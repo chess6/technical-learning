@@ -82,15 +82,21 @@ function MultipleChoice({
                   ? "incorrect"
                   : undefined;
           return (
-            <li key={choice}>
+            <li key={`${exercise.id}-${index}`}>
               <button
                 type="button"
                 className="btn btn--ghost exercise-panel__choice"
                 aria-pressed={isSelected}
                 data-state={state}
+                data-choice-index={index}
                 onClick={() => choose(index)}
               >
-                {String.fromCharCode(65 + index)}. {choice}
+                <span className="exercise-panel__choice-letter" aria-hidden="true">
+                  {String.fromCharCode(65 + index)}.
+                </span>
+                <span className="exercise-panel__choice-math">
+                  <ProseWithMath text={choice} />
+                </span>
               </button>
             </li>
           );

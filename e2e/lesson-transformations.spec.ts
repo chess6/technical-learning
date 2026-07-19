@@ -84,7 +84,10 @@ test("matrix control, preset, and scrub update the transformed vector", async ({
 test("exercise feedback connects numbers to geometry", async ({ page }) => {
   await page.goto("/lesson/transformations");
 
-  await page.getByRole("button", { name: /0, −1/ }).click();
+  await page.locator('.exercise-panel__choice[data-choice-index="0"]').click();
   const feedback = page.locator('.exercise-panel__feedback[data-state="correct"]');
   await expect(feedback.first()).toContainText("Correct");
+  await expect(
+    page.locator('.exercise-panel__choice[data-choice-index="0"] .katex'),
+  ).toBeVisible();
 });

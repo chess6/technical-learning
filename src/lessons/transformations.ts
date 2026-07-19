@@ -58,10 +58,10 @@ export const transformationsLesson: LessonDefinition = {
       prompt:
         "Which matrix sends $\\mathbf{e}_1$ to $(0, 1)$ and $\\mathbf{e}_2$ to $(-1, 0)$ — a $90^\\circ$ counterclockwise rotation?",
       choices: [
-        "[[0, −1], [1, 0]]",
-        "[[1, 0], [0, 1]]",
-        "[[2, 0], [0, 2]]",
-        "[[1, 1], [0, 1]]",
+        "$\\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix}$",
+        "$\\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$",
+        "$\\begin{bmatrix} 2 & 0 \\\\ 0 & 2 \\end{bmatrix}$",
+        "$\\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}$",
       ],
       correctChoice: 0,
       explanation:
