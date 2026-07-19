@@ -1,0 +1,14 @@
+---
+description: Mafs explorers — shared controls, continuity with guided examples
+globs: src/explorations/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Explorations
+
+- Register explorers in `explorations/registry.tsx`; lessons reference `explorationId`.
+- Reuse `MafsSceneShell`, `ParameterControls`, `ExplorationToggles`, `PresetPicker`, `SceneReadout`, `ResetButton`.
+- Seed from `src/lessons/exampleData.ts` / shared example ids (same matrices as the guided scene for that lesson).
+- Prefer progressive disclosure (`<details>`) for advanced controls; keep the first view focused.
+- Role colors via CSS variables (`--role-*`); keep legend swatches in sync with drawn vectors.
+- Colocate explorer CSS next to the component; match existing naming.

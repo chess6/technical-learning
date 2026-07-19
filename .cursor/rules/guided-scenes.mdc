@@ -1,0 +1,29 @@
+---
+description: Motion Canvas guided scenes — safe frame, registration, player UX
+globs: src/guided-scenes/**/*.{ts,tsx},src/components/lesson/GuidedScenePlayer.*
+alwaysApply: false
+---
+
+# Guided scenes
+
+## Registration
+
+1. Timings → `sceneTimings.ts`
+2. Metadata → `sceneMeta.ts`
+3. `makeScene2D` module under `scenes/`
+4. Register in `sceneDescriptions.ts`
+5. Lesson sets `guidedSceneId` only
+
+Flip backends via `ACTIVE_BACKEND` in `src/guided-scenes/engine/index.ts` — do not fork lesson UI per backend.
+
+## Safe frame (clipping)
+
+- Stage is fixed (see `safeFrame.ts`); overlays are **center-anchored**.
+- Use `makeOverlayLabel()` at `LABEL_CENTER_X` + top/bottom label Y — never left-edge x for long `Txt` (half the string clips off-stage).
+- Keep generous `lineHeight` / `cachePadding` so ascent/descent are not cache-clipped.
+
+## Player / autoplay
+
+- Autoplay once when ~≥55% visible; pause when off-screen/hidden; respect `prefers-reduced-motion`.
+- Learner controls: Play/Pause/Replay, Previous/Next idea, major-step chips, scrubber.
+- Debug UI only behind `?debug=1` or `localStorage.guidedSceneDebug=1`.

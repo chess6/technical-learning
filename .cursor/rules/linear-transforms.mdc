@@ -1,0 +1,29 @@
+---
+description: Correct 2×2 matrix application and transformed-grid construction
+globs: src/math/**/*.{ts,tsx},src/explorations/**/*.{ts,tsx},src/guided-scenes/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Linear transforms
+
+Every point `(x, y)` under matrix `A = [[a11, a12], [a21, a22]]` must use:
+
+```ts
+xPrime = a11 * x + a12 * y;
+yPrime = a21 * x + a22 * y;
+// → matrixVectorMultiply(A, [x, y])
+```
+
+## Grids
+
+- Build transformed grid **lines by transforming endpoints** of identity-space segments (`x = k` and `y = k`), then draw the segment between images.
+- Do **not** invent slopes from matrix rows/columns independently of that map.
+- Prefer `transformedGridSegments` (math) or the same endpoint pattern as `makeTransformedGrid` (guided).
+
+## Mafs caveat
+
+If using Mafs `<Transform>`, pack the affine matrix as Mafs expects (`matrixCreate`-style: `[a11, a12, tx, a21, a22, ty]`). Prefer explicit endpoint transforms so packing bugs cannot desync the grid from `Av` / basis columns.
+
+## Continuity
+
+Explorer readouts (`Av`, transformed `e₁`/`e₂`, `det`) and drawn geometry must agree with the same `matrixVectorMultiply` path.

@@ -1,0 +1,27 @@
+---
+description: Automatically commit completed work units on this project
+alwaysApply: true
+---
+
+# Auto-commit
+
+After finishing a coherent unit of work (feature fix, rule add, test pass, docs tied to that change), **create a git commit** without waiting to be asked.
+
+## When to commit
+
+- A milestone slice, bugfix, or rule/docs update is done and verified (lint/tests as appropriate).
+- Prefer one commit per logical change; split unrelated fixes.
+
+## When not to commit
+
+- Mid-exploration with broken/incomplete state the user is still directing.
+- Only secret/credential files would be staged — warn instead.
+- User explicitly says not to commit.
+
+## How
+
+Follow the repo git protocol: status + diff + recent log → stage relevant files → commit via HEREDOC → verify with `git status`.
+
+Message style (match history): short imperative summary of **why**, e.g. `Fix explorer grid endpoint transforms` or `Add Cursor project rules`.
+
+Do **not**: amend unless the usual amend-safety conditions hold; force-push; skip hooks; push unless the user asks.

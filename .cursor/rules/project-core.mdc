@@ -1,0 +1,33 @@
+---
+description: Core architecture, scope, and conventions for the linear algebra visual learning POC
+alwaysApply: true
+---
+
+# Project core
+
+Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent parallel math or lesson pipelines.
+
+## Layers (keep boundaries)
+
+| Layer | Path | Rule |
+| --- | --- | --- |
+| Pure math | `src/math/` | No React, no Mafs, no Motion Canvas. Production must not import `mathjs` (`mathjs` is devDependency only). |
+| Shared examples | `src/math/examples.ts`, `src/lessons/exampleData.ts` | Guided + explorers share example ids — never duplicate matrix/vector constants. |
+| Guided | `src/guided-scenes/` | Lessons pass `guidedSceneId` only; React never imports Motion Canvas scene modules directly. |
+| Explorations | `src/explorations/` | Register in `registry.tsx`; reuse `MafsSceneShell`, controls, toggles, readouts. |
+| Lessons / UI | `src/lessons/`, `src/components/lesson/` | Registry-driven; no per-lesson branching in the shell. |
+
+## Scope
+
+- Lessons 1–2 + M4.5 polish are the active product surface.
+- Do **not** implement Lessons 3–4 / determinants / eigenvectors milestones unless the user explicitly reopens that work.
+- Prefer fixing visual/math correctness and shared helpers over new lesson content.
+
+## Math & copy
+
+- Learner-facing math uses KaTeX (`ProseWithMath`, equation/readout components) — including MC choices when they are matrices/vectors.
+- Prefer `matrixVectorMultiply` / shared helpers over ad-hoc formulas in UI code.
+
+## Verify
+
+After meaningful changes: `npm run lint`, `npm run test`, and e2e when touching player/layout/lesson flow (`npm run test:e2e`).
