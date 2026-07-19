@@ -1,20 +1,29 @@
 import type { ReactNode } from "react";
 import "./ExplorationPanel.css";
 
-type ExplorationPanelProps = {
-  title?: string;
-  children?: ReactNode;
+export type ExplorationPanelProps = {
   explorationId: string;
+  title?: string;
+  description?: string;
+  children?: ReactNode;
+  controls?: ReactNode;
+  readout?: ReactNode;
+  toolbar?: ReactNode;
 };
 
 /**
- * Placeholder exploration shell for M1.
- * M3 will host Mafs explorers here.
+ * Orchestration shell for interactive explorations.
+ * Hosts Mafs diagrams, external controls, and numerical readouts.
+ * Mathematical state stays local to the child exploration component.
  */
 export function ExplorationPanel({
-  title = "Interactive exploration",
-  children,
   explorationId,
+  title = "Interactive exploration",
+  description,
+  children,
+  controls,
+  readout,
+  toolbar,
 }: ExplorationPanelProps) {
   return (
     <div
@@ -23,12 +32,25 @@ export function ExplorationPanel({
       role="region"
       aria-label={title}
     >
-      <h2 className="exploration-panel__title">{title}</h2>
-      {children ?? (
-        <p className="exploration-panel__placeholder">
-          Interactive diagram for <code>{explorationId}</code> will appear here.
-        </p>
-      )}
+      <header className="exploration-panel__header">
+        <h2 className="exploration-panel__title">{title}</h2>
+        {description && (
+          <p className="exploration-panel__description">{description}</p>
+        )}
+        {toolbar && (
+          <div className="exploration-panel__toolbar">{toolbar}</div>
+        )}
+      </header>
+
+      <div className="exploration-panel__body">
+        <div className="exploration-panel__scene">{children}</div>
+        {(controls || readout) && (
+          <aside className="exploration-panel__side">
+            {controls}
+            {readout}
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

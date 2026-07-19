@@ -26,6 +26,10 @@ export function HomePage() {
           </li>
         ))}
       </ol>
+
+      <p className="home-page__dev-link">
+        <Link to="/dev/mafs-demo">Mafs technical demo (M3)</Link>
+      </p>
     </div>
   );
 }

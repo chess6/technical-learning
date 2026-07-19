@@ -77,3 +77,9 @@
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
+
+.home-page__dev-link {
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+}

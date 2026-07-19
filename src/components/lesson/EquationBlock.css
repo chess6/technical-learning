@@ -14,7 +14,25 @@
   color: var(--color-text-faint);
 }
 
-.equation-block__tex {
+.equation-block__rendered {
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: var(--color-text);
+  font-size: var(--text-lg);
+}
+
+/* KaTeX defaults to its own font color; keep it aligned to the theme. */
+.equation-block__rendered .katex,
+.equation-inline .katex {
+  color: var(--color-text);
+}
+
+.equation-inline {
+  white-space: nowrap;
+}
+
+.equation-block__tex,
+.equation-inline--fallback {
   margin: 0;
   overflow-x: auto;
   font-family: var(--font-mono);

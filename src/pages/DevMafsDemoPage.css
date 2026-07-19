@@ -1,0 +1,29 @@
+.dev-mafs-demo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 56rem;
+}
+
+.dev-mafs-demo__header {
+  max-width: 40rem;
+}
+
+.dev-mafs-demo__eyebrow {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.dev-mafs-demo__title {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-3);
+}
+
+.dev-mafs-demo__lede {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}

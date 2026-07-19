@@ -1,13 +1,6 @@
-export type Matrix2x2 = [[number, number], [number, number]];
+import type { Vector2 } from "../math/types";
 
-export type Vector2 = [number, number];
-
-export type MatrixExample = {
-  id: string;
-  title: string;
-  matrix: Matrix2x2;
-  inputVector?: Vector2;
-};
+export type { Matrix2x2, MatrixExample, Vector2 } from "../math/types";
 
 export type ExerciseDefinition =
   | {

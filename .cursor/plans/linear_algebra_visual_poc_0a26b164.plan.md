@@ -7,13 +7,13 @@ todos:
     status: completed
   - id: m2-spike
     content: "M2 (gate): GuidedSceneEngine interface + GuidedScenePlayer; MotionCanvasEngine spike with one transform scene proving play/pause/reset/scrub/resize/cleanup/remount/no-leak; SvgFallbackEngine if spike fails; document outcome"
-    status: in_progress
+    status: completed
   - id: m3-mafs-math
     content: "M3: ExplorationPanel Mafs wrapper, shared example data + Matrix2x2/MatrixExample types, pure math utils (vectors, matrices, interpolation, eigen) with Vitest unit tests"
-    status: pending
+    status: completed
   - id: m4-lessons-1-2
     content: "M4: Lesson 1 (vectors & linear combinations) and Lesson 2 (matrices as transformations) - guided scenes, Mafs explorations, exercises, shared data"
-    status: pending
+    status: in_progress
   - id: m5-lessons-3-4
     content: "M5: Lesson 3 (determinants as signed area) and Lesson 4 (eigenvectors/eigenvalues) - guided scenes, explorations with tolerant/graceful eigen handling, exercises"
     status: pending
