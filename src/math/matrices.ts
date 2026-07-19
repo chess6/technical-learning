@@ -48,6 +48,40 @@ export function applyMatrixToPoints(
   return points.map((point) => matrixVectorMultiply(m, point));
 }
 
+/** One grid line after mapping both endpoints through `m` (no slope derivation). */
+export type TransformedGridSegment = {
+  kind: "vertical" | "horizontal";
+  index: number;
+  point1: Vector2;
+  point2: Vector2;
+};
+
+/**
+ * Identity-space grid lines (x=k and y=k) with both endpoints transformed by
+ * `matrixVectorMultiply`. Callers draw the segment between those images.
+ */
+export function transformedGridSegments(
+  m: Matrix2x2,
+  halfExtent: number,
+): TransformedGridSegment[] {
+  const segments: TransformedGridSegment[] = [];
+  for (let k = -halfExtent; k <= halfExtent; k += 1) {
+    segments.push({
+      kind: "vertical",
+      index: k,
+      point1: matrixVectorMultiply(m, [k, -halfExtent]),
+      point2: matrixVectorMultiply(m, [k, halfExtent]),
+    });
+    segments.push({
+      kind: "horizontal",
+      index: k,
+      point1: matrixVectorMultiply(m, [-halfExtent, k]),
+      point2: matrixVectorMultiply(m, [halfExtent, k]),
+    });
+  }
+  return segments;
+}
+
 /** Corners of the unit square [0,1]×[0,1], in counterclockwise order from origin. */
 export const UNIT_SQUARE: readonly Vector2[] = [
   [0, 0],

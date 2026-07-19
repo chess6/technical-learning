@@ -33,7 +33,9 @@ export {
   approximatelyEqualMatrix,
   matrixTrace,
   verifiesEigenpair,
+  transformedGridSegments,
 } from "./matrices";
+export type { TransformedGridSegment } from "./matrices";
 
 export {
   clamp,

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Line, Text, Transform, Vector, useMovablePoint } from "mafs";
+import { Line, Text, Vector, useMovablePoint } from "mafs";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
 import { MatrixTeX, VectorTeX } from "../components/lesson/ProseWithMath";
 import { MafsSceneShell } from "./MafsSceneShell";
@@ -18,6 +18,7 @@ import {
   lerpIdentityToMatrix,
   matrixVectorMultiply,
   requireMatrixExample,
+  transformedGridSegments,
   type Matrix2x2,
   type Vector2,
 } from "../math";
@@ -50,10 +51,6 @@ function toMatrix(e: Entries): Matrix2x2 {
   ];
 }
 
-function toMafsMatrix(m: Matrix2x2): [number, number, number, number, number, number] {
-  return [m[0][0], m[1][0], m[0][1], m[1][1], 0, 0];
-}
-
 function fmt(n: number): string {
   const r = Math.round(n * 100) / 100;
   return Object.is(r, -0) ? "0" : String(r);
@@ -64,30 +61,22 @@ function fmtPlainMatrix(m: Matrix2x2): string {
 }
 
 function TransformedGrid({ matrix, color }: { matrix: Matrix2x2; color: string }) {
-  const lines = [];
-  for (let k = -GRID_EXTENT; k <= GRID_EXTENT; k += 1) {
-    lines.push(
-      <Line.Segment
-        key={`v${k}`}
-        point1={[k, -GRID_EXTENT]}
-        point2={[k, GRID_EXTENT]}
-        color={color}
-        weight={k === 0 ? 2 : 1}
-        opacity={k === 0 ? 0.75 : 0.28}
-      />,
-    );
-    lines.push(
-      <Line.Segment
-        key={`h${k}`}
-        point1={[-GRID_EXTENT, k]}
-        point2={[GRID_EXTENT, k]}
-        color={color}
-        weight={k === 0 ? 2 : 1}
-        opacity={k === 0 ? 0.75 : 0.28}
-      />,
-    );
-  }
-  return <Transform matrix={toMafsMatrix(matrix)}>{lines}</Transform>;
+  // Endpoints only: each segment is the image of an identity-space line under A.
+  const segments = transformedGridSegments(matrix, GRID_EXTENT);
+  return (
+    <>
+      {segments.map((seg) => (
+        <Line.Segment
+          key={`${seg.kind}${seg.index}`}
+          point1={seg.point1}
+          point2={seg.point2}
+          color={color}
+          weight={seg.index === 0 ? 2 : 1}
+          opacity={seg.index === 0 ? 0.75 : 0.28}
+        />
+      ))}
+    </>
+  );
 }
 
 export function MatrixTransformationExplorer() {
