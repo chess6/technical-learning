@@ -5,6 +5,7 @@ import {
   SPIKE_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
+import { SCENE_SIZE } from "./safeFrame";
 
 /**
  * Scene metadata (size, accessible label, step markers) kept free of any
@@ -15,32 +16,66 @@ export interface GuidedSceneMeta {
   id: string;
   size: { width: number; height: number };
   ariaLabel: string;
+  /** All timeline beats (scrubber / progress). */
   steps: GuidedSceneStep[];
+  /**
+   * Major conceptual stages for Prev/Next idea controls.
+   * A subset of {@link steps}; learner UI should prefer these.
+   */
+  majorSteps: GuidedSceneStep[];
 }
 
-const SIZE = { width: 960, height: 600 } as const;
+function pickMajor(
+  steps: GuidedSceneStep[],
+  ids: readonly string[],
+): GuidedSceneStep[] {
+  return ids
+    .map((id) => steps.find((step) => step.id === id))
+    .filter((step): step is GuidedSceneStep => Boolean(step));
+}
+
+const LINEAR_STEPS = toSteps(LINEAR_COMBINATION_SEGMENTS);
+const MATRIX_STEPS = toSteps(MATRIX_TRANSFORMATION_SEGMENTS);
+const SPIKE_STEPS = toSteps(SPIKE_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "vectors-linear-combinations": {
     id: "vectors-linear-combinations",
-    size: SIZE,
+    size: SCENE_SIZE,
     ariaLabel:
       "Guided animation building linear combinations of two vectors and comparing an independent span (the whole plane) with a dependent span (a single line).",
-    steps: toSteps(LINEAR_COMBINATION_SEGMENTS),
+    steps: LINEAR_STEPS,
+    majorSteps: pickMajor(LINEAR_STEPS, [
+      "vector-v",
+      "addition",
+      "scaling",
+      "combination",
+      "span-plane",
+      "dependent",
+    ]),
   },
   "matrix-transformations": {
     id: "matrix-transformations",
-    size: SIZE,
+    size: SCENE_SIZE,
     ariaLabel:
       "Guided animation showing a 2 by 2 matrix moving the basis vectors, deforming the coordinate grid, and touring scale, shear, rotation, reflection, and singular transformations.",
-    steps: toSteps(MATRIX_TRANSFORMATION_SEGMENTS),
+    steps: MATRIX_STEPS,
+    majorSteps: pickMajor(MATRIX_STEPS, [
+      "identity",
+      "col1",
+      "sample",
+      "grid",
+      "presets",
+      "summary",
+    ]),
   },
   "transform-spike": {
     id: "transform-spike",
-    size: SIZE,
+    size: SCENE_SIZE,
     ariaLabel:
       "Development scene: a coordinate grid transforming from the identity to a shear matrix.",
-    steps: toSteps(SPIKE_SEGMENTS),
+    steps: SPIKE_STEPS,
+    majorSteps: SPIKE_STEPS,
   },
 };
 

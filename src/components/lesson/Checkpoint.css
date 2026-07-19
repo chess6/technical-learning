@@ -1,0 +1,31 @@
+.checkpoint {
+  max-width: var(--prose-max);
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.checkpoint__label {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.checkpoint__prompt {
+  margin: 0;
+  color: var(--color-text);
+  line-height: var(--leading-relaxed);
+  font-size: var(--text-lg);
+}
+
+.checkpoint__answer {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}

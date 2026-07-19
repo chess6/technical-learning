@@ -29,11 +29,12 @@ test("Mafs demo renders, updates from controls, and resets", async ({ page }) =>
 });
 
 test("Mafs demo is responsive across two viewport sizes", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+  // Stay above the sidebar drawer breakpoint so the main column simply shrinks.
+  await page.setViewportSize({ width: 1600, height: 800 });
   await page.goto("/dev/mafs-demo");
   const wide = await page.locator(".MafsView").boundingBox();
 
-  await page.setViewportSize({ width: 900, height: 800 });
+  await page.setViewportSize({ width: 1100, height: 800 });
   const narrow = await page.locator(".MafsView").boundingBox();
 
   expect(wide).not.toBeNull();

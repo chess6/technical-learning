@@ -1,0 +1,34 @@
+.exploration-toggles {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.exploration-toggles__legend {
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.exploration-toggles__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.exploration-toggles__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.exploration-toggles__row input {
+  accent-color: var(--color-accent);
+}

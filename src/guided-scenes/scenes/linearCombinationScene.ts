@@ -1,10 +1,11 @@
-import { Circle, Line, Node, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Line, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
   createSignal,
   easeInOutCubic,
   waitFor,
+  type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_COMBINATION_EXAMPLE } from "../../lessons/exampleData";
 import { LINEAR_COMBINATION_SEGMENTS } from "./sceneTimings";
@@ -13,9 +14,11 @@ import {
   SCALE,
   makeArrow,
   makeLabel,
+  makeOverlayLabel,
   makeSegment,
   makeStaticGrid,
 } from "./sceneKit";
+import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
 /**
  * Guided scene for Lesson 1: build linear combinations of two vectors, then
@@ -37,7 +40,7 @@ const fmt = (n: number): string => {
 export const linearCombinationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  const grid = makeStaticGrid(6);
+  const grid = makeStaticGrid();
   grid.opacity(0);
   view.add(grid);
 
@@ -57,7 +60,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
     lineWidth: 1.5,
     opacity: 0,
     points: () => {
-      const r = 1.3;
+      const r = 1.1;
       const a = px(V.scale(r).add(wTip().scale(r)));
       const b = px(V.scale(r).sub(wTip().scale(r)));
       return [a, b, a.scale(-1), b.scale(-1)];
@@ -70,7 +73,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
     lineWidth: 4,
     lineDash: [10, 8],
     opacity: 0,
-    points: () => [px(V.scale(2.2)), px(V.scale(-2.2))],
+    points: () => [px(V.scale(1.8)), px(V.scale(-1.8))],
   });
   view.add(spanLine);
 
@@ -105,18 +108,18 @@ export const linearCombinationScene = makeScene2D(function* (view) {
 
   // Labels.
   const vLabel = makeLabel("v", ROLE.basis1);
-  vLabel.opacity(0).position(() => px(V).add(new Vector2(18, -14)));
+  vLabel.opacity(0).position(() => px(V).add(new Vector2(20, -18)));
   const wLabel = makeLabel("w", ROLE.basis2);
-  wLabel.opacity(0).position(() => px(wTip()).add(new Vector2(18, -6)));
+  wLabel.opacity(0).position(() => px(wTip()).add(new Vector2(20, -8)));
   view.add(vLabel);
   view.add(wLabel);
 
-  const eq = makeLabel("", ROLE.text, 34);
-  eq.opacity(0).position(new Vector2(-360, -250));
+  const eq = makeOverlayLabel("", ROLE.text, 26);
+  eq.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(eq);
 
-  const caption = makeLabel("", ROLE.textMuted, 26);
-  caption.opacity(0).position(new Vector2(-360, 250));
+  const caption = makeOverlayLabel("", ROLE.textMuted, 20);
+  caption.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 
   const setEq = (text: string) => eq.text(text);
@@ -127,7 +130,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
     LINEAR_COMBINATION_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
-  const bodies: Record<string, () => Generator> = {
+  const bodies: Record<string, () => ThreadGenerator> = {
     *plane() {
       yield* all(grid.opacity(1, 0.8), origin.opacity(1, 0.8));
       yield* waitFor(seconds.plane - 0.8);

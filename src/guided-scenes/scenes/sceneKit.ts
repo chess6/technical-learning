@@ -2,6 +2,9 @@ import { Line, Node, Txt } from "@motion-canvas/2d";
 import { Vector2, type SignalValue } from "@motion-canvas/core";
 import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
+import { GRID_HALF_EXTENT, SCALE } from "./safeFrame";
+
+export { SCALE, SCENE_SIZE, SAFE_MARGIN } from "./safeFrame";
 
 /**
  * Shared building blocks for the guided lesson scenes. Both lessons need the
@@ -9,10 +12,9 @@ import { matrixVectorMultiply } from "../../math";
  * background grid, so these live in one kit rather than being duplicated.
  *
  * Colours mirror the semantic role tokens in src/styles/tokens.css so the
- * canvas and the surrounding React UI stay visually consistent.
+ * canvas and the surrounding React UI stay visually consistent. Geometry must
+ * respect the safe-frame convention in safeFrame.ts.
  */
-
-export const SCALE = 68;
 
 export const ROLE = {
   background: "#0e1116",
@@ -61,16 +63,38 @@ export function makeSegment(color: string, width = 3, dash = false): Line {
 
 export function makeLabel(
   text: SignalValue<string>,
-  color = ROLE.text,
-  fontSize = 30,
+  color: string = ROLE.text,
+  fontSize = 28,
 ): Txt {
   return new Txt({
     text,
     fill: color,
     fontSize,
-    fontFamily:
-      "'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif",
+    fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     fontWeight: 600,
+  });
+}
+
+/**
+ * Centered overlay caption/equation for the safe top/bottom bands.
+ * Always position at (LABEL_CENTER_X, LABEL_TOP_Y | LABEL_BOTTOM_Y).
+ */
+export function makeOverlayLabel(
+  text: SignalValue<string>,
+  color: string = ROLE.text,
+  fontSize = 24,
+): Txt {
+  return new Txt({
+    text,
+    fill: color,
+    fontSize,
+    lineHeight: fontSize * 1.55,
+    padding: [14, 12],
+    cachePadding: 24,
+    fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
+    fontWeight: 600,
+    textAlign: "center",
+    offset: [0, 0],
   });
 }
 
@@ -78,7 +102,7 @@ export function makeLabel(
  * A static background grid + axes covering the given half-extent (in units).
  * Purely decorative reference frame; transformed grids are built per-scene.
  */
-export function makeStaticGrid(halfExtent = 6): Node {
+export function makeStaticGrid(halfExtent = GRID_HALF_EXTENT): Node {
   const group = new Node({});
   for (let k = -halfExtent; k <= halfExtent; k += 1) {
     const isAxis = k === 0;
@@ -106,7 +130,7 @@ export function makeStaticGrid(halfExtent = 6): Node {
  */
 export function makeTransformedGrid(
   matrixAt: () => Matrix2x2,
-  halfExtent = 5,
+  halfExtent = GRID_HALF_EXTENT,
   color = ROLE.gridTransformed,
 ): Node {
   const group = new Node({});

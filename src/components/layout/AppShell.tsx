@@ -1,31 +1,50 @@
 import { Link, Outlet } from "react-router-dom";
-import { lessons } from "../../lessons/registry";
+import { useCallback } from "react";
+import { CourseSidebar } from "./CourseSidebar";
+import { useSidebarOpen } from "../../hooks/useSidebarOpen";
 import "./AppShell.css";
 
 export function AppShell() {
+  const { open, closeSidebar, toggleSidebar } = useSidebarOpen();
+
+  const handleClose = useCallback(() => {
+    closeSidebar();
+  }, [closeSidebar]);
+
   return (
     <div className="app-shell">
       <header className="app-shell__header">
+        <button
+          type="button"
+          className="app-shell__menu"
+          aria-expanded={open}
+          aria-controls="course-sidebar"
+          onClick={toggleSidebar}
+        >
+          Contents
+        </button>
         <Link to="/" className="app-shell__brand">
           Linear Algebra
           <span className="app-shell__brand-sub">Visual Learning</span>
         </Link>
-        <nav className="app-shell__nav" aria-label="Lessons">
-          {lessons.map((lesson, index) => (
-            <Link
-              key={lesson.id}
-              to={`/lesson/${lesson.id}`}
-              className="app-shell__nav-link"
-            >
-              <span className="app-shell__nav-index">{index + 1}</span>
-              {lesson.title}
-            </Link>
-          ))}
-        </nav>
       </header>
-      <main className="app-shell__main">
-        <Outlet />
-      </main>
+
+      <div className="app-shell__body">
+        <div id="course-sidebar">
+          <CourseSidebar open={open} onClose={handleClose} />
+        </div>
+        {open && (
+          <button
+            type="button"
+            className="app-shell__backdrop"
+            aria-label="Close course contents"
+            onClick={handleClose}
+          />
+        )}
+        <main className="app-shell__main">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { ProseWithMath } from "./ProseWithMath";
 import "./LessonSummary.css";
 
 type LessonSummaryProps = {
@@ -9,11 +10,15 @@ export function LessonSummary({ takeaway, objectives }: LessonSummaryProps) {
   return (
     <section className="lesson-summary" aria-label="Lesson summary">
       <h2 className="lesson-summary__heading">Key insight</h2>
-      <p className="lesson-summary__takeaway">{takeaway}</p>
+      <p className="lesson-summary__takeaway">
+        <ProseWithMath text={takeaway} />
+      </p>
       <h3 className="lesson-summary__objectives-title">Learning objectives</h3>
       <ul className="lesson-summary__objectives">
         {objectives.map((objective) => (
-          <li key={objective}>{objective}</li>
+          <li key={objective}>
+            <ProseWithMath text={objective} />
+          </li>
         ))}
       </ul>
     </section>

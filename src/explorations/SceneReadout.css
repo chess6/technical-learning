@@ -34,8 +34,11 @@
 
 .scene-readout__row dd {
   margin: 0;
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
   word-break: break-word;
+}
+
+.scene-readout__row dd .katex {
+  font-size: 1.05em;
 }

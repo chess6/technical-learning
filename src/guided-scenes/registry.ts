@@ -8,17 +8,19 @@ import {
 /**
  * Maps a lesson's guidedSceneId to an engine factory.
  *
- * M2 scope: every lesson resolves to the single minimal transform spike scene.
- * Later milestones will register per-lesson scenes here without touching the
- * player or engine layers.
+ * The sceneId is threaded into the engine options so the engine can build the
+ * matching registered scene. Lesson definitions and the React player never see
+ * Motion Canvas details — only this string id and the GuidedSceneEngine
+ * interface. Unregistered ids resolve to a fallback scene (see sceneMeta).
  */
 export type GuidedSceneFactory = (
   options: GuidedSceneEngineOptions,
 ) => GuidedSceneEngine;
 
 export function getGuidedSceneFactory(
-  _sceneId: string,
+  sceneId: string,
   backend?: GuidedSceneBackend,
 ): GuidedSceneFactory {
-  return (options) => createGuidedSceneEngine(options, backend);
+  return (options) =>
+    createGuidedSceneEngine({ ...options, sceneId }, backend);
 }

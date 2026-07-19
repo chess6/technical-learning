@@ -18,7 +18,7 @@ export const SPIKE_MATRIX: Matrix2x2 = spikeExample.matrix;
 
 export const SAMPLE_VECTOR: Vector2 = spikeExample.inputVector ?? [1.5, 0.5];
 
-export const SPIKE_SCENE_SIZE = { width: 960, height: 600 } as const;
+export const SPIKE_SCENE_SIZE = { width: 960, height: 540 } as const;
 
 export const SPIKE_STEPS: GuidedSceneStep[] = [
   { id: "identity", title: "Identity grid", at: 0 },

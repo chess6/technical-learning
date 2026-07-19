@@ -4,15 +4,24 @@ Desktop-first browser POC for learning linear algebra through guided animations 
 
 ## Status
 
-**Milestone 3 complete** — shared pure math layer, immutable example registry, and
-Mafs exploration foundation with a technical demo at `/dev/mafs-demo`.
-Details: [docs/m3-math-and-mafs.md](docs/m3-math-and-mafs.md).
+**Milestone 4.5 complete** — visual, layout, and learning-experience refinement
+of Lessons 1–2 (sidebar TOC, autoplay, safe-frame clipping fix, KaTeX prose,
+learner-facing player controls, progressive disclosure). Details:
+[docs/m45-refinement.md](docs/m45-refinement.md).
 
-Milestone 2 delivered Motion Canvas embedding behind `GuidedSceneEngine`
+**Milestone 4 complete** — Lessons 1 (Vectors and Linear Combinations) and 2
+(Matrices as Linear Transformations) are fully implemented: guided Motion Canvas
+scenes, Mafs explorations, KaTeX equations, deterministic exercises, and a
+motivating-question → guide → checkpoint → explore → exercise → takeaway flow.
+Details: [docs/m4-lessons.md](docs/m4-lessons.md).
+
+Earlier milestones: shared pure math layer + Mafs foundation
+([docs/m3-math-and-mafs.md](docs/m3-math-and-mafs.md)) and Motion Canvas
+embedding behind `GuidedSceneEngine`
 ([docs/motion-canvas-spike.md](docs/motion-canvas-spike.md)).
 
-Later milestones implement the four full lessons, accessibility polish, and
-final documentation.
+Lessons 3 (determinants) and 4 (eigenvectors) remain placeholders for later
+milestones.
 
 ## Commands
 
@@ -30,26 +39,39 @@ npm run test:e2e       # Playwright browser tests (installs: npx playwright inst
 | Layer | Path | Responsibility |
 | --- | --- | --- |
 | Pure math | `src/math/` | Vectors, matrices, interpolation, 2×2 eigen analysis |
-| Shared examples | `src/math/examples.ts` | Immutable presets; lookup by id from guided + interactive scenes |
-| Guided animations | `src/guided-scenes/` | Motion Canvas engines/scenes |
-| Explorations | `src/explorations/` | Mafs interactive diagrams |
-| Lesson UI | `src/components/lesson/` | Layout orchestration |
+| Shared examples | `src/math/examples.ts` | Immutable matrix presets; lookup by id |
+| Lesson example data | `src/lessons/exampleData.ts` | Shared vectors/coefficients/presets used by guided + interactive modes |
+| Guided animations | `src/guided-scenes/` | Motion Canvas engines/scenes behind `GuidedSceneEngine` |
+| Explorations | `src/explorations/` | Mafs interactive diagrams + registry |
+| Equations | `src/components/lesson/EquationBlock.tsx` | KaTeX rendering of trusted static TeX |
+| Lesson content | `src/lessons/` | Typed lesson definitions, grading, registry |
+| Lesson UI | `src/components/lesson/`, `LessonPage`, `LessonLayout` | Registry-driven orchestration (no per-lesson branching) |
 
-Guided and interactive scenes must consume the same example ids — never duplicate matrix constants.
+Guided and interactive scenes must consume the same example ids — never duplicate constants.
 
 ## Guided animation
 
 - `GuidedSceneEngine` + `MotionCanvasEngine` (active) / `SvgFallbackEngine`
-- Flip `ACTIVE_BACKEND` in `src/guided-scenes/engine/index.ts` to switch backends
+- Scenes are registered by id in `src/guided-scenes/scenes/` (metadata in
+  `sceneMeta.ts`, descriptions in `sceneDescriptions.ts`); the sceneId is passed
+  through the engine, so lesson data and React never touch Motion Canvas.
+- Flip `ACTIVE_BACKEND` in `src/guided-scenes/engine/index.ts` to switch backends.
 
-## Mafs technical demo
+## Adding a guided scene and explorer
 
-- Route: `/dev/mafs-demo`
-- Shared example `shear-2-1`, draggable input, matrix sliders, determinant readout, reset
+1. **Scene:** add durations to `sceneTimings.ts`, metadata to `sceneMeta.ts`,
+   a `makeScene2D` module under `scenes/`, and register it in
+   `sceneDescriptions.ts`. Set the lesson's `guidedSceneId`.
+2. **Explorer:** build a component under `src/explorations/` (reuse
+   `MafsSceneShell`, `ParameterControls`, `ExplorationToggles`, `PresetPicker`,
+   `SceneReadout`, `ResetButton`) and register it in `explorations/registry.tsx`.
+   Set the lesson's `explorationId`.
 
-## Lessons (content placeholders until M4+)
+## Lessons
 
-1. Vectors and Linear Combinations — `/lesson/vectors`
-2. Matrices as Linear Transformations — `/lesson/transformations`
-3. Determinants as Signed Area Scaling — `/lesson/determinants`
-4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors`
+1. Vectors and Linear Combinations — `/lesson/vectors` (complete)
+2. Matrices as Linear Transformations — `/lesson/transformations` (complete)
+3. Determinants as Signed Area Scaling — `/lesson/determinants` (placeholder)
+4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors` (placeholder)
+
+`mathjs` is a **dev-only** dependency (cross-check tests); no production module imports it.

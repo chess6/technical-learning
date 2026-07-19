@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: m4-lessons-1-2
     content: "M4: Lesson 1 (vectors & linear combinations) and Lesson 2 (matrices as transformations) - guided scenes, Mafs explorations, exercises, shared data"
-    status: in_progress
+    status: completed
   - id: m5-lessons-3-4
     content: "M5: Lesson 3 (determinants as signed area) and Lesson 4 (eigenvectors/eigenvalues) - guided scenes, explorations with tolerant/graceful eigen handling, exercises"
     status: pending

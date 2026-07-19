@@ -14,8 +14,8 @@ import type {
   GuidedSceneEngineOptions,
   GuidedSceneStep,
 } from "./types";
-import { SPIKE_SCENE_SIZE, SPIKE_STEPS } from "../scenes/spikeConstants";
-import { transformSpikeScene } from "../scenes/transformSpikeScene";
+import { getSceneMeta } from "../scenes/sceneMeta";
+import { getSceneDescription } from "../scenes/sceneDescriptions";
 
 const MC_VERSION = "3.17.2";
 
@@ -40,26 +40,30 @@ const VERSIONS: Versions = {
  * docs/motion-canvas-spike.md). They are used only for construction, never for
  * lifecycle instrumentation.
  */
-function buildSpikeProject(): Project {
+function buildProject(sceneId: string): Project {
+  const name = `guided-${sceneId}`;
   const description = {
-    ...transformSpikeScene,
-    name: "guided-spike",
+    ...(getSceneDescription(sceneId) as object),
+    name,
   } as unknown as FullSceneDescription;
 
   return bootstrap(
-    "guided-spike",
+    name,
     VERSIONS,
     [],
-    { name: "guided-spike", scenes: [description] },
-    new MetaFile("guided-spike", false),
-    new MetaFile("guided-spike-settings", false),
+    { name, scenes: [description] },
+    new MetaFile(name, false),
+    new MetaFile(`${name}-settings`, false),
   );
 }
 
 export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
-  readonly steps: GuidedSceneStep[] = SPIKE_STEPS;
+  readonly steps: GuidedSceneStep[];
 
+  private readonly sceneId: string;
   private readonly reducedMotion: boolean;
+  private readonly sceneSize: { width: number; height: number };
+  private readonly ariaLabel: string;
   private stage: Stage | null = null;
   private player: Player | null = null;
   private canvas: HTMLCanvasElement | null = null;
@@ -76,14 +80,19 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
 
   constructor(options: GuidedSceneEngineOptions) {
     super(true);
+    this.sceneId = options.sceneId ?? "matrix-transformations";
     this.reducedMotion = options.reducedMotion ?? false;
+    const meta = getSceneMeta(this.sceneId);
+    this.steps = meta.steps;
+    this.sceneSize = meta.size;
+    this.ariaLabel = meta.ariaLabel;
   }
 
   async mount(container: HTMLElement): Promise<void> {
     if (this.isDisposed) return;
 
     const stage = new Stage();
-    const project = buildSpikeProject();
+    const project = buildProject(this.sceneId);
     const player = new Player(project);
     // The Player constructor activates itself, starting the update loop.
     this.loopActive = true;
@@ -92,7 +101,7 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
     this.stage = stage;
     this.player = player;
 
-    const size = new Vector2(SPIKE_SCENE_SIZE.width, SPIKE_SCENE_SIZE.height);
+    const size = new Vector2(this.sceneSize.width, this.sceneSize.height);
     const rendering = project.meta.getFullRenderingSettings();
     this.fps = rendering.fps || 60;
 
@@ -101,12 +110,12 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
 
     const canvas = stage.finalBuffer;
     canvas.setAttribute("role", "img");
-    canvas.setAttribute(
-      "aria-label",
-      "Coordinate grid transforming from the identity to a shear matrix",
-    );
+    canvas.setAttribute("aria-label", this.ariaLabel);
+    canvas.dataset.sceneWidth = String(this.sceneSize.width);
+    canvas.dataset.sceneHeight = String(this.sceneSize.height);
     canvas.style.width = "100%";
-    canvas.style.height = "auto";
+    canvas.style.height = "100%";
+    canvas.style.objectFit = "contain";
     canvas.style.display = "block";
     this.canvas = canvas;
     container.appendChild(canvas);
@@ -222,9 +231,10 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
 
     if (this.reducedMotion && !this.reducedMotionApplied && duration > 0) {
       this.reducedMotionApplied = true;
-      this.hasPlayed = true;
+      this.hasPlayed = false;
       this.player?.togglePlayback(false);
-      this.player?.requestSeek(duration);
+      // Stay on the first frame; the player seeks to the first major idea.
+      this.player?.requestSeek(0);
     }
   };
 

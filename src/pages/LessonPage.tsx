@@ -4,11 +4,14 @@ import { EquationBlock } from "../components/lesson/EquationBlock";
 import { ExercisePanel } from "../components/lesson/ExercisePanel";
 import { ExplanationBlock } from "../components/lesson/ExplanationBlock";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
+import { Checkpoint } from "../components/lesson/Checkpoint";
+import { MotivatingQuestion } from "../components/lesson/MotivatingQuestion";
 import { GuidedScenePlayer } from "../components/lesson/GuidedScenePlayer";
 import { LessonSummary } from "../components/lesson/LessonSummary";
 import { LessonLayout } from "../components/layout/LessonLayout";
 import { getLessonById } from "../lessons/registry";
 import { getGuidedSceneFactory } from "../guided-scenes/registry";
+import { getExplorer } from "../explorations/registry";
 
 export function LessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -29,34 +32,27 @@ export function LessonPage() {
     return <Navigate to="/" replace />;
   }
 
-  const primarySection = lesson.sections[0];
-  const secondarySection = lesson.sections[1];
+  const Explorer = getExplorer(lesson.explorationId);
 
   return (
     <LessonLayout
       lesson={lesson}
       onReset={handleReset}
-      explanation={
-        <>
-          {primarySection && (
-            <ExplanationBlock
-              title={primarySection.title}
-              body={primarySection.body}
-              observation={primarySection.observation}
-            />
-          )}
-          {primarySection?.equation && (
-            <EquationBlock tex={primarySection.equation} />
-          )}
-          {secondarySection && (
-            <ExplanationBlock
-              title={secondarySection.title}
-              body={secondarySection.body}
-              observation={secondarySection.observation}
-            />
-          )}
-        </>
+      motivation={
+        lesson.motivatingQuestion && (
+          <MotivatingQuestion question={lesson.motivatingQuestion} />
+        )
       }
+      explanation={lesson.sections.map((section) => (
+        <div key={section.id} className="lesson-section">
+          <ExplanationBlock
+            title={section.title}
+            body={section.body}
+            observation={section.observation}
+          />
+          {section.equation && <EquationBlock tex={section.equation} />}
+        </div>
+      ))}
       visualization={
         <GuidedScenePlayer
           key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
@@ -65,11 +61,27 @@ export function LessonPage() {
           title={`Guided animation: ${lesson.title}`}
         />
       }
+      checkpoint={
+        lesson.checkpoint && (
+          <Checkpoint
+            prompt={lesson.checkpoint.prompt}
+            answer={lesson.checkpoint.answer}
+          />
+        )
+      }
       exploration={
-        <ExplorationPanel
-          key={`explore:${lesson.id}:${resetToken}`}
-          explorationId={lesson.explorationId}
-        />
+        Explorer ? (
+          <div key={`explore:${lesson.id}:${resetToken}`}>
+            <Explorer />
+          </div>
+        ) : (
+          <ExplorationPanel
+            key={`explore:${lesson.id}:${resetToken}`}
+            explorationId={lesson.explorationId}
+            title="Interactive exploration"
+            description="This lesson's interactive exploration arrives in a later milestone."
+          />
+        )
       }
       exercises={<ExercisePanel exercises={lesson.exercises} />}
       summary={

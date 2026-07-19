@@ -1,0 +1,25 @@
+.matrix-explorer__scene {
+  width: 100%;
+}
+
+.swatch--original {
+  border-top-color: var(--role-original);
+}
+
+.swatch--transformed {
+  border-top-color: var(--role-transformed);
+  border-top-style: dashed;
+}
+
+.swatch--basis1 {
+  border-top-color: var(--role-basis-1);
+}
+
+.swatch--basis2 {
+  border-top-color: var(--role-basis-2);
+}
+
+.matrix-explorer__det {
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+}

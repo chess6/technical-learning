@@ -4,7 +4,8 @@ import type {
   GuidedSceneEngineOptions,
   GuidedSceneStep,
 } from "./types";
-import { SPIKE_MATRIX, SPIKE_STEPS } from "../scenes/spikeConstants";
+import { SPIKE_MATRIX } from "../scenes/spikeConstants";
+import { getSceneMeta } from "../scenes/sceneMeta";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const DURATION_SECONDS = 2.6;
@@ -18,7 +19,7 @@ const SCALE = 70;
  * is backend-agnostic, not to be a finished lesson visual.
  */
 export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
-  readonly steps: GuidedSceneStep[] = SPIKE_STEPS;
+  readonly steps: GuidedSceneStep[];
 
   private readonly reducedMotion: boolean;
   private svg: SVGSVGElement | null = null;
@@ -31,6 +32,7 @@ export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
   constructor(options: GuidedSceneEngineOptions) {
     super(true);
     this.reducedMotion = options.reducedMotion ?? false;
+    this.steps = getSceneMeta(options.sceneId ?? "matrix-transformations").steps;
   }
 
   mount(container: HTMLElement): void {
