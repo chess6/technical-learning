@@ -25,13 +25,30 @@ milestones.
 
 ## Commands
 
+Convenience scripts (preferred):
+
+```bash
+./setup.sh          # npm install + Playwright Chromium
+./start.sh          # background Vite at http://127.0.0.1:5173
+./stop.sh           # stop that server
+./status.sh         # is it running?
+./check.sh          # lint + typecheck + unit tests
+./check.sh --e2e    # same + Playwright
+./test.sh           # unit tests
+./test.sh e2e       # browser tests (pass extra paths after)
+./build.sh          # production build → dist/
+./preview.sh        # serve dist locally
+```
+
+Equivalent npm commands:
+
 ```bash
 npm install
-npm run dev            # dev server at http://localhost:5173
+npm run dev            # foreground; http://localhost:5173
 npm run build          # typecheck + production build
 npm run lint           # oxlint
 npm run test           # Vitest unit tests
-npm run test:e2e       # Playwright browser tests (installs: npx playwright install chromium)
+npm run test:e2e       # Playwright (browsers: npx playwright install chromium)
 ```
 
 ## Architecture (layers)

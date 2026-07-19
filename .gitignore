@@ -17,6 +17,9 @@ test-results
 playwright-report
 coverage
 
+# Local script runtime (dev server pid/log)
+.run/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
