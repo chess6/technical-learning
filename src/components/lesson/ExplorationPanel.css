@@ -1,0 +1,25 @@
+.exploration-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 12rem;
+}
+
+.exploration-panel__title {
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.exploration-panel__placeholder {
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.exploration-panel__placeholder code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+}

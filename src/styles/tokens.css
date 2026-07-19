@@ -1,0 +1,83 @@
+:root {
+  /* Surfaces */
+  --color-bg: #0e1116;
+  --color-surface: #161b22;
+  --color-surface-raised: #1c2330;
+  --color-border: #2a3340;
+  --color-border-subtle: #212833;
+
+  /* Text */
+  --color-text: #e8edf4;
+  --color-text-muted: #9aa6b5;
+  --color-text-faint: #6b7788;
+
+  /* Accents */
+  --color-accent: #7eb8d4;
+  --color-accent-strong: #5a9fbf;
+  --color-focus: #c4d4e4;
+  --color-success: #7dba8a;
+  --color-warning: #d4a574;
+  --color-error: #d47a7a;
+
+  /* Semantic math roles — consistent across all lessons */
+  --role-original: #7eb8d4;
+  --role-transformed: #d4a574;
+  --role-basis-1: #7dba8a;
+  --role-basis-2: #b89ad4;
+  --role-selected: #e8d48a;
+  --role-invariant: #e87a9a;
+  --role-intermediate: #9aa6b5;
+
+  /* Canvas */
+  --color-canvas: #0a0d11;
+  --color-grid: #1e2633;
+  --color-axis: #3a4556;
+
+  /* Typography */
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  --font-display: "Source Serif 4", "Georgia", serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Layout */
+  --shell-max: 72rem;
+  --explain-ratio: 0.4;
+  --viz-ratio: 0.6;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --control-height: 2.25rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+  }
+}

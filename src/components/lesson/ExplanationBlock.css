@@ -1,0 +1,32 @@
+.explanation-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.explanation-block__title {
+  font-size: var(--text-lg);
+}
+
+.explanation-block__body {
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.explanation-block__observation {
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--color-accent);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.explanation-block__label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
