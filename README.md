@@ -36,38 +36,49 @@ npm run test:e2e       # Playwright browser tests (installs: npx playwright inst
 
 ## Architecture (layers)
 
-| Layer | Path | Responsibility |
-| --- | --- | --- |
-| Pure math | `src/math/` | Vectors, matrices, interpolation, 2×2 eigen analysis |
-| Shared examples | `src/math/examples.ts` | Immutable matrix presets; lookup by id |
-| Lesson example data | `src/lessons/exampleData.ts` | Shared vectors/coefficients/presets used by guided + interactive modes |
-| Guided animations | `src/guided-scenes/` | Motion Canvas engines/scenes behind `GuidedSceneEngine` |
-| Explorations | `src/explorations/` | Mafs interactive diagrams + registry |
-| Equations | `src/components/lesson/EquationBlock.tsx` | KaTeX rendering of trusted static TeX |
-| Lesson content | `src/lessons/` | Typed lesson definitions, grading, registry |
-| Lesson UI | `src/components/lesson/`, `LessonPage`, `LessonLayout` | Registry-driven orchestration (no per-lesson branching) |
+
+| Layer               | Path                                                   | Responsibility                                                         |
+| ------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Pure math           | `src/math/`                                            | Vectors, matrices, interpolation, 2×2 eigen analysis                   |
+| Shared examples     | `src/math/examples.ts`                                 | Immutable matrix presets; lookup by id                                 |
+| Lesson example data | `src/lessons/exampleData.ts`                           | Shared vectors/coefficients/presets used by guided + interactive modes |
+| Guided animations   | `src/guided-scenes/`                                   | Motion Canvas engines/scenes behind `GuidedSceneEngine`                |
+| Explorations        | `src/explorations/`                                    | Mafs interactive diagrams + registry                                   |
+| Equations           | `src/components/lesson/EquationBlock.tsx`              | KaTeX rendering of trusted static TeX                                  |
+| Lesson content      | `src/lessons/`                                         | Typed lesson definitions, grading, registry                            |
+| Lesson UI           | `src/components/lesson/`, `LessonPage`, `LessonLayout` | Registry-driven orchestration (no per-lesson branching)                |
+
 
 Guided and interactive scenes must consume the same example ids — never duplicate constants.
 
-**Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).  
-**Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).  
-**Lesson checklist:** [docs/LESSON_CORRECTNESS_CHECKLIST.md](docs/LESSON_CORRECTNESS_CHECKLIST.md).
+## Project standards
+
+Read these before adding or changing lessons or math visualizations:
+
+- **Lesson design:** [docs/LESSON_DESIGN.md](docs/LESSON_DESIGN.md) — pedagogy, flow, notation, visual language, anti-patterns.
+- **Lesson template:** [docs/LESSON_TEMPLATE.md](docs/LESSON_TEMPLATE.md) — fill-in planning template.
+- **Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).
+- **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).
+- **Lesson checklist:** [docs/LESSON_CORRECTNESS_CHECKLIST.md](docs/LESSON_CORRECTNESS_CHECKLIST.md).
+
+Notation uses conventional symbols (hats for unit/basis vectors, e.g. \(\hat{u}, \hat{v}\)).
+Accessibility for disabilities is out of scope for this POC (see LESSON_DESIGN.md → Out of scope).
 
 ## Guided animation
 
 - `GuidedSceneEngine` + `MotionCanvasEngine` (active) / `SvgFallbackEngine`
 - Scenes are registered by id in `src/guided-scenes/scenes/` (metadata in
-  `sceneMeta.ts`, descriptions in `sceneDescriptions.ts`); the sceneId is passed
-  through the engine, so lesson data and React never touch Motion Canvas.
+`sceneMeta.ts`, descriptions in `sceneDescriptions.ts`); the sceneId is passed
+through the engine, so lesson data and React never touch Motion Canvas.
 - Flip `ACTIVE_BACKEND` in `src/guided-scenes/engine/index.ts` to switch backends.
 
 ## Adding a guided scene and explorer
 
 1. **Scene:** add durations to `sceneTimings.ts`, metadata to `sceneMeta.ts`,
-   a `makeScene2D` module under `scenes/`, and register it in
+  a `makeScene2D` module under `scenes/`, and register it in
    `sceneDescriptions.ts`. Set the lesson's `guidedSceneId`.
 2. **Explorer:** build a component under `src/explorations/` (reuse
-   `MafsSceneShell`, `ParameterControls`, `ExplorationToggles`, `PresetPicker`,
+  `MafsSceneShell`, `ParameterControls`, `ExplorationToggles`, `PresetPicker`,
    `SceneReadout`, `ResetButton`) and register it in `explorations/registry.tsx`.
    Set the lesson's `explorationId`.
 

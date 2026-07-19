@@ -3,7 +3,9 @@
 Copy this section for each new or substantially changed visualization surface.
 Do not mark complete until every applicable item is done.
 
-Reference: [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md), [ERROR_LOG.md](./ERROR_LOG.md).
+Reference both standards: [LESSON_DESIGN.md](./LESSON_DESIGN.md) (pedagogy,
+notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
+(mathematics), plus [ERROR_LOG.md](./ERROR_LOG.md) (known failure modes).
 
 ## Mathematical review
 

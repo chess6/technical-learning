@@ -4,6 +4,10 @@ Authoritative conventions for the linear algebra visualization POC.
 All geometry shown to learners must obey these rules. Implementation lives in
 `src/math/`; renderers only map already-correct math coordinates to the screen.
 
+For how these conventions surface in lessons (notation, semantic roles,
+guided-to-interactive continuity), see [LESSON_DESIGN.md](./LESSON_DESIGN.md).
+This document remains the source of truth for the underlying mathematics.
+
 ## Matrix convention
 
 Matrices act on **column vectors**.
