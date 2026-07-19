@@ -73,10 +73,9 @@ to derive both the animation length and the step markers.
 
 ## Accessibility & reduced motion
 
-> **Superseded (standards update):** accessibility for disabilities is now
-> **out of scope** — see [LESSON_DESIGN.md → Out of scope](./LESSON_DESIGN.md#out-of-scope).
-> The behavior below is preserved as a historical record of what M4 shipped; it
-> is **not** a design requirement for new lessons and may be simplified.
+> **Standards update:** keep [basic accessibility](./LESSON_DESIGN.md#basic-accessibility-keep)
+> (focus, labels, readouts, reduced-motion autoplay). Full disability-product
+> optimization remains out of scope. Behavior below is what M4 shipped.
 
 - All playback controls are real keyboard-focusable buttons; the scrubber and all
   parameter sliders are labelled `<input>`s with `aria-valuetext`.

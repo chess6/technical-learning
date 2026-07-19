@@ -52,7 +52,7 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 ## Interactive controls (Explore)
 > Initialize from the main example above.
 - Primary controls (shown first): ...
-- Primary readouts: ...  (use KaTeX; hat notation for \(\hat{u}, \hat{v}\))
+- Primary readouts: ...  (use KaTeX; \(\mathbf{e}_1, \mathbf{e}_2\) for the standard basis)
 - Progressive-disclosure controls (Display options / Advanced): ...
 - Clamp ranges: ...
 - Reset behavior: ...
@@ -77,7 +77,7 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 ## Mathematical invariants to assert
 > From `src/math/invariants.ts` where applicable.
 - [ ] transformed basis matches columns
-- [ ] grid families parallel to \(A\hat{u}\) / \(A\hat{v}\)
+- [ ] grid families parallel to \(A\mathbf{e}_1\) / \(A\mathbf{e}_2\)
 - [ ] sample points match `matrixVectorMultiply`
 - [ ] unit-square area = |det(A)| (if determinant is in scope)
 - [ ] eigenpairs satisfy \(A\mathbf{v} \approx \lambda\mathbf{v}\) (if eigen in scope)
@@ -94,7 +94,8 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 - [ ] Six-phase flow (or documented deviation)
 - [ ] Guided-to-interactive continuity (same example/notation/roles)
 - [ ] Progressive disclosure applied
-- [ ] KaTeX + hat notation consistent
+- [ ] KaTeX + \(\mathbf{e}_1, \mathbf{e}_2\) notation consistent
+- [ ] Basic accessibility preserved (labels, focus, readouts, reduced-motion)
 - [ ] Diagrams labelled, unclipped, safe frame intact
 - [ ] Viewport/zoom checks done
 - [ ] [LESSON_CORRECTNESS_CHECKLIST.md](./LESSON_CORRECTNESS_CHECKLIST.md) completed

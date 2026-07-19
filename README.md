@@ -78,8 +78,10 @@ Read these before adding or changing lessons or math visualizations:
 - **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).
 - **Lesson checklist:** [docs/LESSON_CORRECTNESS_CHECKLIST.md](docs/LESSON_CORRECTNESS_CHECKLIST.md).
 
-Notation uses conventional symbols (hats for unit/basis vectors, e.g. \(\hat{u}, \hat{v}\)).
-Accessibility for disabilities is out of scope for this POC (see LESSON_DESIGN.md → Out of scope).
+Notation uses conventional symbols: standard basis \(\mathbf{e}_1, \mathbf{e}_2\);
+bold vectors \(\mathbf{v}, \mathbf{w}\); matrix \(A\). Keep basic accessibility
+(labels, focus, readouts, reduced-motion autoplay); full disability-product work
+is out of scope (see LESSON_DESIGN.md).
 
 ## Guided animation
 

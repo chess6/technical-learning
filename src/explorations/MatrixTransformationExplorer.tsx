@@ -179,16 +179,16 @@ export function MatrixTransformationExplorer() {
               { id: "m-d", label: "a₂₂", value: entries.d, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("d", v) },
             ]}
           />
-          <ParameterControls
-            title="Input vector v"
-            controls={[
-              { id: "in-x", label: "vₓ", value: x, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([clamp(val, VEC_MIN, VEC_MAX), y]) },
-              { id: "in-y", label: "v_y", value: y, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([x, clamp(val, VEC_MIN, VEC_MAX)]) },
-            ]}
-          />
           <details className="exploration-details">
-            <summary>Display options &amp; transition</summary>
+            <summary>Numeric v, display &amp; transition</summary>
             <div className="exploration-details__body">
+              <ParameterControls
+                title="Input vector v (also draggable)"
+                controls={[
+                  { id: "in-x", label: "vₓ", value: x, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([clamp(val, VEC_MIN, VEC_MAX), y]) },
+                  { id: "in-y", label: "v_y", value: y, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([x, clamp(val, VEC_MIN, VEC_MAX)]) },
+                ]}
+              />
               <ParameterControls
                 title="Identity → A"
                 controls={[

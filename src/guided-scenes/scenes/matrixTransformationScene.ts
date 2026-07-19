@@ -108,6 +108,16 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     );
   const setCaption = (text: string) => caption.text(text);
 
+  // Establishing shot: identity basis visible when paused at t=0.
+  setMatrixLabel();
+  setCaption("Identity grid — watch where e₁ and e₂ go under A");
+  matrixLabel.opacity(1);
+  caption.opacity(1);
+  e1Label.opacity(1);
+  e2Label.opacity(1);
+  e1Ghost.opacity(0.35);
+  e2Ghost.opacity(0.35);
+
   const seconds = Object.fromEntries(
     MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
@@ -126,13 +136,14 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     *identity() {
       setMatrixLabel();
       setCaption("Identity: e₁ = (1,0), e₂ = (0,1)");
+      // Labels/caption already shown at t=0; reinforce basis draw-in.
       yield* all(
-        matrixLabel.opacity(1, 0.6),
-        caption.opacity(1, 0.6),
+        matrixLabel.opacity(1, 0.4),
+        caption.opacity(1, 0.4),
         e1.end(1, 0.8),
         e2.end(1, 0.8),
-        e1Label.opacity(1, 0.6),
-        e2Label.opacity(1, 0.6),
+        e1Label.opacity(1, 0.4),
+        e2Label.opacity(1, 0.4),
       );
       yield* all(e1Ghost.opacity(0.5, 0.5), e2Ghost.opacity(0.5, 0.5));
       yield* waitFor(seconds.identity - 1.6);

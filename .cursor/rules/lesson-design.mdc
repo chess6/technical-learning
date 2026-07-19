@@ -16,19 +16,17 @@ Before modifying **mathematical visualizations**, also read
   be added when they help, keeping Watch-before-Explore and continuity intact.
 - Preserve **guided-to-interactive continuity**: same example, data, names,
   semantic colors/roles, and math utilities.
-- Use **KaTeX** for conceptual notation; **column vectors**; conventional symbols
-  with hats for unit/basis vectors (\(\hat{u}, \hat{v}, \hat{\imath}, \hat{\jmath}\)).
+- Use **KaTeX** for conceptual notation; **column vectors**; standard basis
+  \(\mathbf{e}_1, \mathbf{e}_2\) (not hats — hats are for generic unit vectors).
   Never put raw array notation like `[[2,1],[0,1]]` in learner-facing prose.
 - Use shared **semantic roles / design tokens** (`--role-*`), not raw colors.
 - Avoid documentation-like card walls; do not expose all controls at once
   (progressive disclosure).
+- Keep **basic accessibility**: focusable controls, labels, diagram labels,
+  text readouts, reduced-motion-aware autoplay. Full disability-product work is
+  out of scope; do not strip the basics.
+- Guided scenes: paused t=0 must still show an establishing frame (grid/origin/caption).
 - Add/update lesson **tests** and complete `docs/LESSON_CORRECTNESS_CHECKLIST.md`.
-
-## Do not
-
-- Do **not** add accessibility-for-disabilities requirements — out of scope; this
-  POC assumes non-disabled users (see `docs/LESSON_DESIGN.md` → Out of scope).
-- Do not reimplement linear algebra in scene/explorer code (`src/math` is truth).
 
 ## When in doubt
 

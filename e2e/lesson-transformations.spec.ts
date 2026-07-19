@@ -63,7 +63,7 @@ test("matrix control, preset, and scrub update the transformed vector", async ({
     "[[0, -1], [1, 0]]",
   );
 
-  await explore.getByText("Display options & transition").click();
+  await explore.getByText("Numeric v, display & transition").click();
   await page.locator("#progress").fill("0");
   await expect(page.getByTestId("output-readout")).toHaveAttribute(
     "data-plain",

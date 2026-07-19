@@ -11,11 +11,11 @@ Practical enough to follow while building or modifying a lesson. Pair it with:
 - [LESSON_CORRECTNESS_CHECKLIST.md](./LESSON_CORRECTNESS_CHECKLIST.md) — per-lesson sign-off.
 - [LESSON_TEMPLATE.md](./LESSON_TEMPLATE.md) — fill-in planning template.
 
-> **Scope note (this POC).** Accessibility for disabilities is **out of scope**
-> — see [Out of scope](#out-of-scope). This standard is a **backbone, not a
-> cage**: the six-phase flow is the default, but lessons may add supporting
-> material (e.g. a definition of linear dependence in an intro vectors lesson)
-> when it genuinely helps. See [Flexibility](#flexibility).
+> **Scope note (this POC).** Prefer [Basic accessibility](#basic-accessibility-keep);
+> full disability-product optimization is out of scope. This standard is a
+> **backbone, not a cage**: the six-phase flow is the default, but lessons may add
+> supporting material (e.g. a definition of linear dependence in an intro vectors
+> lesson) when it genuinely helps. See [Flexibility](#flexibility).
 
 ---
 
@@ -62,7 +62,9 @@ The default full-lesson sequence is six phases. Treat it as the backbone; see
 - Reveal **one conceptual change at a time**.
 - Synchronize geometry, notation, highlighting, and prose.
 - Do not hand learners controls that distract from the explanation.
-- The sequence must be understandable without narration/audio.
+- The **paused initial frame** (before autoplay, or when Replay resets) must still
+  communicate what the learner is about to see — subdued grid, origin, and a short
+  caption or establishing geometry — not an empty black stage.
 
 ### Check understanding
 - A short **conceptual checkpoint**: ask for a prediction or interpretation.
@@ -74,7 +76,7 @@ The default full-lesson sequence is six phases. Treat it as the backbone; see
 - **Initialize from the guided scene's main/final example** (see [continuity](#guided-to-interactive-continuity)).
 - Preserve the same notation, semantic colors, labels, and mathematical model.
 - Expose only the controls needed to test the concept.
-- Offer **numeric entry** alongside dragging (for precision, not as an a11y mandate).
+- Offer **numeric entry** alongside dragging (precision + basic accessibility).
 
 ### Practice
 - Deterministic exercises.
@@ -229,8 +231,9 @@ Learner-facing rules:
 
 **Conventional symbols.** Follow standard mathematical convention:
 
-- **Unit / basis vectors carry a hat:** \(\hat{u}\), \(\hat{v}\); the standard
-  basis as \(\hat{\imath}, \hat{\jmath}\) (or \(\hat{e}_1, \hat{e}_2\)).
+- **Standard basis:** \(\mathbf{e}_1, \mathbf{e}_2\) (or \(e_1, e_2\) in canvas labels).
+  Do **not** put hats on the standard basis — hats usually mark *generic* unit
+  vectors \(\hat{u}, \hat{v}\), which is a different role.
 - General vectors are bold lowercase: \(\mathbf{v}, \mathbf{w}\).
 - Matrices are uppercase: \(A\); scalars lowercase: \(a, b, \lambda\).
 - Eigen-things: eigenvalue \(\lambda\), eigenvector \(\mathbf{v}\) with \(A\mathbf{v} = \lambda\mathbf{v}\).
@@ -240,16 +243,16 @@ Preferred:
 ```tex
 A = \begin{bmatrix} 2 & 1 \\ 0 & 1 \end{bmatrix},
 \qquad
-A\hat{u} = \begin{bmatrix} 2 \\ 0 \end{bmatrix},
+A\mathbf{e}_1 = \begin{bmatrix} 2 \\ 0 \end{bmatrix},
 \qquad
-A\hat{v} = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
+A\mathbf{e}_2 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}
 ```
 
 Discouraged:
 
 - `A = [[2, 1], [0, 1]]` in prose.
 - Row-vector or transpose-implicit forms when a column vector is meant.
-- Unhatted basis symbols where a unit/basis vector is intended.
+- Hatting the standard basis (\(\hat{e}_1\)) when \(\mathbf{e}_1\) is meant.
 
 ---
 
@@ -260,8 +263,8 @@ Consistent **semantic roles**, referenced via design tokens (`--role-*` in
 
 - original vector
 - transformed vector
-- first basis vector \((\hat{u} / \hat{\imath})\)
-- second basis vector \((\hat{v} / \hat{\jmath})\)
+- first basis vector \(\mathbf{e}_1\) (role token `--role-basis-1`)
+- second basis vector \(\mathbf{e}_2\) (role token `--role-basis-2`)
 - selected object
 - invariant direction (e.g. eigen-directions)
 - intermediate state
@@ -304,6 +307,7 @@ Do not repeat the same values across panels without a teaching reason.
 - Highlight notation when the corresponding geometry changes.
 - Avoid simultaneous movement of many unrelated objects.
 - Return to **stable states** between major ideas.
+- The **first frame** (paused / pre-autoplay) is an establishing shot, not a blank stage.
 - **Label educational interpolation honestly** — do not imply a visual transition
   is a matrix decomposition unless it is one.
 - Major steps correspond to meaningful ideas, not arbitrary timestamps.
@@ -397,19 +401,30 @@ Prohibited:
 
 ---
 
+## Basic accessibility (keep)
+
+Keep **lightweight** accessibility as a normal quality bar — not a full WCAG /
+disability-product effort:
+
+- keyboard-focusable controls with visible focus;
+- labelled form controls (sliders, buttons, inputs);
+- descriptive labels / `aria-label`s on diagram regions;
+- text equivalents for important visual conclusions (readouts, legends);
+- do not convey meaning by color alone (pair with labels or line style);
+- respect `prefers-reduced-motion` for autoplay (pause continuous motion; allow
+  discrete step navigation).
+
+Full disability-specific optimization (screen-reader narration scripts,
+specialized color-blind palettes as a primary design driver, etc.) remains
+outside the POC’s product scope — but do **not** strip the basics above.
+
+---
+
 ## Out of scope
 
-- **Accessibility for disabilities.** This POC assumes learners do **not** have
-  disabilities. Do not add ARIA-compliance requirements, screen-reader narration,
-  reduced-motion discrete-state mandates, or color-blind-only accommodations as
-  acceptance criteria. Existing accessibility code may remain or be simplified; it
-  is not a design requirement. (This supersedes the accessibility emphasis in the
-  historical `docs/m4-lessons.md`.)
+- Full disability-product accessibility programs (beyond [Basic accessibility](#basic-accessibility-keep)).
 - Backend/AI features; a large external design system; copying another product's
   identity; rewriting the math engine or the Motion Canvas / Mafs integration.
-
-Numeric entry and keyboard-usable controls may still exist where they aid
-**precision and general usability** — but they are conveniences, not a11y mandates.
 
 ---
 
@@ -419,7 +434,8 @@ Numeric entry and keyboard-usable controls may still exist where they aid
 - [ ] Animation teaches one idea at a time
 - [ ] Exploration continues from the guided example
 - [ ] Shared math model reused (no duplicated arithmetic)
-- [ ] KaTeX used consistently; hat notation for unit/basis vectors
+- [ ] KaTeX used consistently; standard-basis notation \(\mathbf{e}_1, \mathbf{e}_2\)
+- [ ] Basic accessibility preserved (focus, labels, readouts, reduced-motion autoplay)
 - [ ] Diagrams labelled and unclipped (safe frame intact)
 - [ ] Controls use progressive disclosure
 - [ ] Exercises align with learning goals; feedback explains reasoning

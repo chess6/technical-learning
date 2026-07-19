@@ -63,6 +63,7 @@
 
   /* Layout */
   --sidebar-width: 16.5rem;
+  --header-height: 3.5rem;
   --content-max: 68rem;
   --content-max-wide: 78rem;
   --prose-max: 40rem;

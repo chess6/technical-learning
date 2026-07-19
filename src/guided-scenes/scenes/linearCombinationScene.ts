@@ -41,10 +41,10 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
   const grid = makeStaticGrid();
-  grid.opacity(0);
+  grid.opacity(0.55);
   view.add(grid);
 
-  const origin = new Circle({ size: 12, fill: ROLE.text, opacity: 0 });
+  const origin = new Circle({ size: 12, fill: ROLE.text, opacity: 1 });
   view.add(origin);
 
   // Live coefficients / directions.
@@ -125,6 +125,10 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   const setEq = (text: string) => eq.text(text);
   const setCaption = (text: string) => caption.text(text);
 
+  // Establishing shot: readable when paused at t=0 (before autoplay).
+  setCaption("Two arrows from the origin — stretch and add them to reach the plane");
+  caption.opacity(1);
+
   // Duration lookup keeps the animation length aligned with sceneTimings.
   const seconds = Object.fromEntries(
     LINEAR_COMBINATION_SEGMENTS.map((s) => [s.id, s.duration]),
@@ -132,8 +136,9 @@ export const linearCombinationScene = makeScene2D(function* (view) {
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *plane() {
-      yield* all(grid.opacity(1, 0.8), origin.opacity(1, 0.8));
-      yield* waitFor(seconds.plane - 0.8);
+      // Grid/origin already visible at t=0; gently settle into the watch frame.
+      yield* all(grid.opacity(1, 0.6), origin.opacity(1, 0.01));
+      yield* waitFor(seconds.plane - 0.6);
     },
     *["vector-v"]() {
       setEq("v = [ " + fmt(V.x) + ", " + fmt(V.y) + " ]");
