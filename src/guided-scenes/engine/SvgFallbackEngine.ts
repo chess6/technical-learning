@@ -6,6 +6,11 @@ import type {
 } from "./types";
 import { SPIKE_MATRIX } from "../scenes/spikeConstants";
 import { getSceneMeta } from "../scenes/sceneMeta";
+import {
+  lerpIdentityToMatrix,
+  matrixVectorMultiply,
+  type Vector2,
+} from "../../math";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const DURATION_SECONDS = 2.6;
@@ -154,15 +159,10 @@ export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
   }
 
   private render(): void {
-    const t = this.progress;
-    const [[a, b], [c, d]] = SPIKE_MATRIX;
-    const m: [[number, number], [number, number]] = [
-      [1 + (a - 1) * t, b * t],
-      [c * t, 1 + (d - 1) * t],
-    ];
-    const project = ([x, y]: [number, number]): [number, number] => {
-      const tx = m[0][0] * x + m[0][1] * y;
-      const ty = m[1][0] * x + m[1][1] * y;
+    const m = lerpIdentityToMatrix(SPIKE_MATRIX, this.progress);
+    const project = (point: Vector2): [number, number] => {
+      const [tx, ty] = matrixVectorMultiply(m, point);
+      // Screen map only after math: center, scale, flip y.
       return [VIEW / 2 + tx * SCALE, VIEW / 2 - ty * SCALE];
     };
     for (const line of this.lines) {

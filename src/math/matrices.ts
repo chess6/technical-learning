@@ -17,6 +17,11 @@ export function matrixVectorMultiply(m: Matrix2x2, v: Vector2): Vector2 {
   ];
 }
 
+/** Column `j` of A — equals A eⱼ₊₁ (j = 0 → A e₁, j = 1 → A e₂). */
+export function matrixColumn(m: Matrix2x2, j: 0 | 1): Vector2 {
+  return j === 0 ? [m[0][0], m[1][0]] : [m[0][1], m[1][1]];
+}
+
 export function matrixMatrixMultiply(a: Matrix2x2, b: Matrix2x2): Matrix2x2 {
   return [
     [

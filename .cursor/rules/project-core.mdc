@@ -28,6 +28,10 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
 - Learner-facing math uses KaTeX (`ProseWithMath`, equation/readout components) — including MC choices when they are matrices/vectors.
 - Prefer `matrixVectorMultiply` / shared helpers over ad-hoc formulas in UI code.
 
+## Correctness docs
+
+Before changing math or visualizations: `docs/MATH_CORRECTNESS.md`, `docs/ERROR_LOG.md`. Checklist: `docs/LESSON_CORRECTNESS_CHECKLIST.md`.
+
 ## Verify
 
 After meaningful changes: `npm run lint`, `npm run test`, and e2e when touching player/layout/lesson flow (`npm run test:e2e`).

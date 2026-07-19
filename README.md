@@ -49,6 +49,10 @@ npm run test:e2e       # Playwright browser tests (installs: npx playwright inst
 
 Guided and interactive scenes must consume the same example ids — never duplicate constants.
 
+**Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).  
+**Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).  
+**Lesson checklist:** [docs/LESSON_CORRECTNESS_CHECKLIST.md](docs/LESSON_CORRECTNESS_CHECKLIST.md).
+
 ## Guided animation
 
 - `GuidedSceneEngine` + `MotionCanvasEngine` (active) / `SvgFallbackEngine`

@@ -25,6 +25,7 @@ export {
   UNIT_SQUARE,
   identityMatrix,
   matrixVectorMultiply,
+  matrixColumn,
   matrixMatrixMultiply,
   determinant2x2,
   transpose2x2,
@@ -36,6 +37,16 @@ export {
   transformedGridSegments,
 } from "./matrices";
 export type { TransformedGridSegment } from "./matrices";
+
+export {
+  assertTransformedBasisMatchesColumns,
+  assertGridDirectionMatchesBasis,
+  assertPointMatchesMatrixTransform,
+  assertUnitSquareAreaMatchesDeterminant,
+  assertEigenpair,
+  assertTransformedGridInvariants,
+  gridFamilyDirection,
+} from "./invariants";
 
 export {
   clamp,
@@ -60,6 +71,7 @@ export {
   TRANSFORM_PRESETS,
   EIGEN_PRESETS,
   DETERMINANT_PRESETS,
+  DIAGNOSTIC_PRESETS,
   getMatrixExample,
   requireMatrixExample,
 } from "./examples";

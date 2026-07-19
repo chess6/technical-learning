@@ -1,0 +1,24 @@
+---
+description: Enforce src/math as single source of truth for visualization geometry
+alwaysApply: true
+---
+
+# Math visualization correctness
+
+Before modifying math or visualization code (explorers, guided scenes, SVG fallback):
+
+1. Read `docs/MATH_CORRECTNESS.md`.
+2. Read `docs/ERROR_LOG.md` for known failure modes.
+
+## Rules
+
+- **`src/math` is the only source of truth** for matrix–vector products, determinants, eigen checks, and transformed grid endpoints.
+- **Never reimplement** linear algebra inside scene or explorer rendering code. Call shared helpers; then map math → screen.
+- **Columns, not rows:** \(A\mathbf{e}_1\) / \(A\mathbf{e}_2\) are the matrix columns. Verify drawn basis vectors against columns.
+- **Grids:** transform endpoints via `transformedGridSegments` / `matrixVectorMultiply`. Do not derive slopes from rows or trust untested third-party matrix packing.
+- **Separate coordinates:** compute in math space first; apply pixel scale / y-flip only afterward.
+- **Tests:** every corrected math/visualization bug needs a regression test; prefer asymmetric matrices (`diagnostic-asymmetric`, `grid-bug-repro`) over identity/scaling alone.
+- **Logging:** when a mathematically incorrect visualization is found, add an entry to `docs/ERROR_LOG.md`.
+- **Uncertainty:** stop and report rather than guessing a visually plausible fix.
+
+Use `src/math/invariants.ts` helpers in tests. Complete `docs/LESSON_CORRECTNESS_CHECKLIST.md` when shipping visualization changes.

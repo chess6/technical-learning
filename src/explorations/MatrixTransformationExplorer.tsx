@@ -15,6 +15,7 @@ import {
 import {
   clamp,
   determinant2x2,
+  DIAGNOSTIC_PRESETS,
   lerpIdentityToMatrix,
   matrixVectorMultiply,
   requireMatrixExample,
@@ -68,8 +69,8 @@ function TransformedGrid({ matrix, color }: { matrix: Matrix2x2; color: string }
       {segments.map((seg) => (
         <Line.Segment
           key={`${seg.kind}${seg.index}`}
-          point1={seg.point1}
-          point2={seg.point2}
+          point1={seg.point1 as [number, number]}
+          point2={seg.point2 as [number, number]}
           color={color}
           weight={seg.index === 0 ? 2 : 1}
           opacity={seg.index === 0 ? 0.75 : 0.28}
@@ -102,10 +103,22 @@ export function MatrixTransformationExplorer() {
   const input: Vector2 = [x, y];
 
   const output = matrixVectorMultiply(current, input);
-  const e1: Vector2 = [current[0][0], current[1][0]];
-  const e2: Vector2 = [current[0][1], current[1][1]];
+  const e1 = matrixVectorMultiply(current, [1, 0]);
+  const e2 = matrixVectorMultiply(current, [0, 1]);
   const det = determinant2x2(target);
   const singular = Math.abs(det) < 1e-9;
+
+  const showDiagnosticPresets = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return (
+        new URLSearchParams(window.location.search).get("debug") === "1" ||
+        window.localStorage?.getItem("guidedSceneDebug") === "1"
+      );
+    } catch {
+      return false;
+    }
+  }, []);
 
   const setEntry = useCallback((key: keyof Entries, value: number) => {
     setEntries((prev) => ({ ...prev, [key]: clamp(value, ENTRY_MIN, ENTRY_MAX) }));
@@ -124,6 +137,23 @@ export function MatrixTransformationExplorer() {
     setPoint(INITIAL_INPUT as [number, number]);
   }, [setPoint]);
 
+  const learnerPresets = TRANSFORM_LESSON_PRESETS.map((p) => ({
+    id: p.id,
+    label: p.label,
+    onSelect: () => applyPreset(p.exampleId),
+  }));
+
+  const diagnosticPresets = showDiagnosticPresets
+    ? DIAGNOSTIC_PRESETS.map((exampleId) => {
+        const ex = requireMatrixExample(exampleId);
+        return {
+          id: exampleId,
+          label: `Diag: ${ex.title}`,
+          onSelect: () => applyPreset(exampleId),
+        };
+      })
+    : [];
+
   return (
     <ExplorationPanel
       explorationId="matrix-transformation"
@@ -133,11 +163,7 @@ export function MatrixTransformationExplorer() {
         <>
           <PresetPicker
             label="Presets"
-            presets={TRANSFORM_LESSON_PRESETS.map((p) => ({
-              id: p.id,
-              label: p.label,
-              onSelect: () => applyPreset(p.exampleId),
-            }))}
+            presets={[...learnerPresets, ...diagnosticPresets]}
           />
           <ResetButton onReset={handleReset} />
         </>

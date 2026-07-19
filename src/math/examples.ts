@@ -138,6 +138,28 @@ export const MATRIX_EXAMPLES = [
     ],
     inputVector: [1, 0],
   },
+  {
+    id: "diagnostic-asymmetric",
+    title: "Diagnostic (asymmetric)",
+    description:
+      "Dev/test only: rows ≠ columns so transpose packing bugs are obvious. A = [[1, 2], [3, 4]].",
+    matrix: [
+      [1, 2],
+      [3, 4],
+    ],
+    inputVector: [1, 1],
+  },
+  {
+    id: "grid-bug-repro",
+    title: "Grid orientation repro",
+    description:
+      "Regression matrix from ERROR_LOG: A e₂ = (0, 2.2) must keep one grid family vertical.",
+    matrix: [
+      [1.8, 0],
+      [1.8, 2.2],
+    ],
+    inputVector: [1, 1],
+  },
 ] as const satisfies readonly MatrixExample[];
 
 export type MatrixExampleId = (typeof MATRIX_EXAMPLES)[number]["id"];
@@ -190,4 +212,13 @@ export const DETERMINANT_PRESETS: readonly MatrixExampleId[] = [
   "singular-collapse",
   "determinant-negative",
   "reflection",
+];
+
+/**
+ * Not shown in the default learner preset list. Use for tests and `?debug=1`
+ * explorer tooling — rows and columns are visually distinct.
+ */
+export const DIAGNOSTIC_PRESETS: readonly MatrixExampleId[] = [
+  "diagnostic-asymmetric",
+  "grid-bug-repro",
 ];
