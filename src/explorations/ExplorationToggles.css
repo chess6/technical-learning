@@ -1,17 +1,17 @@
 .exploration-toggles {
   margin: 0;
-  padding: var(--space-3);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .exploration-toggles__legend {
-  padding: 0 var(--space-2);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-text-faint);
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 .exploration-toggles__list {
@@ -30,5 +30,7 @@
 }
 
 .exploration-toggles__row input {
-  accent-color: var(--color-accent);
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--color-primary);
 }

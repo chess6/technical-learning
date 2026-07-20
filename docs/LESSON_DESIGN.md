@@ -51,6 +51,19 @@ The default full-lesson sequence is six phases. Treat it as the backbone; see
 
 1. **Motivate** 2. **Watch** 3. **Check understanding** 4. **Explore** 5. **Practice** 6. **Summarize**
 
+**Learner-facing titles.** Do not surface the internal phase names or numbered
+utility labels (e.g. `1 · MOTIVATE`) in the UI. Use conversational headings with a
+subtle numbered rail cue instead:
+
+| Phase | Learner-facing title |
+| --- | --- |
+| Motivate | Think about it |
+| Watch | Watch the idea |
+| Check understanding | Quick check |
+| Explore | Try it yourself |
+| Practice | Practice |
+| Summarize | Remember this |
+
 ### Motivate
 - Open with a concrete question, prediction, or apparent puzzle.
 - Establish why the concept matters.
@@ -258,8 +271,18 @@ Discouraged:
 
 ## Visual language
 
+> **Visual system (2026 refinement).** The full palette, typography roles,
+> section hierarchy, and per-phase presentation are documented in
+> [visual-design-refinement.md](./visual-design-refinement.md). In short: a
+> **light-first, warm-ivory lesson page** with deep-navy text and **dark
+> visualization canvases** framed as illustrations; a humanist sans for
+> body/UI and an expressive serif reserved for the lesson title, the motivating
+> question, and the key takeaway. Lesson 1 is the reference implementation.
+
 Consistent **semantic roles**, referenced via design tokens (`--role-*` in
-`src/styles/tokens.css`) — do not hardcode raw colors:
+`src/styles/tokens.css`) — do not hardcode raw colors. The `--role-*` colors are
+tuned for the **dark canvas** and stay consistent across the light page and the
+guided animation:
 
 - original vector
 - transformed vector

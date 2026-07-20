@@ -9,16 +9,16 @@
 
 .parameter-controls__legend {
   padding: 0;
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--color-text);
 }
 
 .parameter-controls__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .parameter-controls__row {
@@ -38,10 +38,12 @@
 .parameter-controls__value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
   color: var(--color-text);
 }
 
 .parameter-controls__row input[type="range"] {
   width: 100%;
-  accent-color: var(--color-accent);
+  height: 4px;
+  accent-color: var(--color-primary);
 }

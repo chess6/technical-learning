@@ -169,26 +169,30 @@ export function GuidedScenePlayer({
 
   const isPlaying = state.status === "playing";
 
+  const majorCount = majorSteps.length;
+
   return (
-    <div
+    <figure
       className="guided-scene-player"
       data-scene-id={sceneId}
       role="region"
       aria-label={title ?? "Guided animation"}
     >
-      <div
-        className="guided-scene-player__canvas"
-        ref={bindContainer}
-        style={{ aspectRatio: String(SCENE_ASPECT) }}
-        data-testid="guided-canvas-frame"
-      />
-
-      <div className="guided-scene-player__stage" aria-live="polite">
-        <span className="guided-scene-player__stage-label">Now:</span>
-        <span className="guided-scene-player__stage-title">
-          {stageTitle ?? "Ready"}
-        </span>
+      <div className="guided-scene-player__frame">
+        <div
+          className="guided-scene-player__canvas"
+          ref={bindContainer}
+          style={{ aspectRatio: String(SCENE_ASPECT) }}
+          data-testid="guided-canvas-frame"
+        />
       </div>
+
+      <figcaption className="guided-scene-player__stage" aria-live="polite">
+        <span className="guided-scene-player__stage-eyebrow">Watching now</span>
+        <span className="guided-scene-player__stage-title">
+          {stageTitle ?? "Ready to play"}
+        </span>
+      </figcaption>
 
       {reducedMotion && (
         <p className="guided-scene-player__reduced-note">
@@ -197,43 +201,71 @@ export function GuidedScenePlayer({
         </p>
       )}
 
-      <div
-        className="guided-scene-player__controls"
-        aria-label="Playback controls"
-      >
-        {isPlaying ? (
-          <button type="button" className="btn btn--primary" onClick={handlePause}>
-            Pause
+      <div className="guided-scene-player__toolbar">
+        <div
+          className="guided-scene-player__controls"
+          aria-label="Playback controls"
+        >
+          {isPlaying ? (
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={handlePause}
+            >
+              Pause
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={handlePlay}
+              disabled={state.status === "error"}
+            >
+              Play
+            </button>
+          )}
+          <button type="button" className="btn" onClick={handleReplay}>
+            Replay
           </button>
-        ) : (
+          <span className="guided-scene-player__spacer" aria-hidden="true" />
           <button
             type="button"
-            className="btn btn--primary"
-            onClick={handlePlay}
-            disabled={state.status === "error"}
+            className="btn btn--ghost"
+            onClick={goPrevIdea}
+            disabled={majorCount === 0}
           >
-            Play
+            Previous idea
           </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={goNextIdea}
+            disabled={majorCount === 0}
+          >
+            Next idea
+          </button>
+        </div>
+
+        {majorCount > 0 && (
+          <div
+            className="guided-scene-player__ideas"
+            role="group"
+            aria-label="Jump to idea"
+          >
+            {majorSteps.map((step, index) => (
+              <button
+                key={step.id}
+                type="button"
+                className="guided-scene-player__idea-dot"
+                aria-label={`Idea ${index + 1}: ${step.title}`}
+                aria-current={currentMajorIndex === index ? "step" : undefined}
+                data-active={currentMajorIndex === index}
+                title={step.title}
+                onClick={() => handleSeek(step.at)}
+              />
+            ))}
+          </div>
         )}
-        <button type="button" className="btn" onClick={handleReplay}>
-          Replay
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost"
-          onClick={goPrevIdea}
-          disabled={majorSteps.length === 0}
-        >
-          Previous idea
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost"
-          onClick={goNextIdea}
-          disabled={majorSteps.length === 0}
-        >
-          Next idea
-        </button>
       </div>
 
       {state.canSeek && (
@@ -252,26 +284,6 @@ export function GuidedScenePlayer({
         </label>
       )}
 
-      {majorSteps.length > 0 && (
-        <div
-          className="guided-scene-player__ideas"
-          aria-label="Major ideas"
-        >
-          {majorSteps.map((step, index) => (
-            <button
-              key={step.id}
-              type="button"
-              className="guided-scene-player__idea"
-              aria-current={currentMajorIndex === index ? "step" : undefined}
-              data-active={currentMajorIndex === index}
-              onClick={() => handleSeek(step.at)}
-            >
-              {step.title}
-            </button>
-          ))}
-        </div>
-      )}
-
       {state.error && (
         <p className="guided-scene-player__error" role="alert">
           {state.error}
@@ -279,7 +291,7 @@ export function GuidedScenePlayer({
       )}
 
       {showDebug && <DebugReadout />}
-    </div>
+    </figure>
   );
 }
 

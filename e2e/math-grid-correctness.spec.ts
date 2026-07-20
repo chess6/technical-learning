@@ -29,6 +29,9 @@ test("explorer basis readouts match columns for grid-bug-repro matrix", async ({
   await setRange(page, "m-b", "0");
   await setRange(page, "m-c", "1.8");
   await setRange(page, "m-d", "2.2");
+
+  // The numeric input-vector controls live under progressive disclosure.
+  await page.getByText("Numeric v, display & transition").click();
   await setRange(page, "in-x", "1");
   await setRange(page, "in-y", "1");
 

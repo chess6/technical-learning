@@ -1,16 +1,26 @@
 .lesson-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-3);
   padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.lesson-header__position {
+  order: -1;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .lesson-header__title {
   font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  letter-spacing: -0.03em;
-  margin-bottom: var(--space-2);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
 }
 
 .lesson-header__subtitle {
@@ -20,10 +30,8 @@
   line-height: var(--leading-normal);
 }
 
-.lesson-header__position {
-  flex-shrink: 0;
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-faint);
-  padding-top: var(--space-2);
+@media (max-width: 720px) {
+  .lesson-header__title {
+    font-size: var(--text-3xl);
+  }
 }

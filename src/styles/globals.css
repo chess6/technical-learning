@@ -7,9 +7,10 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -19,7 +20,7 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-page-bg);
 }
 
 #root {
@@ -66,6 +67,7 @@ button {
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .sr-only {
@@ -80,6 +82,7 @@ button {
   border: 0;
 }
 
+/* ---- Buttons ---- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -88,35 +91,53 @@ button {
   min-height: var(--control-height);
   padding: 0 var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--color-surface-raised);
   color: var(--color-text);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-sm);
   transition:
     background var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--color-border);
-  border-color: var(--color-text-faint);
+  border-color: var(--color-divider-strong);
+  background: var(--color-surface-subtle);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn--primary {
-  background: var(--color-accent-strong);
-  border-color: var(--color-accent-strong);
-  color: var(--color-bg);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-card);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .btn--ghost {
   background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-subtle);
+  border-color: var(--color-divider);
 }

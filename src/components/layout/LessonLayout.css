@@ -1,31 +1,56 @@
 .lesson-layout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-10);
+  gap: var(--space-16);
 }
 
-.lesson-phase {
+/* ============================================================
+ * Phases — a subtle numbered rail, distinct rhythm per phase.
+ * ============================================================ */
+.phase {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
-.lesson-phase__label {
+.phase__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.phase__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-divider-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.phase__title {
   margin: 0;
-  font-size: var(--text-xs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
 }
 
-.lesson-phase__heading {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  letter-spacing: -0.02em;
+.phase__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.lesson-phase__lede {
+.phase__lede {
   margin: 0;
   max-width: var(--prose-max);
   color: var(--color-text-muted);
@@ -33,18 +58,36 @@
   line-height: var(--leading-relaxed);
 }
 
-.lesson-phase--light {
-  padding: var(--space-4) 0;
+/* --- Think about it: airy, serif question, faint grid motif --- */
+.phase--think .phase__step {
+  border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent);
+  color: var(--accent-gold);
 }
 
-.lesson-phase--recap {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-subtle);
+.phase--think .phase__body {
+  position: relative;
+  padding: var(--space-8) var(--space-8) var(--space-10);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(
+        circle at 1px 1px,
+        color-mix(in srgb, var(--color-text) 8%, transparent) 1px,
+        transparent 0
+      )
+      0 0 / 26px 26px,
+    var(--tint-gold);
+  overflow: hidden;
+}
+
+/* --- Watch the idea: animation is the dominant object --- */
+.phase--watch .phase__step {
+  border-color: color-mix(in srgb, var(--accent-blue) 55%, transparent);
+  color: var(--accent-blue);
 }
 
 .lesson-layout__watch {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.45fr);
   gap: var(--space-8);
   align-items: start;
 }
@@ -52,7 +95,7 @@
 .lesson-layout__explain {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
   min-width: 0;
   max-width: var(--prose-max);
 }
@@ -62,14 +105,48 @@
   flex-direction: column;
   gap: var(--space-3);
   min-width: 0;
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+}
+
+/* --- Quick check: distinct tinted band, not a heavy box --- */
+.phase--check .phase__step {
+  border-color: color-mix(in srgb, var(--accent-teal) 55%, transparent);
+  color: var(--accent-teal);
+}
+
+.phase--check .phase__body {
+  padding: var(--space-6) var(--space-6) var(--space-6) var(--space-6);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--accent-teal);
+  background: var(--tint-teal);
+}
+
+/* --- Try it yourself --- */
+.phase--explore .phase__step {
+  border-color: color-mix(in srgb, var(--accent-coral) 55%, transparent);
+  color: var(--accent-coral);
 }
 
 .lesson-layout__explore {
   min-width: 0;
 }
 
+/* --- Practice --- */
+.phase--practice .phase__step {
+  border-color: color-mix(in srgb, var(--accent-lavender) 55%, transparent);
+  color: var(--accent-lavender);
+}
+
 .lesson-layout__practice {
-  max-width: 42rem;
+  max-width: 46rem;
+}
+
+/* --- Remember this --- */
+.phase--remember .phase__step {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
 }
 
 @media (max-width: 1100px) {
@@ -79,5 +156,19 @@
 
   .lesson-layout__explain {
     max-width: none;
+  }
+
+  .lesson-layout__viz {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .lesson-layout {
+    gap: var(--space-12);
+  }
+
+  .phase--think .phase__body {
+    padding: var(--space-6) var(--space-5) var(--space-8);
   }
 }

@@ -35,7 +35,8 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
     >
       <div className="course-sidebar__inner">
         <p className="course-sidebar__course" id={titleId}>
-          Linear Algebra
+          <span className="course-sidebar__course-main">Linear Algebra</span>
+          <span className="course-sidebar__course-sub">Visual Learning</span>
         </p>
 
         <nav className="course-sidebar__nav" aria-label="Course contents">

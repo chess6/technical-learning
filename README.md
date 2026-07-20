@@ -73,6 +73,7 @@ Guided and interactive scenes must consume the same example ids — never duplic
 Read these before adding or changing lessons or math visualizations:
 
 - **Lesson design:** [docs/LESSON_DESIGN.md](docs/LESSON_DESIGN.md) — pedagogy, flow, notation, visual language, anti-patterns.
+- **Visual system:** [docs/visual-design-refinement.md](docs/visual-design-refinement.md) — light-first palette & tokens, typography roles, six-phase hierarchy, guided/explorer/exercise presentation (Lesson 1 is the reference).
 - **Lesson template:** [docs/LESSON_TEMPLATE.md](docs/LESSON_TEMPLATE.md) — fill-in planning template.
 - **Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).
 - **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).

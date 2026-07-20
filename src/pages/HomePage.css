@@ -6,12 +6,16 @@
 }
 
 .home-page__hero {
-  max-width: 36rem;
+  max-width: 42rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .home-page__title {
-  font-size: var(--text-3xl);
-  margin-bottom: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  letter-spacing: -0.02em;
 }
 
 .home-page__lede {
@@ -26,43 +30,59 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  border-top: 1px solid var(--color-border-subtle);
+  gap: var(--space-3);
 }
 
 .home-page__item {
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
 }
 
 .home-page__link {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-4);
-  padding: var(--space-5) 0;
+  padding: var(--space-5) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
   color: inherit;
   text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .home-page__link:hover {
   text-decoration: none;
+  border-color: var(--color-divider-strong);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
 }
 
 .home-page__link:hover .home-page__lesson-title {
-  color: var(--color-accent);
+  color: var(--color-primary);
 }
 
 .home-page__index {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--tint-blue);
+  color: var(--color-primary);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-faint);
-  padding-top: 0.2rem;
 }
 
 .home-page__link-text {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0.15rem;
   min-width: 0;
 }
 
@@ -79,7 +99,7 @@
 }
 
 .home-page__dev-link {
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   font-size: var(--text-sm);
   color: var(--color-text-faint);
 }

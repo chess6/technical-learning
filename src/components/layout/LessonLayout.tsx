@@ -17,6 +17,33 @@ type LessonLayoutProps = {
   onReset?: () => void;
 };
 
+type PhaseProps = {
+  step: number;
+  title: string;
+  ariaLabel: string;
+  variant: string;
+  children: ReactNode;
+};
+
+/** One lesson phase with a numbered rail cue and conversational title. */
+function Phase({ step, title, ariaLabel, variant, children }: PhaseProps) {
+  return (
+    <section
+      className={`phase phase--${variant}`}
+      aria-label={ariaLabel}
+      data-phase={variant}
+    >
+      <div className="phase__head">
+        <span className="phase__step" aria-hidden="true">
+          {step}
+        </span>
+        <h2 className="phase__title">{title}</h2>
+      </div>
+      <div className="phase__body">{children}</div>
+    </section>
+  );
+}
+
 export function LessonLayout({
   lesson,
   motivation,
@@ -41,50 +68,44 @@ export function LessonLayout({
       />
 
       {motivation && (
-        <section className="lesson-phase" aria-label="Motivate">
-          <p className="lesson-phase__label">1 · Motivate</p>
+        <Phase step={1} title="Think about it" ariaLabel="Think about it" variant="think">
           {motivation}
-        </section>
+        </Phase>
       )}
 
-      <section className="lesson-phase" aria-label="Watch the guided explanation">
-        <p className="lesson-phase__label">2 · Watch</p>
+      <Phase step={2} title="Watch the idea" ariaLabel="Watch the idea" variant="watch">
         <div className="lesson-layout__watch">
           <div className="lesson-layout__explain">{explanation}</div>
           <div className="lesson-layout__viz">{visualization}</div>
         </div>
-      </section>
+      </Phase>
 
       {checkpoint && (
-        <section className="lesson-phase lesson-phase--light" aria-label="Check understanding">
-          <p className="lesson-phase__label">3 · Check</p>
+        <Phase step={3} title="Quick check" ariaLabel="Quick check" variant="check">
           {checkpoint}
-        </section>
+        </Phase>
       )}
 
       {exploration && (
-        <section className="lesson-phase" aria-label="Try it yourself">
-          <p className="lesson-phase__label">4 · Explore</p>
-          <h2 className="lesson-phase__heading">Try it yourself</h2>
-          <p className="lesson-phase__lede">
-            Now change the same example you just watched.
+        <Phase step={4} title="Try it yourself" ariaLabel="Try it yourself" variant="explore">
+          <p className="phase__lede">
+            Now take control of the same example you just watched — drag the
+            arrows or nudge the numbers and see what changes.
           </p>
           <div className="lesson-layout__explore">{exploration}</div>
-        </section>
+        </Phase>
       )}
 
       {exercises && (
-        <section className="lesson-phase" aria-label="Practice">
-          <p className="lesson-phase__label">5 · Practice</p>
+        <Phase step={5} title="Practice" ariaLabel="Practice" variant="practice">
           <div className="lesson-layout__practice">{exercises}</div>
-        </section>
+        </Phase>
       )}
 
       {summary && (
-        <section className="lesson-phase lesson-phase--recap" aria-label="Summarize">
-          <p className="lesson-phase__label">6 · Summarize</p>
+        <Phase step={6} title="Remember this" ariaLabel="Remember this" variant="remember">
           {summary}
-        </section>
+        </Phase>
       )}
 
       <LessonNavigation previous={previous} next={next} onReset={onReset} />

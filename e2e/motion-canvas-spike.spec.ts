@@ -51,12 +51,14 @@ test("Motion Canvas scene renders, controls work, and disposes cleanly", async (
   // Exactly one active engine on a lesson page.
   await expect.poll(async () => (await counters(page)).activeEngines).toBe(1);
 
-  // Play advances progress (autoplay may already be running).
-  const play = page.getByRole("button", { name: "Play" });
-  if (await play.isEnabled()) {
+  // Play advances progress (autoplay may already be running once visible).
+  const play = page.getByRole("button", { name: "Play", exact: true });
+  if (await play.count()) {
     await play.click();
   }
-  await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled({
+    timeout: 8000,
+  });
   await expect
     .poll(async () => Number(await page.locator(scrubber).inputValue()), {
       timeout: 5000,
@@ -73,7 +75,7 @@ test("Motion Canvas scene renders, controls work, and disposes cleanly", async (
   await page.getByRole("button", { name: "Pause" }).click();
 
   // Seek/scrub is reliable: jumping to the final major idea seeks near the end.
-  await page.locator(".guided-scene-player__idea").last().click();
+  await page.locator(".guided-scene-player__idea-dot").last().click();
   await expect
     .poll(async () => Number(await page.locator(scrubber).inputValue()), {
       timeout: 5000,

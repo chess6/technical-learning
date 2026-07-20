@@ -8,7 +8,7 @@
 .mafs-scene-shell .MafsView {
   background: var(--color-canvas);
   --mafs-bg: var(--color-canvas);
-  --mafs-fg: var(--color-text);
+  --mafs-fg: var(--color-canvas-text);
   --mafs-origin-color: var(--color-axis);
   --mafs-line-color: var(--color-grid);
 }

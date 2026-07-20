@@ -8,23 +8,140 @@ type ExercisePanelProps = {
   exercises: ExerciseDefinition[];
 };
 
-/** Interactive, deterministic exercises with explanatory feedback. */
+type Draft = {
+  choice: number | null;
+  value: string;
+  x: string;
+  y: string;
+  revealed: boolean;
+};
+
+const emptyDraft: Draft = {
+  choice: null,
+  value: "",
+  x: "",
+  y: "",
+  revealed: false,
+};
+
+/**
+ * Interactive, deterministic exercises shown one at a time.
+ * Answer state is lifted here so learners can move Next / Previous and
+ * revisit earlier questions without losing their work, and so a compact
+ * completed-summary can appear once every question has been attempted.
+ */
 export function ExercisePanel({ exercises }: ExercisePanelProps) {
+  const [current, setCurrent] = useState(0);
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [results, setResults] = useState<Record<string, GradeResult | null>>({});
+
+  const total = exercises.length;
+  const exercise = exercises[current];
+
+  const draft = (id: string): Draft => drafts[id] ?? emptyDraft;
+  const patch = (id: string, next: Partial<Draft>) =>
+    setDrafts((prev) => ({ ...prev, [id]: { ...draft(id), ...next } }));
+  const setResult = (id: string, result: GradeResult | null) =>
+    setResults((prev) => ({ ...prev, [id]: result }));
+
+  const isAttempted = (ex: ExerciseDefinition): boolean =>
+    ex.type === "prediction"
+      ? draft(ex.id).revealed
+      : Boolean(results[ex.id]);
+
+  const attemptedCount = exercises.filter(isAttempted).length;
+  const allAttempted = attemptedCount === total && total > 0;
+
+  const go = (delta: number) =>
+    setCurrent((c) => Math.min(Math.max(c + delta, 0), total - 1));
+
+  if (!exercise) return null;
+
   return (
-    <div className="exercise-panel" role="region" aria-label="Exercises">
-      <h2 className="exercise-panel__heading">Exercises</h2>
-      <ol className="exercise-panel__list">
-        {exercises.map((exercise, index) => (
-          <li key={exercise.id} className="exercise-panel__item">
-            <p className="exercise-panel__prompt">
-              <span className="exercise-panel__index">{index + 1}.</span>
-              <ProseWithMath text={exercise.prompt} />
-            </p>
-            <ExerciseBody exercise={exercise} />
-          </li>
-        ))}
-      </ol>
-    </div>
+    <section className="exercise-panel" role="region" aria-label="Practice exercises">
+      <div className="exercise-panel__progress">
+        <p className="exercise-panel__count" aria-live="polite">
+          Question {current + 1} of {total}
+        </p>
+        <ol className="exercise-panel__dots" aria-hidden="true">
+          {exercises.map((ex, index) => (
+            <li
+              key={ex.id}
+              className="exercise-panel__dot"
+              data-active={index === current}
+              data-done={isAttempted(ex)}
+            />
+          ))}
+        </ol>
+      </div>
+
+      <div className="exercise-panel__card" key={exercise.id}>
+        <p className="exercise-panel__prompt">
+          <ProseWithMath text={exercise.prompt} />
+        </p>
+        <ExerciseBody
+          exercise={exercise}
+          draft={draft(exercise.id)}
+          result={results[exercise.id] ?? null}
+          onDraft={(next) => patch(exercise.id, next)}
+          onResult={(result) => setResult(exercise.id, result)}
+        />
+      </div>
+
+      <div className="exercise-panel__nav">
+        <button
+          type="button"
+          className="btn btn--ghost"
+          onClick={() => go(-1)}
+          disabled={current === 0}
+        >
+          ← Previous
+        </button>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => go(1)}
+          disabled={current === total - 1}
+        >
+          Next question →
+        </button>
+      </div>
+
+      {allAttempted && (
+        <div className="exercise-panel__summary" role="status">
+          <h3 className="exercise-panel__summary-title">Nice work — you tried all {total}.</h3>
+          <ol className="exercise-panel__summary-list">
+            {exercises.map((ex, index) => {
+              const result = results[ex.id];
+              const state =
+                ex.type === "prediction"
+                  ? "reviewed"
+                  : result?.correct
+                    ? "correct"
+                    : "incorrect";
+              return (
+                <li key={ex.id} className="exercise-panel__summary-item" data-state={state}>
+                  <button
+                    type="button"
+                    className="exercise-panel__summary-link"
+                    onClick={() => setCurrent(index)}
+                  >
+                    <span className="exercise-panel__summary-index">Q{index + 1}</span>
+                    <span className="exercise-panel__summary-label">
+                      {state === "correct"
+                        ? "Correct"
+                        : state === "incorrect"
+                          ? "Revisit"
+                          : "Reviewed"}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -41,30 +158,41 @@ function Feedback({ result }: { result: GradeResult | null }) {
   );
 }
 
-function ExerciseBody({ exercise }: { exercise: ExerciseDefinition }) {
-  switch (exercise.type) {
+type BodyProps = {
+  exercise: ExerciseDefinition;
+  draft: Draft;
+  result: GradeResult | null;
+  onDraft: (next: Partial<Draft>) => void;
+  onResult: (result: GradeResult | null) => void;
+};
+
+function ExerciseBody(props: BodyProps) {
+  switch (props.exercise.type) {
     case "multiple-choice":
-      return <MultipleChoice exercise={exercise} />;
+      return <MultipleChoice {...props} exercise={props.exercise} />;
     case "numeric":
-      return <NumericAnswer exercise={exercise} />;
+      return <NumericAnswer {...props} exercise={props.exercise} />;
     case "vector":
-      return <VectorAnswer exercise={exercise} />;
+      return <VectorAnswer {...props} exercise={props.exercise} />;
     case "prediction":
-      return <Prediction exercise={exercise} />;
+      return <Prediction {...props} exercise={props.exercise} />;
   }
 }
 
 function MultipleChoice({
   exercise,
-}: {
+  draft,
+  result,
+  onDraft,
+  onResult,
+}: BodyProps & {
   exercise: Extract<ExerciseDefinition, { type: "multiple-choice" }>;
 }) {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [result, setResult] = useState<GradeResult | null>(null);
+  const selected = draft.choice;
 
   const choose = (choice: number) => {
-    setSelected(choice);
-    setResult(gradeExercise(exercise, { kind: "multiple-choice", choice }));
+    onDraft({ choice });
+    onResult(gradeExercise(exercise, { kind: "multiple-choice", choice }));
   };
 
   return (
@@ -74,7 +202,7 @@ function MultipleChoice({
           const isSelected = selected === index;
           const isCorrect = index === exercise.correctChoice;
           const state =
-            selected === null
+            selected === null || selected === undefined
               ? undefined
               : isCorrect
                 ? "correct"
@@ -85,14 +213,14 @@ function MultipleChoice({
             <li key={`${exercise.id}-${index}`}>
               <button
                 type="button"
-                className="btn btn--ghost exercise-panel__choice"
+                className="exercise-panel__choice"
                 aria-pressed={isSelected}
                 data-state={state}
                 data-choice-index={index}
                 onClick={() => choose(index)}
               >
                 <span className="exercise-panel__choice-letter" aria-hidden="true">
-                  {String.fromCharCode(65 + index)}.
+                  {String.fromCharCode(65 + index)}
                 </span>
                 <span className="exercise-panel__choice-math">
                   <ProseWithMath text={choice} />
@@ -109,19 +237,18 @@ function MultipleChoice({
 
 function NumericAnswer({
   exercise,
-}: {
-  exercise: Extract<ExerciseDefinition, { type: "numeric" }>;
-}) {
-  const [value, setValue] = useState("");
-  const [result, setResult] = useState<GradeResult | null>(null);
-
+  draft,
+  result,
+  onDraft,
+  onResult,
+}: BodyProps & { exercise: Extract<ExerciseDefinition, { type: "numeric" }> }) {
   const check = () => {
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      setResult({ correct: false, feedback: "Enter a number to check." });
+    const parsed = Number(draft.value);
+    if (draft.value.trim() === "" || Number.isNaN(parsed)) {
+      onResult({ correct: false, feedback: "Enter a number to check." });
       return;
     }
-    setResult(gradeExercise(exercise, { kind: "numeric", value: parsed }));
+    onResult(gradeExercise(exercise, { kind: "numeric", value: parsed }));
   };
 
   return (
@@ -138,12 +265,12 @@ function NumericAnswer({
           type="number"
           step="any"
           inputMode="decimal"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
+          value={draft.value}
+          onChange={(event) => onDraft({ value: event.target.value })}
         />
       </label>
       <button type="submit" className="btn">
-        Check
+        Check answer
       </button>
       <Feedback result={result} />
     </form>
@@ -152,21 +279,24 @@ function NumericAnswer({
 
 function VectorAnswer({
   exercise,
-}: {
-  exercise: Extract<ExerciseDefinition, { type: "vector" }>;
-}) {
-  const [xValue, setXValue] = useState("");
-  const [yValue, setYValue] = useState("");
-  const [result, setResult] = useState<GradeResult | null>(null);
-
+  draft,
+  result,
+  onDraft,
+  onResult,
+}: BodyProps & { exercise: Extract<ExerciseDefinition, { type: "vector" }> }) {
   const check = () => {
-    const px = Number(xValue);
-    const py = Number(yValue);
-    if (Number.isNaN(px) || Number.isNaN(py)) {
-      setResult({ correct: false, feedback: "Enter both coordinates to check." });
+    const px = Number(draft.x);
+    const py = Number(draft.y);
+    if (
+      draft.x.trim() === "" ||
+      draft.y.trim() === "" ||
+      Number.isNaN(px) ||
+      Number.isNaN(py)
+    ) {
+      onResult({ correct: false, feedback: "Enter both coordinates to check." });
       return;
     }
-    setResult(gradeExercise(exercise, { kind: "vector", value: [px, py] }));
+    onResult(gradeExercise(exercise, { kind: "vector", value: [px, py] }));
   };
 
   return (
@@ -183,8 +313,8 @@ function VectorAnswer({
           type="number"
           step="any"
           aria-label="x coordinate"
-          value={xValue}
-          onChange={(event) => setXValue(event.target.value)}
+          value={draft.x}
+          onChange={(event) => onDraft({ x: event.target.value })}
         />
       </label>
       <label className="exercise-panel__field">
@@ -193,12 +323,12 @@ function VectorAnswer({
           type="number"
           step="any"
           aria-label="y coordinate"
-          value={yValue}
-          onChange={(event) => setYValue(event.target.value)}
+          value={draft.y}
+          onChange={(event) => onDraft({ y: event.target.value })}
         />
       </label>
       <button type="submit" className="btn">
-        Check
+        Check answer
       </button>
       <Feedback result={result} />
     </form>
@@ -207,17 +337,17 @@ function VectorAnswer({
 
 function Prediction({
   exercise,
-}: {
-  exercise: Extract<ExerciseDefinition, { type: "prediction" }>;
-}) {
-  const [revealed, setRevealed] = useState(false);
+  draft,
+  onDraft,
+}: BodyProps & { exercise: Extract<ExerciseDefinition, { type: "prediction" }> }) {
+  const revealed = draft.revealed;
   return (
     <>
       <button
         type="button"
         className="btn"
         aria-expanded={revealed}
-        onClick={() => setRevealed((prev) => !prev)}
+        onClick={() => onDraft({ revealed: !revealed })}
       >
         {revealed ? "Hide answer" : "Reveal answer"}
       </button>

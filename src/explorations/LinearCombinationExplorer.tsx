@@ -125,6 +125,11 @@ export function LinearCombinationExplorer() {
           <ResetButton onReset={handleReset} />
         </>
       }
+      summary={
+        independent
+          ? "These two directions are independent, so their linear combinations reach every point of the plane."
+          : "Here w points along the same line as v, so every linear combination stays on that single line."
+      }
       controls={
         <>
           <ParameterControls

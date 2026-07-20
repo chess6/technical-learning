@@ -9,6 +9,8 @@ export type ExplorationPanelProps = {
   controls?: ReactNode;
   readout?: ReactNode;
   toolbar?: ReactNode;
+  /** Prominent, natural-language result statement shown above the canvas. */
+  summary?: ReactNode;
 };
 
 /**
@@ -24,6 +26,7 @@ export function ExplorationPanel({
   controls,
   readout,
   toolbar,
+  summary,
 }: ExplorationPanelProps) {
   return (
     <div
@@ -33,14 +36,22 @@ export function ExplorationPanel({
       aria-label={title}
     >
       <header className="exploration-panel__header">
-        <h2 className="exploration-panel__title">{title}</h2>
-        {description && (
-          <p className="exploration-panel__description">{description}</p>
-        )}
+        <div className="exploration-panel__intro">
+          <h3 className="exploration-panel__title">{title}</h3>
+          {description && (
+            <p className="exploration-panel__description">{description}</p>
+          )}
+        </div>
         {toolbar && (
           <div className="exploration-panel__toolbar">{toolbar}</div>
         )}
       </header>
+
+      {summary && (
+        <p className="exploration-panel__summary" aria-live="polite">
+          {summary}
+        </p>
+      )}
 
       <div className="exploration-panel__body">
         <div className="exploration-panel__scene">{children}</div>

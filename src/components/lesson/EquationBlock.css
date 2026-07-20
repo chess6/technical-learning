@@ -1,15 +1,17 @@
 .equation-block {
   margin: 0;
-  padding: var(--space-2) 0;
-  border: none;
-  background: transparent;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
 }
 
 .equation-block__label {
   margin-bottom: var(--space-2);
   font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--color-text-faint);
 }
 

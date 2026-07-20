@@ -24,7 +24,7 @@ export function AppShell() {
           Contents
         </button>
         <Link to="/" className="app-shell__brand">
-          Linear Algebra
+          <span className="app-shell__brand-main">Linear Algebra</span>
           <span className="app-shell__brand-sub">Visual Learning</span>
         </Link>
       </header>

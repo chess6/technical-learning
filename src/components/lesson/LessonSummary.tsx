@@ -8,19 +8,24 @@ type LessonSummaryProps = {
 
 export function LessonSummary({ takeaway, objectives }: LessonSummaryProps) {
   return (
-    <section className="lesson-summary" aria-label="Lesson summary">
-      <h2 className="lesson-summary__heading">Key insight</h2>
-      <p className="lesson-summary__takeaway">
+    <div className="lesson-summary">
+      <blockquote className="lesson-summary__takeaway">
+        <span className="lesson-summary__mark" aria-hidden="true" />
         <ProseWithMath text={takeaway} />
-      </p>
-      <h3 className="lesson-summary__objectives-title">Learning objectives</h3>
-      <ul className="lesson-summary__objectives">
-        {objectives.map((objective) => (
-          <li key={objective}>
-            <ProseWithMath text={objective} />
-          </li>
-        ))}
-      </ul>
-    </section>
+      </blockquote>
+
+      {objectives.length > 0 && (
+        <details className="lesson-summary__objectives">
+          <summary>What this lesson set out to do</summary>
+          <ul>
+            {objectives.map((objective) => (
+              <li key={objective}>
+                <ProseWithMath text={objective} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   );
 }

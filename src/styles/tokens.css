@@ -1,56 +1,106 @@
 :root {
-  /* Surfaces — calm educational canvas, not documentation chrome */
-  --color-bg: #0c1017;
-  --color-surface: #141a24;
-  --color-surface-raised: #1a2230;
-  --color-border: #2a3545;
-  --color-border-subtle: #1c2430;
+  color-scheme: light;
 
-  /* Text */
-  --color-text: #eef2f7;
-  --color-text-muted: #a8b4c4;
-  --color-text-faint: #6e7c90;
+  /* ============================================================
+   * Semantic surface tokens — light-first "warm textbook page"
+   * ============================================================ */
+  --color-page-bg: #f8f5ef; /* warm ivory lesson page */
+  --color-sidebar-bg: #f1ece1; /* slightly deeper warm for course nav */
+  --color-surface-subtle: #f2ede3; /* quiet inset panels */
+  --color-surface-raised: #ffffff; /* elevated cards / inputs */
+  --color-divider: #e7dfcf; /* warm-gray hairline */
+  --color-divider-strong: #dbd0bd;
 
-  /* Accents */
-  --color-accent: #7eb8d4;
-  --color-accent-strong: #5a9fbf;
-  --color-focus: #c4d4e4;
-  --color-success: #7dba8a;
-  --color-warning: #d4a574;
-  --color-error: #d47a7a;
+  /* Back-compat aliases (existing component CSS references these) */
+  --color-bg: var(--color-page-bg);
+  --color-surface: var(--color-surface-subtle);
+  --color-surface-raised: #ffffff;
+  --color-border: var(--color-divider-strong);
+  --color-border-subtle: var(--color-divider);
 
-  /* Semantic math roles — consistent across all lessons */
-  --role-original: #7eb8d4;
-  --role-transformed: #d4a574;
-  --role-basis-1: #7dba8a;
-  --role-basis-2: #b89ad4;
-  --role-selected: #e8d48a;
-  --role-invariant: #e87a9a;
-  --role-intermediate: #9aa6b5;
+  /* ============================================================
+   * Text
+   * ============================================================ */
+  --color-text: #202b38; /* deep navy / charcoal body */
+  --color-text-muted: #545f6c; /* secondary */
+  --color-text-faint: #7c8794; /* muted / metadata */
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
 
-  /* Canvas */
-  --color-canvas: #080b10;
-  --color-grid: #1a2230;
-  --color-axis: #3a4556;
+  /* ============================================================
+   * Accents & actions
+   * ============================================================ */
+  --color-primary: #2c6f8c; /* soft-deep blue primary action */
+  --color-primary-hover: #21596f;
+  --color-accent: #2c6f8c; /* link / accent (alias) */
+  --color-accent-strong: #21596f;
+  --color-focus: #3f86ad;
 
-  /* Typography — distinctive display, readable body */
+  --accent-blue: #3f86ad;
+  --accent-teal: #2f9c8d;
+  --accent-coral: #d9694c;
+  --accent-gold: #c28f2c;
+  --accent-lavender: #7a70c4;
+
+  --color-success: #2f8b68;
+  --color-warning: #a76f1c;
+  --color-error: #bb524a;
+
+  /* On-light tint fills for phase backgrounds (very restrained) */
+  --tint-blue: #eef4f7;
+  --tint-gold: #f6f0e2;
+  --tint-teal: #ecf5f2;
+
+  /* ============================================================
+   * Semantic math roles — rendered on the DARK canvas.
+   * Preserved from earlier lessons; tuned for dark backgrounds so
+   * both the guided animation and Mafs explorer stay consistent.
+   * ============================================================ */
+  --role-original: #7ec5e6; /* original vector / span region */
+  --role-transformed: #e6b566; /* transformed / result vector */
+  --role-result: var(--role-transformed);
+  --role-basis-1: #7fd0a0; /* basis vector 1 */
+  --role-basis-2: #b9a3ef; /* basis vector 2 */
+  --role-selected: #ecd484; /* highlighted concept */
+  --role-highlight: var(--role-selected);
+  --role-invariant: #f0879f; /* result / combination emphasis */
+  --role-intermediate: #9aa6b5; /* helper / component lines */
+  --role-reachable: #7ec5e6; /* reachable region (span) */
+
+  /* ============================================================
+   * Dark visualization canvas
+   * ============================================================ */
+  --color-canvas: #0e1420;
+  --color-canvas-elevated: #131b29;
+  --color-canvas-text: #e8edf4; /* labels on the dark canvas */
+  --color-canvas-muted: #9aa6b5;
+  --color-grid: #202b3d;
+  --color-axis: #3a4658;
+
+  /* ============================================================
+   * Typography — humanist sans body, expressive serif display
+   * ============================================================ */
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Consolas", monospace;
   --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
 
-  --text-xs: 0.75rem;
+  --text-xs: 0.8125rem;
   --text-sm: 0.9375rem;
   --text-base: 1.0625rem;
   --text-lg: 1.1875rem;
   --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
+  --text-2xl: 1.9375rem;
   --text-3xl: 2.5rem;
+  --text-4xl: 3rem;
 
-  --leading-tight: 1.25;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
   --leading-normal: 1.6;
   --leading-relaxed: 1.75;
 
-  /* Spacing */
+  /* ============================================================
+   * Spacing
+   * ============================================================ */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -60,23 +110,32 @@
   --space-8: 2rem;
   --space-10: 2.5rem;
   --space-12: 3rem;
+  --space-16: 4rem;
 
-  /* Layout */
-  --sidebar-width: 16.5rem;
-  --header-height: 3.5rem;
-  --content-max: 68rem;
-  --content-max-wide: 78rem;
+  /* ============================================================
+   * Layout
+   * ============================================================ */
+  --sidebar-width: 17.5rem;
+  --header-height: 3.75rem;
+  --content-max: 60rem;
+  --content-max-wide: 66rem;
   --prose-max: 40rem;
   --shell-max: 72rem;
-  --explain-ratio: 0.38;
-  --viz-ratio: 0.62;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --control-height: 2.25rem;
-  --shadow-canvas: 0 12px 40px rgb(0 0 0 / 0.35);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --control-height: 2.5rem;
 
-  /* Motion */
+  /* Shadows — restrained, warm-neutral */
+  --shadow-sm: 0 1px 2px rgb(31 43 56 / 0.06);
+  --shadow-card: 0 2px 10px rgb(31 43 56 / 0.06);
+  --shadow-raised: 0 8px 28px rgb(31 43 56 / 0.1);
+  --shadow-canvas: 0 14px 38px rgb(14 20 32 / 0.28);
+
+  /* ============================================================
+   * Motion
+   * ============================================================ */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 120ms;
   --duration-normal: 220ms;
