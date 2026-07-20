@@ -23,6 +23,7 @@ import {
   ROLE,
   SCALE,
   makeArrow,
+  makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
 } from "./sceneKit";
@@ -31,6 +32,11 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 /**
  * Lesson 4: eigenvectors as invariant directions; eigenvalues as signed scale.
  * All eigen geometry comes from analyzeEigen2x2 — never hardcoded independently.
+ *
+ * Choreography (learner-first):
+ * - Keep ghost v while Av moves so input vs output is visible.
+ * - Highlight full lines through the origin (same line ≠ same direction).
+ * - Act out λ > 1 / λ < 0 / λ = 0 with length and flip, not matrix morph alone.
  */
 
 const MAIN = EIGEN_LESSON_EXAMPLE.matrix as Matrix2x2;
@@ -42,14 +48,18 @@ const ROTATION = requireMatrixExample("eigen-no-real").matrix as Matrix2x2;
 const NEGATIVE = requireMatrixExample("eigen-negative").matrix as Matrix2x2;
 const ZERO_EIG = requireMatrixExample("eigen-zero").matrix as Matrix2x2;
 
+/** Fan chosen so several directions clearly leave their ray under MAIN. */
 const FAN: MathV[] = [
-  [1.5, 0],
-  [1.2, 0.8],
-  [0.6, 1.4],
-  [0, 1.5],
-  [-0.8, 1.1],
-  [-1.4, 0.4],
+  [1.6, 0.2],
+  [1.3, 0.9],
+  [0.5, 1.5],
+  [-0.3, 1.5],
+  [-1.2, 1.0],
+  [-1.5, 0.3],
 ];
+
+/** Index used for explicit v / Av tip labels. */
+const LABEL_FAN_INDEX = 1;
 
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
@@ -58,6 +68,12 @@ const fmt = (n: number): string => {
   const r = Math.round(n * 100) / 100;
   return Object.is(r, -0) ? "0" : String(r);
 };
+
+function unitDir(v: MathV): MathV {
+  const n = normalizeVector(v);
+  if (!n) return [1, 0];
+  return stabilizeDirection(n);
+}
 
 function eigenDirections(m: Matrix2x2): MathV[] {
   const analysis = analyzeEigen2x2(m);
@@ -74,6 +90,22 @@ function eigenDirections(m: Matrix2x2): MathV[] {
     .map((v) => scaleVector(stabilizeDirection(v), 2));
 }
 
+function firstEigenpair(m: Matrix2x2): { lambda: number; dir: MathV } | null {
+  const analysis = analyzeEigen2x2(m);
+  if (analysis.kind === "distinct-real" && analysis.pairs[0]) {
+    const p = analysis.pairs[0];
+    const n = normalizeVector(p.eigenvector);
+    if (!n) return null;
+    return { lambda: p.eigenvalue, dir: stabilizeDirection(n) };
+  }
+  if (analysis.kind === "repeated-real" && analysis.eigenspaceBasis[0]) {
+    const n = normalizeVector(analysis.eigenspaceBasis[0]);
+    if (!n) return null;
+    return { lambda: analysis.eigenvalue, dir: stabilizeDirection(n) };
+  }
+  return null;
+}
+
 export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   view,
 ) {
@@ -88,18 +120,28 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     [mc(), md()],
   ];
 
-  // Progress 0 = show v, 1 = show Av for the fan.
+  /** 0 = show v, 1 = show Av for the fan result arrows. */
   const applyT = createSignal(0);
+  /** Ghost (original v) opacity. */
+  const ghostOpacity = createSignal(0);
+  /** Demo arrow along one eigendirection: tip = demoScale * demoDir. */
+  const demoScale = createSignal(0);
+  const demoDx = createSignal(1);
+  const demoDy = createSignal(0);
+  const demoOpacity = createSignal(0);
+  const demoGhostOpacity = createSignal(0);
+  const demoGhostScale = createSignal(1.6);
 
   const grid = makeStaticGrid(3);
-  grid.opacity(0.5);
+  grid.opacity(0.45);
   view.add(grid);
 
   const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
 
+  // Results: morph from v toward Av (drawn under ghosts so v stays visible).
   const fanArrows = FAN.map((v) => {
-    const arrow = makeArrow(ROLE.dim, 4);
+    const arrow = makeArrow(ROLE.transformed, 5);
     arrow.points(() => {
       const Av = matrixVectorMultiply(matrix(), v);
       const tip: MathV = [
@@ -108,12 +150,38 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       ];
       return [new Vector2(0, 0), px(tip)];
     });
-    arrow.opacity(0.85);
+    arrow.opacity(0.9);
     view.add(arrow);
     return arrow;
   });
 
-  // Eigendirection lines (dashed — non-color cue).
+  // Ghosts: stay at original v (input). Drawn above Av so labels read clearly.
+  for (const v of FAN) {
+    const arrow = makeArrow(ROLE.original, 4);
+    arrow.points([new Vector2(0, 0), px(v)]);
+    arrow.opacity(() => ghostOpacity());
+    view.add(arrow);
+  }
+
+  const showPairLabels = createSignal(0);
+  const labelV = FAN[LABEL_FAN_INDEX]!;
+  const vLabel = makeLabel("v", ROLE.original, 32);
+  const avLabel = makeLabel("Av", ROLE.transformed, 32);
+  vLabel.opacity(() => showPairLabels());
+  avLabel.opacity(() => (showPairLabels() > 0 && applyT() > 0.12 ? 1 : 0));
+  vLabel.position(() => px(labelV).add(new Vector2(18, -22)));
+  avLabel.position(() => {
+    const Av = matrixVectorMultiply(matrix(), labelV);
+    const tip: MathV = [
+      labelV[0] + (Av[0] - labelV[0]) * applyT(),
+      labelV[1] + (Av[1] - labelV[1]) * applyT(),
+    ];
+    return px(tip).add(new Vector2(18, 18));
+  });
+  view.add(vLabel);
+  view.add(avLabel);
+
+  // Eigendirection lines (dashed — full line through origin).
   const eigenLines: Line[] = [0, 1].map(() => {
     const line = new Line({
       stroke: ROLE.selected,
@@ -134,10 +202,27 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     return arrow;
   });
 
-  const top = makeOverlayLabel("", ROLE.text, 40);
+  // Demo arrow + ghost for λ stretch / reverse / collapse.
+  const demoGhost = makeArrow(ROLE.original, 5);
+  demoGhost.opacity(() => demoGhostOpacity());
+  demoGhost.points(() => {
+    const d: MathV = [demoDx(), demoDy()];
+    return [new Vector2(0, 0), px(scaleVector(d, demoGhostScale()))];
+  });
+  view.add(demoGhost);
+
+  const demoArrow = makeArrow(ROLE.result, 7);
+  demoArrow.opacity(() => demoOpacity());
+  demoArrow.points(() => {
+    const d: MathV = [demoDx(), demoDy()];
+    return [new Vector2(0, 0), px(scaleVector(d, demoScale()))];
+  });
+  view.add(demoArrow);
+
+  const top = makeOverlayLabel("", ROLE.text, 38);
   top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(top);
-  const caption = makeOverlayLabel("", ROLE.textMuted, 32);
+  const caption = makeOverlayLabel("", ROLE.textMuted, 30);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 
@@ -170,10 +255,23 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       const tip = px(d);
       const anti = px(scaleVector(d, -1));
       eigenLines[i]!.points([anti, tip]);
-      eigenLines[i]!.opacity(0.85);
+      eigenLines[i]!.opacity(0.9);
       eigenArrows[i]!.points([new Vector2(0, 0), tip]);
       eigenArrows[i]!.opacity(1);
     }
+  }
+
+  function hideEigenGraphics(): void {
+    for (let i = 0; i < 2; i += 1) {
+      eigenLines[i]!.opacity(0);
+      eigenArrows[i]!.opacity(0);
+    }
+  }
+
+  function setDemoDirection(dir: MathV): void {
+    const u = unitDir(dir);
+    demoDx(u[0]);
+    demoDy(u[1]);
   }
 
   const seconds = Object.fromEntries(
@@ -185,22 +283,44 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       setTop("A fan of directions");
       setCaption("Most tips will leave their original ray");
       applyT(0);
+      ghostOpacity(0);
+      demoOpacity(0);
+      demoGhostOpacity(0);
+      showPairLabels(0);
+      hideEigenGraphics();
       yield* waitFor(seconds.fan);
     },
+
     *apply() {
-      setCaption("Apply A — most directions turn");
-      yield* applyT(1, 1.8, easeInOutCubic);
-      yield* waitFor(seconds.apply - 1.8);
+      setTop("Most directions turn");
+      setCaption("Blue = v (input) · orange = Av (output)");
+      // Reveal ghosts, then morph results toward Av.
+      showPairLabels(1);
+      yield* ghostOpacity(0.85, 0.4);
+      yield* applyT(1, 2.2, easeInOutCubic);
+      yield* waitFor(seconds.apply - 2.6);
     },
+
     *highlight() {
-      setCaption("Dashed lines: directions that stayed on their line");
+      setTop("Some stay on their line");
+      setCaption("Dashed line through origin — same line, maybe opposite way");
+      showPairLabels(0);
+      // Seek-friendly: teaching frame visible at segment start.
+      for (const a of fanArrows) a.opacity(0.2);
+      ghostOpacity(0.2);
       updateEigenGraphics(MAIN);
-      yield* all(
-        ...eigenLines.map((l) => l.opacity(0.9, 0.6)),
-        ...eigenArrows.map((a) => a.opacity(1, 0.6)),
-      );
-      yield* waitFor(seconds.highlight - 0.6);
+      const pair = firstEigenpair(MAIN);
+      if (pair) {
+        setDemoDirection(pair.dir);
+        const base = 1.0;
+        demoGhostScale(base);
+        demoScale(base * pair.lambda);
+        demoGhostOpacity(0.9);
+        demoOpacity(1);
+      }
+      yield* waitFor(seconds.highlight);
     },
+
     *equation() {
       const analysis = analyzeEigen2x2(MAIN);
       const lambdas =
@@ -208,45 +328,114 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
           ? analysis.pairs.map((p) => fmt(p.eigenvalue)).join(", ")
           : "?";
       setTop("Av = λv");
-      setCaption(`Eigenvalues λ ≈ ${lambdas} — never call 0 an eigenvector`);
+      setCaption(`λ ≈ ${lambdas} · zero vector is never an eigenvector`);
       yield* waitFor(seconds.equation);
     },
+
     *lambdas() {
-      setCaption("λ > 1 stretch · 0 < λ < 1 shrink · λ = 0 collapse · λ < 0 reverse");
-      yield* morphTo(NEGATIVE, 1.2);
-      updateEigenGraphics(NEGATIVE);
-      yield* waitFor(0.8);
-      yield* morphTo(ZERO_EIG, 1.2);
-      updateEigenGraphics(ZERO_EIG);
-      yield* waitFor(seconds.lambdas - 3.2);
+      // Hide fan clutter — held demos on one line only.
+      for (const a of fanArrows) a.opacity(0);
+      ghostOpacity(0);
+      hideEigenGraphics();
+      demoOpacity(0);
+      demoGhostOpacity(0);
+
+      // --- Stretch (λ > 1) on NEGATIVE's x-axis ---
+      setTop("λ > 1 stretches");
+      setCaption("Same line — tip moves farther from the origin");
+      yield* morphTo(NEGATIVE, 0.8);
+      setDemoDirection([1, 0]);
+      demoGhostScale(1.2);
+      demoScale(1.2);
+      demoGhostOpacity(0.85);
+      demoOpacity(1);
+      yield* demoScale(2.4, 1.4, easeInOutCubic);
+      yield* waitFor(1.2);
+
+      // --- Reverse (λ < 0) on NEGATIVE's y-axis ---
+      setTop("λ < 0 reverses");
+      setCaption("Same line — tip flips to the opposite ray");
+      setDemoDirection([0, 1]);
+      demoGhostScale(1.6);
+      demoScale(1.6);
+      demoGhostOpacity(0.9);
+      yield* demoScale(-1.6, 1.6, easeInOutCubic);
+      yield* waitFor(1.6);
+
+      // --- Collapse (λ = 0) ---
+      setTop("λ = 0 collapses");
+      setCaption("Same line — tip retracts to the origin");
+      yield* morphTo(ZERO_EIG, 0.8);
+      setDemoDirection([0, 1]);
+      demoGhostScale(1.6);
+      demoScale(1.6);
+      demoGhostOpacity(0.9);
+      yield* demoScale(0, 1.6, easeInOutCubic);
+      // Segment budget: 0.8+1.4+1.2+1.6+1.6+0.8+1.6 = 9.0s (fan hide is sync).
+      yield* waitFor(Math.max(0, seconds.lambdas - 9.0));
     },
+
     *scalar() {
-      setCaption("Scalar A = λI — every nonzero direction is an eigenvector");
-      yield* morphTo(SCALAR, 1.2);
+      setTop("Scalar: every direction");
+      setCaption("A = λI — every nonzero arrow stays on its ray");
+      demoOpacity(0);
+      demoGhostOpacity(0);
+      yield* morphTo(SCALAR, 1.0);
+      applyT(1);
+      // Brighten whole fan: for λI, Av is parallel to v.
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0.95, 0.5)),
+        ghostOpacity(0.55, 0.5),
+      );
       updateEigenGraphics(SCALAR);
-      // Hide fan noise; show that all directions work.
-      yield* all(...fanArrows.map((a) => a.opacity(0.35, 0.5)));
-      yield* waitFor(seconds.scalar - 1.7);
+      // Scalar: two basis directions from analysis (whole plane is eigenspace).
+      yield* waitFor(seconds.scalar - 1.5);
     },
+
     *defective() {
-      setCaption("Defective repeated λ — only one eigendirection (do not invent a second)");
-      yield* morphTo(DEFECTIVE, 1.2);
+      setTop("Defective: only one line");
+      setCaption("Repeated λ — only one eigendirection (do not invent a second)");
+      demoOpacity(0);
+      demoGhostOpacity(0);
+      yield* morphTo(DEFECTIVE, 1.0);
       updateEigenGraphics(DEFECTIVE);
-      yield* waitFor(seconds.defective - 1.2);
+      // Ensure second line stays hidden (analysis returns one basis vector).
+      eigenLines[1]!.opacity(0);
+      eigenArrows[1]!.opacity(0);
+      yield* all(...fanArrows.map((a) => a.opacity(0.2, 0.4)), ghostOpacity(0.15, 0.4));
+      yield* waitFor(seconds.defective - 1.4);
     },
+
     *rotation() {
-      setCaption("Rotation: no real eigenvectors (complex eigenvalues may still exist)");
-      yield* morphTo(ROTATION, 1.2);
-      updateEigenGraphics(ROTATION);
-      yield* applyT(1, 0.1);
-      yield* waitFor(seconds.rotation - 1.3);
+      setTop("No real eigenvectors");
+      setCaption("Rotation turns every arrow — complex λ may still exist");
+      hideEigenGraphics();
+      demoOpacity(0);
+      demoGhostOpacity(0);
+      yield* morphTo(ROTATION, 1.0);
+      // Ghost fan at v; orange tips sweep to Av (90° for this matrix).
+      applyT(0);
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0.95, 0.35)),
+        ghostOpacity(0.85, 0.35),
+      );
+      yield* applyT(1, 1.8, easeInOutCubic);
+      yield* waitFor(Math.max(0, seconds.rotation - 3.15));
     },
+
     *summary() {
-      setCaption("Eigenvectors: nonzero directions A preserves; λ is signed scale");
-      yield* morphTo(MAIN, 1.2);
+      setTop("Invariant directions");
+      setCaption("Eigenvector: nonzero direction A keeps; λ = signed scale");
+      // Restore MAIN teaching state as the landing frame.
+      yield* morphTo(MAIN, 1.0);
+      applyT(1);
+      ghostOpacity(0.35);
+      for (const a of fanArrows) a.opacity(0.35);
       updateEigenGraphics(MAIN);
-      yield* all(...fanArrows.map((a) => a.opacity(0.5, 0.4)));
-      yield* waitFor(seconds.summary - 1.6);
+      demoOpacity(0);
+      demoGhostOpacity(0);
+      showPairLabels(0);
+      yield* waitFor(seconds.summary - 1.0);
     },
   };
 

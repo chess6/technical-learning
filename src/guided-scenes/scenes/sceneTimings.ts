@@ -61,15 +61,15 @@ export const DETERMINANT_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
-  { id: "fan", title: "A fan of directions", duration: 3 },
-  { id: "apply", title: "Most directions turn", duration: 4 },
-  { id: "highlight", title: "Some stay on their line", duration: 3.5 },
+  { id: "fan", title: "A fan of directions", duration: 3.5 },
+  { id: "apply", title: "Most directions turn", duration: 5 },
+  { id: "highlight", title: "Some stay on their line", duration: 4.5 },
   { id: "equation", title: "Av = λv", duration: 3.5 },
-  { id: "lambdas", title: "Stretch, shrink, reverse, collapse", duration: 5 },
-  { id: "scalar", title: "Scalar: every direction", duration: 3.5 },
-  { id: "defective", title: "Defective: only one line", duration: 3.5 },
-  { id: "rotation", title: "No real eigenvectors", duration: 3.5 },
-  { id: "summary", title: "Invariant directions", duration: 3 },
+  { id: "lambdas", title: "Stretch, reverse, collapse", duration: 11 },
+  { id: "scalar", title: "Scalar: every direction", duration: 5 },
+  { id: "defective", title: "Defective: only one line", duration: 5 },
+  { id: "rotation", title: "No real eigenvectors", duration: 4.5 },
+  { id: "summary", title: "Invariant directions", duration: 4 },
 ];
 
 /** Total timeline length in seconds. */

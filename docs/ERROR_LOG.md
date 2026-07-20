@@ -57,3 +57,18 @@ rules over one-off patches.
   - Keep screen-coordinate conversion separate from the mathematical map.  
   - Do not trust third-party matrix layouts without a packing test against `matrixVectorMultiply`.
 - **Status:** fixed
+
+---
+
+### 2026-07-19 — Eigen guided scene captioned λ reverse/collapse without showing scale
+
+- **Date:** 2026-07-19
+- **Title:** Eigen guided scene captioned λ reverse/collapse without showing scale
+- **Symptom:** Lesson 4 Watch captions said “reverse” / “collapse” while eigen arrows stayed fixed length; λ = 0 still showed a long axis arrow. v vs Av were morphing in place with no labels, so newcomers could not see input vs output.
+- **Mathematical expectation:** For an eigendirection, \(A\mathbf{v}=\lambda\mathbf{v}\). λ < 0 must reverse along the same line; λ = 0 must send the tip to the origin. Displayed geometry must match the captioned case.
+- **Root cause:** Choreography morphing matrices while leaving eigendirection markers at constant length; apply beat reused one arrow tip instead of ghost \(\mathbf{v}\) + \(\mathbf{A}\mathbf{v}\).
+- **Affected files:** `src/guided-scenes/scenes/eigenvectorsInvariantDirectionsScene.ts`, `sceneTimings.ts`, `sceneMeta.ts`
+- **Fix:** Ghost \(\mathbf{v}\) + labeled \(\mathbf{A}\mathbf{v}\); held stretch / reverse / collapse demos on one line; majorSteps include lambdas and scalar; longer holds.
+- **Regression test added:** Visual review via Playwright MCP screenshots of major beats (no pixel assertion). Existing Lesson 4 e2e still covers load/play/explorer.
+- **General lesson / prevention rule:** When a caption names a geometric effect (flip, collapse, stretch), the same beat must animate tip length/direction accordingly — not only swap matrices or show fixed direction markers.
+- **Status:** fixed

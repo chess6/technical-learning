@@ -92,6 +92,8 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "apply",
       "highlight",
       "equation",
+      "lambdas",
+      "scalar",
       "defective",
       "rotation",
       "summary",
