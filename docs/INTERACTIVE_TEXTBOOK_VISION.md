@@ -127,6 +127,15 @@ By the end, all five compress into a single handle: \(\det(A)\). Its magnitude i
 the area factor, zero is collapse, its sign is orientation, and its vanishing is
 singularity. One symbol now *carries* the whole cluster of experiences.
 
+Be precise about the important *consequence*, though: the determinant's magnitude
+measures oriented-area scaling, not "how much information is preserved" on a
+sliding scale. A tiny nonzero determinant is still fully invertible; the
+qualitative information-loss boundary is at **zero**. The sharp statement is: **a
+zero determinant means some distinct inputs become indistinguishable under the
+transformation** (the map crushes a dimension), whereas any nonzero determinant,
+however small, keeps every input recoverable. Use "information loss" as this
+crisp consequence of collapse, not as a gradual gloss on the magnitude.
+
 Likewise, the entire geometric behavior of "a direction the transformation only
 scales" compresses into \(A\mathbf{v} = \lambda\mathbf{v}\).
 
@@ -155,9 +164,9 @@ the learner's head. (For the UI mechanics of each, see LESSON_DESIGN.md.)
 
 | Beat | Learner-facing | Pedagogical job |
 | --- | --- | --- |
-| Introduction / Think | "Think about it" | Orient the learner and open a **genuine question** they can hold. Create the itch the rest of the lesson scratches. Surface a prediction so later evidence can confirm or overturn it. |
+| Introduction / Think | "Think about it" | Orient the learner and open a **genuine question** they can hold. Create the itch the rest of the lesson scratches. Invite a prediction *only* where it would materially expose a misconception or set up an important contrast — not before every explanation. |
 | Watch | "Watch the idea" | Show the idea forming, one conceptual change at a time, with symbol and geometry synchronized. Build the mental model before the learner has to steer. |
-| Check | "Quick check" | Retrieve, don't restate. Ask for a prediction/interpretation *before* revealing. This is a learning event (testing effect), not an assessment. |
+| Check | "Quick check" | Retrieve, don't restate. Ask for an interpretation (or a prediction, where it sets up a contrast) *before* revealing. This is a learning event (testing effect), not an assessment. |
 | Explore | "Try it yourself" | Hand over the *same* example to manipulate, in service of a specific question. Let the learner test the boundaries of the model they just built. |
 | Practice | "Practice" | Apply and transfer. Every reveal continues teaching (see §11). |
 | Remember | "Remember this" | Compress. State the one reusable idea the lesson collapses into (see §3). |
@@ -169,6 +178,12 @@ Two durable ordering commitments underlie this flow:
   yet have is the "playground" failure mode (§5, principle 10).
 - **Question before procedure.** Every computational method is preceded by the
   question that makes it necessary (§5, principle 3).
+- **Prediction is a tool, not a ritual.** Open a genuine question the learner can
+  hold; use *prediction* when it materially exposes a misconception or prepares
+  the learner for an important contrast. Do **not** require a prediction before
+  every animation or explanation — that quickly becomes repetitive and hollow.
+  Prediction stays valuable for selected checks, exercises, and misconception
+  confrontations (§12), and nowhere else by default.
 
 *(The exact number and naming of beats is the current instance. A short concept
 lesson may merge Introduction+Watch; a two-idea lesson may run two Explore/Practice
@@ -242,8 +257,8 @@ the backbone of the worked-example philosophy (§10). One caution: **not every
 algebraic step has an equally meaningful picture.** Manufacturing a visual for a
 purely bookkeeping step (clearing a denominator) dilutes the ones that matter.
 Synchronize the steps that carry *meaning* (e.g. "\((A - \lambda I)\mathbf{v} =
-\mathbf{0}\) means this direction lands on the origin-line — it gets crushed"),
-and let routine algebra be routine.
+\mathbf{0}\) means the auxiliary map \(A - \lambda I\) sends this direction to the
+origin"), and let routine algebra be routine.
 
 ### 5.5 Worked examples teach reasoning
 
@@ -392,7 +407,7 @@ near-future topics — **not a mandate**; a future lesson names its own):
 | Span | Reachability using the directions you have. |
 | Basis | A minimal coordinate language for the space. |
 | Linear transformation | A machine that moves every point consistently. |
-| Determinant | Information preservation, seen as signed area scaling. |
+| Determinant | How a transformation scales oriented area, with zero marking dimensional collapse. |
 | Eigenvector | A direction the transformation refuses to mix. |
 
 Notes on using the table:
@@ -523,8 +538,9 @@ meaning.)*
 ## 10. Worked-example philosophy
 
 A worked example is the product's closest thing to a professor at a whiteboard
-thinking aloud. It does **not** merely reach the answer. For **each step**, it
-explicitly identifies:
+thinking aloud. It does **not** merely reach the answer. **Across the worked
+example, and at every conceptually meaningful step, make these five elements
+available:**
 
 1. **The mathematical object** — what are we operating on right now?
 2. **The invariant being preserved** — what stays true through this step, and why
@@ -533,11 +549,17 @@ explicitly identifies:
 4. **Why the next step follows** — what makes the following move natural rather
    than arbitrary?
 5. **What the learner should now understand** — the one-line "what idea did I just
-   learn?" A step that cannot answer this is bookkeeping; label it as such and
-   move on quickly (§5.4).
+   learn?"
 
-Never a bare "Step 3: solve the characteristic polynomial." A learner should
-finish each step knowing not just *what* was done but *which idea it taught*.
+This is a requirement on the *meaningful* steps, not a five-line annotation on
+every line of algebra. Routine bookkeeping — expanding a polynomial, clearing a
+denominator — should be *named as bookkeeping* and move quickly (§5.4); forcing
+all five elements onto it makes solutions mechanically repetitive and buries the
+steps that actually carry meaning.
+
+Never a bare "Step 3: solve the characteristic polynomial" *for a step that
+teaches something*. At the conceptual steps, a learner should finish knowing not
+just *what* was done but *which idea it taught*.
 
 Also required (from §5.5): **why a tempting wrong path fails.** Naming the
 attractive mistake and showing where it breaks is often more instructive than the
@@ -557,10 +579,10 @@ meaning; a derivation visualization (§9a) accompanies the meaningful rungs.
 | Rung | Symbolic step | Geometric meaning (the synchronized picture) |
 | --- | --- | --- |
 | 1 | \(A\mathbf{v} = \lambda\mathbf{v}\) | "Find a nonzero direction the map only scales — it stays on its own line." |
-| 2 | \((A - \lambda I)\mathbf{v} = \mathbf{0}\) | "For that special \(\lambda\), the map \(A - \lambda I\) sends \(\mathbf{v}\) to the origin — it *crushes* that direction." |
-| 3 | \(\det(A - \lambda I) = 0\) | "A map crushes a nonzero direction exactly when it collapses area — determinant zero (reusing the determinant model, §3)." |
+| 2 | \((A - \lambda I)\mathbf{v} = \mathbf{0}\) | "Under the *auxiliary* transformation \(A - \lambda I\), that direction collapses to zero. This happens precisely because \(A\mathbf{v}\) and \(\lambda\mathbf{v}\) coincide — it is \(A - \lambda I\), not \(A\), that sends \(\mathbf{v}\) to the origin." |
+| 3 | \(\det(A - \lambda I) = 0\) | "The auxiliary map \(A - \lambda I\) sends a nonzero direction to zero exactly when it collapses area — determinant zero (reusing the determinant model, §3)." |
 | 4 | Solve for \(\lambda\) | "Which scale factors make a direction collapse? These are the eigenvalues." |
-| 5 | Solve \((A - \lambda I)\mathbf{v} = \mathbf{0}\) for \(\mathbf{v}\) | "For each \(\lambda\), which direction is the one that gets crushed? That is its eigenvector / eigenspace." |
+| 5 | Solve \((A - \lambda I)\mathbf{v} = \mathbf{0}\) for \(\mathbf{v}\) | "For each \(\lambda\), which direction does the auxiliary map \(A - \lambda I\) send to zero? That is its eigenvector / eigenspace." |
 | 6 | Interpret | "Read \(\lambda\) as stretch/shrink/reverse/collapse along that invariant line — back to the mental model (§7)." |
 
 Notice rung 3 *reuses* the determinant lesson's compressed idea ("det = 0 is
