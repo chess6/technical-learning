@@ -5,27 +5,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3);
+  padding: var(--space-4);
   background: rgba(14, 20, 32, 0.72);
 }
 
 /*
- * Fit the viewport without nested scroll regions: header + body fill the
- * dialog; the viz scales down; the compact step list sits beside it.
+ * Side-by-side by default: enlarged clip on the left, compact numbered steps
+ * on the right. Prefer fitting in the viewport; allow the dialog itself to
+ * scroll once rather than clipping the canvas or stacking steps under it.
  */
 .eigen-clip-modal {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  width: min(74rem, 100%);
-  height: min(90vh, 52rem);
-  max-height: 90vh;
-  overflow: hidden;
+  width: min(72rem, 100%);
+  max-height: min(92vh, 56rem);
+  overflow: auto;
   background: var(--color-page-bg);
   color: var(--color-text);
   border-radius: var(--radius-lg, 0.75rem);
   box-shadow: 0 18px 48px rgba(14, 20, 32, 0.35);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
 }
 
 .eigen-clip-modal__header {
@@ -38,90 +38,74 @@
 
 .eigen-clip-modal__title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 650;
 }
 
 .eigen-clip-modal__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
-  gap: var(--space-4);
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-5);
+  align-items: start;
 }
 
 .eigen-clip-modal:not([data-has-steps="true"]) .eigen-clip-modal__body {
-  grid-template-columns: 1fr;
+  display: block;
 }
 
 .eigen-clip-modal__viz {
+  flex: 1.4 1 0;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.eigen-clip-modal__viz > * {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-/* Keep the enlarged clip inside the dialog without forcing page/modal scroll. */
+/* Keep the canvas aspect ratio; do not force-shrink with overflow clipping. */
 .eigen-clip-modal__viz .guided-scene-player {
-  gap: var(--space-2);
+  gap: var(--space-3);
+  height: auto;
   min-height: 0;
-}
-
-.eigen-clip-modal__viz .guided-scene-player__frame {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 .eigen-clip-modal__viz .guided-scene-player__canvas {
-  flex: 1 1 auto;
-  max-height: none;
-  min-height: 0;
-  aspect-ratio: auto;
+  max-height: min(58vh, 34rem);
+  aspect-ratio: 16 / 10;
 }
 
 .eigen-clip-modal__viz .eigen-3d-extension {
+  height: auto;
   min-height: 0;
-  height: 100%;
 }
 
 .eigen-clip-modal__viz .eigen-3d-extension__canvas-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
-  aspect-ratio: auto;
+  aspect-ratio: 16 / 10;
+  min-height: 14rem;
+  max-height: min(58vh, 34rem);
 }
 
 .eigen-clip-modal__steps {
-  min-width: 0;
-  min-height: 0;
-  /* Prefer fitting without a scrollbar; only scroll if the viewport is tiny. */
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  flex: 0 0 14rem;
+  width: 14rem;
+  max-width: 14rem;
+  min-width: 12rem;
 }
 
-@media (max-width: 48rem) {
+/* Only stack on very narrow viewports where side-by-side is impossible. */
+@media (max-width: 36rem) {
   .eigen-clip-modal {
-    height: min(94vh, 56rem);
     padding: var(--space-3);
+    max-height: 96vh;
   }
 
   .eigen-clip-modal__body {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(12rem, 1fr) auto;
-    overflow-y: auto;
+    flex-wrap: wrap;
+  }
+
+  .eigen-clip-modal__viz {
+    flex: 1 1 100%;
   }
 
   .eigen-clip-modal__steps {
-    overflow: visible;
-    max-height: none;
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
   }
 }
