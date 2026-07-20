@@ -53,4 +53,27 @@ describe("lesson wiring for all four POC lessons", () => {
       }
     }
   });
+
+  it("eigenvectors lesson embeds a derivation scene in a worked example", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    expect(lesson.workedExamples?.length).toBeGreaterThanOrEqual(1);
+    const primary = lesson.workedExamples![0]!;
+    expect(primary.guidedSceneId).toBe("eigenvectors-derivation");
+    expect(hasGuidedScene(primary.guidedSceneId!)).toBe(true);
+    expect(getSceneMeta(primary.guidedSceneId!).id).toBe("eigenvectors-derivation");
+  });
+
+  it("eigenvectors practice covers check, drill, and transfer tiers", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    const tiers = new Set(lesson.exercises.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+  });
+
+  it("eigenvectors callouts stay optional and flexible", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    expect(lesson.callouts?.length).toBeGreaterThanOrEqual(1);
+    expect(lesson.callouts?.some((c) => c.solutionVisualId)).toBe(true);
+  });
 });

@@ -6,6 +6,8 @@ flow, visual language, interaction model, and quality bar.
 
 Practical enough to follow while building or modifying a lesson. Pair it with:
 
+- [INTERACTIVE_TEXTBOOK_VISION.md](./INTERACTIVE_TEXTBOOK_VISION.md) — educational philosophy (depth, mental models, worked examples).
+- [lesson-depth-pattern.md](./lesson-depth-pattern.md) — medium-agnostic pattern for deepening lessons (Lesson 4 reference).
 - [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md) — mathematical conventions (source of truth for geometry).
 - [ERROR_LOG.md](./ERROR_LOG.md) — known math/visualization failure modes.
 - [LESSON_CORRECTNESS_CHECKLIST.md](./LESSON_CORRECTNESS_CHECKLIST.md) — per-lesson sign-off.

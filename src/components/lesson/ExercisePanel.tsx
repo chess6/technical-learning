@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ExerciseDefinition } from "../../lessons/types";
 import { gradeExercise, type GradeResult } from "../../lessons/grading";
 import { ProseWithMath } from "./ProseWithMath";
+import { SolutionReveal } from "./SolutionReveal";
 import "./ExercisePanel.css";
 
 type ExercisePanelProps = {
@@ -13,7 +14,10 @@ type Draft = {
   value: string;
   x: string;
   y: string;
+  /** Comma-separated eigenvalues for type: eigenvalue. */
+  lambdas: string;
   revealed: boolean;
+  hintIndex: number;
 };
 
 const emptyDraft: Draft = {
@@ -21,7 +25,15 @@ const emptyDraft: Draft = {
   value: "",
   x: "",
   y: "",
+  lambdas: "",
   revealed: false,
+  hintIndex: 0,
+};
+
+const TIER_LABEL: Record<string, string> = {
+  check: "Check",
+  drill: "Drill",
+  transfer: "Transfer",
 };
 
 /**
@@ -57,11 +69,19 @@ export function ExercisePanel({ exercises }: ExercisePanelProps) {
 
   if (!exercise) return null;
 
+  const tier = exercise.tier;
+
   return (
     <section className="exercise-panel" role="region" aria-label="Practice exercises">
       <div className="exercise-panel__progress">
         <p className="exercise-panel__count" aria-live="polite">
           Question {current + 1} of {total}
+          {tier && (
+            <span className="exercise-panel__tier" data-tier={tier}>
+              {" "}
+              · {TIER_LABEL[tier] ?? tier}
+            </span>
+          )}
         </p>
         <ol className="exercise-panel__dots" aria-hidden="true">
           {exercises.map((ex, index) => (
@@ -70,6 +90,7 @@ export function ExercisePanel({ exercises }: ExercisePanelProps) {
               className="exercise-panel__dot"
               data-active={index === current}
               data-done={isAttempted(ex)}
+              data-tier={ex.tier}
             />
           ))}
         </ol>
@@ -79,6 +100,15 @@ export function ExercisePanel({ exercises }: ExercisePanelProps) {
         <p className="exercise-panel__prompt">
           <ProseWithMath text={exercise.prompt} />
         </p>
+        <HintControls
+          exercise={exercise}
+          hintIndex={draft(exercise.id).hintIndex}
+          onShowMore={() =>
+            patch(exercise.id, {
+              hintIndex: draft(exercise.id).hintIndex + 1,
+            })
+          }
+        />
         <ExerciseBody
           exercise={exercise}
           draft={draft(exercise.id)}
@@ -145,16 +175,69 @@ export function ExercisePanel({ exercises }: ExercisePanelProps) {
   );
 }
 
-function Feedback({ result }: { result: GradeResult | null }) {
+function HintControls({
+  exercise,
+  hintIndex,
+  onShowMore,
+}: {
+  exercise: ExerciseDefinition;
+  hintIndex: number;
+  onShowMore: () => void;
+}) {
+  const hints = exercise.hints ?? [];
+  if (hints.length === 0) return null;
+  const shown = hints.slice(0, hintIndex);
+  const hasMore = hintIndex < hints.length;
   return (
-    <p
-      className="exercise-panel__feedback"
-      role="status"
-      aria-live="polite"
-      data-state={result ? (result.correct ? "correct" : "incorrect") : "idle"}
-    >
-      {result ? <ProseWithMath text={result.feedback} /> : null}
-    </p>
+    <div className="exercise-panel__hints">
+      {shown.map((hint, index) => (
+        <p key={index} className="exercise-panel__hint">
+          <span className="exercise-panel__hint-label">Hint {index + 1}.</span>{" "}
+          <ProseWithMath text={hint} />
+        </p>
+      ))}
+      {hasMore && (
+        <button type="button" className="btn btn--ghost" onClick={onShowMore}>
+          Show hint
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Feedback({
+  result,
+  exercise,
+}: {
+  result: GradeResult | null;
+  exercise: ExerciseDefinition;
+}) {
+  if (!result) {
+    return (
+      <p
+        className="exercise-panel__feedback"
+        role="status"
+        aria-live="polite"
+        data-state="idle"
+      />
+    );
+  }
+
+  const reveal = result.solutionReveal ?? exercise.solutionReveal;
+  const compact = exercise.tier === "drill" || exercise.tier === "check";
+
+  return (
+    <div className="exercise-panel__feedback-block">
+      <p
+        className="exercise-panel__feedback"
+        role="status"
+        aria-live="polite"
+        data-state={result.correct ? "correct" : "incorrect"}
+      >
+        <ProseWithMath text={result.feedback} />
+      </p>
+      {reveal && <SolutionReveal reveal={reveal} compact={compact} />}
+    </div>
   );
 }
 
@@ -174,6 +257,8 @@ function ExerciseBody(props: BodyProps) {
       return <NumericAnswer {...props} exercise={props.exercise} />;
     case "vector":
       return <VectorAnswer {...props} exercise={props.exercise} />;
+    case "eigenvalue":
+      return <EigenvalueAnswer {...props} exercise={props.exercise} />;
     case "prediction":
       return <Prediction {...props} exercise={props.exercise} />;
   }
@@ -230,7 +315,7 @@ function MultipleChoice({
           );
         })}
       </ul>
-      <Feedback result={result} />
+      <Feedback result={result} exercise={exercise} />
     </>
   );
 }
@@ -272,7 +357,7 @@ function NumericAnswer({
       <button type="submit" className="btn">
         Check answer
       </button>
-      <Feedback result={result} />
+      <Feedback result={result} exercise={exercise} />
     </form>
   );
 }
@@ -330,7 +415,64 @@ function VectorAnswer({
       <button type="submit" className="btn">
         Check answer
       </button>
-      <Feedback result={result} />
+      <Feedback result={result} exercise={exercise} />
+    </form>
+  );
+}
+
+function EigenvalueAnswer({
+  exercise,
+  draft,
+  result,
+  onDraft,
+  onResult,
+}: BodyProps & {
+  exercise: Extract<ExerciseDefinition, { type: "eigenvalue" }>;
+}) {
+  const check = () => {
+    const parts = draft.lambdas
+      .split(/[,\s]+/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map(Number);
+    if (parts.length === 0 || parts.some((n) => Number.isNaN(n))) {
+      onResult({
+        correct: false,
+        feedback: "Enter one or more eigenvalues, separated by commas.",
+      });
+      return;
+    }
+    onResult(
+      gradeExercise(exercise, {
+        kind: "eigenvalue",
+        value: parts.length === 1 ? parts[0]! : parts,
+      }),
+    );
+  };
+
+  return (
+    <form
+      className="exercise-panel__answer"
+      onSubmit={(event) => {
+        event.preventDefault();
+        check();
+      }}
+    >
+      <label className="exercise-panel__field">
+        <span className="sr-only">Eigenvalue(s)</span>
+        <input
+          type="text"
+          inputMode="decimal"
+          placeholder="e.g. 2, 3"
+          aria-label="Eigenvalues"
+          value={draft.lambdas}
+          onChange={(event) => onDraft({ lambdas: event.target.value })}
+        />
+      </label>
+      <button type="submit" className="btn">
+        Check answer
+      </button>
+      <Feedback result={result} exercise={exercise} />
     </form>
   );
 }
@@ -352,14 +494,22 @@ function Prediction({
         {revealed ? "Hide answer" : "Reveal answer"}
       </button>
       {revealed && (
-        <p
-          className="exercise-panel__feedback"
-          role="status"
-          aria-live="polite"
-          data-state="reveal"
-        >
-          <ProseWithMath text={exercise.reveal} />
-        </p>
+        <>
+          <p
+            className="exercise-panel__feedback"
+            role="status"
+            aria-live="polite"
+            data-state="reveal"
+          >
+            <ProseWithMath text={exercise.reveal} />
+          </p>
+          {exercise.solutionReveal && (
+            <SolutionReveal
+              reveal={exercise.solutionReveal}
+              compact={exercise.tier !== "transfer"}
+            />
+          )}
+        </>
       )}
     </>
   );

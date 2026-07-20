@@ -26,6 +26,10 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./eigenvectorsInvariantDirectionsScene").then(
       (m) => m.eigenvectorsInvariantDirectionsScene,
     ),
+  "eigenvectors-derivation": () =>
+    import("./eigenvectorsDerivationScene").then(
+      (m) => m.eigenvectorsDerivationScene,
+    ),
   "transform-spike": () =>
     import("./transformSpikeScene").then((m) => m.transformSpikeScene),
 };

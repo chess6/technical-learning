@@ -1,0 +1,39 @@
+.misconception-callout {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid var(--role-invariant, #f0879f);
+  background: var(--color-surface-muted, #f8f6f1);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.misconception-callout__title {
+  margin: 0 0 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.misconception-callout__body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 900px) {
+  .misconception-callout__body:has(.misconception-callout__visual) {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+  }
+}
+
+.misconception-callout__prose p {
+  margin: 0 0 0.55rem;
+  line-height: 1.55;
+}
+
+.misconception-callout__label {
+  font-weight: 650;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.misconception-callout__visual {
+  min-width: 0;
+}

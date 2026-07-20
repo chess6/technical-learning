@@ -1,0 +1,111 @@
+.worked-example-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.worked-example {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.worked-example__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.worked-example__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+
+.worked-example__prompt {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--color-text-muted, #4b5563);
+  line-height: 1.55;
+}
+
+.worked-example__body {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1100px) {
+  .worked-example__body[data-has-scene="true"] {
+    grid-template-columns: 1.35fr 0.95fr;
+    align-items: start;
+  }
+
+  .worked-example__scene {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.worked-example__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  counter-reset: worked-step;
+}
+
+.worked-example__step {
+  counter-increment: worked-step;
+  position: relative;
+  padding: 0.75rem 0.9rem 0.75rem 2.6rem;
+  border-radius: 0.55rem;
+  background: var(--color-surface-muted, #f8f6f1);
+  border: 1px solid var(--color-border, #e5e7eb);
+}
+
+.worked-example__step::before {
+  content: counter(worked-step);
+  position: absolute;
+  left: 0.7rem;
+  top: 0.8rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--color-surface-raised, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  color: var(--color-text-muted, #6b7280);
+}
+
+.worked-example__step p {
+  margin: 0 0 0.4rem;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.worked-example__symbolic {
+  font-size: 1.05rem !important;
+}
+
+.worked-example__label {
+  font-weight: 650;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.worked-example__learned {
+  margin-top: 0.35rem !important;
+}
+
+.worked-example__hide {
+  margin-top: 0.5rem;
+}
+
+.worked-example__step-visual {
+  margin-top: 0.55rem;
+}

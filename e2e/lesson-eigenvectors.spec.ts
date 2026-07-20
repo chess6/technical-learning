@@ -9,7 +9,7 @@ function collectConsoleErrors(page: Page): string[] {
   return errors;
 }
 
-test("Lesson 4 loads, guided scene plays, explorer edge cases and exercises work", async ({
+test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exercises work", async ({
   page,
 }) => {
   const errors = collectConsoleErrors(page);
@@ -19,14 +19,33 @@ test("Lesson 4 loads, guided scene plays, explorer edge cases and exercises work
   await expect(
     page.getByRole("heading", { name: "Eigenvectors and Eigenvalues" }),
   ).toBeVisible();
-  await expect(page.locator(".guided-scene-player__canvas canvas")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Watch the idea" }),
+  ).toBeVisible();
+  await expect(page.locator(".guided-scene-player__canvas canvas").first()).toBeVisible();
 
-  const play = page.getByRole("button", { name: "Play", exact: true });
+  const play = page.getByRole("button", { name: "Play", exact: true }).first();
   if (await play.count()) await play.click();
-  await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled({
+  await expect(page.getByRole("button", { name: "Pause" }).first()).toBeEnabled({
     timeout: 8000,
   });
-  await page.getByRole("button", { name: "Replay" }).click();
+  await page.getByRole("button", { name: "Replay" }).first().click();
+
+  await expect(
+    page.getByRole("heading", { name: "Worked computation" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("worked-example-eigen-compute-distinct")).toBeVisible();
+  await expect(page.getByTestId("misconception-callout").first()).toBeVisible();
+
+  // Derivation scene idea dots expose ladder rung titles.
+  const worked = page.getByRole("region", { name: "Worked examples" });
+  const ideaDot = worked.locator(".guided-scene-player__idea-dot").nth(2);
+  if (await ideaDot.count()) {
+    await ideaDot.click();
+    await expect(
+      worked.locator(".guided-scene-player__stage-title"),
+    ).toContainText(/det\(A|char|λ|lambda|Solve/i);
+  }
 
   const explore = page.getByRole("region", {
     name: "Hunt for invariant directions",
@@ -49,7 +68,8 @@ test("Lesson 4 loads, guided scene plays, explorer edge cases and exercises work
   await expect(page.getByTestId("eigen-kind")).toHaveText("distinct-real");
 
   const practice = page.getByRole("region", { name: "Practice exercises" });
-  await practice.locator('.exercise-panel__choice[data-choice-index="1"]').click();
+  await expect(practice.getByText(/Check|Drill|Transfer/)).toBeVisible();
+  await practice.locator('.exercise-panel__choice[data-choice-index="2"]').click();
   await expect(
     practice.locator('.exercise-panel__feedback[data-state="correct"]').first(),
   ).toContainText("Correct");

@@ -1,0 +1,34 @@
+.eigen-solution-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.eigen-solution-diagram__readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.4rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.eigen-solution-diagram__readout div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.eigen-solution-diagram__readout dt {
+  margin: 0;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.eigen-solution-diagram__readout dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text, #1a1f2e);
+}

@@ -20,6 +20,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+.exercise-panel__tier {
+  font-weight: 500;
+  color: var(--color-text-faint, #9aa6b5);
+}
+
+.exercise-panel__hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.exercise-panel__hint {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.exercise-panel__hint-label {
+  font-weight: 650;
+}
+
+.exercise-panel__feedback-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
 .exercise-panel__dots {
   display: flex;
   gap: var(--space-2);

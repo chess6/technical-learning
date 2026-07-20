@@ -79,21 +79,27 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 
 ---
 
-## Lesson 4 — Eigenvectors and Eigenvalues (M5)
+## Lesson 4 — Eigenvectors and Eigenvalues (M5 + Chapter 1 depth)
 
 ### Mathematical review
 
 - [x] Formulas independently verified (\(A\mathbf{v}=\lambda\mathbf{v}\))
 - [x] Shared utilities from `src/math` (`analyzeEigen2x2`, classify helpers)
+- [x] Derivation spine: `characteristicPolynomial2x2`, `characteristicRoots2x2`, `matrixShift`, `nullspaceBasis2x2` (`Subspace2D`), `eigenDerivation2x2`
+- [x] No TeX/prose in `src/math` — formatting in `eigenFormat.ts`
 - [x] No hardcoded eigendirections independent of analysis
-- [x] Eigenpairs verified with `assertEigenpair`
-- [x] Eigen edge cases: zero vector, λ=0, scalar, defective, complex/no-real
+- [x] Eigenpairs verified with `assertEigenpair` / `verifiesEigenpair`
+- [x] Eigen edge cases: zero vector, λ=0, scalar (`plane`), defective (`line`), complex/no-real
+- [x] Asymmetric lesson matrix: λ=3 → (1,0); λ=2 → multiple of (−1,1)
 - [x] Visual transitions labelled; complex case states complex eigenvalues may exist
 
 ### Visual review
 
 - [x] Labels match numeric / KaTeX readouts
-- [x] Eigendirection dashes + arrows from `summarizeEigenAnalysis`
+- [x] Eigendirection dashes + arrows from `summarizeEigenAnalysis` / derivation
+- [x] Derivation scene embeds in worked example (not a second top-level Watch)
+- [x] Off-axis λ=2 direction explicitly labelled in scene + callouts
+- [x] Static `EigenSolutionDiagram` for practice reveals
 - [x] Stable direction normalization (`stabilizeDirection`)
 - [x] Safe framing; reduced-motion via shared player
 - [x] Screen-\(y\) inversion only in render mapping
@@ -101,15 +107,23 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 
 ### Testing review
 
-- [x] Unit tests (`m5-classify`, `EigenvectorExplorer`)
+- [x] Unit tests (`eigen.test.ts` derivation helpers, `m5-classify`, `EigenvectorExplorer`)
+- [x] `sceneTimings.test.ts` for derivation ladder metadata
+- [x] Wiring: worked example `guidedSceneId`, tiers, callouts
+- [x] Component tests: DepthLayer, MisconceptionCallout, SolutionReveal, ExercisePanel eigenvalue
 - [x] `assertEigenpair` on displayed directions
 - [x] Distinct-real covered via `eigen-distinct`
 - [x] λ=0 covered via `eigen-zero` preset
-- [x] Browser test `e2e/lesson-eigenvectors.spec.ts`
-- [x] No new ERROR_LOG bug found during M5
+- [x] Browser test `e2e/lesson-eigenvectors.spec.ts` (worked computation + tiers)
+- [x] No new ERROR_LOG bug found during depth expansion
 
 ### Teaching review
 
 - [x] Zero vector never presented as an eigenvector
 - [x] Readouts and explanation text agree
 - [x] KaTeX used for \(A\mathbf{v}=\lambda\mathbf{v}\)
+- [x] Worked example teaches computation with faded second example
+- [x] Misconception confrontations at natural points (axes, reverse, defective)
+- [x] Concept-graph callbacks to determinants (collapse), span, transformations
+- [x] Tiered practice: check / drill / transfer with solution visuals
+- [x] Depth layers (connection, looking-ahead, math-note, trap)

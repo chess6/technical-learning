@@ -124,6 +124,19 @@
   background: var(--tint-teal);
 }
 
+/* --- Worked computation --- */
+.phase--worked .phase__step {
+  border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent);
+  color: var(--accent-gold);
+}
+
+.lesson-layout__worked {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
 /* --- Try it yourself --- */
 .phase--explore .phase__step {
   border-color: color-mix(in srgb, var(--accent-coral) 55%, transparent);

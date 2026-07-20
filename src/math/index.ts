@@ -3,6 +3,7 @@ export type {
   EigenPair,
   Matrix2x2,
   MatrixExample,
+  Subspace2D,
   Vector2,
 } from "./types";
 export { DEFAULT_TOLERANCE } from "./types";
@@ -61,8 +62,18 @@ export {
 
 export {
   discriminant2x2,
+  characteristicPolynomial2x2,
+  characteristicRoots2x2,
+  matrixShift,
+  nullspaceBasis2x2,
   analyzeEigen2x2,
   realEigenvalues,
+  eigenDerivation2x2,
+} from "./eigen";
+export type {
+  CharacteristicPolynomial2x2,
+  EigenDerivation2x2,
+  EigenDerivationStep2x2,
 } from "./eigen";
 
 export {

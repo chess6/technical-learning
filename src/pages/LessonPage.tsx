@@ -8,6 +8,10 @@ import { Checkpoint } from "../components/lesson/Checkpoint";
 import { MotivatingQuestion } from "../components/lesson/MotivatingQuestion";
 import { GuidedScenePlayer } from "../components/lesson/GuidedScenePlayer";
 import { LessonSummary } from "../components/lesson/LessonSummary";
+import { WorkedExamplePanel } from "../components/lesson/WorkedExamplePanel";
+import { DepthLayerList } from "../components/lesson/DepthLayer";
+import { MisconceptionCallout } from "../components/lesson/MisconceptionCallout";
+import { EigenSolutionDiagram } from "../components/lesson/solutionVisuals/EigenSolutionDiagram";
 import { LessonLayout } from "../components/layout/LessonLayout";
 import { getLessonById } from "../lessons/registry";
 import { getGuidedSceneFactory } from "../guided-scenes/registry";
@@ -51,6 +55,7 @@ export function LessonPage() {
             observation={section.observation}
           />
           {section.equation && <EquationBlock tex={section.equation} />}
+          <DepthLayerList layers={section.layers} />
         </div>
       ))}
       visualization={
@@ -68,6 +73,38 @@ export function LessonPage() {
             answer={lesson.checkpoint.answer}
           />
         )
+      }
+      workedExamples={
+        (lesson.workedExamples && lesson.workedExamples.length > 0) ||
+        (lesson.callouts && lesson.callouts.length > 0) ? (
+          <>
+            {lesson.workedExamples && lesson.workedExamples.length > 0 && (
+              <WorkedExamplePanel
+                examples={lesson.workedExamples}
+                resetToken={resetToken}
+              />
+            )}
+            {lesson.callouts?.map((callout) => (
+              <MisconceptionCallout
+                key={callout.id}
+                title={callout.title}
+                belief={callout.belief}
+                confront={callout.confront}
+                resolve={callout.resolve}
+                visual={
+                  callout.solutionVisualId ? (
+                    <EigenSolutionDiagram
+                      exampleId={callout.exampleId}
+                      highlightLambda={callout.highlightLambda}
+                      height={200}
+                      ariaLabel={callout.title}
+                    />
+                  ) : undefined
+                }
+              />
+            ))}
+          </>
+        ) : undefined
       }
       exploration={
         Explorer ? (

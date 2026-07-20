@@ -1,5 +1,13 @@
 import type { GuidedSceneStep } from "../engine/types";
-import { LINEAR_COMBINATION_SEGMENTS, MATRIX_TRANSFORMATION_SEGMENTS, SPIKE_SEGMENTS, DETERMINANT_SEGMENTS, EIGENVECTOR_SEGMENTS, toSteps } from "./sceneTimings";
+import {
+  LINEAR_COMBINATION_SEGMENTS,
+  MATRIX_TRANSFORMATION_SEGMENTS,
+  SPIKE_SEGMENTS,
+  DETERMINANT_SEGMENTS,
+  EIGENVECTOR_SEGMENTS,
+  EIGEN_DERIVATION_SEGMENTS,
+  toSteps,
+} from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
 
 /**
@@ -34,6 +42,7 @@ const MATRIX_STEPS = toSteps(MATRIX_TRANSFORMATION_SEGMENTS);
 const SPIKE_STEPS = toSteps(SPIKE_SEGMENTS);
 const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
+const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "vectors-linear-combinations": {
@@ -97,6 +106,21 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "defective",
       "rotation",
       "summary",
+    ]),
+  },
+  "eigenvectors-derivation": {
+    id: "eigenvectors-derivation",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided derivation computing eigenvalues and eigenvectors: from Av equals lambda v through A minus lambda I, the characteristic equation, solving for lambda, finding eigenspaces, and interpreting the asymmetric directions.",
+    steps: EIGEN_DERIVATION_STEPS,
+    majorSteps: pickMajor(EIGEN_DERIVATION_STEPS, [
+      "recap",
+      "shift",
+      "charpoly",
+      "solveLambda",
+      "solveV",
+      "interpret",
     ]),
   },
   "transform-spike": {

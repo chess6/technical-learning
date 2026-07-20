@@ -72,6 +72,19 @@ export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
   { id: "summary", title: "Invariant directions", duration: 4 },
 ];
 
+/**
+ * Computational derivation ladder (embedded in the Lesson 4 worked example).
+ * Teaches how to compute eigenvalues/eigenvectors — not a second Watch block.
+ */
+export const EIGEN_DERIVATION_SEGMENTS: readonly SceneSegment[] = [
+  { id: "recap", title: "Av = λv", duration: 4 },
+  { id: "shift", title: "(A − λI)v = 0", duration: 5.5 },
+  { id: "charpoly", title: "det(A − λI) = 0", duration: 5.5 },
+  { id: "solveLambda", title: "Solve for λ", duration: 4.5 },
+  { id: "solveV", title: "Solve the eigenspaces", duration: 6 },
+  { id: "interpret", title: "Interpret geometrically", duration: 4.5 },
+];
+
 /** Total timeline length in seconds. */
 export function totalDuration(segments: readonly SceneSegment[]): number {
   return segments.reduce((sum, segment) => sum + segment.duration, 0);

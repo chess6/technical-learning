@@ -33,11 +33,12 @@ Both follow the redesigned six-phase educational system established for Lessons 
 | Motivate | Think about it | Directions A can stretch without turning? |
 | Watch | Watch the idea | Fan of vectors; most turn; eigendirections stay; Av=λv; λ stretch/shrink/reverse/collapse; scalar; defective; rotation (no real) |
 | Check | Quick check | Opposite direction but same line → still eigenvector (λ < 0) |
+| Worked | Worked computation | Derivation scene (`eigenvectors-derivation`) + notebook ladder; faded second example; misconception callouts |
 | Explore | Try it yourself | `EigenvectorExplorer` — drag/numeric v, Av, line angle, exact eigendirections from `analyzeEigen2x2`, zero-vector rejection |
-| Practice | Practice | Identify eigenvector; interpret λ = −2; prediction drag |
-| Summarize | Remember this | Nonzero preserved direction; λ = signed scale |
+| Practice | Practice | Tiered check/drill/transfer: reverse λ; compute eigenvalues; off-axis eigenvector; rotation transfer |
+| Summarize | Remember this | Nonzero preserved direction; λ = signed scale; compute via det(A−λI)=0 |
 
-**Main shared example:** `eigen-distinct` (`EIGEN_LESSON_EXAMPLE`).
+**Main shared example:** `eigen-distinct` (`EIGEN_LESSON_EXAMPLE`) — deliberately asymmetric: λ=3 → (1,0), λ=2 → (−1,1).
 
 ---
 
@@ -46,7 +47,8 @@ Both follow the redesigned six-phase educational system established for Lessons 
 | Registration | Id |
 | --- | --- |
 | Guided scene L3 | `determinant-area-scaling` |
-| Guided scene L4 | `eigenvectors-invariant-directions` |
+| Guided scene L4 (concept) | `eigenvectors-invariant-directions` |
+| Guided scene L4 (derivation, embedded in worked example) | `eigenvectors-derivation` |
 | Explorer L3 | `determinant-area-scaling` → `DeterminantExplorer` |
 | Explorer L4 | `eigenvectors-invariant-directions` → `EigenvectorExplorer` |
 
@@ -62,6 +64,7 @@ No per-lesson branching in `LessonPage`. Shared math from `src/math`; examples f
 
 - `classifyDeterminant` / `signedParallelogramArea`
 - `classifyEigenCandidate` / `summarizeEigenAnalysis` / `lineAngleBetweenVectors` / `stabilizeDirection`
+- Derivation spine: `characteristicPolynomial2x2`, `characteristicRoots2x2`, `matrixShift`, `nullspaceBasis2x2` (`Subspace2D`), `eigenDerivation2x2`
 
 ---
 

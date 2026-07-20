@@ -31,6 +31,7 @@ describe("scene description loaders (M6 lazy-loading)", () => {
     expect(ids).toContain("matrix-transformations");
     expect(ids).toContain("determinant-area-scaling");
     expect(ids).toContain("eigenvectors-invariant-directions");
+    expect(ids).toContain("eigenvectors-derivation");
     expect(ids).toContain("transform-spike");
   });
 });

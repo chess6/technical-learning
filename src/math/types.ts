@@ -21,6 +21,15 @@ export type EigenPair = {
 };
 
 /**
+ * Discriminated 2D subspace — preferred over raw basis arrays so callers
+ * do not infer meaning from length alone.
+ */
+export type Subspace2D =
+  | { readonly kind: "zero" }
+  | { readonly kind: "line"; readonly basis: Vector2 }
+  | { readonly kind: "plane"; readonly basis: readonly [Vector2, Vector2] };
+
+/**
  * Explicit 2×2 eigen analysis. Edge cases are named kinds rather than
  * ambiguous empty/partial arrays.
  */

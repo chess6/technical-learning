@@ -68,4 +68,20 @@ describe("gradeExercise", () => {
     expect(result.correct).toBe(true);
     expect(result.feedback).toBe("the reveal text");
   });
+
+  it("grades eigenvalues order-insensitively", () => {
+    const eigen: Extract<ExerciseDefinition, { type: "eigenvalue" }> = {
+      id: "e",
+      type: "eigenvalue",
+      prompt: "?",
+      expected: [2, 3],
+      explanation: "roots of the char poly",
+    };
+    expect(
+      gradeExercise(eigen, { kind: "eigenvalue", value: [3, 2] }).correct,
+    ).toBe(true);
+    expect(
+      gradeExercise(eigen, { kind: "eigenvalue", value: [2] }).correct,
+    ).toBe(false);
+  });
 });
