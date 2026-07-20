@@ -14,11 +14,14 @@ import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatSceneNumber,
+  focusOpacities,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
   makeTransformedGrid,
+  morphMatrixEntries,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -26,6 +29,9 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * Guided scene for Lesson 2: a 2x2 matrix moves the basis vectors, deforms the
  * grid, carries a sample vector along, and tours a few canonical
  * transformations. The concrete matrix is the shared A = [[2, 1], [0, 1]].
+ *
+ * Quality-bar focus: column→Aeᵢ identity (tip coordinates bind column to
+ * vector), attention focus during column beats, shared morph helper.
  */
 
 const A = MATRIX_LESSON_EXAMPLE.matrix as Matrix2x2;
@@ -36,15 +42,11 @@ const SAMPLE = (MATRIX_LESSON_EXAMPLE.inputVector ?? [1.5, 0.5]) as [
 
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
-const fmt = (n: number): string => {
-  const r = Math.round(n * 100) / 100;
-  return Object.is(r, -0) ? "0" : String(r);
-};
+const fmt = (n: number) => formatSceneNumber(n);
 
 export const matrixTransformationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  // Matrix entries as live signals: M = [[ma, mb], [mc, md]].
   const ma = createSignal(1);
   const mb = createSignal(0);
   const mc = createSignal(0);
@@ -65,7 +67,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   const origin = new Circle({ size: 14, fill: ROLE.text });
   view.add(origin);
 
-  // Original (ghost) basis for comparison.
   const e1Ghost = makeArrow(ROLE.dim, 3);
   e1Ghost.opacity(0).points([new Vector2(0, 0), px([1, 0])]);
   const e2Ghost = makeArrow(ROLE.dim, 3);
@@ -73,7 +74,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   view.add(e1Ghost);
   view.add(e2Ghost);
 
-  // Live transformed basis (matrix columns).
   const e1 = makeArrow(ROLE.basis1, 6);
   e1.points(() => [new Vector2(0, 0), px([ma(), mc()])]);
   const e2 = makeArrow(ROLE.basis2, 6);
@@ -81,7 +81,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   view.add(e1);
   view.add(e2);
 
-  // Sample vector, carried by the transformation.
   const sample = makeArrow(ROLE.selected, 5);
   sample
     .end(0)
@@ -94,6 +93,18 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   e2Label.opacity(0).position(() => px([mb(), md()]).add(new Vector2(16, -6)));
   view.add(e1Label);
   view.add(e2Label);
+
+  // Tip coordinate readouts — bind column entries to the landing tip.
+  const e1Coords = makeLabel("", ROLE.basis1, 32);
+  e1Coords
+    .opacity(0)
+    .position(() => px([ma(), mc()]).add(new Vector2(22, -28)));
+  const e2Coords = makeLabel("", ROLE.basis2, 32);
+  e2Coords
+    .opacity(0)
+    .position(() => px([mb(), md()]).add(new Vector2(22, 28)));
+  view.add(e1Coords);
+  view.add(e2Coords);
 
   const matrixLabel = makeOverlayLabel("", ROLE.text, 42);
   matrixLabel.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
@@ -109,7 +120,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     );
   const setCaption = (text: string) => caption.text(text);
 
-  // Establishing shot: identity basis visible when paused at t=0.
   setMatrixLabel();
   setCaption("Identity grid — watch where e₁ and e₂ go under A");
   matrixLabel.opacity(1);
@@ -123,21 +133,14 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
-  // Morph all four entries toward a target matrix, keeping the label live.
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* all(
-      ma(target[0][0], dur, easeInOutCubic),
-      mb(target[0][1], dur, easeInOutCubic),
-      mc(target[1][0], dur, easeInOutCubic),
-      md(target[1][1], dur, easeInOutCubic),
-    );
+    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
   }
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *identity() {
       setMatrixLabel();
       setCaption("Identity: e₁ = (1,0), e₂ = (0,1)");
-      // Labels/caption already shown at t=0; reinforce basis draw-in.
       yield* all(
         matrixLabel.opacity(1, 0.4),
         caption.opacity(1, 0.4),
@@ -150,35 +153,75 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.identity - 1.6);
     },
     *col1() {
-      setCaption("First column [2, 0] → new e₁");
-      yield* e1.lineWidth(9, 0.4);
-      yield* all(ma(A[0][0], 1.4, easeInOutCubic), mc(A[1][0], 1.4, easeInOutCubic));
+      // Column → tip coordinates → Ae₁: identity preserved across the beat.
+      setCaption("First column of A is exactly Ae₁");
+      yield* focusOpacities([
+        { node: e1, opacity: 1 },
+        { node: e1Label, opacity: 1 },
+        { node: e2, opacity: 0.3 },
+        { node: e2Label, opacity: 0.3 },
+        { node: sample, opacity: 0.2 },
+        { node: tGrid, opacity: 0 },
+      ]);
+      yield* e1.lineWidth(9, 0.35);
+      yield* all(
+        ma(A[0][0], 1.3, easeInOutCubic),
+        mc(A[1][0], 1.3, easeInOutCubic),
+      );
       setMatrixLabel();
-      yield* e1.lineWidth(6, 0.4);
-      yield* waitFor(seconds.col1 - 2.2);
+      e1Coords.text(`(${fmt(A[0][0])}, ${fmt(A[1][0])})`);
+      e1Label.text("Ae₁");
+      yield* e1Coords.opacity(1, 0.35);
+      yield* e1.lineWidth(6, 0.3);
+      yield* waitFor(seconds.col1 - 2.3);
     },
     *col2() {
-      setCaption("Second column [1, 1] → new e₂");
-      yield* e2.lineWidth(9, 0.4);
-      yield* all(mb(A[0][1], 1.4, easeInOutCubic), md(A[1][1], 1.4, easeInOutCubic));
+      setCaption("Second column of A is exactly Ae₂");
+      yield* focusOpacities([
+        { node: e2, opacity: 1 },
+        { node: e2Label, opacity: 1 },
+        { node: e1, opacity: 0.35 },
+        { node: e1Label, opacity: 0.35 },
+        { node: e1Coords, opacity: 0.45 },
+        { node: sample, opacity: 0.2 },
+      ]);
+      yield* e2.lineWidth(9, 0.35);
+      yield* all(
+        mb(A[0][1], 1.3, easeInOutCubic),
+        md(A[1][1], 1.3, easeInOutCubic),
+      );
       setMatrixLabel();
-      yield* e2.lineWidth(6, 0.4);
-      yield* waitFor(seconds.col2 - 2.2);
+      e2Coords.text(`(${fmt(A[0][1])}, ${fmt(A[1][1])})`);
+      e2Label.text("Ae₂");
+      yield* e2Coords.opacity(1, 0.35);
+      yield* e2.lineWidth(6, 0.3);
+      yield* waitFor(seconds.col2 - 2.3);
     },
     *sample() {
       setCaption(`Write the sample as ${fmt(SAMPLE[0])}·e₁ + ${fmt(SAMPLE[1])}·e₂`);
+      yield* focusOpacities([
+        { node: sample, opacity: 1 },
+        { node: e1, opacity: 0.55 },
+        { node: e2, opacity: 0.55 },
+        { node: e1Coords, opacity: 0.35 },
+        { node: e2Coords, opacity: 0.35 },
+      ]);
       yield* sample.end(1, 1.2, easeInOutCubic);
-      yield* waitFor(seconds.sample - 1.2);
+      yield* waitFor(seconds.sample - 1.55);
     },
     *["transform-sample"]() {
-      setCaption("It lands by linearity on the transformed basis");
+      setCaption("By linearity it lands on the transformed basis");
       yield* sample.lineWidth(8, 0.4);
       yield* sample.lineWidth(5, 0.5);
       yield* waitFor(seconds["transform-sample"] - 0.9);
     },
     *grid() {
       setCaption("The whole grid follows the same rule");
-      yield* tGrid.opacity(0.9, 1);
+      yield* all(
+        tGrid.opacity(0.9, 1),
+        e1Coords.opacity(0.25, 0.5),
+        e2Coords.opacity(0.25, 0.5),
+      );
       yield* waitFor(seconds.grid - 1);
     },
     *compare() {
@@ -187,6 +230,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.compare - 0.6);
     },
     *presets() {
+      yield* all(e1Coords.opacity(0, 0.3), e2Coords.opacity(0, 0.3));
       const tour: Array<[string, Matrix2x2]> = [
         ["Scale", [[2, 0], [0, 2]]],
         ["Rotation", [[0, -1], [1, 0]]],
@@ -204,6 +248,8 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     *summary() {
       setCaption("Columns are the basis images; everything follows");
       yield* morphTo(A, 1.2);
+      e1Label.text("Ae₁");
+      e2Label.text("Ae₂");
       setMatrixLabel();
       yield* waitFor(seconds.summary - 1.2);
     },

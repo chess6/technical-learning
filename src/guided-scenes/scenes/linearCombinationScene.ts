@@ -13,6 +13,8 @@ import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatSceneNumber,
+  focusOpacities,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -33,10 +35,7 @@ const W_IND = new Vector2(EX.wIndependent[0], EX.wIndependent[1]);
 const W_DEP = new Vector2(EX.wDependent[0], EX.wDependent[1]);
 
 const px = (v: Vector2): Vector2 => new Vector2(v.x * SCALE, -v.y * SCALE);
-const fmt = (n: number): string => {
-  const r = Math.round(n * 10) / 10;
-  return Object.is(r, -0) ? "0" : String(r);
-};
+const fmt = (n: number) => formatSceneNumber(n, 1);
 
 export const linearCombinationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
@@ -186,26 +185,46 @@ export const linearCombinationScene = makeScene2D(function* (view) {
     *combination() {
       setEq("a · v + b · w");
       setCaption("Every combination is one reachable point");
+      yield* focusOpacities([
+        { node: comboArrow, opacity: 1 },
+        { node: vArrow, opacity: 0.55 },
+        { node: wArrow, opacity: 0.55 },
+        { node: spanRegion, opacity: 0 },
+        { node: spanLine, opacity: 0 },
+      ]);
       yield* bCoef(1, 0.6);
       yield* aCoef(1.6, 0.9, easeInOutCubic);
       yield* bCoef(-0.7, 0.9, easeInOutCubic);
       yield* all(aCoef(0.6, 0.9, easeInOutCubic), bCoef(1.2, 0.9, easeInOutCubic));
-      yield* waitFor(seconds.combination - 3.6);
+      yield* waitFor(seconds.combination - 3.95);
     },
     *["span-plane"]() {
+      // Name-after-intuition: feel the reachable set, then name it span.
       setEq("independent v, w");
-      setCaption("Reachable set = the whole plane");
+      setCaption("Those combinations fill the whole plane");
       yield* all(aCoef(1, 0.6), bCoef(1, 0.6));
-      yield* spanRegion.opacity(0.22, 1);
-      yield* waitFor(seconds["span-plane"] - 1.6);
+      yield* focusOpacities([
+        { node: spanRegion, opacity: 0.22 },
+        { node: comboArrow, opacity: 0.45 },
+        { node: vArrow, opacity: 0.7 },
+        { node: wArrow, opacity: 0.7 },
+      ]);
+      yield* waitFor(1.0);
+      setCaption("That reachable set is the span of v and w");
+      yield* waitFor(seconds["span-plane"] - 2.6);
     },
     *dependent() {
       setEq("w = 2 · v   (dependent)");
-      setCaption("Reachable set collapses to a single line");
+      setCaption("When directions line up, reachability collapses to a line");
       yield* spanRegion.opacity(0, 0.6);
       yield* wTip(W_DEP, 1.4, easeInOutCubic);
-      yield* spanLine.opacity(1, 0.8);
-      yield* waitFor(seconds.dependent - 2.8);
+      yield* focusOpacities([
+        { node: spanLine, opacity: 1 },
+        { node: vArrow, opacity: 0.85 },
+        { node: wArrow, opacity: 0.85 },
+        { node: comboArrow, opacity: 0.4 },
+      ]);
+      yield* waitFor(seconds.dependent - 2.35);
     },
   };
 

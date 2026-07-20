@@ -76,7 +76,7 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [x] Does not imply false statements about det
 - [x] Readouts and explanation text agree
 - [x] KaTeX used for learner-facing notation
-- [x] Quality-bar focus applied (script-event beats, attention focus helpers, ghost-square continuity, name-after-intuition, Lesson 2 column callback, successive diagonal area stages) — see `docs/animation-quality-bar.md`
+- [x] Quality-bar focus applied (script-event beats, attention focus helpers, ghost-square continuity, name-after-intuition, Lesson 2 column callback, successive diagonal area stages with explicit digression) — see `docs/animation-quality-bar.md`; shared helpers in `sceneKit.ts` (`focusOpacities`, `morphMatrixEntries`, `makeGhostClosedRegion`)
 
 ---
 
@@ -128,6 +128,7 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [x] Concept-graph callbacks to determinants (collapse), span, transformations
 - [x] Tiered practice: check / drill / transfer with solution visuals
 - [x] Depth layers (connection, looking-ahead, math-note, trap)
+- [x] Quality-bar focus applied to Watch (name-after-intuition for “eigenvector”, Lesson 3 collapse callback on λ=0, clearer counterexample caption on rotation; shared `morphMatrixEntries` / `focusOpacities`)
 
 ### 3D extension + expand modal (Lesson 4 clip polish)
 

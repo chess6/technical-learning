@@ -37,8 +37,8 @@ describe("scene timings (pure data)", () => {
     }
   });
 
+  // expand choreography: announce + reset (≈1.0) + morphs/hold (≈3.3) ≈ 4.25s floor.
   it("gives the determinant expand beat enough time for successive stretches", () => {
-    // expand choreography: morph X_STRETCH (1.3) + hold (1.1) + morph EXPAND (1.3) = 3.7s.
     const expand = DETERMINANT_SEGMENTS.find((s) => s.id === "expand");
     expect(expand).toBeDefined();
     expect(expand!.duration).toBeGreaterThanOrEqual(5.0);

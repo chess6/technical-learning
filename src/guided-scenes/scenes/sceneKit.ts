@@ -1,5 +1,13 @@
 import { Line, Node, Txt } from "@motion-canvas/2d";
-import { Vector2, type SignalValue } from "@motion-canvas/core";
+import {
+  Vector2,
+  all,
+  easeInOutCubic,
+  type SignalValue,
+  type SimpleSignal,
+  type ThreadGenerator,
+  type TimingFunction,
+} from "@motion-canvas/core";
 import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
 import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
@@ -7,13 +15,16 @@ import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
 export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
 
 /**
- * Shared building blocks for the guided lesson scenes. Both lessons need the
- * same coordinate mapping, semantic colours, arrow/label builders, and a static
- * background grid, so these live in one kit rather than being duplicated.
+ * Shared building blocks for the guided lesson scenes.
  *
  * Colours mirror the semantic role tokens in src/styles/tokens.css so the
  * canvas and the surrounding React UI stay visually consistent. Geometry must
  * respect the safe-frame convention in safeFrame.ts.
+ *
+ * Attention / continuity helpers (`focusOpacities`, `morphMatrixEntries`,
+ * `makeGhostClosedRegion`) encode quality-bar patterns that proved to reduce
+ * confusion — promote reuse across lessons; keep lesson-specific choreography
+ * local to each scene module.
  */
 
 export const ROLE = {
@@ -35,6 +46,89 @@ export const ROLE = {
 /** Map a math-space point (y up) to scene pixels. */
 export function toPixels(point: MathVector2): Vector2 {
   return new Vector2(point[0] * SCALE, -point[1] * SCALE);
+}
+
+/** Compact numeric formatting for on-canvas labels (avoids "-0"). */
+export function formatSceneNumber(n: number, digits = 2): string {
+  const factor = 10 ** digits;
+  const r = Math.round(n * factor) / factor;
+  return Object.is(r, -0) ? "0" : String(r);
+}
+
+/**
+ * Nodes that expose Motion Canvas's animatable opacity API.
+ * Used by attention choreography to brighten the focal object and dim the rest.
+ */
+export type OpacityAnimatable = {
+  opacity: {
+    (): number;
+    (value: number): void;
+    (
+      value: number,
+      duration: number,
+      timingFunction?: TimingFunction,
+    ): ThreadGenerator;
+  };
+};
+
+export type FocusOpacityTarget = {
+  node: OpacityAnimatable;
+  opacity: number;
+};
+
+/**
+ * Attention choreography: tween several opacities in parallel so one focal
+ * relationship is bright and the rest retreat.
+ */
+export function* focusOpacities(
+  targets: readonly FocusOpacityTarget[],
+  duration = 0.35,
+): ThreadGenerator {
+  if (targets.length === 0) return;
+  yield* all(
+    ...targets.map(({ node, opacity }) =>
+      node.opacity(opacity, duration, easeInOutCubic),
+    ),
+  );
+}
+
+/**
+ * Morph a live 2×2 matrix (four entry signals) toward a target.
+ * Shared so scenes do not reimplement entry-wise `all(...)` morphs.
+ */
+export function* morphMatrixEntries(
+  a11: SimpleSignal<number, void>,
+  a12: SimpleSignal<number, void>,
+  a21: SimpleSignal<number, void>,
+  a22: SimpleSignal<number, void>,
+  target: Matrix2x2,
+  duration: number,
+): ThreadGenerator {
+  yield* all(
+    a11(target[0][0], duration, easeInOutCubic),
+    a12(target[0][1], duration, easeInOutCubic),
+    a21(target[1][0], duration, easeInOutCubic),
+    a22(target[1][1], duration, easeInOutCubic),
+  );
+}
+
+/**
+ * Ghost of a closed region (e.g. original unit square) for object continuity:
+ * the live shape morphs while the dashed ghost keeps "what it was" visible.
+ */
+export function makeGhostClosedRegion(
+  points: SignalValue<Vector2[]>,
+  color: string = ROLE.original,
+): Line {
+  return new Line({
+    stroke: color,
+    lineWidth: 2,
+    closed: true,
+    fill: color,
+    opacity: 0.12,
+    lineDash: [8, 8],
+    points,
+  });
 }
 
 export function makeArrow(

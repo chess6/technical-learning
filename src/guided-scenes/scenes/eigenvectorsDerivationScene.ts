@@ -28,6 +28,7 @@ import {
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
+  morphMatrixEntries,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -246,12 +247,7 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   vLabel.opacity(1);
 
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* all(
-      ma(target[0][0], dur, easeInOutCubic),
-      mb(target[0][1], dur, easeInOutCubic),
-      mc(target[1][0], dur, easeInOutCubic),
-      md(target[1][1], dur, easeInOutCubic),
-    );
+    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
   }
 
   const seconds = Object.fromEntries(

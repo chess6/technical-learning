@@ -23,10 +23,13 @@ import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatSceneNumber,
+  focusOpacities,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
+  morphMatrixEntries,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -66,10 +69,7 @@ const LABEL_FAN_INDEX = 1;
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
 
-const fmt = (n: number): string => {
-  const r = Math.round(n * 100) / 100;
-  return Object.is(r, -0) ? "0" : String(r);
-};
+const fmt = (n: number) => formatSceneNumber(n);
 
 function unitDir(v: MathV): MathV {
   const n = normalizeVector(v);
@@ -250,12 +250,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   caption.opacity(1);
 
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* all(
-      ma(target[0][0], dur, easeInOutCubic),
-      mb(target[0][1], dur, easeInOutCubic),
-      mc(target[1][0], dur, easeInOutCubic),
-      md(target[1][1], dur, easeInOutCubic),
-    );
+    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
   }
 
   function updateEigenGraphics(m: Matrix2x2): void {
@@ -296,7 +291,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   const bodies: Record<string, () => ThreadGenerator> = {
     *fan() {
       setTop("A fan of directions");
-      setCaption("Most tips will leave their original ray");
+      setCaption("Watch which tips leave their original ray");
       applyT(0);
       ghostOpacity(0);
       demoOpacity(0);
@@ -309,8 +304,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
 
     *apply() {
       setTop("Most directions turn");
-      setCaption("v is the input · Av is its image under A");
-      // Reveal ghosts, then morph results toward Av.
+      setCaption("Ghost = input v · bright tip = Av");
       showPairLabels(1);
       yield* ghostOpacity(0.85, 0.4);
       yield* applyT(1, 2.2, easeInOutCubic);
@@ -319,9 +313,8 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
 
     *highlight() {
       setTop("Some stay on their line");
-      setCaption("Dashed line through origin — same line, maybe flipped");
+      setCaption("Dashed line through the origin — the tip never leaves it");
       showPairLabels(0);
-      // Seek-friendly: teaching frame visible at segment start.
       for (const a of fanArrows) a.opacity(0.2);
       ghostOpacity(0.2);
       updateEigenGraphics(MAIN);
@@ -333,26 +326,29 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
         demoScale(base * pair.lambda);
         demoGhostOpacity(0.9);
         demoOpacity(1);
-        demoLambda.text(`λ ≈ ${fmt(pair.lambda)}`);
+        demoLambda.text(`scale ≈ ${fmt(pair.lambda)}`);
         demoLambdaOpacity(1);
       }
       yield* waitFor(seconds.highlight);
     },
 
     *equation() {
+      // Name-after-intuition: the line-staying behavior was felt; now name it.
       demoLambdaOpacity(0);
       const analysis = analyzeEigen2x2(MAIN);
       const lambdas =
         analysis.kind === "distinct-real"
           ? analysis.pairs.map((p) => fmt(p.eigenvalue)).join(", ")
           : "?";
+      setTop("Call them eigenvectors");
+      setCaption("Nonzero directions A only scales — Av = λv");
+      yield* waitFor(1.2);
       setTop("Av = λv");
       setCaption(`λ ≈ ${lambdas} · zero vector is never an eigenvector`);
-      yield* waitFor(seconds.equation);
+      yield* waitFor(seconds.equation - 1.2);
     },
 
     *lambdas() {
-      // Hide fan clutter — held demos on one line only.
       for (const a of fanArrows) a.opacity(0);
       ghostOpacity(0);
       hideEigenGraphics();
@@ -360,8 +356,6 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
 
-      // --- Stretch (λ > 1) on NEGATIVE's x-axis ---
-      // Ghost length = |v|, tip length = λ·|v|, so the readout is exactly λ.
       setTop("λ > 1 stretches");
       setCaption("Same line — tip moves farther from the origin");
       yield* morphTo(NEGATIVE, 0.8);
@@ -375,7 +369,6 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       yield* demoScale(2.0, 1.4, easeInOutCubic);
       yield* waitFor(1.2);
 
-      // --- Reverse (λ < 0) on NEGATIVE's y-axis ---
       setTop("λ < 0 reverses");
       setCaption("Same line — tip flips to the opposite ray");
       setDemoDirection([0, 1]);
@@ -386,9 +379,8 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       yield* demoScale(-1.5, 1.6, easeInOutCubic);
       yield* waitFor(1.6);
 
-      // --- Collapse (λ = 0) ---
       setTop("λ = 0 collapses");
-      setCaption("Same line — tip retracts to the origin");
+      setCaption("Lesson 3: zero scale kills length — tip retracts to the origin");
       yield* morphTo(ZERO_EIG, 0.8);
       setDemoDirection([0, 1]);
       demoGhostScale(1.6);
@@ -396,7 +388,6 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoGhostOpacity(0.9);
       demoLambda.text("λ = 0");
       yield* demoScale(0, 1.6, easeInOutCubic);
-      // Segment budget: 0.8+1.4+1.2+1.6+1.6+0.8+1.6 = 9.0s (fan hide is sync).
       yield* waitFor(Math.max(0, seconds.lambdas - 9.0));
     },
 
@@ -408,13 +399,11 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoLambdaOpacity(0);
       yield* morphTo(SCALAR, 1.0);
       applyT(1);
-      // Brighten whole fan: for λI, Av is parallel to v.
-      yield* all(
-        ...fanArrows.map((a) => a.opacity(0.95, 0.5)),
-        ghostOpacity(0.55, 0.5),
-      );
+      yield* focusOpacities([
+        ...fanArrows.map((a) => ({ node: a, opacity: 0.95 })),
+      ]);
+      yield* ghostOpacity(0.55, 0.5);
       updateEigenGraphics(SCALAR);
-      // Scalar: two basis directions from analysis (whole plane is eigenspace).
       yield* waitFor(seconds.scalar - 1.5);
     },
 
@@ -426,22 +415,23 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoLambdaOpacity(0);
       yield* morphTo(DEFECTIVE, 1.0);
       updateEigenGraphics(DEFECTIVE);
-      // Ensure second line stays hidden (analysis returns one basis vector).
       eigenLines[1]!.opacity(0);
       eigenArrows[1]!.opacity(0);
-      yield* all(...fanArrows.map((a) => a.opacity(0.2, 0.4)), ghostOpacity(0.15, 0.4));
+      yield* focusOpacities([
+        ...fanArrows.map((a) => ({ node: a, opacity: 0.2 })),
+      ]);
+      yield* ghostOpacity(0.15, 0.4);
       yield* waitFor(seconds.defective - 1.4);
     },
 
     *rotation() {
       setTop("No real eigenvectors");
-      setCaption("Rotation turns every arrow — complex λ still possible");
+      setCaption("Counterexample: rotation turns every arrow off its ray");
       hideEigenGraphics();
       demoOpacity(0);
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
       yield* morphTo(ROTATION, 1.0);
-      // Ghost fan at v; orange tips sweep to Av (90° for this matrix).
       applyT(0);
       yield* all(
         ...fanArrows.map((a) => a.opacity(0.95, 0.35)),
@@ -454,7 +444,6 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     *summary() {
       setTop("Invariant directions");
       setCaption("Eigenvector: nonzero direction A keeps; λ = signed scale");
-      // Restore MAIN teaching state as the landing frame.
       yield* morphTo(MAIN, 1.0);
       applyT(1);
       ghostOpacity(0.35);

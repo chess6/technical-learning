@@ -3,7 +3,6 @@ import {
   Vector2,
   all,
   createSignal,
-  easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
@@ -19,21 +18,24 @@ import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatSceneNumber,
+  focusOpacities,
   makeArrow,
+  makeGhostClosedRegion,
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
+  morphMatrixEntries,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
 /**
  * Lesson 3: determinants as signed area scaling.
  *
- * Quality-bar focus (highest impact only):
- * - Script-event contract: one communicative purpose per beat.
- * - Attention choreography: one focal relationship; dim the rest.
+ * Quality-bar focus (highest impact):
+ * - Script-event contract + attention choreography via shared focusOpacities.
  * - Object continuity: same unit-square object morphs; ghost of the original.
- * - Successive transforms: diagonal stretch in two held stages so area multiplies.
+ * - Successive transforms on an explicitly announced diagonal digression.
  * - Name-after-intuition: feel the area factor before naming det(A).
  */
 
@@ -56,10 +58,7 @@ const IDENTITY: Matrix2x2 = [
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
 
-const fmt = (n: number): string => {
-  const r = Math.round(n * 100) / 100;
-  return Object.is(r, -0) ? "0" : String(r);
-};
+const fmt = (n: number) => formatSceneNumber(n);
 
 function squarePoints(m: Matrix2x2): Vector2[] {
   return applyMatrixToUnitSquare(m).map((p) => px(p));
@@ -84,19 +83,10 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
 
-  // Ghost of the original unit square — continuity: "this became that."
-  const ghostSquare = new Line({
-    stroke: ROLE.original,
-    lineWidth: 2,
-    closed: true,
-    fill: ROLE.original,
-    opacity: 0.12,
-    lineDash: [8, 8],
-    points: squarePoints(IDENTITY),
-  });
+  const ghostSquare = makeGhostClosedRegion(squarePoints(IDENTITY));
+  ghostSquare.opacity(0);
   view.add(ghostSquare);
 
-  // Live unit square / parallelogram (same object throughout).
   const square = new Line({
     stroke: ROLE.original,
     lineWidth: 3,
@@ -107,7 +97,6 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   });
   view.add(square);
 
-  // Orientation cue: dashed edge from origin → Ae1 (not color-only).
   const orientEdge = new Line({
     stroke: ROLE.selected,
     lineWidth: 3,
@@ -155,55 +144,48 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
     return `det(A) ≈ ${fmt(d)} · |det| ≈ ${fmt(Math.abs(d))}`;
   };
 
-  // Establishing frame at t=0 — square is the sole focal object.
   setTop("Unit square · area = 1");
   setCaption("Watch what happens to this region's area");
   top.opacity(1);
   caption.opacity(1);
   square.opacity(0.45);
-  ghostSquare.opacity(0);
   orientEdge.opacity(0.2);
 
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* all(
-      ma(target[0][0], dur, easeInOutCubic),
-      mb(target[0][1], dur, easeInOutCubic),
-      mc(target[1][0], dur, easeInOutCubic),
-      md(target[1][1], dur, easeInOutCubic),
-    );
+    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
   }
 
   function* focusSquare(emphasis = 0.55): ThreadGenerator {
-    yield* all(
-      square.opacity(emphasis, 0.35),
-      e1.opacity(0.35, 0.35),
-      e2.opacity(0.35, 0.35),
-      e1Label.opacity(0.35, 0.35),
-      e2Label.opacity(0.35, 0.35),
-      orientEdge.opacity(0.25, 0.35),
-    );
+    yield* focusOpacities([
+      { node: square, opacity: emphasis },
+      { node: e1, opacity: 0.35 },
+      { node: e2, opacity: 0.35 },
+      { node: e1Label, opacity: 0.35 },
+      { node: e2Label, opacity: 0.35 },
+      { node: orientEdge, opacity: 0.25 },
+    ]);
   }
 
   function* focusBasis(): ThreadGenerator {
-    yield* all(
-      square.opacity(0.22, 0.35),
-      e1.opacity(1, 0.35),
-      e2.opacity(1, 0.35),
-      e1Label.opacity(1, 0.35),
-      e2Label.opacity(1, 0.35),
-      orientEdge.opacity(0.55, 0.35),
-    );
+    yield* focusOpacities([
+      { node: square, opacity: 0.22 },
+      { node: e1, opacity: 1 },
+      { node: e2, opacity: 1 },
+      { node: e1Label, opacity: 1 },
+      { node: e2Label, opacity: 1 },
+      { node: orientEdge, opacity: 0.55 },
+    ]);
   }
 
   function* focusOrientation(): ThreadGenerator {
-    yield* all(
-      square.opacity(0.28, 0.35),
-      e1.opacity(0.45, 0.35),
-      e2.opacity(0.45, 0.35),
-      e1Label.opacity(0.45, 0.35),
-      e2Label.opacity(0.45, 0.35),
-      orientEdge.opacity(1, 0.35),
-    );
+    yield* focusOpacities([
+      { node: square, opacity: 0.28 },
+      { node: e1, opacity: 0.45 },
+      { node: e2, opacity: 0.45 },
+      { node: e1Label, opacity: 0.45 },
+      { node: e2Label, opacity: 0.45 },
+      { node: orientEdge, opacity: 1 },
+    ]);
   }
 
   const seconds = Object.fromEntries(
@@ -212,7 +194,6 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *identity() {
-      // Focal: unit square only. Basis arrives after the region is established.
       setTop("Unit square · area = 1");
       setCaption("One region to track — its area starts at 1");
       yield* all(
@@ -225,7 +206,6 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.identity - 1.3);
     },
     *basis() {
-      // Focal: columns as landing spots (Lesson 2 callback). Square stays dim.
       setTop("Columns of A");
       setCaption("Lesson 2: columns are where e₁ and e₂ land");
       yield* focusBasis();
@@ -235,17 +215,12 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.basis - 1.95);
     },
     *parallelogram() {
-      // Focal: same square object, now a parallelogram; ghost shows identity.
       setTop("Same square · new shape");
       setCaption("The unit square itself becomes this parallelogram");
-      yield* all(
-        ghostSquare.opacity(0.22, 0.5),
-        focusSquare(0.55),
-      );
+      yield* all(ghostSquare.opacity(0.22, 0.5), focusSquare(0.55));
       yield* waitFor(seconds.parallelogram - 0.85);
     },
     *area() {
-      // Name-after-intuition: feel the factor, then name det.
       setTop(areaFactorLabel());
       setCaption("That area is the scale factor for every region");
       yield* focusSquare(0.6);
@@ -255,26 +230,27 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.area - 1.75);
     },
     *expand() {
-      // Successive transforms: two held stages so area multiplies visibly.
-      setTop("Stretch in stages");
+      // Honesty: this is a digression to a diagonal map, not a factorization of A.
+      setTop("Aside: a diagonal map");
+      setCaption("Not the shear — a pure stretch, so area multiplies visibly");
+      yield* all(ghostSquare.opacity(0.18, 0.3), focusSquare(0.55));
+      yield* morphTo(IDENTITY, 0.6);
+      e1Label.text("e₁");
+      e2Label.text("e₂");
       setCaption("First stretch sideways — watch area × 2");
-      yield* all(
-        ghostSquare.opacity(0.18, 0.3),
-        focusSquare(0.55),
-        morphTo(X_STRETCH, 1.3),
-      );
+      yield* morphTo(X_STRETCH, 1.2);
       setTop(`area = ${fmt(determinant2x2(X_STRETCH))}`);
-      yield* waitFor(1.1);
+      yield* waitFor(0.9);
       setCaption("Then stretch vertically — area multiplies again");
-      yield* morphTo(EXPAND, 1.3);
+      yield* morphTo(EXPAND, 1.2);
       setTop(
         `area = ${fmt(EXPAND[0][0])} × ${fmt(EXPAND[1][1])} = ${fmt(determinant2x2(EXPAND))}`,
       );
-      setCaption("For a diagonal map, area multiplies by each stretch");
-      yield* waitFor(seconds.expand - 3.7);
+      setCaption("On a diagonal map, each stretch multiplies the area");
+      // Budget: focus/ghost 0.35 + reset 0.6 + morphs 1.2+1.2 + hold 0.9 = 4.25
+      yield* waitFor(seconds.expand - 4.25);
     },
     *collapse() {
-      // Contrast: area factor → 0.
       setTop(detLabel());
       setCaption("Drive the factor to zero — the parallelogram flattens");
       yield* focusSquare(0.55);
@@ -283,7 +259,6 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.collapse - 2.35);
     },
     *negative() {
-      // Focal: orientation edge flips past zero.
       setCaption("Past zero the dashed edge flips — orientation reverses");
       yield* focusOrientation();
       yield* morphTo(NEGATIVE, 2);

@@ -16,11 +16,11 @@ export const eigenvectorsLesson: LessonDefinition = {
   sections: [
     {
       id: "intro",
-      title: "Special directions",
-      body: "Apply a matrix to a fan of vectors. Most tips swing off their original rays. A few stay on the same line — those are eigenvectors, scaled by an eigenvalue $\\lambda$ via $A\\mathbf{v}=\\lambda\\mathbf{v}$. The zero vector is never an eigenvector.",
+      title: "Directions that refuse to turn",
+      body: "Apply a matrix to a fan of vectors. Most tips swing off their original rays. A few stay on the same line through the origin — those special directions are eigenvectors, scaled by an eigenvalue $\\lambda$ via $A\\mathbf{v}=\\lambda\\mathbf{v}$. The zero vector is never an eigenvector.",
       equation: "A\\mathbf{v} = \\lambda\\mathbf{v}",
       observation:
-        "An eigenvalue of $-1$ reverses the arrow while keeping it on the same line.",
+        "An eigenvalue of $-1$ reverses the arrow while keeping it on the same line. An eigenvalue of $0$ collapses length the way Lesson 3's determinant collapsed area.",
       layers: [
         {
           kind: "connection",
