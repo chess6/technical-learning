@@ -139,3 +139,16 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [x] Constrained OrbitControls + Reset view; reduced-motion disables damping auto-motion
 - [x] Expand modal scoped to Lesson 4 eigen clips only
 - [x] Unit tests: `eigen3.test.ts`, `EigenClipStage.test.tsx`; e2e coverage for modal + 3D entry
+
+#### Clip readability pass (2026-07-20)
+
+- [x] 3D vectors carry real cone arrowheads + on-object labels (`v`, `Av = 1.5 v`,
+  `eigenline (1,1,1)`); a color→meaning legend backs up the roles (no color-only cues)
+- [x] 3D colours aligned with the 2D `--role-*` tokens (input=original, image=transformed,
+  eigenline=selected); camera looks roughly perpendicular to (1,1,1) so the line reads as spatial
+- [x] `shift-collapse` draws the image plane explicitly (translucent quad with normal (1,1,1))
+  and frames the eigendirection as the nullspace of `A − λI`; caption/legend wording precise
+- [x] New math regressions in `eigen3.test.ts`: single application scales length ×1.5 and turns
+  ordinary vectors (not a spiral), `v`/`Av` stay collinear, cube collapses into `x+y+z=0`
+- [x] 2D Watch scene shows an honest `λ` readout tied to geometry (tip length = λ · ghost length)
+  on the highlight/stretch/reverse/collapse beats; captions made symbol-first (not color-named)

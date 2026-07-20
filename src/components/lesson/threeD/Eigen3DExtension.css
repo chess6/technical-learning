@@ -50,6 +50,53 @@
   height: 100% !important;
 }
 
+.eigen-3d-extension__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow:
+    0 0 3px #0e1420,
+    0 0 3px #0e1420,
+    0 0 5px #0e1420;
+  user-select: none;
+}
+
+.eigen-3d-extension__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.eigen-3d-extension__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.82rem;
+  color: var(--color-canvas-text);
+}
+
+.eigen-3d-extension__legend-swatch {
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.eigen-3d-extension__legend-swatch--arrow,
+.eigen-3d-extension__legend-swatch--line {
+  width: 1.4rem;
+  height: 0;
+  border-top: 3px solid currentColor;
+}
+
+.eigen-3d-extension__legend-swatch--plane {
+  width: 1.1rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  opacity: 0.55;
+}
+
 .eigen-3d-extension__toolbar {
   display: flex;
   flex-wrap: wrap;

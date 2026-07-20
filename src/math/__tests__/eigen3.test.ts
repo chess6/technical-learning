@@ -10,6 +10,7 @@ import {
 } from "../eigen3";
 import {
   addMatrices3,
+  applyMatrixToUnitCube,
   approximatelyEqualMatrix3,
   approximatelyEqualVector3,
   collapseDimension3,
@@ -114,6 +115,49 @@ describe("3×3 curated eigen extension example", () => {
       [1.5, 0, 0],
       [0, 1.5, 0],
     ]);
+  });
+
+  // The 3D extension scene claims: a single application of A turns each
+  // ordinary vector (it is NOT parallel to its image) while scaling its length
+  // by exactly 1.5. These regression tests keep the rendered arrows honest.
+  describe("single-application behaviour shown in the 3D scene", () => {
+    const cross = (a: typeof v, b: typeof v): typeof v => [
+      a[1] * b[2] - a[2] * b[1],
+      a[2] * b[0] - a[0] * b[2],
+      a[0] * b[1] - a[1] * b[0],
+    ];
+
+    it("scales every ordinary vector's length by exactly 1.5 (P is orthogonal)", () => {
+      for (const vec of example.ordinaryVectors) {
+        const image = matrixVectorMultiply3(A, vec);
+        expect(magnitude3(image)).toBeCloseTo(1.5 * magnitude3(vec), 9);
+      }
+    });
+
+    it("turns ordinary vectors off their ray (single application is not a scale)", () => {
+      for (const vec of example.ordinaryVectors) {
+        const image = matrixVectorMultiply3(A, vec);
+        // Non-parallel ⇒ nonzero cross product. Confirms a genuine 120° turn,
+        // not the outward spiral that only appears under repeated application.
+        expect(magnitude3(cross(vec, image))).toBeGreaterThan(1e-6);
+      }
+    });
+
+    it("keeps v and Av collinear along the eigendirection", () => {
+      const vAlong = scaleVector3(v, 1.15);
+      const image = matrixVectorMultiply3(A, vAlong);
+      expect(magnitude3(cross(vAlong, image))).toBeLessThan(1e-9);
+    });
+  });
+
+  // The 3D "shift-collapse" scene renders the image of A − λI as a flat plane
+  // whose normal is the eigendirection (1,1,1): every column of A − λI has a
+  // zero coordinate-sum, so the whole image lies in { x + y + z = 0 }.
+  it("collapses the unit cube into the plane x + y + z = 0", () => {
+    const shifted = matrixShift3(A, lambda);
+    for (const corner of applyMatrixToUnitCube(shifted)) {
+      expect(corner[0] + corner[1] + corner[2]).toBeCloseTo(0, 9);
+    }
   });
 });
 
