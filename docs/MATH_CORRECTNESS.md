@@ -71,6 +71,38 @@ In segment metadata, `kind: "horizontal"` / `"vertical"` refers to the **identit
 - Scalar matrices (\(A = \lambda I\)) and defective matrices are different kinds in `analyzeEigen2x2` — do not invent a second basis vector for defective cases.
 - Complex / no-real-eigenvector cases must not fabricate real directions.
 
+## 3×3 curated extension (Lesson 4 only)
+
+A genuine 3D extension may use **one** curated \(3\times 3\) example with a
+**declared** real eigenvalue — not a general cubic eigen solver.
+
+Current example (`EIGEN_3D_EXTENSION_EXAMPLE` in `src/math/examples3.ts`):
+
+\[
+A = 1.5\,P,\quad
+P=\begin{bmatrix}0&0&1\\1&0&0\\0&1&0\end{bmatrix}
+\]
+
+- Unique real eigenvalue \(\lambda=1.5\) with eigendirection along \((1,1,1)/\sqrt{3}\).
+- Characteristic polynomial (authored as data):
+  \(\chi_A(t)=(t-1.5)(t^2+1.5t+2.25)\). Quadratic discriminant
+  \(1.5^2-4(2.25)=-6.75<0\) proves the other roots are a complex conjugate pair —
+  so the scene must expose **exactly one** real eigendirection.
+- **Single application** of \(A\): a generic vector rotates \(120^\circ\) about the
+  invariant axis and scales by \(1.5\). Do **not** call this a spiral.
+- **Repeated applications** \(x, Ax, A^2x, \ldots\) trace an outward spiral; the
+  initial 3D scene need not animate that.
+- Under \(A-\lambda I\) (rank 2) the unit cube collapses **to a plane**. Collapse
+  dimension must match `rank` / nullspace (plane / line / origin) — never hardcode
+  "to a plane" as a general rule, and never imply \(A\) itself crushes the
+  eigenvector. Precise wording for the auxiliary map:
+
+  > Under \(A-\lambda I\), at least one nonzero direction is sent to zero. The
+  > transformed unit cube therefore has zero volume, so \(\det(A-\lambda I)=0\).
+
+Helpers live in `src/math/matrices3.ts` and `src/math/eigen3.ts`. Renderers must
+not reimplement 3D linear algebra.
+
 ## Rendering rule
 
 **All mathematical geometry must be derived from tested functions in `src/math`.**

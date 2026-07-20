@@ -106,3 +106,45 @@ export {
   getMatrixExample,
   requireMatrixExample,
 } from "./examples";
+
+export type {
+  Vector3,
+  Matrix3x3,
+  CollapseDimension3,
+} from "./matrices3";
+export {
+  IDENTITY_MATRIX_3,
+  UNIT_CUBE,
+  matrixVectorMultiply3,
+  matrixMatrixMultiply3,
+  scaleMatrix3,
+  addMatrices3,
+  determinant3x3,
+  matrixShift3,
+  magnitude3,
+  scaleVector3,
+  approximatelyEqualVector3,
+  approximatelyEqualMatrix3,
+  normalizeVector3,
+  rank3x3,
+  nullity3x3,
+  collapseDimension3,
+  applyMatrixToPoints3,
+  applyMatrixToUnitCube,
+} from "./matrices3";
+
+export {
+  verifiesEigenpair3,
+  eigenDirectionForEigenvalue3,
+} from "./eigen3";
+
+export {
+  CYCLIC_PERMUTATION_3,
+  EIGEN_3D_EXTENSION_MATRIX,
+  EIGEN_3D_EXTENSION_CHAR_POLY,
+  EIGEN_3D_EXTENSION_EXAMPLE,
+} from "./examples3";
+export type {
+  CuratedCharPoly3,
+  Eigen3DExtensionExample,
+} from "./examples3";

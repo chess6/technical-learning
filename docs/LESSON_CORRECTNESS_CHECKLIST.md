@@ -127,3 +127,15 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [x] Concept-graph callbacks to determinants (collapse), span, transformations
 - [x] Tiered practice: check / drill / transfer with solution visuals
 - [x] Depth layers (connection, looking-ahead, math-note, trap)
+
+### 3D extension + expand modal (Lesson 4 clip polish)
+
+- [x] 3D objective named: in three dimensions, an eigendirection is still a line that maps onto itself
+- [x] 2D derivation vs 3D extension non-equivalence made explicit (different curated \(3\times 3\) example; labels "2D derivation" / "See it in 3D")
+- [x] Curated matrix \(A=1.5P\) documented; \(\chi_A(t)=(t-1.5)(t^2+1.5t+2.25)\) with negative quadratic discriminant verified in tests
+- [x] Semantic `majorStepId` synchronization (not raw timeline progress across scenes)
+- [x] Single-renderer lifecycle (inline unmounts while modal open; Motion Canvas dispose verified)
+- [x] WebGL-unavailable fallback + retry path (`forceUnavailable` / jsdom)
+- [x] Constrained OrbitControls + Reset view; reduced-motion disables damping auto-motion
+- [x] Expand modal scoped to Lesson 4 eigen clips only
+- [x] Unit tests: `eigen3.test.ts`, `EigenClipStage.test.tsx`; e2e coverage for modal + 3D entry

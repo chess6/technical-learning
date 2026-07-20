@@ -76,3 +76,90 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
 
   expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
 });
+
+test("Lesson 4 expand modal and 3D extension preserve semantic step and single renderer", async ({
+  page,
+}) => {
+  const errors = collectConsoleErrors(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/lesson/eigenvectors");
+
+  const watchStage = page.getByTestId("eigen-clip-stage").first();
+  await expect(watchStage).toBeVisible();
+  await expect(
+    watchStage.getByRole("button", { name: "2D derivation" }),
+  ).toHaveAttribute("aria-pressed", "true");
+
+  // Expand → only this stage's inline unmounts; close → inline returns.
+  await watchStage.getByTestId("eigen-expand-clip").click();
+  const modal = page.getByTestId("eigen-clip-modal");
+  await expect(modal).toBeVisible();
+  await expect(watchStage.getByTestId("eigen-clip-inline")).toHaveCount(0);
+  await expect(modal.locator('[data-step-id="fan"], [data-step-id="recap"]').first()).toHaveAttribute(
+    "data-active",
+    "true",
+  );
+
+  await modal
+    .locator('[data-step-id="equation"], [data-step-id="highlight"]')
+    .first()
+    .click();
+  await page.getByTestId("eigen-clip-modal-close").click();
+  await expect(modal).toHaveCount(0);
+  await expect(watchStage.getByTestId("eigen-clip-inline")).toBeVisible();
+
+  // See it in 3D — different example note; Reset view when canvas mounts.
+  await watchStage.getByTestId("eigen-see-3d").click();
+  await expect(watchStage).toHaveAttribute("data-mode", "extension");
+  await expect(watchStage.getByText(/different 3×3 example/i)).toBeVisible();
+
+  const threeD = watchStage.getByTestId("eigen-3d-extension");
+  const fallback = watchStage.getByTestId("eigen-3d-fallback");
+  await expect(threeD.or(fallback)).toBeVisible({ timeout: 15000 });
+  if (await threeD.count()) {
+    await expect(watchStage.getByTestId("eigen-3d-reset-view")).toBeVisible();
+    const canvas = threeD.locator("canvas");
+    const box = await canvas.boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2);
+      await page.mouse.up();
+    }
+    await watchStage.getByTestId("eigen-3d-reset-view").click();
+  }
+
+  await watchStage.getByRole("button", { name: "2D derivation" }).click();
+  await expect(watchStage).toHaveAttribute("data-mode", "derivation");
+
+  await watchStage.getByTestId("eigen-expand-clip").click();
+  await expect(page.getByTestId("eigen-clip-modal")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("eigen-clip-modal")).toHaveCount(0);
+
+  await page.goto("/");
+  await page.goto("/lesson/eigenvectors");
+  await expect(page.getByTestId("eigen-clip-stage").first()).toBeVisible();
+  const canvasCount = await page.locator("canvas").count();
+  expect(canvasCount).toBeGreaterThan(0);
+  expect(canvasCount).toBeLessThan(12);
+
+  expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+});
+
+test("non-eigen lesson does not load the three.js chunk", async ({ page }) => {
+  const threeRequests: string[] = [];
+  page.on("request", (request) => {
+    const url = request.url();
+    if (/three|react-three|Eigen3D/i.test(url)) {
+      threeRequests.push(url);
+    }
+  });
+  await page.goto("/lesson/vectors");
+  await expect(
+    page.getByRole("heading", { name: "Vectors and Linear Combinations", level: 1 }),
+  ).toBeVisible();
+  await expect(page.getByTestId("eigen-clip-stage")).toHaveCount(0);
+  await page.waitForTimeout(500);
+  expect(threeRequests, threeRequests.join("\n")).toEqual([]);
+});

@@ -80,6 +80,14 @@ subtle numbered rail cue instead:
 - The **paused initial frame** (before autoplay, or when Replay resets) must still
   communicate what the learner is about to see — subdued grid, origin, and a short
   caption or establishing geometry — not an empty black stage.
+- **Optional dimensional extension (Lesson 4):** a "See it in 3D" control may open a
+  **3D extension** — a conceptual generalization beyond the plane with a *different*
+  curated example. It is **not** an interchangeable render of the same 2D derivation
+  (matrix, equations, vectors, and timeline are not shared). Learner-facing labels:
+  "2D derivation" / "See it in 3D" / "3D extension" — never a bare "2D / 3D" toggle
+  that implies equivalence. Synchronize by semantic `majorStepId`, not raw progress.
+  At most one renderer (Motion Canvas or WebGL) is mounted for a clip at a time when
+  an expand-modal is used.
 
 ### Check understanding
 - A short **conceptual checkpoint**: ask for a prediction or interpretation.

@@ -7,6 +7,7 @@ import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
 import { Checkpoint } from "../components/lesson/Checkpoint";
 import { MotivatingQuestion } from "../components/lesson/MotivatingQuestion";
 import { GuidedScenePlayer } from "../components/lesson/GuidedScenePlayer";
+import { EigenClipStage } from "../components/lesson/EigenClipStage";
 import { LessonSummary } from "../components/lesson/LessonSummary";
 import { WorkedExamplePanel } from "../components/lesson/WorkedExamplePanel";
 import { DepthLayerList } from "../components/lesson/DepthLayer";
@@ -16,6 +17,8 @@ import { LessonLayout } from "../components/layout/LessonLayout";
 import { getLessonById } from "../lessons/registry";
 import { getGuidedSceneFactory } from "../guided-scenes/registry";
 import { getExplorer } from "../explorations/registry";
+
+const EIGEN_LESSON_ID = "eigenvectors";
 
 export function LessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -31,6 +34,7 @@ export function LessonPage() {
   // key below, which disposes and recreates the engine cleanly.
   const sceneId = lesson?.guidedSceneId ?? "none";
   const createEngine = useMemo(() => getGuidedSceneFactory(sceneId), [sceneId]);
+  const isEigenLesson = lesson?.id === EIGEN_LESSON_ID;
 
   if (!lesson) {
     return <Navigate to="/" replace />;
@@ -59,12 +63,21 @@ export function LessonPage() {
         </div>
       ))}
       visualization={
-        <GuidedScenePlayer
-          key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
-          sceneId={lesson.guidedSceneId}
-          createEngine={createEngine}
-          title={`Guided animation: ${lesson.title}`}
-        />
+        isEigenLesson ? (
+          <EigenClipStage
+            key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
+            sceneId={lesson.guidedSceneId}
+            title={`Guided animation: ${lesson.title}`}
+            resetToken={resetToken}
+          />
+        ) : (
+          <GuidedScenePlayer
+            key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
+            sceneId={lesson.guidedSceneId}
+            createEngine={createEngine}
+            title={`Guided animation: ${lesson.title}`}
+          />
+        )
       }
       checkpoint={
         lesson.checkpoint && (
@@ -82,6 +95,7 @@ export function LessonPage() {
               <WorkedExamplePanel
                 examples={lesson.workedExamples}
                 resetToken={resetToken}
+                enableEigenClipStage={isEigenLesson}
               />
             )}
             {lesson.callouts?.map((callout) => (

@@ -1,0 +1,81 @@
+.eigen-3d-extension {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 14rem;
+  background: var(--color-canvas);
+  color: var(--color-canvas-text);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: var(--space-3);
+}
+
+.eigen-3d-extension__eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-canvas-muted);
+}
+
+.eigen-3d-extension__caption,
+.eigen-3d-extension__nearest {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-canvas-text);
+  max-width: 42rem;
+}
+
+.eigen-3d-extension__nearest {
+  color: var(--color-canvas-muted);
+  font-size: 0.85rem;
+}
+
+.eigen-3d-extension__canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 16rem;
+  border-radius: var(--radius-sm, 0.35rem);
+  overflow: hidden;
+  background: var(--color-canvas-elevated);
+}
+
+.eigen-3d-extension__canvas-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.eigen-3d-extension__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.eigen-3d-extension__hint {
+  font-size: 0.85rem;
+  color: var(--color-canvas-muted);
+}
+
+.eigen-3d-extension__loading,
+.eigen-3d-extension--fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  border-radius: var(--radius-md, 0.5rem);
+  min-height: 10rem;
+}
+
+.eigen-3d-extension__loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--color-canvas-muted);
+  background: var(--color-canvas);
+}

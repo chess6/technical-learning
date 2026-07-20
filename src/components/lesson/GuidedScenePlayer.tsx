@@ -15,6 +15,7 @@ import {
 import { guidedSceneDebug } from "../../guided-scenes/engine/instrumentation";
 import { getSceneMeta } from "../../guided-scenes/scenes/sceneMeta";
 import { SCENE_ASPECT } from "../../guided-scenes/scenes/safeFrame";
+import type { ClipPosition } from "./clipPosition";
 import "./GuidedScenePlayer.css";
 
 type GuidedSceneFactory = (options: GuidedSceneEngineOptions) => GuidedSceneEngine;
@@ -24,6 +25,18 @@ type GuidedScenePlayerProps = {
   /** Stable engine factory; identity change triggers dispose + recreate. */
   createEngine: GuidedSceneFactory;
   title?: string;
+  /**
+   * Optional semantic seed. When set, seek to this major step after mount
+   * (instead of t=0 / reduced-motion first stage). Backward compatible.
+   */
+  initialPosition?: ClipPosition;
+  /** Fires when the active major step id changes. Backward compatible. */
+  onClipPositionChange?: (position: ClipPosition) => void;
+  /**
+   * When false, skip autoplay-once (e.g. modal remount that should stay paused
+   * at the seeded step). Defaults to true.
+   */
+  autoplayEnabled?: boolean;
 };
 
 /**
@@ -41,6 +54,9 @@ export function GuidedScenePlayer({
   sceneId,
   createEngine,
   title,
+  initialPosition,
+  onClipPositionChange,
+  autoplayEnabled = true,
 }: GuidedScenePlayerProps) {
   const reducedMotion = usePrefersReducedMotion();
   const showDebug = useShowGuidedDebug();
@@ -54,6 +70,9 @@ export function GuidedScenePlayer({
   const [retryToken, setRetryToken] = useState(0);
   const autoplay = useAutoplayOnceGuard();
   const substantiallyVisible = useSubstantialVisibility(containerEl, 0.55);
+  const lastReportedStepId = useRef<string | null>(null);
+  const onClipPositionChangeRef = useRef(onClipPositionChange);
+  onClipPositionChangeRef.current = onClipPositionChange;
 
   const meta = getSceneMeta(sceneId);
   const majorSteps =
@@ -73,15 +92,23 @@ export function GuidedScenePlayer({
     const unsubscribe = engine.subscribe(setState);
     setMounted(false);
     autoplay.reset();
+    lastReportedStepId.current = null;
 
     void Promise.resolve(engine.mount(container)).then(() => {
-      if (engineRef.current === engine) {
-        setMounted(true);
-        if (reducedMotion && engine.steps.length > 0) {
-          // First meaningful discrete state under reduced motion.
-          const first = majorSteps[0] ?? engine.steps[0];
-          if (first) engine.seek(first.at);
-        }
+      if (engineRef.current !== engine) return;
+      setMounted(true);
+
+      const seeded = initialPosition
+        ? majorSteps.find((step) => step.id === initialPosition.majorStepId)
+        : undefined;
+      if (seeded) {
+        engine.seek(seeded.at);
+        return;
+      }
+      if (reducedMotion && engine.steps.length > 0) {
+        // First meaningful discrete state under reduced motion.
+        const first = majorSteps[0] ?? engine.steps[0];
+        if (first) engine.seek(first.at);
       }
     });
 
@@ -99,6 +126,7 @@ export function GuidedScenePlayer({
 
   // Autoplay once when substantially visible.
   useEffect(() => {
+    if (!autoplayEnabled) return;
     if (!mounted || reducedMotion) return;
     if (!substantiallyVisible) return;
     if (autoplay.hasFired()) return;
@@ -111,7 +139,13 @@ export function GuidedScenePlayer({
     }
     autoplay.markFired();
     engine.play();
-  }, [mounted, substantiallyVisible, reducedMotion, autoplay]);
+  }, [
+    mounted,
+    substantiallyVisible,
+    reducedMotion,
+    autoplay,
+    autoplayEnabled,
+  ]);
 
   // Pause when the page/tab is hidden or the scene scrolls out of view.
   useEffect(() => {
@@ -131,6 +165,20 @@ export function GuidedScenePlayer({
   }, [substantiallyVisible, mounted]);
 
   const currentMajorIndex = majorStepIndex(majorSteps, state.progress);
+  const currentMajorStepId =
+    currentMajorIndex !== null
+      ? majorSteps[currentMajorIndex]?.id
+      : majorSteps[0]?.id;
+
+  // Report semantic position changes (majorStepId primary).
+  useEffect(() => {
+    if (!currentMajorStepId) return;
+    if (lastReportedStepId.current === currentMajorStepId) return;
+    lastReportedStepId.current = currentMajorStepId;
+    onClipPositionChangeRef.current?.({
+      majorStepId: currentMajorStepId,
+    });
+  }, [currentMajorStepId]);
 
   const handlePlay = (): void => engineRef.current?.play();
   const handlePause = (): void => engineRef.current?.pause();
@@ -138,7 +186,7 @@ export function GuidedScenePlayer({
     const engine = engineRef.current;
     if (!engine) return;
     engine.reset();
-    if (!reducedMotion) {
+    if (!reducedMotion && autoplayEnabled) {
       // Allow a deliberate replay after reset.
       autoplay.markFired();
       engine.play();
@@ -176,6 +224,7 @@ export function GuidedScenePlayer({
     <figure
       className="guided-scene-player"
       data-scene-id={sceneId}
+      data-major-step={currentMajorStepId ?? undefined}
       role="region"
       aria-label={title ?? "Guided animation"}
     >

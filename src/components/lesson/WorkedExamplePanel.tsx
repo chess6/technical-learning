@@ -1,16 +1,21 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import type { WorkedExample, WorkedStep } from "../../lessons/types";
 import { getGuidedSceneFactory } from "../../guided-scenes/registry";
 import { GuidedScenePlayer } from "./GuidedScenePlayer";
+import { EigenClipStage } from "./EigenClipStage";
 import { DepthLayerList } from "./DepthLayer";
 import { ProseWithMath } from "./ProseWithMath";
 import { getSolutionVisual } from "./solutionVisuals/registry";
-import { Suspense } from "react";
 import "./WorkedExamplePanel.css";
 
 type WorkedExamplePanelProps = {
   examples: WorkedExample[];
   resetToken?: number;
+  /**
+   * Lesson 4 only: wrap eigen derivation scenes in EigenClipStage
+   * (expand + 3D extension). Other lessons keep GuidedScenePlayer.
+   */
+  enableEigenClipStage?: boolean;
 };
 
 /**
@@ -21,6 +26,7 @@ type WorkedExamplePanelProps = {
 export function WorkedExamplePanel({
   examples,
   resetToken = 0,
+  enableEigenClipStage = false,
 }: WorkedExamplePanelProps) {
   if (examples.length === 0) return null;
 
@@ -31,6 +37,7 @@ export function WorkedExamplePanel({
           key={example.id}
           example={example}
           resetToken={resetToken}
+          enableEigenClipStage={enableEigenClipStage}
         />
       ))}
     </div>
@@ -40,9 +47,11 @@ export function WorkedExamplePanel({
 function WorkedExampleBlock({
   example,
   resetToken,
+  enableEigenClipStage,
 }: {
   example: WorkedExample;
   resetToken: number;
+  enableEigenClipStage: boolean;
 }) {
   const createEngine = useMemo(
     () =>
@@ -51,6 +60,12 @@ function WorkedExampleBlock({
         : null,
     [example.guidedSceneId],
   );
+
+  const useEigenStage =
+    enableEigenClipStage &&
+    Boolean(example.guidedSceneId) &&
+    (example.guidedSceneId === "eigenvectors-derivation" ||
+      example.guidedSceneId === "eigenvectors-invariant-directions");
 
   return (
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
@@ -65,7 +80,18 @@ function WorkedExampleBlock({
         className="worked-example__body"
         data-has-scene={Boolean(example.guidedSceneId)}
       >
-        {example.guidedSceneId && createEngine && (
+        {example.guidedSceneId && useEigenStage && (
+          <div className="worked-example__scene">
+            <EigenClipStage
+              key={`${example.id}:${example.guidedSceneId}:${resetToken}`}
+              sceneId={example.guidedSceneId}
+              title={`Derivation: ${example.title}`}
+              resetToken={resetToken}
+            />
+          </div>
+        )}
+
+        {example.guidedSceneId && createEngine && !useEigenStage && (
           <div className="worked-example__scene">
             <GuidedScenePlayer
               key={`${example.id}:${example.guidedSceneId}:${resetToken}`}
