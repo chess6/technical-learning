@@ -23,10 +23,11 @@ export const SAFE_WIDTH = SCENE_WIDTH - SAFE_MARGIN * 2;
 export const SAFE_HEIGHT = SCENE_HEIGHT - SAFE_MARGIN * 2;
 
 /**
- * Pixels per math unit. Keep a ±4-unit teaching grid well inside the safe
- * frame even after moderate shears (4 * 48 = 192).
+ * Pixels per math unit. Sized so geometry and labels read at roughly body-text
+ * scale when the 960×540 stage is CSS-scaled into the Watch panel.
+ * Keep a ±4-unit teaching grid well inside the safe frame (4 * 64 = 256).
  */
-export const SCALE = 48;
+export const SCALE = 64;
 
 /** Default half-extent for decorative grids (math units). */
 export const GRID_HALF_EXTENT = 4;
@@ -38,9 +39,10 @@ export const LABEL_CENTER_X = 0;
  * Overlay bands sit well inside SAFE_MARGIN so font ascent/descent and
  * Motion Canvas text caches never touch the stage clip edge.
  * Bottom band uses a larger inset because descenders (y, g, p) extend further.
+ * Insets leave room for the larger overlay type used after the visual polish.
  */
-export const LABEL_TOP_Y = -(SCENE_HEIGHT / 2 - SAFE_MARGIN - 40);
-export const LABEL_BOTTOM_Y = SCENE_HEIGHT / 2 - SAFE_MARGIN - 56;
+export const LABEL_TOP_Y = -(SCENE_HEIGHT / 2 - SAFE_MARGIN - 60);
+export const LABEL_BOTTOM_Y = SCENE_HEIGHT / 2 - SAFE_MARGIN - 80;
 
 /**
  * @deprecated Prefer LABEL_CENTER_X with a center-aligned overlay label.

@@ -87,7 +87,9 @@
 
 .lesson-layout__watch {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.45fr);
+  /* Slightly wider prose than before, while keeping the animation dominant
+     so canvas labels CSS-scale to roughly body-text size. */
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
   gap: var(--space-8);
   align-items: start;
 }

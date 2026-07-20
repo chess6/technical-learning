@@ -44,7 +44,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   grid.opacity(0.55);
   view.add(grid);
 
-  const origin = new Circle({ size: 12, fill: ROLE.text, opacity: 1 });
+  const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
 
   // Live coefficients / directions.
@@ -114,11 +114,11 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(vLabel);
   view.add(wLabel);
 
-  const eq = makeOverlayLabel("", ROLE.text, 26);
+  const eq = makeOverlayLabel("", ROLE.text, 42);
   eq.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(eq);
 
-  const caption = makeOverlayLabel("", ROLE.textMuted, 20);
+  const caption = makeOverlayLabel("", ROLE.textMuted, 34);
   caption.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 

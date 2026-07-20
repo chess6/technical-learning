@@ -61,7 +61,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   tGrid.opacity(0);
   view.add(tGrid);
 
-  const origin = new Circle({ size: 12, fill: ROLE.text });
+  const origin = new Circle({ size: 14, fill: ROLE.text });
   view.add(origin);
 
   // Original (ghost) basis for comparison.
@@ -94,11 +94,11 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   view.add(e1Label);
   view.add(e2Label);
 
-  const matrixLabel = makeOverlayLabel("", ROLE.text, 24);
+  const matrixLabel = makeOverlayLabel("", ROLE.text, 42);
   matrixLabel.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(matrixLabel);
 
-  const caption = makeOverlayLabel("", ROLE.textMuted, 20);
+  const caption = makeOverlayLabel("", ROLE.textMuted, 34);
   caption.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 

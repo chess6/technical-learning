@@ -39,23 +39,23 @@ export function toPixels(point: MathVector2): Vector2 {
 
 export function makeArrow(
   color: string,
-  width = 5,
+  width = 6,
 ): Line {
   return new Line({
     stroke: color,
     lineWidth: width,
     endArrow: true,
-    arrowSize: 13,
+    arrowSize: 16,
     lineCap: "round",
     points: [new Vector2(0, 0), new Vector2(0, 0)],
   });
 }
 
-export function makeSegment(color: string, width = 3, dash = false): Line {
+export function makeSegment(color: string, width = 3.5, dash = false): Line {
   return new Line({
     stroke: color,
     lineWidth: width,
-    lineDash: dash ? [8, 8] : [],
+    lineDash: dash ? [10, 10] : [],
     lineCap: "round",
     points: [new Vector2(0, 0), new Vector2(0, 0)],
   });
@@ -64,7 +64,7 @@ export function makeSegment(color: string, width = 3, dash = false): Line {
 export function makeLabel(
   text: SignalValue<string>,
   color: string = ROLE.text,
-  fontSize = 28,
+  fontSize = 44,
 ): Txt {
   return new Txt({
     text,
@@ -78,19 +78,20 @@ export function makeLabel(
 /**
  * Centered overlay caption/equation for the safe top/bottom bands.
  * Always position at (LABEL_CENTER_X, LABEL_TOP_Y | LABEL_BOTTOM_Y).
+ * Defaults sized so CSS-scaled canvases roughly match body-text weight.
  */
 export function makeOverlayLabel(
   text: SignalValue<string>,
   color: string = ROLE.text,
-  fontSize = 24,
+  fontSize = 40,
 ): Txt {
   return new Txt({
     text,
     fill: color,
     fontSize,
-    lineHeight: fontSize * 1.55,
-    padding: [14, 12],
-    cachePadding: 24,
+    lineHeight: fontSize * 1.4,
+    padding: [18, 16],
+    cachePadding: 32,
     fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     fontWeight: 600,
     textAlign: "center",
