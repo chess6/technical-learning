@@ -23,6 +23,7 @@ import { EIGEN_DERIVATION_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
+  OVERLAY_CLEAR_HALF_EXTENT,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -57,7 +58,7 @@ function squarePoints(m: Matrix2x2): Vector2[] {
   return applyMatrixToUnitSquare(m).map((p) => px(p));
 }
 
-function lineEnds(dir: MathV, extent = 2.6): [Vector2, Vector2] {
+function lineEnds(dir: MathV, extent = 2.2): [Vector2, Vector2] {
   const u = stabilizeDirection(dir);
   return [px(scaleVector(u, -extent)), px(scaleVector(u, extent))];
 }
@@ -74,6 +75,15 @@ const DIR_3: MathV =
 const DIR_2: MathV =
   STEP_2?.eigenspace.kind === "line" ? STEP_2.eigenspace.basis : [-1, 1];
 
+const LAMBDA_3 = DERIVATION.lambdas.find((l) => Math.abs(l - 3) < 1e-8) ?? 3;
+const SHIFTED_3 = matrixShift(A, LAMBDA_3);
+
+function tipLabelOffset(dir: MathV, pixels = 36): Vector2 {
+  const [dx, dy] = stabilizeDirection(dir);
+  // Screen-space perpendicular to the drawn arrow (math → screen flips y).
+  return new Vector2(-dy * pixels, -dx * pixels);
+}
+
 export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
@@ -87,7 +97,7 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
     [mc(), md()],
   ];
 
-  const grid = makeStaticGrid(3);
+  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   grid.opacity(0.5);
   view.add(grid);
 
@@ -95,7 +105,7 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   view.add(origin);
 
   // Candidate eigenvector along λ=3 direction (axis) for the shift demo.
-  const vScale = createSignal(1.8);
+  const vScale = createSignal(1.35);
   const vDir: MathV = DIR_3;
   const vArrow = makeArrow(ROLE.original, 6);
   vArrow.points(() => {
@@ -124,6 +134,41 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   });
   AvLabel.opacity(0);
   view.add(AvLabel);
+
+  // λv construction for the shift beat. λv is simply the input v scaled by λ;
+  // for an eigendirection it lands exactly on Av, so (A − λI)v = Av − λv = 0.
+  // lambdaVLen is the λv arrow length in math units along vDir.
+  const lambdaVLen = createSignal(0);
+  const lambdaVArrow = makeArrow(ROLE.selected, 6);
+  lambdaVArrow.points(() => [
+    new Vector2(0, 0),
+    px(scaleVector(vDir, lambdaVLen())),
+  ]);
+  lambdaVArrow.opacity(0);
+  view.add(lambdaVArrow);
+
+  const lambdaVLabel = makeLabel("λv", ROLE.selected, 34);
+  lambdaVLabel.position(() =>
+    px(scaleVector(vDir, lambdaVLen())).add(new Vector2(12, 30)),
+  );
+  lambdaVLabel.opacity(0);
+  view.add(lambdaVLabel);
+
+  // Subtraction arrow: −λv anchored at the tip of Av. As subProgress goes
+  // 0→1 its head walks from the tip of Av back to the origin, because
+  // Av − λv = 0 for the eigendirection. This is the geometric "why".
+  const subProgress = createSignal(0);
+  const subArrow = makeArrow(ROLE.selected, 4);
+  subArrow.lineDash([10, 8]);
+  subArrow.points(() => {
+    const avTip = px(matrixVectorMultiply(matrix(), scaleVector(vDir, vScale())));
+    const minusLambdaV = px(scaleVector(vDir, -LAMBDA_3 * vScale())).scale(
+      subProgress(),
+    );
+    return [avTip, avTip.add(minusLambdaV)];
+  });
+  subArrow.opacity(0);
+  view.add(subArrow);
 
   // Unit-square / parallelogram for the charpoly collapse beat.
   const square = new Line({
@@ -155,22 +200,30 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   view.add(line2);
 
   const arrow3 = makeArrow(ROLE.result, 5);
-  arrow3.points(() => [new Vector2(0, 0), px(scaleVector(DIR_3, 2))]);
+  arrow3.points(() => [new Vector2(0, 0), px(scaleVector(DIR_3, 1.7))]);
   arrow3.opacity(0);
   view.add(arrow3);
 
   const arrow2 = makeArrow(ROLE.selected, 5);
-  arrow2.points(() => [new Vector2(0, 0), px(scaleVector(DIR_2, 2))]);
+  arrow2.points(() => [new Vector2(0, 0), px(scaleVector(DIR_2, 1.7))]);
   arrow2.opacity(0);
   view.add(arrow2);
 
-  const label3 = makeLabel("λ=3 · (1,0)", ROLE.result, 30);
-  label3.position(() => px(scaleVector(DIR_3, 2.15)).add(new Vector2(10, 20)));
+  const label3 = makeLabel("λ=3 · (1,0)", ROLE.result, 28);
+  // Grow upward away from the horizontal tip.
+  label3.offset([0, 1]);
+  label3.position(() =>
+    px(scaleVector(DIR_3, 1.7)).add(tipLabelOffset(DIR_3, 28)),
+  );
   label3.opacity(0);
   view.add(label3);
 
-  const label2 = makeLabel("λ=2 · (−1,1)", ROLE.selected, 30);
-  label2.position(() => px(scaleVector(DIR_2, 2.15)).add(new Vector2(-20, -24)));
+  const label2 = makeLabel("λ=2 · (−1,1)", ROLE.selected, 28);
+  // Grow away from the off-axis tip (left edge anchored).
+  label2.offset([-1, 0]);
+  label2.position(() =>
+    px(scaleVector(DIR_2, 1.7)).add(tipLabelOffset(DIR_2, 48)),
+  );
   label2.opacity(0);
   view.add(label2);
 
@@ -205,53 +258,72 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
     EIGEN_DERIVATION_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
-  const lambda3 = DERIVATION.lambdas.find((l) => Math.abs(l - 3) < 1e-8) ?? 3;
-  const shifted3 = matrixShift(A, lambda3);
-
   const bodies: Record<string, () => ThreadGenerator> = {
     *recap() {
       setTop("Av = λv");
-      setCaption("Find nonzero directions A only scales — they stay on their line");
+      setCaption("Find nonzero directions A only scales — stay on their line");
       yield* all(AvArrow.opacity(1, 0.6), AvLabel.opacity(1, 0.6));
       // Show Av = 3v along the axis direction.
       yield* waitFor(seconds.recap - 0.6);
     },
 
     *shift() {
+      // Make the algebra geometric: (A − λI)v = Av − λv, and for an
+      // eigendirection Av and λv coincide, so the difference is the zero
+      // vector. We keep the matrix as A here — this beat is about the two
+      // vectors, not about morphing the matrix (that is the charpoly beat).
       setTop("(A − λI)v = 0");
-      setCaption(
-        "Under the auxiliary map A−λI, that direction collapses to zero — because Av and λv coincide",
-      );
-      yield* all(AvArrow.opacity(0.25, 0.4), AvLabel.opacity(0, 0.4));
-      // Morph A → A−3I and collapse v to the origin.
-      yield* all(morphTo(shifted3, 2.2), vScale(0.05, 2.2, easeInOutCubic));
-      setCaption("A−λI sends v to the origin — not A itself");
-      yield* waitFor(Math.max(0, seconds.shift - 2.6));
+      setCaption("Rewrite Av = λv as Av − λv = 0 — now watch it");
+      // Introduce λv starting at v's length, then grow it onto Av.
+      lambdaVLen(vScale());
+      yield* all(lambdaVArrow.opacity(1, 0.4), lambdaVLabel.opacity(1, 0.4));
+      setCaption("λv is just the input v scaled by λ — it lands on Av");
+      yield* lambdaVLen(LAMBDA_3 * vScale(), 1.2, easeInOutCubic);
+      // Flash to show λv and Av are the same arrow for this direction.
+      yield* all(lambdaVArrow.lineWidth(9, 0.25), AvArrow.lineWidth(9, 0.25));
+      yield* all(lambdaVArrow.lineWidth(6, 0.25), AvArrow.lineWidth(6, 0.25));
+      // Subtract λv from Av: its head walks from Av's tip back to the origin.
+      setCaption("Subtract λv from Av — the tip walks back to the origin");
+      yield* all(subArrow.opacity(1, 0.3), lambdaVLabel.opacity(0, 0.3));
+      yield* subProgress(1, 1.2, easeInOutCubic);
+      setCaption("Av − λv = 0, so (A − λI)v = 0 for this direction");
+      // Pulse the origin to land the "= 0".
+      yield* origin.size(24, 0.25);
+      yield* origin.size(14, 0.25);
+      yield* waitFor(Math.max(0, seconds.shift - 4.3));
     },
 
     *charpoly() {
+      // Now motivate WHEN a nonzero v can collapse: only if the matrix
+      // A − λI itself flattens the plane (zero area scale). This is where
+      // we actually morph A → A − λI and watch the unit square collapse.
       setTop("det(A − λI) = 0");
-      setCaption(
-        "A map sends a nonzero direction to zero exactly when it collapses area (Lesson 3)",
-      );
-      // Restore a visible parallelogram under A−λI and show collapse.
+      setCaption("When can a nonzero v hit zero? Only if A − λI flattens area");
+      // Clear the vector-subtraction construction, bring up the unit square
+      // under the current matrix (still A) so the collapse is visible.
       yield* all(
-        vArrow.opacity(0.2, 0.4),
+        subArrow.opacity(0, 0.4),
+        lambdaVArrow.opacity(0, 0.4),
+        AvArrow.opacity(0, 0.4),
+        AvLabel.opacity(0, 0.4),
+        vArrow.opacity(0.25, 0.4),
         vLabel.opacity(0, 0.4),
         square.opacity(0.45, 0.5),
       );
-      const det = determinant2x2(matrix());
-      setTop(`det(A − λI) ≈ ${fmt(det)} · collapse`);
-      // Nudge slightly away then back to emphasize flatness at this λ.
+      // Morph A → A − λI: the unit square collapses onto a line (area → 0).
+      setCaption("A − λI squashes the whole plane onto a line — area scale 0");
+      yield* morphTo(SHIFTED_3, 1.6);
+      setTop(`det(A − λI) ≈ ${fmt(determinant2x2(matrix()))} · collapse`);
+      // Nudge slightly off and back to show flatness holds exactly at this λ.
       const slightlyOff: Matrix2x2 = [
-        [shifted3[0][0] + 0.4, shifted3[0][1]],
-        [shifted3[1][0], shifted3[1][1] + 0.4],
+        [SHIFTED_3[0][0] + 0.4, SHIFTED_3[0][1]],
+        [SHIFTED_3[1][0], SHIFTED_3[1][1] + 0.4],
       ];
-      yield* morphTo(slightlyOff, 0.9);
-      setTop(`det ≈ ${fmt(determinant2x2(matrix()))}`);
-      yield* morphTo(shifted3, 1.2);
-      setTop(`det(A − λI) = 0 · area collapses`);
-      yield* waitFor(Math.max(0, seconds.charpoly - 3.0));
+      yield* morphTo(slightlyOff, 0.8);
+      setTop(`det ≈ ${fmt(determinant2x2(matrix()))} · not flat`);
+      yield* morphTo(SHIFTED_3, 1.0);
+      setTop("det(A − λI) = 0 · area collapses");
+      yield* waitFor(Math.max(0, seconds.charpoly - 4.3));
     },
 
     *solveLambda() {
@@ -268,7 +340,7 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
     *solveV() {
       setTop("Solve (A − λI)v = 0");
       setCaption(
-        "λ=3 keeps the x-axis; λ=2 is the off-axis line through (−1,1) — not every eigenline is an axis",
+        "λ=3 keeps the x-axis; λ=2 is the off-axis line through (−1,1)",
       );
       yield* all(
         vArrow.opacity(0, 0.3),
@@ -288,7 +360,7 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
     *interpret() {
       setTop("Interpret geometrically");
       setCaption(
-        "λ=3 stretches along (1,0); λ=2 stretches along (−1,1). Same idea, two different lines",
+        "λ=3 stretches along (1,0); λ=2 along (−1,1) — two different lines",
       );
       // Pulse the off-axis direction so the asymmetry is the takeaway.
       yield* all(

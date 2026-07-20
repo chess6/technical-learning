@@ -36,13 +36,23 @@ export const GRID_HALF_EXTENT = 4;
 export const LABEL_CENTER_X = 0;
 
 /**
- * Overlay bands sit well inside SAFE_MARGIN so font ascent/descent and
- * Motion Canvas text caches never touch the stage clip edge.
- * Bottom band uses a larger inset because descenders (y, g, p) extend further.
- * Insets leave room for the larger overlay type used after the visual polish.
+ * Overlay caption bands live in the stage margins — outside the teaching
+ * geometry — so titles/captions never sit on vectors, tips, or the working
+ * parallelogram. Txt is center-anchored on these points.
+ *
+ * Vertical budget (540 stage, ±270 from center):
+ *   top band ≈ y ∈ [-270, -185], bottom band ≈ y ∈ [185, 270]
+ * Teaching geometry should stay within roughly ±2.6 math units (±166 px)
+ * so it clears both bands with a small gap.
  */
-export const LABEL_TOP_Y = -(SCENE_HEIGHT / 2 - SAFE_MARGIN - 60);
-export const LABEL_BOTTOM_Y = SCENE_HEIGHT / 2 - SAFE_MARGIN - 80;
+export const LABEL_TOP_Y = -(SCENE_HEIGHT / 2 - 40);
+export const LABEL_BOTTOM_Y = SCENE_HEIGHT / 2 - 48;
+
+/**
+ * Preferred half-extent for decorative grids when overlays are present.
+ * Keeps grid lines from running through the caption bands.
+ */
+export const OVERLAY_CLEAR_HALF_EXTENT = 2.5;
 
 /**
  * @deprecated Prefer LABEL_CENTER_X with a center-aligned overlay label.

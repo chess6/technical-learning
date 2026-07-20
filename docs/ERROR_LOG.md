@@ -27,6 +27,36 @@ rules over one-off patches.
 
 ---
 
+### 2026-07-20 — Overlay captions sat on teaching geometry
+
+- **Date:** 2026-07-20
+- **Title:** Overlay captions sat on teaching geometry
+- **Symptom:** Top/bottom guided-scene captions overlapped vector tips, eigenspace lines, and grid axes (e.g. defective / highlight beats; derivation tip labels on arrowheads).
+- **Mathematical expectation:** N/A (presentation). Overlay titles/captions must sit in stage margin bands; tip annotations must sit off the stroked geometry.
+- **Root cause:** `LABEL_TOP_Y` / `LABEL_BOTTOM_Y` were inset deep into the teaching zone; grids used half-extent 3–4 so lines ran through caption bands; tip `Txt` nodes were center-anchored on the tip.
+- **Affected files:** `safeFrame.ts`, `sceneKit.ts`, all lesson guided scenes (grid half-extent), `eigenvectorsInvariantDirectionsScene.ts` (fan length), `eigenvectorsDerivationScene.ts` (tip offsets)
+- **Fix:** Move overlay bands to the stage edges; introduce `OVERLAY_CLEAR_HALF_EXTENT` (2.5); shrink fans/arrows into that band; dark glyph stroke on overlays/labels; tip labels use perpendicular offset + edge anchoring.
+- **Regression test added:** Manual screenshot review of defective / highlight / interpret beats.
+- **General lesson / prevention rule:** Keep overlay Y anchors in the stage margin outside the teaching half-extent; never place center-anchored tip labels on the tip itself.
+- **Status:** fixed
+
+---
+
+### 2026-07-20 — Guided overlay captions clipped at stage edges
+
+- **Date:** 2026-07-20
+- **Title:** Guided overlay captions clipped at stage edges
+- **Symptom:** Long top/bottom Motion Canvas overlays (e.g. defective-matrix caption “Repeated λ — only one eigendirection…”) were cut off at the left/right of the guided canvas.
+- **Mathematical expectation:** N/A (presentation). All learner-facing overlay text must remain fully readable inside the safe frame.
+- **Root cause:** `makeOverlayLabel` drew single-line `Txt` nodes with no `width` / `textWrap`, so long strings extended past `SCENE_WIDTH` while still center-anchored at `LABEL_CENTER_X`.
+- **Affected files:** `src/guided-scenes/scenes/sceneKit.ts`, `safeFrame.ts`, caption copy in eigen/determinant/linear-combination scenes
+- **Fix:** Cap overlay width to `SAFE_WIDTH` with `textWrap: true`, increase `cachePadding`, nudge label band Y for wrapped lines, and shorten the longest captions.
+- **Regression test added:** Manual Playwright screenshot review of long-caption beats (defective, derivation shift/solveV). No pixel CI assertion (per project convention).
+- **General lesson / prevention rule:** Overlay captions must use `makeOverlayLabel` with a safe max width and wrapping; never rely on a single unwrapped line fitting the stage. Prefer shorter caption copy when a wrap would crowd geometry.
+- **Status:** fixed
+
+---
+
 ### 2026-07-19 — Transformed grid used the wrong matrix orientation or coordinate mapping
 
 - **Date:** 2026-07-19

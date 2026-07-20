@@ -12,6 +12,7 @@ import { LINEAR_COMBINATION_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
+  OVERLAY_CLEAR_HALF_EXTENT,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -40,7 +41,7 @@ const fmt = (n: number): string => {
 export const linearCombinationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  const grid = makeStaticGrid();
+  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   grid.opacity(0.55);
   view.add(grid);
 
@@ -126,7 +127,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   const setCaption = (text: string) => caption.text(text);
 
   // Establishing shot: readable when paused at t=0 (before autoplay).
-  setCaption("Two arrows from the origin — stretch and add them to reach the plane");
+  setCaption("Two arrows from the origin — stretch and add them");
   caption.opacity(1);
 
   // Duration lookup keeps the animation length aligned with sceneTimings.

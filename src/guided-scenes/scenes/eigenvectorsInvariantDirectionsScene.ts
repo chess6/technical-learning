@@ -22,6 +22,7 @@ import { EIGENVECTOR_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
+  OVERLAY_CLEAR_HALF_EXTENT,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -48,14 +49,15 @@ const ROTATION = requireMatrixExample("eigen-no-real").matrix as Matrix2x2;
 const NEGATIVE = requireMatrixExample("eigen-negative").matrix as Matrix2x2;
 const ZERO_EIG = requireMatrixExample("eigen-zero").matrix as Matrix2x2;
 
-/** Fan chosen so several directions clearly leave their ray under MAIN. */
+/** Fan chosen so several directions clearly leave their ray under MAIN.
+ * Lengths stay inside the overlay-clear teaching band (~±2.5 units). */
 const FAN: MathV[] = [
-  [1.6, 0.2],
-  [1.3, 0.9],
-  [0.5, 1.5],
-  [-0.3, 1.5],
-  [-1.2, 1.0],
-  [-1.5, 0.3],
+  [1.15, 0.15],
+  [0.95, 0.65],
+  [0.35, 1.1],
+  [-0.2, 1.1],
+  [-0.9, 0.75],
+  [-1.1, 0.2],
 ];
 
 /** Index used for explicit v / Av tip labels. */
@@ -82,12 +84,12 @@ function eigenDirections(m: Matrix2x2): MathV[] {
     return analysis.pairs
       .map((p) => normalizeVector(p.eigenvector))
       .filter((v): v is MathV => v !== null)
-      .map((v) => scaleVector(stabilizeDirection(v), 2));
+      .map((v) => scaleVector(stabilizeDirection(v), 1.6));
   }
   return analysis.eigenspaceBasis
     .map((v) => normalizeVector(v))
     .filter((v): v is MathV => v !== null)
-    .map((v) => scaleVector(stabilizeDirection(v), 2));
+    .map((v) => scaleVector(stabilizeDirection(v), 1.6));
 }
 
 function firstEigenpair(m: Matrix2x2): { lambda: number; dir: MathV } | null {
@@ -132,7 +134,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   const demoGhostOpacity = createSignal(0);
   const demoGhostScale = createSignal(1.6);
 
-  const grid = makeStaticGrid(3);
+  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   grid.opacity(0.45);
   view.add(grid);
 
@@ -303,7 +305,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
 
     *highlight() {
       setTop("Some stay on their line");
-      setCaption("Dashed line through origin — same line, maybe opposite way");
+      setCaption("Dashed line through origin — same line, maybe flipped");
       showPairLabels(0);
       // Seek-friendly: teaching frame visible at segment start.
       for (const a of fanArrows) a.opacity(0.2);
@@ -349,7 +351,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoScale(1.2);
       demoGhostOpacity(0.85);
       demoOpacity(1);
-      yield* demoScale(2.4, 1.4, easeInOutCubic);
+      yield* demoScale(2.0, 1.4, easeInOutCubic);
       yield* waitFor(1.2);
 
       // --- Reverse (λ < 0) on NEGATIVE's y-axis ---
@@ -394,7 +396,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
 
     *defective() {
       setTop("Defective: only one line");
-      setCaption("Repeated λ — only one eigendirection (do not invent a second)");
+      setCaption("Repeated λ — only one eigendirection (not two)");
       demoOpacity(0);
       demoGhostOpacity(0);
       yield* morphTo(DEFECTIVE, 1.0);
@@ -408,7 +410,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
 
     *rotation() {
       setTop("No real eigenvectors");
-      setCaption("Rotation turns every arrow — complex λ may still exist");
+      setCaption("Rotation turns every arrow — complex λ still possible");
       hideEigenGraphics();
       demoOpacity(0);
       demoGhostOpacity(0);

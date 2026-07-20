@@ -2,9 +2,9 @@ import { Line, Node, Txt } from "@motion-canvas/2d";
 import { Vector2, type SignalValue } from "@motion-canvas/core";
 import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
-import { GRID_HALF_EXTENT, SCALE } from "./safeFrame";
+import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
 
-export { SCALE, SCENE_SIZE, SAFE_MARGIN } from "./safeFrame";
+export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
 
 /**
  * Shared building blocks for the guided lesson scenes. Both lessons need the
@@ -69,6 +69,9 @@ export function makeLabel(
   return new Txt({
     text,
     fill: color,
+    stroke: ROLE.background,
+    lineWidth: Math.max(4, Math.round(fontSize * 0.16)),
+    strokeFirst: true,
     fontSize,
     fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     fontWeight: 600,
@@ -78,7 +81,9 @@ export function makeLabel(
 /**
  * Centered overlay caption/equation for the safe top/bottom bands.
  * Always position at (LABEL_CENTER_X, LABEL_TOP_Y | LABEL_BOTTOM_Y).
- * Defaults sized so CSS-scaled canvases roughly match body-text weight.
+ * Width is capped to SAFE_WIDTH with wrapping so long captions never clip
+ * the stage edges. A dark glyph stroke keeps axes/grid from cutting through
+ * the letters when they share the vertical mid-line.
  */
 export function makeOverlayLabel(
   text: SignalValue<string>,
@@ -88,10 +93,15 @@ export function makeOverlayLabel(
   return new Txt({
     text,
     fill: color,
+    stroke: ROLE.background,
+    lineWidth: Math.max(6, Math.round(fontSize * 0.22)),
+    strokeFirst: true,
     fontSize,
-    lineHeight: fontSize * 1.4,
-    padding: [18, 16],
-    cachePadding: 32,
+    lineHeight: fontSize * 1.3,
+    padding: [8, 10],
+    cachePadding: 56,
+    width: SAFE_WIDTH,
+    textWrap: true,
     fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     fontWeight: 600,
     textAlign: "center",

@@ -30,20 +30,21 @@
 }
 
 .worked-example__body {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.25rem;
+  align-items: start;
+  container-type: inline-size;
+  container-name: worked-example;
 }
 
-@media (min-width: 1100px) {
-  .worked-example__body[data-has-scene="true"] {
-    grid-template-columns: 1.35fr 0.95fr;
-    align-items: start;
-  }
-
-  .worked-example__scene {
-    position: sticky;
-    top: 1rem;
-  }
+.worked-example__body[data-has-scene="true"] > .worked-example__scene {
+  /* Floor for the derivation clip; notebook takes more leftover width.
+     Sticky only while side-by-side (see container query below). */
+  flex: 1 0 var(--guided-scene-min-width);
+  min-width: min(100%, var(--guided-scene-min-width));
+  max-width: 100%;
+  position: static;
 }
 
 .worked-example__steps {
@@ -54,6 +55,16 @@
   flex-direction: column;
   gap: 0.85rem;
   counter-reset: worked-step;
+  flex: 1.5 1 24rem;
+  min-width: min(100%, 18rem);
+}
+
+/* Same wrap threshold as Watch: sticky only when scene + notebook share a row. */
+@container worked-example (min-width: 58rem) {
+  .worked-example__body[data-has-scene="true"] > .worked-example__scene {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+  }
 }
 
 .worked-example__step {

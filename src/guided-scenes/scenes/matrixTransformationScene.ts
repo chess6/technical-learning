@@ -13,6 +13,7 @@ import { MATRIX_TRANSFORMATION_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
+  OVERLAY_CLEAR_HALF_EXTENT,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -53,11 +54,11 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     [mc(), md()],
   ];
 
-  const ghostGrid = makeStaticGrid();
+  const ghostGrid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   ghostGrid.opacity(0.18);
   view.add(ghostGrid);
 
-  const tGrid = makeTransformedGrid(matrix, 3);
+  const tGrid = makeTransformedGrid(matrix, OVERLAY_CLEAR_HALF_EXTENT);
   tGrid.opacity(0);
   view.add(tGrid);
 

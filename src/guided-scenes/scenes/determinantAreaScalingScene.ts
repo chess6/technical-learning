@@ -18,6 +18,7 @@ import { DETERMINANT_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
+  OVERLAY_CLEAR_HALF_EXTENT,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -59,7 +60,7 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
     [mc(), md()],
   ];
 
-  const grid = makeStaticGrid(3);
+  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   grid.opacity(0.55);
   view.add(grid);
 
@@ -153,7 +154,7 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.basis - 1.6);
     },
     *parallelogram() {
-      setCaption("The unit square becomes the parallelogram spanned by Ae₁, Ae₂");
+      setCaption("Unit square becomes the parallelogram of Ae₁, Ae₂");
       yield* square.opacity(0.55, 0.8);
       yield* waitFor(seconds.parallelogram - 0.8);
     },
@@ -163,20 +164,20 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.area);
     },
     *expand() {
-      setCaption("Positive expansion — visual transition toward a larger det");
+      setCaption("Positive expansion — toward a larger det");
       yield* morphTo(EXPAND, 1.5);
       setTop(detLabel());
       yield* waitFor(seconds.expand - 1.5);
     },
     *collapse() {
-      setCaption("Toward det = 0 the parallelogram flattens onto a line");
+      setCaption("Toward det = 0 the parallelogram flattens to a line");
       yield* morphTo(SINGULAR, 2);
       setTop(detLabel());
       // Keep vertices finite; singular still draws a degenerate polygon.
       yield* waitFor(seconds.collapse - 2);
     },
     *negative() {
-      setCaption("Past zero: dashed edge flips — orientation reverses (not color alone)");
+      setCaption("Past zero: dashed edge flips — orientation reverses");
       yield* morphTo(NEGATIVE, 2);
       setTop(detLabel());
       yield* orientEdge.lineWidth(5, 0.4);
