@@ -2,6 +2,7 @@ import type { LessonDefinition } from "./types";
 import { DETERMINANT_LESSON_EXAMPLE } from "./exampleData";
 
 const A = DETERMINANT_LESSON_EXAMPLE.matrix;
+const detA = A[0][0] * A[1][1] - A[0][1] * A[1][0];
 
 export const determinantsLesson: LessonDefinition = {
   id: "determinants",
@@ -18,16 +19,23 @@ export const determinantsLesson: LessonDefinition = {
   sections: [
     {
       id: "intro",
-      title: "Area under a map",
-      body: "The unit square transforms into the parallelogram spanned by $A\\mathbf{e}_1$ and $A\\mathbf{e}_2$. The absolute value $|\\det(A)|$ is that parallelogram's area; the sign of $\\det(A)$ records whether orientation was preserved.",
-      equation: `\\det(A)=${A[0][0]}\\cdot${A[1][1]}-${A[0][1]}\\cdot${A[1][0]}=${A[0][0] * A[1][1] - A[0][1] * A[1][0]}`,
+      title: "Track one region",
+      body: "Lesson 2 showed that the columns of $A$ are where $\\mathbf{e}_1$ and $\\mathbf{e}_2$ land. Follow the unit square under that same map: it becomes the parallelogram spanned by $A\\mathbf{e}_1$ and $A\\mathbf{e}_2$. The change in its area is the idea we are after.",
       observation:
-        "Geometry and algebra stay synchronized: as the shape flattens, the determinant approaches zero.",
+        "When the stretch factors multiply on a diagonal map, the area multiplies too — each stage leaves a readable intermediate shape.",
+    },
+    {
+      id: "name",
+      title: "Name the scale factor",
+      body: "That area scale factor — how much every region grows or shrinks — is the absolute value of the determinant. For the running example,",
+      equation: `\\det(A)=${A[0][0]}\\cdot${A[1][1]}-${A[0][1]}\\cdot${A[1][0]}=${detA}`,
+      observation:
+        "Geometry and algebra stay synchronized: as the shape flattens, the scale factor approaches zero.",
     },
     {
       id: "sign",
-      title: "Sign and collapse",
-      body: "Crossing through $\\det(A)=0$ collapses the parallelogram onto a line. Continuing past zero flips the orientation of the ordered basis — magnitude still measures area; sign measures handedness.",
+      title: "Collapse, then orientation",
+      body: "Crossing through $\\det(A)=0$ collapses the parallelogram onto a line. The absolute value still measures area, but the story is incomplete without sign: continuing past zero flips the ordered basis. Magnitude answers how much; sign answers which handedness.",
     },
   ],
   guidedSceneId: "determinant-area-scaling",

@@ -50,12 +50,13 @@ export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
 
 export const DETERMINANT_SEGMENTS: readonly SceneSegment[] = [
   { id: "identity", title: "Unit square area 1", duration: 3 },
-  { id: "basis", title: "e₁ and e₂ move", duration: 3.5 },
-  { id: "parallelogram", title: "Square → parallelogram", duration: 4 },
-  { id: "area", title: "Area = |det(A)|", duration: 3.5 },
-  { id: "expand", title: "Positive expansion", duration: 3.5 },
-  { id: "collapse", title: "det → 0 collapse", duration: 4 },
-  { id: "negative", title: "Negative det: flip", duration: 4.5 },
+  { id: "basis", title: "Columns land", duration: 3.5 },
+  { id: "parallelogram", title: "Same square, new shape", duration: 3.5 },
+  { id: "area", title: "Name the area factor", duration: 4 },
+  // Successive diagonal stretches need held intermediate (×a then ×d).
+  { id: "expand", title: "Area multiplies in stages", duration: 5.5 },
+  { id: "collapse", title: "Factor → 0 collapse", duration: 4 },
+  { id: "negative", title: "Past zero: flip", duration: 4.5 },
   { id: "sign", title: "Magnitude vs sign", duration: 3.5 },
   { id: "summary", title: "Signed area scaling", duration: 3 },
 ];

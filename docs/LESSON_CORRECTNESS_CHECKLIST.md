@@ -76,6 +76,7 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [x] Does not imply false statements about det
 - [x] Readouts and explanation text agree
 - [x] KaTeX used for learner-facing notation
+- [x] Quality-bar focus applied (script-event beats, attention focus helpers, ghost-square continuity, name-after-intuition, Lesson 2 column callback, successive diagonal area stages) — see `docs/animation-quality-bar.md`
 
 ---
 

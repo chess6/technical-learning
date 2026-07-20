@@ -28,13 +28,30 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
 /**
  * Lesson 3: determinants as signed area scaling.
- * Unit square → parallelogram spanned by A e₁, A e₂; area = |det|; sign = orientation.
+ *
+ * Quality-bar focus (highest impact only):
+ * - Script-event contract: one communicative purpose per beat.
+ * - Attention choreography: one focal relationship; dim the rest.
+ * - Object continuity: same unit-square object morphs; ghost of the original.
+ * - Successive transforms: diagonal stretch in two held stages so area multiplies.
+ * - Name-after-intuition: feel the area factor before naming det(A).
  */
 
 const A = DETERMINANT_LESSON_EXAMPLE.matrix as Matrix2x2;
 const EXPAND = requireMatrixExample("uniform-scale").matrix as Matrix2x2;
 const SINGULAR = requireMatrixExample("singular-collapse").matrix as Matrix2x2;
 const NEGATIVE = requireMatrixExample("determinant-negative").matrix as Matrix2x2;
+
+/** Intermediate for successive area demo: stretch e₁ only. det = 2. */
+const X_STRETCH: Matrix2x2 = [
+  [EXPAND[0][0], 0],
+  [0, 1],
+];
+
+const IDENTITY: Matrix2x2 = [
+  [1, 0],
+  [0, 1],
+];
 
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
@@ -67,7 +84,19 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
 
-  // Unit square / parallelogram (closed polyline through transformed corners).
+  // Ghost of the original unit square — continuity: "this became that."
+  const ghostSquare = new Line({
+    stroke: ROLE.original,
+    lineWidth: 2,
+    closed: true,
+    fill: ROLE.original,
+    opacity: 0.12,
+    lineDash: [8, 8],
+    points: squarePoints(IDENTITY),
+  });
+  view.add(ghostSquare);
+
+  // Live unit square / parallelogram (same object throughout).
   const square = new Line({
     stroke: ROLE.original,
     lineWidth: 3,
@@ -85,21 +114,26 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
     lineDash: [10, 8],
     endArrow: true,
     arrowSize: 12,
+    opacity: 0.35,
     points: () => [new Vector2(0, 0), px([ma(), mc()])],
   });
   view.add(orientEdge);
 
   const e1 = makeArrow(ROLE.basis1, 6);
   e1.points(() => [new Vector2(0, 0), px([ma(), mc()])]);
+  e1.end(0);
   const e2 = makeArrow(ROLE.basis2, 6);
   e2.points(() => [new Vector2(0, 0), px([mb(), md()])]);
+  e2.end(0);
   view.add(e1);
   view.add(e2);
 
   const e1Label = makeLabel("e₁", ROLE.basis1);
   e1Label.position(() => px([ma(), mc()]).add(new Vector2(18, 18)));
+  e1Label.opacity(0);
   const e2Label = makeLabel("e₂", ROLE.basis2);
   e2Label.position(() => px([mb(), md()]).add(new Vector2(18, -8)));
+  e2Label.opacity(0);
   view.add(e1Label);
   view.add(e2Label);
 
@@ -112,20 +146,23 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
 
   const setTop = (text: string) => top.text(text);
   const setCaption = (text: string) => caption.text(text);
+  const areaFactorLabel = () => {
+    const d = determinant2x2(matrix());
+    return `area factor ≈ ${fmt(Math.abs(d))}`;
+  };
   const detLabel = () => {
     const d = determinant2x2(matrix());
     return `det(A) ≈ ${fmt(d)} · |det| ≈ ${fmt(Math.abs(d))}`;
   };
 
-  // Establishing frame at t=0.
+  // Establishing frame at t=0 — square is the sole focal object.
   setTop("Unit square · area = 1");
-  setCaption("Watch how A stretches signed area");
+  setCaption("Watch what happens to this region's area");
   top.opacity(1);
   caption.opacity(1);
-  e1Label.opacity(1);
-  e2Label.opacity(1);
-  square.opacity(0.4);
-  orientEdge.opacity(0.7);
+  square.opacity(0.45);
+  ghostSquare.opacity(0);
+  orientEdge.opacity(0.2);
 
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
     yield* all(
@@ -136,61 +173,140 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
     );
   }
 
+  function* focusSquare(emphasis = 0.55): ThreadGenerator {
+    yield* all(
+      square.opacity(emphasis, 0.35),
+      e1.opacity(0.35, 0.35),
+      e2.opacity(0.35, 0.35),
+      e1Label.opacity(0.35, 0.35),
+      e2Label.opacity(0.35, 0.35),
+      orientEdge.opacity(0.25, 0.35),
+    );
+  }
+
+  function* focusBasis(): ThreadGenerator {
+    yield* all(
+      square.opacity(0.22, 0.35),
+      e1.opacity(1, 0.35),
+      e2.opacity(1, 0.35),
+      e1Label.opacity(1, 0.35),
+      e2Label.opacity(1, 0.35),
+      orientEdge.opacity(0.55, 0.35),
+    );
+  }
+
+  function* focusOrientation(): ThreadGenerator {
+    yield* all(
+      square.opacity(0.28, 0.35),
+      e1.opacity(0.45, 0.35),
+      e2.opacity(0.45, 0.35),
+      e1Label.opacity(0.45, 0.35),
+      e2Label.opacity(0.45, 0.35),
+      orientEdge.opacity(1, 0.35),
+    );
+  }
+
   const seconds = Object.fromEntries(
     DETERMINANT_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *identity() {
+      // Focal: unit square only. Basis arrives after the region is established.
       setTop("Unit square · area = 1");
-      setCaption("Identity: e₁ and e₂ span a square of area 1");
-      yield* all(e1.end(1, 0.7), e2.end(1, 0.7), square.opacity(0.45, 0.6));
+      setCaption("One region to track — its area starts at 1");
+      yield* all(
+        e1.end(1, 0.7),
+        e2.end(1, 0.7),
+        e1Label.opacity(0.7, 0.7),
+        e2Label.opacity(0.7, 0.7),
+        square.opacity(0.5, 0.6),
+      );
       yield* waitFor(seconds.identity - 1.3);
     },
     *basis() {
-      setCaption("A moves the basis — columns become the new e₁, e₂");
+      // Focal: columns as landing spots (Lesson 2 callback). Square stays dim.
+      setTop("Columns of A");
+      setCaption("Lesson 2: columns are where e₁ and e₂ land");
+      yield* focusBasis();
       yield* morphTo(A, 1.6);
-      setTop(detLabel());
-      yield* waitFor(seconds.basis - 1.6);
+      e1Label.text("Ae₁");
+      e2Label.text("Ae₂");
+      yield* waitFor(seconds.basis - 1.95);
     },
     *parallelogram() {
-      setCaption("Unit square becomes the parallelogram of Ae₁, Ae₂");
-      yield* square.opacity(0.55, 0.8);
-      yield* waitFor(seconds.parallelogram - 0.8);
+      // Focal: same square object, now a parallelogram; ghost shows identity.
+      setTop("Same square · new shape");
+      setCaption("The unit square itself becomes this parallelogram");
+      yield* all(
+        ghostSquare.opacity(0.22, 0.5),
+        focusSquare(0.55),
+      );
+      yield* waitFor(seconds.parallelogram - 0.85);
     },
     *area() {
+      // Name-after-intuition: feel the factor, then name det.
+      setTop(areaFactorLabel());
+      setCaption("That area is the scale factor for every region");
+      yield* focusSquare(0.6);
+      yield* waitFor(1.4);
       setTop(detLabel());
-      setCaption("Parallelogram area equals |det(A)|");
-      yield* waitFor(seconds.area);
+      setCaption("We call this scale factor the determinant of A");
+      yield* waitFor(seconds.area - 1.75);
     },
     *expand() {
-      setCaption("Positive expansion — toward a larger det");
-      yield* morphTo(EXPAND, 1.5);
-      setTop(detLabel());
-      yield* waitFor(seconds.expand - 1.5);
+      // Successive transforms: two held stages so area multiplies visibly.
+      setTop("Stretch in stages");
+      setCaption("First stretch sideways — watch area × 2");
+      yield* all(
+        ghostSquare.opacity(0.18, 0.3),
+        focusSquare(0.55),
+        morphTo(X_STRETCH, 1.3),
+      );
+      setTop(`area = ${fmt(determinant2x2(X_STRETCH))}`);
+      yield* waitFor(1.1);
+      setCaption("Then stretch vertically — area multiplies again");
+      yield* morphTo(EXPAND, 1.3);
+      setTop(
+        `area = ${fmt(EXPAND[0][0])} × ${fmt(EXPAND[1][1])} = ${fmt(determinant2x2(EXPAND))}`,
+      );
+      setCaption("For a diagonal map, area multiplies by each stretch");
+      yield* waitFor(seconds.expand - 3.7);
     },
     *collapse() {
-      setCaption("Toward det = 0 the parallelogram flattens to a line");
+      // Contrast: area factor → 0.
+      setTop(detLabel());
+      setCaption("Drive the factor to zero — the parallelogram flattens");
+      yield* focusSquare(0.55);
       yield* morphTo(SINGULAR, 2);
       setTop(detLabel());
-      // Keep vertices finite; singular still draws a degenerate polygon.
-      yield* waitFor(seconds.collapse - 2);
+      yield* waitFor(seconds.collapse - 2.35);
     },
     *negative() {
-      setCaption("Past zero: dashed edge flips — orientation reverses");
+      // Focal: orientation edge flips past zero.
+      setCaption("Past zero the dashed edge flips — orientation reverses");
+      yield* focusOrientation();
       yield* morphTo(NEGATIVE, 2);
       setTop(detLabel());
-      yield* orientEdge.lineWidth(5, 0.4);
-      yield* orientEdge.lineWidth(3, 0.4);
-      yield* waitFor(seconds.negative - 2.8);
+      yield* orientEdge.lineWidth(5, 0.35);
+      yield* orientEdge.lineWidth(3, 0.35);
+      yield* waitFor(seconds.negative - 3.05);
     },
     *sign() {
-      setCaption("|det| = area factor · sign(det) = orientation");
-      yield* waitFor(seconds.sign);
+      setTop("|det| = area · sign = orientation");
+      setCaption("Magnitude says how much · sign says which handedness");
+      yield* all(focusSquare(0.45), orientEdge.opacity(0.85, 0.4));
+      yield* waitFor(seconds.sign - 0.4);
     },
     *summary() {
       setCaption("Determinant = signed area scale of the transformation");
-      yield* morphTo(A, 1.2);
+      yield* all(
+        morphTo(A, 1.2),
+        ghostSquare.opacity(0.2, 0.5),
+        focusSquare(0.5),
+      );
+      e1Label.text("Ae₁");
+      e2Label.text("Ae₂");
       setTop(detLabel());
       yield* waitFor(seconds.summary - 1.2);
     },

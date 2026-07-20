@@ -79,12 +79,13 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "determinant-area-scaling",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation showing the unit square becoming a parallelogram, linking area to the absolute value of the determinant, collapsing through zero, and reversing orientation for a negative determinant.",
+      "Guided animation showing the unit square becoming a parallelogram, naming its area scale as the determinant, multiplying area in successive stretches, collapsing through zero, and reversing orientation for a negative determinant.",
     steps: DETERMINANT_STEPS,
     majorSteps: pickMajor(DETERMINANT_STEPS, [
       "identity",
       "parallelogram",
       "area",
+      "expand",
       "collapse",
       "negative",
       "summary",

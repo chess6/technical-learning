@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
   totalDuration,
@@ -9,7 +10,11 @@ import { getSceneMeta } from "../sceneMeta";
 
 describe("scene timings (pure data)", () => {
   it("derives steps starting at 0 with monotonic progress", () => {
-    for (const segments of [EIGENVECTOR_SEGMENTS, EIGEN_DERIVATION_SEGMENTS]) {
+    for (const segments of [
+      DETERMINANT_SEGMENTS,
+      EIGENVECTOR_SEGMENTS,
+      EIGEN_DERIVATION_SEGMENTS,
+    ]) {
       const steps = toSteps(segments);
       expect(steps[0]!.at).toBe(0);
       for (let i = 1; i < steps.length; i += 1) {
@@ -32,6 +37,13 @@ describe("scene timings (pure data)", () => {
     }
   });
 
+  it("gives the determinant expand beat enough time for successive stretches", () => {
+    // expand choreography: morph X_STRETCH (1.3) + hold (1.1) + morph EXPAND (1.3) = 3.7s.
+    const expand = DETERMINANT_SEGMENTS.find((s) => s.id === "expand");
+    expect(expand).toBeDefined();
+    expect(expand!.duration).toBeGreaterThanOrEqual(5.0);
+  });
+
   it("keeps the eigen Watch major steps in learning order", () => {
     const meta = getSceneMeta("eigenvectors-invariant-directions");
     expect(meta.majorSteps.map((step) => step.id)).toEqual([
@@ -43,6 +55,19 @@ describe("scene timings (pure data)", () => {
       "scalar",
       "defective",
       "rotation",
+      "summary",
+    ]);
+  });
+
+  it("keeps determinant major steps including successive area expansion", () => {
+    const meta = getSceneMeta("determinant-area-scaling");
+    expect(meta.majorSteps.map((step) => step.id)).toEqual([
+      "identity",
+      "parallelogram",
+      "area",
+      "expand",
+      "collapse",
+      "negative",
       "summary",
     ]);
   });
