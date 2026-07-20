@@ -334,6 +334,10 @@ Do not repeat the same values across panels without a teaching reason.
 
 ## Animation choreography
 
+> For the forward-looking clip quality bar, attention choreography,
+> object-identity continuity, the script-event contract, the review rubric, and
+> the adoption backlog, see [animation-quality-bar.md](./animation-quality-bar.md).
+
 - **One conceptual change at a time.**
 - **Dim** irrelevant objects.
 - Use **deliberate pauses**.
