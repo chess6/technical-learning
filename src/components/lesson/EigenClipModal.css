@@ -82,10 +82,10 @@
 }
 
 .eigen-clip-modal__steps {
-  flex: 0 0 14rem;
-  width: 14rem;
-  max-width: 14rem;
-  min-width: 12rem;
+  flex: 0 0 16rem;
+  width: 16rem;
+  max-width: 16rem;
+  min-width: 14rem;
 }
 
 /* Only stack on very narrow viewports where side-by-side is impossible. */

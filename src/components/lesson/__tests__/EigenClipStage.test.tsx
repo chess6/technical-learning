@@ -151,7 +151,7 @@ describe("EigenClipStage", () => {
     expect(document.activeElement).toBe(expand);
   });
 
-  it("preserves semantic major step across expand and highlights the step", async () => {
+  it("shows derivation steps only in the expand modal and seeks on click", async () => {
     render(
       <EigenClipStage
         sceneId="eigenvectors-derivation"
@@ -159,40 +159,29 @@ describe("EigenClipStage", () => {
       />,
     );
 
-    // Inline step nav seeks the clip without opening the modal.
-    const inlineNav = screen.getByTestId("derivation-step-nav");
-    const inlineShift = inlineNav.querySelector(
-      '[data-step-id="shift"] button',
-    ) as HTMLButtonElement;
-    expect(inlineShift).toBeTruthy();
-    await act(async () => {
-      fireEvent.click(inlineShift);
-    });
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("shift");
-    });
+    // Main page already has notebook steps — no duplicate nav inline.
+    expect(screen.queryByTestId("derivation-step-nav")).toBeNull();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-expand-clip"));
     });
     const modal = await screen.findByTestId("eigen-clip-modal");
-    expect(modal.getAttribute("data-major-step")).toBe("shift");
+    expect(modal.getAttribute("data-major-step")).toBe("recap");
+    expect(screen.getByTestId("derivation-step-nav")).toBeTruthy();
 
-    const charpoly = modal.querySelector(
-      '[data-step-id="charpoly"] button',
+    const shift = modal.querySelector(
+      '[data-step-id="shift"] button',
     ) as HTMLButtonElement | null;
-    expect(charpoly).toBeTruthy();
+    expect(shift).toBeTruthy();
     await act(async () => {
-      fireEvent.click(charpoly!);
+      fireEvent.click(shift!);
     });
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-modal").getAttribute("data-major-step"),
-      ).toBe("charpoly");
+      ).toBe("shift");
     });
-    expect(screen.getByText(/zero volume/i)).toBeTruthy();
+    expect(screen.getByText(/sent to zero/i)).toBeTruthy();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-clip-modal-close"));
@@ -200,8 +189,9 @@ describe("EigenClipStage", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("charpoly");
+      ).toBe("shift");
     });
+    expect(screen.queryByTestId("derivation-step-nav")).toBeNull();
   });
 
   it("disposes engines cleanly after open/close cycles", async () => {

@@ -137,7 +137,6 @@ export function EigenClipModal({
               steps={steps}
               activeStepId={position.majorStepId}
               onSelectStep={onSelectStep}
-              compact
               showCaption
             />
           )}

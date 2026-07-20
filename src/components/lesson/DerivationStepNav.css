@@ -1,13 +1,13 @@
 .derivation-step-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-width: 0;
 }
 
 .derivation-step-nav__eyebrow {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -19,23 +19,23 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
 .derivation-step-nav__button {
   display: grid;
-  grid-template-columns: 1.5rem 1fr;
+  grid-template-columns: 1.75rem 1fr;
   align-items: start;
-  gap: 0.5rem;
+  gap: 0.6rem;
   width: 100%;
   text-align: left;
-  padding: 0.4rem 0.5rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-sm, 0.35rem);
   background: var(--color-surface-raised);
   color: inherit;
   cursor: pointer;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .derivation-step-nav__button:hover {
@@ -57,13 +57,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.55rem;
+  height: 1.55rem;
   margin-top: 0.05rem;
   border-radius: 999px;
   background: var(--color-surface-subtle);
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -76,17 +76,17 @@
 .derivation-step-nav__body {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.15rem;
   min-width: 0;
 }
 
 .derivation-step-nav__label {
   font-weight: 650;
-  font-size: 0.82rem;
+  font-size: 1rem;
 }
 
 .derivation-step-nav__eq {
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -94,29 +94,30 @@
 }
 
 .derivation-step-nav__eq .katex {
-  font-size: 0.95em;
+  font-size: 1.05em;
 }
 
 .derivation-step-nav__caption {
   margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: 0.95rem;
+  line-height: 1.4;
   color: var(--color-text-muted);
 }
 
+/* Compact still used in denser layouts; keep larger than the old tiny size. */
 .derivation-step-nav--compact .derivation-step-nav__button {
-  padding: 0.3rem 0.45rem;
-  gap: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  gap: 0.5rem;
 }
 
 .derivation-step-nav--compact .derivation-step-nav__label {
-  font-size: 0.78rem;
+  font-size: 0.95rem;
 }
 
 .derivation-step-nav--compact .derivation-step-nav__eq {
-  font-size: 0.72rem;
+  font-size: 0.9rem;
 }
 
 .derivation-step-nav--compact .derivation-step-nav__caption {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
 }
