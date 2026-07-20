@@ -20,6 +20,33 @@ describe("scene timings (pure data)", () => {
     }
   });
 
+  it("gives the eigen Watch scene enough time for its held demos", () => {
+    // The lambdas beat runs stretch → reverse → collapse with explicit holds.
+    // Internal choreography budget (see eigenvectorsInvariantDirectionsScene):
+    //   0.8 + 1.4 + 1.2 + 1.6 + 1.6 + 0.8 + 1.6 = 9.0s.
+    const lambdas = EIGENVECTOR_SEGMENTS.find((s) => s.id === "lambdas");
+    expect(lambdas).toBeDefined();
+    expect(lambdas!.duration).toBeGreaterThanOrEqual(9.0);
+    for (const segment of EIGENVECTOR_SEGMENTS) {
+      expect(segment.duration).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps the eigen Watch major steps in learning order", () => {
+    const meta = getSceneMeta("eigenvectors-invariant-directions");
+    expect(meta.majorSteps.map((step) => step.id)).toEqual([
+      "fan",
+      "apply",
+      "highlight",
+      "equation",
+      "lambdas",
+      "scalar",
+      "defective",
+      "rotation",
+      "summary",
+    ]);
+  });
+
   it("eigenvectors-derivation major steps resolve every ladder rung", () => {
     const meta = getSceneMeta("eigenvectors-derivation");
     const majorIds = meta.majorSteps.map((step) => step.id);
