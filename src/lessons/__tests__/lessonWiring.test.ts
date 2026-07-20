@@ -1,22 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { lessons, getLessonById } from "../registry";
-import { getSceneMeta, SCENE_META } from "../../guided-scenes/scenes/sceneMeta";
+import { getSceneMeta, SCENE_META, hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { getExplorer } from "../../explorations/registry";
 import { getMatrixExample } from "../../math";
 
-describe("lesson wiring for M4", () => {
-  it("resolves guided scenes for both implemented lessons", () => {
-    for (const id of ["vectors-linear-combinations", "matrix-transformations"]) {
-      const meta = getSceneMeta(id);
-      // getSceneMeta returns the fallback for unknown ids; assert we got the
-      // real scene by matching the id.
-      expect(meta.id).toBe(id);
-      expect(meta.steps.length).toBeGreaterThan(0);
-      expect(SCENE_META[id]).toBeDefined();
+describe("lesson wiring for all four POC lessons", () => {
+  it("resolves guided scenes for every registered lesson", () => {
+    for (const lesson of lessons) {
+      expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
+      expect(getSceneMeta(lesson.guidedSceneId).id).toBe(lesson.guidedSceneId);
+      expect(SCENE_META[lesson.guidedSceneId]).toBeDefined();
     }
   });
 
-  it("orders step markers monotonically from 0 and exposes major stages", () => {
+  it("orders step markers monotonically and exposes major stages", () => {
     for (const meta of Object.values(SCENE_META)) {
       expect(meta.steps[0]!.at).toBe(0);
       expect(meta.majorSteps.length).toBeGreaterThan(0);
@@ -27,26 +24,33 @@ describe("lesson wiring for M4", () => {
     }
   });
 
-  it("resolves explorers for both implemented lessons", () => {
-    expect(getExplorer("linear-combination")).toBeTypeOf("function");
-    expect(getExplorer("matrix-transformation")).toBeTypeOf("function");
+  it("resolves explorers for every lesson", () => {
+    for (const lesson of lessons) {
+      expect(getExplorer(lesson.explorationId)).toBeTypeOf("function");
+    }
   });
 
-  it("lesson 1 and 2 reference valid scenes, explorers, and example ids", () => {
+  it("lessons 2–4 reference valid matrix example ids", () => {
+    for (const id of ["transformations", "determinants", "eigenvectors"] as const) {
+      const lesson = getLessonById(id)!;
+      expect(lesson.exampleId).toBeTruthy();
+      expect(getMatrixExample(lesson.exampleId!)).toBeDefined();
+    }
+  });
+
+  it("vectors lesson still uses its linear-combination example id", () => {
     const vectors = getLessonById("vectors")!;
-    const transforms = getLessonById("transformations")!;
-
-    expect(getSceneMeta(vectors.guidedSceneId).id).toBe("vectors-linear-combinations");
-    expect(getExplorer(vectors.explorationId)).toBeTypeOf("function");
-
-    expect(getSceneMeta(transforms.guidedSceneId).id).toBe("matrix-transformations");
-    expect(getExplorer(transforms.explorationId)).toBeTypeOf("function");
-    expect(getMatrixExample("shear-2-1")).toBeDefined();
+    expect(vectors.exampleId).toBe("vectors-default");
   });
 
-  it("every lesson exposes at least two exercises", () => {
-    for (const lesson of lessons.slice(0, 2)) {
+  it("every lesson exposes at least three exercises and a checkpoint", () => {
+    for (const lesson of lessons) {
       expect(lesson.exercises.length).toBeGreaterThanOrEqual(2);
+      if (lesson.id === "determinants" || lesson.id === "eigenvectors") {
+        expect(lesson.exercises.length).toBeGreaterThanOrEqual(3);
+        expect(lesson.checkpoint).toBeDefined();
+        expect(lesson.motivatingQuestion).toBeTruthy();
+      }
     }
   });
 });

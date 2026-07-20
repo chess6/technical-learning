@@ -41,6 +41,14 @@ export const LINEAR_COMBINATION_EXAMPLE: LinearCombinationExample = {
 export const MATRIX_LESSON_EXAMPLE: MatrixExample =
   requireMatrixExample("shear-2-1");
 
+/** Lesson 3 main example — positive expansion (same A as Lesson 2 for continuity). */
+export const DETERMINANT_LESSON_EXAMPLE: MatrixExample =
+  requireMatrixExample("shear-2-1");
+
+/** Lesson 4 main example — two distinct real eigendirections. */
+export const EIGEN_LESSON_EXAMPLE: MatrixExample =
+  requireMatrixExample("eigen-distinct");
+
 /** Ordered transformation presets for the Lesson 2 exploration and guided cycle. */
 export interface TransformPreset {
   id: string;
@@ -55,4 +63,24 @@ export const TRANSFORM_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "rotation", label: "Rotation", exampleId: "rotation" },
   { id: "reflection", label: "Reflection", exampleId: "reflection" },
   { id: "singular", label: "Singular collapse", exampleId: "singular-collapse" },
+];
+
+export const DETERMINANT_LESSON_PRESETS: readonly TransformPreset[] = [
+  { id: "identity", label: "Identity", exampleId: "identity" },
+  { id: "expand", label: "Expand", exampleId: "uniform-scale" },
+  { id: "contract", label: "Contract", exampleId: "contraction" },
+  { id: "shear", label: "Shear", exampleId: "shear-2-1" },
+  { id: "singular", label: "Collapse", exampleId: "singular-collapse" },
+  { id: "near-singular", label: "Near-singular", exampleId: "near-singular" },
+  { id: "negative", label: "Negative det", exampleId: "determinant-negative" },
+  { id: "reflection", label: "Reflection", exampleId: "reflection" },
+];
+
+export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
+  { id: "distinct", label: "Distinct real", exampleId: "eigen-distinct" },
+  { id: "negative", label: "Negative λ", exampleId: "eigen-negative" },
+  { id: "zero", label: "Zero λ", exampleId: "eigen-zero" },
+  { id: "scalar", label: "Scalar (all directions)", exampleId: "eigen-repeated-diagonalizable" },
+  { id: "defective", label: "Defective", exampleId: "eigen-repeated-defective" },
+  { id: "rotation", label: "No real", exampleId: "eigen-no-real" },
 ];

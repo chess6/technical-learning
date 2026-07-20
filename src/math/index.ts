@@ -66,6 +66,26 @@ export {
 } from "./eigen";
 
 export {
+  classifyDeterminant,
+  signedParallelogramArea,
+} from "./determinantClassify";
+export type {
+  AreaScaleEffect,
+  DeterminantClassification,
+} from "./determinantClassify";
+
+export {
+  lineAngleBetweenVectors,
+  classifyEigenCandidate,
+  summarizeEigenAnalysis,
+  stabilizeDirection,
+} from "./eigenClassify";
+export type {
+  EigenCandidateResult,
+  EigenAnalysisSummary,
+} from "./eigenClassify";
+
+export {
   MATRIX_EXAMPLES,
   MATRIX_EXAMPLE_IDS,
   TRANSFORM_PRESETS,

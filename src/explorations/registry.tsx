@@ -1,6 +1,8 @@
 import type { ReactElement } from "react";
 import { LinearCombinationExplorer } from "./LinearCombinationExplorer";
 import { MatrixTransformationExplorer } from "./MatrixTransformationExplorer";
+import { DeterminantExplorer } from "./DeterminantExplorer";
+import { EigenvectorExplorer } from "./EigenvectorExplorer";
 
 /**
  * Maps a lesson's explorationId to its interactive Mafs exploration. LessonPage
@@ -9,6 +11,8 @@ import { MatrixTransformationExplorer } from "./MatrixTransformationExplorer";
 const EXPLORERS: Record<string, () => ReactElement> = {
   "linear-combination": () => <LinearCombinationExplorer />,
   "matrix-transformation": () => <MatrixTransformationExplorer />,
+  "determinant-area-scaling": () => <DeterminantExplorer />,
+  "eigenvectors-invariant-directions": () => <EigenvectorExplorer />,
 };
 
 export function getExplorer(

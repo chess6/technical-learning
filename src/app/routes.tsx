@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { DevMafsDemoPage } from "../pages/DevMafsDemoPage";
+import { DevTransformSpikePage } from "../pages/DevTransformSpikePage";
 import { HomePage } from "../pages/HomePage";
 import { LessonPage } from "../pages/LessonPage";
 
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
       {
         path: "dev/mafs-demo",
         element: <DevMafsDemoPage />,
+      },
+      {
+        path: "dev/transform-spike",
+        element: <DevTransformSpikePage />,
       },
       {
         path: "*",

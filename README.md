@@ -4,10 +4,16 @@ Desktop-first browser POC for learning linear algebra through guided animations 
 
 ## Status
 
+**Milestone 5 complete** — Lessons 3 (Determinants as Signed Area Scaling) and
+4 (Eigenvectors and Eigenvalues) are fully implemented with guided scenes,
+Mafs explorers, deterministic practice, and shared math/examples. Details:
+[docs/m5-lessons.md](docs/m5-lessons.md).
+
 **Milestone 4.5 complete** — visual, layout, and learning-experience refinement
 of Lessons 1–2 (sidebar TOC, autoplay, safe-frame clipping fix, KaTeX prose,
 learner-facing player controls, progressive disclosure). Details:
-[docs/m45-refinement.md](docs/m45-refinement.md).
+[docs/m45-refinement.md](docs/m45-refinement.md) and
+[docs/visual-design-refinement.md](docs/visual-design-refinement.md).
 
 **Milestone 4 complete** — Lessons 1 (Vectors and Linear Combinations) and 2
 (Matrices as Linear Transformations) are fully implemented: guided Motion Canvas
@@ -19,9 +25,6 @@ Earlier milestones: shared pure math layer + Mafs foundation
 ([docs/m3-math-and-mafs.md](docs/m3-math-and-mafs.md)) and Motion Canvas
 embedding behind `GuidedSceneEngine`
 ([docs/motion-canvas-spike.md](docs/motion-canvas-spike.md)).
-
-Lessons 3 (determinants) and 4 (eigenvectors) remain placeholders for later
-milestones.
 
 ## Commands
 
@@ -74,6 +77,7 @@ Read these before adding or changing lessons or math visualizations:
 
 - **Lesson design:** [docs/LESSON_DESIGN.md](docs/LESSON_DESIGN.md) — pedagogy, flow, notation, visual language, anti-patterns.
 - **Visual system:** [docs/visual-design-refinement.md](docs/visual-design-refinement.md) — light-first palette & tokens, typography roles, six-phase hierarchy, guided/explorer/exercise presentation (Lesson 1 is the reference).
+- **M5 lessons:** [docs/m5-lessons.md](docs/m5-lessons.md) — determinants and eigenvectors.
 - **Lesson template:** [docs/LESSON_TEMPLATE.md](docs/LESSON_TEMPLATE.md) — fill-in planning template.
 - **Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).
 - **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).
@@ -106,7 +110,9 @@ through the engine, so lesson data and React never touch Motion Canvas.
 
 1. Vectors and Linear Combinations — `/lesson/vectors` (complete)
 2. Matrices as Linear Transformations — `/lesson/transformations` (complete)
-3. Determinants as Signed Area Scaling — `/lesson/determinants` (placeholder)
-4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors` (placeholder)
+3. Determinants as Signed Area Scaling — `/lesson/determinants` (complete)
+4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors` (complete)
+
+Dev-only Motion Canvas spike: `/dev/transform-spike` (explicit id only — never a silent fallback).
 
 `mathjs` is a **dev-only** dependency (cross-check tests); no production module imports it.

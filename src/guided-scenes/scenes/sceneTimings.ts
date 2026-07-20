@@ -48,6 +48,30 @@ export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
   { id: "result", title: "Transformed space", duration: 0.6 },
 ];
 
+export const DETERMINANT_SEGMENTS: readonly SceneSegment[] = [
+  { id: "identity", title: "Unit square area 1", duration: 3 },
+  { id: "basis", title: "e₁ and e₂ move", duration: 3.5 },
+  { id: "parallelogram", title: "Square → parallelogram", duration: 4 },
+  { id: "area", title: "Area = |det(A)|", duration: 3.5 },
+  { id: "expand", title: "Positive expansion", duration: 3.5 },
+  { id: "collapse", title: "det → 0 collapse", duration: 4 },
+  { id: "negative", title: "Negative det: flip", duration: 4.5 },
+  { id: "sign", title: "Magnitude vs sign", duration: 3.5 },
+  { id: "summary", title: "Signed area scaling", duration: 3 },
+];
+
+export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
+  { id: "fan", title: "A fan of directions", duration: 3 },
+  { id: "apply", title: "Most directions turn", duration: 4 },
+  { id: "highlight", title: "Some stay on their line", duration: 3.5 },
+  { id: "equation", title: "Av = λv", duration: 3.5 },
+  { id: "lambdas", title: "Stretch, shrink, reverse, collapse", duration: 5 },
+  { id: "scalar", title: "Scalar: every direction", duration: 3.5 },
+  { id: "defective", title: "Defective: only one line", duration: 3.5 },
+  { id: "rotation", title: "No real eigenvectors", duration: 3.5 },
+  { id: "summary", title: "Invariant directions", duration: 3 },
+];
+
 /** Total timeline length in seconds. */
 export function totalDuration(segments: readonly SceneSegment[]): number {
   return segments.reduce((sum, segment) => sum + segment.duration, 0);

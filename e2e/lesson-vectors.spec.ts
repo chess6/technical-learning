@@ -23,11 +23,19 @@ test("route loads, guided scene plays and resets, no console errors", async ({
   await expect(page.getByRole("heading", { name: "Vectors and Linear Combinations" })).toBeVisible();
   await expect(page.locator(canvas)).toBeVisible();
 
-  // Autoplay (once visible) or manual play should reach Playing.
-  const play = page.getByRole("button", { name: "Play", exact: true });
-  if (await play.count()) {
-    await play.click();
-  }
+  // Wait for the engine to mount, then ensure playback (autoplay or manual).
+  await expect
+    .poll(async () => {
+      const pause = page.getByRole("button", { name: "Pause" });
+      if (await pause.count()) return "playing";
+      const play = page.getByRole("button", { name: "Play", exact: true });
+      if (await play.count()) {
+        await play.click();
+        return "clicked";
+      }
+      return "waiting";
+    }, { timeout: 10000 })
+    .not.toBe("waiting");
   await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled({ timeout: 8000 });
   await expect
     .poll(async () => Number(await page.locator(scrubber).inputValue()), { timeout: 5000 })

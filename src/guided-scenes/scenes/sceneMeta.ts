@@ -1,10 +1,5 @@
 import type { GuidedSceneStep } from "../engine/types";
-import {
-  LINEAR_COMBINATION_SEGMENTS,
-  MATRIX_TRANSFORMATION_SEGMENTS,
-  SPIKE_SEGMENTS,
-  toSteps,
-} from "./sceneTimings";
+import { LINEAR_COMBINATION_SEGMENTS, MATRIX_TRANSFORMATION_SEGMENTS, SPIKE_SEGMENTS, DETERMINANT_SEGMENTS, EIGENVECTOR_SEGMENTS, toSteps } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
 
 /**
@@ -37,6 +32,8 @@ function pickMajor(
 const LINEAR_STEPS = toSteps(LINEAR_COMBINATION_SEGMENTS);
 const MATRIX_STEPS = toSteps(MATRIX_TRANSFORMATION_SEGMENTS);
 const SPIKE_STEPS = toSteps(SPIKE_SEGMENTS);
+const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
+const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "vectors-linear-combinations": {
@@ -69,6 +66,37 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "summary",
     ]),
   },
+  "determinant-area-scaling": {
+    id: "determinant-area-scaling",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing the unit square becoming a parallelogram, linking area to the absolute value of the determinant, collapsing through zero, and reversing orientation for a negative determinant.",
+    steps: DETERMINANT_STEPS,
+    majorSteps: pickMajor(DETERMINANT_STEPS, [
+      "identity",
+      "parallelogram",
+      "area",
+      "collapse",
+      "negative",
+      "summary",
+    ]),
+  },
+  "eigenvectors-invariant-directions": {
+    id: "eigenvectors-invariant-directions",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing that most vectors change direction under a matrix while eigendirections stay on their line, covering stretch, shrink, reverse, collapse, scalar, defective, and no-real-eigenvector cases.",
+    steps: EIGENVECTOR_STEPS,
+    majorSteps: pickMajor(EIGENVECTOR_STEPS, [
+      "fan",
+      "apply",
+      "highlight",
+      "equation",
+      "defective",
+      "rotation",
+      "summary",
+    ]),
+  },
   "transform-spike": {
     id: "transform-spike",
     size: SCENE_SIZE,
@@ -79,9 +107,27 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
   },
 };
 
-/** Fallback used for lessons whose scenes are not yet implemented. */
-export const FALLBACK_SCENE_ID = "transform-spike";
+/** Fallback used only when an explicit scene id requests the spike. */
+export const SPIKE_SCENE_ID = "transform-spike";
 
+/** @deprecated Prefer hasGuidedScene / getSceneMeta throwing — no silent fallback. */
+export const FALLBACK_SCENE_ID = SPIKE_SCENE_ID;
+
+export function hasGuidedScene(sceneId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(SCENE_META, sceneId);
+}
+
+/**
+ * Resolve scene metadata. Unknown production ids throw — they must never
+ * silently render the transform-spike scene.
+ */
 export function getSceneMeta(sceneId: string): GuidedSceneMeta {
-  return SCENE_META[sceneId] ?? SCENE_META[FALLBACK_SCENE_ID]!;
+  const meta = SCENE_META[sceneId];
+  if (!meta) {
+    throw new Error(
+      `Unknown guided scene id: "${sceneId}". ` +
+        `Register it in SCENE_META or use the explicit "${SPIKE_SCENE_ID}" id.`,
+    );
+  }
+  return meta;
 }

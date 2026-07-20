@@ -139,6 +139,46 @@ export const MATRIX_EXAMPLES = [
     inputVector: [1, 0],
   },
   {
+    id: "contraction",
+    title: "Contraction",
+    description: "Shrinks area uniformly (|det| < 1).",
+    matrix: [
+      [0.5, 0],
+      [0, 0.5],
+    ],
+    inputVector: [1.5, 1],
+  },
+  {
+    id: "near-singular",
+    title: "Near-singular",
+    description: "Almost parallel columns — |det| is tiny but nonzero.",
+    matrix: [
+      [1, 1],
+      [0.99, 1],
+    ],
+    inputVector: [1, 0],
+  },
+  {
+    id: "eigen-negative",
+    title: "One negative eigenvalue",
+    description: "Stretch along one axis; reverse along the other.",
+    matrix: [
+      [2, 0],
+      [0, -1],
+    ],
+    inputVector: [1, 1],
+  },
+  {
+    id: "eigen-zero",
+    title: "Zero eigenvalue",
+    description: "Collapses one axis onto the origin (λ = 0).",
+    matrix: [
+      [2, 0],
+      [0, 0],
+    ],
+    inputVector: [1, 1],
+  },
+  {
     id: "diagnostic-asymmetric",
     title: "Diagnostic (asymmetric)",
     description:
@@ -197,21 +237,24 @@ export const TRANSFORM_PRESETS: readonly MatrixExampleId[] = [
 /** Presets useful for the eigenvector exploration. */
 export const EIGEN_PRESETS: readonly MatrixExampleId[] = [
   "eigen-distinct",
+  "eigen-negative",
+  "eigen-zero",
   "eigen-repeated-diagonalizable",
   "eigen-repeated-defective",
   "eigen-no-real",
-  "reflection",
-  "shear-2-1",
 ];
 
 /** Presets useful for the determinant exploration. */
 export const DETERMINANT_PRESETS: readonly MatrixExampleId[] = [
   "identity",
   "uniform-scale",
+  "contraction",
   "shear-2-1",
   "singular-collapse",
+  "near-singular",
   "determinant-negative",
   "reflection",
+  "diagnostic-asymmetric",
 ];
 
 /**

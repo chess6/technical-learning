@@ -39,3 +39,77 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 - [ ] Visualization does not imply a false mathematical statement
 - [ ] Readouts and explanation text agree
 - [ ] Learner-facing notation uses KaTeX where appropriate
+
+---
+
+## Lesson 3 — Determinants as Signed Area Scaling (M5)
+
+### Mathematical review
+
+- [x] Formulas independently verified (hand calc or known identity)
+- [x] Shared utilities from `src/math` used for all linear algebra
+- [x] No hardcoded geometry that conflicts with the mathematical model
+- [x] Basis-column convention verified (\(A\mathbf{e}_1\) / \(A\mathbf{e}_2\) = columns)
+- [x] Determinant edge cases checked (singular, near-singular, negative, asymmetric)
+- [x] Identity→\(A\) interpolation labelled as a visual transition in guided captions
+
+### Visual review
+
+- [x] Labels match numeric values / KaTeX readouts
+- [x] Arrows / parallelogram vertices from `applyMatrixToUnitSquare` / `matrixVectorMultiply`
+- [x] Orientation uses dashed edge (non-color cue) plus sign readout
+- [x] Safe framing preserved; singular states remain finite
+- [x] Screen-\(y\) inversion only in render mapping (`toPixels` / Mafs)
+- [x] Collapse / negative det states labelled honestly
+
+### Testing review
+
+- [x] Unit tests (`m5-classify`, `DeterminantExplorer`)
+- [x] Invariant / area tests via `assertUnitSquareAreaMatchesDeterminant`
+- [x] Asymmetric matrix covered (`diagnostic-asymmetric`)
+- [x] Singular / collapse covered
+- [x] Browser test `e2e/lesson-determinants.spec.ts`
+- [x] No new ERROR_LOG bug found during M5
+
+### Teaching review
+
+- [x] Does not imply false statements about det
+- [x] Readouts and explanation text agree
+- [x] KaTeX used for learner-facing notation
+
+---
+
+## Lesson 4 — Eigenvectors and Eigenvalues (M5)
+
+### Mathematical review
+
+- [x] Formulas independently verified (\(A\mathbf{v}=\lambda\mathbf{v}\))
+- [x] Shared utilities from `src/math` (`analyzeEigen2x2`, classify helpers)
+- [x] No hardcoded eigendirections independent of analysis
+- [x] Eigenpairs verified with `assertEigenpair`
+- [x] Eigen edge cases: zero vector, λ=0, scalar, defective, complex/no-real
+- [x] Visual transitions labelled; complex case states complex eigenvalues may exist
+
+### Visual review
+
+- [x] Labels match numeric / KaTeX readouts
+- [x] Eigendirection dashes + arrows from `summarizeEigenAnalysis`
+- [x] Stable direction normalization (`stabilizeDirection`)
+- [x] Safe framing; reduced-motion via shared player
+- [x] Screen-\(y\) inversion only in render mapping
+- [x] Defective / no-real cases labelled honestly (no fabricated second direction)
+
+### Testing review
+
+- [x] Unit tests (`m5-classify`, `EigenvectorExplorer`)
+- [x] `assertEigenpair` on displayed directions
+- [x] Distinct-real covered via `eigen-distinct`
+- [x] λ=0 covered via `eigen-zero` preset
+- [x] Browser test `e2e/lesson-eigenvectors.spec.ts`
+- [x] No new ERROR_LOG bug found during M5
+
+### Teaching review
+
+- [x] Zero vector never presented as an eigenvector
+- [x] Readouts and explanation text agree
+- [x] KaTeX used for \(A\mathbf{v}=\lambda\mathbf{v}\)
