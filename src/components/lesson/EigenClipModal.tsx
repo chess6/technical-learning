@@ -8,11 +8,8 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
-import { EquationBlock } from "./EquationBlock";
-import {
-  getDerivationSteps,
-  type DerivationStep,
-} from "../../guided-scenes/scenes/derivationSteps";
+import { getDerivationSteps } from "../../guided-scenes/scenes/derivationSteps";
+import { DerivationStepNav } from "./DerivationStepNav";
 import type { ClipPosition } from "./clipPosition";
 import "./EigenClipModal.css";
 
@@ -49,8 +46,6 @@ export function EigenClipModal({
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const steps = getDerivationSteps(sceneId);
-  const activeStep =
-    steps?.find((step) => step.id === position.majorStepId) ?? steps?.[0];
 
   useEffect(() => {
     if (!open) return;
@@ -116,6 +111,7 @@ export function EigenClipModal({
         aria-labelledby={titleId}
         data-testid="eigen-clip-modal"
         data-major-step={position.majorStepId}
+        data-has-steps={Boolean(steps && steps.length > 0)}
       >
         <header className="eigen-clip-modal__header">
           <h2 id={titleId} className="eigen-clip-modal__title">
@@ -132,71 +128,22 @@ export function EigenClipModal({
           </button>
         </header>
 
-        <div
-          className="eigen-clip-modal__body"
-          data-has-steps={Boolean(steps && steps.length > 0)}
-        >
+        <div className="eigen-clip-modal__body">
           <div className="eigen-clip-modal__viz">{children}</div>
 
-          {steps && steps.length > 0 && (
-            <aside
+          {steps && steps.length > 0 && onSelectStep && (
+            <DerivationStepNav
               className="eigen-clip-modal__steps"
-              aria-label="Derivation steps"
-            >
-              <p className="eigen-clip-modal__steps-eyebrow">Derivation steps</p>
-              <ol className="eigen-clip-modal__step-list">
-                {steps.map((step) => (
-                  <StepItem
-                    key={step.id}
-                    step={step}
-                    active={step.id === (activeStep?.id ?? position.majorStepId)}
-                    onSelect={onSelectStep}
-                  />
-                ))}
-              </ol>
-              {activeStep && (
-                <p
-                  className="eigen-clip-modal__active-caption"
-                  aria-live="polite"
-                >
-                  {activeStep.caption}
-                </p>
-              )}
-            </aside>
+              steps={steps}
+              activeStepId={position.majorStepId}
+              onSelectStep={onSelectStep}
+              compact
+              showCaption
+            />
           )}
         </div>
       </div>
     </div>,
     document.body,
-  );
-}
-
-function StepItem({
-  step,
-  active,
-  onSelect,
-}: {
-  step: DerivationStep;
-  active: boolean;
-  onSelect?: (stepId: string) => void;
-}) {
-  return (
-    <li
-      className="eigen-clip-modal__step"
-      data-active={active}
-      data-step-id={step.id}
-    >
-      <button
-        type="button"
-        className="eigen-clip-modal__step-button"
-        aria-current={active ? "step" : undefined}
-        onClick={() => onSelect?.(step.id)}
-      >
-        <span className="eigen-clip-modal__step-label">{step.label}</span>
-        <span className="eigen-clip-modal__step-eq">
-          <EquationBlock tex={step.equation} />
-        </span>
-      </button>
-    </li>
   );
 }

@@ -5,22 +5,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-4);
+  padding: var(--space-3);
   background: rgba(14, 20, 32, 0.72);
 }
 
+/*
+ * Fit the viewport without nested scroll regions: header + body fill the
+ * dialog; the viz scales down; the compact step list sits beside it.
+ */
 .eigen-clip-modal {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  width: min(72rem, 100%);
-  max-height: min(92vh, 56rem);
-  overflow: auto;
+  gap: var(--space-3);
+  width: min(74rem, 100%);
+  height: min(90vh, 52rem);
+  max-height: 90vh;
+  overflow: hidden;
   background: var(--color-page-bg);
   color: var(--color-text);
   border-radius: var(--radius-lg, 0.75rem);
   box-shadow: 0 18px 48px rgba(14, 20, 32, 0.35);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
 }
 
 .eigen-clip-modal__header {
@@ -28,102 +33,95 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .eigen-clip-modal__title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 650;
 }
 
 .eigen-clip-modal__body {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-5);
-  align-items: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 15rem);
+  gap: var(--space-4);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.eigen-clip-modal:not([data-has-steps="true"]) .eigen-clip-modal__body {
+  grid-template-columns: 1fr;
 }
 
 .eigen-clip-modal__viz {
-  flex: 1.4 1 28rem;
-  min-width: min(100%, 22rem);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.eigen-clip-modal__viz > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Keep the enlarged clip inside the dialog without forcing page/modal scroll. */
+.eigen-clip-modal__viz .guided-scene-player {
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.eigen-clip-modal__viz .guided-scene-player__frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.eigen-clip-modal__viz .guided-scene-player__canvas {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.eigen-clip-modal__viz .eigen-3d-extension {
+  min-height: 0;
+  height: 100%;
+}
+
+.eigen-clip-modal__viz .eigen-3d-extension__canvas-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  aspect-ratio: auto;
 }
 
 .eigen-clip-modal__steps {
-  flex: 1 1 16rem;
-  min-width: min(100%, 14rem);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  max-height: 70vh;
-  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  /* Prefer fitting without a scrollbar; only scroll if the viewport is tiny. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.eigen-clip-modal__steps-eyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-
-.eigen-clip-modal__step-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.eigen-clip-modal__step-button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
-  width: 100%;
-  text-align: left;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-sm, 0.35rem);
-  background: var(--color-surface-raised);
-  color: inherit;
-  cursor: pointer;
-}
-
-.eigen-clip-modal__step[data-active="true"] .eigen-clip-modal__step-button {
-  border-color: var(--color-primary);
-  box-shadow: inset 3px 0 0 var(--color-primary);
-  background: var(--tint-blue);
-}
-
-.eigen-clip-modal__step-label {
-  font-weight: 650;
-  font-size: 0.95rem;
-}
-
-.eigen-clip-modal__step-eq {
-  font-size: 0.9rem;
-  width: 100%;
-}
-
-.eigen-clip-modal__step-eq .equation-block {
-  margin: 0;
-}
-
-.eigen-clip-modal__active-caption {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: var(--color-text-muted);
-}
-
-@media (max-width: 40rem) {
+@media (max-width: 48rem) {
   .eigen-clip-modal {
+    height: min(94vh, 56rem);
     padding: var(--space-3);
-    max-height: 96vh;
   }
 
   .eigen-clip-modal__body {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(12rem, 1fr) auto;
+    overflow-y: auto;
+  }
+
+  .eigen-clip-modal__steps {
+    overflow: visible;
+    max-height: none;
   }
 }

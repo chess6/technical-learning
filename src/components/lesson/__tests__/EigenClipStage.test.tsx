@@ -159,25 +159,40 @@ describe("EigenClipStage", () => {
       />,
     );
 
+    // Inline step nav seeks the clip without opening the modal.
+    const inlineNav = screen.getByTestId("derivation-step-nav");
+    const inlineShift = inlineNav.querySelector(
+      '[data-step-id="shift"] button',
+    ) as HTMLButtonElement;
+    expect(inlineShift).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(inlineShift);
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
+      ).toBe("shift");
+    });
+
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-expand-clip"));
     });
     const modal = await screen.findByTestId("eigen-clip-modal");
-    expect(modal.getAttribute("data-major-step")).toBe("recap");
+    expect(modal.getAttribute("data-major-step")).toBe("shift");
 
-    const shiftButton = modal.querySelector(
-      '[data-step-id="shift"] button',
+    const charpoly = modal.querySelector(
+      '[data-step-id="charpoly"] button',
     ) as HTMLButtonElement | null;
-    expect(shiftButton).toBeTruthy();
+    expect(charpoly).toBeTruthy();
     await act(async () => {
-      fireEvent.click(shiftButton!);
+      fireEvent.click(charpoly!);
     });
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-modal").getAttribute("data-major-step"),
-      ).toBe("shift");
+      ).toBe("charpoly");
     });
-    expect(screen.getByText(/sent to zero/i)).toBeTruthy();
+    expect(screen.getByText(/zero volume/i)).toBeTruthy();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-clip-modal-close"));
@@ -185,7 +200,7 @@ describe("EigenClipStage", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("shift");
+      ).toBe("charpoly");
     });
   });
 

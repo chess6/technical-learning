@@ -4,6 +4,7 @@
   gap: var(--space-3);
   width: 100%;
   min-height: 14rem;
+  height: 100%;
   background: var(--color-canvas);
   color: var(--color-canvas-text);
   border-radius: var(--radius-md, 0.5rem);
@@ -35,8 +36,9 @@
 .eigen-3d-extension__canvas-wrap {
   position: relative;
   width: 100%;
+  flex: 1 1 auto;
   aspect-ratio: 16 / 10;
-  min-height: 16rem;
+  min-height: 12rem;
   border-radius: var(--radius-sm, 0.35rem);
   overflow: hidden;
   background: var(--color-canvas-elevated);

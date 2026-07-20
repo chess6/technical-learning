@@ -13,6 +13,7 @@ import { getGuidedSceneFactory } from "../../guided-scenes/registry";
 import { getDerivationSteps } from "../../guided-scenes/scenes/derivationSteps";
 import { GuidedScenePlayer } from "./GuidedScenePlayer";
 import { EigenClipModal } from "./EigenClipModal";
+import { DerivationStepNav } from "./DerivationStepNav";
 import type { ClipMode, ClipPosition } from "./clipPosition";
 import "./EigenClipStage.css";
 
@@ -191,7 +192,21 @@ export function EigenClipStage({
           className="eigen-clip-stage__inline"
           data-testid="eigen-clip-inline"
         >
-          {renderActiveViz({ autoplay: mode === "derivation" })}
+          <div className="eigen-clip-stage__inline-layout">
+            <div className="eigen-clip-stage__inline-viz">
+              {renderActiveViz({ autoplay: mode === "derivation" })}
+            </div>
+            {steps && steps.length > 0 && (
+              <DerivationStepNav
+                className="eigen-clip-stage__inline-steps"
+                steps={steps}
+                activeStepId={position.majorStepId}
+                onSelectStep={handleSelectStep}
+                compact
+                showCaption
+              />
+            )}
+          </div>
         </div>
       )}
 
