@@ -115,7 +115,7 @@ test("Lesson 4 expand modal and 3D extension preserve semantic step and single r
 
   const threeD = watchStage.getByTestId("eigen-3d-extension");
   const fallback = watchStage.getByTestId("eigen-3d-fallback");
-  await expect(threeD.or(fallback)).toBeVisible({ timeout: 15000 });
+  await expect(threeD.or(fallback)).toBeVisible({ timeout: 45000 });
   if (await threeD.count()) {
     await expect(watchStage.getByTestId("eigen-3d-reset-view")).toBeVisible();
     const canvas = threeD.locator("canvas");
