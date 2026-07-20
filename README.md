@@ -4,6 +4,13 @@ Desktop-first browser POC for learning linear algebra through guided animations 
 
 ## Status
 
+**Milestone 6 complete** — production polish, performance, and release
+readiness: route/scene/explorer-level lazy loading (home page no longer
+loads Motion Canvas, Mafs, or KaTeX), production gating of dev-only routes,
+error boundaries with learner-facing retry, a polished home page, and a
+responsive/accessibility/consistency pass across all four lessons. Details:
+[docs/m6-release-polish.md](docs/m6-release-polish.md).
+
 **Milestone 5 complete** — Lessons 3 (Determinants as Signed Area Scaling) and
 4 (Eigenvectors and Eigenvalues) are fully implemented with guided scenes,
 Mafs explorers, deterministic practice, and shared math/examples. Details:
@@ -71,6 +78,24 @@ npm run test:e2e       # Playwright (browsers: npx playwright install chromium)
 
 Guided and interactive scenes must consume the same example ids — never duplicate constants.
 
+### Why Motion Canvas and Mafs have separate roles
+
+Motion Canvas drives the **guided, read-only** animation (deliberate pacing,
+staged reveals, one conceptual change at a time — see [LESSON_DESIGN.md](docs/LESSON_DESIGN.md#motion-canvas-responsibilities)).
+Mafs drives the **learner-controlled** exploration (draggable vectors,
+sliders, immediate feedback). Both consume the same `src/math` utilities and
+the same example data, but neither is a general-purpose UI framework, so
+mixing their responsibilities is deliberately avoided.
+
+### Lazy loading
+
+Both libraries are large, so neither loads on the home page. `LessonPage` is
+route-lazy; each guided scene module (`src/guided-scenes/scenes/sceneDescriptions.ts`)
+and each interactive explorer (`src/explorations/registry.tsx`) is its own
+dynamic import, fetched only when a learner opens the lesson that needs it.
+See [docs/m6-release-polish.md](docs/m6-release-polish.md) for before/after
+bundle sizes and the full M6 write-up.
+
 ## Project standards
 
 Read these before adding or changing lessons or math visualizations:
@@ -78,6 +103,7 @@ Read these before adding or changing lessons or math visualizations:
 - **Lesson design:** [docs/LESSON_DESIGN.md](docs/LESSON_DESIGN.md) — pedagogy, flow, notation, visual language, anti-patterns.
 - **Visual system:** [docs/visual-design-refinement.md](docs/visual-design-refinement.md) — light-first palette & tokens, typography roles, six-phase hierarchy, guided/explorer/exercise presentation (Lesson 1 is the reference).
 - **M5 lessons:** [docs/m5-lessons.md](docs/m5-lessons.md) — determinants and eigenvectors.
+- **M6 release polish:** [docs/m6-release-polish.md](docs/m6-release-polish.md) — bundle sizes, code splitting, dev-route gating, accessibility/responsive audits.
 - **Lesson template:** [docs/LESSON_TEMPLATE.md](docs/LESSON_TEMPLATE.md) — fill-in planning template.
 - **Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).
 - **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).
@@ -113,6 +139,9 @@ through the engine, so lesson data and React never touch Motion Canvas.
 3. Determinants as Signed Area Scaling — `/lesson/determinants` (complete)
 4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors` (complete)
 
-Dev-only Motion Canvas spike: `/dev/transform-spike` (explicit id only — never a silent fallback).
+Dev-only Motion Canvas spike: `/dev/transform-spike` (explicit id only — never
+a silent fallback). Development-only; excluded from production route tables
+and builds via `import.meta.env.DEV` (see `src/app/routes.tsx` and
+[docs/m6-release-polish.md](docs/m6-release-polish.md)).
 
 `mathjs` is a **dev-only** dependency (cross-check tests); no production module imports it.

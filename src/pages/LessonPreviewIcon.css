@@ -1,0 +1,35 @@
+.lesson-preview-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lesson-preview-icon__original {
+  stroke: var(--role-original);
+}
+
+.lesson-preview-icon__basis-1 {
+  stroke: var(--role-basis-1);
+}
+
+.lesson-preview-icon__basis-2 {
+  stroke: var(--role-basis-2);
+}
+
+.lesson-preview-icon__result {
+  stroke: var(--role-result);
+}
+
+.lesson-preview-icon__grid-shape {
+  stroke: var(--role-basis-1);
+  fill: none;
+}
+
+.lesson-preview-icon__result-fill {
+  stroke: var(--role-invariant);
+  fill: color-mix(in srgb, var(--role-invariant) 18%, transparent);
+}

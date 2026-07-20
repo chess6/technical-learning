@@ -1,13 +1,17 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { StrictMode } from "react";
-import { render } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GuidedScenePlayer } from "../GuidedScenePlayer";
 import { SvgFallbackEngine } from "../../../guided-scenes/engine/SvgFallbackEngine";
 import {
   guidedSceneDebug,
   instrumentation,
 } from "../../../guided-scenes/engine/instrumentation";
-import type { GuidedSceneEngineOptions } from "../../../guided-scenes/engine/types";
+import type {
+  GuidedSceneEngine,
+  GuidedSceneEngineOptions,
+  GuidedSceneState,
+} from "../../../guided-scenes/engine/types";
 
 function makeFactory() {
   return (options: GuidedSceneEngineOptions) => new SvgFallbackEngine(options);
@@ -87,5 +91,72 @@ describe("GuidedScenePlayer lifecycle", () => {
     expect(instrumentation.snapshot().activeEngines).toBe(1);
     unmount();
     expect(guidedSceneDebug.isClean()).toBe(true);
+  });
+
+  it("shows learner-facing error UI with a retry when the engine fails to load (M6)", async () => {
+    let attempt = 0;
+
+    class FakeFailingThenWorkingEngine implements GuidedSceneEngine {
+      readonly steps = [];
+      private state: GuidedSceneState;
+      private listener: ((state: GuidedSceneState) => void) | null = null;
+      private readonly shouldFail: boolean;
+
+      constructor(shouldFail: boolean) {
+        this.shouldFail = shouldFail;
+        this.state = {
+          status: "idle",
+          progress: 0,
+          duration: null,
+          currentStep: null,
+          canSeek: false,
+          error: null,
+        };
+      }
+
+      mount(): void {
+        if (this.shouldFail) {
+          this.state = {
+            ...this.state,
+            status: "error",
+            error: "chunk load failed",
+          };
+          this.listener?.(this.state);
+        }
+      }
+      play(): void {}
+      pause(): void {}
+      reset(): void {}
+      seek(): void {}
+      resize(): void {}
+      dispose(): void {}
+      getState(): GuidedSceneState {
+        return this.state;
+      }
+      subscribe(listener: (state: GuidedSceneState) => void): () => void {
+        this.listener = listener;
+        listener(this.state);
+        return () => {
+          this.listener = null;
+        };
+      }
+    }
+
+    const factory = () => {
+      attempt += 1;
+      return new FakeFailingThenWorkingEngine(attempt === 1);
+    };
+
+    render(<GuidedScenePlayer sceneId="transform-spike" createEngine={factory} />);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("chunk load failed");
+
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+    expect(attempt).toBe(2);
   });
 });

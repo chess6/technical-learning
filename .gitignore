@@ -16,6 +16,8 @@ dist-ssr
 test-results
 playwright-report
 coverage
+tmp-screenshots/
+.playwright-mcp/
 
 # Local script runtime (dev server pid/log)
 .run/

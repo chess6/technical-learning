@@ -18,12 +18,29 @@ type Counters = {
   activeSubscribers: number;
 };
 
+/**
+ * The guided-scene engine module (and its debug hook) is lazy-loaded only on
+ * lesson routes (see routes.tsx / LessonPage). On routes that never import
+ * it — the home page, after a hard navigation — the hook is legitimately
+ * absent, which itself proves nothing guided-scene-related loaded there.
+ * Treat that as all-zero counters rather than an error.
+ */
 async function counters(page: Page): Promise<Counters> {
   return page.evaluate(() => {
     const debug = (window as unknown as {
       __guidedSceneDebug?: { snapshot(): Counters };
     }).__guidedSceneDebug;
-    if (!debug) throw new Error("guided scene debug not present");
+    if (!debug) {
+      return {
+        created: 0,
+        activeEngines: 0,
+        mounts: 0,
+        disposals: 0,
+        activeLoops: 0,
+        activeResources: 0,
+        activeSubscribers: 0,
+      };
+    }
     return debug.snapshot();
   });
 }

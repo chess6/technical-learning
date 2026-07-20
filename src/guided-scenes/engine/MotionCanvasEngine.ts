@@ -40,10 +40,10 @@ const VERSIONS: Versions = {
  * docs/motion-canvas-spike.md). They are used only for construction, never for
  * lifecycle instrumentation.
  */
-function buildProject(sceneId: string): Project {
+async function buildProject(sceneId: string): Promise<Project> {
   const name = `guided-${sceneId}`;
   const description = {
-    ...(getSceneDescription(sceneId) as object),
+    ...((await getSceneDescription(sceneId)) as object),
     name,
   } as unknown as FullSceneDescription;
 
@@ -91,8 +91,25 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
   async mount(container: HTMLElement): Promise<void> {
     if (this.isDisposed) return;
 
+    let project: Project;
+    try {
+      project = await buildProject(this.sceneId);
+    } catch (error) {
+      if (this.isDisposed) return;
+      this.setState({
+        status: "error",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to load the guided animation.",
+      });
+      return;
+    }
+    // The scene module load above is async; the container may already have
+    // been unmounted (fast navigation) by the time it resolves.
+    if (this.isDisposed) return;
+
     const stage = new Stage();
-    const project = buildProject(this.sceneId);
     const player = new Player(project);
     // The Player constructor activates itself, starting the update loop.
     this.loopActive = true;

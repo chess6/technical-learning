@@ -51,6 +51,7 @@ export function GuidedScenePlayer({
     createInitialState(true),
   );
   const [mounted, setMounted] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
   const autoplay = useAutoplayOnceGuard();
   const substantiallyVisible = useSubstantialVisibility(containerEl, 0.55);
 
@@ -94,7 +95,7 @@ export function GuidedScenePlayer({
     };
     // majorSteps is stable per sceneId; include sceneId via createEngine.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [createEngine, reducedMotion]);
+  }, [createEngine, reducedMotion, retryToken]);
 
   // Autoplay once when substantially visible.
   useEffect(() => {
@@ -285,9 +286,16 @@ export function GuidedScenePlayer({
       )}
 
       {state.error && (
-        <p className="guided-scene-player__error" role="alert">
-          {state.error}
-        </p>
+        <div className="guided-scene-player__error" role="alert">
+          <p>This animation couldn't load. {state.error}</p>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => setRetryToken((token) => token + 1)}
+          >
+            Try again
+          </button>
+        </div>
       )}
 
       {showDebug && <DebugReadout />}
