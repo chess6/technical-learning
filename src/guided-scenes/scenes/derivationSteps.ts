@@ -41,8 +41,9 @@ const DERIVATION_SCENE_STEPS: readonly DerivationStep[] = [
     id: "charpoly",
     equation: "\\det(A-\\lambda I)=0",
     label: "det(A − λI) = 0",
+    // 2D sidebar / notebook copy — unit square & area (not the 3D cube/volume wording).
     caption:
-      "The transformed unit cube has zero volume, so the determinant is zero.",
+      "The transformed unit square has zero area, so the determinant is zero.",
     threeD: "shift-collapse",
   },
   {

@@ -47,6 +47,18 @@ describe("derivationSteps semantic map", () => {
     const step = resolveThreeDStep("eigenvectors-derivation", "recap");
     expect(step?.threeD).toBe("invariant-line");
   });
+
+  it("uses 2D area language in derivation captions (not 3D cube/volume)", () => {
+    const steps = getDerivationSteps("eigenvectors-derivation");
+    expect(steps).toBeTruthy();
+    for (const step of steps!) {
+      expect(step.caption.toLowerCase()).not.toMatch(/\bcube\b/);
+      expect(step.caption.toLowerCase()).not.toMatch(/\bvolume\b/);
+    }
+    const charpoly = steps!.find((step) => step.id === "charpoly");
+    expect(charpoly?.caption.toLowerCase()).toMatch(/unit square/);
+    expect(charpoly?.caption.toLowerCase()).toMatch(/area/);
+  });
 });
 
 describe("EigenClipStage", () => {
