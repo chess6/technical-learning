@@ -16,6 +16,7 @@ dist-ssr
 test-results
 playwright-report
 coverage
+screenshots/
 tmp-screenshots/
 .playwright-mcp/
 

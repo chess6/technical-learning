@@ -35,3 +35,7 @@ Before changing math or visualizations: `docs/MATH_CORRECTNESS.md`, `docs/ERROR_
 ## Verify
 
 After meaningful changes: `npm run lint`, `npm run test`, and e2e when touching player/layout/lesson flow (`npm run test:e2e`).
+
+## Browser review screenshots
+
+Save app screenshots **only** under `screenshots/` in the project workspace (gitignored). Always pass an absolute path such as `/home/thomas/Dev/technical-learning/screenshots/<name>.png` to Playwright / browser tools. Never write review captures to the home directory, Downloads, or other unrelated locations.

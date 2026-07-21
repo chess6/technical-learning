@@ -210,7 +210,8 @@ export function EigenClipStage({
         onSelectStep={handleSelectStep}
         returnFocusRef={expandButtonRef}
       >
-        {expanded && renderActiveViz({ autoplay: false })}
+        {expanded &&
+          renderActiveViz({ autoplay: mode === "derivation" })}
       </EigenClipModal>
     </div>
   );

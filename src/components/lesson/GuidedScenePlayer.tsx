@@ -33,8 +33,9 @@ type GuidedScenePlayerProps = {
   /** Fires when the active major step id changes. Backward compatible. */
   onClipPositionChange?: (position: ClipPosition) => void;
   /**
-   * When false, skip autoplay-once (e.g. modal remount that should stay paused
-   * at the seeded step). Defaults to true.
+   * When false, skip autoplay-once (e.g. deliberately paused remounts).
+   * Defaults to true — including expand-modal remounts, which should resume
+   * autoplay once the canvas is substantially visible.
    */
   autoplayEnabled?: boolean;
 };

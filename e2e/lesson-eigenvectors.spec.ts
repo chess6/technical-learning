@@ -95,6 +95,10 @@ test("Lesson 4 expand modal and 3D extension preserve semantic step and single r
   const modal = page.getByTestId("eigen-clip-modal");
   await expect(modal).toBeVisible();
   await expect(watchStage.getByTestId("eigen-clip-inline")).toHaveCount(0);
+  // Expand remounts the player — modal should autoplay like the inline clip.
+  await expect(modal.getByRole("button", { name: "Pause" })).toBeEnabled({
+    timeout: 6000,
+  });
   await expect(modal.locator('[data-step-id="fan"], [data-step-id="recap"]').first()).toHaveAttribute(
     "data-active",
     "true",

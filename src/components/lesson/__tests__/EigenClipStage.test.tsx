@@ -129,6 +129,12 @@ describe("EigenClipStage", () => {
     await waitFor(() => {
       expect(instrumentation.snapshot().activeEngines).toBe(1);
     });
+    // Expand remounts the player; 2D derivation should autoplay in the modal.
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Pause" }),
+      ).toBeTruthy();
+    });
 
     await act(async () => {
       fireEvent.keyDown(document, { key: "Escape" });
