@@ -67,9 +67,8 @@ export function KaratsubaExplorer() {
   const [showWeights, setShowWeights] = useState(true);
   const [showAux, setShowAux] = useState(true);
   const [showTree, setShowTree] = useState(false);
-  const [showParabola, setShowParabola] = useState(false);
+  const [showQuadraticNote, setShowQuadraticNote] = useState(false);
   const [treeN, setTreeN] = useState(8);
-  const [treeDepth, setTreeDepth] = useState(2);
   const [showExampleTrace, setShowExampleTrace] = useState(false);
   const [activePreset, setActivePreset] = useState(KARATSUBA_CLEAN.id);
 
@@ -105,9 +104,8 @@ export function KaratsubaExplorer() {
     setShowWeights(true);
     setShowAux(true);
     setShowTree(false);
-    setShowParabola(false);
+    setShowQuadraticNote(false);
     setTreeN(8);
-    setTreeDepth(2);
     setShowExampleTrace(false);
     setActivePreset(KARATSUBA_CLEAN.id);
   }, []);
@@ -252,9 +250,9 @@ export function KaratsubaExplorer() {
               },
               {
                 id: "parabola",
-                label: "Show the parabola view (advanced)",
-                checked: showParabola,
-                onChange: setShowParabola,
+                label: "Show the quadratic-evaluation note (advanced)",
+                checked: showQuadraticNote,
+                onChange: setShowQuadraticNote,
               },
             ]}
           />
@@ -359,7 +357,7 @@ export function KaratsubaExplorer() {
         <div className="karatsuba-explorer__frame">{weightedView}</div>
         {auxView ? <div className="karatsuba-explorer__frame">{auxView}</div> : null}
       </div>
-      {showParabola ? (
+      {showQuadraticNote ? (
         <p className="karatsuba-explorer__parabola" data-testid="parabola-note">
           <ProseWithMath text="Advanced: the three products are three evaluations of the product quadratic $x(t)y(t)$ at $t=0,1,\\infty$. Optional deeper connection — not required for the elementary chain." />
         </p>
@@ -367,10 +365,8 @@ export function KaratsubaExplorer() {
       {showTree ? (
         <KaratsubaTreeDiagram
           n={treeN}
-          depth={treeDepth}
           showExampleTrace={showExampleTrace}
           onNChange={setTreeN}
-          onDepthChange={setTreeDepth}
           onShowExampleTraceChange={setShowExampleTrace}
         />
       ) : null}

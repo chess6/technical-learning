@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { leafCount, multiplicationCount, recursionTree, type TreeNode } from "../math";
+import { multiplicationCount, recursionTree, type TreeNode } from "../math";
 import { KARATSUBA_RECURSIVE } from "../lessons/karatsubaData";
 import { karatsubaStep } from "../math";
 import "./KaratsubaTreeDiagram.css";
@@ -7,10 +7,8 @@ import "./KaratsubaTreeDiagram.css";
 type Props = {
   /** Digit length n (power of 2) for the conceptual cost model. */
   n: number;
-  depth: number;
   showExampleTrace: boolean;
   onNChange: (n: number) => void;
-  onDepthChange: (depth: number) => void;
   onShowExampleTraceChange: (show: boolean) => void;
 };
 
@@ -24,7 +22,7 @@ function renderTreeSvg(
   depth: number,
   width: number,
   height: number,
-): { paths: string[]; nodes: { x: number; y: number }[] } {
+): { paths: string[]; nodes: { x: number; y: number }[]; leaves: number } {
   const tree = recursionTree(branch, depth);
   const nodes: { x: number; y: number; id: string }[] = [];
   const paths: string[] = [];
@@ -52,25 +50,23 @@ function renderTreeSvg(
   }
 
   layout(tree, depth, 8, width - 8, 16, "r");
-  return { paths, nodes };
+  // Leaf total of the tree that is actually drawn — keeps caption honest.
+  return { paths, nodes, leaves: countLeaves(tree) };
 }
 
 export function KaratsubaTreeDiagram({
   n,
-  depth,
   showExampleTrace,
   onNChange,
-  onDepthChange,
   onShowExampleTraceChange,
 }: Props) {
+  // Single source of truth: draw the tree at the same depth the captions describe.
   const levels = Math.log2(n);
-  const leaves3 = leafCount(3, levels);
-  const leaves4 = leafCount(4, levels);
   const multi3 = multiplicationCount(n, 3);
   const multi4 = multiplicationCount(n, 4);
 
-  const tree3 = useMemo(() => renderTreeSvg(3, depth, 220, 140), [depth]);
-  const tree4 = useMemo(() => renderTreeSvg(4, depth, 220, 140), [depth]);
+  const tree3 = useMemo(() => renderTreeSvg(3, levels, 220, 140), [levels]);
+  const tree4 = useMemo(() => renderTreeSvg(4, levels, 220, 140), [levels]);
 
   const recursive = useMemo(
     () =>
@@ -92,21 +88,7 @@ export function KaratsubaTreeDiagram({
             onChange={(e) => onNChange(Number(e.target.value))}
             aria-label="Digit length n"
           >
-            {[2, 4, 8, 16].map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Tree depth
-          <select
-            value={depth}
-            onChange={(e) => onDepthChange(Number(e.target.value))}
-            aria-label="Tree depth"
-          >
-            {[1, 2, 3].map((v) => (
+            {[2, 4, 8].map((v) => (
               <option key={v} value={v}>
                 {v}
               </option>
@@ -134,7 +116,7 @@ export function KaratsubaTreeDiagram({
             ))}
           </svg>
           <p data-testid="tree-leaves-4">
-            Leaves at depth {levels}: {leaves4} (= n² for n={n}; multiplications {multi4})
+            Leaves at depth {levels}: {tree4.leaves} (= n² for n={n}; multiplications {multi4})
           </p>
         </figure>
         <figure className="karatsuba-tree__fig">
@@ -154,7 +136,7 @@ export function KaratsubaTreeDiagram({
             ))}
           </svg>
           <p data-testid="tree-leaves-3">
-            Leaves at depth {levels}: {leaves3} (multiplications {multi3})
+            Leaves at depth {levels}: {tree3.leaves} (multiplications {multi3})
           </p>
         </figure>
       </div>
@@ -169,8 +151,6 @@ export function KaratsubaTreeDiagram({
           {recursive.product.toLocaleString()}.
         </aside>
       ) : null}
-      {/* Keep countLeaves referenced for future interactive expand */}
-      <span className="karatsuba-tree__sr-only">{countLeaves(recursionTree(3, depth))}</span>
     </section>
   );
 }

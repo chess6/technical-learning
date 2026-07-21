@@ -225,6 +225,26 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
 
   const weightLabels = createSignal(0);
 
+  // Place-value weight labels centered in each weighted subrectangle.
+  // AC = 100, AD = 10, BC = 10 (the two that share a weight), BD = 1.
+  const weightLabelSpecs: { tex: string; pos: Vector2 }[] = [
+    { tex: "100", pos: new Vector2(wx0 + splitX / 2, wy0 + splitY / 2) },
+    { tex: "10", pos: new Vector2(wx0 + splitX / 2, wy0 + splitY + (wH - splitY) / 2) },
+    { tex: "10", pos: new Vector2(wx0 + splitX + (wW - splitX) / 2, wy0 + splitY / 2) },
+    { tex: "1", pos: new Vector2(wx0 + splitX + (wW - splitX) / 2, wy0 + splitY + (wH - splitY) / 2) },
+  ];
+  for (const spec of weightLabelSpecs) {
+    const label = new Latex({
+      tex: spec.tex,
+      fill: ROLE.text,
+      fontSize: 24,
+      position: spec.pos,
+    });
+    // Reactive opacity: hidden at t=0, faded in during the weights() beat.
+    label.opacity(() => weightLabels());
+    view.add(label);
+  }
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *setup() {
       // Establishing frame already visible at t=0.
@@ -247,8 +267,8 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
         "Prediction: which two pieces share a place-value weight?",
         0.4,
       );
-      weightLabels(1);
-      yield* waitFor(seconds.weights);
+      yield* weightLabels(1, 0.6);
+      yield* waitFor(seconds.weights - 0.6);
     },
     *share() {
       yield* all(
@@ -292,7 +312,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
         auxAd.opacity(0.9, 0.6),
         auxBc.opacity(0.9, 0.6),
         caption.text(
-          "L-shape left = AD+BC = z₁ = 12 − 1 − 6 = 5",
+          "The two opposite corners left = AD+BC = z₁ = 12 − 1 − 6 = 5",
           0.4,
         ),
         formula.tex("z_1=(A+B)(C+D)-AC-BD", 0.4),
@@ -368,7 +388,4 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   for (const segment of KARATSUBA_SEGMENTS) {
     yield* bodies[segment.id]!();
   }
-
-  // Silence unused signal warning in strict builds — weightLabels reserved for label fade.
-  void weightLabels;
 });

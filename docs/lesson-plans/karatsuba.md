@@ -154,7 +154,7 @@ rule).
 | `weights` | Place-value weights | Tag pieces with $100,10,10,1$ — **prediction pause** | weights $100,10,10,1$ |
 | `share` | The middle collapses | $AD$ and $BC$ share weight $10$ ⇒ only $AD+BC$ matters. Puzzle: 4 pieces, 3 levels | $100AC+10(AD+BC)+BD$ |
 | `aux-rect` | A different rectangle | Introduce the **separate auxiliary coefficient rectangle** $(A+B)(C+D)=3\times4$ | $(A+B)(C+D)=AC+AD+BC+BD$ |
-| `subtract` | Peel off the corners | Remove $AC$ and $BD$; L-shape left = $AD+BC$ — **prediction pause** | $z_1=(A+B)(C+D)-AC-BD$ |
+| `subtract` | Peel off the corners | Remove $AC$ and $BD$; the two opposite corners left = $AD+BC$ — **prediction pause** | $z_1=(A+B)(C+D)-AC-BD$ |
 | `reassemble` | Rebuild the answer | $100z_2+10z_1+z_0=156$ from three products | $z_2=AC,\ z_0=BD,\ \text{result}=100z_2+10z_1+z_0$ |
 | `carry-vs-width` | Two kinds of "too big" | Switch to $78\times56$: $z_i$ overflow ⇒ **output carrying**; $A+B=15$ ⇒ **wider operand** in $(A+B)(C+D)$, handled by padding, not a 4th product | $z_2B^{2m}+z_1B^m+z_0$ then carry |
 | `branch` | Four calls or three? | Side-by-side **conceptual recurrence trees**: branch 4 vs branch 3 — **prediction pause** | $T(n)=4T(n/2)$ vs $3T(n/2)+\Theta(n)$ |
@@ -167,7 +167,7 @@ rule).
   optional.
 - **`majorSteps`** (Prev/Next idea): `["foil","share","aux-rect","subtract","reassemble","carry-vs-width","branch","exponent"]`. `setup` stays in `steps` but out of major nav.
 - **Pauses / dimming plan:** dim inactive subrectangles when a weight is discussed; when the auxiliary rectangle enters, translate/scale it to a clearly separate canvas region and label both rectangles with persistent titles so they are never confused.
-- **Honest labelling of any interpolation:** the peel animation must show the *actual* remaining area equals $AD+BC$ (no faked L-shape); the recursion-tree leaf counts must match `leafCount()` from `src/math/karatsuba.ts` exactly.
+- **Honest labelling of any interpolation:** the peel animation must show the *actual* remaining area equals $AD+BC$ — the two opposite-corner subrectangles, not an L-shape; the recursion-tree leaf counts must match `leafCount()` from `src/math/karatsuba.ts` exactly.
 
 ### Learner prompts and prediction pauses (verbatim)
 

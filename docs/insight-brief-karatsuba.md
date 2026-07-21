@@ -58,8 +58,8 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
   subtractions.
 - Visual/interactive: the auxiliary coefficient rectangle of width $a+b$, height
   $c+d$, partitioned into four subrectangles $ac, ad, bc, bd$. Shade it whole, then
-  "peel off" the $ac$ and $bd$ subrectangles; the remaining L-shape is the single
-  quantity $ad+bc$ you actually needed.
+  "peel off" the $ac$ and $bd$ subrectangles; the two remaining opposite-corner
+  subrectangles are exactly the single quantity $ad+bc$ you actually needed.
 - New prediction: the middle level is one product plus two subtractions, so an
   explicit three-product construction computes the whole result — three half-size
   multiplications instead of four.
@@ -288,7 +288,7 @@ Criteria: (1) surprise before / inevitability after; (2) explanatory compression
 - Correctness: exact and elementary; the construction is explicit (no reliance on
   rank–nullity to claim removability).
 - Teachability: excellent — a four-tile rectangle, peel two subrectangles, keep the
-  L-shape.
+  two opposite corners.
 - Prerequisites: FOIL and place value only. Chosen primary.
 
 ### #2 — C5: branching factor sets the exponent

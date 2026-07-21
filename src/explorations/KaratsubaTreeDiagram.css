@@ -98,11 +98,3 @@
   border-left: 3px solid var(--role-selected);
   background: color-mix(in srgb, var(--role-selected) 12%, transparent);
 }
-
-.karatsuba-tree__sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-}

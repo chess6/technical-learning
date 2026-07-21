@@ -27,6 +27,27 @@ rules over one-off patches.
 
 ---
 
+### 2026-07-20 — Karatsuba recurrence-tree picture/caption mismatch, missing weight labels, wrong "L-shape"
+
+- **Date:** 2026-07-20
+- **Title:** Karatsuba recurrence-tree picture/caption mismatch, missing weight labels, wrong "L-shape"
+- **Symptom:**
+  1. The explorer's conceptual recursion tree was drawn at a separate `depth` prop (default 2) while its caption read "Leaves at depth {levels}: 27/64" (levels = log₂ n = 3 at n=8) — the drawn picture contradicted the stated leaf count.
+  2. The guided scene's "Place-value weights" beat asked "which two pieces share a place-value weight?" but drew no weight labels; the `weightLabels` signal was discarded via `void weightLabels`.
+  3. The `subtract()` beat captioned the region remaining after peeling AC and BD as an "L-shape"; peeling two opposite corners actually leaves AD + BC — two opposite diagonal corners, not an L.
+- **Mathematical expectation:** A recursion-tree drawing must have the same depth/leaf count as its caption (branch³ = 27 leaves for branch 3, 64 for branch 4 at n=8). The two shared-weight middle pieces (AD and BC, both weight 10) must be visibly labeled. After removing AC (top-left) and BD (bottom-right), the remaining area is AD (bottom-left) + BC (top-right).
+- **Root cause:** An independent `depth` control decoupled the drawn tree from the `levels = log₂ n` used in captions; the weight-label fade was stubbed out and never implemented; caption copy described the wrong geometry.
+- **Affected files:** `src/explorations/KaratsubaTreeDiagram.tsx`, `src/explorations/KaratsubaExplorer.tsx`, `src/guided-scenes/scenes/karatsubaCrossTermsScene.ts`
+- **Fix:**
+  1. Draw both trees at `renderDepth = levels = log₂ n`, restrict n to `[2, 4, 8]`, remove the redundant "Tree depth" control and its plumbing, and derive the caption leaf total from `countLeaves()` of the actually-drawn tree so picture and number agree by construction.
+  2. Add four `Latex` weight labels (100 on AC, 10 on AD, 10 on BC, 1 on BD) at the subrectangle centers using the existing `wx0/wy0/splitX/splitY/wW/wH` coordinates, opacity bound to the `weightLabels` signal (hidden at t=0, faded in during the `weights()` beat).
+  3. Reword the caption to "The two opposite corners left = AD+BC = z₁ = 12 − 1 − 6 = 5" (numbers unchanged).
+- **Regression test added:** `src/explorations/__tests__/KaratsubaExplorer.test.tsx` — leaf-count captions track drawn depth (log₂ n) for n ∈ {2,4,8}; the "Tree depth" control is gone; the advanced toggle reveals a quadratic-evaluation note. Existing `karatsuba.test.ts` leaf-count invariants still cover the math source of truth.
+- **General lesson / prevention rule:** A visualization's geometry (tree depth, drawn regions) must be derived from the same quantity as its caption — no independent "depth" knob that can desync from `log₂ n`. When a caption asks the learner to find something in the picture (shared weights) or names a shape ("L-shape", "opposite corners"), the drawn geometry must actually show it.
+- **Status:** fixed
+
+---
+
 ### 2026-07-20 — Overlay captions sat on teaching geometry
 
 - **Date:** 2026-07-20

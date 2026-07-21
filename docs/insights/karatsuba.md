@@ -111,7 +111,7 @@ $10C+D$) tags each of the four subrectangles with its place-value weight $100$,
 $10$, $10$, $1$, making the shared weight of $AD$ and $BC$ visible — the learner
 sees *what* combined quantity ($AD+BC$) is needed. Then the **auxiliary
 coefficient rectangle** ($A+B$ by $C+D$): the learner shades it whole, "peels off"
-the $AC$ and $BD$ subrectangles, and the remaining L-shape is exactly $AD+BC$ —
+the $AC$ and $BD$ subrectangles, and the two remaining opposite-corner subrectangles are exactly $AD+BC$ —
 seeing *how* one extra product supplies it.
 
 ### 9. What the learner can predict afterward

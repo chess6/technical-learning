@@ -262,8 +262,8 @@ text, ordering, region-shading, learner-built expressions), this is called out a
   drag-to-shade-a-region task needs **new region-interaction support**.
 - **Placement:** **Explore** (the explorer *is* the multi-representation surface)
   and **Practice**.
-- **Karatsuba example:** "The L-shaped region left after peeling \(AC\) and \(BD\)
-  from the \((A+B)(C+D)\) rectangle equals which algebraic quantity?" →
+- **Karatsuba example:** "The region left after peeling \(AC\) and \(BD\)
+  from the \((A+B)(C+D)\) rectangle (the two opposite corners) equals which algebraic quantity?" →
   `multiple-choice` (\(AD + BC\)).
 - **Other-domain example (Fourier):** "This time-domain spike corresponds to which
   feature of the frequency-domain plot?" → `multiple-choice`.
