@@ -24,7 +24,10 @@ export const COURSE_SECTIONS: readonly CourseSection[] = [
   {
     id: "foundations",
     title: "Foundations",
-    items: [{ kind: "lesson", lessonId: "vectors" }],
+    items: [
+      { kind: "lesson", lessonId: "why-linear-algebra" },
+      { kind: "lesson", lessonId: "vectors" },
+    ],
   },
   {
     id: "transformations",

@@ -77,6 +77,17 @@ export const MATRIX_EXAMPLES = [
     inputVector: [1, 0],
   },
   {
+    id: "projection-x",
+    title: "Projection onto x-axis",
+    description:
+      "Flattens the plane onto the x-axis; the y-column is zero, so it is singular.",
+    matrix: [
+      [1, 0],
+      [0, 0],
+    ],
+    inputVector: [1, 1],
+  },
+  {
     id: "determinant-negative",
     title: "Negative determinant",
     description: "Reverses orientation while stretching area.",

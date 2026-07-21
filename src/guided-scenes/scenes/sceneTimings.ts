@@ -44,6 +44,21 @@ export const MATRIX_TRANSFORMATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "summary", title: "Columns are the basis images", duration: 3 },
 ];
 
+/**
+ * Chapter 0 — "Why Linear Algebra?" walking skeleton. A recognizable graphic is
+ * carried through a short tour of canonical 2×2 transformations, ending on the
+ * central mystery. No column/derivation teaching here (that is Lesson 2).
+ */
+export const CHAPTER0_SEGMENTS: readonly SceneSegment[] = [
+  { id: "establish", title: "One craft on a grid", duration: 4 },
+  { id: "scale", title: "Scaling", duration: 5 },
+  { id: "rotation", title: "Rotation", duration: 5 },
+  { id: "reflection", title: "Reflection", duration: 5 },
+  { id: "shear", title: "Shear", duration: 5 },
+  { id: "projection", title: "Projection collapses the plane", duration: 5 },
+  { id: "mystery", title: "Four numbers, every vertex", duration: 5 },
+];
+
 export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
   { id: "identity", title: "Identity grid", duration: 0.4 },
   { id: "transform", title: "Apply the matrix", duration: 2 },

@@ -134,12 +134,18 @@ export function LessonPage() {
           />
         )
       }
-      exercises={<ExercisePanel exercises={lesson.exercises} />}
+      exercises={
+        lesson.exercises && lesson.exercises.length > 0 ? (
+          <ExercisePanel exercises={lesson.exercises} />
+        ) : undefined
+      }
       summary={
-        <LessonSummary
-          takeaway={lesson.keyTakeaway}
-          objectives={lesson.learningObjectives}
-        />
+        lesson.keyTakeaway ? (
+          <LessonSummary
+            takeaway={lesson.keyTakeaway}
+            objectives={lesson.learningObjectives}
+          />
+        ) : undefined
       }
     />
   );

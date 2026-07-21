@@ -12,6 +12,8 @@ import { hasGuidedScene } from "./sceneMeta";
  * Motion Canvas import) — never silently substitute the transform-spike scene.
  */
 const LOADERS: Record<string, () => Promise<unknown>> = {
+  "why-linear-algebra": () =>
+    import("./chapter0Scene").then((m) => m.chapter0Scene),
   "vectors-linear-combinations": () =>
     import("./linearCombinationScene").then((m) => m.linearCombinationScene),
   "matrix-transformations": () =>

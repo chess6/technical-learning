@@ -72,7 +72,7 @@ describe("gradeExercise", () => {
 
   it("grades both Karatsuba carry-vs-width exercises", () => {
     for (const id of ["karatsuba-width-vs-carry", "karatsuba-output-carry"]) {
-      const exercise = karatsubaLesson.exercises.find((ex) => ex.id === id);
+      const exercise = karatsubaLesson.exercises!.find((ex) => ex.id === id);
       expect(exercise, `exercise ${id} exists`).toBeDefined();
       const mcExercise = exercise as Extract<
         ExerciseDefinition,

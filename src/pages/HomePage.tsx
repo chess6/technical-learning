@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { lessons } from "../lessons/registry";
+import { lessons, getLessonNumber } from "../lessons/registry";
 import { LessonPreviewIcon } from "./LessonPreviewIcon";
 import "./LessonPreviewIcon.css";
 import "./HomePage.css";
@@ -31,7 +31,7 @@ export function HomePage() {
         </p>
         <p className="home-page__cta">
           <Link to={`/lesson/${lessons[0]!.id}`} className="btn btn--primary">
-            Start with Lesson 1
+            Start with Chapter 0
           </Link>
         </p>
       </header>
@@ -49,11 +49,11 @@ export function HomePage() {
       </ol>
 
       <ol className="home-page__list" aria-label="Lessons, in recommended order">
-        {lessons.map((lesson, index) => (
+        {lessons.map((lesson) => (
           <li key={lesson.id} className="home-page__item">
             <Link to={`/lesson/${lesson.id}`} className="home-page__link">
               <span className="home-page__index" aria-hidden="true">
-                {index + 1}
+                {getLessonNumber(lesson.id)}
               </span>
               <LessonPreviewIcon lessonId={lesson.id} />
               <span className="home-page__link-text">

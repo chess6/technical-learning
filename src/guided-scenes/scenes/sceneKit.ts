@@ -131,6 +131,31 @@ export function makeGhostClosedRegion(
   });
 }
 
+/**
+ * A closed graphic (polygon) whose vertices follow a live matrix. The points
+ * signal maps each math-space outline vertex through the current matrix and into
+ * scene pixels, so the shape deforms with the transformation. Solid stroke +
+ * translucent fill = the "current / transformed" state (pair with
+ * {@link makeGhostClosedRegion} for the dashed "original" ghost).
+ *
+ * Geometry always goes through the shared math (`matrixVectorMultiply`); this
+ * helper never reimplements linear algebra.
+ */
+export function makeGraphic(
+  matrixAt: () => Matrix2x2,
+  outline: readonly MathVector2[],
+  color: string = ROLE.transformed,
+): Line {
+  return new Line({
+    stroke: color,
+    lineWidth: 4,
+    lineJoin: "round",
+    closed: true,
+    points: () =>
+      outline.map((v) => toPixels(matrixVectorMultiply(matrixAt(), v))),
+  });
+}
+
 export function makeArrow(
   color: string,
   width = 6,

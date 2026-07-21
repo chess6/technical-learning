@@ -7,6 +7,13 @@
  */
 export function LessonPreviewIcon({ lessonId }: { lessonId: string }) {
   switch (lessonId) {
+    case "why-linear-algebra":
+      return (
+        <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">
+          <path d="M18 8 L24 22 L18 30 L10 24 Z" className="lesson-preview-icon__original" />
+          <path d="M30 12 L40 26 L32 36 L22 30 Z" className="lesson-preview-icon__result" strokeDasharray="3 3" />
+        </svg>
+      );
     case "vectors":
       return (
         <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">

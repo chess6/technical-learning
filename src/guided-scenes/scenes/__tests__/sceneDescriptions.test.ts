@@ -27,6 +27,7 @@ describe("scene description loaders (M6 lazy-loading)", () => {
 
   it("lists every production scene id used by SCENE_META", () => {
     const ids = listSceneDescriptionIds();
+    expect(ids).toContain("why-linear-algebra");
     expect(ids).toContain("vectors-linear-combinations");
     expect(ids).toContain("matrix-transformations");
     expect(ids).toContain("determinant-area-scaling");

@@ -1,7 +1,11 @@
 import { useEffect, useId } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { COURSE_SECTIONS } from "../../lessons/curriculum";
-import { getLessonById, getLessonIndex } from "../../lessons/registry";
+import {
+  getLessonById,
+  getLessonIndex,
+  getLessonNumber,
+} from "../../lessons/registry";
 import "./CourseSidebar.css";
 
 type CourseSidebarProps = {
@@ -61,6 +65,8 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
                   const lesson = getLessonById(item.lessonId);
                   if (!lesson) return null;
                   const index = getLessonIndex(lesson.id);
+                  const number = getLessonNumber(lesson.id);
+                  const badge = number === 0 ? "0" : String(number);
                   const state =
                     index < 0
                       ? "upcoming"
@@ -83,7 +89,7 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
                         }
                       >
                         <span className="course-sidebar__num" aria-hidden="true">
-                          {index + 1}
+                          {badge}
                         </span>
                         <span className="course-sidebar__link-text">
                           {lesson.title}

@@ -145,6 +145,12 @@ export type LessonDefinition = {
   id: string;
   title: string;
   subtitle: string;
+  /**
+   * "intro" marks a course-opening chapter (e.g. Chapter 0). Intro pages are
+   * numbered "Chapter 0" and are excluded from the "Lesson N" count. Defaults to
+   * an ordinary numbered lesson.
+   */
+  kind?: "intro" | "lesson";
   learningObjectives: string[];
   /** A prediction/motivating question shown before the explanation. */
   motivatingQuestion?: string;
@@ -162,8 +168,10 @@ export type LessonDefinition = {
    * not every callout needs every field.
    */
   callouts?: AuthoredCallout[];
-  exercises: ExerciseDefinition[];
-  keyTakeaway: string;
+  /** Optional so an intro chapter can omit Practice entirely. */
+  exercises?: ExerciseDefinition[];
+  /** Optional so an intro chapter can omit a "Remember this" summary. */
+  keyTakeaway?: string;
   /** Shared example id used by both guided scene and exploration. */
   exampleId?: string;
 };

@@ -7,6 +7,7 @@ import {
   EIGENVECTOR_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
+  CHAPTER0_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -45,8 +46,25 @@ const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
+const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
+  "why-linear-algebra": {
+    id: "why-linear-algebra",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Chapter 0 animation: a small asymmetric vector graphic on a coordinate grid is transformed by a live 2 by 2 matrix through scaling, rotation, reflection, shear, and a projection that collapses the plane onto a line, while the standard basis vectors, their images, and one highlighted vertex and its image track the change — ending on the question of how four numbers move every vertex.",
+    steps: CHAPTER0_STEPS,
+    majorSteps: pickMajor(CHAPTER0_STEPS, [
+      "establish",
+      "scale",
+      "rotation",
+      "reflection",
+      "shear",
+      "projection",
+      "mystery",
+    ]),
+  },
   "vectors-linear-combinations": {
     id: "vectors-linear-combinations",
     size: SCENE_SIZE,

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { lessons, getLessonById } from "../registry";
+import {
+  lessons,
+  getLessonById,
+  getLessonNumber,
+  getLessonPosition,
+} from "../registry";
 import { getSceneMeta, SCENE_META, hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { getExplorer } from "../../explorations/registry";
 import { getMatrixExample } from "../../math";
@@ -44,11 +49,12 @@ describe("lesson wiring for all registered lessons", () => {
     expect(vectors.exampleId).toBe("vectors-default");
   });
 
-  it("every lesson exposes at least three exercises and a checkpoint", () => {
+  it("every content lesson exposes at least two exercises and a checkpoint", () => {
     for (const lesson of lessons) {
-      expect(lesson.exercises.length).toBeGreaterThanOrEqual(2);
+      if (lesson.kind === "intro") continue; // intro chapters have no Practice
+      expect((lesson.exercises ?? []).length).toBeGreaterThanOrEqual(2);
       if (lesson.id === "determinants" || lesson.id === "eigenvectors") {
-        expect(lesson.exercises.length).toBeGreaterThanOrEqual(3);
+        expect((lesson.exercises ?? []).length).toBeGreaterThanOrEqual(3);
         expect(lesson.checkpoint).toBeDefined();
         expect(lesson.motivatingQuestion).toBeTruthy();
       }
@@ -99,7 +105,7 @@ describe("lesson wiring for all registered lessons", () => {
 
   it("eigenvectors practice covers check, drill, and transfer tiers", () => {
     const lesson = getLessonById("eigenvectors")!;
-    const tiers = new Set(lesson.exercises.map((ex) => ex.tier).filter(Boolean));
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
     expect(tiers.has("check")).toBe(true);
     expect(tiers.has("drill")).toBe(true);
     expect(tiers.has("transfer")).toBe(true);
@@ -109,6 +115,50 @@ describe("lesson wiring for all registered lessons", () => {
     const lesson = getLessonById("eigenvectors")!;
     expect(lesson.callouts?.length).toBeGreaterThanOrEqual(1);
     expect(lesson.callouts?.some((c) => c.solutionVisualId)).toBe(true);
+  });
+});
+
+describe("Chapter 0 opening slice (walking skeleton)", () => {
+  it("is registered first as an intro chapter with the mystery scene", () => {
+    expect(lessons[0]!.id).toBe("why-linear-algebra");
+    const chapter0 = getLessonById("why-linear-algebra")!;
+    expect(chapter0.kind).toBe("intro");
+    expect(chapter0.guidedSceneId).toBe("why-linear-algebra");
+    expect(hasGuidedScene(chapter0.guidedSceneId)).toBe(true);
+    expect(getSceneMeta(chapter0.guidedSceneId).id).toBe("why-linear-algebra");
+    // Reuses the existing matrix explorer for the bounded interaction.
+    expect(getExplorer(chapter0.explorationId)).toBeTypeOf("function");
+  });
+
+  it("has no Practice or Summary, and asks the central mystery question", () => {
+    const chapter0 = getLessonById("why-linear-algebra")!;
+    expect(chapter0.exercises).toBeUndefined();
+    expect(chapter0.keyTakeaway).toBeUndefined();
+    expect(chapter0.motivatingQuestion).toMatch(/four numbers/i);
+  });
+
+  it("is numbered Chapter 0 and does not shift Lesson 1", () => {
+    expect(getLessonNumber("why-linear-algebra")).toBe(0);
+    expect(getLessonNumber("vectors")).toBe(1);
+    expect(getLessonPosition("vectors").current).toBe(1);
+    // Karatsuba stays put (intro excluded from the count).
+    expect(getLessonNumber("karatsuba")).toBe(5);
+  });
+
+  it("tours scale, rotation, reflection, shear, and projection", () => {
+    const meta = getSceneMeta("why-linear-algebra");
+    const ids = meta.majorSteps.map((s) => s.id);
+    for (const id of [
+      "establish",
+      "scale",
+      "rotation",
+      "reflection",
+      "shear",
+      "projection",
+      "mystery",
+    ]) {
+      expect(ids).toContain(id);
+    }
   });
 });
 
@@ -128,9 +178,9 @@ describe("Lesson 1 expanded to vectors, linear combinations, and basis", () => {
     const objectives = lesson.learningObjectives.join(" ").toLowerCase();
     expect(objectives).toMatch(/basis/);
     expect(objectives).toMatch(/coordinates/);
-    expect(lesson.keyTakeaway.toLowerCase()).toMatch(/basis/);
+    expect(lesson.keyTakeaway!.toLowerCase()).toMatch(/basis/);
     // 2D qualification: "in the plane".
-    expect(lesson.keyTakeaway.toLowerCase()).toMatch(/in the plane/);
+    expect(lesson.keyTakeaway!.toLowerCase()).toMatch(/in the plane/);
   });
 
   it("carries the uniqueness argument (existence vs uniqueness)", () => {
@@ -170,7 +220,7 @@ describe("Lesson 1 expanded to vectors, linear combinations, and basis", () => {
 
   it("covers check, drill, and transfer practice tiers", () => {
     const lesson = getLessonById("vectors")!;
-    const tiers = new Set(lesson.exercises.map((ex) => ex.tier).filter(Boolean));
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
     expect(tiers.has("check")).toBe(true);
     expect(tiers.has("drill")).toBe(true);
     expect(tiers.has("transfer")).toBe(true);
@@ -245,9 +295,9 @@ describe("Karatsuba lesson wiring", () => {
 
   it("exercises cover reconstruction, complexity, transfer, and carry-vs-width", () => {
     const lesson = getLessonById("karatsuba")!;
-    expect(lesson.exercises.length).toBeGreaterThanOrEqual(6);
+    expect(lesson.exercises!.length).toBeGreaterThanOrEqual(6);
     expect(lesson.checkpoint).toBeDefined();
-    const ids = lesson.exercises.map((ex) => ex.id);
+    const ids = lesson.exercises!.map((ex) => ex.id);
     expect(ids).toContain("karatsuba-z1");
     expect(ids).toContain("karatsuba-exponent");
     expect(ids).toContain("karatsuba-strassen-transfer");
