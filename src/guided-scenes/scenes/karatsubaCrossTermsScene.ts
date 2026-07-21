@@ -137,8 +137,10 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   const weightedGroup = new Node({});
   view.add(weightedGroup);
 
-  const W_ORIGIN = new Vector2(-250, 30);
-  const W_SCALE = 20; // pixels per unit for the weighted view
+  // Keep the teaching geometry inside a clear mid-band so top titles and the
+  // bottom caption never share pixels with the rectangles (caption wraps up).
+  const W_ORIGIN = new Vector2(-250, 10);
+  const W_SCALE = 16; // pixels per unit — sized to leave caption/title bands clear
   const wW = CLEAN.x * W_SCALE;
   const wH = CLEAN.y * W_SCALE;
   const splitX = 10 * W_SCALE; // place-value split (10A | B)
@@ -196,12 +198,15 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   weightedGroup.add(bc);
   weightedGroup.add(bd);
 
-  const weightedTitle = makeOverlayLabel(
-    "Weighted multiplication rectangle  12×13",
+  // Use makeLabel (intrinsic width), not makeOverlayLabel: the overlay helper
+  // forces SAFE_WIDTH, and centering that wide node at ±250 clips half the
+  // title past the stage edge.
+  const weightedTitle = makeLabel(
+    "Weighted  12×13",
     ROLE.text,
-    28,
+    26,
   );
-  weightedTitle.position(new Vector2(W_ORIGIN.x, wy0 - 34));
+  weightedTitle.position(new Vector2(W_ORIGIN.x, wy0 - 28));
   weightedGroup.add(weightedTitle);
 
   // Region labels inside each subrectangle. They start as bare region names
@@ -229,11 +234,12 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   weightedGroup.add(wLabelBD);
 
   // Combined middle label shown when AD and BC collapse into one weighted term.
+  // Sit just under the rectangle, still above the bottom caption band (~y 210+).
   const combinedMid = new Latex({
     tex: "10(AD+BC)",
     fill: ROLE.selected,
-    fontSize: 26,
-    position: new Vector2(W_ORIGIN.x, wy0 + wH + 26),
+    fontSize: 24,
+    position: new Vector2(W_ORIGIN.x, wy0 + wH + 22),
     opacity: 0,
   });
   weightedGroup.add(combinedMid);
@@ -244,8 +250,8 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   const auxGroup = new Node({});
   view.add(auxGroup);
 
-  const A_ORIGIN = new Vector2(250, 30);
-  const A_SCALE = 36;
+  const A_ORIGIN = new Vector2(250, 10);
+  const A_SCALE = 32;
   const aW = (CLEAN.a + CLEAN.b) * A_SCALE; // 3
   const aH = (CLEAN.c + CLEAN.d) * A_SCALE; // 4
   const aSplitX = CLEAN.a * A_SCALE;
@@ -324,12 +330,12 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   auxGroup.add(auxLabelBC);
   auxGroup.add(auxLabelBD);
 
-  const auxTitle = makeOverlayLabel(
-    "Auxiliary coefficient rectangle  (A+B)×(C+D)",
+  const auxTitle = makeLabel(
+    "Auxiliary  (A+B)×(C+D)",
     ROLE.original,
-    24,
+    22,
   );
-  auxTitle.position(new Vector2(A_ORIGIN.x, ay0 - 30));
+  auxTitle.position(new Vector2(A_ORIGIN.x, ay0 - 26));
   auxTitle.opacity(0);
   auxGroup.add(auxTitle);
 
@@ -415,32 +421,33 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   // Conceptual recurrence trees (branch 4 vs branch 3), depth 3.
   // ---------------------------------------------------------------------------
   const TREE_DEPTH = 3;
-  const tree4Layout = layoutTree(4, TREE_DEPTH, -380, -40, -60, 140);
-  const tree3Layout = layoutTree(3, TREE_DEPTH, 40, 380, -60, 140);
+  // Trees sit in the mid-band; leaf labels stay above the caption band (y≲180).
+  const tree4Layout = layoutTree(4, TREE_DEPTH, -380, -40, -80, 110);
+  const tree3Layout = layoutTree(3, TREE_DEPTH, 40, 380, -80, 110);
   const tree4Group = buildTree(tree4Layout, ROLE.transformed);
   const tree3Group = buildTree(tree3Layout, ROLE.basis1);
   view.add(tree4Group);
   view.add(tree3Group);
 
   const tree4Title = makeLabel("Branch 4 (naive)", ROLE.transformed, 22);
-  tree4Title.position(new Vector2(-210, -92));
+  tree4Title.position(new Vector2(-210, -110));
   tree4Title.opacity(0);
   const tree3Title = makeLabel("Branch 3 (Karatsuba)", ROLE.basis1, 22);
-  tree3Title.position(new Vector2(210, -92));
+  tree3Title.position(new Vector2(210, -110));
   tree3Title.opacity(0);
   const tree4Leaves = makeLabel(
     `${tree4Layout.leaves} leaves = n²`,
     ROLE.transformed,
-    22,
+    20,
   );
-  tree4Leaves.position(new Vector2(-210, 170));
+  tree4Leaves.position(new Vector2(-210, 140));
   tree4Leaves.opacity(0);
   const tree3Leaves = makeLabel(
     `${tree3Layout.leaves} leaves ≈ n^1.585`,
     ROLE.basis1,
-    22,
+    20,
   );
-  tree3Leaves.position(new Vector2(210, 170));
+  tree3Leaves.position(new Vector2(210, 140));
   tree3Leaves.opacity(0);
   view.add(tree4Title);
   view.add(tree3Title);
@@ -450,19 +457,22 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   // ---------------------------------------------------------------------------
   // Shared overlay caption + equation.
   // ---------------------------------------------------------------------------
+  // Slightly smaller than the default overlay so two wrapped lines stay inside
+  // the bottom margin band and do not climb into the teaching geometry.
   const caption = makeOverlayLabel(
     "12 × 13 as a weighted multiplication rectangle",
     ROLE.textMuted,
+    32,
   );
-  caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
+  caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y + 8));
   view.add(caption);
 
   const formula = new Latex({
     tex: "(10A+B)(10C+D)",
     fill: ROLE.text,
-    fontSize: 28,
+    fontSize: 26,
     opacity: 0,
-    position: new Vector2(0, -220),
+    position: new Vector2(0, -230),
   });
   view.add(formula);
 
@@ -502,7 +512,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     },
     *share() {
       yield* caption.text(
-        "AD and BC share weight 10 — the shared ×10 is the whole trick",
+        "AD and BC share weight 10 — only their sum is needed",
         0.4,
       );
       // Focal event: dim AC and BD, brighten and pulse the two ×10 pieces.
@@ -583,9 +593,16 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     },
     *["carry-vs-width"]() {
       // The 12×13 weighted rectangle leaves so 78×56 can take the stage.
+      // Also force trees (if somehow visible from scrubbing) fully off.
       yield* all(
         weightedGroup.opacity(0, 0.5),
         auxGroup.opacity(0, 0.5),
+        tree4Group.opacity(0, 0.3),
+        tree3Group.opacity(0, 0.3),
+        tree4Title.opacity(0, 0.3),
+        tree3Title.opacity(0, 0.3),
+        tree4Leaves.opacity(0, 0.3),
+        tree3Leaves.opacity(0, 0.3),
         caption.text('78 × 56: two different kinds of "too big"', 0.4),
       );
       yield* all(
@@ -615,7 +632,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
       yield* waitFor(0.7);
       yield* carryChip1.opacity(0, 0.2);
       yield* caption.text(
-        "Separately, A+B=15 is wider → padding in (A+B)(C+D), not a 4th multiply",
+        "Separately: A+B=15 is wider — padding, not a 4th multiply",
         0.4,
       );
       yield* waitFor(seconds["carry-vs-width"] - 5.3);

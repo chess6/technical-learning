@@ -83,6 +83,18 @@ describe("KaratsubaExplorer", () => {
     expect(screen.getByTestId("parabola-note").textContent).toMatch(/quadratic/i);
   });
 
+  it("labels weighted regions as 100·AC, 10·AD, 10·BC, BD (not bare numeric values)", () => {
+    render(<KaratsubaExplorer />);
+    const weighted = screen.getByRole("img", {
+      name: /Weighted multiplication rectangle/i,
+    });
+    const name = weighted.getAttribute("aria-label") ?? "";
+    expect(name).toMatch(/100 AC/);
+    expect(name).toMatch(/10 AD/);
+    expect(name).toMatch(/10 BC/);
+    expect(name).toMatch(/\bBD\b/);
+  });
+
   it("labels all four regions inside the auxiliary coefficient rectangle", () => {
     render(<KaratsubaExplorer />);
     // Visible Mafs <Text> labels don't render in jsdom, so the labeled regions

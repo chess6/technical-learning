@@ -126,36 +126,83 @@ export function KaratsubaExplorer() {
   const readingOrder = [...step.normalized.blocks].reverse().join(", ");
 
   // Independently normalized frames: unit square [0,1]×[0,1] for each view.
+  // Extra top/bottom padding so frame titles are not clipped by the Mafs viewport.
+  const diagramViewBox = {
+    x: [-0.42, 1.18] as [number, number],
+    y: [-0.36, 1.34] as [number, number],
+    padding: 0.02,
+  };
+
   const weightedView = (
     <MafsSceneShell
-      height={220}
-      viewBox={{ x: [-0.15, 1.15], y: [-0.2, 1.2], padding: 0.05 }}
-      ariaLabel={`Weighted multiplication rectangle ${x} by ${y}`}
+      height={260}
+      viewBox={diagramViewBox}
+      ariaLabel={`Weighted multiplication rectangle ${x} by ${y}, regions labeled 100 AC, 10 AD, 10 BC, BD`}
       showCoordinates={false}
     >
+      {/* Outer frame so the four FOIL regions read as one rectangle. */}
+      <Polygon
+        points={[
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 1],
+        ]}
+        color="var(--role-text)"
+        fillOpacity={0}
+        weight={2}
+      />
       <RegionRect x0={0} y0={wLowY} x1={wSplitX} y1={1} color={ROLE_AC} />
       <RegionRect x0={0} y0={0} x1={wSplitX} y1={wLowY} color={ROLE_AD} />
       <RegionRect x0={wSplitX} y0={wLowY} x1={1} y1={1} color={ROLE_BC} />
       <RegionRect x0={wSplitX} y0={0} x1={1} y1={wLowY} color={ROLE_BD} />
-      <Text x={0.5} y={1.08} attach="s" size={14} color="var(--role-text)">
+      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--role-text)">
         {`Weighted ${x}×${y}`}
+      </Text>
+      {/* Edge place-value ticks so the skinny strips still read as 10A|B and 10C|D. */}
+      <Text x={wSplitX / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+        10A
+      </Text>
+      <Text x={(1 + wSplitX) / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+        B
+      </Text>
+      <Text x={-0.12} y={(1 + wLowY) / 2} attach="e" size={12} color="var(--role-text)">
+        10C
+      </Text>
+      <Text x={-0.12} y={wLowY / 2} attach="e" size={12} color="var(--role-text)">
+        D
       </Text>
       {showWeights ? (
         <>
-          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={12} color="var(--role-text)">
-            {`100·${step.regions.ac}`}
+          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+            {"100 AC"}
           </Text>
-          <Text x={wSplitX / 2} y={wLowY / 2} size={12} color="var(--role-text)">
-            {`10·${step.regions.ad}`}
+          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+            {"10 AD"}
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={12} color="var(--role-text)">
-            {`10·${step.regions.bc}`}
+          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+            {"10 BC"}
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={12} color="var(--role-text)">
-            {`${step.regions.bd}`}
+          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+            BD
           </Text>
         </>
-      ) : null}
+      ) : (
+        <>
+          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+            AC
+          </Text>
+          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+            AD
+          </Text>
+          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+            BC
+          </Text>
+          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+            BD
+          </Text>
+        </>
+      )}
     </MafsSceneShell>
   );
 
@@ -167,13 +214,24 @@ export function KaratsubaExplorer() {
 
   const auxView = showAux ? (
     <MafsSceneShell
-      height={220}
-      viewBox={{ x: [-0.15, 1.15], y: [-0.2, 1.2], padding: 0.05 }}
+      height={260}
+      viewBox={diagramViewBox}
       ariaLabel={`Auxiliary coefficient rectangle ${sumA} by ${sumC}, subrectangles labeled AC, AD, BC, BD${
         showPeel ? "; AC and BD peeled off, AD and BC (= z₁) highlighted" : ""
       }`}
       showCoordinates={false}
     >
+      <Polygon
+        points={[
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 1],
+        ]}
+        color="var(--role-text)"
+        fillOpacity={0}
+        weight={2}
+      />
       <RegionRect
         x0={0}
         y0={aLowY}
@@ -208,20 +266,32 @@ export function KaratsubaExplorer() {
         color={ROLE_BD}
         fillOpacity={cornerOpacity}
       />
-      <Text x={aSplitX / 2} y={(aLowY + 1) / 2} size={12} color="var(--role-text)">
+      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--role-text)">
+        {`Auxiliary ${sumA}×${sumC}`}
+      </Text>
+      <Text x={aSplitX / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+        A
+      </Text>
+      <Text x={(aSplitX + 1) / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+        B
+      </Text>
+      <Text x={-0.12} y={(aLowY + 1) / 2} attach="e" size={12} color="var(--role-text)">
+        C
+      </Text>
+      <Text x={-0.12} y={aLowY / 2} attach="e" size={12} color="var(--role-text)">
+        D
+      </Text>
+      <Text x={aSplitX / 2} y={(aLowY + 1) / 2} size={14} color="var(--role-text)">
         AC
       </Text>
-      <Text x={aSplitX / 2} y={aLowY / 2} size={12} color="var(--role-text)">
+      <Text x={aSplitX / 2} y={aLowY / 2} size={14} color="var(--role-text)">
         AD
       </Text>
-      <Text x={(aSplitX + 1) / 2} y={(aLowY + 1) / 2} size={12} color="var(--role-text)">
+      <Text x={(aSplitX + 1) / 2} y={(aLowY + 1) / 2} size={14} color="var(--role-text)">
         BC
       </Text>
-      <Text x={(aSplitX + 1) / 2} y={aLowY / 2} size={12} color="var(--role-text)">
+      <Text x={(aSplitX + 1) / 2} y={aLowY / 2} size={14} color="var(--role-text)">
         BD
-      </Text>
-      <Text x={0.5} y={1.08} attach="s" size={14} color="var(--role-text)">
-        {`Auxiliary ${sumA}×${sumC}`}
       </Text>
     </MafsSceneShell>
   ) : null;

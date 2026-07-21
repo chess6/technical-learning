@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  align-items: stretch;
 }
 
 @media (max-width: 720px) {
@@ -12,6 +13,10 @@
 
 .karatsuba-explorer__frame {
   min-width: 0;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  padding: 0.25rem;
 }
 
 .karatsuba-explorer__badges {
