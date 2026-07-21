@@ -39,6 +39,14 @@
   gap: 0.4rem !important;
 }
 
+.karatsuba-tree__depth {
+  margin: 0;
+  flex: 1 1 12rem;
+  min-width: 12rem;
+  font-size: 0.8rem;
+  color: var(--role-text-muted, var(--role-intermediate));
+}
+
 .karatsuba-tree__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;

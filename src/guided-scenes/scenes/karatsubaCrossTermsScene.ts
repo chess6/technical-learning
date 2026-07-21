@@ -1,4 +1,4 @@
-import { Latex, Line, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Latex, Line, Node, Rect, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -8,15 +8,20 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { KARATSUBA_CLEAN, KARATSUBA_BOUNDARY } from "../../lessons/karatsubaData";
-import { karatsubaStep, leafCount } from "../../math";
+import { karatsubaStep, leafCount, recursionTree, type TreeNode } from "../../math";
 import { KARATSUBA_SEGMENTS } from "./sceneTimings";
-import { ROLE, makeOverlayLabel } from "./sceneKit";
+import { ROLE, makeLabel, makeOverlayLabel } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
 
 /**
  * Watch scene for Karatsuba: weighted multiplication rectangle → shared middle
  * weight → separate auxiliary coefficient rectangle → reconstruction → carry vs
- * width → conceptual recurrence trees. Numbers from karatsubaData.
+ * width → conceptual recurrence trees. Numbers come from karatsubaData and math
+ * helpers (karatsubaStep / recursionTree / leafCount) — the scene only maps them
+ * to the canvas.
+ *
+ * Region → role color mapping (shared with the explorer, do not change):
+ *   AC = basis1, AD = selected, BC = transformed, BD = basis2.
  */
 
 const CLEAN = karatsubaStep(KARATSUBA_CLEAN.x, KARATSUBA_CLEAN.y, KARATSUBA_CLEAN.m);
@@ -43,10 +48,7 @@ function rectCorners(
   ];
 }
 
-function makeRegion(
-  color: string,
-  opacity = 0.55,
-): Line {
+function makeRegion(color: string, opacity = 0.55): Line {
   return new Line({
     closed: true,
     fill: color,
@@ -57,6 +59,71 @@ function makeRegion(
   });
 }
 
+/** A short centered LaTeX label sitting inside a subrectangle. */
+function makeRegionLabel(tex: string, pos: Vector2, fontSize = 22): Latex {
+  return new Latex({
+    tex,
+    fill: ROLE.text,
+    fontSize,
+    position: pos,
+    opacity: 0,
+  });
+}
+
+interface TreeLayout {
+  readonly nodes: Vector2[];
+  readonly edges: [Vector2, Vector2][];
+  readonly leaves: number;
+}
+
+/**
+ * Lay out a conceptual recursion tree from the shared `recursionTree` structure.
+ * Leaf count is taken from `leafCount` so the drawing and any caption agree.
+ */
+function layoutTree(
+  branch: 3 | 4,
+  depth: number,
+  left: number,
+  right: number,
+  top: number,
+  bottom: number,
+): TreeLayout {
+  const tree = recursionTree(branch, depth);
+  const nodes: Vector2[] = [];
+  const edges: [Vector2, Vector2][] = [];
+  const levelY = (level: number) =>
+    depth === 0 ? top : top + (level * (bottom - top)) / depth;
+
+  function walk(node: TreeNode, level: number, x0: number, x1: number): Vector2 {
+    const point = new Vector2((x0 + x1) / 2, levelY(level));
+    nodes.push(point);
+    if (node.children.length > 0) {
+      const span = (x1 - x0) / node.children.length;
+      node.children.forEach((child, i) => {
+        const childPoint = walk(child, level + 1, x0 + i * span, x0 + (i + 1) * span);
+        edges.push([point, childPoint]);
+      });
+    }
+    return point;
+  }
+
+  walk(tree, 0, left, right);
+  return { nodes, edges, leaves: leafCount(branch, depth) };
+}
+
+function buildTree(layout: TreeLayout, color: string): Node {
+  const group = new Node({ opacity: 0 });
+  for (const [a, b] of layout.edges) {
+    group.add(
+      new Line({ points: [a, b], stroke: color, lineWidth: 1, opacity: 0.5 }),
+    );
+  }
+  for (const point of layout.nodes) {
+    group.add(new Circle({ position: point, size: 4, fill: color }));
+  }
+  return group;
+}
+
 export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
@@ -64,39 +131,35 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     KARATSUBA_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
-  // --- Weighted multiplication rectangle (12×13), left side, independently scaled ---
-  const W_ORIGIN = new Vector2(-280, 40);
-  const W_SCALE = 18; // pixels per unit for the weighted view
+  // ---------------------------------------------------------------------------
+  // Weighted multiplication rectangle (12×13), left side, own scale.
+  // ---------------------------------------------------------------------------
+  const weightedGroup = new Node({});
+  view.add(weightedGroup);
+
+  const W_ORIGIN = new Vector2(-250, 30);
+  const W_SCALE = 20; // pixels per unit for the weighted view
   const wW = CLEAN.x * W_SCALE;
   const wH = CLEAN.y * W_SCALE;
-  // Split: A=1,B=2,C=1,D=3 → vertical split at A/(A+B)=1/3? Actually width split is A vs B along x for (10A+B)...
-  // For area view of (10A+B)×(10C+D), FOIL regions:
-  //   AC: width A*10? Better: use digit split of the dimensions themselves.
-  // Dimensions are 12 and 13. Split width into A*10=10 and B=2; height into C*10=10 and D=3.
-  const splitX = 10 * W_SCALE; // A·10
-  const splitY = 10 * W_SCALE; // C·10
+  const splitX = 10 * W_SCALE; // place-value split (10A | B)
+  const splitY = 10 * W_SCALE; // place-value split (10C | D)
   const left = W_ORIGIN.x - wW / 2;
-  // Motion Canvas: +y is down. Place origin of rectangle at top-left for clarity.
   const wx0 = left;
   const wy0 = W_ORIGIN.y - wH / 2;
 
-  // Regions: AC (top-left in screen? height from top):
-  // Math: x from 0..10 is high part A·10, 10..12 is B; y from 0..10 is C·10, 10..13 is D.
-  // Screen: x same; y flipped so math-up is screen-up (smaller y).
+  // AC top-left (high×high), AD bottom-left, BC top-right, BD bottom-right.
   const acPts = [
     new Vector2(wx0, wy0),
     new Vector2(wx0 + splitX, wy0),
     new Vector2(wx0 + splitX, wy0 + splitY),
     new Vector2(wx0, wy0 + splitY),
   ];
-  // AD = high×low → left, bottom (screen y increases down)
   const adPts = [
     new Vector2(wx0, wy0 + splitY),
     new Vector2(wx0 + splitX, wy0 + splitY),
     new Vector2(wx0 + splitX, wy0 + wH),
     new Vector2(wx0, wy0 + wH),
   ];
-  // BC = low×high → right, top
   const bcPts = [
     new Vector2(wx0 + splitX, wy0),
     new Vector2(wx0 + wW, wy0),
@@ -118,7 +181,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     opacity: 1,
     points: rectCorners(W_ORIGIN.x, W_ORIGIN.y, wW, wH),
   });
-  view.add(outline);
+  weightedGroup.add(outline);
 
   const ac = makeRegion(ROLE.basis1, 0);
   ac.points(acPts);
@@ -128,20 +191,60 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   bc.points(bcPts);
   const bd = makeRegion(ROLE.basis2, 0);
   bd.points(bdPts);
-  view.add(ac);
-  view.add(ad);
-  view.add(bc);
-  view.add(bd);
+  weightedGroup.add(ac);
+  weightedGroup.add(ad);
+  weightedGroup.add(bc);
+  weightedGroup.add(bd);
 
   const weightedTitle = makeOverlayLabel(
     "Weighted multiplication rectangle  12×13",
     ROLE.text,
+    28,
   );
-  weightedTitle.position(new Vector2(W_ORIGIN.x, wy0 - 36));
-  view.add(weightedTitle);
+  weightedTitle.position(new Vector2(W_ORIGIN.x, wy0 - 34));
+  weightedGroup.add(weightedTitle);
 
-  // --- Auxiliary coefficient rectangle (3×4), right side, own scale ---
-  const A_ORIGIN = new Vector2(260, 40);
+  // Region labels inside each subrectangle. They start as bare region names
+  // (AC/AD/BC/BD) and gain their place-value weight during the weights beat.
+  const acCenter = new Vector2(wx0 + splitX / 2, wy0 + splitY / 2);
+  const adCenter = new Vector2(
+    wx0 + splitX / 2,
+    wy0 + splitY + (wH - splitY) / 2,
+  );
+  const bcCenter = new Vector2(
+    wx0 + splitX + (wW - splitX) / 2,
+    wy0 + splitY / 2,
+  );
+  const bdCenter = new Vector2(
+    wx0 + splitX + (wW - splitX) / 2,
+    wy0 + splitY + (wH - splitY) / 2,
+  );
+  const wLabelAC = makeRegionLabel("AC", acCenter);
+  const wLabelAD = makeRegionLabel("AD", adCenter, 18);
+  const wLabelBC = makeRegionLabel("BC", bcCenter, 18);
+  const wLabelBD = makeRegionLabel("BD", bdCenter, 18);
+  weightedGroup.add(wLabelAC);
+  weightedGroup.add(wLabelAD);
+  weightedGroup.add(wLabelBC);
+  weightedGroup.add(wLabelBD);
+
+  // Combined middle label shown when AD and BC collapse into one weighted term.
+  const combinedMid = new Latex({
+    tex: "10(AD+BC)",
+    fill: ROLE.selected,
+    fontSize: 26,
+    position: new Vector2(W_ORIGIN.x, wy0 + wH + 26),
+    opacity: 0,
+  });
+  weightedGroup.add(combinedMid);
+
+  // ---------------------------------------------------------------------------
+  // Auxiliary coefficient rectangle (3×4), right side, own scale.
+  // ---------------------------------------------------------------------------
+  const auxGroup = new Node({});
+  view.add(auxGroup);
+
+  const A_ORIGIN = new Vector2(250, 30);
   const A_SCALE = 36;
   const aW = (CLEAN.a + CLEAN.b) * A_SCALE; // 3
   const aH = (CLEAN.c + CLEAN.d) * A_SCALE; // 4
@@ -158,7 +261,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     opacity: 0,
     points: rectCorners(A_ORIGIN.x, A_ORIGIN.y, aW, aH),
   });
-  view.add(auxOutline);
+  auxGroup.add(auxOutline);
 
   const auxAc = makeRegion(ROLE.basis1, 0);
   auxAc.points([
@@ -188,19 +291,165 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     new Vector2(ax0 + aW, ay0 + aH),
     new Vector2(ax0 + aSplitX, ay0 + aH),
   ]);
-  view.add(auxAc);
-  view.add(auxAd);
-  view.add(auxBc);
-  view.add(auxBd);
+  auxGroup.add(auxAc);
+  auxGroup.add(auxAd);
+  auxGroup.add(auxBc);
+  auxGroup.add(auxBd);
+
+  const auxLabelAC = makeRegionLabel(
+    "AC",
+    new Vector2(ax0 + aSplitX / 2, ay0 + aSplitY / 2),
+    18,
+  );
+  const auxLabelAD = makeRegionLabel(
+    "AD",
+    new Vector2(ax0 + aSplitX / 2, ay0 + aSplitY + (aH - aSplitY) / 2),
+    18,
+  );
+  const auxLabelBC = makeRegionLabel(
+    "BC",
+    new Vector2(ax0 + aSplitX + (aW - aSplitX) / 2, ay0 + aSplitY / 2),
+    18,
+  );
+  const auxLabelBD = makeRegionLabel(
+    "BD",
+    new Vector2(
+      ax0 + aSplitX + (aW - aSplitX) / 2,
+      ay0 + aSplitY + (aH - aSplitY) / 2,
+    ),
+    18,
+  );
+  auxGroup.add(auxLabelAC);
+  auxGroup.add(auxLabelAD);
+  auxGroup.add(auxLabelBC);
+  auxGroup.add(auxLabelBD);
 
   const auxTitle = makeOverlayLabel(
     "Auxiliary coefficient rectangle  (A+B)×(C+D)",
     ROLE.original,
+    24,
   );
-  auxTitle.position(new Vector2(A_ORIGIN.x, ay0 - 36));
+  auxTitle.position(new Vector2(A_ORIGIN.x, ay0 - 30));
   auxTitle.opacity(0);
-  view.add(auxTitle);
+  auxGroup.add(auxTitle);
 
+  // ---------------------------------------------------------------------------
+  // Output-carrying diagram for 78×56 (replaces the weighted rect at that beat).
+  // ---------------------------------------------------------------------------
+  const carryGroup = new Node({ opacity: 0 });
+  view.add(carryGroup);
+
+  const cz2 = createSignal(BOUNDARY.z2); // 35
+  const cz1 = createSignal(BOUNDARY.z1); // 82
+  const cz0 = createSignal(BOUNDARY.z0); // 48
+
+  const carryTitle = makeLabel("Output carrying: 78 × 56", ROLE.text, 26);
+  carryTitle.position(new Vector2(0, -120));
+  carryGroup.add(carryTitle);
+
+  const carryBlocks: { sig: () => number; place: string; color: string; x: number }[] =
+    [
+      { sig: cz2, place: "z_2", color: ROLE.basis1, x: -150 },
+      { sig: cz1, place: "z_1", color: ROLE.selected, x: 0 },
+      { sig: cz0, place: "z_0", color: ROLE.basis2, x: 150 },
+    ];
+  for (const block of carryBlocks) {
+    carryGroup.add(
+      new Rect({
+        x: block.x,
+        y: 0,
+        width: 100,
+        height: 74,
+        radius: 10,
+        fill: block.color,
+        opacity: 0.28,
+        stroke: block.color,
+        lineWidth: 2,
+      }),
+    );
+    carryGroup.add(
+      new Latex({
+        tex: block.place,
+        fill: ROLE.textMuted,
+        fontSize: 22,
+        position: new Vector2(block.x, -56),
+      }),
+    );
+    carryGroup.add(
+      new Latex({
+        tex: () => String(Math.round(block.sig())),
+        fill: ROLE.text,
+        fontSize: 34,
+        position: new Vector2(block.x, 0),
+      }),
+    );
+  }
+
+  // Carry chips (temporary): +4 from z0→z1, then +8 from z1→z2.
+  const carryChip0 = new Latex({
+    tex: "+4",
+    fill: ROLE.result,
+    fontSize: 26,
+    position: new Vector2(75, -44),
+    opacity: 0,
+  });
+  const carryChip1 = new Latex({
+    tex: "+8",
+    fill: ROLE.result,
+    fontSize: 26,
+    position: new Vector2(-75, -44),
+    opacity: 0,
+  });
+  carryGroup.add(carryChip0);
+  carryGroup.add(carryChip1);
+
+  const carryPlaces = new Latex({
+    tex: "z_2\\,(\\times100)\\quad z_1\\,(\\times10)\\quad z_0\\,(\\times1)",
+    fill: ROLE.textMuted,
+    fontSize: 20,
+    position: new Vector2(0, 70),
+  });
+  carryGroup.add(carryPlaces);
+
+  // ---------------------------------------------------------------------------
+  // Conceptual recurrence trees (branch 4 vs branch 3), depth 3.
+  // ---------------------------------------------------------------------------
+  const TREE_DEPTH = 3;
+  const tree4Layout = layoutTree(4, TREE_DEPTH, -380, -40, -60, 140);
+  const tree3Layout = layoutTree(3, TREE_DEPTH, 40, 380, -60, 140);
+  const tree4Group = buildTree(tree4Layout, ROLE.transformed);
+  const tree3Group = buildTree(tree3Layout, ROLE.basis1);
+  view.add(tree4Group);
+  view.add(tree3Group);
+
+  const tree4Title = makeLabel("Branch 4 (naive)", ROLE.transformed, 22);
+  tree4Title.position(new Vector2(-210, -92));
+  tree4Title.opacity(0);
+  const tree3Title = makeLabel("Branch 3 (Karatsuba)", ROLE.basis1, 22);
+  tree3Title.position(new Vector2(210, -92));
+  tree3Title.opacity(0);
+  const tree4Leaves = makeLabel(
+    `${tree4Layout.leaves} leaves = n²`,
+    ROLE.transformed,
+    22,
+  );
+  tree4Leaves.position(new Vector2(-210, 170));
+  tree4Leaves.opacity(0);
+  const tree3Leaves = makeLabel(
+    `${tree3Layout.leaves} leaves ≈ n^1.585`,
+    ROLE.basis1,
+    22,
+  );
+  tree3Leaves.position(new Vector2(210, 170));
+  tree3Leaves.opacity(0);
+  view.add(tree4Title);
+  view.add(tree3Title);
+  view.add(tree4Leaves);
+  view.add(tree3Leaves);
+
+  // ---------------------------------------------------------------------------
+  // Shared overlay caption + equation.
+  // ---------------------------------------------------------------------------
   const caption = makeOverlayLabel(
     "12 × 13 as a weighted multiplication rectangle",
     ROLE.textMuted,
@@ -217,37 +466,9 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   });
   view.add(formula);
 
-  // Conceptual tree leaf counts (not a literal 1234×5678 trace).
-  const treeCaption = makeOverlayLabel("", ROLE.selected);
-  treeCaption.position(new Vector2(0, 200));
-  treeCaption.opacity(0);
-  view.add(treeCaption);
-
-  const weightLabels = createSignal(0);
-
-  // Place-value weight labels centered in each weighted subrectangle.
-  // AC = 100, AD = 10, BC = 10 (the two that share a weight), BD = 1.
-  const weightLabelSpecs: { tex: string; pos: Vector2 }[] = [
-    { tex: "100", pos: new Vector2(wx0 + splitX / 2, wy0 + splitY / 2) },
-    { tex: "10", pos: new Vector2(wx0 + splitX / 2, wy0 + splitY + (wH - splitY) / 2) },
-    { tex: "10", pos: new Vector2(wx0 + splitX + (wW - splitX) / 2, wy0 + splitY / 2) },
-    { tex: "1", pos: new Vector2(wx0 + splitX + (wW - splitX) / 2, wy0 + splitY + (wH - splitY) / 2) },
-  ];
-  for (const spec of weightLabelSpecs) {
-    const label = new Latex({
-      tex: spec.tex,
-      fill: ROLE.text,
-      fontSize: 24,
-      position: spec.pos,
-    });
-    // Reactive opacity: hidden at t=0, faded in during the weights() beat.
-    label.opacity(() => weightLabels());
-    view.add(label);
-  }
-
   const bodies: Record<string, () => ThreadGenerator> = {
     *setup() {
-      // Establishing frame already visible at t=0.
+      // Establishing frame already visible at t=0 (outline + caption).
       yield* waitFor(seconds.setup);
     },
     *foil() {
@@ -256,33 +477,53 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
         ad.opacity(0.55, 0.6, easeInOutCubic),
         bc.opacity(0.55, 0.6, easeInOutCubic),
         bd.opacity(0.55, 0.6, easeInOutCubic),
+        wLabelAC.opacity(1, 0.6),
+        wLabelAD.opacity(1, 0.6),
+        wLabelBC.opacity(1, 0.6),
+        wLabelBD.opacity(1, 0.6),
         caption.text("FOIL: four subrectangles AC, AD, BC, BD", 0.4),
         formula.opacity(1, 0.4),
       );
       formula.tex("100\\,AC + 10\\,AD + 10\\,BC + BD");
-      yield* waitFor(seconds.foil - 1);
+      yield* waitFor(seconds.foil - 0.6);
     },
     *weights() {
       yield* caption.text(
-        "Prediction: which two pieces share a place-value weight?",
+        "Place-value weights: which two pieces share a column?",
         0.4,
       );
-      yield* weightLabels(1, 0.6);
-      yield* waitFor(seconds.weights - 0.6);
+      // Weights fade in by attaching each region's place value to its name.
+      yield* all(
+        wLabelAC.tex("100\\,AC", 0.4),
+        wLabelAD.tex("10\\,AD", 0.4),
+        wLabelBC.tex("10\\,BC", 0.4),
+      );
+      yield* waitFor(seconds.weights - 0.8);
     },
     *share() {
+      yield* caption.text(
+        "AD and BC share weight 10 — the shared ×10 is the whole trick",
+        0.4,
+      );
+      // Focal event: dim AC and BD, brighten and pulse the two ×10 pieces.
       yield* all(
-        ac.opacity(0.25, 0.5),
-        bd.opacity(0.25, 0.5),
+        ac.opacity(0.2, 0.5),
+        bd.opacity(0.2, 0.5),
+        wLabelAC.opacity(0.35, 0.5),
+        wLabelBD.opacity(0.35, 0.5),
         ad.opacity(0.85, 0.5),
         bc.opacity(0.85, 0.5),
-        caption.text(
-          "AD and BC share weight 10 — only AD+BC is needed",
-          0.4,
-        ),
+      );
+      yield* all(ad.opacity(1, 0.25), bc.opacity(1, 0.25));
+      yield* all(ad.opacity(0.85, 0.25), bc.opacity(0.85, 0.25));
+      // Combine the two ×10 pieces into a single weighted term.
+      yield* all(
+        wLabelAD.opacity(0, 0.4),
+        wLabelBC.opacity(0, 0.4),
+        combinedMid.opacity(1, 0.4),
         formula.tex("100\\,AC + 10(AD+BC) + BD", 0.4),
       );
-      yield* waitFor(seconds.share - 0.9);
+      yield* waitFor(seconds.share - 2.2);
     },
     *["aux-rect"]() {
       yield* all(
@@ -292,23 +533,29 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
         auxAd.opacity(0.5, 0.6),
         auxBc.opacity(0.5, 0.6),
         auxBd.opacity(0.5, 0.6),
+        auxLabelAC.opacity(1, 0.6),
+        auxLabelAD.opacity(1, 0.6),
+        auxLabelBC.opacity(1, 0.6),
+        auxLabelBD.opacity(1, 0.6),
         caption.text(
           "A different rectangle: (A+B)(C+D) = AC+AD+BC+BD",
           0.4,
         ),
         formula.tex("(A+B)(C+D)=3\\cdot4=12", 0.4),
       );
-      yield* waitFor(seconds["aux-rect"] - 1);
+      yield* waitFor(seconds["aux-rect"] - 0.6);
     },
     *subtract() {
       yield* caption.text(
-        "Prediction: shade the whole, remove AC and BD — what remains?",
+        "Prediction: remove AC and BD — what remains?",
         0.4,
       );
       yield* waitFor(1.2);
       yield* all(
         auxAc.opacity(0.12, 0.6),
         auxBd.opacity(0.12, 0.6),
+        auxLabelAC.opacity(0.3, 0.6),
+        auxLabelBD.opacity(0.3, 0.6),
         auxAd.opacity(0.9, 0.6),
         auxBc.opacity(0.9, 0.6),
         caption.text(
@@ -332,42 +579,65 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
         ac.opacity(0.55, 0.4),
         bd.opacity(0.55, 0.4),
       );
-      yield* waitFor(seconds.reassemble - 0.8);
+      yield* waitFor(seconds.reassemble - 0.4);
     },
     *["carry-vs-width"]() {
+      // The 12×13 weighted rectangle leaves so 78×56 can take the stage.
       yield* all(
-        caption.text(
-          `Boundary ${BOUNDARY.x}×${BOUNDARY.y}: z=(${BOUNDARY.z2},${BOUNDARY.z1},${BOUNDARY.z0}) overflow → carrying; A+B=15 → wider sum-product (padding, not a 4th multiply)`,
-          0.5,
-        ),
-        formula.tex(
-          "(35,82,48)\\to(35,86,8)\\to(43,6,8)=4368",
-          0.4,
-        ),
+        weightedGroup.opacity(0, 0.5),
+        auxGroup.opacity(0, 0.5),
+        caption.text('78 × 56: two different kinds of "too big"', 0.4),
       );
-      yield* waitFor(seconds["carry-vs-width"] - 0.9);
+      yield* all(
+        carryGroup.opacity(1, 0.5),
+        formula.tex("z_2\\cdot100+z_1\\cdot10+z_0=3500+820+48", 0.4),
+      );
+      yield* waitFor(0.7);
+      // Carry step 1: z0 = 48 keeps 8, carries +4 into z1 → 86.
+      const step0 = BOUNDARY.normalized.steps[0]!;
+      yield* carryChip0.opacity(1, 0.3);
+      cz0(step0.digitAfter);
+      cz1(cz1() + step0.carryOut);
+      yield* caption.text(
+        "Output carrying: 48 keeps 8, carries 4 → z₁ = 86",
+        0.4,
+      );
+      yield* waitFor(0.7);
+      // Carry step 2: z1 = 86 keeps 6, carries +8 into z2 → 43.
+      const step1 = BOUNDARY.normalized.steps[1]!;
+      yield* all(carryChip0.opacity(0, 0.2), carryChip1.opacity(1, 0.3));
+      cz1(step1.digitAfter);
+      cz2(cz2() + step1.carryOut);
+      yield* all(
+        caption.text("86 keeps 6, carries 8 → z₂ = 43. Digits 4368", 0.4),
+        formula.tex("(35,82,48)\\to(35,86,8)\\to(43,6,8)=4368", 0.4),
+      );
+      yield* waitFor(0.7);
+      yield* carryChip1.opacity(0, 0.2);
+      yield* caption.text(
+        "Separately, A+B=15 is wider → padding in (A+B)(C+D), not a 4th multiply",
+        0.4,
+      );
+      yield* waitFor(seconds["carry-vs-width"] - 5.3);
     },
     *branch() {
-      const levels = 3;
       yield* all(
-        auxOutline.opacity(0.2, 0.4),
-        auxAc.opacity(0, 0.4),
-        auxAd.opacity(0, 0.4),
-        auxBc.opacity(0, 0.4),
-        auxBd.opacity(0, 0.4),
-        auxTitle.opacity(0.3, 0.4),
+        carryGroup.opacity(0, 0.4),
         caption.text(
           "Conceptual recurrence trees — not an exact numeric call-tree trace",
           0.4,
         ),
-        treeCaption.opacity(1, 0.4),
-        treeCaption.text(
-          `branch 4 → ${leafCount(4, levels)} leaves   |   branch 3 → ${leafCount(3, levels)} leaves  (depth ${levels})`,
+        tree4Group.opacity(1, 0.6),
+        tree3Group.opacity(1, 0.6),
+        tree4Title.opacity(1, 0.6),
+        tree3Title.opacity(1, 0.6),
+        formula.tex(
+          "T(n)=4T(n/2)\\quad\\text{vs}\\quad T(n)=3T(n/2)+\\Theta(n)",
           0.4,
         ),
-        formula.tex("T(n)=4T(n/2)\\quad\\text{vs}\\quad T(n)=3T(n/2)+\\Theta(n)", 0.4),
       );
-      yield* waitFor(seconds.branch - 0.8);
+      yield* all(tree4Leaves.opacity(1, 0.5), tree3Leaves.opacity(1, 0.5));
+      yield* waitFor(seconds.branch - 1.1);
     },
     *exponent() {
       yield* all(
@@ -375,13 +645,14 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
           "Leaf counts: n² vs n^(log₂ 3) ≈ n^1.585 — an exponent change, not 25%",
           0.4,
         ),
-        formula.tex("\\log_2 4 = 2 \\;\\longrightarrow\\; \\log_2 3 \\approx 1.585", 0.4),
-        treeCaption.text(
-          `At n=8: ${leafCount(4, 3)} vs ${leafCount(3, 3)} multiplications at the leaves`,
+        formula.tex(
+          "\\log_2 4 = 2 \\;\\longrightarrow\\; \\log_2 3 \\approx 1.585",
           0.4,
         ),
       );
-      yield* waitFor(seconds.exponent - 0.8);
+      // Pulse the leaf rows so attention lands on the leaf totals.
+      yield* all(tree4Leaves.opacity(1, 0.3), tree3Leaves.opacity(1, 0.3));
+      yield* waitFor(seconds.exponent - 0.7);
     },
   };
 

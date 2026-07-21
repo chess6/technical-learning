@@ -21,7 +21,11 @@
 .guided-scene-player__canvas {
   position: relative;
   width: 100%;
-  max-height: min(70vh, 38rem);
+  /* Larger displayed clip so on-canvas captions/labels stay legible and are not
+     shrunk to the point of cropping (SCENE_SIZE is shared; enlarge the display
+     rather than the logical stage). object-fit: contain keeps every scene's
+     aspect ratio, so other lessons letterbox rather than regress. */
+  max-height: min(80vh, 46rem);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--color-canvas);

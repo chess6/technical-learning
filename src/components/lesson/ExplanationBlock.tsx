@@ -14,7 +14,9 @@ export function ExplanationBlock({
 }: ExplanationBlockProps) {
   return (
     <div className="explanation-block">
-      <h2 className="explanation-block__title">{title}</h2>
+      <h2 className="explanation-block__title" aria-label={title}>
+        <ProseWithMath text={title} />
+      </h2>
       <p className="explanation-block__body">
         <ProseWithMath text={body} />
       </p>

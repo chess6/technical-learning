@@ -32,7 +32,9 @@ export function MisconceptionCallout({
       aria-label={title}
       data-testid="misconception-callout"
     >
-      <h3 className="misconception-callout__title">{title}</h3>
+      <h3 className="misconception-callout__title" aria-label={title}>
+        <ProseWithMath text={title} />
+      </h3>
       <div className="misconception-callout__body">
         <div className="misconception-callout__prose">
           {belief && (

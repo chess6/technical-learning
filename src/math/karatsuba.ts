@@ -74,6 +74,22 @@ function assertBase(base: number): void {
   }
 }
 
+/**
+ * Guard against silent precision loss: two `number` safe integers whose product
+ * exceeds `Number.MAX_SAFE_INTEGER` cannot be represented exactly, so returning
+ * `x * y` would yield a wrong integer. Detect the overflow up-front (before the
+ * multiply) via `y > MAX / x` and throw instead of returning a wrong number.
+ * Inputs are assumed already validated as nonnegative safe integers.
+ */
+function assertProductSafe(x: number, y: number): void {
+  if (x !== 0 && y > Number.MAX_SAFE_INTEGER / x) {
+    throw new RangeError(
+      `product ${x} × ${y} exceeds Number.MAX_SAFE_INTEGER; ` +
+        `use bigint for operands this large`,
+    );
+  }
+}
+
 /** Digit length of a nonnegative integer in the given base (0 has length 1). */
 export function digitLength(value: number, base: number): number {
   assertNonnegativeSafeInteger(value, "value");
@@ -211,13 +227,31 @@ export function karatsubaStep(
 
 /**
  * Recursive Karatsuba multiplication.
- * Inputs: nonnegative safe integers. Base case: x < base or y < base => x * y.
- * Each recursive call recomputes its own width, including the wider sum-product.
+ *
+ * Contract:
+ * - **Domain:** `x`, `y` nonnegative safe integers (`Number.isSafeInteger`);
+ *   `base` an integer ≥ 2 (the lesson uses base 10). Anything else throws
+ *   `RangeError`.
+ * - **Base case:** `x < base || y < base` returns `x * y` directly.
+ * - **Split:** width `n = max digit length`, split point `m = floor(n/2)`,
+ *   `power = base**m`; `a = floor(x/power)`, `b = x % power` (odd widths keep the
+ *   low block `power`-wide — no separate handling), likewise `c`, `d`.
+ * - **Recurse & recombine:** `ac`, `bd`, and the wider `(a+b)(c+d)` are each
+ *   computed by a recursive call (the sum-product's operand-width growth is
+ *   absorbed here, never as a fourth multiply), then
+ *   `ac·power² + ((a+b)(c+d) − ac − bd)·power + bd`.
+ * - **Error behavior (safe-integer):** if the exact product would exceed
+ *   `Number.MAX_SAFE_INTEGER`, throws `RangeError` up-front rather than silently
+ *   returning an imprecise integer. Because the top-level product is validated
+ *   and every term of the recombination is nonnegative and ≤ that product, and
+ *   each recursive sub-product self-validates, the recombination stays exact.
+ * - `bigint` is a future extension; this POC uses `number`.
  */
 export function karatsubaMultiply(x: number, y: number, base = 10): number {
   assertNonnegativeSafeInteger(x, "x");
   assertNonnegativeSafeInteger(y, "y");
   assertBase(base);
+  assertProductSafe(x, y);
   if (x < base || y < base) {
     return x * y;
   }
@@ -238,9 +272,16 @@ export function karatsubaMultiply(x: number, y: number, base = 10): number {
   return ac * power * power + middle * power + bd;
 }
 
+/**
+ * Schoolbook reference multiply. Same safe-integer contract as
+ * {@link karatsubaMultiply}: nonnegative safe-integer inputs whose exact product
+ * exceeds `Number.MAX_SAFE_INTEGER` throw `RangeError` rather than returning an
+ * imprecise integer.
+ */
 export function naiveMultiply(x: number, y: number): number {
   assertNonnegativeSafeInteger(x, "x");
   assertNonnegativeSafeInteger(y, "y");
+  assertProductSafe(x, y);
   return x * y;
 }
 

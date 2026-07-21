@@ -82,4 +82,48 @@ describe("KaratsubaExplorer", () => {
     fireEvent.click(toggle);
     expect(screen.getByTestId("parabola-note").textContent).toMatch(/quadratic/i);
   });
+
+  it("labels all four regions inside the auxiliary coefficient rectangle", () => {
+    render(<KaratsubaExplorer />);
+    // Visible Mafs <Text> labels don't render in jsdom, so the labeled regions
+    // are also encoded in the accessible name (browsers show the glyphs).
+    const aux = screen.getByRole("img", {
+      name: /Auxiliary coefficient rectangle/i,
+    });
+    const name = aux.getAttribute("aria-label") ?? "";
+    for (const label of ["AC", "AD", "BC", "BD"]) {
+      expect(name).toContain(label);
+    }
+  });
+
+  it("peel toggle isolates z₁ = AD+BC = (A+B)(C+D) − AC − BD", () => {
+    render(<KaratsubaExplorer />);
+    // Off by default.
+    expect(screen.getByTestId("karatsuba-peel").textContent).toMatch(/off/i);
+    fireEvent.click(screen.getByLabelText(/Peel off AC and BD/i));
+    const peel = screen.getByTestId("karatsuba-peel").textContent ?? "";
+    // Names the removed corners (AC, BD) and the remaining opposite pair (AD, BC).
+    expect(peel).toMatch(/AC/);
+    expect(peel).toMatch(/BD/);
+    expect(peel).toMatch(/AD \+ BC/);
+    // Clean example: z₁ = 12 − 1 − 6 = 5.
+    expect(peel).toMatch(/12 − 1 − 6 = 5/);
+  });
+
+  it("shows normalized blocks in human reading order (high→low) and labels the internal order", () => {
+    render(<KaratsubaExplorer />);
+    fireEvent.click(screen.getByRole("button", { name: /78 × 56/ }));
+    const normalized = screen.getByTestId("karatsuba-normalized").textContent ?? "";
+    expect(normalized).toMatch(/reading order \(high→low\): 43, 6, 8/);
+    // Internal least-significant-first array is still surfaced, clearly labeled.
+    expect(normalized).toMatch(/low→high: \[8, 6, 43\]/);
+  });
+
+  it("labels the tree depth as the total recurrence depth = log2 n", () => {
+    render(<KaratsubaExplorer />);
+    fireEvent.click(screen.getByLabelText(/Show recursion tree/i));
+    const note = screen.getByTestId("tree-depth-note").textContent ?? "";
+    expect(note).toMatch(/total recurrence depth/i);
+    expect(note).toMatch(/log₂ n = 3/);
+  });
 });

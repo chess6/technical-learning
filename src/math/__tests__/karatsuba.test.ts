@@ -150,6 +150,40 @@ describe("karatsubaMultiply", () => {
   });
 });
 
+describe("safe-integer product contract", () => {
+  // 94_906_265 is the largest n with n² ≤ MAX_SAFE_INTEGER; 94_906_266² exceeds it.
+  const IN_RANGE = 94_906_265;
+  const OVER = 94_906_266;
+
+  it("both operands safe and product in range → exact product, no throw", () => {
+    const expected = IN_RANGE * IN_RANGE;
+    expect(expected).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
+    expect(Number.isSafeInteger(IN_RANGE)).toBe(true);
+    expect(karatsubaMultiply(IN_RANGE, IN_RANGE)).toBe(expected);
+    expect(naiveMultiply(IN_RANGE, IN_RANGE)).toBe(expected);
+  });
+
+  it("safe operands whose product exceeds MAX_SAFE_INTEGER throw RangeError", () => {
+    expect(Number.isSafeInteger(OVER)).toBe(true);
+    expect(OVER * OVER).toBeGreaterThan(Number.MAX_SAFE_INTEGER);
+    expect(() => karatsubaMultiply(OVER, OVER)).toThrow(RangeError);
+    expect(() => naiveMultiply(OVER, OVER)).toThrow(RangeError);
+    // A large × moderate case that also overflows.
+    expect(() => karatsubaMultiply(100_000_000, 100_000_000)).toThrow(RangeError);
+  });
+
+  it("behaves correctly right at the safe/unsafe boundary", () => {
+    // n² is exact at n = IN_RANGE; (n+1)² is the first square to overflow.
+    expect(IN_RANGE * IN_RANGE).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
+    expect(OVER * OVER).toBeGreaterThan(Number.MAX_SAFE_INTEGER);
+    expect(karatsubaMultiply(IN_RANGE, IN_RANGE)).toBe(IN_RANGE * IN_RANGE);
+    expect(() => karatsubaMultiply(OVER, OVER)).toThrow(RangeError);
+    // Zero is always safe regardless of the other operand's size.
+    expect(karatsubaMultiply(0, Number.MAX_SAFE_INTEGER)).toBe(0);
+    expect(naiveMultiply(Number.MAX_SAFE_INTEGER, 0)).toBe(0);
+  });
+});
+
 describe("complexity helpers", () => {
   it("counts leaves and multiplications", () => {
     expect(leafCount(3, 4)).toBe(81);

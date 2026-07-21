@@ -35,6 +35,11 @@
   background: color-mix(in srgb, var(--role-selected) 18%, transparent);
 }
 
+.karatsuba-explorer__aside {
+  color: var(--role-text-muted, var(--role-intermediate));
+  font-size: 0.85em;
+}
+
 .karatsuba-explorer__parabola {
   margin: 0.75rem 0 0;
   font-size: 0.9rem;

@@ -95,6 +95,10 @@ export function KaratsubaTreeDiagram({
             ))}
           </select>
         </label>
+        <p className="karatsuba-tree__depth" data-testid="tree-depth-note">
+          Total recurrence depth = levels = log₂ n = {levels}. The whole tree is
+          drawn (no preview cap); leaf counts below are for this full depth.
+        </p>
         <label className="karatsuba-tree__check">
           <input
             type="checkbox"

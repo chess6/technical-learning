@@ -70,7 +70,9 @@ function WorkedExampleBlock({
   return (
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
       <header className="worked-example__header">
-        <h3 className="worked-example__title">{example.title}</h3>
+        <h3 className="worked-example__title" aria-label={example.title}>
+          <ProseWithMath text={example.title} />
+        </h3>
         {example.prompt && (
           <p className="worked-example__prompt">
             <ProseWithMath text={example.prompt} />

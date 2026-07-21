@@ -41,12 +41,16 @@ function RegionRect({
   x1,
   y1,
   color,
+  fillOpacity = 0.45,
+  weight = 2,
 }: {
   x0: number;
   y0: number;
   x1: number;
   y1: number;
   color: string;
+  fillOpacity?: number;
+  weight?: number;
 }) {
   return (
     <Polygon
@@ -57,7 +61,8 @@ function RegionRect({
         [x0, y1],
       ]}
       color={color}
-      fillOpacity={0.45}
+      fillOpacity={fillOpacity}
+      weight={weight}
     />
   );
 }
@@ -66,6 +71,7 @@ export function KaratsubaExplorer() {
   const [digits, setDigits] = useState<Digits>(DEFAULT);
   const [showWeights, setShowWeights] = useState(true);
   const [showAux, setShowAux] = useState(true);
+  const [showPeel, setShowPeel] = useState(false);
   const [showTree, setShowTree] = useState(false);
   const [showQuadraticNote, setShowQuadraticNote] = useState(false);
   const [treeN, setTreeN] = useState(8);
@@ -103,6 +109,7 @@ export function KaratsubaExplorer() {
     setDigits(DEFAULT);
     setShowWeights(true);
     setShowAux(true);
+    setShowPeel(false);
     setShowTree(false);
     setShowQuadraticNote(false);
     setTreeN(8);
@@ -113,6 +120,10 @@ export function KaratsubaExplorer() {
   const carrySequence = step.normalized.steps
     .map((s) => `${s.valueBefore}→${s.digitAfter} (+${s.carryOut})`)
     .join("; ");
+
+  // `normalized.blocks` is least-significant-first; humans read most-significant
+  // first. Show the reading order but keep the internal (low→high) array visible.
+  const readingOrder = [...step.normalized.blocks].reverse().join(", ");
 
   // Independently normalized frames: unit square [0,1]×[0,1] for each view.
   const weightedView = (
@@ -148,17 +159,67 @@ export function KaratsubaExplorer() {
     </MafsSceneShell>
   );
 
+  // Peel: dim the two known corners AC (top-left) and BD (bottom-right); keep the
+  // two OPPOSITE corners AD (bottom-left) and BC (top-right) — their areas are z₁.
+  const cornerOpacity = showPeel ? 0.1 : 0.45;
+  const oppositeOpacity = showPeel ? 0.7 : 0.45;
+  const oppositeWeight = showPeel ? 4 : 2;
+
   const auxView = showAux ? (
     <MafsSceneShell
       height={220}
       viewBox={{ x: [-0.15, 1.15], y: [-0.2, 1.2], padding: 0.05 }}
-      ariaLabel={`Auxiliary coefficient rectangle ${sumA} by ${sumC}`}
+      ariaLabel={`Auxiliary coefficient rectangle ${sumA} by ${sumC}, subrectangles labeled AC, AD, BC, BD${
+        showPeel ? "; AC and BD peeled off, AD and BC (= z₁) highlighted" : ""
+      }`}
       showCoordinates={false}
     >
-      <RegionRect x0={0} y0={aLowY} x1={aSplitX} y1={1} color={ROLE_AC} />
-      <RegionRect x0={0} y0={0} x1={aSplitX} y1={aLowY} color={ROLE_AD} />
-      <RegionRect x0={aSplitX} y0={aLowY} x1={1} y1={1} color={ROLE_BC} />
-      <RegionRect x0={aSplitX} y0={0} x1={1} y1={aLowY} color={ROLE_BD} />
+      <RegionRect
+        x0={0}
+        y0={aLowY}
+        x1={aSplitX}
+        y1={1}
+        color={ROLE_AC}
+        fillOpacity={cornerOpacity}
+      />
+      <RegionRect
+        x0={0}
+        y0={0}
+        x1={aSplitX}
+        y1={aLowY}
+        color={ROLE_AD}
+        fillOpacity={oppositeOpacity}
+        weight={oppositeWeight}
+      />
+      <RegionRect
+        x0={aSplitX}
+        y0={aLowY}
+        x1={1}
+        y1={1}
+        color={ROLE_BC}
+        fillOpacity={oppositeOpacity}
+        weight={oppositeWeight}
+      />
+      <RegionRect
+        x0={aSplitX}
+        y0={0}
+        x1={1}
+        y1={aLowY}
+        color={ROLE_BD}
+        fillOpacity={cornerOpacity}
+      />
+      <Text x={aSplitX / 2} y={(aLowY + 1) / 2} size={12} color="var(--role-text)">
+        AC
+      </Text>
+      <Text x={aSplitX / 2} y={aLowY / 2} size={12} color="var(--role-text)">
+        AD
+      </Text>
+      <Text x={(aSplitX + 1) / 2} y={(aLowY + 1) / 2} size={12} color="var(--role-text)">
+        BC
+      </Text>
+      <Text x={(aSplitX + 1) / 2} y={aLowY / 2} size={12} color="var(--role-text)">
+        BD
+      </Text>
       <Text x={0.5} y={1.08} attach="s" size={14} color="var(--role-text)">
         {`Auxiliary ${sumA}×${sumC}`}
       </Text>
@@ -243,6 +304,12 @@ export function KaratsubaExplorer() {
                 onChange: setShowAux,
               },
               {
+                id: "peel",
+                label: "Peel off AC and BD (leave z₁ = AD + BC)",
+                checked: showPeel,
+                onChange: setShowPeel,
+              },
+              {
                 id: "tree",
                 label: "Show recursion tree & cost",
                 checked: showTree,
@@ -308,7 +375,31 @@ export function KaratsubaExplorer() {
                 <span data-testid="karatsuba-carry">
                   {step.normalized.steps.length === 0
                     ? "none (clean coefficients)"
-                    : `${carrySequence} → blocks [${step.normalized.blocks.join(", ")}]`}
+                    : carrySequence}
+                </span>
+              ),
+            },
+            {
+              id: "normalized-blocks",
+              label: "Normalized blocks",
+              value: (
+                <span data-testid="karatsuba-normalized">
+                  reading order (high→low): {readingOrder}
+                  {"  "}
+                  <span className="karatsuba-explorer__aside">
+                    (internal array is low→high: [{step.normalized.blocks.join(", ")}])
+                  </span>
+                </span>
+              ),
+            },
+            {
+              id: "peel",
+              label: "Peel (z₁ = AD + BC)",
+              value: (
+                <span data-testid="karatsuba-peel">
+                  {showPeel
+                    ? `Peel off the known corners AC and BD; the two opposite corners AD + BC remain = z₁ = (A+B)(C+D) − AC − BD = ${step.sumProduct} − ${step.regions.ac} − ${step.regions.bd} = ${step.z1}`
+                    : "off — toggle “Peel off AC and BD” to isolate z₁"}
                 </span>
               ),
             },

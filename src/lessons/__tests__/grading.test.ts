@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { gradeExercise } from "../grading";
 import type { ExerciseDefinition } from "../types";
+import { karatsubaLesson } from "../karatsuba";
 
 const mc: Extract<ExerciseDefinition, { type: "multiple-choice" }> = {
   id: "mc",
@@ -67,6 +68,28 @@ describe("gradeExercise", () => {
     const result = gradeExercise(prediction, { kind: "prediction" });
     expect(result.correct).toBe(true);
     expect(result.feedback).toBe("the reveal text");
+  });
+
+  it("grades both Karatsuba carry-vs-width exercises", () => {
+    for (const id of ["karatsuba-width-vs-carry", "karatsuba-output-carry"]) {
+      const exercise = karatsubaLesson.exercises.find((ex) => ex.id === id);
+      expect(exercise, `exercise ${id} exists`).toBeDefined();
+      const mcExercise = exercise as Extract<
+        ExerciseDefinition,
+        { type: "multiple-choice" }
+      >;
+      expect(mcExercise.type).toBe("multiple-choice");
+      const correct = mcExercise.correctChoice;
+      const wrong = correct === 0 ? 1 : 0;
+      expect(
+        gradeExercise(mcExercise, { kind: "multiple-choice", choice: correct })
+          .correct,
+      ).toBe(true);
+      expect(
+        gradeExercise(mcExercise, { kind: "multiple-choice", choice: wrong })
+          .correct,
+      ).toBe(false);
+    }
   });
 
   it("grades eigenvalues order-insensitively", () => {
