@@ -7,6 +7,17 @@ under `src/lessons/`.
 Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md). Copy this file per lesson.
 
+> **Gate prerequisite (required before planning).** Do not fill in this template
+> until an approved Insight Contract exists for the topic and its
+> `Gate result: PASS`. See [INSIGHT_DISCOVERY_GATE.md](./INSIGHT_DISCOVERY_GATE.md).
+> The lesson must be built around, and must preserve verbatim, that contract's
+> exact primary insight.
+
+## Approved insight (gate)
+- Insight Contract: `docs/insights/<topic>.md`
+- [ ] `Gate result: PASS` confirmed
+- Exact primary insight (verbatim, preserved by this lesson): `<...>`
+
 ---
 
 ## Lesson title
@@ -91,6 +102,7 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 - [ ] Asymmetric matrix + singular case where relevant
 
 ## Acceptance checklist
+- [ ] Approved Insight Contract linked and `PASS`; primary insight preserved
 - [ ] Six-phase flow (or documented deviation)
 - [ ] Guided-to-interactive continuity (same example/notation/roles)
 - [ ] Progressive disclosure applied
