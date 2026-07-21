@@ -1,4 +1,4 @@
-import { Circle, Line, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Latex, Line, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -231,6 +231,27 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   const top = makeOverlayLabel("", ROLE.text, 40);
   top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(top);
+
+  // --- Equation-transition pilot (Av = λv → (A − λI)v = 0) ---------------
+  // A single lesson-specific KaTeX/MathJax morph. `{{ }}` marks the fragments
+  // Motion Canvas should keep identical across states; the rest fades in/out.
+  // The morph is honest: we subtract λv from *both* sides, then factor v —
+  // no "magical transposition" across the equals sign.
+  const EQ_AV = String.raw`{{A\mathbf{v}}}`;
+  const EQ_LV = String.raw`{{\lambda\mathbf{v}}}`;
+  const EQ_START = String.raw`${EQ_AV}{{=}}${EQ_LV}`;
+  const EQ_SUBTRACT = String.raw`${EQ_AV}{{-}}${EQ_LV}{{=}}${EQ_LV}{{-}}${EQ_LV}`;
+  const EQ_ZERO = String.raw`${EQ_AV}{{-}}${EQ_LV}{{=}}{{\mathbf{0}}}`;
+  const EQ_FACTORED = String.raw`{{(A-\lambda I)\mathbf{v}}}{{=}}{{\mathbf{0}}}`;
+
+  const eqTex = new Latex({
+    tex: EQ_START,
+    fill: ROLE.text,
+    fontSize: 44,
+    opacity: 0,
+  });
+  eqTex.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
+  view.add(eqTex);
   const caption = makeOverlayLabel("", ROLE.textMuted, 30);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
@@ -256,37 +277,50 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *recap() {
-      setTop("Av = λv");
-      setCaption("Find nonzero directions A only scales — stay on their line");
-      yield* all(AvArrow.opacity(1, 0.6), AvLabel.opacity(1, 0.6));
-      // Show Av = 3v along the axis direction.
-      yield* waitFor(seconds.recap - 0.6);
+      setCaption("Directions A only scales — they stay on their line");
+      // Establishing "Computing eigenvectors" title yields to the live equation.
+      eqTex.tex(EQ_START);
+      yield* all(
+        top.opacity(0, 0.3),
+        eqTex.opacity(1, 0.4),
+        AvArrow.opacity(1, 0.6),
+        AvLabel.opacity(1, 0.6),
+      );
+      yield* waitFor(Math.max(0, seconds.recap - 0.6));
     },
 
     *shift() {
-      // Make the algebra geometric: (A − λI)v = Av − λv, and for an
+      // PILOT. Make the algebra geometric: (A − λI)v = Av − λv, and for an
       // eigendirection Av and λv coincide, so the difference is the zero
-      // vector. We keep the matrix as A here — this beat is about the two
-      // vectors, not about morphing the matrix (that is the charpoly beat).
-      setTop("(A − λI)v = 0");
-      setCaption("Rewrite Av = λv as Av − λv = 0 — now watch it");
-      // Introduce λv starting at v's length, then grow it onto Av.
+      // vector. The Latex morph and the arrows move together. We keep the
+      // matrix as A here — the charpoly beat is where A actually morphs.
+      setCaption("Subtract λv from both sides of Av = λv");
+      // Introduce λv (geometry) alongside subtracting λv from both sides
+      // (equation). Both sides gain −λv: honest, not a jump across "=".
       lambdaVLen(vScale());
-      yield* all(lambdaVArrow.opacity(1, 0.4), lambdaVLabel.opacity(1, 0.4));
-      setCaption("λv is just the input v scaled by λ — it lands on Av");
-      yield* lambdaVLen(LAMBDA_3 * vScale(), 1.2, easeInOutCubic);
+      yield* all(
+        lambdaVArrow.opacity(1, 0.4),
+        lambdaVLabel.opacity(1, 0.4),
+        eqTex.tex(EQ_SUBTRACT, 0.8),
+      );
+      setCaption("λv is the input v scaled by λ — it lands on Av");
+      yield* lambdaVLen(LAMBDA_3 * vScale(), 1.0, easeInOutCubic);
       // Flash to show λv and Av are the same arrow for this direction.
-      yield* all(lambdaVArrow.lineWidth(9, 0.25), AvArrow.lineWidth(9, 0.25));
-      yield* all(lambdaVArrow.lineWidth(6, 0.25), AvArrow.lineWidth(6, 0.25));
-      // Subtract λv from Av: its head walks from Av's tip back to the origin.
-      setCaption("Subtract λv from Av — the tip walks back to the origin");
-      yield* all(subArrow.opacity(1, 0.3), lambdaVLabel.opacity(0, 0.3));
-      yield* subProgress(1, 1.2, easeInOutCubic);
-      setCaption("Av − λv = 0, so (A − λI)v = 0 for this direction");
-      // Pulse the origin to land the "= 0".
-      yield* origin.size(24, 0.25);
+      yield* all(lambdaVArrow.lineWidth(9, 0.22), AvArrow.lineWidth(9, 0.22));
+      yield* all(lambdaVArrow.lineWidth(6, 0.22), AvArrow.lineWidth(6, 0.22));
+      // Right side λv − λv → 0, mirrored by the tip walking to the origin.
+      setCaption("The right side λv − λv is 0; the tip walks to the origin");
+      yield* all(
+        subArrow.opacity(1, 0.3),
+        lambdaVLabel.opacity(0, 0.3),
+        eqTex.tex(EQ_ZERO, 0.6),
+      );
+      yield* subProgress(1, 1.0, easeInOutCubic);
+      // Factor v out of Av − λv.
+      setCaption("Factor v: (A − λI)v = 0 for this direction");
+      yield* all(eqTex.tex(EQ_FACTORED, 0.7), origin.size(24, 0.35));
       yield* origin.size(14, 0.25);
-      yield* waitFor(Math.max(0, seconds.shift - 4.3));
+      yield* waitFor(Math.max(0, seconds.shift - 5.1));
     },
 
     *charpoly() {
@@ -295,9 +329,12 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
       // we actually morph A → A − λI and watch the unit square collapse.
       setTop("det(A − λI) = 0");
       setCaption("When can a nonzero v hit zero? Only if A − λI flattens area");
-      // Clear the vector-subtraction construction, bring up the unit square
-      // under the current matrix (still A) so the collapse is visible.
+      // Hand the equation label back to the plain-text top; the pilot morph
+      // is done. Clear the vector-subtraction construction and bring up the
+      // unit square under the current matrix (still A) so collapse is visible.
       yield* all(
+        eqTex.opacity(0, 0.3),
+        top.opacity(1, 0.3),
         subArrow.opacity(0, 0.4),
         lambdaVArrow.opacity(0, 0.4),
         AvArrow.opacity(0, 0.4),

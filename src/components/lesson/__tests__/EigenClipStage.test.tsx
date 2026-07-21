@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { EigenClipStage } from "../EigenClipStage";
 import { Eigen3DExtension } from "../threeD/Eigen3DExtension";
 import {
-  getDerivationSteps,
+  getPlaybackBeats,
   resolveThreeDStep,
 } from "../../../guided-scenes/scenes/derivationSteps";
 import {
@@ -21,10 +21,10 @@ vi.mock("../../../guided-scenes/registry", () => ({
       }),
 }));
 
-describe("derivationSteps semantic map", () => {
+describe("playback beats semantic map", () => {
   it("aligns derivation scene ids with major ladder rungs", () => {
-    const steps = getDerivationSteps("eigenvectors-derivation");
-    expect(steps?.map((step) => step.id)).toEqual([
+    const beats = getPlaybackBeats("eigenvectors-derivation");
+    expect(beats?.map((beat) => beat.id)).toEqual([
       "recap",
       "shift",
       "charpoly",
@@ -48,16 +48,15 @@ describe("derivationSteps semantic map", () => {
     expect(step?.threeD).toBe("invariant-line");
   });
 
-  it("uses 2D area language in derivation captions (not 3D cube/volume)", () => {
-    const steps = getDerivationSteps("eigenvectors-derivation");
-    expect(steps).toBeTruthy();
-    for (const step of steps!) {
-      expect(step.caption.toLowerCase()).not.toMatch(/\bcube\b/);
-      expect(step.caption.toLowerCase()).not.toMatch(/\bvolume\b/);
+  it("carries playback metadata only — an equation and a short label, no prose", () => {
+    const beats = getPlaybackBeats("eigenvectors-derivation");
+    expect(beats).toBeTruthy();
+    for (const beat of beats!) {
+      expect(beat.equation.length).toBeGreaterThan(0);
+      expect(beat.label.length).toBeGreaterThan(0);
+      // The discarded five-field / caption template must not creep back in.
+      expect(Object.keys(beat)).toEqual(["id", "equation", "label", "threeD"]);
     }
-    const charpoly = steps!.find((step) => step.id === "charpoly");
-    expect(charpoly?.caption.toLowerCase()).toMatch(/unit square/);
-    expect(charpoly?.caption.toLowerCase()).toMatch(/area/);
   });
 });
 
@@ -193,7 +192,12 @@ describe("EigenClipStage", () => {
         screen.getByTestId("eigen-clip-modal").getAttribute("data-major-step"),
       ).toBe("shift");
     });
-    expect(screen.getByText(/sent to zero/i)).toBeTruthy();
+    // Nav is playback metadata: the selected beat is marked active. No captions.
+    expect(
+      modal
+        .querySelector('[data-step-id="shift"]')
+        ?.getAttribute("data-active"),
+    ).toBe("true");
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-clip-modal-close"));

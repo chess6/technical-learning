@@ -12,8 +12,10 @@ math spine (structured values from src/math)
   → an appropriate solution visual
 ```
 
-Plus optional: notebook worked examples (with faded guidance), tiered practice
-reveals, misconception callouts, and depth layers.
+Plus optional: worked computations (a clean equation sequence, optionally beside
+a derivation scene), tiered practice reveals, misconception callouts, and depth
+layers. Equation-only worked computations are the normal case — prose is added
+only where it genuinely earns its place (see INTERACTIVE_TEXTBOOK_VISION.md §10).
 
 **The medium follows the learning objective.** Do **not** assume every lesson needs
 its own Motion Canvas derivation scene and a bespoke solution-diagram component.
@@ -45,7 +47,8 @@ Reserve full cinematic scenes for genuinely new ideas — not every drill item.
 | --- | --- | --- |
 | Structured math helpers | `src/math` | Numbers only — no TeX |
 | Presentation formatting | e.g. `src/lessons/eigenFormat.ts` | KaTeX/prose from structured values |
-| `WorkedExample` + `WorkedStep` | `src/lessons/types.ts` | Embed `guidedSceneId` on the example when a scene is the visual core |
+| `WorkedExample` (`equations: string[]`) | `src/lessons/types.ts` | A plain ordered list of KaTeX expressions; embed `guidedSceneId` when a scene is the visual core. No per-step prose schema. |
+| `EquationSequence` | `EquationSequence.tsx` | Renders the equation list cleanly (accessible MathML) |
 | `DepthLayer` | types + `DepthLayer.tsx` | Main line must stand alone |
 | `AuthoredCallout` | flexible slots, not a rigid DSL | Belief / confront / resolve optional |
 | `SolutionReveal` + registry | practice / checkpoint | Tiered: check/drill compact; transfer richer |
@@ -57,9 +60,9 @@ Flow:
 
 1. Conceptual Watch (`eigenvectors-invariant-directions`)
 2. Quick Check
-3. **Worked computation** — derivation scene + notebook (taught once)
+3. **Worked computation** — derivation scene + a clean equation sequence
 4. Explorer
-5. Faded example + tiered practice
+5. Tiered practice
 
 Key design choices to copy in spirit (not necessarily in medium):
 
@@ -75,8 +78,8 @@ Key design choices to copy in spirit (not necessarily in medium):
 - [ ] Math spine exists in `src/math` (structured values only)
 - [ ] Derivation representation chosen to fit the objective (not defaulted to Motion Canvas)
 - [ ] Solution visual chosen to fit the objective (not defaulted to a new component)
-- [ ] Worked example(s) identify object / invariant / picture / why-next / learned on **meaningful** steps
-- [ ] Guidance fades on a later example
+- [ ] Worked computation authored as a **plain equation sequence**; prose (callout / depth layer) added only for a subtle connection, likely misconception, or non-obvious transition — never a per-step template
+- [ ] Fading / self-explanation used only where it helps (optional)
 - [ ] At least one misconception confrontation where it naturally arises
 - [ ] Practice tiers (or a clear reason to skip a tier)
 - [ ] At least one concept-graph edge strengthened

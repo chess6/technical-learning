@@ -1,11 +1,11 @@
-import { useMemo, useState, Suspense } from "react";
-import type { WorkedExample, WorkedStep } from "../../lessons/types";
+import { useMemo } from "react";
+import type { WorkedExample } from "../../lessons/types";
 import { getGuidedSceneFactory } from "../../guided-scenes/registry";
 import { GuidedScenePlayer } from "./GuidedScenePlayer";
 import { EigenClipStage } from "./EigenClipStage";
 import { DepthLayerList } from "./DepthLayer";
+import { EquationSequence } from "./EquationSequence";
 import { ProseWithMath } from "./ProseWithMath";
-import { getSolutionVisual } from "./solutionVisuals/registry";
 import "./WorkedExamplePanel.css";
 
 type WorkedExamplePanelProps = {
@@ -19,9 +19,9 @@ type WorkedExamplePanelProps = {
 };
 
 /**
- * Notebook-style worked computation.
- * When a guidedSceneId is set, the derivation animation is the visual core
- * (left/top) with synchronized notebook reasoning (right/below) — taught once.
+ * A worked computation: an embedded derivation clip (when present) beside a
+ * clean sequence of equations. No per-step explanatory template — high-value
+ * asides live in depth layers, and misconceptions in callouts on the page.
  */
 export function WorkedExamplePanel({
   examples,
@@ -31,7 +31,7 @@ export function WorkedExamplePanel({
   if (examples.length === 0) return null;
 
   return (
-    <div className="worked-example-panel" role="region" aria-label="Worked examples">
+    <div className="worked-example-panel" role="region" aria-label="Worked computation">
       {examples.map((example) => (
         <WorkedExampleBlock
           key={example.id}
@@ -71,9 +71,11 @@ function WorkedExampleBlock({
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
       <header className="worked-example__header">
         <h3 className="worked-example__title">{example.title}</h3>
-        <p className="worked-example__prompt">
-          <ProseWithMath text={example.prompt} />
-        </p>
+        {example.prompt && (
+          <p className="worked-example__prompt">
+            <ProseWithMath text={example.prompt} />
+          </p>
+        )}
       </header>
 
       <div
@@ -102,105 +104,14 @@ function WorkedExampleBlock({
           </div>
         )}
 
-        <ol className="worked-example__steps">
-          {example.steps.map((step) => (
-            <WorkedStepItem
-              key={step.id}
-              step={step}
-              exampleId={example.exampleId}
-            />
-          ))}
-        </ol>
+        <EquationSequence
+          className="worked-example__equations"
+          equations={example.equations}
+          ariaLabel={example.equationsAriaLabel ?? `${example.title}: calculation`}
+        />
       </div>
 
       <DepthLayerList layers={example.layers} />
     </article>
-  );
-}
-
-function WorkedStepItem({
-  step,
-  exampleId,
-}: {
-  step: WorkedStep;
-  exampleId?: string;
-}) {
-  const [revealed, setRevealed] = useState(!step.faded);
-  const Visual = step.solutionVisualId
-    ? getSolutionVisual(step.solutionVisualId)
-    : null;
-
-  const content = (
-    <>
-      {step.symbolic && (
-        <p className="worked-example__symbolic">
-          <ProseWithMath text={`$${step.symbolic}$`} />
-        </p>
-      )}
-      {step.object && (
-        <p>
-          <span className="worked-example__label">Object.</span>{" "}
-          <ProseWithMath text={step.object} />
-        </p>
-      )}
-      {step.invariant && (
-        <p>
-          <span className="worked-example__label">Invariant.</span>{" "}
-          <ProseWithMath text={step.invariant} />
-        </p>
-      )}
-      {step.picture && (
-        <p>
-          <span className="worked-example__label">Picture.</span>{" "}
-          <ProseWithMath text={step.picture} />
-        </p>
-      )}
-      {step.whyNext && (
-        <p>
-          <span className="worked-example__label">Why next.</span>{" "}
-          <ProseWithMath text={step.whyNext} />
-        </p>
-      )}
-      {step.learned && (
-        <p className="worked-example__learned">
-          <span className="worked-example__label">What you learned.</span>{" "}
-          <ProseWithMath text={step.learned} />
-        </p>
-      )}
-      {Visual && (
-        <div className="worked-example__step-visual">
-          <Suspense fallback={null}>
-            <Visual exampleId={exampleId} height={200} />
-          </Suspense>
-        </div>
-      )}
-    </>
-  );
-
-  return (
-    <li className="worked-example__step" data-faded={Boolean(step.faded)}>
-      {step.faded && !revealed ? (
-        <button
-          type="button"
-          className="btn"
-          aria-expanded={false}
-          onClick={() => setRevealed(true)}
-        >
-          Reveal your reasoning for this step
-        </button>
-      ) : (
-        content
-      )}
-      {step.faded && revealed && (
-        <button
-          type="button"
-          className="btn btn--ghost worked-example__hide"
-          aria-expanded={true}
-          onClick={() => setRevealed(false)}
-        >
-          Hide step
-        </button>
-      )}
-    </li>
   );
 }

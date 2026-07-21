@@ -71,6 +71,12 @@ export function GuidedScenePlayer({
   const autoplay = useAutoplayOnceGuard();
   const substantiallyVisible = useSubstantialVisibility(containerEl, 0.55);
   const lastReportedStepId = useRef<string | null>(null);
+  /**
+   * Seed/seek target (0..1) queued until the engine reports a non-zero
+   * duration. Seeking immediately after mount can race the duration event and
+   * silently land on frame 0 (the modal step-nav "stuck on recap" bug).
+   */
+  const pendingSeekRef = useRef<number | null>(null);
   const onClipPositionChangeRef = useRef(onClipPositionChange);
   onClipPositionChangeRef.current = onClipPositionChange;
 
@@ -93,6 +99,7 @@ export function GuidedScenePlayer({
     setMounted(false);
     autoplay.reset();
     lastReportedStepId.current = null;
+    pendingSeekRef.current = null;
 
     void Promise.resolve(engine.mount(container)).then(() => {
       if (engineRef.current !== engine) return;
@@ -101,14 +108,21 @@ export function GuidedScenePlayer({
       const seeded = initialPosition
         ? majorSteps.find((step) => step.id === initialPosition.majorStepId)
         : undefined;
-      if (seeded) {
-        engine.seek(seeded.at);
+      const target =
+        seeded?.at ??
+        (reducedMotion && engine.steps.length > 0
+          ? (majorSteps[0] ?? engine.steps[0])?.at ?? null
+          : null);
+      if (target == null) return;
+      if (target <= 0) {
+        engine.seek(target);
         return;
       }
-      if (reducedMotion && engine.steps.length > 0) {
-        // First meaningful discrete state under reduced motion.
-        const first = majorSteps[0] ?? engine.steps[0];
-        if (first) engine.seek(first.at);
+      // Queue; applied once the engine reports a real duration (see below).
+      pendingSeekRef.current = target;
+      if ((engine.getState().duration ?? 0) > 0) {
+        engine.seek(target);
+        pendingSeekRef.current = null;
       }
     });
 
@@ -123,6 +137,19 @@ export function GuidedScenePlayer({
     // majorSteps is stable per sceneId; include sceneId via createEngine.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createEngine, reducedMotion, retryToken]);
+
+  // Flush a queued seed-seek once the engine reports a real duration. This
+  // makes modal step-nav / scrubber seeking deterministic instead of racing
+  // the duration event.
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    const target = pendingSeekRef.current;
+    if (target == null) return;
+    if ((state.duration ?? 0) <= 0) return;
+    engine.seek(target);
+    pendingSeekRef.current = null;
+  }, [state.duration, mounted]);
 
   // Autoplay once when substantially visible.
   useEffect(() => {

@@ -38,7 +38,7 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   await expect(page.getByTestId("misconception-callout").first()).toBeVisible();
 
   // Derivation scene idea dots expose ladder rung titles.
-  const worked = page.getByRole("region", { name: "Worked examples" });
+  const worked = page.getByRole("region", { name: "Worked computation" });
   const ideaDot = worked.locator(".guided-scene-player__idea-dot").nth(2);
   if (await ideaDot.count()) {
     await ideaDot.click();

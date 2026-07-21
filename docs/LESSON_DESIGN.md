@@ -124,6 +124,30 @@ The six-phase flow is the default spine, **not a rigid template**. Lessons may:
   motivate+watch), as long as the learner still watches before exploring.
 - Add a second explore/practice cycle when a lesson carries two linked ideas.
 
+### Authoring freedom (pedagogy and presentation)
+
+Agents and human authors have real creative latitude over **how** a concept is
+taught and presented, as long as the choice is pedagogically justified and
+correctness is preserved:
+
+- A **worked computation is a plain equation sequence by default**
+  (`WorkedExample.equations`). There is no per-step "object / invariant /
+  picture / why-next / learned" template — that framework was removed. Leaving a
+  step as an equation alone is normal. Add prose (a callout or a depth layer)
+  only when it reveals a subtle connection, prevents a likely misconception, or
+  explains a genuinely non-obvious transition. *Start with the mathematics; add
+  explanation only when it contributes something the expression, the sequence,
+  the adjacent visual, or reasonable learner inference does not already provide.*
+- A **visual does not need a caption** when its mathematical role is already
+  clear from the equations or context.
+- Prior lesson patterns (including Lesson 4's structure) are **reusable tools,
+  not requirements**. A different structure may be chosen when it better serves
+  the concept.
+
+This freedom applies to pedagogy and presentation — **not** to mathematical
+honesty, accessibility, testing, semantic color consistency, object-identity
+continuity, or reduced-motion behavior, which are non-negotiable.
+
 Constraints on deviation:
 
 - Guided **Watch before** learner **Explore** is preserved.

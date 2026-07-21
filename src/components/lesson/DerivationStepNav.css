@@ -25,7 +25,7 @@
 .derivation-step-nav__button {
   display: grid;
   grid-template-columns: 1.75rem 1fr;
-  align-items: start;
+  align-items: center;
   gap: 0.6rem;
   width: 100%;
   text-align: left;
@@ -73,35 +73,14 @@
   color: #fff;
 }
 
-.derivation-step-nav__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.derivation-step-nav__label {
-  font-weight: 650;
-  font-size: 1rem;
-}
-
 .derivation-step-nav__eq {
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  font-size: 1rem;
+  align-self: center;
 }
 
 .derivation-step-nav__eq .katex {
   font-size: 1.05em;
-}
-
-.derivation-step-nav__caption {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: var(--color-text-muted);
 }
 
 /* Compact still used in denser layouts; keep larger than the old tiny size. */
@@ -110,14 +89,6 @@
   gap: 0.5rem;
 }
 
-.derivation-step-nav--compact .derivation-step-nav__label {
-  font-size: 0.95rem;
-}
-
 .derivation-step-nav--compact .derivation-step-nav__eq {
-  font-size: 0.9rem;
-}
-
-.derivation-step-nav--compact .derivation-step-nav__caption {
   font-size: 0.9rem;
 }

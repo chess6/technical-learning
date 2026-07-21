@@ -81,32 +81,32 @@ export type ExerciseDefinition =
       explanation: string;
     });
 
-export type WorkedStep = {
-  id: string;
-  /** KaTeX for the symbolic line (presentation layer). */
-  symbolic?: string;
-  object?: string;
-  invariant?: string;
-  picture?: string;
-  whyNext?: string;
-  learned?: string;
-  solutionVisualId?: string;
-  /** When true, hide behind a self-explanation reveal (faded guidance). */
-  faded?: boolean;
-};
-
+/**
+ * A worked computation is authored as a plain, ordered list of mathematical
+ * expressions (KaTeX) — nothing more by default.
+ *
+ * There is deliberately **no** per-step explanatory schema (no object /
+ * invariant / picture / why-next / learned). If a step needs a subtle
+ * connection, a misconception repair, or a non-obvious transition explained,
+ * put that in a `layer` (depth layer) or an `AuthoredCallout` beside the
+ * calculation — not on every equation. Equation-only is the normal case.
+ */
 export type WorkedExample = {
   id: string;
   title: string;
-  prompt: string;
+  prompt?: string;
   /**
    * Optional embedded derivation scene — the visual core of this worked
-   * example. Prefer this over a separate second Watch block.
+   * computation. Prefer this over a separate second Watch block.
    */
   guidedSceneId?: string;
   /** Shared matrix/example id for continuity with guided + explorer. */
   exampleId?: string;
-  steps: WorkedStep[];
+  /** The calculation itself: an ordered list of KaTeX expressions. */
+  equations: readonly string[];
+  /** Optional accessible label for the equation sequence region. */
+  equationsAriaLabel?: string;
+  /** Optional depth layers for genuinely high-value asides (never per-step). */
   layers?: DepthLayer[];
 };
 

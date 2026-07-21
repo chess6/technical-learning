@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
-import { getDerivationSteps } from "../../guided-scenes/scenes/derivationSteps";
+import { getPlaybackBeats } from "../../guided-scenes/scenes/derivationSteps";
 import { DerivationStepNav } from "./DerivationStepNav";
 import type { ClipPosition } from "./clipPosition";
 import "./EigenClipModal.css";
@@ -45,7 +45,7 @@ export function EigenClipModal({
 }: EigenClipModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const steps = getDerivationSteps(sceneId);
+  const beats = getPlaybackBeats(sceneId);
 
   useEffect(() => {
     if (!open) return;
@@ -111,7 +111,7 @@ export function EigenClipModal({
         aria-labelledby={titleId}
         data-testid="eigen-clip-modal"
         data-major-step={position.majorStepId}
-        data-has-steps={Boolean(steps && steps.length > 0)}
+        data-has-steps={Boolean(beats && beats.length > 0)}
       >
         <header className="eigen-clip-modal__header">
           <h2 id={titleId} className="eigen-clip-modal__title">
@@ -131,13 +131,12 @@ export function EigenClipModal({
         <div className="eigen-clip-modal__body">
           <div className="eigen-clip-modal__viz">{children}</div>
 
-          {steps && steps.length > 0 && onSelectStep && (
+          {beats && beats.length > 0 && onSelectStep && (
             <DerivationStepNav
               className="eigen-clip-modal__steps"
-              steps={steps}
+              beats={beats}
               activeStepId={position.majorStepId}
               onSelectStep={onSelectStep}
-              showCaption
             />
           )}
         </div>

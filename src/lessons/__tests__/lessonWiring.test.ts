@@ -63,6 +63,39 @@ describe("lesson wiring for all four POC lessons", () => {
     expect(getSceneMeta(primary.guidedSceneId!).id).toBe("eigenvectors-derivation");
   });
 
+  it("Lesson 4 worked computation is a clean ordered equation sequence", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    const primary = lesson.workedExamples![0]!;
+    // Authored as plain equations — no per-step explanatory template.
+    expect(Array.isArray(primary.equations)).toBe(true);
+    expect((primary as unknown as { steps?: unknown }).steps).toBeUndefined();
+    expect(primary.equations).toEqual([
+      "A\\mathbf{v} = \\lambda\\mathbf{v}",
+      "(A - \\lambda I)\\mathbf{v} = \\mathbf{0}",
+      "\\det(A - \\lambda I) = 0",
+      "\\det\\begin{bmatrix} 3-\\lambda & 1 \\\\ 0 & 2-\\lambda \\end{bmatrix} = 0",
+      "(3-\\lambda)(2-\\lambda) = 0",
+      "\\lambda = 3,\\; 2",
+      "\\lambda = 3:\\quad \\mathbf{v} \\parallel \\begin{bmatrix} 1 \\\\ 0 \\end{bmatrix}",
+      "\\lambda = 2:\\quad \\mathbf{v} \\parallel \\begin{bmatrix} -1 \\\\ 1 \\end{bmatrix}",
+    ]);
+  });
+
+  it("high-value eigen insights live in layers/callouts, not per-equation", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    const primary = lesson.workedExamples![0]!;
+    const layerText = (primary.layers ?? [])
+      .map((l) => `${l.title} ${l.body}`)
+      .join(" ");
+    // A − λI (not A) sends v to zero; det(A−λI)=0 reuses Lesson 3 collapse.
+    expect(layerText).toMatch(/A-\\lambda I/);
+    expect(layerText.toLowerCase()).toMatch(/collapse|singular/);
+    // Off-axis + negative-eigenvalue insights are covered by callouts.
+    const calloutIds = new Set((lesson.callouts ?? []).map((c) => c.id));
+    expect(calloutIds.has("not-always-axes")).toBe(true);
+    expect(calloutIds.has("same-line-not-direction")).toBe(true);
+  });
+
   it("eigenvectors practice covers check, drill, and transfer tiers", () => {
     const lesson = getLessonById("eigenvectors")!;
     const tiers = new Set(lesson.exercises.map((ex) => ex.tier).filter(Boolean));

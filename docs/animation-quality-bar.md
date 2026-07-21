@@ -49,6 +49,20 @@ cannot be bought back by strength on another:
 
 Polish and complexity serve the first two axes; they are never the goal.
 
+**Captions are optional and brief.** A beat needs no caption when its
+mathematical role is already clear from the geometry or the on-screen equation
+("hold, no text" is a legitimate script line, §… below). When a caption is
+present, it says what to **notice visually** — it is not a second textbook. Keep
+the three authoring surfaces distinct to avoid triple-authoring the same
+sentence:
+
+- **Scene captions** — brief, "what to notice" in the picture.
+- **Lesson prose / callouts / depth layers** — the broader concept or a subtle
+  point, authored once on the page.
+- **The equation** — the symbolic content, shared verbatim across surfaces when
+  the same expression appears (e.g. a `WorkedExample.equations` line and a scene
+  `Latex` beat).
+
 ---
 
 ## 2. Explicit exclusion rule

@@ -51,8 +51,9 @@ example, and should read like one.
 ## 1. Purpose, audience, and north star
 
 **Audience.** College-level learners meeting linear algebra as a *conceptual*
-subject, not a computational chore. They can handle symbols; what they usually
-lack is the picture behind the symbols and the reason the symbols were invented.
+subject, not a computational chore. They can handle symbols and paper-and-pen 
+calculations; what they usually lack is the picture behind the techniques and 
+the reason the techniques were invented.
 
 **North star.** The learner should feel they are reading a *beautifully
 illustrated live notebook* — not a traditional textbook, and not a playlist of
@@ -537,44 +538,41 @@ meaning.)*
 
 ## 10. Worked-example philosophy
 
-A worked example is the product's closest thing to a professor at a whiteboard
-thinking aloud. It does **not** merely reach the answer. **Across the worked
-example, and at every conceptually meaningful step, make these five elements
-available:**
+A worked computation is a professor at a whiteboard — but the whiteboard is
+mostly *mathematics*, not prose. **The default is to show the sequence of
+expressions and stop there.** The equations, the spacing between them, and the
+adjacent visualization already carry most of the meaning. Trust the learner to
+read a calculation.
 
-1. **The mathematical object** — what are we operating on right now?
-2. **The invariant being preserved** — what stays true through this step, and why
-   that is what licenses it?
-3. **The mental picture** — what does this step *look like* geometrically?
-4. **Why the next step follows** — what makes the following move natural rather
-   than arbitrary?
-5. **What the learner should now understand** — the one-line "what idea did I just
-   learn?"
+**Author a worked computation as a plain, ordered list of expressions** (this is
+literally what `WorkedExample.equations` is). There is deliberately **no**
+per-step explanatory schema. Do not describe every step with an "object /
+invariant / picture / why-next / learned" template — that framework has been
+removed. An equation standing alone is the normal case.
 
-This is a requirement on the *meaningful* steps, not a five-line annotation on
-every line of algebra. Routine bookkeeping — expanding a polynomial, clearing a
-denominator — should be *named as bookkeeping* and move quickly (§5.4); forcing
-all five elements onto it makes solutions mechanically repetitive and buries the
-steps that actually carry meaning.
+Add prose only where it earns its place, and put it **beside** the calculation
+rather than on every line:
 
-Never a bare "Step 3: solve the characteristic polynomial" *for a step that
-teaches something*. At the conceptual steps, a learner should finish knowing not
-just *what* was done but *which idea it taught*.
+- **A subtle connection** to an earlier idea (a depth layer, §11).
+- **A likely misconception** the calculation would otherwise leave intact (a
+  callout — the "why a tempting wrong path fails" from §5.5).
+- **A genuinely non-obvious transition** whose motivation the expression does not
+  reveal on its own.
 
-Also required (from §5.5): **why a tempting wrong path fails.** Naming the
-attractive mistake and showing where it breaks is often more instructive than the
-correct path alone.
+If none of these apply, write nothing. *Explanatory completeness is not the same
+as explanatory volume.* One well-placed sentence beats five labels on every rung.
 
-Guidance fades (§5.5, expertise reversal): the **first** worked example of a
-procedure meets this standard in full; later examples in the same lesson or
-chapter **omit steps and ask the learner to supply the reasoning** (self-
-explanation prompts), so the scaffold is removed as competence grows.
+Fading and self-explanation prompts (§5.5) remain available when they help, but
+they are a tool, not a requirement: a later example may simply be a shorter
+equation sequence.
 
-### Reference template: the eigenvector derivation ladder
+### Reference example (not a template): the eigenvector derivation ladder
 
-This is the canonical shape for **every** computational procedure the product
-teaches — present and future. Each rung is a symbolic step *with* its geometric
-meaning; a derivation visualization (§9a) accompanies the meaningful rungs.
+The table below is one *illustration* of a computation whose geometry is worth
+showing — not a mandatory shape. A future procedure may keep the geometric
+column, drop it, or restructure the rungs entirely when a different presentation
+serves the concept better. The retained insights (rungs 2 and 3) live in a
+callout and a depth layer in the actual lesson, not as per-rung annotations.
 
 | Rung | Symbolic step | Geometric meaning (the synchronized picture) |
 | --- | --- | --- |
@@ -842,12 +840,13 @@ six abilities* are. If a learner cannot do all six, the lesson is not done.
       **made computable** (§2).
 - [ ] The lesson has a clear **compression payoff** — a moment where the pieces
       snap into one reusable idea (§3).
-- [ ] Any computational procedure is taught via a **derivation ladder** whose
-      meaningful rungs pair symbol with geometry (§10).
-- [ ] Each **worked example** identifies, per step: object, invariant, picture,
-      why-next, and what-was-learned; and names a tempting wrong path (§10).
-- [ ] Worked guidance **fades** across the lesson (self-explanation prompts;
-      later steps left to the learner) (§5.5).
+- [ ] Any computational procedure is shown as a **clean equation sequence**; an
+      adjacent visualization accompanies it where geometry helps (§10).
+- [ ] Worked computations are **equations first** — prose (a callout or depth
+      layer) appears only for a subtle connection, a likely misconception, or a
+      non-obvious transition, never as a per-step template (§10).
+- [ ] Fading / self-explanation is used **where it helps**, not as a requirement
+      (§5.5).
 - [ ] At least one **misconception is staged as a confrontation** (elicit,
       confront, resolve), where it naturally arises (§12).
 - [ ] **Practice reveals continue teaching**, tiered by kind; the learner commits

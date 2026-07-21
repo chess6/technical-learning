@@ -14,6 +14,16 @@ Before modifying **mathematical visualizations**, also read
 - Six-phase flow: Motivate → Watch → Check → Explore → Practice → Summarize.
   It is a backbone, not a cage — supporting concepts (e.g. linear dependence) may
   be added when they help, keeping Watch-before-Explore and continuity intact.
+- **Equation-first worked computations.** Author a worked computation as a plain
+  ordered list of KaTeX expressions (`WorkedExample.equations`). There is **no**
+  per-step object/invariant/picture/why-next/learned template — an equation
+  alone is normal. Add prose (a callout or depth layer) only for a subtle
+  connection, a likely misconception, or a non-obvious transition. A visual
+  needs no caption when its role is already clear.
+- **Authoring freedom:** prior lesson structures and docs are tools, not law.
+  Depart from them when a different presentation better serves the concept and
+  you preserve correctness, accessibility, tests, semantic roles, continuity,
+  and reduced motion.
 - Preserve **guided-to-interactive continuity**: same example, data, names,
   semantic colors/roles, and math utilities.
 - Use **KaTeX** for conceptual notation; **column vectors**; standard basis

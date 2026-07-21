@@ -1,0 +1,38 @@
+.equation-sequence {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  /* A single restrained rule groups the lines as one derivation without
+     card-per-equation heaviness. */
+  border-left: 2px solid var(--color-divider, #e5e7eb);
+  padding-left: 1rem;
+}
+
+.equation-sequence__row {
+  margin: 0;
+}
+
+/* Strip the standalone-equation card chrome: inside a sequence the equations
+   read as one calculation (grouped by the left rule), not a stack of cards. */
+.equation-sequence__row .equation-block {
+  margin: 0;
+  padding: 0.3rem 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* Left-align so the calculation reads top-to-bottom like a notebook. */
+.equation-sequence__row .equation-block__rendered {
+  text-align: left;
+  font-size: var(--text-lg);
+}
+
+.equation-sequence__row .katex-display {
+  margin: 0.1rem 0;
+  text-align: left;
+}

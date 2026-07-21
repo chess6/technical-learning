@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { getGuidedSceneFactory } from "../../guided-scenes/registry";
-import { getDerivationSteps } from "../../guided-scenes/scenes/derivationSteps";
+import { getPlaybackBeats } from "../../guided-scenes/scenes/derivationSteps";
 import { GuidedScenePlayer } from "./GuidedScenePlayer";
 import { EigenClipModal } from "./EigenClipModal";
 import type { ClipMode, ClipPosition } from "./clipPosition";
@@ -49,8 +49,8 @@ export function EigenClipStage({
     () => getGuidedSceneFactory(sceneId),
     [sceneId],
   );
-  const steps = getDerivationSteps(sceneId);
-  const defaultStepId = steps?.[0]?.id ?? "recap";
+  const beats = getPlaybackBeats(sceneId);
+  const defaultStepId = beats?.[0]?.id ?? "recap";
 
   const [mode, setMode] = useState<ClipMode>("derivation");
   const [expanded, setExpanded] = useState(false);

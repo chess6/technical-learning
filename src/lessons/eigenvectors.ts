@@ -64,112 +64,32 @@ export const eigenvectorsLesson: LessonDefinition = {
   workedExamples: [
     {
       id: "eigen-compute-distinct",
-      title: "Computing eigenvectors",
+      title: "Computing the eigenvalues and eigenvectors",
       prompt:
-        "For $A=\\begin{bmatrix} 3 & 1 \\\\ 0 & 2 \\end{bmatrix}$, derive the eigenvalues and eigendirections. Watch the animation and the notebook together — they are one object.",
+        "For $A=\\begin{bmatrix} 3 & 1 \\\\ 0 & 2 \\end{bmatrix}$ — the same matrix you just watched — here is the whole calculation.",
       guidedSceneId: "eigenvectors-derivation",
       exampleId: "eigen-distinct",
-      steps: [
-        {
-          id: "recap",
-          symbolic: "A\\mathbf{v} = \\lambda\\mathbf{v}",
-          object: "A nonzero vector $\\mathbf{v}$ and a scalar $\\lambda$.",
-          invariant: "We seek directions the map only scales — same line, signed length.",
-          picture: "Most arrows leave their ray; a few stay put on a line through the origin.",
-          whyNext:
-            "Rearrange to expose a homogeneous equation whose nontrivial solutions are exactly those directions.",
-          learned: "The defining equation is geometric: stay on your line, scaled by $\\lambda$.",
-        },
-        {
-          id: "shift",
-          symbolic: "(A - \\lambda I)\\mathbf{v} = \\mathbf{0}",
-          object: "The auxiliary matrix $A-\\lambda I$, not $A$ itself.",
-          invariant:
-            "When $A\\mathbf{v}$ and $\\lambda\\mathbf{v}$ coincide, their difference is the zero vector.",
-          picture:
-            "Under $A-\\lambda I$, that special direction collapses to the origin. $A$ still stretches it — the auxiliary map is what crushes it.",
-          whyNext:
-            "A nonzero $\\mathbf{v}$ in the nullspace exists exactly when $A-\\lambda I$ collapses area.",
-          learned:
-            "The shift rewrites the geometry as a nullspace problem for a related map.",
-        },
-        {
-          id: "charpoly",
-          symbolic: "\\det(A - \\lambda I) = 0",
-          object: "The determinant of the auxiliary map (Lesson 3).",
-          invariant:
-            "det $= 0$ means dimensional collapse — some distinct inputs become indistinguishable.",
-          picture:
-            "The unit square under $A-\\lambda I$ flattens onto a line precisely when $\\lambda$ is an eigenvalue.",
-          whyNext: "Expand the determinant to get a quadratic in $\\lambda$ and solve.",
-          learned:
-            "Finding eigenvalues reuses the determinant idea: collapse of the auxiliary map.",
-        },
-        {
-          id: "solve-lambda",
-          symbolic: "\\lambda^2 - 5\\lambda + 6 = 0 \\implies \\lambda = 3,\\; 2",
-          object: "The characteristic polynomial $\\lambda^2 - (\\mathrm{tr})\\lambda + \\det$.",
-          picture: "Two real roots for this $A$: $\\lambda=3$ and $\\lambda=2$.",
-          whyNext: "For each $\\lambda$, solve $(A-\\lambda I)\\mathbf{v}=\\mathbf{0}$.",
-          learned: "The roots are the scale factors along the special directions.",
-        },
-        {
-          id: "solve-v",
-          symbolic:
-            "\\lambda=3:\\; \\mathbf{v}\\parallel(1,0);\\quad \\lambda=2:\\; \\mathbf{v}\\parallel(-1,1)",
-          object: "One eigenspace per eigenvalue.",
-          invariant: "Each nullspace is a line (or the plane, in the scalar case).",
-          picture:
-            "$\\lambda=3$ keeps the $x$-axis. $\\lambda=2$ is the off-axis line through $(-1,1)$ — eigenvectors are not always coordinate axes.",
-          whyNext: "Read each $\\lambda$ back as stretch, shrink, reverse, or collapse.",
-          learned:
-            "Asymmetry is the point: one axis direction and one slanted direction for the same matrix.",
-        },
-        {
-          id: "interpret",
-          object: "The pair $(\\lambda, \\text{line})$.",
-          picture:
-            "$\\lambda=3$ stretches along $(1,0)$; $\\lambda=2$ stretches along $(-1,1)$. Same definition, two different lines.",
-          learned:
-            "You can now compute eigenvectors — not only recognize them visually.",
-        },
+      equationsAriaLabel: "Deriving the eigenvalues and eigenvectors of A",
+      equations: [
+        "A\\mathbf{v} = \\lambda\\mathbf{v}",
+        "(A - \\lambda I)\\mathbf{v} = \\mathbf{0}",
+        "\\det(A - \\lambda I) = 0",
+        "\\det\\begin{bmatrix} 3-\\lambda & 1 \\\\ 0 & 2-\\lambda \\end{bmatrix} = 0",
+        "(3-\\lambda)(2-\\lambda) = 0",
+        "\\lambda = 3,\\; 2",
+        "\\lambda = 3:\\quad \\mathbf{v} \\parallel \\begin{bmatrix} 1 \\\\ 0 \\end{bmatrix}",
+        "\\lambda = 2:\\quad \\mathbf{v} \\parallel \\begin{bmatrix} -1 \\\\ 1 \\end{bmatrix}",
       ],
       layers: [
         {
-          kind: "connection",
-          title: "Determinant collapse pays off here",
-          body: "The rung $\\det(A-\\lambda I)=0$ is Lesson 3's compression reused: zero determinant means the auxiliary map loses a dimension. The concept graph edge from determinants to eigenvectors is the derivation itself.",
-        },
-        {
           kind: "trap",
-          title: "Do not say A crushes its eigenvector",
-          body: "Under $A$, an eigenvector is scaled, not sent to zero (unless $\\lambda=0$). It is $A-\\lambda I$ that sends that direction to the origin.",
-        },
-      ],
-    },
-    {
-      id: "eigen-faded-negative",
-      title: "Your turn — a negative eigenvalue",
-      prompt:
-        "For $A=\\begin{bmatrix} 2 & 0 \\\\ 0 & -1 \\end{bmatrix}$, supply the missing reasoning. Guidance is faded: reveal each step after you try.",
-      exampleId: "eigen-negative",
-      steps: [
-        {
-          id: "charpoly-faded",
-          faded: true,
-          symbolic: "\\det(A-\\lambda I)=\\lambda^2 - \\lambda - 2 = 0",
-          object: "Characteristic polynomial for this diagonal matrix.",
-          learned: "Roots $\\lambda=2$ and $\\lambda=-1$.",
+          title: "It is A − λI, not A, that sends v to zero",
+          body: "Watch which map does the crushing. Under $A$ an eigenvector is only scaled ($A\\mathbf{v}=\\lambda\\mathbf{v}$); it is the auxiliary map $A-\\lambda I$ that sends that direction to the origin. That is why we look for the $\\lambda$ that makes $A-\\lambda I$ singular.",
         },
         {
-          id: "spaces-faded",
-          faded: true,
-          symbolic:
-            "\\lambda=2:\\;(1,0);\\quad \\lambda=-1:\\;(0,1)",
-          picture:
-            "$\\lambda=-1$ reverses the vertical axis while staying on that line — same line, opposite direction.",
-          learned:
-            "Negative eigenvalues reverse; they do not leave the eigendirection.",
+          kind: "connection",
+          title: "Why det(A − λI) = 0? — determinant collapse from Lesson 3",
+          body: "A nonzero direction can land on $\\mathbf{0}$ only if $A-\\lambda I$ flattens the plane. In Lesson 3 that was exactly what $\\det=0$ meant: the map collapses a dimension. So the eigenvalues are the $\\lambda$ that make the auxiliary map singular.",
         },
       ],
     },
