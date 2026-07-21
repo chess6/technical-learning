@@ -27,6 +27,28 @@ rules over one-off patches.
 
 ---
 
+### 2026-07-20 — Karatsuba Watch scene: bare weight labels, text-only trees, carry beat still showed 12×13
+
+- **Date:** 2026-07-20
+- **Title:** Karatsuba Watch scene: bare weight labels, text-only recurrence trees, carry-vs-width beat still showed 12×13
+- **Symptom:**
+  1. The weighted rectangle labeled its four regions with bare place values (`100`, `10`, `10`, `1`), so the learner had to remember which weight belonged to which region; the auxiliary rectangle had no in-rectangle region labels at all.
+  2. The `branch` and `exponent` beats described the recurrence trees only in a caption (`branch 4 → 64 leaves …`) — no actual tree was drawn, so the branching-factor → leaf-count claim was asserted, not shown.
+  3. The `carry-vs-width` beat kept the **12 × 13** weighted rectangle on screen while the narration and equation discussed the **78 × 56** carrying example — a picture/word mismatch (the visible rectangle was the wrong number).
+- **Mathematical expectation:** Each region label should carry its own weight (`100·AC`, `10·AD`, `10·BC`, `BD`) so the shared ×10 of AD and BC is legible; the two recurrence trees must be drawn with real nodes/edges whose leaf counts equal `leafCount(4,3)=64` and `leafCount(3,3)=27`; and a beat about `78 × 56` must not show the `12 × 13` figure — it must show the 78×56 coefficient blocks `(35,82,48)→(35,86,8)→(43,6,8)` from `karatsubaStep(78,56,1).normalized`.
+- **Root cause:** The weight labels were authored as bare values; the tree beats were placeholder text; and the carry beat reused the weighted-rectangle nodes instead of a dedicated 78×56 carrying diagram.
+- **Affected files:** `src/guided-scenes/scenes/karatsubaCrossTermsScene.ts`, `src/components/lesson/GuidedScenePlayer.css`
+- **Fix:**
+  1. Region labels inside **both** rectangles: the weighted rectangle labels combine name+weight (`AC` → `100\,AC`, `AD` → `10\,AD`, `BC` → `10\,BC`, `BD`) with the weight fading in during the `weights` beat; the auxiliary rectangle labels each subrectangle `AC/AD/BC/BD`. The `share` beat makes the shared ×10 the focal event (dim AC/BD, pulse AD/BC) and collapses them into a single `10(AD+BC)` label.
+  2. `branch`/`exponent` now draw two side-by-side conceptual trees from `recursionTree(4,3)` / `recursionTree(3,3)` (nodes + edges) with leaf-count labels `64 leaves = n²` and `27 leaves ≈ n^1.585`, keeping the "conceptual, not a literal call tree" caption.
+  3. `carry-vs-width` fades the 12×13 weighted (and auxiliary) rectangle out and fades in a dedicated 78×56 coefficient-block diagram whose three blocks animate `(35,82,48)→(35,86,8)→(43,6,8)` driven by `BOUNDARY.normalized.steps`, with `+4`/`+8` carry chips as temporaries.
+  4. Enlarged the displayed clip (`GuidedScenePlayer.css` canvas `max-height`) so captions/labels stay legible without shrinking the shared logical stage; captions kept short enough to sit inside the safe frame.
+- **Regression test added:** `src/guided-scenes/scenes/__tests__/karatsubaSceneData.test.ts` pins the exact data each beat renders (weighted region values, aux `(A+B)(C+D)=12`, the 78×56 carry order + blocks, and the branch-4/branch-3 leaf counts from `recursionTree`/`leafCount`). `e2e/lesson-karatsuba.spec.ts` steps through the major beats (incl. the boundary carry beat and trees) and adds narrow-viewport passes (768 px, 390 px) asserting the canvas is not cropped.
+- **General lesson / prevention rule:** A beat's caption/equation and its on-canvas figure must describe the **same** example — never leave a previous example's figure on screen while narrating a new one. Recurrence trees are drawn from `recursionTree`/`leafCount`, never text-only. Region labels should carry the quantity (name+weight) the learner must reason about, in both rectangles.
+- **Status:** fixed
+
+---
+
 ### 2026-07-20 — Karatsuba recurrence-tree picture/caption mismatch, missing weight labels, wrong "L-shape"
 
 - **Date:** 2026-07-20

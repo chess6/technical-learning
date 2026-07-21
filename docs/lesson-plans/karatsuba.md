@@ -156,9 +156,17 @@ rule).
 | `aux-rect` | A different rectangle | Introduce the **separate auxiliary coefficient rectangle** $(A+B)(C+D)=3\times4$ | $(A+B)(C+D)=AC+AD+BC+BD$ |
 | `subtract` | Peel off the corners | Remove $AC$ and $BD$; the two opposite corners left = $AD+BC$ — **prediction pause** | $z_1=(A+B)(C+D)-AC-BD$ |
 | `reassemble` | Rebuild the answer | $100z_2+10z_1+z_0=156$ from three products | $z_2=AC,\ z_0=BD,\ \text{result}=100z_2+10z_1+z_0$ |
-| `carry-vs-width` | Two kinds of "too big" | Switch to $78\times56$: $z_i$ overflow ⇒ **output carrying**; $A+B=15$ ⇒ **wider operand** in $(A+B)(C+D)$, handled by padding, not a 4th product | $z_2B^{2m}+z_1B^m+z_0$ then carry |
-| `branch` | Four calls or three? | Side-by-side **conceptual recurrence trees**: branch 4 vs branch 3 — **prediction pause** | $T(n)=4T(n/2)$ vs $3T(n/2)+\Theta(n)$ |
-| `exponent` | The exponent bends | Leaf counts $n^{\log_2 4}=n^2$ vs $n^{\log_2 3}\approx n^{1.585}$ | $\log_2 4 \to \log_2 3$ |
+| `carry-vs-width` | Two kinds of "too big" | The 12×13 weighted rectangle **leaves the stage**; a dedicated $78\times56$ coefficient-block diagram fades in and animates $(35,82,48)\to(35,86,8)\to(43,6,8)$ (blocks + `+4`/`+8` carry chips) from `karatsubaStep(78,56,1).normalized`. Output carrying vs. wider $A+B=15$ (padding, not a 4th product) kept separate | $z_2B^{2m}+z_1B^m+z_0$ then carry |
+| `branch` | Four calls or three? | **Real** side-by-side conceptual recurrence trees drawn from `recursionTree(4,3)` and `recursionTree(3,3)` (nodes + edges), captioned "conceptual, not a literal call tree" | $T(n)=4T(n/2)$ vs $3T(n/2)+\Theta(n)$ |
+| `exponent` | The exponent bends | Leaf-count labels under the two drawn trees: $64=n^2$ vs $27\approx n^{1.585}$ (from `leafCount`) | $\log_2 4 \to \log_2 3$ |
+
+> **Beat visuals updated (2026-07-20).** The weighted rectangle labels combine
+> name + weight ($100\,AC$, $10\,AD$, $10\,BC$, $BD$, weights fading in on
+> `weights`); `share` makes the shared $\times10$ the focal event and collapses
+> $10\,AD$ and $10\,BC$ into $10(AD+BC)$; both rectangles label their four
+> subregions $AC/AD/BC/BD$; the `carry-vs-width` beat shows the $78\times56$
+> carry diagram (never $12\times13$); and `branch`/`exponent` draw the two trees
+> instead of text. See [ERROR_LOG.md](../ERROR_LOG.md).
 
 - **No `deeper` beat.** The polynomial/parabola connection is **not** a segment of
   the primary timeline (autoplay would otherwise always show it). It lives only in
