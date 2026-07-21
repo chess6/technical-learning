@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Line, Text, Vector, useMovablePoint } from "mafs";
+import { Line, Point, Polygon, Text, Vector, useMovablePoint } from "mafs";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
 import { MatrixTeX, VectorTeX } from "../components/lesson/ProseWithMath";
 import { MafsSceneShell } from "./MafsSceneShell";
@@ -12,7 +12,9 @@ import {
   MATRIX_LESSON_EXAMPLE,
   TRANSFORM_LESSON_PRESETS,
 } from "../lessons/exampleData";
+import { OPENING_GRAPHIC } from "../lessons/openingGraphic";
 import {
+  applyMatrixToPoints,
   clamp,
   determinant2x2,
   DIAGNOSTIC_PRESETS,
@@ -24,6 +26,25 @@ import {
   type Vector2,
 } from "../math";
 import "./MatrixTransformationExplorer.css";
+
+const GRAPHIC = OPENING_GRAPHIC.outline as readonly [number, number][];
+const ANCHORS = OPENING_GRAPHIC.anchors;
+const ROLE_SELECTED = "var(--role-selected)";
+
+/** Reflection across y = x — the "same map, two matrices" example. */
+const REFLECTION_XY: Matrix2x2 = [
+  [0, 1],
+  [1, 0],
+];
+
+function matrixApproxEqual(m: Matrix2x2, n: Matrix2x2, tol = 0.05): boolean {
+  return (
+    Math.abs(m[0][0] - n[0][0]) < tol &&
+    Math.abs(m[0][1] - n[0][1]) < tol &&
+    Math.abs(m[1][0] - n[1][0]) < tol &&
+    Math.abs(m[1][1] - n[1][1]) < tol
+  );
+}
 
 const DEFAULT_EXAMPLE = MATRIX_LESSON_EXAMPLE;
 const INITIAL_INPUT = (DEFAULT_EXAMPLE.inputVector ?? [1.5, 0.5]) as Vector2;
@@ -87,6 +108,8 @@ export function MatrixTransformationExplorer() {
   const [t, setT] = useState(1);
   const [showTransformedGrid, setShowTransformedGrid] = useState(true);
   const [showBasis, setShowBasis] = useState(true);
+  const [showGraphic, setShowGraphic] = useState(true);
+  const [targetMatrix, setTargetMatrix] = useState<Matrix2x2 | null>(null);
 
   const target = useMemo(() => toMatrix(entries), [entries]);
   const current = useMemo(() => lerpIdentityToMatrix(target, t), [target, t]);
@@ -108,6 +131,20 @@ export function MatrixTransformationExplorer() {
   const det = determinant2x2(target);
   const singular = Math.abs(det) < 1e-9;
 
+  // Shared graphic: transform every vertex through the shared math (never ad-hoc).
+  const graphicTransformed = applyMatrixToPoints(current, GRAPHIC);
+  const noseImage = matrixVectorMultiply(current, GRAPHIC[ANCHORS.nose]!);
+  const finImage = matrixVectorMultiply(current, GRAPHIC[ANCHORS.rightFin]!);
+  const noseOriginal = GRAPHIC[ANCHORS.nose]!;
+  const finOriginal = GRAPHIC[ANCHORS.rightFin]!;
+
+  // "Same map, two matrices": reflection across y = x is diag(1, -1) in B.
+  const isReflectionXY = matrixApproxEqual(target, REFLECTION_XY);
+
+  // Build-a-matrix target-match task.
+  const targetGraphic = targetMatrix ? applyMatrixToPoints(targetMatrix, GRAPHIC) : null;
+  const targetMatched = targetMatrix ? matrixApproxEqual(target, targetMatrix) : false;
+
   const showDiagnosticPresets = useMemo(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -127,6 +164,15 @@ export function MatrixTransformationExplorer() {
   const applyPreset = useCallback((exampleId: string) => {
     setEntries(toEntries(requireMatrixExample(exampleId).matrix));
     setT(1);
+    setTargetMatrix(null);
+  }, []);
+
+  const startMatch = useCallback((exampleId: string) => {
+    // Learner rebuilds the map from its basis images: start at the identity so
+    // the two columns must be set to hit the target graphic.
+    setTargetMatrix(requireMatrixExample(exampleId).matrix as Matrix2x2);
+    setEntries(toEntries(requireMatrixExample("identity").matrix));
+    setT(1);
   }, []);
 
   const handleReset = useCallback(() => {
@@ -134,6 +180,8 @@ export function MatrixTransformationExplorer() {
     setT(1);
     setShowTransformedGrid(true);
     setShowBasis(true);
+    setShowGraphic(true);
+    setTargetMatrix(null);
     setPoint(INITIAL_INPUT as [number, number]);
   }, [setPoint]);
 
@@ -163,7 +211,24 @@ export function MatrixTransformationExplorer() {
         <>
           <PresetPicker
             label="Presets"
-            presets={[...learnerPresets, ...diagnosticPresets]}
+            presets={[
+              ...learnerPresets,
+              {
+                id: "reflection-xy",
+                label: "Reflect y = x",
+                onSelect: () => applyPreset("reflection-xy"),
+              },
+              ...diagnosticPresets,
+            ]}
+          />
+          <PresetPicker
+            label="Build a matrix (set the two columns to match the target)"
+            activeId={targetMatrix ? "on" : "off"}
+            presets={[
+              { id: "match-rotation", label: "Target: rotation", onSelect: () => startMatch("rotation") },
+              { id: "match-reflection", label: "Target: reflect y = x", onSelect: () => startMatch("reflection-xy") },
+              { id: "match-off", label: "Free explore", onSelect: () => setTargetMatrix(null) },
+            ]}
           />
           <ResetButton onReset={handleReset} />
         </>
@@ -200,6 +265,7 @@ export function MatrixTransformationExplorer() {
                 toggles={[
                   { id: "toggle-grid", label: "Transformed grid", checked: showTransformedGrid, onChange: setShowTransformedGrid },
                   { id: "toggle-basis", label: "Basis vectors", checked: showBasis, onChange: setShowBasis },
+                  { id: "toggle-graphic", label: "Show graphic (craft)", checked: showGraphic, onChange: setShowGraphic },
                 ]}
               />
             </div>
@@ -239,7 +305,7 @@ export function MatrixTransformationExplorer() {
             },
             {
               id: "e1",
-              label: "Transformed e₁",
+              label: "Column 1 = A·e₁",
               value: (
                 <span data-testid="e1-readout" data-plain={`(${fmt(e1[0])}, ${fmt(e1[1])})`}>
                   <VectorTeX x={e1[0]} y={e1[1]} />
@@ -248,7 +314,7 @@ export function MatrixTransformationExplorer() {
             },
             {
               id: "e2",
-              label: "Transformed e₂",
+              label: "Column 2 = A·e₂",
               value: (
                 <span data-testid="e2-readout" data-plain={`(${fmt(e2[0])}, ${fmt(e2[1])})`}>
                   <VectorTeX x={e2[0]} y={e2[1]} />
@@ -265,6 +331,45 @@ export function MatrixTransformationExplorer() {
                 </span>
               ),
             },
+            ...(singular
+              ? [
+                  {
+                    id: "graphic-collapse",
+                    label: "Graphic",
+                    value: (
+                      <span data-testid="graphic-collapse-readout">
+                        collapsed onto a line (vertices coincide)
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
+            ...(isReflectionXY
+              ? [
+                  {
+                    id: "two-matrices",
+                    label: "Same map in B = ((1,1),(1,−1))",
+                    value: (
+                      <span data-testid="two-matrices-readout" data-plain="diag(1, -1)">
+                        <MatrixTeX a={1} b={0} c={0} d={-1} name="[T]_B" />
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
+            ...(targetMatrix
+              ? [
+                  {
+                    id: "target-match",
+                    label: "Target match",
+                    value: (
+                      <span data-testid="target-match-readout">
+                        {targetMatched ? "matched" : "set both columns to match"}
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }
@@ -277,6 +382,44 @@ export function MatrixTransformationExplorer() {
         >
           {showTransformedGrid && (
             <TransformedGrid matrix={current} color={ROLE_GRID} />
+          )}
+          {showGraphic && (
+            <>
+              {/* Ghost original craft (dashed) for before/after correspondence. */}
+              <Polygon
+                points={GRAPHIC as [number, number][]}
+                color={ROLE_ORIGINAL}
+                fillOpacity={0.05}
+                strokeOpacity={0.5}
+                weight={1.5}
+              />
+              {/* Optional target ghost (build-a-matrix task). */}
+              {targetGraphic && (
+                <Polygon
+                  points={targetGraphic as [number, number][]}
+                  color={ROLE_SELECTED}
+                  fillOpacity={0.04}
+                  strokeOpacity={0.6}
+                  weight={2}
+                />
+              )}
+              {/* Transformed craft (solid) — every vertex via applyMatrixToPoints. */}
+              <Polygon
+                points={graphicTransformed as [number, number][]}
+                color={ROLE_TRANSFORMED}
+                fillOpacity={0.14}
+                strokeOpacity={0.95}
+                weight={2}
+              />
+              {/* Gold anchors: nose and right fin, tracked across the transform. */}
+              <Point x={noseOriginal[0]} y={noseOriginal[1]} color={ROLE_ORIGINAL} />
+              <Point x={finOriginal[0]} y={finOriginal[1]} color={ROLE_ORIGINAL} />
+              <Point x={noseImage[0]} y={noseImage[1]} color={ROLE_SELECTED} />
+              <Point x={finImage[0]} y={finImage[1]} color={ROLE_SELECTED} />
+              <Text x={noseImage[0]} y={noseImage[1]} attach="n" attachDistance={12} color={ROLE_SELECTED} size={13}>
+                nose
+              </Text>
+            </>
           )}
           {showBasis && (
             <>

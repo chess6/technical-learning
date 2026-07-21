@@ -1,0 +1,59 @@
+.formal-statement {
+  margin: 1.1rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--color-border, #e3ded3);
+  border-left: 3px solid var(--role-basis-2, #7c6cf0);
+  background: var(--color-surface, #fffdf8);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.formal-statement[data-visibility="reference"] {
+  background: var(--color-surface-muted, #f8f6f1);
+  opacity: 0.9;
+}
+
+.formal-statement__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  flex-wrap: wrap;
+}
+
+.formal-statement__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--role-basis-2, #7c6cf0);
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.45rem;
+}
+
+.formal-statement__label {
+  font-weight: 650;
+  color: var(--color-text, #26221b);
+}
+
+.formal-statement__statement {
+  margin: 0 0 0.55rem;
+  line-height: 1.6;
+  font-size: 1.02rem;
+}
+
+.formal-statement__interpretation {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--color-text-muted, #55504a);
+}
+
+.formal-statement__interpretation-label {
+  font-weight: 650;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.formal-statement .depth-layers,
+.formal-statement .depth-layer {
+  margin-top: 0.75rem;
+}

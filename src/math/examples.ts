@@ -88,6 +88,17 @@ export const MATRIX_EXAMPLES = [
     inputVector: [1, 1],
   },
   {
+    id: "reflection-xy",
+    title: "Reflection across y = x",
+    description:
+      "Swaps the coordinates: e₁ ↦ (0, 1) and e₂ ↦ (1, 0). The line y = x is fixed.",
+    matrix: [
+      [0, 1],
+      [1, 0],
+    ],
+    inputVector: [1.5, 0.5],
+  },
+  {
     id: "determinant-negative",
     title: "Negative determinant",
     description: "Reverses orientation while stretching area.",

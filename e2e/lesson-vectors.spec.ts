@@ -69,7 +69,7 @@ test("coordinate challenge finds p's coordinates in the basis (v, w)", async ({ 
   await page.goto("/lesson/vectors");
   const explore = page.getByRole("region", { name: "Build a linear combination" });
 
-  await explore.getByRole("button", { name: "Coordinate challenge" }).click();
+  await explore.getByRole("button", { name: "Coordinate challenge", exact: true }).click();
   await expect(page.getByTestId("coords-b-readout")).toHaveAttribute("data-plain", "(0, 0)");
   await expect(page.getByTestId("match-readout")).toHaveText("not matched yet");
 
@@ -115,14 +115,14 @@ test("exercises run one at a time with next/previous navigation", async ({ page 
   await page.goto("/lesson/vectors");
   const practice = page.getByRole("region", { name: "Practice exercises" });
 
-  await expect(practice.getByText("Question 1 of 5")).toBeVisible();
+  await expect(practice.getByText("Question 1 of 9")).toBeVisible();
   // Only the active question is shown at a time.
   await expect(
     practice.getByRole("button", { name: /a single line through the origin/ }),
   ).toHaveCount(0);
 
   await practice.getByRole("button", { name: /Next question/ }).click();
-  await expect(practice.getByText("Question 2 of 5")).toBeVisible();
+  await expect(practice.getByText("Question 2 of 9")).toBeVisible();
 
   await practice.getByRole("button", { name: /a single line through the origin/ }).click();
   const feedback = practice.locator('.exercise-panel__feedback[data-state="correct"]');
@@ -130,5 +130,5 @@ test("exercises run one at a time with next/previous navigation", async ({ page 
 
   // Revisiting a previous question preserves navigation.
   await practice.getByRole("button", { name: /Previous/ }).click();
-  await expect(practice.getByText("Question 1 of 5")).toBeVisible();
+  await expect(practice.getByText("Question 1 of 9")).toBeVisible();
 });

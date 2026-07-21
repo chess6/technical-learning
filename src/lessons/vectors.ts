@@ -2,6 +2,46 @@ import type { LessonDefinition } from "./types";
 import { LINEAR_COMBINATION_EXAMPLE as EX } from "./exampleData";
 
 export const vectorsLesson: LessonDefinition = {
+  route: [
+    { kind: "motivate" },
+    { kind: "watch" },
+    { kind: "formal", formalId: "def-basis" },
+    { kind: "formal", formalId: "thm-unique-representation" },
+    { kind: "check" },
+    { kind: "worked" },
+    { kind: "explore" },
+    { kind: "practice" },
+    { kind: "summary" },
+  ],
+  formalBlocks: [
+    {
+      id: "def-basis",
+      kind: "definition",
+      label: "Basis of the plane",
+      statement:
+        "An ordered pair $B = (\\mathbf{v}, \\mathbf{w})$ is a *basis* of $\\mathbb{R}^2$ when the two vectors are independent (neither is a scalar multiple of the other) and together they span the plane.",
+      interpretation:
+        "A basis is a minimal coordinate language for the plane: two directions that are genuinely different, and between them can reach everywhere.",
+      visibility: "visible",
+    },
+    {
+      id: "thm-unique-representation",
+      kind: "theorem",
+      label: "Basis ⇔ unique representation",
+      statement:
+        "An ordered pair $B = (\\mathbf{v}, \\mathbf{w})$ is a basis of $\\mathbb{R}^2$ **if and only if** every vector $\\mathbf{x} \\in \\mathbb{R}^2$ has **one and only one** representation $\\mathbf{x} = a\\mathbf{v} + b\\mathbf{w}$.",
+      interpretation:
+        "Span gives *existence* — you can always name the point. Independence gives *uniqueness* — there is only one name. Together they are exactly what makes $(a, b)$ well-defined coordinates.",
+      visibility: "revealed",
+      layers: [
+        {
+          kind: "math-note",
+          title: "Why both directions hold",
+          body: "*Existence:* spanning means every $\\mathbf{x}$ is *some* $a\\mathbf{v} + b\\mathbf{w}$. *Uniqueness:* if $a\\mathbf{v} + b\\mathbf{w} = a'\\mathbf{v} + b'\\mathbf{w}$ then $(a-a')\\mathbf{v} + (b-b')\\mathbf{w} = \\mathbf{0}$, and independence forces $a = a'$, $b = b'$. Geometrically, an independent pair rules two families of parallel coordinate lines; each point sits on exactly one line of each family, so its $(a, b)$ is pinned down. A dependent pair collapses both families onto one direction — existence or uniqueness fails.",
+        },
+      ],
+    },
+  ],
   id: "vectors",
   title: "Vectors, Linear Combinations, and Basis",
   subtitle: "Arrows, the region two directions reach, and the coordinate language a basis provides",
@@ -70,6 +110,29 @@ export const vectorsLesson: LessonDefinition = {
           kind: "looking-ahead",
           title: "Coming up in Lesson 2",
           body: "A matrix will do exactly this reading: it takes a vector's standard coordinates $x, y$ and rebuilds the output from where the basis vectors land. Coordinates-in-a-basis is the idea the next lesson runs on.",
+        },
+      ],
+    },
+    {
+      id: "coords-q-component-equation",
+      title: "Finding an undisclosed coordinate by solving a 2×2 system",
+      prompt:
+        "This time the coefficients are not handed to you. Find $[\\mathbf{q}]_B$ for $\\mathbf{q} = (-1, 5)$ in $B = (\\mathbf{v}, \\mathbf{w})$ by writing $a\\mathbf{v} + b\\mathbf{w} = \\mathbf{q}$ componentwise and solving.",
+      equations: [
+        "a\\,\\mathbf{v} + b\\,\\mathbf{w} = \\mathbf{q}",
+        "a\\begin{bmatrix} 1 \\\\ 2 \\end{bmatrix} + b\\begin{bmatrix} 3 \\\\ -1 \\end{bmatrix} = \\begin{bmatrix} -1 \\\\ 5 \\end{bmatrix}",
+        "a + 3b = -1, \\qquad 2a - b = 5",
+        "a = -1 - 3b \\;\\Rightarrow\\; 2(-1 - 3b) - b = 5",
+        "-2 - 7b = 5 \\;\\Rightarrow\\; b = -1, \\quad a = 2",
+        "[\\mathbf{q}]_B = \\begin{bmatrix} 2 \\\\ -1 \\end{bmatrix} \\qquad (\\mathbf{q} = 2\\mathbf{v} - \\mathbf{w})",
+      ],
+      equationsAriaLabel:
+        "Solving the two by two system a plus three b equals negative one and two a minus b equals five, giving a equals two and b equals negative one, so q in basis B is two, negative one.",
+      layers: [
+        {
+          kind: "math-note",
+          title: "Basis order changes the coordinate order",
+          body: "A basis is *ordered*. Reading $\\mathbf{q}$ against $B' = (\\mathbf{w}, \\mathbf{v})$ — the same two arrows, swapped — gives $[\\mathbf{q}]_{B'} = (-1, 2)$: the very same numbers in the opposite slots. The arrow never moved; only the order of the coordinate language did.",
         },
       ],
     },
@@ -163,6 +226,52 @@ export const vectorsLesson: LessonDefinition = {
         "Predict: are $\\mathbf{v} = (1, 2)$ and $\\mathbf{w} = (3, -1)$ independent, and what does that mean for their span?",
       reveal:
         "They are independent — neither is a scalar multiple of the other (the cross term $1\\cdot(-1) - 2\\cdot 3 = -7 \\neq 0$). Independent directions span the whole plane, so they form a basis and every point has unique coordinates in it.",
+    },
+    {
+      id: "vec-coords-q",
+      type: "vector",
+      tier: "transfer",
+      prompt:
+        "Find $[\\mathbf{q}]_B$ for $\\mathbf{q} = (-1, 5)$ in $B = (\\mathbf{v}, \\mathbf{w})$ with $\\mathbf{v} = (1, 2)$, $\\mathbf{w} = (3, -1)$. Solve $a\\mathbf{v} + b\\mathbf{w} = \\mathbf{q}$ for $(a, b)$.",
+      expected: [EX.coordinatesInBasisQ[0], EX.coordinatesInBasisQ[1]],
+      tolerance: 0.01,
+      explanation:
+        "The system $a + 3b = -1$, $2a - b = 5$ solves to $a = 2$, $b = -1$, so $[\\mathbf{q}]_B = (2, -1)$ and $\\mathbf{q} = 2\\mathbf{v} - \\mathbf{w}$.",
+    },
+    {
+      id: "vec-basis-order",
+      type: "vector",
+      tier: "transfer",
+      prompt:
+        "Using the *swapped* basis $B' = (\\mathbf{w}, \\mathbf{v})$, what is $[\\mathbf{q}]_{B'}$ for $\\mathbf{q} = (-1, 5)$?",
+      expected: [EX.coordinatesInBasisPrimeQ[0], EX.coordinatesInBasisPrimeQ[1]],
+      tolerance: 0.01,
+      explanation:
+        "Order matters: $[\\mathbf{q}]_B = (2, -1)$ becomes $[\\mathbf{q}]_{B'} = (-1, 2)$ when the two basis vectors trade places. Same arrow, reordered coordinate language.",
+    },
+    {
+      id: "vec-infinitely-many",
+      type: "multiple-choice",
+      tier: "check",
+      prompt:
+        "With the dependent pair $\\mathbf{v} = (1, 2)$ and $\\mathbf{w}_d = (2, 4)$, how many coefficient pairs $(a, b)$ satisfy $a\\mathbf{v} + b\\mathbf{w}_d = \\mathbf{r}$ for $\\mathbf{r} = (3, 6)$?",
+      choices: [
+        "Exactly one",
+        "None — $\\mathbf{r}$ is unreachable",
+        "Infinitely many, all with $a = 3 - 2b$",
+        "Exactly two",
+      ],
+      correctChoice: 2,
+      explanation:
+        "Since $\\mathbf{w}_d = 2\\mathbf{v}$, both components reduce to the single equation $a + 2b = 3$. Every $b$ gives a valid $a = 3 - 2b$ — a whole family of representations, because a dependent pair is not a basis.",
+    },
+    {
+      id: "vec-existence-uniqueness",
+      type: "prediction",
+      prompt:
+        "Predict: why does a basis give *exactly one* coordinate pair $(a, b)$ for each vector — no more, no fewer?",
+      reveal:
+        "Spanning guarantees at least one representation exists (you can always reach the point). Independence guarantees it is unique (if two pairs gave the same vector, their difference would combine the independent vectors to $\\mathbf{0}$, forcing the pairs to be equal). Existence + uniqueness = well-defined coordinates.",
     },
   ],
   keyTakeaway:

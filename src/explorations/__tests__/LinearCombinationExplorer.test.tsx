@@ -55,6 +55,43 @@ describe("LinearCombinationExplorer", () => {
     expect(screen.queryByTestId("match-readout")).toBeNull();
   });
 
+  it("coordinate challenge (q) finds the undisclosed [q]_B = (2, -1)", () => {
+    const { container } = render(<LinearCombinationExplorer />);
+    fireEvent.click(screen.getByRole("button", { name: "Coordinate challenge (q)" }));
+    expect(screen.getByTestId("match-readout").textContent).toBe("not matched yet");
+    setRange(container, "coef-a", "2");
+    setRange(container, "coef-b", "-1");
+    expect(plain("combo-readout")).toBe("(-1, 5)");
+    expect(plain("coords-b-readout")).toBe("(2, -1)");
+    expect(screen.getByTestId("match-readout").textContent).toBe("matched");
+  });
+
+  it("basis-order toggle swaps the coordinate readout to (b, a)", () => {
+    const { container } = render(<LinearCombinationExplorer />);
+    fireEvent.click(screen.getByRole("button", { name: "Coordinate challenge (q)" }));
+    setRange(container, "coef-a", "2");
+    setRange(container, "coef-b", "-1");
+    expect(plain("coords-b-readout")).toBe("(2, -1)");
+    fireEvent.click(screen.getByLabelText("Swap basis order (B' = (w, v))"));
+    expect(plain("coords-b-readout")).toBe("(-1, 2)");
+    expect(screen.getByTestId("basis-order-readout").textContent).toBe("B' = (w, v)");
+  });
+
+  it("dependent inside-span task shows the infinitely-many family on r = (3, 6)", () => {
+    const { container } = render(<LinearCombinationExplorer />);
+    fireEvent.click(screen.getByRole("button", { name: "Dependent (inside span)" }));
+    // Starts on r = 3v via (a, b) = (1, 1).
+    expect(plain("combo-readout")).toBe("(3, 6)");
+    expect(screen.getByTestId("family-readout").textContent).toBe(
+      "a = 3 − 2b (infinitely many)",
+    );
+    // A different (a, b) with a + 2b = 3 still lands on r.
+    setRange(container, "coef-a", "3");
+    setRange(container, "coef-b", "0");
+    expect(plain("combo-readout")).toBe("(3, 6)");
+    expect(screen.getByTestId("match-readout").textContent).toBe("on target");
+  });
+
   it("reset restores the independent default", () => {
     const { container } = render(<LinearCombinationExplorer />);
     fireEvent.click(screen.getByRole("button", { name: "Dependent" }));

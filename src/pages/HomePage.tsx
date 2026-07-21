@@ -14,8 +14,8 @@ const FLOW_STEPS = [
     body: "Take the controls yourself, starting from the same example.",
   },
   {
-    title: "Practice",
-    body: "A few deterministic exercises check what stuck.",
+    title: "Read & practice",
+    body: "Definitions and results are stated plainly, then checked with a few exercises.",
   },
 ];
 
@@ -26,8 +26,10 @@ export function HomePage() {
         <h1 className="home-page__title">Linear Algebra</h1>
         <p className="home-page__lede">
           A visual proof of concept: geometric intuition first, symbols second.
-          Four short lessons, each moving from a guided animation to
-          hands-on exploration to a quick practice check.
+          It opens with Chapter 0's mystery — how four numbers move a whole
+          graphic — then builds the coordinate language and transformations that
+          resolve it. Most lessons move from a guided animation to hands-on
+          exploration to a quick check.
         </p>
         <p className="home-page__cta">
           <Link to={`/lesson/${lessons[0]!.id}`} className="btn btn--primary">
@@ -36,7 +38,7 @@ export function HomePage() {
         </p>
       </header>
 
-      <ol className="home-page__flow" aria-label="How each lesson works">
+      <ol className="home-page__flow" aria-label="How most lessons work">
         {FLOW_STEPS.map((step, index) => (
           <li key={step.title} className="home-page__flow-step">
             <span className="home-page__flow-index" aria-hidden="true">

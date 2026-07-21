@@ -22,7 +22,7 @@ test("sidebar lists course structure and highlights the current lesson", async (
     nav.locator(".course-sidebar__section-title", { hasText: "Transformations" }),
   ).toBeVisible();
   await expect(
-    nav.getByRole("link", { name: /Vectors and Linear Combinations/ }),
+    nav.getByRole("link", { name: /Vectors, Linear Combinations/ }),
   ).toHaveAttribute("aria-current", "page");
 
   await nav.getByRole("link", { name: /Matrices as Linear Transformations/ }).click();
@@ -60,7 +60,11 @@ test("debug counters stay hidden unless ?debug=1", async ({ page }) => {
 test("autoplay starts once when the guided scene is visible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/lesson/vectors");
-  await expect(page.locator(".guided-scene-player__canvas canvas")).toBeVisible();
+  // Richer opening lessons place the clip below the fold, so bring it into
+  // view: autoplay fires once the canvas is substantially visible.
+  const canvasEl = page.locator(".guided-scene-player__canvas canvas");
+  await expect(canvasEl).toBeVisible();
+  await canvasEl.scrollIntoViewIfNeeded();
   await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled({
     timeout: 6000,
   });

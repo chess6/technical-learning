@@ -57,7 +57,7 @@ test("matrix control, preset, and scrub update the transformed vector", async ({
     "(2, 0.5)",
   );
 
-  await explore.getByRole("button", { name: "Rotation" }).click();
+  await explore.getByRole("button", { name: "Rotation", exact: true }).click();
   await expect(page.getByTestId("matrix-readout")).toHaveAttribute(
     "data-plain",
     "[[0, -1], [1, 0]]",
@@ -85,9 +85,12 @@ test("exercise feedback connects numbers to geometry", async ({ page }) => {
   await page.goto("/lesson/transformations");
   const practice = page.getByRole("region", { name: "Practice exercises" });
 
-  // The multiple-choice question is the second exercise.
-  await practice.getByRole("button", { name: /Next question/ }).click();
-  await expect(practice.getByText("Question 2 of 2")).toBeVisible();
+  // Advance to the rotation multiple-choice question (columns are basis images).
+  for (let i = 0; i < 12; i += 1) {
+    if (await practice.getByText(/Which matrix sends/).count()) break;
+    await practice.getByRole("button", { name: /Next question/ }).click();
+  }
+  await expect(practice.getByText(/Which matrix sends/)).toBeVisible();
 
   await page.locator('.exercise-panel__choice[data-choice-index="0"]').click();
   const feedback = page.locator('.exercise-panel__feedback[data-state="correct"]');

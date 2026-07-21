@@ -120,12 +120,13 @@ test("repeated navigation never leaks engines", async ({ page }) => {
 
   for (let i = 0; i < 4; i += 1) {
     await page.goto("/lesson/vectors");
-    await expect(page.locator(canvas)).toBeVisible();
+    await expect(page.locator(canvas).first()).toBeVisible();
     await expect.poll(async () => (await counters(page)).activeEngines).toBe(1);
 
-    await page.goto("/lesson/eigenvectors");
-    await expect(page.locator(canvas)).toBeVisible();
-    // Old engine disposed, new one created: still exactly one active.
+    // Navigate to another single-player lesson: old engine disposed, new one
+    // created, so still exactly one active (no accumulation across routes).
+    await page.goto("/lesson/transformations");
+    await expect(page.locator(canvas).first()).toBeVisible();
     await expect.poll(async () => (await counters(page)).activeEngines).toBe(1);
 
     await page.goto("/");
@@ -144,15 +145,16 @@ test("repeated navigation never leaks engines", async ({ page }) => {
 });
 
 test("scene resizes with its container", async ({ page }) => {
-  // Stay in the two-column watch layout (>1100px) and with the desktop sidebar
-  // (>960px) so we compare like-for-like column widths.
+  // Stay in the two-column watch layout: with the desktop sidebar the watch
+  // body only reaches its ~58rem two-column threshold above ~1330px, so both
+  // sizes sit comfortably above it to compare like-for-like column widths.
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto("/lesson/vectors");
-  await expect(page.locator(canvas)).toBeVisible();
-  const wide = await page.locator(canvas).boundingBox();
+  await expect(page.locator(canvas).first()).toBeVisible();
+  const wide = await page.locator(canvas).first().boundingBox();
 
-  await page.setViewportSize({ width: 1200, height: 900 });
-  const narrow = await page.locator(canvas).boundingBox();
+  await page.setViewportSize({ width: 1360, height: 900 });
+  const narrow = await page.locator(canvas).first().boundingBox();
 
   expect(wide).not.toBeNull();
   expect(narrow).not.toBeNull();

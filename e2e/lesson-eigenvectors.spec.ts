@@ -161,7 +161,7 @@ test("non-eigen lesson does not load the three.js chunk", async ({ page }) => {
   });
   await page.goto("/lesson/vectors");
   await expect(
-    page.getByRole("heading", { name: "Vectors and Linear Combinations", level: 1 }),
+    page.getByRole("heading", { name: "Vectors, Linear Combinations, and Basis", level: 1 }),
   ).toBeVisible();
   await expect(page.getByTestId("eigen-clip-stage")).toHaveCount(0);
   await page.waitForTimeout(500);

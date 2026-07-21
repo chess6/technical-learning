@@ -33,8 +33,8 @@ test("opening a lesson shows a loading state, then the guided animation", async 
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: /Start with Lesson 1/ }).click();
-  await expect(page).toHaveURL(/\/lesson\/vectors/);
+  await page.getByRole("link", { name: /Start with Chapter 0/ }).click();
+  await expect(page).toHaveURL(/\/lesson\/why-linear-algebra/);
   await expect(page.locator(".guided-scene-player__canvas canvas")).toBeVisible();
 });
 
@@ -45,7 +45,7 @@ test("browser back/forward between home and a lesson leaves no stale state", asy
   await page.goto("/");
   await page
     .locator(".home-page__list")
-    .getByRole("link", { name: /Vectors and Linear Combinations/ })
+    .getByRole("link", { name: /Vectors, Linear Combinations/ })
     .click();
   await expect(page).toHaveURL(/\/lesson\/vectors/);
 

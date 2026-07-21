@@ -134,6 +134,52 @@ export type LessonSection = {
   layers?: DepthLayer[];
 };
 
+/**
+ * A lightweight textbook-style formal block (the fields a textbook actually
+ * labels — no general DSL). Rendered by `FormalStatement`.
+ */
+export type FormalKind =
+  | "definition"
+  | "proposition"
+  | "theorem"
+  | "corollary"
+  | "conjecture"
+  | "lemma"
+  | "axiom";
+
+export type FormalBlock = {
+  id: string;
+  kind: FormalKind;
+  /** Optional short name, e.g. "Basis ⇔ unique representation". */
+  label?: string;
+  /** KaTeX-in-prose ($...$), rendered through ProseWithMath. */
+  statement: string;
+  /** Learner-accessible gloss. */
+  interpretation: string;
+  /**
+   * visible = statement + interpretation shown; revealed = justification lives
+   * in a collapsed <details>; reference = rendered muted (a named aside).
+   */
+  visibility: "visible" | "revealed" | "reference";
+  layers?: DepthLayer[];
+};
+
+/**
+ * A declared lesson route: an ordered list of blocks that overrides the fixed
+ * phase order. Phase-like blocks reuse existing slots; `formal` renders a
+ * FormalBlock inline; `handoff` renders a CTA link to another lesson.
+ */
+export type RouteBlock =
+  | { kind: "motivate" }
+  | { kind: "watch" }
+  | { kind: "formal"; formalId: string }
+  | { kind: "check" }
+  | { kind: "worked" }
+  | { kind: "explore" }
+  | { kind: "practice" }
+  | { kind: "summary" }
+  | { kind: "handoff"; to: string; label: string };
+
 /** A short conceptual check-in shown between the guided scene and exploration. */
 export type LessonCheckpoint = {
   prompt: string;
@@ -155,6 +201,14 @@ export type LessonDefinition = {
   /** A prediction/motivating question shown before the explanation. */
   motivatingQuestion?: string;
   sections: LessonSection[];
+  /**
+   * Optional declared route. When present, LessonLayout renders blocks in this
+   * order (interleaving formal blocks / handoff); when absent, the fixed phase
+   * order is used. Existing lessons omit it and are unaffected.
+   */
+  route?: RouteBlock[];
+  /** Formal blocks referenced by a `formal` route block. */
+  formalBlocks?: FormalBlock[];
   guidedSceneId: string;
   explorationId: string;
   checkpoint?: LessonCheckpoint;

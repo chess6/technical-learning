@@ -27,6 +27,18 @@ export interface LinearCombinationExample {
   target: Vector2;
   /** Coordinates of `target` in the basis B = (v, w): [p]_B = (1, 1). */
   coordinatesInBasis: Vector2;
+  /**
+   * Undisclosed-coordinate task point q = (-1, 5) = 2v - w. Its coordinates in
+   * B = (v, w) are (2, -1); in the swapped basis B' = (w, v) they are (-1, 2).
+   */
+  q: Vector2;
+  coordinatesInBasisQ: Vector2;
+  coordinatesInBasisPrimeQ: Vector2;
+  /**
+   * Inside-span target r = (3, 6) = 3v. With the dependent pair (v, wDependent),
+   * a·v + b·wDependent = r reduces to a + 2b = 3 — infinitely many solutions.
+   */
+  r: Vector2;
   /** Symmetric clamp bound for dragging and coefficient sliders. */
   bound: number;
 }
@@ -42,6 +54,13 @@ export const LINEAR_COMBINATION_EXAMPLE: LinearCombinationExample = {
   // p = v + w = (4, 1) in the standard basis; (1, 1) in B = (v, w).
   target: [4, 1],
   coordinatesInBasis: [1, 1],
+  // q = 2v - w = (-1, 5); [q]_B = (2, -1); [q]_B' = (-1, 2) with B' = (w, v).
+  q: [-1, 5],
+  coordinatesInBasisQ: [2, -1],
+  coordinatesInBasisPrimeQ: [-1, 2],
+  // r = 3v = (3, 6): inside span(v) so the dependent pair reaches it infinitely
+  // many ways (a + 2b = 3).
+  r: [3, 6],
   bound: 6,
 };
 
@@ -73,6 +92,7 @@ export const TRANSFORM_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "shear", label: "Shear", exampleId: "shear-2-1" },
   { id: "rotation", label: "Rotation", exampleId: "rotation" },
   { id: "reflection", label: "Reflection", exampleId: "reflection" },
+  { id: "projection", label: "Projection", exampleId: "projection-x" },
   { id: "singular", label: "Singular collapse", exampleId: "singular-collapse" },
 ];
 

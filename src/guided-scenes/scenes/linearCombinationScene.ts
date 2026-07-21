@@ -249,6 +249,29 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       ]);
       yield* waitFor(seconds.dependent - 2.35);
     },
+    *["dependent-inside"]() {
+      // Target r = (3, 6) = 3v lies ON the dependent line, so infinitely many
+      // (a, b) reach it: with w = 2v, a·v + b·w = r reduces to a + 2b = 3.
+      setEq("a + 2·b = 3   (w = 2·v)");
+      setCaption("Target r = (3, 6) sits on the line — many (a, b) reach it");
+      comboArrow.stroke(ROLE.selected);
+      yield* all(aCoef(3, 0.6), bCoef(0, 0.6)); // (3, 0)
+      yield* focusOpacities([
+        { node: comboArrow, opacity: 1 },
+        { node: spanLine, opacity: 1 },
+        { node: wFromV, opacity: 1 },
+        { node: vArrow, opacity: 0.7 },
+        { node: wArrow, opacity: 0.7 },
+      ]);
+      yield* wFromV.end(1, 0.5);
+      yield* waitFor(0.6);
+      setCaption("Slide b and set a = 3 − 2b — the tip never leaves r");
+      yield* all(aCoef(1, 0.9, easeInOutCubic), bCoef(1, 0.9, easeInOutCubic)); // (1, 1)
+      yield* all(aCoef(-1, 0.9, easeInOutCubic), bCoef(2, 0.9, easeInOutCubic)); // (-1, 2)
+      yield* waitFor(seconds["dependent-inside"] - 3.6);
+      yield* wFromV.end(0, 0.4);
+      comboArrow.stroke(ROLE.result);
+    },
     *basis() {
       // Restore the independent pair and name it a basis of the plane.
       setEq("independent v, w  →  a basis");
