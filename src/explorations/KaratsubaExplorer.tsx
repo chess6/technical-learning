@@ -520,7 +520,11 @@ export function KaratsubaExplorer() {
       </div>
       {showQuadraticNote ? (
         <p className="karatsuba-explorer__parabola" data-testid="parabola-note">
-          <ProseWithMath text="Advanced: the three products are three evaluations of the product quadratic $x(t)y(t)$ at $t=0,1,\\infty$. Optional deeper connection — not required for the elementary chain." />
+          <ProseWithMath
+            text={
+              "Advanced: the three products are three evaluations of the product quadratic $x(t)y(t)$ at $t=0,1,\\infty$. Optional deeper connection — not required for the elementary chain."
+            }
+          />
         </p>
       ) : null}
       {showTree ? (
