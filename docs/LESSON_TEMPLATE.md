@@ -10,13 +10,17 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 > **Gate prerequisite (required before planning).** Do not fill in this template
 > until an approved Insight Contract exists for the topic and its
 > `Gate result: PASS`. See [INSIGHT_DISCOVERY_GATE.md](./INSIGHT_DISCOVERY_GATE.md).
-> The lesson must be built around, and must preserve verbatim, that contract's
-> exact primary insight.
+> The lesson must be built around that contract's primary insight and preserve its
+> mathematical meaning and causal chain. Keep the exact insight sentence verbatim
+> in the planning metadata below (for traceability); learner-facing prose may use
+> shorter, clearer wording.
 
 ## Approved insight (gate)
 - Insight Contract: `docs/insights/<topic>.md`
 - [ ] `Gate result: PASS` confirmed
-- Exact primary insight (verbatim, preserved by this lesson): `<...>`
+- Exact primary insight — **verbatim, planning metadata only** (learner-facing
+  prose may reword while preserving the meaning and causal chain): `<...>`
+- Learner-facing phrasing (optimized for clarity): `<...>`
 
 ---
 
@@ -74,6 +78,21 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 | 1 | ... | ... | ... | ... |
 | 2 | ... | ... | ... | ... |
 
+## Insight traceability (required)
+> Map **every** obligation in the approved Insight Contract's causal chain to a
+> learner-facing location and observable evidence of understanding. A plan does
+> **not** pass by merely linking the contract or repeating the primary-insight
+> sentence — each causal step needs a location and evidence.
+
+| Contract obligation | Learner-facing location | Evidence of understanding |
+| --- | --- | --- |
+| <e.g. Four naive products> | <Watch beat> | <Learner counts four product regions> |
+| <Shared place-value weight> | <Watch / Check> | <Learner identifies AD and BC as one middle level> |
+| <Auxiliary coefficient rectangle> | <Watch / Explore> | <Learner predicts what remains after subtraction> |
+| <Exact reconstruction> | <Watch / Explore> | <Learner assembles 100z₂ + 10z₁ + z₀> |
+| <Recursive consequence> | <Watch / Practice> | <Learner predicts branch count and exponent> |
+| <Transfer> | <Practice> | <Learner applies the principle to a related recurrence> |
+
 ## Key takeaway (Summarize)
 > One concise sentence. Optional small visual recap.
 
@@ -102,7 +121,10 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 - [ ] Asymmetric matrix + singular case where relevant
 
 ## Acceptance checklist
-- [ ] Approved Insight Contract linked and `PASS`; primary insight preserved
+- [ ] Approved Insight Contract linked and `PASS`; exact insight verbatim in
+      metadata; learner-facing wording preserves meaning + causal chain
+- [ ] Insight traceability table complete — every contract obligation mapped to a
+      learner-facing location and observable evidence
 - [ ] Six-phase flow (or documented deviation)
 - [ ] Guided-to-interactive continuity (same example/notation/roles)
 - [ ] Progressive disclosure applied

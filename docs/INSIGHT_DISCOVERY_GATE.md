@@ -77,6 +77,20 @@ All of the following must be present and correct:
     whether the connection is exact, approximate, or architectural.
 11. **Prerequisites, limitations, likely misconceptions** — explicit.
 
+### Review signoff (required)
+
+The contract must record a review-signoff block so it does not silently
+self-certify:
+
+- **Contract author**
+- **Mathematical reviewer**
+- **Pedagogical reviewer**
+- **User / domain-owner approval**
+- **Outstanding concerns**
+
+One person or model may temporarily fill several roles, but that must be stated
+honestly (e.g. "self-review, not independent"). Record the true current status.
+
 ### PASS / REVISE
 
 PASS the contract only when **both** hold:
@@ -85,6 +99,10 @@ PASS the contract only when **both** hold:
   has no missing reconstruction step.
 - Mathematical audit clean: every check in the audit below is answered, with any
   overreach corrected in the text.
+
+(The review-signoff block should also be filled in honestly; a `PASS` with all
+review roles self-filled is allowed but flags that independent review is still
+advisable.)
 
 REVISE when any of:
 
@@ -97,8 +115,29 @@ REVISE when any of:
 
 The contract must end with an explicit line:
 
-`Gate result: PASS` (or `REVISE`) and the **exact primary insight** sentence that
-the later lesson plan must preserve verbatim.
+`Gate result: PASS` (or `REVISE`) and the **exact primary insight** sentence.
+Stage 3 keeps this sentence **verbatim in its planning metadata** for
+traceability; the learner-facing lesson must preserve the insight's mathematical
+meaning and causal chain but **may use shorter, clearer wording** (do not require
+the long contract sentence to appear verbatim in learner-facing prose).
+
+---
+
+## Stage 3 — Lesson Plan
+
+Begins only after `Gate result: PASS`. Use [LESSON_TEMPLATE.md](./LESSON_TEMPLATE.md).
+
+Beyond the template's usual sections, a Stage 3 plan must include an **insight
+traceability** mapping. For **every** obligation in the approved contract's causal
+chain, the plan states:
+
+- where the learner encounters or discovers it;
+- the scene, checkpoint, explorer, or exercise responsible;
+- the observable evidence the learner understood it.
+
+A lesson plan does **not** pass merely because it links the contract or repeats the
+primary-insight sentence. Every causal step must have a learner-facing location and
+observable evidence.
 
 ---
 

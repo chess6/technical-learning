@@ -24,6 +24,13 @@ Each may exceed a single $m$-digit block, so a final **carrying** pass normalize
 them into digits. Carrying is a separate, purely additive step from the algebraic
 reconstruction and does not change the multiplication count.
 
+Keep two size effects distinct. *Output carrying* (above) normalizes the $z_i$.
+Separately, because $a+b$ can be $m+1$ digits wide, the recursive product
+$(a+b)(c+d)$ may be slightly wider than $ac$ and $bd$; this *operand-width* growth
+is absorbed by padding, uneven block lengths, or recursing on the larger width. It
+adds no fourth multiplication, and the recurrence
+$T(n)\le 3\,T(\lceil n/2\rceil+1)+O(n)$ still gives the exponent $\log_2 3$.
+
 Naive splitting computes four half-size products $ac, ad, bc, bd$. Karatsuba
 computes three — $z_2=ac$, $z_0=bd$, and $(a+b)(c+d)$ — then recovers the middle by
 subtraction, $z_1=(a+b)(c+d)-z_2-z_0=ad+bc$. The recurrence changes from
@@ -43,13 +50,16 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
 - Structural reveal: $ad$ and $bc$ both land on the same level $B^{m}$, so the
   result depends on them only through the sum $ad+bc$. You need the *combined*
   middle quantity, never its two halves separately.
-- Minimal derivation: the whole coefficient rectangle $(a+b)(c+d)=ac+ad+bc+bd$;
-  subtract the two subrectangles $z_2=ac$ and $z_0=bd$ to leave exactly $ad+bc$.
-  So $z_1=(a+b)(c+d)-z_2-z_0$, using one product and two subtractions.
-- Visual/interactive: a rectangle of width $a+b$, height $c+d$, partitioned into
-  four subrectangles $ac, ad, bc, bd$. Shade the whole rectangle, then "peel off"
-  the $ac$ and $bd$ subrectangles; the remaining L-shape is the single quantity
-  $ad+bc$ you actually needed.
+- Minimal derivation: the *auxiliary coefficient rectangle* $(a+b)(c+d)=ac+ad+bc+bd$
+  (dimensions $a+b$ by $c+d$, unweighted areas) is distinct from the *weighted
+  multiplication rectangle* ($aB^m+b$ by $cB^m+d$) whose shared middle weight
+  showed that only $ad+bc$ is needed. Subtract the two subrectangles $z_2=ac$ and
+  $z_0=bd$ to leave exactly $ad+bc$: $z_1=(a+b)(c+d)-z_2-z_0$, one product and two
+  subtractions.
+- Visual/interactive: the auxiliary coefficient rectangle of width $a+b$, height
+  $c+d$, partitioned into four subrectangles $ac, ad, bc, bd$. Shade it whole, then
+  "peel off" the $ac$ and $bd$ subrectangles; the remaining L-shape is the single
+  quantity $ad+bc$ you actually needed.
 - New prediction: the middle level is one product plus two subtractions, so an
   explicit three-product construction computes the whole result — three half-size
   multiplications instead of four.
@@ -111,7 +121,8 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
 
 - Initial model: "$(a+b)(c+d)$ is the special trick."
 - Tension: why the sum $a+b$ specifically?
-- Structural reveal: any third node works. Using $t=-1$:
+- Structural reveal: any suitable distinct node for which interpolation is valid
+  and computationally useful works. Using $t=-1$:
   $(a-b)(c-d)=ac-(ad+bc)+bd$, so $ad+bc = ac+bd-(a-b)(c-d)$. The subtractions are
   interpolation with a different node.
 - Minimal derivation: substitute $t=-1$ into $x(t)y(t)$ and solve for the middle
@@ -144,11 +155,14 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
 - Tension: is three optimal, or could a cleverer scheme reach two?
 - Structural reveal: multiplying two linear polynomials is a fixed bilinear map;
   the minimum number of scalar multiplications is the rank of its structure
-  tensor, which is exactly 3. Karatsuba realizes that rank; two is provably
-  impossible. This is what turns C1's *sufficiency* into *optimality*.
+  tensor, which is exactly 3. Karatsuba realizes that rank; that two is impossible
+  is an accepted result in algebraic complexity. This is what turns C1's
+  *sufficiency* into *optimality*.
 - Minimal derivation: express each output coefficient as a bilinear form in
   $(a,b),(c,d)$; a rank-$r$ decomposition is $r$ products of linear combinations.
-  Karatsuba exhibits $r=3$; a counting/independence argument rules out $r=2$.
+  Karatsuba exhibits $r=3$. That $r=2$ is impossible is an **accepted advanced
+  result** (see the bilinear-complexity / tensor-rank literature); this brief does
+  not prove it.
 - Visual/interactive: show the three "recipes" (which combo of $a,b$ times which of
   $c,d$) as three rank-1 layers stacking to the full multiplication table.
 - New prediction: the same move — cut the number of multiplications in a bilinear
@@ -167,11 +181,12 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
 - Minimal derivation: per level Karatsuba adds $\Theta(n)$ addition work to remove
   $\Theta(1)$ of the four recursive multiplies; favorable exactly when the removed
   multiply exceeds the added $\Theta(n)$ — true for large $n$, false for small $n$
-  (hence the base-case cutoff, typically tens of digits).
+  (hence a base-case cutoff whose size depends on the implementation,
+  representation, compiler, and hardware, not a fixed digit count).
 - Visual/interactive: a cost dial for "multiply vs add"; the crossover $n$ moves as
   you change the ratio, making the base-case cutoff a consequence, not a hack.
 - New prediction: implementations switch to schoolbook below a cutoff; the cutoff
-  shifts with hardware multiply cost.
+  shifts with the relative cost of multiply vs add on the target platform.
 - Transfers to: operation-cost accounting; hybrid-algorithm cutoffs.
 
 ### C8. Karatsuba, Toom-Cook, and FFT share one architecture
@@ -241,8 +256,9 @@ $\Theta(n^{\log_2 3})\approx\Theta(n^{1.585})$.
   is a downstream additive pass.
 - Visual/interactive: toggle between "polynomial coefficients" and "carried digits"
   views of the same computation.
-- New prediction: the same code multiplies integers, big-floats, and polynomials;
-  carrying is an afterthought.
+- New prediction: the algebraic decomposition transfers across integers,
+  big-floats, and polynomials, while carrying, coefficient arithmetic, precision,
+  and implementation details differ per representation.
 - Transfers to: the number ↔ polynomial dictionary behind fast arithmetic.
 
 ---
@@ -313,7 +329,7 @@ themselves before the word "Karatsuba" is used, on a concrete 2-digit example.
 flowchart TD
   A["Multiply (10A+B)(10C+D) with FOIL; get 4 subrectangles AC, AD, BC, BD"] --> B["Attach place-value weights: AC->100, AD->10, BC->10, BD->1"]
   B --> C["Notice AD and BC share weight 10, so only AD+BC matters. Puzzle: 4 products, 3 levels"]
-  C --> D["Form the whole rectangle (A+B)(C+D) = AC+AD+BC+BD"]
+  C --> D["Form the SEPARATE auxiliary coefficient rectangle (A+B)(C+D) = AC+AD+BC+BD"]
   D --> E["Subtract the two known subrectangles: (A+B)(C+D) - AC - BD = AD+BC"]
   E --> F["Assemble: result = 100*z2 + 10*z1 + z0 with z2=AC, z1=AD+BC, z0=BD"]
   F --> G["Count products: 3 (AC, BD, (A+B)(C+D)). Recurse: branch 3 -> n^(log2 3)"]
@@ -329,17 +345,23 @@ Step detail:
    $$(10A+B)(10C+D)=100\,AC+10\,AD+10\,BC+BD=100\,AC+10(AD+BC)+BD.$$
 3. See the collapse. $AD$ and $BC$ share weight $10$, so the answer depends on them
    only through $AD+BC$. Puzzle made explicit: four products, three levels.
-4. Recover the middle without splitting it. Form the whole rectangle
-   $(A+B)(C+D)=AC+AD+BC+BD$ and subtract the two known subrectangles:
+4. Recover the middle without splitting it. Form the *separate* auxiliary
+   coefficient rectangle $(A+B)(C+D)=AC+AD+BC+BD$ (distinct from the weighted
+   multiplication rectangle of step 1) and subtract the two known subrectangles:
    $$z_1=(A+B)(C+D)-\underbrace{AC}_{z_2}-\underbrace{BD}_{z_0}=AD+BC.$$
 5. Reassemble. $\text{result}=100\,z_2+10\,z_1+z_0$, with $z_2=AC$, $z_0=BD$.
-   Note the $z_i$ may exceed one digit; a carrying pass normalizes them.
+   Note the $z_i$ may exceed one digit; an output-carrying pass normalizes them
+   (distinct from the operand-width growth of $A+B$).
 6. Count and compound. Three products ($AC$, $BD$, $(A+B)(C+D)$) instead of four;
    recurse to get branching factor 3 and predict $n^{\log_2 3}$ (hand off to C5).
 7. Deeper reframe (optional). The same three values are three evaluations of the
    product quadratic; this opens Toom-Cook and the FFT architecture (C2/C8),
    carrying the C2 precision caveat.
 
-Exit test (predict, not recall): give $(A+B)$ or $(C+D)$ that overflows a digit and
-ask the learner to (a) still produce $z_1$ by subtraction and (b) explain why
-carrying, not the multiplication count, handles the overflow.
+Exit test (predict, not recall), distinguishing the two size effects:
+(a) give operands where $A+B$ carries into an extra digit; the learner should still
+produce $z_1$ by subtraction and explain that the wider recursive product
+$(A+B)(C+D)$ is absorbed by padding / uneven widths — **not** a fourth
+multiplication; and (b) give a case where a coefficient $z_i$ overflows its block;
+the learner should explain that *output carrying* normalizes it. The two effects
+are distinct, and neither changes the three-way branching.
