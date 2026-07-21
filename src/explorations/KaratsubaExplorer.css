@@ -1,0 +1,43 @@
+.karatsuba-explorer__frames {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .karatsuba-explorer__frames {
+    grid-template-columns: 1fr;
+  }
+}
+
+.karatsuba-explorer__frame {
+  min-width: 0;
+}
+
+.karatsuba-explorer__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.karatsuba-explorer__badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--role-intermediate);
+  border-radius: 0.25rem;
+  opacity: 0.45;
+}
+
+.karatsuba-explorer__badge--on {
+  opacity: 1;
+  border-color: var(--role-selected);
+  background: color-mix(in srgb, var(--role-selected) 18%, transparent);
+}
+
+.karatsuba-explorer__parabola {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--role-basis-2);
+}

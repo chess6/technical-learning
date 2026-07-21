@@ -1,5 +1,6 @@
 import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
+import { karatsubaLesson } from "./karatsuba";
 import { transformationsLesson } from "./transformations";
 import type { LessonDefinition } from "./types";
 import { vectorsLesson } from "./vectors";
@@ -10,6 +11,7 @@ export const lessons: LessonDefinition[] = [
   transformationsLesson,
   determinantsLesson,
   eigenvectorsLesson,
+  karatsubaLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

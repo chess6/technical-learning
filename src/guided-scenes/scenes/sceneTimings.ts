@@ -88,6 +88,24 @@ export const EIGEN_DERIVATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "interpret", title: "Interpret geometrically", duration: 4.5 },
 ];
 
+/**
+ * Karatsuba Watch scene — elementary place-value breakthrough.
+ * No polynomial/`deeper` beat: that material stays in depth layers / explorer.
+ * Total ~58s.
+ */
+export const KARATSUBA_SEGMENTS: readonly SceneSegment[] = [
+  { id: "setup", title: "Two numbers, one rectangle", duration: 4 },
+  { id: "foil", title: "Four pieces (FOIL)", duration: 5 },
+  { id: "weights", title: "Place-value weights", duration: 5.5 },
+  { id: "share", title: "The middle collapses", duration: 5.5 },
+  { id: "aux-rect", title: "A different rectangle", duration: 5.5 },
+  { id: "subtract", title: "Peel off the corners", duration: 6 },
+  { id: "reassemble", title: "Rebuild the answer", duration: 5.5 },
+  { id: "carry-vs-width", title: "Two kinds of too big", duration: 7 },
+  { id: "branch", title: "Four calls or three?", duration: 7 },
+  { id: "exponent", title: "The exponent bends", duration: 7 },
+];
+
 /** Total timeline length in seconds. */
 export function totalDuration(segments: readonly SceneSegment[]): number {
   return segments.reduce((sum, segment) => sum + segment.duration, 0);

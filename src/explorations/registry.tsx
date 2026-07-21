@@ -32,6 +32,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.EigenvectorExplorer,
     })),
   ),
+  "karatsuba-cross-terms": lazy(() =>
+    import("./KaratsubaExplorer").then((m) => ({
+      default: m.KaratsubaExplorer,
+    })),
+  ),
 };
 
 export function getExplorer(

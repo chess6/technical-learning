@@ -32,6 +32,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     ),
   "transform-spike": () =>
     import("./transformSpikeScene").then((m) => m.transformSpikeScene),
+  "karatsuba-cross-terms": () =>
+    import("./karatsubaCrossTermsScene").then((m) => m.karatsubaCrossTermsScene),
 };
 
 export function getSceneDescription(sceneId: string): Promise<unknown> {

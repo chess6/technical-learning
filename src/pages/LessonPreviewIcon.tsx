@@ -40,6 +40,16 @@ export function LessonPreviewIcon({ lessonId }: { lessonId: string }) {
           <line x1="12" y1="24" x2="36" y2="24" className="lesson-preview-icon__result" />
         </svg>
       );
+    case "karatsuba":
+      return (
+        <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">
+          <rect x="6" y="8" width="18" height="14" className="lesson-preview-icon__basis-1" />
+          <rect x="24" y="8" width="10" height="14" className="lesson-preview-icon__result" />
+          <rect x="6" y="22" width="18" height="8" className="lesson-preview-icon__original" />
+          <rect x="24" y="22" width="10" height="8" className="lesson-preview-icon__basis-2" />
+          <rect x="36" y="14" width="8" height="10" className="lesson-preview-icon__grid-shape" />
+        </svg>
+      );
     default:
       return null;
   }

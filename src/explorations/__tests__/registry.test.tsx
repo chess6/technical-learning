@@ -8,6 +8,7 @@ describe("explorer registry (M6 lazy-loading)", () => {
     expect(hasExplorer("matrix-transformation")).toBe(true);
     expect(hasExplorer("determinant-area-scaling")).toBe(true);
     expect(hasExplorer("eigenvectors-invariant-directions")).toBe(true);
+    expect(hasExplorer("karatsuba-cross-terms")).toBe(true);
     expect(hasExplorer("not-a-real-explorer")).toBe(false);
     expect(getExplorer("not-a-real-explorer")).toBeUndefined();
   });

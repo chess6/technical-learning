@@ -148,3 +148,30 @@ export type {
   CuratedCharPoly3,
   Eigen3DExtensionExample,
 } from "./examples3";
+
+export {
+  KARATSUBA_EXPONENT,
+  assertBranchLeafCount,
+  assertMiddleCoefficientIdentity,
+  assertRecombinationEqualsProduct,
+  assertThreeProductsMatchNaive,
+  digitLength,
+  foilRegions,
+  karatsubaMultiply,
+  karatsubaStep,
+  leafCount,
+  middleCoefficient,
+  multiplicationCount,
+  naiveMultiply,
+  normalizeCoefficients,
+  recursionTree,
+  splitDecimal,
+} from "./karatsuba";
+export type {
+  CarryStep,
+  DigitSplit,
+  FoilRegions,
+  KaratsubaStep,
+  NormalizedCoefficients,
+  TreeNode,
+} from "./karatsuba";

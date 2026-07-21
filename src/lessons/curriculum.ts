@@ -36,6 +36,11 @@ export const COURSE_SECTIONS: readonly CourseSection[] = [
     ],
   },
   {
+    id: "algorithms",
+    title: "Algorithms & complexity",
+    items: [{ kind: "lesson", lessonId: "karatsuba" }],
+  },
+  {
     id: "later",
     title: "Later topics",
     items: [

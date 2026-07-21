@@ -6,6 +6,7 @@ import {
   DETERMINANT_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
+  KARATSUBA_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -43,6 +44,7 @@ const SPIKE_STEPS = toSteps(SPIKE_SEGMENTS);
 const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
+const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "vectors-linear-combinations": {
@@ -133,6 +135,23 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "Development scene: a coordinate grid transforming from the identity to a shear matrix.",
     steps: SPIKE_STEPS,
     majorSteps: SPIKE_STEPS,
+  },
+  "karatsuba-cross-terms": {
+    id: "karatsuba-cross-terms",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Karatsuba: reducing four multiplications to three via a weighted multiplication rectangle and a separate auxiliary coefficient rectangle, then comparing three-way and four-way conceptual recurrence trees.",
+    steps: KARATSUBA_STEPS,
+    majorSteps: pickMajor(KARATSUBA_STEPS, [
+      "foil",
+      "share",
+      "aux-rect",
+      "subtract",
+      "reassemble",
+      "carry-vs-width",
+      "branch",
+      "exponent",
+    ]),
   },
 };
 

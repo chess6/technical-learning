@@ -1,0 +1,108 @@
+.karatsuba-tree {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--role-intermediate);
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, var(--role-background) 88%, var(--role-intermediate));
+}
+
+.karatsuba-tree__title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: var(--role-text);
+}
+
+.karatsuba-tree__note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--role-text-muted, var(--role-intermediate));
+}
+
+.karatsuba-tree__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.karatsuba-tree__controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.karatsuba-tree__check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.4rem !important;
+}
+
+.karatsuba-tree__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 720px) {
+  .karatsuba-tree__pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.karatsuba-tree__fig {
+  margin: 0;
+}
+
+.karatsuba-tree__fig figcaption {
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: var(--role-text);
+}
+
+.karatsuba-tree__fig svg {
+  width: 100%;
+  max-height: 160px;
+  background: color-mix(in srgb, var(--role-background) 70%, black);
+  border-radius: 0.25rem;
+}
+
+.karatsuba-tree__edge {
+  fill: none;
+  stroke: var(--role-intermediate);
+  stroke-width: 1.5;
+}
+
+.karatsuba-tree__edge--k {
+  stroke: var(--role-basis-1);
+}
+
+.karatsuba-tree__node {
+  fill: var(--role-transformed);
+}
+
+.karatsuba-tree__node--k {
+  fill: var(--role-basis-1);
+}
+
+.karatsuba-tree__fig p {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+}
+
+.karatsuba-tree__trace {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  border-left: 3px solid var(--role-selected);
+  background: color-mix(in srgb, var(--role-selected) 12%, transparent);
+}
+
+.karatsuba-tree__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}

@@ -3,8 +3,9 @@ import { lessons, getLessonById } from "../registry";
 import { getSceneMeta, SCENE_META, hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { getExplorer } from "../../explorations/registry";
 import { getMatrixExample } from "../../math";
+import { requireKaratsubaExample } from "../karatsubaData";
 
-describe("lesson wiring for all four POC lessons", () => {
+describe("lesson wiring for all registered lessons", () => {
   it("resolves guided scenes for every registered lesson", () => {
     for (const lesson of lessons) {
       expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
@@ -197,5 +198,60 @@ describe("Lesson 2 recalls the basis and derives the columns rule", () => {
     expect(grid.body.toLowerCase()).toMatch(/consequence/);
     const layerKinds = (grid.layers ?? []).map((l) => l.kind);
     expect(layerKinds).toContain("connection");
+  });
+});
+
+describe("Karatsuba lesson wiring", () => {
+  it("resolves scene, explorer, and shared examples without a matrix exampleId", () => {
+    const lesson = getLessonById("karatsuba")!;
+    expect(lesson.guidedSceneId).toBe("karatsuba-cross-terms");
+    expect(lesson.explorationId).toBe("karatsuba-cross-terms");
+    expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
+    expect(getExplorer(lesson.explorationId)).toBeTypeOf("function");
+    expect(lesson.exampleId).toBeUndefined();
+    expect(requireKaratsubaExample("karatsuba-clean").x).toBe(12);
+    expect(requireKaratsubaExample("karatsuba-boundary").y).toBe(56);
+    expect(requireKaratsubaExample("karatsuba-recursive").x).toBe(1234);
+  });
+
+  it("has no deeper beat on the primary timeline; major steps cover the elementary chain", () => {
+    const meta = getSceneMeta("karatsuba-cross-terms");
+    const stepIds = meta.steps.map((s) => s.id);
+    expect(stepIds).not.toContain("deeper");
+    expect(stepIds).toEqual([
+      "setup",
+      "foil",
+      "weights",
+      "share",
+      "aux-rect",
+      "subtract",
+      "reassemble",
+      "carry-vs-width",
+      "branch",
+      "exponent",
+    ]);
+    const majorIds = meta.majorSteps.map((s) => s.id);
+    expect(majorIds).toEqual([
+      "foil",
+      "share",
+      "aux-rect",
+      "subtract",
+      "reassemble",
+      "carry-vs-width",
+      "branch",
+      "exponent",
+    ]);
+  });
+
+  it("exercises cover reconstruction, complexity, transfer, and carry-vs-width", () => {
+    const lesson = getLessonById("karatsuba")!;
+    expect(lesson.exercises.length).toBeGreaterThanOrEqual(6);
+    expect(lesson.checkpoint).toBeDefined();
+    const ids = lesson.exercises.map((ex) => ex.id);
+    expect(ids).toContain("karatsuba-z1");
+    expect(ids).toContain("karatsuba-exponent");
+    expect(ids).toContain("karatsuba-strassen-transfer");
+    expect(ids).toContain("karatsuba-width-vs-carry");
+    expect(ids).toContain("karatsuba-output-carry");
   });
 });

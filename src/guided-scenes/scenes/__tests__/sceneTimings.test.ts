@@ -3,6 +3,7 @@ import {
   DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
+  KARATSUBA_SEGMENTS,
   LINEAR_COMBINATION_SEGMENTS,
   totalDuration,
   toSteps,
@@ -15,6 +16,7 @@ describe("scene timings (pure data)", () => {
       DETERMINANT_SEGMENTS,
       EIGENVECTOR_SEGMENTS,
       EIGEN_DERIVATION_SEGMENTS,
+      KARATSUBA_SEGMENTS,
     ]) {
       const steps = toSteps(segments);
       expect(steps[0]!.at).toBe(0);
@@ -102,5 +104,22 @@ describe("scene timings (pure data)", () => {
     for (const id of majorIds) {
       expect(meta.steps.some((step) => step.id === id)).toBe(true);
     }
+  });
+
+  it("karatsuba scene has no deeper beat and ~58s elementary timeline", () => {
+    expect(KARATSUBA_SEGMENTS.map((s) => s.id)).not.toContain("deeper");
+    expect(totalDuration(KARATSUBA_SEGMENTS)).toBeGreaterThanOrEqual(55);
+    expect(totalDuration(KARATSUBA_SEGMENTS)).toBeLessThanOrEqual(65);
+    const meta = getSceneMeta("karatsuba-cross-terms");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual([
+      "foil",
+      "share",
+      "aux-rect",
+      "subtract",
+      "reassemble",
+      "carry-vs-width",
+      "branch",
+      "exponent",
+    ]);
   });
 });
