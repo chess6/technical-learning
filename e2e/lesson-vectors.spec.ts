@@ -20,7 +20,7 @@ test("route loads, guided scene plays and resets, no console errors", async ({
   const errors = collectConsoleErrors(page);
   await page.goto("/lesson/vectors");
 
-  await expect(page.getByRole("heading", { name: "Vectors and Linear Combinations" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vectors, Linear Combinations, and Basis" })).toBeVisible();
   await expect(page.locator(canvas)).toBeVisible();
 
   // Wait for the engine to mount, then ensure playback (autoplay or manual).
@@ -65,18 +65,64 @@ test("coefficient change and dependent preset update the readouts", async ({ pag
   await expect(page.getByTestId("span-readout")).toHaveText("the plane");
 });
 
+test("coordinate challenge finds p's coordinates in the basis (v, w)", async ({ page }) => {
+  await page.goto("/lesson/vectors");
+  const explore = page.getByRole("region", { name: "Build a linear combination" });
+
+  await explore.getByRole("button", { name: "Coordinate challenge" }).click();
+  await expect(page.getByTestId("coords-b-readout")).toHaveAttribute("data-plain", "(0, 0)");
+  await expect(page.getByTestId("match-readout")).toHaveText("not matched yet");
+
+  await page.locator("#coef-a").fill("1");
+  await page.locator("#coef-b").fill("1");
+
+  await expect(page.getByTestId("combo-readout")).toHaveAttribute("data-plain", "(4, 1)");
+  await expect(page.getByTestId("coords-b-readout")).toHaveAttribute("data-plain", "(1, 1)");
+  await expect(page.getByTestId("match-readout")).toHaveText("matched");
+});
+
+test("basis worked computation and both misconception callouts are present", async ({ page }) => {
+  await page.goto("/lesson/vectors");
+
+  await expect(
+    page.getByRole("heading", { name: "Coordinates of one point in two bases" }),
+  ).toBeVisible();
+
+  const callouts = page.getByTestId("misconception-callout");
+  await expect(callouts).toHaveCount(2);
+  await expect(
+    page.getByRole("heading", { name: /Independent means perpendicular/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /The coordinates are the vector/ }),
+  ).toBeVisible();
+});
+
+test("guided scene exposes basis and coordinates as major idea steps", async ({ page }) => {
+  await page.goto("/lesson/vectors");
+  await expect(page.locator(canvas)).toBeVisible();
+
+  // The idea dots are rendered from scene metadata regardless of playback.
+  await expect(
+    page.getByRole("button", { name: /Idea \d+: Independent pair . basis/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Idea \d+: Coordinates in a basis/ }),
+  ).toBeVisible();
+});
+
 test("exercises run one at a time with next/previous navigation", async ({ page }) => {
   await page.goto("/lesson/vectors");
   const practice = page.getByRole("region", { name: "Practice exercises" });
 
-  await expect(practice.getByText("Question 1 of 3")).toBeVisible();
+  await expect(practice.getByText("Question 1 of 5")).toBeVisible();
   // Only the active question is shown at a time.
   await expect(
     practice.getByRole("button", { name: /a single line through the origin/ }),
   ).toHaveCount(0);
 
   await practice.getByRole("button", { name: /Next question/ }).click();
-  await expect(practice.getByText("Question 2 of 3")).toBeVisible();
+  await expect(practice.getByText("Question 2 of 5")).toBeVisible();
 
   await practice.getByRole("button", { name: /a single line through the origin/ }).click();
   const feedback = practice.locator('.exercise-panel__feedback[data-state="correct"]');
@@ -84,5 +130,5 @@ test("exercises run one at a time with next/previous navigation", async ({ page 
 
   // Revisiting a previous question preserves navigation.
   await practice.getByRole("button", { name: /Previous/ }).click();
-  await expect(practice.getByText("Question 1 of 3")).toBeVisible();
+  await expect(practice.getByText("Question 1 of 5")).toBeVisible();
 });

@@ -28,8 +28,12 @@ const ROLE_W = "var(--role-basis-2)";
 const ROLE_COMBO = "var(--role-invariant)";
 const ROLE_COMPONENT = "var(--role-intermediate)";
 const ROLE_SPAN = "var(--role-original)";
+const ROLE_TARGET = "var(--role-selected)";
 
-type Preset = "independent" | "dependent";
+/** How close a·v + b·w must sit to p to count as "matched" in the challenge. */
+const MATCH_TOL = 0.1;
+
+type Preset = "independent" | "dependent" | "challenge";
 
 function fmt(n: number): string {
   const r = Math.round(n * 100) / 100;
@@ -70,6 +74,14 @@ export function LinearCombinationExplorer() {
   const independent = !areParallel(v, w);
   const spanKind = independent ? "the plane" : "a line";
 
+  // Bounded "find the coordinates" task, entered via the challenge preset.
+  const challenge = preset === "challenge";
+  const target = EX.target as [number, number];
+  const matched =
+    challenge &&
+    Math.abs(combo[0] - target[0]) < MATCH_TOL &&
+    Math.abs(combo[1] - target[1]) < MATCH_TOL;
+
   const spanCornerP1 = addVectors(scaleVector(v, SPAN_R), scaleVector(w, SPAN_R));
   const spanCornerP2 = addVectors(scaleVector(v, SPAN_R), scaleVector(w, -SPAN_R));
   const spanCorners = [
@@ -87,6 +99,17 @@ export function LinearCombinationExplorer() {
   const applyPreset = useCallback(
     (next: Preset) => {
       setPreset(next);
+      if (next === "challenge") {
+        // Lock to the independent pair and start away from the answer so the
+        // learner has to find a = b = 1.
+        vPoint.setPoint(EX.v as [number, number]);
+        wPoint.setPoint(EX.wIndependent as [number, number]);
+        setA(0);
+        setB(0);
+        setShowSpan(false);
+        setShowComponents(false);
+        return;
+      }
       wPoint.setPoint(
         (next === "independent" ? EX.wIndependent : EX.wDependent) as [
           number,
@@ -94,7 +117,7 @@ export function LinearCombinationExplorer() {
         ],
       );
     },
-    [wPoint],
+    [vPoint, wPoint],
   );
 
   const handleReset = useCallback(() => {
@@ -111,7 +134,7 @@ export function LinearCombinationExplorer() {
     <ExplorationPanel
       explorationId="linear-combination"
       title="Build a linear combination"
-      description="Drag v and w or adjust a and b. You are changing the same example from the guided animation."
+      description="Drag v and w or adjust a and b. You are changing the same example from the guided animation. Try the coordinate challenge to read p in the basis (v, w)."
       toolbar={
         <>
           <PresetPicker
@@ -120,15 +143,20 @@ export function LinearCombinationExplorer() {
             presets={[
               { id: "independent", label: "Independent", onSelect: () => applyPreset("independent") },
               { id: "dependent", label: "Dependent", onSelect: () => applyPreset("dependent") },
+              { id: "challenge", label: "Coordinate challenge", onSelect: () => applyPreset("challenge") },
             ]}
           />
           <ResetButton onReset={handleReset} />
         </>
       }
       summary={
-        independent
-          ? "These two directions are independent, so their linear combinations reach every point of the plane."
-          : "Here w points along the same line as v, so every linear combination stays on that single line."
+        challenge
+          ? matched
+            ? "You found it: a·v + b·w now lands on p, so [p]_B = (1, 1). The same arrow that is (4, 1) in the standard basis is (1, 1) in the basis (v, w)."
+            : "Adjust a and b until a·v + b·w lands on the gold target p = (4, 1). The coefficients you find are p's coordinates in the basis (v, w)."
+          : independent
+            ? "These two directions are independent, so their linear combinations reach every point of the plane — they form a basis."
+            : "Here w = (2, 4) points along v's line, so every combination stays on that line and can't reach a point like (4, 1) off it — a dependent pair is not a basis."
       }
       controls={
         <>
@@ -188,6 +216,28 @@ export function LinearCombinationExplorer() {
               label: "Span is",
               value: <span data-testid="span-readout">{spanKind}</span>,
             },
+            ...(challenge
+              ? [
+                  {
+                    id: "coords-b",
+                    label: "[p]_B = (a, b)",
+                    value: (
+                      <span data-testid="coords-b-readout" data-plain={`(${fmt(a)}, ${fmt(b)})`}>
+                        <VectorTeX x={a} y={b} />
+                      </span>
+                    ),
+                  },
+                  {
+                    id: "match",
+                    label: "Target p = (4, 1)",
+                    value: (
+                      <span data-testid="match-readout">
+                        {matched ? "matched" : "not matched yet"}
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }
@@ -232,6 +282,20 @@ export function LinearCombinationExplorer() {
             style="dashed"
             opacity={0.55}
           />
+
+          {challenge && (
+            <>
+              <Vector
+                tip={target}
+                color={ROLE_TARGET}
+                weight={4}
+                style="dashed"
+              />
+              <Text x={target[0]} y={target[1]} attach="se" attachDistance={16} color={ROLE_TARGET} size={16}>
+                p (target)
+              </Text>
+            </>
+          )}
 
           <Vector tip={v as [number, number]} color={ROLE_V} weight={3} />
           <Vector tip={w as [number, number]} color={ROLE_W} weight={3} />

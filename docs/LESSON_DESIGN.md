@@ -16,8 +16,9 @@ Practical enough to follow while building or modifying a lesson. Pair it with:
 > **Scope note (this POC).** Prefer [Basic accessibility](#basic-accessibility-keep);
 > full disability-product optimization is out of scope. This standard is a
 > **backbone, not a cage**: the six-phase flow is the default, but lessons may add
-> supporting material (e.g. a definition of linear dependence in an intro vectors
-> lesson) when it genuinely helps. See [Flexibility](#flexibility).
+> supporting material (e.g. Lesson 1 now carries span, linear dependence, basis, and
+> coordinates-relative-to-a-basis in one intro lesson) when it genuinely helps. See
+> [Flexibility](#flexibility).
 
 ---
 

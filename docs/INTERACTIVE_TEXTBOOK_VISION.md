@@ -657,9 +657,10 @@ A living catalog (seeded from the current lessons; extend it as chapters grow):
 
 | Concept | Misconception | The confrontation |
 | --- | --- | --- |
-| Vectors | "The coordinates *are* the vector." | The same arrow has different coordinates in a different basis; the arrow is the invariant. Coordinates describe it, they are not it. |
+| Vectors | "The coordinates *are* the vector." | The same fixed arrow \(\mathbf{p}\) is \((4,1)\) in the standard basis and \((1,1)\) in \(B=(\mathbf{v},\mathbf{w})\); the arrow is the invariant. Coordinates describe it, they are not it. |
 | Span | "Span is just 'linear combinations.'" | Reframe as *reachability*: which points can you actually get to? Dependent vectors "combine" endlessly yet reach only a line. |
-| Independence | "Independent means perpendicular." | Show \((1,2)\) and \((3,-1)\): not perpendicular, yet independent — they still span the plane. Independence is "not on the same line," not "at right angles." |
+| Independence / Basis | "Independent means perpendicular" / "a basis must be the coordinate axes." | Show \((1,2)\) and \((3,-1)\): not perpendicular, not axis-aligned, yet independent — they span the plane and form a valid basis. Independence is "not on the same line," not "at right angles," and any independent pair is a basis. |
+| Basis | "Any two vectors form a basis." | The dependent pair \(\mathbf{w}=(2,4)=2\mathbf{v}\) reaches only a line, so it cannot name a point like \((4,1)\) off it. A basis needs *independence*, resolved inline with the dependent case rather than a separate warning. |
 | Determinant | "A negative determinant is a negative area." | Area is \(|\det|\); the **sign is orientation** (handedness flip), not a negative amount of area. |
 | Determinant | "det = 0 is just a small number." | It is *collapse*: the parallelogram loses a dimension; the columns are dependent; the map is singular. |
 | Eigenvectors | "An eigenvector keeps the same direction." | \(\lambda < 0\) reverses the arrow while keeping it on the **same line**. "Same line," not "same direction." |
@@ -739,10 +740,16 @@ re-entry points — the concept map above, explicit "Connection" / "Looking ahea
 layers (§13), and a scannable "Remember this" close — so a returning learner can
 rejoin mid-story without replaying the whole plot.
 
-Forward edges to the current "Later topics"
+The `Vectors → … → Basis` edge is delivered **within Lesson 1**
+([src/lessons/vectors.ts](../src/lessons/vectors.ts), retitled "Vectors, Linear
+Combinations, and Basis"), not as a separate lesson: it teaches span, independence,
+basis, and coordinates-relative-to-a-basis, landing on the fixed point
+\(\mathbf{p}=(4,1)=[\mathbf{p}]_E\) being \([\mathbf{p}]_B=(1,1)\) in \(B=(\mathbf{v},\mathbf{w})\).
+Lesson 2 then recalls unique standard-basis coordinates to *derive* the matrix-columns
+rule. Forward edges to the current "Later topics"
 ([src/lessons/curriculum.ts](../src/lessons/curriculum.ts)) — change of basis and
-SVD — should already be *seeded* by earlier lessons (e.g. "coordinates depend on
-basis" in the vectors misconception is the seed of change of basis).
+SVD — are therefore seeded explicitly: "the same arrow has different coordinates in
+a different basis" is the direct seed of change of basis.
 
 ---
 

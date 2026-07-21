@@ -9,8 +9,8 @@ export const transformationsLesson: LessonDefinition = {
   subtitle: "How a 2×2 matrix moves the plane",
   learningObjectives: [
     "Interpret a matrix as a transformation, not only a table of numbers",
-    "Read matrix columns as the images of the basis vectors",
-    "See how the transformed basis determines every other vector",
+    "Recall that $\\mathbf{e}_1, \\mathbf{e}_2$ are the standard basis and every vector has unique coordinates $x, y$",
+    "Derive why the two columns are the images of the basis vectors and therefore determine the whole map",
     "Recognize scale, shear, rotation, reflection, and singular collapse",
   ],
   motivatingQuestion:
@@ -19,7 +19,7 @@ export const transformationsLesson: LessonDefinition = {
     {
       id: "intro",
       title: "From table to map",
-      body: "A $2\\times 2$ matrix tells every vector where to go. The cleanest way to read it is by columns: the first column is where $\\mathbf{e}_1 = (1, 0)$ lands, and the second is where $\\mathbf{e}_2 = (0, 1)$ lands.",
+      body: "Recall from Lesson 1 that $\\mathbf{e}_1 = (1, 0)$ and $\\mathbf{e}_2 = (0, 1)$ are the standard basis, so every vector has unique coordinates: $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$. A $2\\times 2$ matrix tells every vector where to go, and the cleanest way to read it is by columns: the first column is where $\\mathbf{e}_1$ lands, the second where $\\mathbf{e}_2$ lands.",
       equation: `A = \\begin{bmatrix} ${A[0][0]} & ${A[0][1]} \\\\ ${A[1][0]} & ${A[1][1]} \\end{bmatrix}`,
       observation:
         "Once you know where $\\mathbf{e}_1$ and $\\mathbf{e}_2$ go, every other vector follows by linearity.",
@@ -27,10 +27,17 @@ export const transformationsLesson: LessonDefinition = {
     {
       id: "grid",
       title: "Linearity carries the grid",
-      body: "Any vector is $x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$. A linear map sends it to $x\\,(A\\mathbf{e}_1) + y\\,(A\\mathbf{e}_2)$, so the whole coordinate grid deforms into a scaled, sheared lattice while lines stay straight and evenly spaced.",
+      body: "Because $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$ uniquely, linearity forces $A\\mathbf{v} = x\\,(A\\mathbf{e}_1) + y\\,(A\\mathbf{e}_2)$. So the two columns $A\\mathbf{e}_1, A\\mathbf{e}_2$ decide where every vector goes — the columns rule is a consequence of unique coordinates, not a separate fact. The whole grid deforms into a scaled, sheared lattice while lines stay straight and evenly spaced.",
       equation: "A(x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2) = x\\,A\\mathbf{e}_1 + y\\,A\\mathbf{e}_2",
       observation:
         "The identity-to-$A$ frames you scrub are an educational visual transition, not a matrix factorization.",
+      layers: [
+        {
+          kind: "connection",
+          title: "This is Lesson 1's basis idea in action",
+          body: "Lesson 1 showed every vector is a unique combination of basis vectors. Here the matrix reads those coordinates and rebuilds the output from the transformed basis. Later, change of basis lets you choose which basis to read coordinates in.",
+        },
+      ],
     },
   ],
   guidedSceneId: "matrix-transformations",

@@ -33,6 +33,28 @@ describe("LinearCombinationExplorer", () => {
     expect(screen.getByTestId("span-readout").textContent).toBe("a line");
   });
 
+  it("coordinate challenge shows a target and finds [p]_B = (1, 1) when matched", () => {
+    const { container } = render(<LinearCombinationExplorer />);
+    fireEvent.click(screen.getByRole("button", { name: "Coordinate challenge" }));
+
+    // Starts away from the answer so the learner has to find a = b = 1.
+    expect(plain("coords-b-readout")).toBe("(0, 0)");
+    expect(screen.getByTestId("match-readout").textContent).toBe("not matched yet");
+
+    setRange(container, "coef-a", "1");
+    setRange(container, "coef-b", "1");
+
+    expect(plain("combo-readout")).toBe("(4, 1)");
+    expect(plain("coords-b-readout")).toBe("(1, 1)");
+    expect(screen.getByTestId("match-readout").textContent).toBe("matched");
+  });
+
+  it("hides the coordinate-challenge readouts outside the challenge preset", () => {
+    render(<LinearCombinationExplorer />);
+    expect(screen.queryByTestId("coords-b-readout")).toBeNull();
+    expect(screen.queryByTestId("match-readout")).toBeNull();
+  });
+
   it("reset restores the independent default", () => {
     const { container } = render(<LinearCombinationExplorer />);
     fireEvent.click(screen.getByRole("button", { name: "Dependent" }));

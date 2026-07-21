@@ -49,7 +49,7 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "vectors-linear-combinations",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation building linear combinations of two vectors and comparing an independent span (the whole plane) with a dependent span (a single line).",
+      "Guided animation building linear combinations of two vectors, comparing an independent span (the whole plane) with a dependent span (a single line), naming an independent pair a basis, and reading one fixed point's coordinates in the standard basis and in that basis.",
     steps: LINEAR_STEPS,
     majorSteps: pickMajor(LINEAR_STEPS, [
       "vector-v",
@@ -58,6 +58,8 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "combination",
       "span-plane",
       "dependent",
+      "basis",
+      "coordinates",
     ]),
   },
   "matrix-transformations": {

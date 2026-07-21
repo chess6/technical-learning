@@ -19,6 +19,14 @@ export interface LinearCombinationExample {
   wDependent: Vector2;
   initialA: number;
   initialB: number;
+  /**
+   * Fixed target point used by the basis / coordinate material: p = v + w.
+   * Its standard-basis coordinates are `target` itself; in B = (v, w) it is
+   * `coordinatesInBasis`.
+   */
+  target: Vector2;
+  /** Coordinates of `target` in the basis B = (v, w): [p]_B = (1, 1). */
+  coordinatesInBasis: Vector2;
   /** Symmetric clamp bound for dragging and coefficient sliders. */
   bound: number;
 }
@@ -31,6 +39,9 @@ export const LINEAR_COMBINATION_EXAMPLE: LinearCombinationExample = {
   wDependent: [2, 4],
   initialA: 1,
   initialB: 1,
+  // p = v + w = (4, 1) in the standard basis; (1, 1) in B = (v, w).
+  target: [4, 1],
+  coordinatesInBasis: [1, 1],
   bound: 6,
 };
 

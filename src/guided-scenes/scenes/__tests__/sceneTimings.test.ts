@@ -3,6 +3,7 @@ import {
   DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
+  LINEAR_COMBINATION_SEGMENTS,
   totalDuration,
   toSteps,
 } from "../sceneTimings";
@@ -42,6 +43,21 @@ describe("scene timings (pure data)", () => {
     const expand = DETERMINANT_SEGMENTS.find((s) => s.id === "expand");
     expect(expand).toBeDefined();
     expect(expand!.duration).toBeGreaterThanOrEqual(5.0);
+  });
+
+  it("extends Lesson 1 with basis + coordinates beats and enough time for the continuous coordinate transition", () => {
+    const ids = LINEAR_COMBINATION_SEGMENTS.map((s) => s.id);
+    expect(ids).toContain("basis");
+    expect(ids).toContain("coordinates");
+    // basis appears after the dependent contrast, coordinates last.
+    expect(ids.indexOf("basis")).toBeGreaterThan(ids.indexOf("dependent"));
+    expect(ids.indexOf("coordinates")).toBe(ids.length - 1);
+    // The [p]_E -> [p]_B transition happens in one continuous beat; it needs room.
+    const coordinates = LINEAR_COMBINATION_SEGMENTS.find((s) => s.id === "coordinates");
+    expect(coordinates!.duration).toBeGreaterThanOrEqual(6);
+    for (const segment of LINEAR_COMBINATION_SEGMENTS) {
+      expect(segment.duration).toBeGreaterThan(0);
+    }
   });
 
   it("keeps the eigen Watch major steps in learning order", () => {

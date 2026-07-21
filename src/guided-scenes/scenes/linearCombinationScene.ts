@@ -8,6 +8,7 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_COMBINATION_EXAMPLE } from "../../lessons/exampleData";
+import type { Matrix2x2 } from "../../math";
 import { LINEAR_COMBINATION_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
@@ -20,6 +21,7 @@ import {
   makeOverlayLabel,
   makeSegment,
   makeStaticGrid,
+  makeTransformedGrid,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -33,6 +35,13 @@ const EX = LINEAR_COMBINATION_EXAMPLE;
 const V = new Vector2(EX.v[0], EX.v[1]);
 const W_IND = new Vector2(EX.wIndependent[0], EX.wIndependent[1]);
 const W_DEP = new Vector2(EX.wDependent[0], EX.wDependent[1]);
+// Fixed target p = v + w = (4, 1). Its (v, w)-coordinate grid is the standard
+// lattice mapped by B, whose columns are v and w; p then lands on node (1, 1).
+const P = new Vector2(EX.target[0], EX.target[1]);
+const B_MATRIX: Matrix2x2 = [
+  [EX.v[0], EX.wIndependent[0]],
+  [EX.v[1], EX.wIndependent[1]],
+];
 
 const px = (v: Vector2): Vector2 => new Vector2(v.x * SCALE, -v.y * SCALE);
 const fmt = (n: number) => formatSceneNumber(n, 1);
@@ -43,6 +52,12 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   grid.opacity(0.55);
   view.add(grid);
+
+  // The (v, w) coordinate grid — standard lattice carried by B (columns v, w).
+  // Hidden until the coordinates beat, where p lands on lattice node (1, 1).
+  const bGrid = makeTransformedGrid(() => B_MATRIX, OVERLAY_CLEAR_HALF_EXTENT);
+  bGrid.opacity(0);
+  view.add(bGrid);
 
   const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
@@ -106,13 +121,21 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(vArrow);
   view.add(wArrow);
 
+  // Fixed target point p (gold), used only in the basis / coordinate beats.
+  const pArrow = makeArrow(ROLE.selected, 6);
+  pArrow.end(0).points(() => [new Vector2(0, 0), px(P)]);
+  view.add(pArrow);
+
   // Labels.
   const vLabel = makeLabel("v", ROLE.basis1);
   vLabel.opacity(0).position(() => px(V).add(new Vector2(20, -18)));
   const wLabel = makeLabel("w", ROLE.basis2);
   wLabel.opacity(0).position(() => px(wTip()).add(new Vector2(20, -8)));
+  const pLabel = makeLabel("p", ROLE.selected);
+  pLabel.opacity(0).position(px(P).add(new Vector2(22, -16)));
   view.add(vLabel);
   view.add(wLabel);
+  view.add(pLabel);
 
   const eq = makeOverlayLabel("", ROLE.text, 42);
   eq.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
@@ -225,6 +248,49 @@ export const linearCombinationScene = makeScene2D(function* (view) {
         { node: comboArrow, opacity: 0.4 },
       ]);
       yield* waitFor(seconds.dependent - 2.35);
+    },
+    *basis() {
+      // Restore the independent pair and name it a basis of the plane.
+      setEq("independent v, w  →  a basis");
+      setCaption("In the plane, two independent directions form a basis");
+      comboArrow.stroke(ROLE.result);
+      yield* all(
+        spanLine.opacity(0, 0.4),
+        comboArrow.opacity(0, 0.4),
+        wTip(W_IND, 1.2, easeInOutCubic),
+      );
+      yield* focusOpacities([
+        { node: spanRegion, opacity: 0.22 },
+        { node: vArrow, opacity: 1 },
+        { node: wArrow, opacity: 1 },
+        { node: vLabel, opacity: 1 },
+        { node: wLabel, opacity: 1 },
+      ]);
+      yield* waitFor(seconds.basis - 1.6);
+    },
+    *coordinates() {
+      // One fixed point p, two coordinate readings. p never moves.
+      setEq("p in standard basis = ( 4, 1 )");
+      setCaption("Read p against the standard grid: 4 right, 1 up");
+      yield* all(
+        spanRegion.opacity(0.08, 0.4),
+        vArrow.opacity(0.5, 0.4),
+        wArrow.opacity(0.5, 0.4),
+      );
+      yield* all(pArrow.end(1, 1.2, easeInOutCubic), pLabel.opacity(1, 0.6));
+      yield* waitFor(1.2);
+      // Fade in the (v, w) coordinate grid; p stays geometrically fixed.
+      setCaption("Same arrow, read against basis (v, w):  p = 1·v + 1·w");
+      yield* all(
+        bGrid.opacity(0.6, 0.8),
+        grid.opacity(0.22, 0.8),
+        vArrow.opacity(0.95, 0.8),
+        wArrow.opacity(0.95, 0.8),
+      );
+      setEq("p in basis (v, w) = ( 1, 1 )");
+      yield* waitFor(1.4);
+      setCaption("p never moved — only its coordinates changed");
+      yield* waitFor(seconds.coordinates - 5.0);
     },
   };
 

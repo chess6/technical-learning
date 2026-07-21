@@ -110,3 +110,92 @@ describe("lesson wiring for all four POC lessons", () => {
     expect(lesson.callouts?.some((c) => c.solutionVisualId)).toBe(true);
   });
 });
+
+describe("Lesson 1 expanded to vectors, linear combinations, and basis", () => {
+  it("is organized into exactly three sections through basis and coordinates", () => {
+    const lesson = getLessonById("vectors")!;
+    expect(lesson.title).toBe("Vectors, Linear Combinations, and Basis");
+    expect(lesson.sections.map((s) => s.id)).toEqual([
+      "vectors",
+      "combinations",
+      "basis",
+    ]);
+  });
+
+  it("teaches basis and coordinates in its objectives and takeaway", () => {
+    const lesson = getLessonById("vectors")!;
+    const objectives = lesson.learningObjectives.join(" ").toLowerCase();
+    expect(objectives).toMatch(/basis/);
+    expect(objectives).toMatch(/coordinates/);
+    expect(lesson.keyTakeaway.toLowerCase()).toMatch(/basis/);
+    // 2D qualification: "in the plane".
+    expect(lesson.keyTakeaway.toLowerCase()).toMatch(/in the plane/);
+  });
+
+  it("carries the uniqueness argument (existence vs uniqueness)", () => {
+    const lesson = getLessonById("vectors")!;
+    const basis = lesson.sections.find((s) => s.id === "basis")!;
+    const layerText = (basis.layers ?? []).map((l) => `${l.title} ${l.body}`).join(" ");
+    expect(layerText).toMatch(/a - a'|a-a'/);
+    expect(layerText.toLowerCase()).toMatch(/unique/);
+    expect(layerText.toLowerCase()).toMatch(/exist/);
+  });
+
+  it("has an equation-first worked example for [p]_E vs [p]_B", () => {
+    const lesson = getLessonById("vectors")!;
+    const worked = lesson.workedExamples![0]!;
+    expect(Array.isArray(worked.equations)).toBe(true);
+    const eqs = worked.equations.join(" ");
+    expect(eqs).toMatch(/\[\\mathbf\{p\}\]_E/);
+    expect(eqs).toMatch(/\[\\mathbf\{p\}\]_B/);
+    // No embedded second Watch scene — the main scene teaches it once.
+    expect(worked.guidedSceneId).toBeUndefined();
+  });
+
+  it("uses exactly two misconception callouts", () => {
+    const lesson = getLessonById("vectors")!;
+    const ids = (lesson.callouts ?? []).map((c) => c.id);
+    expect(ids).toEqual([
+      "basis-not-perpendicular",
+      "coordinates-are-not-the-vector",
+    ]);
+  });
+
+  it("repurposes the checkpoint to coordinates-in-a-basis", () => {
+    const lesson = getLessonById("vectors")!;
+    expect(lesson.checkpoint?.prompt.toLowerCase()).toMatch(/did .*move|move/);
+    expect(lesson.checkpoint?.answer.toLowerCase()).toMatch(/did not move|not move/);
+  });
+
+  it("covers check, drill, and transfer practice tiers", () => {
+    const lesson = getLessonById("vectors")!;
+    const tiers = new Set(lesson.exercises.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+  });
+
+  it("keeps the single guided scene but adds basis + coordinates beats", () => {
+    const lesson = getLessonById("vectors")!;
+    expect(lesson.guidedSceneId).toBe("vectors-linear-combinations");
+    const meta = getSceneMeta(lesson.guidedSceneId);
+    const stepIds = meta.steps.map((s) => s.id);
+    expect(stepIds).toContain("basis");
+    expect(stepIds).toContain("coordinates");
+    const majorIds = meta.majorSteps.map((s) => s.id);
+    expect(majorIds).toContain("basis");
+    expect(majorIds).toContain("coordinates");
+  });
+});
+
+describe("Lesson 2 recalls the basis and derives the columns rule", () => {
+  it("references the standard basis and unique coordinates, with a connection layer", () => {
+    const lesson = getLessonById("transformations")!;
+    const intro = lesson.sections.find((s) => s.id === "intro")!;
+    expect(intro.body).toMatch(/standard basis/);
+    const grid = lesson.sections.find((s) => s.id === "grid")!;
+    expect(grid.body.toLowerCase()).toMatch(/consequence/);
+    const layerKinds = (grid.layers ?? []).map((l) => l.kind);
+    expect(layerKinds).toContain("connection");
+  });
+});

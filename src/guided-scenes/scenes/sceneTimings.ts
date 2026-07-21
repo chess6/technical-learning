@@ -28,6 +28,8 @@ export const LINEAR_COMBINATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "combination", title: "a·v + b·w", duration: 5 },
   { id: "span-plane", title: "Independent span: the plane", duration: 4 },
   { id: "dependent", title: "Dependent span: a line", duration: 4.6 },
+  { id: "basis", title: "Independent pair → basis", duration: 4 },
+  { id: "coordinates", title: "Coordinates in a basis", duration: 7 },
 ];
 
 export const MATRIX_TRANSFORMATION_SEGMENTS: readonly SceneSegment[] = [
