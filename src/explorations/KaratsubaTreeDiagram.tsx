@@ -116,7 +116,7 @@ export function KaratsubaTreeDiagram({
               <path key={i} d={d} className="karatsuba-tree__edge" />
             ))}
             {tree4.nodes.map((node, i) => (
-              <circle key={i} cx={node.x} cy={node.y} r={4} className="karatsuba-tree__node" />
+              <circle key={i} cx={node.x} cy={node.y} r={5} className="karatsuba-tree__node" />
             ))}
           </svg>
           <p data-testid="tree-leaves-4">
@@ -134,7 +134,7 @@ export function KaratsubaTreeDiagram({
                 key={i}
                 cx={node.x}
                 cy={node.y}
-                r={4}
+                r={5}
                 className="karatsuba-tree__node karatsuba-tree__node--k"
               />
             ))}

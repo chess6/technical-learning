@@ -19,6 +19,16 @@
   padding: 0.25rem;
 }
 
+/*
+ * Mafs Text always adds class "mafs-shadow" (3px dark stroke, paint-order:stroke).
+ * That halo looks bold/blurry on solid FOIL region fills — disable it here.
+ * Contrast comes from the light fill on the colored regions instead.
+ */
+.karatsuba-explorer__frame .mafs-shadow {
+  stroke: none;
+  stroke-width: 0;
+}
+
 .karatsuba-explorer__badges {
   display: flex;
   flex-wrap: wrap;
@@ -41,13 +51,22 @@
 }
 
 .karatsuba-explorer__aside {
-  color: var(--role-text-muted, var(--role-intermediate));
-  font-size: 0.85em;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm, 0.9375rem);
+  line-height: 1.45;
 }
 
 .karatsuba-explorer__parabola {
-  margin: 0.75rem 0 0;
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.95rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--color-text);
   border-left: 3px solid var(--role-basis-2);
+  background: color-mix(in srgb, var(--role-basis-2) 10%, var(--color-surface, white));
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.karatsuba-explorer__parabola .katex {
+  font-size: 1.08em;
 }

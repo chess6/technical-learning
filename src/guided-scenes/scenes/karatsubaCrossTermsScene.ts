@@ -1,4 +1,4 @@
-import { Circle, Latex, Line, Node, Rect, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Latex, Line, Node, Rect, Txt, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -10,7 +10,7 @@ import {
 import { KARATSUBA_CLEAN, KARATSUBA_BOUNDARY } from "../../lessons/karatsubaData";
 import { karatsubaStep, leafCount, recursionTree, type TreeNode } from "../../math";
 import { KARATSUBA_SEGMENTS } from "./sceneTimings";
-import { ROLE, makeLabel, makeOverlayLabel } from "./sceneKit";
+import { ROLE, makeOverlayLabel } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
 
 /**
@@ -59,14 +59,33 @@ function makeRegion(color: string, opacity = 0.55): Line {
   });
 }
 
-/** A short centered LaTeX label sitting inside a subrectangle. */
-function makeRegionLabel(tex: string, pos: Vector2, fontSize = 22): Latex {
-  return new Latex({
-    tex,
+/**
+ * Region name inside a solid FOIL tile. No glyph stroke — the dark halo from
+ * makeLabel/makeOverlayLabel reads as bold+blur on filled regions.
+ */
+function makeRegionLabel(text: string, pos: Vector2, fontSize = 22): Txt {
+  return new Txt({
+    text,
     fill: ROLE.text,
     fontSize,
+    fontWeight: 500,
+    fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     position: pos,
     opacity: 0,
+  });
+}
+
+/** Short title above a rectangle — light outline only, not a thick halo. */
+function makePanelTitle(text: string, color: string, fontSize: number): Txt {
+  return new Txt({
+    text,
+    fill: color,
+    stroke: ROLE.background,
+    lineWidth: 2,
+    strokeFirst: true,
+    fontSize,
+    fontWeight: 600,
+    fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
   });
 }
 
@@ -198,14 +217,9 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   weightedGroup.add(bc);
   weightedGroup.add(bd);
 
-  // Use makeLabel (intrinsic width), not makeOverlayLabel: the overlay helper
-  // forces SAFE_WIDTH, and centering that wide node at ±250 clips half the
-  // title past the stage edge.
-  const weightedTitle = makeLabel(
-    "Weighted  12×13",
-    ROLE.text,
-    26,
-  );
+  // Use a light-outline title (not SAFE_WIDTH overlay): full-width overlays
+  // centered at ±250 clipped past the stage edge.
+  const weightedTitle = makePanelTitle("Weighted  12×13", ROLE.text, 26);
   weightedTitle.position(new Vector2(W_ORIGIN.x, wy0 - 28));
   weightedGroup.add(weightedTitle);
 
@@ -330,11 +344,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   auxGroup.add(auxLabelBC);
   auxGroup.add(auxLabelBD);
 
-  const auxTitle = makeLabel(
-    "Auxiliary  (A+B)×(C+D)",
-    ROLE.original,
-    22,
-  );
+  const auxTitle = makePanelTitle("Auxiliary  (A+B)×(C+D)", ROLE.original, 22);
   auxTitle.position(new Vector2(A_ORIGIN.x, ay0 - 26));
   auxTitle.opacity(0);
   auxGroup.add(auxTitle);
@@ -349,7 +359,7 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   const cz1 = createSignal(BOUNDARY.z1); // 82
   const cz0 = createSignal(BOUNDARY.z0); // 48
 
-  const carryTitle = makeLabel("Output carrying: 78 × 56", ROLE.text, 26);
+  const carryTitle = makePanelTitle("Output carrying: 78 × 56", ROLE.text, 26);
   carryTitle.position(new Vector2(0, -120));
   carryGroup.add(carryTitle);
 
@@ -429,20 +439,20 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   view.add(tree4Group);
   view.add(tree3Group);
 
-  const tree4Title = makeLabel("Branch 4 (naive)", ROLE.transformed, 22);
+  const tree4Title = makePanelTitle("Branch 4 (naive)", ROLE.transformed, 22);
   tree4Title.position(new Vector2(-210, -110));
   tree4Title.opacity(0);
-  const tree3Title = makeLabel("Branch 3 (Karatsuba)", ROLE.basis1, 22);
+  const tree3Title = makePanelTitle("Branch 3 (Karatsuba)", ROLE.basis1, 22);
   tree3Title.position(new Vector2(210, -110));
   tree3Title.opacity(0);
-  const tree4Leaves = makeLabel(
+  const tree4Leaves = makePanelTitle(
     `${tree4Layout.leaves} leaves = n²`,
     ROLE.transformed,
     20,
   );
   tree4Leaves.position(new Vector2(-210, 140));
   tree4Leaves.opacity(0);
-  const tree3Leaves = makeLabel(
+  const tree3Leaves = makePanelTitle(
     `${tree3Layout.leaves} leaves ≈ n^1.585`,
     ROLE.basis1,
     20,
@@ -457,13 +467,14 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
   // ---------------------------------------------------------------------------
   // Shared overlay caption + equation.
   // ---------------------------------------------------------------------------
-  // Slightly smaller than the default overlay so two wrapped lines stay inside
-  // the bottom margin band and do not climb into the teaching geometry.
+  // Slightly smaller overlay with a thin outline — the default overlay stroke
+  // (≈0.22×fontSize) reads as a bold blur on long captions.
   const caption = makeOverlayLabel(
     "12 × 13 as a weighted multiplication rectangle",
     ROLE.textMuted,
-    32,
+    30,
   );
+  caption.lineWidth(3);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y + 8));
   view.add(caption);
 
@@ -504,9 +515,9 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
       );
       // Weights fade in by attaching each region's place value to its name.
       yield* all(
-        wLabelAC.tex("100\\,AC", 0.4),
-        wLabelAD.tex("10\\,AD", 0.4),
-        wLabelBC.tex("10\\,BC", 0.4),
+        wLabelAC.text("100 AC", 0.4),
+        wLabelAD.text("10 AD", 0.4),
+        wLabelBC.text("10 BC", 0.4),
       );
       yield* waitFor(seconds.weights - 0.8);
     },
