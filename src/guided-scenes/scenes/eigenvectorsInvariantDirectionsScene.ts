@@ -10,6 +10,7 @@ import {
 import { EIGEN_LESSON_EXAMPLE } from "../../lessons/exampleData";
 import {
   analyzeEigen2x2,
+  lerpIdentityToMatrix,
   matrixVectorMultiply,
   normalizeVector,
   requireMatrixExample,
@@ -29,6 +30,7 @@ import {
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
+  makeTransformedGrid,
   morphMatrixEntries,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
@@ -38,6 +40,12 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * All eigen geometry comes from analyzeEigen2x2 — never hardcoded independently.
  *
  * Choreography (learner-first):
+ * - Deform the whole grid with A (the base visual language of linear algebra):
+ *   as space stretches/rotates, most directions turn but eigenlines stay put,
+ *   which is *why* eigenvectors land on their own line. The transformed grid is
+ *   built from the shared `lerpIdentityToMatrix` × `matrixVectorMultiply` path —
+ *   never ad-hoc slopes — and rides the fan exactly because
+ *   lerp(v, Av, t) = (lerp(I, A, t)) · v.
  * - Keep ghost v while Av moves so input vs output is visible.
  * - Highlight full lines through the origin (same line ≠ same direction).
  * - Act out λ > 1 / λ < 0 / λ = 0 with length and flip, not matrix morph alone.
@@ -122,8 +130,12 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     [mc(), md()],
   ];
 
-  /** 0 = show v, 1 = show Av for the fan result arrows. */
+  /** 0 = show v, 1 = show Av for the fan result arrows. Also drives the
+   * transformed grid so the whole space deforms in lockstep with the fan. */
   const applyT = createSignal(0);
+  /** Opacity of the deforming grid — revealed only where "the whole space
+   * moves" is the point (apply, highlight, scalar, defective, rotation). */
+  const gridDeformOpacity = createSignal(0);
   /** Ghost (original v) opacity. */
   const ghostOpacity = createSignal(0);
   /** Demo arrow along one eigendirection: tip = demoScale * demoDir. */
@@ -134,9 +146,20 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   const demoGhostOpacity = createSignal(0);
   const demoGhostScale = createSignal(1.6);
 
+  // Faint identity grid: the "before" reference the transformed grid moves off.
   const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
-  grid.opacity(0.45);
+  grid.opacity(0.3);
   view.add(grid);
+
+  // The whole space deforming under A. Endpoints come from the shared
+  // matrix→screen path inside makeTransformedGrid; the interpolation from
+  // identity to A is the tested `lerpIdentityToMatrix` educational transition.
+  const tGrid = makeTransformedGrid(
+    () => lerpIdentityToMatrix(matrix(), applyT()),
+    OVERLAY_CLEAR_HALF_EXTENT,
+  );
+  tGrid.opacity(() => gridDeformOpacity());
+  view.add(tGrid);
 
   const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
   view.add(origin);
@@ -293,6 +316,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       setTop("A fan of directions");
       setCaption("Watch which tips leave their original ray");
       applyT(0);
+      gridDeformOpacity(0);
       ghostOpacity(0);
       demoOpacity(0);
       demoGhostOpacity(0);
@@ -303,20 +327,25 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     },
 
     *apply() {
-      setTop("Most directions turn");
-      setCaption("Ghost = input v · bright tip = Av");
+      setTop("The whole grid moves");
+      setCaption("Space follows A — ghost v · bright tip Av · most directions turn");
       showPairLabels(1);
       yield* ghostOpacity(0.85, 0.4);
-      yield* applyT(1, 2.2, easeInOutCubic);
+      // Grid deforms together with the fan: same t drives both.
+      yield* all(
+        gridDeformOpacity(0.85, 0.6),
+        applyT(1, 2.2, easeInOutCubic),
+      );
       yield* waitFor(seconds.apply - 2.6);
     },
 
     *highlight() {
-      setTop("Some stay on their line");
-      setCaption("Dashed line through the origin — the tip never leaves it");
+      setTop("Some lines stay put");
+      setCaption("Grid slid off — but this line maps onto itself: an eigenline");
       showPairLabels(0);
       for (const a of fanArrows) a.opacity(0.2);
       ghostOpacity(0.2);
+      yield* gridDeformOpacity(0.4, 0.4);
       updateEigenGraphics(MAIN);
       const pair = firstEigenpair(MAIN);
       if (pair) {
@@ -329,7 +358,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
         demoLambda.text(`scale ≈ ${fmt(pair.lambda)}`);
         demoLambdaOpacity(1);
       }
-      yield* waitFor(seconds.highlight);
+      yield* waitFor(seconds.highlight - 0.4);
     },
 
     *equation() {
@@ -352,6 +381,9 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       for (const a of fanArrows) a.opacity(0);
       ghostOpacity(0);
       hideEigenGraphics();
+      // A single arrow reads the signed scale cleanly here; a full grid would
+      // only add clutter, so retire it for the λ demos.
+      yield* gridDeformOpacity(0, 0.3);
       demoOpacity(0);
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
@@ -388,32 +420,36 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoGhostOpacity(0.9);
       demoLambda.text("λ = 0");
       yield* demoScale(0, 1.6, easeInOutCubic);
-      yield* waitFor(Math.max(0, seconds.lambdas - 9.0));
+      // 9.3 = 9.0 of demo beats + 0.3 spent retiring the grid at the start.
+      yield* waitFor(Math.max(0, seconds.lambdas - 9.3));
     },
 
     *scalar() {
       setTop("Scalar: every direction");
-      setCaption("A = λI — every nonzero arrow stays on its ray");
+      setCaption("A = λI — the whole grid just scales, so every line stays");
       demoOpacity(0);
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
-      yield* morphTo(SCALAR, 1.0);
       applyT(1);
+      yield* morphTo(SCALAR, 1.0);
+      yield* gridDeformOpacity(0.75, 0.5);
       yield* focusOpacities([
         ...fanArrows.map((a) => ({ node: a, opacity: 0.95 })),
       ]);
       yield* ghostOpacity(0.55, 0.5);
       updateEigenGraphics(SCALAR);
-      yield* waitFor(seconds.scalar - 1.5);
+      yield* waitFor(seconds.scalar - 2.0);
     },
 
     *defective() {
       setTop("Defective: only one line");
-      setCaption("Repeated λ — only one eigendirection (not two)");
+      setCaption("Repeated λ — the grid shears; just one line survives");
       demoOpacity(0);
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
+      applyT(1);
       yield* morphTo(DEFECTIVE, 1.0);
+      yield* gridDeformOpacity(0.5, 0.4);
       updateEigenGraphics(DEFECTIVE);
       eigenLines[1]!.opacity(0);
       eigenArrows[1]!.opacity(0);
@@ -421,21 +457,25 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
         ...fanArrows.map((a) => ({ node: a, opacity: 0.2 })),
       ]);
       yield* ghostOpacity(0.15, 0.4);
-      yield* waitFor(seconds.defective - 1.4);
+      yield* waitFor(seconds.defective - 1.8);
     },
 
     *rotation() {
       setTop("No real eigenvectors");
-      setCaption("Counterexample: rotation turns every arrow off its ray");
+      setCaption("Counterexample: the grid rotates — no line is left in place");
       hideEigenGraphics();
       demoOpacity(0);
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
+      // Reset to identity with the grid hidden, then rotate the whole space so
+      // the "every line turns" point lands with the grid, not just the fan.
+      gridDeformOpacity(0);
       yield* morphTo(ROTATION, 1.0);
       applyT(0);
       yield* all(
         ...fanArrows.map((a) => a.opacity(0.95, 0.35)),
         ghostOpacity(0.85, 0.35),
+        gridDeformOpacity(0.8, 0.35),
       );
       yield* applyT(1, 1.8, easeInOutCubic);
       yield* waitFor(Math.max(0, seconds.rotation - 3.15));
@@ -444,8 +484,9 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     *summary() {
       setTop("Invariant directions");
       setCaption("Eigenvector: nonzero direction A keeps; λ = signed scale");
-      yield* morphTo(MAIN, 1.0);
       applyT(1);
+      yield* morphTo(MAIN, 1.0);
+      yield* gridDeformOpacity(0.4, 0.4);
       ghostOpacity(0.35);
       for (const a of fanArrows) a.opacity(0.35);
       updateEigenGraphics(MAIN);
@@ -453,7 +494,7 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
       showPairLabels(0);
-      yield* waitFor(seconds.summary - 1.0);
+      yield* waitFor(seconds.summary - 1.4);
     },
   };
 

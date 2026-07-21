@@ -95,7 +95,7 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "eigenvectors-invariant-directions",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation showing that most vectors change direction under a matrix while eigendirections stay on their line, covering stretch, shrink, reverse, collapse, scalar, defective, and no-real-eigenvector cases.",
+      "Guided animation showing the whole coordinate grid stretching and rotating under a matrix so that most vectors change direction while eigendirections stay on their line, covering stretch, shrink, reverse, collapse, scalar, defective, and no-real-eigenvector cases.",
     steps: EIGENVECTOR_STEPS,
     majorSteps: pickMajor(EIGENVECTOR_STEPS, [
       "fan",

@@ -363,6 +363,16 @@ Do not repeat the same values across panels without a teaching reason.
 > the adoption backlog, see [animation-quality-bar.md](./animation-quality-bar.md).
 
 - **One conceptual change at a time.**
+- **Show the transformation as moving space, not just isolated arrows.** The
+  deforming coordinate grid — the whole plane stretching / rotating / shearing
+  under \(A\) — is the base visual language for **any** matrix or transformation
+  concept, eigenvectors included. Seeing the grid slide off its original lines is
+  what makes "these directions land back on their own line" (eigenlines) and
+  "no line survives" (rotation) intuitive. Deform the grid through the shared
+  `makeTransformedGrid` / `transformedGridSegments` path (endpoints via
+  `matrixVectorMultiply`), never ad-hoc slopes. Individual vector arrows
+  supplement the moving space; they do not replace it. Retire the grid when a
+  single arrow reads a quantity (e.g. a signed scale) more cleanly.
 - **Dim** irrelevant objects.
 - Use **deliberate pauses**.
 - Highlight notation when the corresponding geometry changes.

@@ -282,6 +282,37 @@ Used **only when the mathematics calls for them**. Not every clip needs any of
 these. Each entry states its function, identity/correctness constraints, misuse
 risk, effort, and classification.
 
+### A7 — Deforming grid as the base transformation view *(reusable, topic-specific)*
+
+The foundational visualization for **any** matrix/transformation concept is the
+whole coordinate grid deforming under \(A\): the plane visibly stretches,
+rotates, shears, or collapses. This is the primary view, not an optional garnish
+— isolated vector arrows read on top of the moving space, not instead of it.
+
+- **Teaches the transformation as an action on all of space.** A grid that slides
+  off its original lines makes higher-level facts *visible* rather than asserted:
+  eigenlines are the lines that **land back on themselves**; a rotation leaves
+  **no** line in place; a scalar matrix keeps **every** line; a defective shear
+  keeps exactly **one**.
+- **New obligation (sharpens the excluded "deform the grid" baseline):** in a
+  clip whose point is *why directions do or do not stay on their line* (e.g. the
+  eigenvector Watch clip), the grid deformation must actually be shown during the
+  relevant beats — not only in a standalone matrix lesson. The fan of vectors and
+  the deforming grid must be driven by the **same** interpolation so they never
+  disagree (for the fan, `lerp(v, Av, t) = (lerp(I, A, t))·v` guarantees this).
+- **Correctness constraint:** grid endpoints come only from the shared
+  `makeTransformedGrid` / `transformedGridSegments` path
+  (`matrixVectorMultiply`); never derive slopes from matrix rows or a foreign
+  matrix pack (see [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md) and the
+  transformed-grid entry in [ERROR_LOG.md](./ERROR_LOG.md)). Identity→\(A\)
+  scrubbing is an educational transition, not a claimed factorization.
+- **Attention constraint:** retire or dim the grid the moment a single arrow
+  reads a scalar quantity more cleanly (e.g. the λ stretch/reverse/collapse
+  demos), so the moving space clarifies rather than clutters.
+- **Effort:** Low (reuses `makeTransformedGrid`). **Misuse risk:** leaving a busy
+  transformed grid on screen during a beat that is really about one arrow's
+  length or sign.
+
 ### A1 — Matrix-column-to-basis-vector flights *(reusable, topic-specific)*
 
 Animate matrix columns detaching and landing on the transformed basis vectors,
@@ -364,6 +395,11 @@ the same determinant factor.
 Buildable mapping to the existing stack. No code is produced by this document;
 these notes make later implementation direct.
 
+- **A7:** reuse `makeTransformedGrid(matrixAt, ...)` behind a `gridDeformOpacity`
+  signal; drive `matrixAt` with `lerpIdentityToMatrix(matrix(), t)` and share the
+  same `t` that drives the fan so grid and arrows never disagree. Reveal it on
+  the "space moves" beats and fade it out for single-arrow scalar demos.
+  Implemented in `eigenvectorsInvariantDirectionsScene.ts`.
 - **A1:** new `sceneKit.ts` helper that tweens a matrix column into a
   tip-anchored coordinate label, preserving `ROLE.basis1` / `ROLE.basis2`
   identity; drive it from a segment body in the relevant scene.
