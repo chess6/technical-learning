@@ -148,7 +148,7 @@ export function KaratsubaExplorer() {
           [1, 1],
           [0, 1],
         ]}
-        color="var(--role-text)"
+        color="var(--color-canvas-text)"
         fillOpacity={0}
         weight={2}
       />
@@ -156,49 +156,49 @@ export function KaratsubaExplorer() {
       <RegionRect x0={0} y0={0} x1={wSplitX} y1={wLowY} color={ROLE_AD} />
       <RegionRect x0={wSplitX} y0={wLowY} x1={1} y1={1} color={ROLE_BC} />
       <RegionRect x0={wSplitX} y0={0} x1={1} y1={wLowY} color={ROLE_BD} />
-      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--role-text)">
+      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--color-canvas-text)">
         {`Weighted ${x}×${y}`}
       </Text>
       {/* Edge place-value ticks so the skinny strips still read as 10A|B and 10C|D. */}
-      <Text x={wSplitX / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+      <Text x={wSplitX / 2} y={-0.14} attach="n" size={12} color="var(--color-canvas-text)">
         10A
       </Text>
-      <Text x={(1 + wSplitX) / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+      <Text x={(1 + wSplitX) / 2} y={-0.14} attach="n" size={12} color="var(--color-canvas-text)">
         B
       </Text>
-      <Text x={-0.12} y={(1 + wLowY) / 2} attach="e" size={12} color="var(--role-text)">
+      <Text x={-0.12} y={(1 + wLowY) / 2} attach="e" size={12} color="var(--color-canvas-text)">
         10C
       </Text>
-      <Text x={-0.12} y={wLowY / 2} attach="e" size={12} color="var(--role-text)">
+      <Text x={-0.12} y={wLowY / 2} attach="e" size={12} color="var(--color-canvas-text)">
         D
       </Text>
       {showWeights ? (
         <>
-          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--color-canvas-text)">
             {"100 AC"}
           </Text>
-          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--color-canvas-text)">
             {"10 AD"}
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--color-canvas-text)">
             {"10 BC"}
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--color-canvas-text)">
             BD
           </Text>
         </>
       ) : (
         <>
-          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+          <Text x={wSplitX / 2} y={(1 + wLowY) / 2} size={14} color="var(--color-canvas-text)">
             AC
           </Text>
-          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+          <Text x={wSplitX / 2} y={wLowY / 2} size={14} color="var(--color-canvas-text)">
             AD
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--role-text)">
+          <Text x={(1 + wSplitX) / 2} y={(1 + wLowY) / 2} size={14} color="var(--color-canvas-text)">
             BC
           </Text>
-          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--role-text)">
+          <Text x={(1 + wSplitX) / 2} y={wLowY / 2} size={14} color="var(--color-canvas-text)">
             BD
           </Text>
         </>
@@ -228,7 +228,7 @@ export function KaratsubaExplorer() {
           [1, 1],
           [0, 1],
         ]}
-        color="var(--role-text)"
+        color="var(--color-canvas-text)"
         fillOpacity={0}
         weight={2}
       />
@@ -266,31 +266,31 @@ export function KaratsubaExplorer() {
         color={ROLE_BD}
         fillOpacity={cornerOpacity}
       />
-      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--role-text)">
+      <Text x={0.5} y={1.18} attach="s" size={15} color="var(--color-canvas-text)">
         {`Auxiliary ${sumA}×${sumC}`}
       </Text>
-      <Text x={aSplitX / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+      <Text x={aSplitX / 2} y={-0.14} attach="n" size={12} color="var(--color-canvas-text)">
         A
       </Text>
-      <Text x={(aSplitX + 1) / 2} y={-0.14} attach="n" size={12} color="var(--role-text)">
+      <Text x={(aSplitX + 1) / 2} y={-0.14} attach="n" size={12} color="var(--color-canvas-text)">
         B
       </Text>
-      <Text x={-0.12} y={(aLowY + 1) / 2} attach="e" size={12} color="var(--role-text)">
+      <Text x={-0.12} y={(aLowY + 1) / 2} attach="e" size={12} color="var(--color-canvas-text)">
         C
       </Text>
-      <Text x={-0.12} y={aLowY / 2} attach="e" size={12} color="var(--role-text)">
+      <Text x={-0.12} y={aLowY / 2} attach="e" size={12} color="var(--color-canvas-text)">
         D
       </Text>
-      <Text x={aSplitX / 2} y={(aLowY + 1) / 2} size={14} color="var(--role-text)">
+      <Text x={aSplitX / 2} y={(aLowY + 1) / 2} size={14} color="var(--color-canvas-text)">
         AC
       </Text>
-      <Text x={aSplitX / 2} y={aLowY / 2} size={14} color="var(--role-text)">
+      <Text x={aSplitX / 2} y={aLowY / 2} size={14} color="var(--color-canvas-text)">
         AD
       </Text>
-      <Text x={(aSplitX + 1) / 2} y={(aLowY + 1) / 2} size={14} color="var(--role-text)">
+      <Text x={(aSplitX + 1) / 2} y={(aLowY + 1) / 2} size={14} color="var(--color-canvas-text)">
         BC
       </Text>
-      <Text x={(aSplitX + 1) / 2} y={aLowY / 2} size={14} color="var(--role-text)">
+      <Text x={(aSplitX + 1) / 2} y={aLowY / 2} size={14} color="var(--color-canvas-text)">
         BD
       </Text>
     </MafsSceneShell>
