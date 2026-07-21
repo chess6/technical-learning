@@ -13,17 +13,58 @@ files as they stand today).
 > description* → *a linear transformation is determined by what it does to a
 > basis.*
 
-Chapter 0 opens the mystery **"How can four numbers control every point of a
-graphic?"**; Lesson 1 supplies the coordinate language that makes the question
-askable; Lesson 2 resolves it (the four numbers are where $\mathbf{e}_1,
-\mathbf{e}_2$ land, and every vertex is a combination of $\mathbf{e}_1,
-\mathbf{e}_2$).
+Chapter 0 opens the mystery **"How can four numbers determine where every vertex
+goes under one linear transformation?"** (the honest form — *not* "four numbers
+can reach any picture," which is false); Lesson 1 supplies the coordinate language
+that makes the question askable; Lesson 2 resolves it (the four numbers are where
+$\mathbf{e}_1,\mathbf{e}_2$ land, and every vertex is a combination of
+$\mathbf{e}_1,\mathbf{e}_2$).
 
 Read alongside `docs/INTERACTIVE_TEXTBOOK_VISION.md` (pedagogy),
 `docs/LESSON_DESIGN.md` (mechanics), `docs/lesson-depth-pattern.md` (medium
 choice), `docs/MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` (why the course tree is
 deferred), and `docs/AUDIT-2026-07-20-state-and-trajectory.md` (schema
 history).
+
+---
+
+## 0. Process status and gate compliance (read first)
+
+This slice is governed by the **[Insight Discovery Gate](./INSIGHT_DISCOVERY_GATE.md)**.
+That gate is mandatory: *a lesson plan may begin only after an Approved Insight
+Contract reaches `Gate result: PASS`.* This document is detailed enough to
+constitute lesson planning, so it is **gated**:
+
+- **This brief settles pedagogical + mathematical design only.** It does **not**
+  authorize implementation. §13's slices and any coding prompt are **blocked**
+  until the joint opening-slice contract passes.
+- **Required gate artifacts (one joint gate for the whole opening slice):**
+  - Stage 1 — [`docs/insight-brief-linear-algebra-opening.md`](./insight-brief-linear-algebra-opening.md)
+    (candidate insights + ranking + discovery sequence).
+  - Stage 2 — [`docs/insights/linear-algebra-opening.md`](./insights/linear-algebra-opening.md)
+    (Approved Insight Contract; must end in `Gate result: PASS`).
+  - Stage 3 — this brief becomes the [`LESSON_TEMPLATE.md`](./LESSON_TEMPLATE.md)
+    plan only *after* that PASS, and must add the template's **insight
+    traceability** map (every causal-chain obligation → a learner-facing location
+    + observable evidence).
+- **Approved joint primary insight** (preserved verbatim from the Stage 2
+  contract; learner-facing wording may be shorter):
+  > *Unique basis coordinates describe every vector by coefficients, and
+  > linearity preserves those coefficients; therefore, the images of the basis
+  > vectors determine the transformation of every vector.*
+  Chapter 0 supplies the mystery, Lesson 1 establishes unique coordinates, and
+  Lesson 2 completes the causal chain. This insight is not a slogan substituting
+  for content — it **reorganizes** the definitions, mechanics, examples,
+  derivations, consequences, and practice below.
+- **Downstream review layer.** After implementation and learner validation, the
+  slice is scored with **[`docs/LESSON_QUALITY_REVIEW.md`](./LESSON_QUALITY_REVIEW.md)**
+  (0–3 rubric, hard blockers, shipping threshold) and its assessments are drawn
+  from the pattern library **[`docs/ASSESSMENT_PATTERNS.md`](./ASSESSMENT_PATTERNS.md)**
+  (recall / reconstruction / transfer coverage). §10 tags each item with its
+  pattern; learner-validation uses `docs/INSIGHT_VALIDATION_PROTOCOL.md`.
+
+The remainder of this document is the gated design. Nothing here is built before
+the contract passes.
 
 ---
 
@@ -63,8 +104,12 @@ Mapped by surface. Verdicts: **keep** / **revise** / **move** / **replace** /
   representation for a Definition/Proposition/Theorem/Corollary/Conjecture** —
   formal content is smuggled into `LessonSection.body`/`equation` or a
   `DepthLayer`/`AuthoredCallout`. **Verdict: add** a lightweight `FormalBlock`
-  (see §4, §11) and **revise** the three required fields to optional so a
-  short route (Chapter 0) is honest.
+  (see §4, §11) and **revise** the schema into a discriminated union
+  `StandardLessonDefinition | IntroLessonDefinition` (§11.1): relax
+  `guidedSceneId`/`explorationId`/`exercises` to optional for both, and make
+  `sections`/`keyTakeaway` optional **only** on the `kind:"intro"` arm — so a
+  short Chapter 0 route with no Summary is *valid by construction* while ordinary
+  lessons stay strict.
 - Reusable, keep-as-is: `DepthLayer` (7 kinds), `WorkedExample`
   (equation-first, no per-step schema — the audit's fix already landed),
   `AuthoredCallout` (belief/confront/resolve), `ExerciseDefinition`
@@ -209,9 +254,12 @@ declared-route change in §11.** Rationale:
 
 **Minimum architectural change to enable it (full detail in §11):**
 
-1. `LessonDefinition`: make `guidedSceneId?`, `explorationId?`, `exercises?`
-   optional; add `route?: RouteBlock[]` and `kind?: "intro" | "lesson"`
-   (default `"lesson"`).
+1. `LessonDefinition`: split into a discriminated union
+   `StandardLessonDefinition | IntroLessonDefinition` (§11.1). Both gain
+   `route?`/`formalBlocks?` and relax `guidedSceneId?`/`explorationId?`/`exercises?`
+   to optional; the **intro** arm additionally makes `sections?`/`keyTakeaway?`
+   optional and requires `route`. (This is what lets Chapter 0 legitimately have
+   no Summary/sections while keeping ordinary lessons strict.)
 2. `LessonLayout`: when `route` is present, render blocks in declared order via
    a `kind → renderer` map; otherwise fall back to today's fixed order
    (zero rewrites of existing lessons).
@@ -222,14 +270,24 @@ declared-route change in §11.** Rationale:
    `kind === "lesson"` entry (do **not** shift Lesson 1 to "2"). Chapter 0 lives
    as the opening item of the Linear-Algebra course's **Foundations** module.
 
-**Karatsuba note (scope-limited):** Karatsuba shares the global `registry.lessons`
-and appears in the LA sidebar under "Algorithms & complexity"
-(`curriculum.ts:38–42`). Chapter 0 as the first registry entry must therefore key
-its "Chapter 0 vs Lesson N" numbering off **course/module position**, not the raw
-global index, or Karatsuba's number drifts too. The full multi-course split
-(`MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2) is **deferred**; the near-term fix
-is only "number within the active course," which the `kind`-aware header already
-implies.
+**Karatsuba note + the honest numbering fix (scope-limited).** Karatsuba shares
+the global `registry.lessons` and appears in the LA sidebar under "Algorithms &
+complexity" (`curriculum.ts:38–42`). "Number within the active course" is **not
+yet implementable as stated**: the curriculum has **no course identity** — one flat
+`COURSE_SECTIONS` list mixes linear algebra and Karatsuba, so there is no
+active-course to count from. The minimum honest fix is a small **`courseId`** on
+curriculum sections/items (e.g. `"linear-algebra"` vs `"algorithms"`), and then:
+
+- numbering counts `kind:"lesson"` entries **within the same `courseId`**, so
+  Chapter 0 is "Chapter 0" of Linear Algebra, Lesson 1 stays "Lesson 1", and
+  Karatsuba is numbered inside `"algorithms"` independently;
+- this is a single additive field, **not** the full multi-course
+  subjects→courses→modules tree (`MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2),
+  which stays **deferred**.
+
+Without `courseId` the "course-relative" claim has nothing to compute from; with
+it, the `kind`-aware header (§11.5) numbers correctly and Karatsuba's number does
+not drift.
 
 ---
 
@@ -309,9 +367,16 @@ runs on. *Support:* $[\mathbf{p}]_E$ vs $[\mathbf{p}]_B$ beat + worked example.
 **independence ⇒ uniqueness** (only one name). *Where:* §basis, as a labeled
 `FormalBlock`, the compression payoff of the lesson. *Why:* it is the sentence the
 whole lesson collapses into and the seed of Lesson 2. *Support (both directions):*
-- *Geometric:* independent arrows tile the plane with a unique parallelogram grid
-  (the `bGrid` lattice already in the scene) — every point sits on exactly one
-  node's construction.
+- *Geometric:* independent arrows generate **two continuous families of parallel
+  coordinate lines** (constant-$a$ lines parallel to $\mathbf{w}$, constant-$b$
+  lines parallel to $\mathbf{v}$; the `bGrid` in the scene draws the integer
+  members of these families). Every point of the plane lies on **exactly one line
+  of each family**, and those two lines meet in a single point — so its
+  coordinates $(a,b)$ exist and are unique. (The lattice *nodes* mark only the
+  integer pairs; the real coefficient pair is the continuous line-intersection,
+  not a node.) When the arrows are dependent the two families coincide into one
+  direction, so the intersection is not unique — the geometric face of
+  non-uniqueness.
 - *Algebraic:* the existing `math-note` argument: if $a\mathbf{v}+b\mathbf{w}=
   a'\mathbf{v}+b'\mathbf{w}$ then $(a-a')\mathbf{v}+(b-b')\mathbf{w}=\mathbf{0}$, and
   independence forces $a=a',\ b=b'$.
@@ -362,15 +427,18 @@ the bridge from Lesson 1's uniqueness to the matrix. *Support:* derivation beat
 derivation progressively revealed. *(Reuses Lesson 1's Theorem — a strengthened
 concept-graph edge.)*
 
-**Theorem / Corollary (Standard-basis columns rule).**
+**Corollary (Standard-basis columns rule — a consequence of the Proposition).**
 
-> With $\mathbf{x}=x\,\mathbf{e}_1+y\,\mathbf{e}_2$, linearity gives
+> Specializing the Proposition to $B=(\mathbf{e}_1,\mathbf{e}_2)$: with
+> $\mathbf{x}=x\,\mathbf{e}_1+y\,\mathbf{e}_2$, linearity gives
 > $T(\mathbf{x})=x\,T(\mathbf{e}_1)+y\,T(\mathbf{e}_2)$, i.e.
 > $A=\begin{bmatrix} T(\mathbf{e}_1) & T(\mathbf{e}_2)\end{bmatrix}$ and
 > $A\mathbf{x}=x\,(\text{col}_1)+y\,(\text{col}_2)$.
 
 *Interpretation:* the columns are literally where $\mathbf{e}_1,\mathbf{e}_2$ land —
-a **derived consequence** of unique coordinates + linearity, not a convention.
+a **derived corollary** of the basis-determination Proposition (unique coordinates
++ linearity), not a convention. *(One label only: it is a corollary, not a
+free-standing theorem.)*
 *Where:* Lesson 2 core (this is the answer to Chapter 0). *Support:* `col1`/`col2`
 scene beats bind each column to the landing tip. *Visibility:* visible.
 
@@ -388,9 +456,12 @@ scene beats bind each column to the landing tip. *Visibility:* visible.
 **Proposition (A matrix represents $T$ relative to chosen bases).** The same map
 has different matrices in different bases; the standard matrix is $T$ *relative to*
 $(\mathbf{e}_1,\mathbf{e}_2)$. *Support:* the reflection-across-$y=x$ example (§8):
-standard matrix $[[0,1],[1,0]]$; in $B=((1,1),(1,-1))$ the same reflection is
-$\operatorname{diag}(1,-1)$. *Visibility:* visible statement; the **general
-change-of-basis formula is deferred**.
+in standard coordinates $[T]_{E\leftarrow E}=\begin{bmatrix}0&1\\1&0\end{bmatrix}$;
+using the basis $B=((1,1),(1,-1))$ for **both** domain and codomain, the *same*
+reflection is
+$[T]_{B\leftarrow B}=\begin{bmatrix}1&0\\0&-1\end{bmatrix}=\operatorname{diag}(1,-1)$.
+*Visibility:* visible statement; the **general change-of-basis formula is
+deferred**.
 
 ### 4.3 Smallest content-model + rendering change for these blocks
 
@@ -414,7 +485,7 @@ more.
 | `FLOW_STEPS` "Watch→Explore→Practice" | `HomePage.tsx` | **revise** to describe the course, not a per-lesson law |
 | "Four short lessons" lede + CTA | `HomePage.tsx` | **revise** ("Start at Chapter 0") |
 | Fixed 7-phase order | `LessonLayout.tsx` | **replace** with declared-route renderer (+ fallback) |
-| Required `guidedSceneId`/`explorationId`/`exercises` | `types.ts` | **revise** to optional |
+| Required `guidedSceneId`/`explorationId`/`exercises` | `types.ts` | **revise** to optional (discriminated union; intro also relaxes `sections`/`keyTakeaway`) |
 | Lesson 1 three sections | `vectors.ts` | **keep**; add theorem `FormalBlock`, tighten prose |
 | Lesson 1 uniqueness `math-note` | `vectors.ts` | **keep** (becomes the theorem's `revealed` justification) |
 | Lesson 1 `[p]_E`/`[p]_B` worked example | `vectors.ts` | **keep**; append the $\mathbf{q}$ result |
@@ -429,7 +500,7 @@ more.
 | Change-of-basis general formula | — | **defer** |
 | Column space / rank / invertibility procedures | — | **defer** (name only) |
 | Affine/homogeneous $3\times3$ machinery | — | **defer** (name only) |
-| Karatsuba placement / multi-course tree | `curriculum.ts` | **defer** (only course-relative numbering now) |
+| Karatsuba placement / multi-course tree | `curriculum.ts` | **defer** the tree; **add** only a minimal `courseId` field to enable course-relative numbering now |
 
 ---
 
@@ -452,10 +523,37 @@ scene) → ③ *You* try four numbers (bounded interaction) → ④ The mystery,
 - *Reorderable:* Watch and the interaction are both about the same graphic; the
   route places Watch first (guided-before-explore, non-negotiable) then hands
   over control.
-- *New lightweight block:* `handoff` (a CTA block → `/lesson/vectors`), and the
-  `formal` **Conjecture** block ("maybe four numbers can reach any picture?").
+- *New lightweight block:* `handoff` (a CTA block → `/lesson/vectors`), and a
+  `formal` **open-question** block stating the precise mystery — **"How can four
+  numbers determine where every vertex goes under one linear transformation?"**
+  (Not the *false* conjecture "four numbers can reach any picture": four matrix
+  entries cannot produce arbitrary pictures or arbitrary deformations — only the
+  images of $\mathbf{e}_1,\mathbf{e}_2$ under one *linear* map. The question is
+  posed as an honest open question carried into Lessons 1–2, not a claim.)
 - *Built from existing:* everything else (scene = new content in an existing
   scene shell; explorer = the Lesson 2 explorer restricted to the graphic).
+
+**Real-world application layer (sustained, not a montage).** The **game-object
+graphic is the sustained application** — the same small craft the learner
+transforms *is* the running example, presented plainly as "how a game or graphics
+engine moves an object." After the mystery is posed (step ④), add exactly **three
+short transfer connections** — one line each, effects only, no new math — so the
+learner sees the idea is general without a domain parade:
+1. **Computer graphics & animation / game engines** — every rotate, scale, shear,
+   or flip of a sprite/model is this $2\times2$ (in 2-D) acting on its
+   vertices/control points; animation interpolates between such transforms.
+2. **Robotics & physics** — a robot arm or rigid body's orientation change is a
+   linear map on coordinates (rotations/reflections); the same columns-are-images
+   idea places a frame.
+3. **Data & machine learning** — a linear layer / feature map transforms whole
+   coordinate vectors at once; "what happens to the axes" is again the columns.
+
+Each is **one sentence + one visual cue**, deferred in depth; the honest precision
+guard (§7.7) applies — these map **coordinates of vertices/control points**, not
+"pixels." Camera/coordinate-system and image-processing links are mentioned only if
+they fit in a single caption; otherwise they wait. This keeps Chapter 0 a
+*motivating* introduction (effects before calculations), consistent with
+`INTERACTIVE_TEXTBOOK_VISION.md`, without turning it into a marketing reel.
 
 ### 6.2 Lesson 1 — Vectors, Combinations, Basis, Coordinates (supply the language)
 
@@ -652,10 +750,25 @@ Three experiences the learner must *have* (not just read):
    "many $(a,b)$ work: $a=3-2b$" as the learner slides $b$ and the combination
    stays pinned on $\mathbf{r}$. *(New preset/beat — the missing case today.)*
 
-**Undisclosed coordinate problem (new).** $\mathbf{q}=(-1,5)=2\mathbf{v}-\mathbf{w}$
-(check: $2(1,2)-(3,-1)=(-1,5)$), so $[\mathbf{q}]_B=(2,-1)$. The learner *determines*
-$(a,b)$ (coefficients **not** pre-revealed) — a genuine assessment, unlike the
-current challenge.
+**Undisclosed coordinate problem (new).** $\mathbf{q}=(-1,5)$,
+$B=(\mathbf{v},\mathbf{w})=((1,2),(3,-1))$, coefficients **not** pre-revealed — a
+genuine assessment, unlike the current challenge.
+
+**Method the lesson actually teaches (decide this explicitly).** Two complementary
+routes, in this order:
+1. *Geometric coefficient matching (explorer, first):* slide $a,b$ until
+   $a\mathbf{v}+b\mathbf{w}$ lands on $\mathbf{q}$ — builds intuition that the
+   coordinates are the two knob settings that hit the target.
+2. *Component-equation method (the taught procedure):* write
+   $a\mathbf{v}+b\mathbf{w}=\mathbf{q}$ componentwise and solve the $2\times2$
+   linear system
+   $$a + 3b = -1,\qquad 2a - b = 5.$$
+   Solve by lightweight **substitution or elimination** (e.g. from the first
+   $a=-1-3b$; substitute: $2(-1-3b)-b=5\Rightarrow -2-7b=5\Rightarrow b=-1$, then
+   $a=-1-3(-1)=2$), giving $[\mathbf{q}]_B=(2,-1)$ (and indeed
+   $\mathbf{q}=2\mathbf{v}-\mathbf{w}$). This is the reusable skill the geometric
+   knob-matching only approximates. **General Gaussian elimination is deferred**
+   (§15): two equations, hand-solved, is enough here.
 
 **Basis-order comparison.** $B=(\mathbf{v},\mathbf{w})$ vs $B'=(\mathbf{w},\mathbf{v})$.
 Use $\mathbf{q}$: $[\mathbf{q}]_B=(2,-1)$ but $[\mathbf{q}]_{B'}=(-1,2)$ — **order
@@ -676,9 +789,13 @@ Cover, on the graphic + grid + basis:
 | Rotation | $[[0,-1],[1,0]]$ (`rotation`) | linear |
 | Reflection (x-axis) | $[[1,0],[0,-1]]$ (`reflection`) | linear |
 | Shear | $[[2,1],[0,1]]$ (`shear-2-1`) | linear (the recurring $A$) |
-| **Projection (onto x-axis)** | $[[1,0],[0,0]]$ **(add, named)** | singular collapse |
-| **Translation** | $\mathbf{x}\mapsto\mathbf{x}+\mathbf{t}$ | **affine non-example** |
-| **Nonlinear warp** | $ (x,y)\mapsto(x+0.4y^2,\ y)$ | **counterexample** |
+| **Projection (onto x-axis)** | $[[1,0],[0,0]]$ **(add, named)** | singular collapse (`linear`) |
+| **Translation** | $\mathbf{x}\mapsto\mathbf{x}+\mathbf{t}$ | **affine non-example** (`affine`) |
+| **Nonlinear warp** | $ (x,y)\mapsto(x+0.4y^2,\ y)$ | **counterexample** (`nonlinear`) |
+
+These three `kind`s are exactly the tagged `TransformDemo` model (§9.5): only the
+`linear` rows have a $2\times2$ matrix / columns rule; `affine` and `nonlinear` are
+represented by their own forms, never a matrix.
 
 **Linearity, defined and tested.** State both properties (§4). Learner **predicts
 then tests**: pick $\mathbf{u},\mathbf{v}$; check $T(\mathbf{u}+\mathbf{v})$ vs
@@ -696,13 +813,14 @@ possible outputs (name only); dependent columns collapse (projection preset);
 basis-image-still-a-basis ⇒ reversible (name only); $T(\mathbf{0})=\mathbf{0}$.
 
 **Matrix ≠ transformation — one exact example (reflection across $y=x$).**
-- Standard matrix: $\begin{bmatrix}0&1\\1&0\end{bmatrix}$ (from
-  $\mathbf{e}_1\mapsto(0,1)$, $\mathbf{e}_2\mapsto(1,0)$).
-- In $B=((1,1),(1,-1))$: the line $y=x$ is fixed ($(1,1)\mapsto(1,1)$) and
-  $(1,-1)\mapsto(-1,1)=-(1,-1)$, so the $B$-coordinate matrix is
-  $\operatorname{diag}(1,-1)$.
-- **Same map, two matrices** — the matrix represents $T$ *relative to a basis*.
-  The **general change-of-basis formula is deferred.**
+- Standard-coordinate matrix: $[T]_{E\leftarrow E}=\begin{bmatrix}0&1\\1&0\end{bmatrix}$
+  (from $\mathbf{e}_1\mapsto(0,1)$, $\mathbf{e}_2\mapsto(1,0)$).
+- Using $B=((1,1),(1,-1))$ for **both** domain and codomain coordinates: the line
+  $y=x$ is fixed ($(1,1)\mapsto(1,1)$) and $(1,-1)\mapsto(-1,1)=-(1,-1)$, so
+  $$[T]_{B\leftarrow B}=\begin{bmatrix}1&0\\0&-1\end{bmatrix}=\operatorname{diag}(1,-1).$$
+- **Same map, two matrices** — the matrix represents $T$ *relative to a basis*
+  (here the same basis $B$ names inputs and outputs). The **general
+  change-of-basis formula is deferred.**
 
 **Return to the Chapter 0 graphic.** Final beat: derive why transforming the two
 basis vectors determines every vertex (each vertex is $x\mathbf{e}_1+y\mathbf{e}_2$,
@@ -763,8 +881,10 @@ Segments (proposed): `establish` (graphic + grid at identity, caption "one small
 craft, one grid") → `sweep` (morph through rotation → shear → a collapse via
 `morphMatrixEntries`, graphic following) → `four-numbers` (surface the live
 $2\times2$ entries; "these four numbers did all of that") → `mystery` (freeze;
-overlay the question). Register in `sceneMeta` with `majorSteps`. Reuses
-`makeStaticGrid`, `makeTransformedGrid`, `makeGraphic`, overlay labels.
+overlay the precise question **"How can four numbers determine where every vertex
+goes under one linear transformation?"** — not "reach any picture"). Register in
+`sceneMeta` with `majorSteps`. Reuses `makeStaticGrid`, `makeTransformedGrid`,
+`makeGraphic`, overlay labels.
 
 ### 9.4 `LinearCombinationExplorer` (`LinearCombinationExplorer.tsx`)
 
@@ -788,10 +908,27 @@ overlay the question). Register in `sceneMeta` with `majorSteps`. Reuses
 - **[NEW]** "Set basis images" input mode: drag/type $T(\mathbf{e}_1)$ (col 1) and
   $T(\mathbf{e}_2)$ (col 2); the matrix + graphic update — this *is* the
   build-a-matrix interaction (assessment via a target-match readout).
-- **[NEW]** presets: `projection` (named; $[[1,0],[0,0]]$), `translation`
-  (affine — applied as $\mathbf{x}+\mathbf{t}$ to the graphic, **not** a matrix;
-  readout notes "not a $2\times2$ linear map: origin moved"), `nonlinear`
-  (the warp; readout notes "grid lines bend").
+- **[NEW] Tagged demonstration model (decide this before coding).** Translation
+  and the nonlinear warp are **not** $2\times2$ matrices and must not be bolted
+  onto the matrix-preset type (that forces special-case branches mixing matrices
+  with functions). Introduce one small tagged union that the scene, explorer, and
+  presets all consume:
+
+```ts
+type TransformDemo =
+  | { kind: "linear";    matrix: Matrix2x2 }
+  | { kind: "affine";    matrix: Matrix2x2; translate: Vector2 } // e.g. identity + t
+  | { kind: "nonlinear"; apply: (p: Vector2) => Vector2; label: string };
+// application is uniform: linear/affine via shared math (matrixVectorMultiply +
+// optional translate); nonlinear via its own `apply`. Only linear yields a
+// standard columns matrix; affine/nonlinear readouts say why no 2×2 represents them.
+```
+
+- **[NEW]** presets over that model: `projection` (`linear`, named; $[[1,0],[0,0]]$),
+  `translation` (`affine`; applied as $\mathbf{x}+\mathbf{t}$ to the graphic;
+  readout: "not a $2\times2$ linear map: origin moved"), `nonlinear` (the warp;
+  readout: "grid lines bend"). The `linear` presets keep the existing matrix path
+  untouched.
 - **[NEW]** "same map, two matrices" affordance: pick reflection-$y=x$ and toggle
   basis $E$ vs $B=((1,1),(1,-1))$; readout shows $[[0,1],[1,0]]$ vs
   $\operatorname{diag}(1,-1)$ for the *same* geometric reflection.
@@ -814,6 +951,19 @@ Grounded in the exercise types the repo supports (`types.ts`: `multiple-choice`,
 `numeric`, `vector`, `prediction`; `eigenvalue` is eigen-only). **Demonstrate vs
 assess:** the explorer *demonstrates*; the `ExercisePanel` and `prediction` reveals
 *assess* (learner commits, then the reveal teaches).
+
+**Pattern coverage (per `docs/ASSESSMENT_PATTERNS.md`).** Each item below is one of
+that library's patterns — the "Ability" column names it: **procedural execution**
+(form a combination, coords in a basis, predict an image, construct a matrix),
+**explanation / reconstruction from first principles** (existence-vs-uniqueness,
+"why the columns are the basis images"), **prediction** (linearity tests),
+**boundary-case reasoning** (infinitely-many case, translation fixes origin),
+**representation switching** (same map, two matrices; basis order), and **transfer
+to an unfamiliar setting** (set $T(\mathbf{e}_1),T(\mathbf{e}_2)$ to hit a new
+target graphic). The minimal set deliberately spans **recall → reconstruction →
+transfer** for *each* lesson without making it test-heavy (the guidance at the end
+of `ASSESSMENT_PATTERNS.md`); the learner-validation transfer item lives in
+`docs/INSIGHT_VALIDATION_PROTOCOL.md`.
 
 ### 10.1 Lesson 1
 
@@ -883,12 +1033,46 @@ export type RouteBlock =
   | { kind: "summary" }
   | { kind: "handoff"; to: string; label: string };
 
-// LessonDefinition additions (all optional; back-compatible):
-//   kind?: "intro" | "lesson";     // default "lesson"; drives numbering label
-//   route?: RouteBlock[];          // when present, overrides the fixed order
-//   formalBlocks?: FormalBlock[];  // referenced by RouteBlock "formal"
-// and RELAX to optional: guidedSceneId?, explorationId?, exercises?
+// Fields shared by every lesson-like page.
+interface LessonBase {
+  id: string;
+  title: string;
+  route?: RouteBlock[];          // when present, overrides the fixed phase order
+  formalBlocks?: FormalBlock[];  // referenced by RouteBlock "formal"
+  guidedSceneId?: string;        // was required; now optional
+  explorationId?: string;        // was required; now optional
+  exercises?: ExerciseDefinition[]; // was required; now optional
+}
+
+// Ordinary lesson: sections + keyTakeaway REQUIRED (unchanged contract).
+export interface StandardLessonDefinition extends LessonBase {
+  kind?: "lesson";               // default; drives "Lesson N" numbering
+  sections: LessonSection[];
+  keyTakeaway: string;
+  // ...all existing required lesson fields stay required here...
+}
+
+// Chapter 0 / course intro: sections + keyTakeaway OPTIONAL, route REQUIRED.
+// A discriminated union so an intro with no Summary/sections is *valid* and an
+// ordinary lesson missing keyTakeaway is still a *type error* (invalid
+// combinations are prevented, not merely tolerated).
+export interface IntroLessonDefinition extends LessonBase {
+  kind: "intro";
+  route: RouteBlock[];           // required: an intro must declare its short route
+  sections?: LessonSection[];    // optional
+  keyTakeaway?: string;          // optional — Chapter 0 has no "Remember this"
+}
+
+export type LessonDefinition =
+  | StandardLessonDefinition
+  | IntroLessonDefinition;
 ```
+
+This resolves the earlier contradiction (Chapter 0 declares "no Summary" while the
+schema still forced `keyTakeaway`/`sections`): the `kind:"intro"` arm makes exactly
+those two fields optional and requires a `route`, so the type system prevents the
+invalid combinations rather than relying on convention. Existing lessons are
+`StandardLessonDefinition` with no code change.
 
 ### 11.2 `LessonLayout` (`src/components/layout/LessonLayout.tsx`)
 
@@ -913,12 +1097,19 @@ badge + statement + interpretation), reusing `ProseWithMath` and the
 `MisconceptionCallout`/`ExplanationBlock` visual grammar; `revealed` justification
 via the existing `<details>` depth pattern; `reference` rendered muted.
 
-### 11.5 Numbering (`registry.ts` / `CourseSidebar.tsx` / `LessonHeader.tsx`)
+### 11.5 Numbering (`curriculum.ts` / `registry.ts` / `CourseSidebar.tsx` / `LessonHeader.tsx`)
 
-- `getLessonPosition` / sidebar number **within the active course** and treat
-  `kind==="intro"` as "Chapter 0" (not counted in the Lesson 1…N sequence). This is
-  the near-term, course-relative numbering from
-  `MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2 — **not** the full tree.
+- **Add a minimal `courseId` field** to curriculum sections/items (`curriculum.ts`),
+  e.g. `"linear-algebra"` and `"algorithms"`. This is the *prerequisite* for any
+  course-relative numbering — the flat `COURSE_SECTIONS` list has no course
+  identity today, so "number within the active course" is otherwise uncomputable.
+- `getLessonPosition` / sidebar then number `kind:"lesson"` entries **within the
+  same `courseId`**, treating `kind:"intro"` as "Chapter 0" (not counted in the
+  Lesson 1…N sequence). Karatsuba is numbered inside `"algorithms"` independently,
+  so it does not drift.
+- This single additive field is the near-term slice of
+  `MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2 — **not** the full
+  subjects→courses→modules tree.
 
 **Explicitly avoided:** a general block/DSL schema, a rich text/markup engine,
 per-step worked-example templates (already removed), the multi-course graph, and
@@ -933,14 +1124,14 @@ routing changes (URLs stay `/lesson/:id`; Chapter 0 is `/lesson/why-linear-algeb
 - `src/components/layout/LessonLayout.tsx` — declared-route rendering + fallback.
 - `src/pages/LessonPage.tsx` — guards, formal blocks, handoff.
 - `src/components/lesson/FormalStatement.tsx` (+ `.css`) — **new**.
-- `src/lessons/registry.ts`, `src/lessons/curriculum.ts`,
+- `src/lessons/registry.ts`, `src/lessons/curriculum.ts` (**add `courseId`**),
   `src/components/layout/CourseSidebar.tsx`, `src/components/lesson/LessonHeader.tsx`
-  — Chapter 0 nav + course-relative numbering.
+  — Chapter 0 nav + course-relative numbering (per `courseId`).
 - `src/pages/HomePage.tsx` (+ `HomePage.css`) — soften flow copy, CTA → Chapter 0.
 - `src/lessons/chapter0.ts` — **new** (`why-linear-algebra`).
 - `src/lessons/vectors.ts`, `src/lessons/transformations.ts` — revised content + routes + formal blocks.
 - `src/lessons/exampleData.ts` + `src/lessons/openingGraphic.ts` (**new**) — q, r, basis-order, graphic vertices.
-- `src/math/examples.ts` — add reflection-$y=x$ (`reflection-xy` = `[[0,1],[1,0]]`) and `projection-x` (`[[1,0],[0,0]]`); note translation/nonlinear are **not** matrices.
+- `src/math/examples.ts` — add reflection-$y=x$ (`reflection-xy` = `[[0,1],[1,0]]`) and `projection-x` (`[[1,0],[0,0]]`); add the tagged `TransformDemo` model so translation (`affine`) / nonlinear (`nonlinear`) are **not** forced into the matrix type.
 - `src/explorations/LinearCombinationExplorer.tsx`, `MatrixTransformationExplorer.tsx`, `registry.tsx` — presets/tasks/graphic/basis-image mode.
 - `src/guided-scenes/scenes/linearCombinationScene.ts`, `matrixTransformationScene.ts`, `chapter0Scene.ts` (**new**), `sceneKit.ts` (`makeGraphic`), `sceneTimings.ts`, `sceneMeta.ts`, `src/guided-scenes/registry.ts`.
 
@@ -956,6 +1147,11 @@ routing changes (URLs stay `/lesson/:id`; Chapter 0 is `/lesson/why-linear-algeb
 ---
 
 ## 13. Implementation slices (dependency order)
+
+> **Gated (see §0):** these slices do **not** start until
+> `docs/insights/linear-algebra-opening.md` reaches `Gate result: PASS` and this
+> brief is promoted to a Stage 3 plan with an insight-traceability map. They are
+> sequenced for the later coding prompts, not authorized yet.
 
 1. **Shared data & math.** Add `openingGraphic.ts` (vertices + anchors);
    `exampleData` q=(-1,5)→(2,-1), r=(3,6), basis-order data; `examples.ts`
@@ -1025,12 +1221,15 @@ other; 5 depends on 2 (route) + 4 (graphic/explorer).
 procedures; the general **change-of-basis** formula (only "same map, two matrices"
 is shown); **affine / homogeneous coordinates** ($3\times3$ embedding for
 translation) — named as the future resolution of the translation limitation;
-condition number / numerical stability (a nearly-dependent example may hint at
-"skew," no metric).
+**general Gaussian elimination** (coordinates are found by hand-solving a
+$2\times2$ system via substitution/elimination — §8.1 — not a general pivoting
+procedure); condition number / numerical stability (a nearly-dependent example may
+hint at "skew," no metric).
 
 **Architecture deferred:** the full multi-course subjects→courses→modules tree and
-namespaced routing (`MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2–§4) — only
-course-relative numbering is added now; a **matrix-valued exercise type** and a
+namespaced routing (`MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §2–§4) — only a
+minimal `courseId` field (enabling course-relative numbering) is added now; a
+**matrix-valued exercise type** and a
 free-text explanation grader (explanatory assessment stays `prediction` + MC);
 equation morphing; progress persistence; 3D extensions for this slice.
 
