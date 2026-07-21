@@ -27,9 +27,9 @@ detailed enough to implement directly without another design pass.
 
   > Ordinary split multiplication computes four subrectangles, but the two cross
   > products $AD$ and $BC$ are required only through their sum $AD+BC$ because they
-  > occupy the same place-value level. Computing the whole rectangle $(A+B)(C+D)$
-  > and subtracting the two known subrectangles $AC$ and $BD$ recovers that sum, so
-  > three products — $AC$, $BD$, and $(A+B)(C+D)$ — reconstruct
+  > occupy the same place-value level. Computing the separate auxiliary coefficient
+  > rectangle $(A+B)(C+D)$ and subtracting the two known subrectangles $AC$ and $BD$
+  > recovers that sum, so three products — $AC$, $BD$, and $(A+B)(C+D)$ — reconstruct
   > $100\,AC + 10(AD+BC) + BD$. Doing this recursively replaces four half-size
   > products with three and changes the exponent from $\log_2 4$ to $\log_2 3$.
 
@@ -62,9 +62,10 @@ that single saving bends the cost curve.*
 
 - Registry order (`src/lessons/registry.ts`): append **after** `eigenvectorsLesson`
   (it is a standalone algorithms topic, so it sits at the end of the current line).
-- TOC (`src/lessons/curriculum.ts`): add a new section
+- TOC (`src/lessons/curriculum.ts`): insert a new **active** section
   `{ id: "algorithms", title: "Algorithms & complexity", items: [{ kind: "lesson", lessonId: "karatsuba" }] }`
-  after the existing sections.
+  **before** the `later` ("Later topics") placeholder section — not after the
+  future placeholders, so the shipped lesson appears above the coming-soon items.
 
 ## Prerequisites and target learner
 
@@ -79,11 +80,13 @@ that single saving bends the cost curve.*
 
 ## Motivating question
 
-> $73 \times 68$ needs four single-digit-ish multiplications the way you were
-> taught. Two of those four are secretly doing the *same* job. Which two — and can
-> we get away with three multiplications instead of four?
+> $12 \times 13$ splits into four little products the way FOIL expands
+> $(10+2)(10+3)$. Two of those four are secretly doing the *same* job. Which two —
+> and can we get away with three multiplications instead of four?
 
-Rendered by `MotivatingQuestion` from `motivatingQuestion`.
+Rendered by `MotivatingQuestion` from `motivatingQuestion`. Uses the **same**
+`karatsuba-clean` example as the guided scene, explorer, and worked example, for
+motivation→watch→explore continuity.
 
 ## Learning objectives (`learningObjectives`, KaTeX where useful)
 
@@ -108,7 +111,7 @@ one digit), so overflow is visible at small scale.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `karatsuba-clean` | 12 | 13 | 1,2,1,3 | 1,3,2,6 | $3\times4=12$ | 1,5,6 | 156 | **Clean:** every $z_i$ is one digit; $A+B=3$, $C+D=4$ stay one digit. No carrying, no width growth. Primary teaching example. |
 | `karatsuba-boundary` | 78 | 56 | 7,8,5,6 | 35,42,40,48 | $15\times11=165$ | 35,82,48 | 4368 | **Boundary:** all three $z_i$ overflow one digit → **output carrying**. $A+B=15$ has two digits → the sum-product $(A+B)(C+D)=15\times11$ has **wider operands** (handled by padding, *not* carrying, *not* a fourth multiply). Exercises both distinctions in one example. |
-| `karatsuba-recursive` | 1234 | 5678 | split 12\|34, 56\|78 | — | — | — | 7 006 652 | **Recursive:** 4-digit split (\(m=2\)); each of $ac,bd,(a+b)(c+d)$ is itself a 2-digit Karatsuba call. Drives the recursion-tree / complexity view. |
+| `karatsuba-recursive` | 1234 | 5678 | split $a,b,c,d = 12,34,56,78$ ($m=2$) | — | — | — | 7 006 652 | **Recursive (tree panel only):** $ac=12\times56$ and $bd=34\times78$ are 2-digit subproblems, **but the sum-product $(a+b)(c+d)=46\times134$ is wider** — one operand has three digits (the very operand-width-growth this lesson teaches). The branch-three tree models the **asymptotic** structure; it is **not** the literal, perfectly balanced call tree of this numeric example. Used only inside the recursion-tree panel as an "example trace," never in the digit controls. |
 
 Sanity checks (must hold in tests): $12\times13=156$, $78\times56=4368$,
 $1234\times5678=7\,006\,652$, and for the boundary case
@@ -154,11 +157,15 @@ rule).
 | `subtract` | Peel off the corners | Remove $AC$ and $BD$; L-shape left = $AD+BC$ — **prediction pause** | $z_1=(A+B)(C+D)-AC-BD$ |
 | `reassemble` | Rebuild the answer | $100z_2+10z_1+z_0=156$ from three products | $z_2=AC,\ z_0=BD,\ \text{result}=100z_2+10z_1+z_0$ |
 | `carry-vs-width` | Two kinds of "too big" | Switch to $78\times56$: $z_i$ overflow ⇒ **output carrying**; $A+B=15$ ⇒ **wider operand** in $(A+B)(C+D)$, handled by padding, not a 4th product | $z_2B^{2m}+z_1B^m+z_0$ then carry |
-| `branch` | Four calls or three? | Side-by-side recursion trees: branch 4 vs branch 3 — **prediction pause** | $T(n)=4T(n/2)$ vs $3T(n/2)+\Theta(n)$ |
+| `branch` | Four calls or three? | Side-by-side **conceptual recurrence trees**: branch 4 vs branch 3 — **prediction pause** | $T(n)=4T(n/2)$ vs $3T(n/2)+\Theta(n)$ |
 | `exponent` | The exponent bends | Leaf counts $n^{\log_2 4}=n^2$ vs $n^{\log_2 3}\approx n^{1.585}$ | $\log_2 4 \to \log_2 3$ |
-| `deeper` | (Optional) three points fix a parabola | The three products are three evaluations of the product quadratic | $x(t)=at+b$, deeper connection |
 
-- **`majorSteps`** (Prev/Next idea): `["foil","share","aux-rect","subtract","reassemble","carry-vs-width","branch","exponent"]`. `setup` and `deeper` stay in `steps` but out of major nav (`deeper` is optional).
+- **No `deeper` beat.** The polynomial/parabola connection is **not** a segment of
+  the primary timeline (autoplay would otherwise always show it). It lives only in
+  the optional depth layer, the advanced explorer toggle, and optional Exercise 7,
+  so the elementary causal chain stays intact and the deeper material is genuinely
+  optional.
+- **`majorSteps`** (Prev/Next idea): `["foil","share","aux-rect","subtract","reassemble","carry-vs-width","branch","exponent"]`. `setup` stays in `steps` but out of major nav.
 - **Pauses / dimming plan:** dim inactive subrectangles when a weight is discussed; when the auxiliary rectangle enters, translate/scale it to a clearly separate canvas region and label both rectangles with persistent titles so they are never confused.
 - **Honest labelling of any interpolation:** the peel animation must show the *actual* remaining area equals $AD+BC$ (no faked L-shape); the recursion-tree leaf counts must match `leafCount()` from `src/math/karatsuba.ts` exactly.
 
@@ -184,18 +191,31 @@ Initialized from `karatsuba-clean` (12 × 13). Rendered inside `ExplorationPanel
 the two rectangles drawn with Mafs primitives inside `MafsSceneShell`; the
 recursion tree drawn by a small dedicated SVG subcomponent.
 
+- **Dynamic normalization (required).** As the digits range over $10\times10$ to
+  $99\times99$, the weighted multiplication rectangle ($10A+B$ by $10C+D$) and the
+  much smaller auxiliary coefficient rectangle ($A+B$ by $C+D$, at most $18\times18$)
+  cannot share one fixed literal pixel scale without making one view unreadable.
+  Give **each labeled rectangle its own normalized frame / side-by-side viewport**
+  (independently fit to its own dimensions, each with a visible scale/dimension
+  label), rather than drawing both at a single shared scale.
+
 - **Primary controls (shown first):**
   - Digit steppers / sliders for $A,B,C,D$ (each $0$–$9$), i.e. the digits of
     two two-digit numbers $x=10A+B$, $y=10C+D$. Clamp to integers $0$–$9$.
-  - `PresetPicker` with `karatsuba-clean`, `karatsuba-boundary`,
-    `karatsuba-recursive`.
+  - `PresetPicker` with **only** the two arithmetic presets that the digit controls
+    can represent: `karatsuba-clean` (12 × 13) and `karatsuba-boundary` (78 × 56).
+    `karatsuba-recursive` is **not** in this picker — its digits $12,34,56,78$
+    cannot be entered as single digits. (Do **not** build a block-mode UI for the
+    first implementation.)
   - `ResetButton` → back to `karatsuba-clean`.
 - **Primary readouts (`SceneReadout`, KaTeX):**
   - The four subrectangle areas and their weights: $100AC,\,10AD,\,10BC,\,BD$.
   - $(A+B)(C+D)$ and the subtraction $-AC-BD$.
   - $z_2=AC$, $z_1=AD+BC$, $z_0=BD$.
-  - Reconstruction $100z_2+10z_1+z_0$ **before** and **after** carrying, with the
-    final product highlighted.
+  - Reconstruction $100z_2+10z_1+z_0$ **before** carrying, then the step-by-step
+    **carry sequence** from `normalizeCoefficients` (boundary example:
+    $(35,82,48)\to(35,86,8)\to(43,6,8)$), then the final product highlighted. The
+    readout must render the actual `CarryStep[]`, not jump straight to 4368.
   - **Multiplication count:** `3` (Karatsuba) vs `4` (naive), always visible.
   - **Two badges:** "coefficient overflow → carrying" (lit when any $z_i \ge 10$)
     and "operand width +1 → padding" (lit when $A+B \ge 10$ or $C+D \ge 10$).
@@ -203,8 +223,13 @@ recursion tree drawn by a small dedicated SVG subcomponent.
 - **Progressive-disclosure controls (toggles, `ExplorationToggles`, hidden by default):**
   - "Show place-value weights" (on by default).
   - "Show the auxiliary coefficient rectangle" (renders the second rectangle + peel).
-  - "Show recursion tree & cost" (renders branch-4 vs branch-3 trees, leaf counts,
-    and a log–log cost curve for a digit-count slider $n$).
+  - "Show recursion tree & cost" (renders branch-4 vs branch-3 **conceptual
+    recurrence trees**, leaf counts, and a log–log cost curve). This panel has its
+    **own** controls for $n$ (digit count, powers of two) and depth — it is
+    decoupled from the $A,B,C,D$ digit inputs. It may optionally display the
+    `karatsuba-recursive` (1234 × 5678) case as a labeled **"example trace"**,
+    explicitly annotated that the sum-product $46\times134$ is wider so the drawn
+    tree is a conceptual model, not the literal balanced call tree.
   - "Show the parabola view" *(expert)* — the product-as-quadratic plot.
 - **Clamp ranges:** digits $0$–$9$; recursion-depth/$n$ slider limited to powers of
   two up to $n=16$ to keep leaf counts legible.
@@ -289,13 +314,36 @@ export interface KaratsubaStep {
   readonly multiplications: 3;                // Karatsuba count at this level
   readonly coefficientOverflow: boolean;      // some z_i >= base**m  -> output carrying
   readonly operandWidthGrowth: boolean;       // (a+b) or (c+d) >= base**m -> padding
+  readonly normalized: NormalizedCoefficients; // learner-visible carrying sequence
 }
+
+// --- Output carrying (separate, additive normalization step) ---
+export interface CarryStep {
+  readonly level: number;       // block index, 0 = least significant
+  readonly valueBefore: number; // block value before this carry (e.g. 48, then 86)
+  readonly digitAfter: number;  // block value kept at this level after carry
+  readonly carryOut: number;    // amount carried into the next level
+}
+
+export interface NormalizedCoefficients {
+  readonly blocks: readonly number[]; // final per-block values, least significant first
+  readonly steps: readonly CarryStep[];
+}
+
+/**
+ * Normalizes reconstructed coefficients into blocks, recording each carry so the
+ * explorer/scene can show the process instead of jumping to the final integer.
+ * Boundary example (blockBase = 10): (35,82,48) -> (35,86,8) -> (43,6,8).
+ */
+export function normalizeCoefficients(
+  z2: number, z1: number, z0: number, blockBase: number,
+): NormalizedCoefficients;
 
 export function splitDecimal(value: number, m: number, base?: number): DigitSplit;
 export function foilRegions(a: number, b: number, c: number, d: number): FoilRegions;
 export function middleCoefficient(a: number, b: number, c: number, d: number): number; // (a+b)(c+d)-ac-bd
 export function karatsubaStep(x: number, y: number, m: number, base?: number): KaratsubaStep;
-export function karatsubaMultiply(x: number, y: number, base?: number): number; // full recursive result
+export function karatsubaMultiply(x: number, y: number, base?: number): number; // full recursive result (see contract below)
 export function naiveMultiply(x: number, y: number): number;                    // schoolbook reference
 
 // Complexity helpers
@@ -304,6 +352,26 @@ export function multiplicationCount(n: number, branch: 3 | 4): number;         /
 export const KARATSUBA_EXPONENT: number;                                       // Math.log2(3)
 export function recursionTree(branch: 3 | 4, depth: number): TreeNode;         // for the diagram
 ```
+
+### Algorithm contract for `karatsubaMultiply` (fixed — do not re-decide)
+
+- **Input domain:** nonnegative **safe** integers only (`Number.isSafeInteger`).
+- **Base:** integer `base >= 2`; the production lesson uses `base = 10`.
+- **Base case:** if `x < base || y < base`, return `x * y`.
+- **Width `n`:** the maximum base-`base` digit length of `x` and `y`.
+- **Split point `m`:** `m = Math.floor(n / 2)`. `power = base ** m`.
+- **Split (odd widths handled by this floor rule, low block is `power`-wide):**
+  `a = Math.floor(x / power)`, `b = x % power`; `c = Math.floor(y / power)`,
+  `d = y % power`.
+- **Recursion:** compute `ac`, `bd`, and `(a+b)(c+d)` by recursive
+  `karatsubaMultiply`. **Each recursive call recomputes its own width `n`**,
+  including the wider sum-product `(a+b)(c+d)` (this is exactly the
+  operand-width-growth case — no special fourth branch).
+- **Recombine:** `ac * base**(2m) + ((a+b)(c+d) - ac - bd) * base**m + bd`.
+- **Zero:** valid input; returns `0` via the base case / arithmetic.
+- **Errors:** negative or non-safe-integer inputs throw `RangeError`.
+- **Scope note:** this POC uses `number`; `bigint` is a future extension and out of
+  scope for the first implementation.
 
 ### New invariants (add to `src/math/invariants.ts` or co-locate in `karatsuba.ts`)
 
@@ -353,17 +421,18 @@ export function requireKaratsubaExample(id: string): KaratsubaExample;
    sequence for 12 × 13 and depth layers; a second worked example holds the 78 × 56
    carry/width walkthrough.
 6. `src/lessons/registry.ts` — import and append `karatsubaLesson` to `lessons`.
-7. `src/lessons/curriculum.ts` — add the "Algorithms & complexity" section.
+7. `src/lessons/curriculum.ts` — insert the "Algorithms & complexity" section
+   **before** the `later` ("Later topics") section.
 
 **Guided scene** (5-file registration)
-8. `src/guided-scenes/scenes/sceneTimings.ts` — add `KARATSUBA_SEGMENTS: SceneSegment[]` (ids/durations from the beat table; total ~63s).
+8. `src/guided-scenes/scenes/sceneTimings.ts` — add `KARATSUBA_SEGMENTS: SceneSegment[]` (ten ids/durations from the beat table, `setup`…`exponent`, no `deeper`; total ~58s).
 9. `src/guided-scenes/scenes/sceneMeta.ts` — add `SCENE_META["karatsuba-cross-terms"]` with `size`, `ariaLabel`, `steps` (from segments), `majorSteps` via `pickMajor(...)`.
 10. `src/guided-scenes/scenes/karatsubaCrossTermsScene.ts` — new `makeScene2D` module; import numbers from `../../lessons/karatsubaData` and math from `../../math`; reuse `sceneKit`/`safeFrame`; establishing frame at `t=0`.
 11. `src/guided-scenes/scenes/sceneDescriptions.ts` — add loader entry mapping `"karatsuba-cross-terms"` → the new scene module.
 
 **Explorer**
-12. `src/explorations/KaratsubaExplorer.tsx` — new component; state for $A,B,C,D$ + toggles; math via `karatsubaStep`; presets via `KARATSUBA_PRESETS`; render two labeled rectangles in `MafsSceneShell`, readouts in `SceneReadout`, toggles in `ExplorationToggles`, wrapped in `ExplorationPanel`.
-13. `src/explorations/KaratsubaTreeDiagram.tsx` — small SVG subcomponent for branch-4 vs branch-3 recursion trees + leaf-count / log–log cost readout (driven by `recursionTree` / `leafCount`).
+12. `src/explorations/KaratsubaExplorer.tsx` — new component; state for $A,B,C,D$ + toggles; math via `karatsubaStep` (and `normalizeCoefficients` for the carry readout); arithmetic presets `karatsuba-clean` and `karatsuba-boundary` only (not the recursive one); render the two labeled rectangles in **independently normalized side-by-side frames** in `MafsSceneShell`, readouts in `SceneReadout`, toggles in `ExplorationToggles`, wrapped in `ExplorationPanel`.
+13. `src/explorations/KaratsubaTreeDiagram.tsx` — small SVG subcomponent for the branch-4 vs branch-3 **conceptual recurrence trees** + leaf-count / log–log cost readout (driven by `recursionTree` / `leafCount`), with its own `n`/depth controls independent of the digit inputs. Title it "conceptual recurrence tree"; if the optional 1234 × 5678 example trace is shown, label it as a model (sum-product $46\times134$ is wider), not an exact trace.
 14. `src/explorations/registry.tsx` — add lazy entry for `"karatsuba-cross-terms"`.
 
 **Styles**
@@ -379,7 +448,14 @@ export function requireKaratsubaExample(id: string): KaratsubaExample;
 - `karatsubaStep` matches the shared-example table exactly (clean, boundary,
   recursive): regions, `sumProduct`, $z_2/z_1/z_0$, `product`.
 - `karatsubaMultiply === naiveMultiply` over many random pairs (property-style),
-  including multi-digit (recursive) inputs.
+  including multi-digit and **odd-width** inputs (e.g. `123 × 45`) and the recursive
+  case `1234 × 5678 === 7 006 652`.
+- Algorithm contract: `karatsubaMultiply` throws `RangeError` on negative or
+  non-safe-integer inputs; returns `0` when either operand is `0`; hits the base
+  case for single-"digit" (`< base`) operands.
+- `normalizeCoefficients(35, 82, 48, 10)` yields the sequence
+  $(35,82,48)\to(35,86,8)\to(43,6,8)$ (blocks least-significant-first `[8, 6, 43]`,
+  three recorded `CarryStep`s); the clean example `(1,5,6)` records **no** carries.
 - Boundary example: `coefficientOverflow === true` and `operandWidthGrowth === true`;
   clean example: both `false`.
 - `leafCount(3, k) === 3**k`, `multiplicationCount(n,4) === n*n` for powers of two,
@@ -434,7 +510,7 @@ evidence. Linking the contract is **not** sufficient on its own.
 | Recursive consequence (branch 3 not 4) | Watch `branch` (prediction pause); Explore tree toggle | Learner predicts three sub-multiplications per level. |
 | Exponent $\log_2 4 \to \log_2 3$ | Watch `exponent`; Exercise 3 | Learner selects $\log_2 3\approx1.585$ (not 25%). |
 | Transfer (branching factor sets exponent) | Exercise 4; expert depth layer | Learner selects $\log_2 7$ for Strassen. |
-| Deeper connection (evaluation/interpolation) — *optional* | `deeper` beat; deeper depth layer; Exercise 7 | Learner states three suitable evaluations determine the quadratic, with the sufficiency caveat. |
+| Deeper connection (evaluation/interpolation) — *optional* | Deeper depth layer; advanced explorer toggle ("parabola view"); Exercise 7 (**not** a guided-scene beat) | Learner states three suitable evaluations determine the quadratic, with the sufficiency caveat. |
 
 ---
 

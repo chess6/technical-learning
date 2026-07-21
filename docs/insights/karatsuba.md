@@ -199,8 +199,9 @@ causal chain but may use shorter, clearer wording):**
 
 > Ordinary split multiplication computes four subrectangles, but the two cross
 > products $AD$ and $BC$ are required only through their sum $AD+BC$ because they
-> occupy the same place-value level. Computing the whole rectangle $(A+B)(C+D)$ and
-> subtracting the two known subrectangles $AC$ and $BD$ recovers that sum, so three
+> occupy the same place-value level. Computing the separate auxiliary coefficient
+> rectangle $(A+B)(C+D)$ and subtracting the two known subrectangles $AC$ and $BD$
+> recovers that sum, so three
 > products — $AC$, $BD$, and $(A+B)(C+D)$ — reconstruct
 > $100\,AC + 10(AD+BC) + BD$. Doing this recursively replaces four half-size
 > products with three and changes the exponent from $\log_2 4$ to $\log_2 3$.
