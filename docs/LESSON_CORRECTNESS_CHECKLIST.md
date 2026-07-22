@@ -54,22 +54,30 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 ### Mathematical review
 
 - [x] Classification is a single shared source of truth: `classifyLinearSystem2x2` / `solveLinearSystem2x2` in `src/math/systems.ts` (Cramer on the shared `determinant2x2`; consistency for a singular system decided by a span/parallel test)
+- [x] Row geometry is a single shared source of truth too: `classifyRowConstraint` returns `line` / `all` (`0 = 0`) / `empty` (`0 = c`), so a zero row is never drawn as a false line (regression `systems.test.ts`: `A = [[0,0],[1,0]]`)
 - [x] No linear algebra reimplemented in the explorer or the scene — both call the shared helpers / `matrixColumn`
 - [x] Row lines and column arrows computed in math space; pixel / y-flip mapping applied only in the renderer
 - [x] Singular / collapse case is the core content (infinite vs none), not an afterthought
 - [x] Unique solution verified to satisfy `A x = b` (regression test over a grid of targets)
+- [x] Dependent recipe endpoint is `s0·e` (the point on the column line matching `b`) — equals `b` when consistent, `b`'s projection when not; the `t` slider sweeps the recipe without moving the endpoint
 
 ### Visual review
 
-- [x] Row picture (two `Line.ThroughPoints`) and column picture (columns + combination + target) are the SAME system, synchronized
+- [x] Row picture (coefficient space `(x, y)`) and column picture (output space) are explicitly labelled as **different spaces**, not identically-labelled Cartesian planes
+- [x] Row picture (`Line.ThroughPoints` / all-space fill / impossible-equation note) and column picture (columns + combination + target) are the SAME system, synchronized
+- [x] Degenerate rows drawn honestly: `0 = 0` as a faint full-plane fill ("no constraint"), `0 = c` as an "impossible" note with no line — never a false intersection
 - [x] Solution dot / classification readout match `classifyLinearSystem2x2`
+- [x] Infinite case demonstrates *infinitely many recipes*: the `t` slider moves both scaled arrows while the endpoint stays on `b`; no-solution case shows the endpoint stuck on the column line, never reaching `b`
+- [x] Highlighted preset is derived from live state — dragging `b` off a preset falls back to "free" (no stale "Infinitely many" label over a "No solution" readout)
+- [x] Near-singular independent matrix is handled: off-screen solution triggers a warning readout + in-scene note instead of a silently clipped visual
 - [x] Distinct role colors + a labelled legend (equations, columns, target); not color-only
 - [x] Guided scene uses a local scale so `b = (-1, 5)` and `(3, 6)` stay inside the safe frame; lines clipped to the box (no thousands-of-pixels segments)
+- [x] Guided scene uses a **true space transition**: the row lines fully fade to 0 and a "coefficient space → output space" tag switches before the columns appear (no overlaid planes)
 - [x] Scene captions label each case honestly (unique / infinitely many / none)
 
 ### Testing review
 
-- [x] Unit tests for `src/math/systems.ts` (`systems.test.ts`): trichotomy, zero-matrix edge case, grid consistency check
+- [x] Unit tests for `src/math/systems.ts` (`systems.test.ts`): trichotomy, zero-matrix edge case, grid consistency check, `classifyRowConstraint` line/all/empty, and the zero-row regression (`A = [[0,0],[1,0]]`)
 - [x] Wiring tests: lesson order, guided scene + explorer resolve, row/column sections, three worked cases, formal blocks, practice tiers, Lesson 1 number reuse
 - [x] Singular / no-solution / infinite-solution cases all covered
 - [x] Browser check of all three explorer presets + guided scene playback (screenshots in `screenshots/`)
@@ -79,9 +87,10 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 - [x] One-sentence mental model: one equation, two pictures (rows meet in a point; columns combine to a target)
 - [x] Opens with a genuine question (are the two questions the same?), not a definition
 - [x] Compression payoff: consistency ⇔ `b` in the column space; uniqueness ⇔ independent columns ⇔ invertibility
+- [x] Determinant is **not** taught or exercised here — statements are framed in independence / reversibility; `det` appears only in "looking ahead" asides that name (never compute) the next lesson's number
 - [x] Misconceptions staged as confrontations (row vs column "different problems"; equation count vs independence)
-- [x] Strengthens edges to Lesson 1 (basis ⇒ unique) and Lesson 2 (columns rule) and seeds Lesson 3+ (determinant detects the boundary)
-- [x] Practice tiers check / drill / transfer; includes predict, translate-representation, construct-a-counterexample, explain-why, and invertibility-link items
+- [x] Strengthens edges to Lesson 1 (basis ⇒ unique) and Lesson 2 (columns rule) and seeds Lesson 4 (determinant detects the boundary)
+- [x] Practice tiers check / drill / transfer; problem set is sequenced to *derive* the trichotomy — classify → translate-to-`A`-`b` → construct-an-inconsistent-system → generalize-where-inconsistency-lives → counterexample → explain-why (construct / counterexample / explain are genuine `prediction` items, not multiple choice)
 
 ---
 

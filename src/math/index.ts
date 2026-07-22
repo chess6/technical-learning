@@ -78,11 +78,13 @@ export type {
 
 export {
   classifyLinearSystem2x2,
+  classifyRowConstraint,
   solveLinearSystem2x2,
 } from "./systems";
 export type {
   LinearSystemKind,
   LinearSystem2x2Classification,
+  RowConstraint,
 } from "./systems";
 
 export {

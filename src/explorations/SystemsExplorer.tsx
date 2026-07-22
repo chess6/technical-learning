@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Circle, Line, Text, Vector, useMovablePoint } from "mafs";
+import { Circle, Line, Polygon, Text, Vector, useMovablePoint } from "mafs";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
 import { VectorTeX } from "../components/lesson/ProseWithMath";
 import { MafsSceneShell } from "./MafsSceneShell";
@@ -11,9 +11,11 @@ import { PresetPicker } from "./PresetPicker";
 import { LINEAR_SYSTEM_EXAMPLE } from "../lessons/exampleData";
 import {
   classifyLinearSystem2x2,
+  classifyRowConstraint,
   clamp,
   scaleVector,
   type Matrix2x2,
+  type RowConstraint,
   type Vector2,
 } from "../math";
 import "./SystemsExplorer.css";
@@ -21,6 +23,9 @@ import "./SystemsExplorer.css";
 const EX = LINEAR_SYSTEM_EXAMPLE;
 const BOUND = EX.bound;
 const ENTRY = 5;
+/** Half-width of each fixed square view box. */
+const VIEW = 7;
+const EPS = 1e-6;
 
 const ROLE_ROW_1 = "var(--role-original)";
 const ROLE_ROW_2 = "var(--role-transformed)";
@@ -30,6 +35,14 @@ const ROLE_TARGET = "var(--role-selected)";
 const ROLE_COMBO = "var(--role-invariant)";
 const ROLE_SPAN = "var(--role-reachable)";
 const ROLE_SOLUTION = "var(--role-selected)";
+const ROLE_MUTED = "var(--role-intermediate)";
+
+const BOX_CORNERS: [number, number][] = [
+  [-VIEW, -VIEW],
+  [VIEW, -VIEW],
+  [VIEW, VIEW],
+  [-VIEW, VIEW],
+];
 
 type Entries = { a: number; b: number; c: number; d: number };
 type Preset = "unique" | "infinite" | "none" | "free";
@@ -45,37 +58,82 @@ const clampVec = (p: readonly [number, number]): [number, number] => [
   clampVal(p[1]),
 ];
 
-/** Two distinct points on the line a·x + b·y = c (for Line.ThroughPoints). */
-function twoPointsOnLine(
-  a: number,
-  b: number,
-  c: number,
-): [[number, number], [number, number]] {
-  if (Math.abs(b) > 1e-9) {
-    return [
-      [0, c / b],
-      [1, (c - a) / b],
-    ];
-  }
-  if (Math.abs(a) > 1e-9) {
-    return [
-      [c / a, 0],
-      [c / a, 1],
-    ];
-  }
-  // Degenerate 0 = c row (a = b = 0): render nothing meaningful; a dot at origin.
-  return [
-    [0, 0],
-    [1, 0],
+const approxEntries = (e: Entries, m: readonly [readonly number[], readonly number[]]) =>
+  Math.abs(e.a - m[0][0]!) < EPS &&
+  Math.abs(e.b - m[0][1]!) < EPS &&
+  Math.abs(e.c - m[1][0]!) < EPS &&
+  Math.abs(e.d - m[1][1]!) < EPS;
+
+const approxVec = (p: Vector2, q: readonly [number, number]) =>
+  Math.abs(p[0] - q[0]!) < EPS && Math.abs(p[1] - q[1]!) < EPS;
+
+/**
+ * One coefficient pair `(x, y)` that combines the columns toward `b`, using a
+ * single free parameter `t` — the heart of the dependent case. When the columns
+ * are dependent, the reachable set is a line `s·e` (e = the nonzero column). We
+ * fix the combination's endpoint at `s0·e` (the point on that line matching b —
+ * this IS b when consistent, or b's projection when not) and let `t` sweep the
+ * infinitely many `(x, y)` that all land there. So sliding `t` visibly changes
+ * both scaled arrows while the endpoint stays put: "many recipes, one target".
+ */
+function dependentRecipe(
+  col1: Vector2,
+  col2: Vector2,
+  b: Vector2,
+  t: number,
+): { x: number; y: number; combo: Vector2 } | null {
+  const n1 = Math.hypot(col1[0], col1[1]);
+  const n2 = Math.hypot(col2[0], col2[1]);
+  if (n1 <= 1e-9 && n2 <= 1e-9) return null; // zero matrix — nothing to combine
+
+  const combineOf = (x: number, y: number): Vector2 => [
+    x * col1[0] + y * col2[0],
+    x * col1[1] + y * col2[1],
   ];
+
+  if (n1 > 1e-9) {
+    // Base direction e = col1; col2 = k·e. Reaching s0·e needs x + k·y = s0.
+    const e = col1;
+    const ee = e[0] * e[0] + e[1] * e[1];
+    const s0 = (b[0] * e[0] + b[1] * e[1]) / ee;
+    const k = Math.abs(e[0]) >= Math.abs(e[1]) ? col2[0] / e[0] : col2[1] / e[1];
+    const y = t;
+    const x = s0 - k * y;
+    return { x, y, combo: combineOf(x, y) };
+  }
+
+  // col1 ≈ 0, base direction e = col2; col1 = k·e. Reaching s0·e needs k·x + y = s0.
+  const e = col2;
+  const ee = e[0] * e[0] + e[1] * e[1];
+  const s0 = (b[0] * e[0] + b[1] * e[1]) / ee;
+  const k = Math.abs(e[0]) >= Math.abs(e[1]) ? col1[0] / e[0] : col1[1] / e[1];
+  const x = t;
+  const y = s0 - k * x;
+  return { x, y, combo: combineOf(x, y) };
+}
+
+/** Human-readable geometry of a degenerate row, or `null` for an honest line. */
+function degenerateRowNote(rc: RowConstraint, index: 1 | 2): string | null {
+  if (rc.kind === "all") return `equation ${index}: 0 = 0 — every point (no constraint)`;
+  if (rc.kind === "empty") return `equation ${index}: 0 = c ≠ 0 — impossible (no points)`;
+  return null;
 }
 
 /**
- * Lesson "Linear Systems" exploration — the row picture and the column picture
- * of the SAME system `A x = b`, side by side and synchronized. Drag the target
- * b or edit the matrix entries and watch both pictures — and the no/one/infinite
- * classification — change together. Classification comes from the shared
- * `classifyLinearSystem2x2`; nothing here re-derives the linear algebra.
+ * Lesson "Linear Systems" exploration — the row picture (coefficient space) and
+ * the column picture (output space) of the SAME system `A x = b`, side by side.
+ *
+ * - Row picture lives in **coefficient space** `(x, y)`; a solution is a *point*
+ *   where the constraint lines meet. Each row is classified with
+ *   `classifyRowConstraint`, so an all-zero row is drawn as "all points" or
+ *   "impossible" rather than a false line.
+ * - Column picture lives in **output space**; the columns are blended to reach
+ *   `b`. In the dependent case a `t` slider sweeps the infinitely many recipes
+ *   that reach the same endpoint (or shows none reaching an off-line `b`).
+ *
+ * All classification comes from the shared `classifyLinearSystem2x2`; nothing
+ * here re-derives the linear algebra. The highlighted preset is *derived* from
+ * the live state, so dragging `b` off a preset correctly falls back to "free".
  */
 export function SystemsExplorer() {
   const [entries, setEntries] = useState<Entries>({
@@ -84,8 +142,8 @@ export function SystemsExplorer() {
     c: EX.a[1][0],
     d: EX.a[1][1],
   });
-  const [preset, setPreset] = useState<Preset>("unique");
   const [showCombination, setShowCombination] = useState(true);
+  const [t, setT] = useState(1);
 
   const target = useMovablePoint(EX.b as [number, number], {
     color: ROLE_TARGET,
@@ -101,33 +159,59 @@ export function SystemsExplorer() {
   const col2: Vector2 = [entries.b, entries.d];
 
   const classification = classifyLinearSystem2x2(A, b);
-  const { kind, determinant, independentColumns, consistent, solution } =
-    classification;
+  const { kind, independentColumns, consistent, solution } = classification;
 
-  const line1Pts = twoPointsOnLine(entries.a, entries.b, b[0]);
-  const line2Pts = twoPointsOnLine(entries.c, entries.d, b[1]);
+  // Row picture: each equation as its true geometric object (line / all / none).
+  const rc1 = classifyRowConstraint(entries.a, entries.b, b[0]);
+  const rc2 = classifyRowConstraint(entries.c, entries.d, b[1]);
+  const rowNotes = [degenerateRowNote(rc1, 1), degenerateRowNote(rc2, 2)].filter(
+    (n): n is string => n !== null,
+  );
+
+  // Derive the highlighted preset from the ACTUAL state (fixes the stale-preset
+  // bug: dragging b off "Infinitely many" now reads as "free", never a mismatch).
+  const activePreset: Preset = approxEntries(entries, EX.a) && approxVec(b, EX.b)
+    ? "unique"
+    : approxEntries(entries, EX.aDependent) && approxVec(b, EX.bInfinite)
+      ? "infinite"
+      : approxEntries(entries, EX.aDependent) && approxVec(b, EX.bNone)
+        ? "none"
+        : "free";
+
+  // A near-singular independent matrix can push the unique solution far outside
+  // the fixed view box. Detect it so we can warn instead of silently clipping.
+  const solutionOffscreen =
+    solution !== null &&
+    (Math.abs(solution[0]) > VIEW || Math.abs(solution[1]) > VIEW);
 
   // Column-space line (dependent case): draw through the nonzero column.
-  const spanDir: Vector2 =
-    Math.hypot(col1[0], col1[1]) > 1e-9 ? col1 : col2;
+  const spanDir: Vector2 = Math.hypot(col1[0], col1[1]) > 1e-9 ? col1 : col2;
   const spanP1 = scaleVector(spanDir, 40) as [number, number];
   const spanP2 = scaleVector(spanDir, -40) as [number, number];
 
-  // Combination arrows for the unique case.
-  const scaled1: Vector2 = solution
-    ? [solution[0] * col1[0], solution[0] * col1[1]]
+  // The recipe drawn in the column picture. Independent → the unique solution;
+  // dependent → the t-swept family (endpoint fixed, arrows moving).
+  const recipe =
+    independentColumns && solution
+      ? { x: solution[0], y: solution[1], combo: b }
+      : !independentColumns
+        ? dependentRecipe(col1, col2, b, t)
+        : null;
+  const hasRecipe = recipe !== null;
+  const scaled1: Vector2 = recipe
+    ? [recipe.x * col1[0], recipe.x * col1[1]]
     : [0, 0];
+  const comboPt: Vector2 = recipe ? recipe.combo : [0, 0];
+  const recipeReachesB = recipe
+    ? Math.hypot(comboPt[0] - b[0], comboPt[1] - b[1]) < 1e-6
+    : false;
+  const showArrows = showCombination && hasRecipe && !solutionOffscreen;
 
   const applyPreset = useCallback(
     (next: Preset) => {
-      setPreset(next);
+      setT(1);
       if (next === "unique") {
-        setEntries({
-          a: EX.a[0][0],
-          b: EX.a[0][1],
-          c: EX.a[1][0],
-          d: EX.a[1][1],
-        });
+        setEntries({ a: EX.a[0][0], b: EX.a[0][1], c: EX.a[1][0], d: EX.a[1][1] });
         target.setPoint(EX.b as [number, number]);
       } else if (next === "infinite") {
         setEntries({
@@ -146,7 +230,6 @@ export function SystemsExplorer() {
         });
         target.setPoint(EX.bNone as [number, number]);
       }
-      // "free" leaves the current state; the learner drives it.
     },
     [target],
   );
@@ -158,12 +241,26 @@ export function SystemsExplorer() {
 
   const summary = (() => {
     if (kind === "unique") {
-      return `Independent columns (det = ${fmt(determinant)} ≠ 0). The two lines cross at exactly one point, and exactly one recipe combines the columns to reach b: (x, y) = (${fmt(solution![0])}, ${fmt(solution![1])}). One solution.`;
+      if (solutionOffscreen) {
+        return `Independent columns, but only just: A is nearly singular, so the lines cross very far away — the single solution ${solution ? `(${fmt(solution[0])}, ${fmt(solution[1])})` : ""} sits off-screen. There is still exactly one solution; nudge A away from dependent columns to bring it back into view.`;
+      }
+      return `Independent columns: the map x ↦ A x is reversible, so every target is reached by exactly one recipe. Here the two lines cross once and (x, y) = (${fmt(solution![0])}, ${fmt(solution![1])}). One solution.`;
     }
     if (kind === "infinite") {
-      return `Dependent columns (det = 0) and b lies on the line they span. The two equations describe the same line, so every point on it solves the system — infinitely many solutions.`;
+      const rows =
+        rc1.kind === "all" && rc2.kind === "all"
+          ? "Both equations read 0 = 0 — no constraint at all — so every point of the plane solves the system."
+          : rc1.kind === "all" || rc2.kind === "all"
+            ? "One equation reads 0 = 0 (no constraint); the other is a single line, so that whole line is the solution set."
+            : "The two equations describe the same line, so every point on it is a solution.";
+      return `Dependent columns, and b lies on the line they span, so b is reachable. ${rows} Slide t: infinitely many recipes reach the same b. Infinitely many solutions.`;
     }
-    return `Dependent columns (det = 0), but b lies off the line the columns span. The two lines are parallel and never meet; no combination of the columns reaches b — no solution.`;
+    // none
+    const rows =
+      rc1.kind === "empty" || rc2.kind === "empty"
+        ? "One equation reads 0 = c with c ≠ 0 — impossible on its own — so nothing can satisfy the system."
+        : "The two lines are parallel and never meet.";
+    return `Dependent columns, and b lies off the line they span, so no recipe reaches it — slide t and watch the endpoint stay on the columns' line, never touching b. ${rows} No solution.`;
   })();
 
   const kindLabel =
@@ -177,17 +274,16 @@ export function SystemsExplorer() {
     <ExplorationPanel
       explorationId="linear-systems"
       title="One system, two pictures"
-      description="The row picture (left) and column picture (right) of the same system A x = b. Drag the gold target b, or open the matrix controls to change A — both pictures and the solution count update together."
+      description="Left: the row picture in coefficient space (x, y) — each equation is a line and a solution is where they meet. Right: the column picture in output space — blend col₁, col₂ to reach b. Drag the gold target b, edit A, or (when the columns are dependent) sweep the recipe parameter t to see many recipes reach one b."
       toolbar={
         <>
           <PresetPicker
             label="Case"
-            activeId={preset}
+            activeId={activePreset}
             presets={[
               { id: "unique", label: "One solution", onSelect: () => applyPreset("unique") },
               { id: "infinite", label: "Infinitely many", onSelect: () => applyPreset("infinite") },
               { id: "none", label: "No solution", onSelect: () => applyPreset("none") },
-              { id: "free", label: "Free drag", onSelect: () => applyPreset("free") },
             ]}
           />
           <ResetButton onReset={handleReset} />
@@ -206,23 +302,38 @@ export function SystemsExplorer() {
               },
             ]}
           />
+          {!independentColumns && hasRecipe && (
+            <ParameterControls
+              title="Recipe parameter t (dependent columns)"
+              controls={[
+                {
+                  id: "sys-t",
+                  label: "t",
+                  value: t,
+                  min: -5,
+                  max: 5,
+                  onChange: setT,
+                },
+              ]}
+            />
+          )}
           <details className="exploration-details">
             <summary>Matrix A &amp; target b (numeric)</summary>
             <div className="exploration-details__body">
               <ParameterControls
                 title="Matrix A (columns are col₁, col₂)"
                 controls={[
-                  { id: "sys-a", label: "a₁₁", value: entries.a, min: -ENTRY, max: ENTRY, onChange: (v) => { setEntries((e) => ({ ...e, a: v })); setPreset("free"); } },
-                  { id: "sys-b", label: "a₁₂", value: entries.b, min: -ENTRY, max: ENTRY, onChange: (v) => { setEntries((e) => ({ ...e, b: v })); setPreset("free"); } },
-                  { id: "sys-c", label: "a₂₁", value: entries.c, min: -ENTRY, max: ENTRY, onChange: (v) => { setEntries((e) => ({ ...e, c: v })); setPreset("free"); } },
-                  { id: "sys-d", label: "a₂₂", value: entries.d, min: -ENTRY, max: ENTRY, onChange: (v) => { setEntries((e) => ({ ...e, d: v })); setPreset("free"); } },
+                  { id: "sys-a", label: "a₁₁", value: entries.a, min: -ENTRY, max: ENTRY, onChange: (v) => setEntries((e) => ({ ...e, a: v })) },
+                  { id: "sys-b", label: "a₁₂", value: entries.b, min: -ENTRY, max: ENTRY, onChange: (v) => setEntries((e) => ({ ...e, b: v })) },
+                  { id: "sys-c", label: "a₂₁", value: entries.c, min: -ENTRY, max: ENTRY, onChange: (v) => setEntries((e) => ({ ...e, c: v })) },
+                  { id: "sys-d", label: "a₂₂", value: entries.d, min: -ENTRY, max: ENTRY, onChange: (v) => setEntries((e) => ({ ...e, d: v })) },
                 ]}
               />
               <ParameterControls
                 title="Target b (also draggable)"
                 controls={[
-                  { id: "sys-b1", label: "b₁", value: b[0], min: -BOUND, max: BOUND, onChange: (v) => { target.setPoint([clampVal(v), b[1]]); setPreset("free"); } },
-                  { id: "sys-b2", label: "b₂", value: b[1], min: -BOUND, max: BOUND, onChange: (v) => { target.setPoint([b[0], clampVal(v)]); setPreset("free"); } },
+                  { id: "sys-b1", label: "b₁", value: b[0], min: -BOUND, max: BOUND, onChange: (v) => target.setPoint([clampVal(v), b[1]]) },
+                  { id: "sys-b2", label: "b₂", value: b[1], min: -BOUND, max: BOUND, onChange: (v) => target.setPoint([b[0], clampVal(v)]) },
                 ]}
               />
             </div>
@@ -239,21 +350,16 @@ export function SystemsExplorer() {
               value: <span data-testid="systems-kind-readout">{kindLabel}</span>,
             },
             {
-              id: "det",
-              label: "det(A)",
-              value: <span data-testid="systems-det-readout">{fmt(determinant)}</span>,
-            },
-            {
               id: "columns",
               label: "Columns",
-              value: <span>{independentColumns ? "independent" : "dependent"}</span>,
+              value: <span data-testid="systems-columns-readout">{independentColumns ? "independent" : "dependent"}</span>,
             },
             {
               id: "consistent",
               label: "b reachable?",
-              value: <span>{consistent ? "yes (in column space)" : "no"}</span>,
+              value: <span>{consistent ? "yes (in column space)" : "no (off column space)"}</span>,
             },
-            ...(solution
+            ...(kind === "unique" && solution
               ? [
                   {
                     id: "solution",
@@ -266,6 +372,43 @@ export function SystemsExplorer() {
                   },
                 ]
               : []),
+            ...(!independentColumns && recipe
+              ? [
+                  {
+                    id: "recipe",
+                    label: "recipe (x, y) at t",
+                    value: (
+                      <span data-testid="systems-recipe-readout" data-plain={`(${fmt(recipe.x)}, ${fmt(recipe.y)})`}>
+                        <VectorTeX x={recipe.x} y={recipe.y} />
+                      </span>
+                    ),
+                  },
+                  {
+                    id: "reach",
+                    label: "this recipe reaches b?",
+                    value: (
+                      <span data-testid="systems-reach-readout">
+                        {recipeReachesB
+                          ? "yes — and so does every t (infinitely many)"
+                          : "no — the endpoint stays on the columns' line"}
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
+            ...(solutionOffscreen
+              ? [
+                  {
+                    id: "offscreen",
+                    label: "heads up",
+                    value: (
+                      <span data-testid="systems-offscreen-readout">
+                        near-singular A — solution is off-screen
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }
@@ -273,16 +416,26 @@ export function SystemsExplorer() {
       <div className="systems-explorer__panels">
         <figure className="systems-explorer__panel">
           <figcaption className="systems-explorer__caption">
-            Row picture — two lines; a solution is where they meet
+            Row picture — <strong>coefficient space (x, y)</strong>: each equation is a line; a solution is a point on both
           </figcaption>
           <MafsSceneShell
-            ariaLabel="Row picture: the two equations drawn as lines and their intersection"
-            viewBox={{ x: [-7, 7], y: [-7, 7], padding: 0.3 }}
+            ariaLabel="Row picture in coefficient space: the two equations drawn as lines and their intersection"
+            viewBox={{ x: [-VIEW, VIEW], y: [-VIEW, VIEW], padding: 0.3 }}
             height={340}
           >
-            <Line.ThroughPoints point1={line1Pts[0]} point2={line1Pts[1]} color={ROLE_ROW_1} weight={2.5} />
-            <Line.ThroughPoints point1={line2Pts[0]} point2={line2Pts[1]} color={ROLE_ROW_2} weight={2.5} />
-            {solution && (
+            {rc1.kind === "line" && (
+              <Line.ThroughPoints point1={rc1.point1 as [number, number]} point2={rc1.point2 as [number, number]} color={ROLE_ROW_1} weight={2.5} />
+            )}
+            {rc1.kind === "all" && (
+              <Polygon points={BOX_CORNERS} color={ROLE_ROW_1} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
+            )}
+            {rc2.kind === "line" && (
+              <Line.ThroughPoints point1={rc2.point1 as [number, number]} point2={rc2.point2 as [number, number]} color={ROLE_ROW_2} weight={2.5} />
+            )}
+            {rc2.kind === "all" && (
+              <Polygon points={BOX_CORNERS} color={ROLE_ROW_2} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
+            )}
+            {solution && !solutionOffscreen && (
               <>
                 <Circle center={solution as [number, number]} radius={0.22} color={ROLE_SOLUTION} fillOpacity={1} />
                 <Text x={solution[0]} y={solution[1]} attach="ne" attachDistance={18} color={ROLE_SOLUTION} size={15}>
@@ -290,16 +443,26 @@ export function SystemsExplorer() {
                 </Text>
               </>
             )}
+            {rowNotes.map((note, i) => (
+              <Text key={note} x={-VIEW + 0.4} y={VIEW - 0.5 - i * 0.8} attach="e" color={i === 0 ? ROLE_ROW_1 : ROLE_ROW_2} size={13}>
+                {note}
+              </Text>
+            ))}
+            {solutionOffscreen && (
+              <Text x={0} y={0} attach="n" attachDistance={6} color={ROLE_SOLUTION} size={14}>
+                solution off-screen (near-singular)
+              </Text>
+            )}
           </MafsSceneShell>
         </figure>
 
         <figure className="systems-explorer__panel">
           <figcaption className="systems-explorer__caption">
-            Column picture — combine col₁, col₂ to reach b
+            Column picture — <strong>output space</strong>: blend col₁, col₂ to reach b
           </figcaption>
           <MafsSceneShell
-            ariaLabel="Column picture: the two matrix columns, the target b, and the combination reaching it"
-            viewBox={{ x: [-7, 7], y: [-7, 7], padding: 0.3 }}
+            ariaLabel="Column picture in output space: the two matrix columns, the target b, and the combination reaching it"
+            viewBox={{ x: [-VIEW, VIEW], y: [-VIEW, VIEW], padding: 0.3 }}
             height={340}
           >
             {!independentColumns && (
@@ -314,11 +477,21 @@ export function SystemsExplorer() {
             )}
             <Vector tip={col1 as [number, number]} color={ROLE_COL_1} weight={3} />
             <Vector tip={col2 as [number, number]} color={ROLE_COL_2} weight={3} />
-            {showCombination && solution && (
+            {showArrows && (
               <>
-                <Vector tail={[0, 0]} tip={scaled1 as [number, number]} color={ROLE_COL_1} weight={2} style="dashed" opacity={0.7} />
-                <Vector tail={scaled1 as [number, number]} tip={b as [number, number]} color={ROLE_COL_2} weight={2} style="dashed" opacity={0.7} />
-                <Vector tip={b as [number, number]} color={ROLE_COMBO} weight={3} opacity={0.5} />
+                <Vector tail={[0, 0]} tip={scaled1 as [number, number]} color={ROLE_COL_1} weight={2} style="dashed" opacity={0.75} />
+                <Vector tail={scaled1 as [number, number]} tip={comboPt as [number, number]} color={ROLE_COL_2} weight={2} style="dashed" opacity={0.75} />
+                {recipeReachesB ? (
+                  <Vector tip={b as [number, number]} color={ROLE_COMBO} weight={3} opacity={0.5} />
+                ) : (
+                  <>
+                    <Circle center={comboPt as [number, number]} radius={0.16} color={ROLE_COMBO} fillOpacity={1} />
+                    <Line.Segment point1={comboPt as [number, number]} point2={b as [number, number]} color={ROLE_MUTED} weight={1.5} style="dashed" opacity={0.6} />
+                    <Text x={comboPt[0]} y={comboPt[1]} attach="sw" attachDistance={14} color={ROLE_COMBO} size={13}>
+                      recipe endpoint
+                    </Text>
+                  </>
+                )}
               </>
             )}
             <Text x={col1[0]} y={col1[1]} attach="ne" attachDistance={12} color={ROLE_COL_1} size={15}>
@@ -335,8 +508,8 @@ export function SystemsExplorer() {
         </figure>
       </div>
       <ul className="systems-explorer__legend" aria-label="Legend">
-        <li><span className="swatch swatch--row1" /> equation 1 (line)</li>
-        <li><span className="swatch swatch--row2" /> equation 2 (line)</li>
+        <li><span className="swatch swatch--row1" /> equation 1</li>
+        <li><span className="swatch swatch--row2" /> equation 2</li>
         <li><span className="swatch swatch--col1" /> col₁</li>
         <li><span className="swatch swatch--col2" /> col₂</li>
         <li><span className="swatch swatch--target" /> target b</li>

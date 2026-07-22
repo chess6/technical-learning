@@ -26,6 +26,51 @@ import { determinant2x2, matrixColumn } from "./matrices";
 
 export type LinearSystemKind = "unique" | "infinite" | "none";
 
+/**
+ * A single scalar equation `a·x + b·y = c` constrains the plane to exactly one
+ * of three geometric objects — and a renderer must NOT assume it is always a
+ * line. When `a = b = 0` the left side is identically `0`, so:
+ *
+ * - `c = 0` ⇒ **all** points satisfy it (the equation imposes no constraint);
+ * - `c ≠ 0` ⇒ **no** point satisfies it (an impossible equation).
+ *
+ * Otherwise (`a` or `b` nonzero) it is an ordinary **line**, and two distinct
+ * points on it are returned so callers can draw it without re-deriving the
+ * geometry.
+ */
+export type RowConstraint =
+  | { kind: "line"; point1: Vector2; point2: Vector2 }
+  | { kind: "all" }
+  | { kind: "empty" };
+
+export function classifyRowConstraint(
+  a: number,
+  b: number,
+  c: number,
+  tolerance = DEFAULT_TOLERANCE,
+): RowConstraint {
+  const aZero = Math.abs(a) <= tolerance;
+  const bZero = Math.abs(b) <= tolerance;
+  if (aZero && bZero) {
+    return Math.abs(c) <= tolerance ? { kind: "all" } : { kind: "empty" };
+  }
+  if (!bZero) {
+    // Solve for y at x = 0 and x = 1 → two distinct points.
+    return {
+      kind: "line",
+      point1: [0, c / b],
+      point2: [1, (c - a) / b],
+    };
+  }
+  // b = 0, a ≠ 0 ⇒ vertical line x = c / a.
+  return {
+    kind: "line",
+    point1: [c / a, 0],
+    point2: [c / a, 1],
+  };
+}
+
+
 export type LinearSystem2x2Classification = {
   /** Which branch of the trichotomy this system falls into. */
   kind: LinearSystemKind;

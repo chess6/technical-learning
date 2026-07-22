@@ -187,15 +187,28 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const caption = makeOverlayLabel("", ROLE.textMuted, 30);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
+  // A persistent tag naming WHICH space we are in — the row and column pictures
+  // live in different spaces (coefficient vs output), and must never be implied
+  // to share one plane.
+  const spaceTag = makeOverlayLabel("", ROLE.textMuted, 24);
+  spaceTag.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y + 46));
+  spaceTag.opacity(0);
+  view.add(spaceTag);
 
   const setTop = (t: string) => top.text(t);
   const setCaption = (t: string) => caption.text(t);
+  const setSpace = (t: string) => spaceTag.text(t);
+  const COEFFICIENT_SPACE = "coefficient space  (x, y) — solutions are points";
+  const OUTPUT_SPACE = "output space — columns combine to reach b";
 
   const seconds = Object.fromEntries(
     SYSTEMS_SEGMENTS.map((s) => [s.id, s.duration]),
   ) as Record<string, number>;
 
+  // Establish the coefficient space (row picture) — every output-space object is
+  // fully hidden, so the two pictures never share one visible plane.
   const showRow = function* (emphasis = 1): ThreadGenerator {
+    setSpace(COEFFICIENT_SPACE);
     yield* focusOpacities([
       { node: line1, opacity: emphasis },
       { node: line2, opacity: emphasis },
@@ -209,6 +222,21 @@ export const linearSystemsScene = makeScene2D(function* (view) {
     ]);
   };
 
+  // Establish the output space (column picture) — the row-picture lines are fully
+  // faded to 0 first, a true transition rather than a translucent overlay.
+  const showColumn = function* (): ThreadGenerator {
+    setSpace(OUTPUT_SPACE);
+    yield* focusOpacities([
+      { node: line1, opacity: 0 },
+      { node: line2, opacity: 0 },
+      { node: solutionDot, opacity: 0 },
+      { node: arrow1, opacity: 1 },
+      { node: arrow2, opacity: 1 },
+      { node: targetArrow, opacity: 0.9 },
+      { node: targetLabel, opacity: 1 },
+    ]);
+  };
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *equations() {
       setTop("A x = b");
@@ -218,31 +246,34 @@ export const linearSystemsScene = makeScene2D(function* (view) {
     },
     *row() {
       setTop("Row picture");
+      setSpace(COEFFICIENT_SPACE);
       setCaption("Each equation is a line — the solution is where they cross");
-      yield* all(line1.opacity(1, 0.6), line2.opacity(1, 0.6));
+      yield* all(spaceTag.opacity(0.85, 0.4), line1.opacity(1, 0.6), line2.opacity(1, 0.6));
       yield* waitFor(1);
       yield* solutionDot.opacity(1, 0.4);
       yield* solutionDot.size(30, 0.3);
       yield* solutionDot.size(20, 0.3);
-      setCaption("They meet once, at x = 2, y = −1");
+      setCaption("They meet once, at the point (x, y) = (2, −1)");
       yield* waitFor(seconds.row - 3.6);
     },
     *regroup() {
-      setTop("Same numbers, regrouped");
-      setCaption("x·(1, 2) + y·(3, −1) = (−1, 5)");
+      // True transition: fully fade the coefficient-space picture, THEN name and
+      // establish the output space — the lines never linger under the columns.
+      setTop("A different space");
+      setCaption("Fade the lines away — the same solution set, seen elsewhere");
       yield* all(
         solutionDot.opacity(0, 0.4),
-        line1.opacity(0.14, 0.5),
-        line2.opacity(0.14, 0.5),
-        arrow1.opacity(1, 0.5),
-        arrow2.opacity(1, 0.5),
-        targetArrow.opacity(0.9, 0.5),
-        targetLabel.opacity(1, 0.5),
+        line1.opacity(0, 0.6),
+        line2.opacity(0, 0.6),
       );
-      yield* waitFor(seconds.regroup - 0.5);
+      setCaption("x·(1, 2) + y·(3, −1) = (−1, 5) — columns and target live here");
+      // Establish the output-space frame only after the lines are fully gone.
+      yield* showColumn();
+      yield* waitFor(seconds.regroup - 1.1);
     },
     *column() {
       setTop("Column picture");
+      setSpace(OUTPUT_SPACE);
       setCaption("Combine the columns to reach b");
       cx(0);
       cy(0);
@@ -250,20 +281,18 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       yield* cx(EX.solution[0], 1.6, easeInOutCubic);
       yield* scaled2.opacity(0.95, 0.3);
       yield* cy(EX.solution[1], 1.6, easeInOutCubic);
-      setCaption("2·col₁ − 1·col₂ lands exactly on b — same (2, −1)");
+      setCaption("2·col₁ − 1·col₂ lands exactly on b — the same (2, −1)");
       yield* comboDot.size(26, 0.25);
       yield* comboDot.size(18, 0.25);
       yield* waitFor(seconds.column - 4.7);
     },
     *unique() {
       setTop("One solution");
-      setCaption("Independent columns ⇒ one crossing, one recipe");
-      yield* focusOpacities([
-        { node: line1, opacity: 0.5 },
-        { node: line2, opacity: 0.5 },
-        { node: solutionDot, opacity: 0 },
-      ]);
-      yield* waitFor(seconds.unique - 0.35);
+      setCaption("Independent columns ⇒ the lines cross exactly once");
+      // Back to the coefficient space; the output-space arrows fully clear.
+      yield* all(scaled1.opacity(0, 0.3), scaled2.opacity(0, 0.3), comboDot.opacity(0, 0.3));
+      yield* showRow(0.6);
+      yield* waitFor(seconds.unique - 0.65);
     },
     *infinite() {
       setTop("Infinitely many");
@@ -295,9 +324,9 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       yield* waitFor(seconds.none - 1.1);
     },
     *summary() {
-      setTop("Two pictures, one question");
-      setCaption("A x = b is solvable ⇔ b lies in the span of A's columns");
-      yield* all(line1.opacity(0.6, 0.5), line2.opacity(0.6, 0.5));
+      setTop("Two spaces, one question");
+      setCaption("Same solution set, seen through two different spaces");
+      yield* all(spaceTag.opacity(0, 0.4), line1.opacity(0.6, 0.5), line2.opacity(0.6, 0.5));
       yield* waitFor(seconds.summary - 0.5);
     },
   };
