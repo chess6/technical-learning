@@ -61,11 +61,12 @@ export function LessonPage() {
   );
 
   const workedById = new Map(
-    (lesson.workedExamples ?? []).map((example) => [
+    (lesson.workedExamples ?? []).map((example, index) => [
       example.id,
       <WorkedExamplePanel
         key={example.id}
         examples={[example]}
+        startNumber={index + 1}
         resetToken={resetToken}
         enableEigenClipStage={isEigenLesson}
       />,

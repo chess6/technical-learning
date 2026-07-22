@@ -6,12 +6,14 @@ import type {
   RouteBlock,
 } from "../../lessons/types";
 import { getAdjacentLessons, getLessonPosition } from "../../lessons/registry";
+import {
+  flattenLessonToc,
+  getBlockAnchorId,
+  getLessonTocTree,
+} from "../../lessons/toc";
 import { LessonHeader } from "../lesson/LessonHeader";
 import { FormalStatement } from "../lesson/FormalStatement";
-import {
-  LessonTableOfContents,
-  type LessonTocItem,
-} from "../lesson/LessonTableOfContents";
+import { LessonTableOfContents } from "../lesson/LessonTableOfContents";
 import { LessonNavigation } from "./LessonNavigation";
 import "./LessonLayout.css";
 
@@ -95,19 +97,6 @@ const PHASE_PRESENTATION: Record<string, { title: string; variant: string }> = {
   summary: { title: "Remember this", variant: "remember" },
 };
 
-const FORMAL_KIND_LABEL: Record<string, string> = {
-  definition: "Definition",
-  proposition: "Proposition",
-  theorem: "Theorem",
-  corollary: "Corollary",
-  conjecture: "Conjecture",
-  lemma: "Lemma",
-  axiom: "Axiom",
-};
-
-/** Strip inline-KaTeX delimiters so TOC labels stay readable plain text. */
-const plainLabel = (text: string): string => text.replace(/\$/g, "").trim();
-
 export function LessonLayout({
   lesson,
   motivation,
@@ -128,12 +117,6 @@ export function LessonLayout({
 
   const formalById = new Map<string, FormalBlock>(
     (lesson.formalBlocks ?? []).map((block) => [block.id, block]),
-  );
-  const sectionTitleById = new Map<string, string>(
-    lesson.sections.map((section) => [section.id, section.title]),
-  );
-  const workedTitleById = new Map<string, string>(
-    (lesson.workedExamples ?? []).map((example) => [example.id, example.title]),
   );
 
   const route = lesson.route ?? FALLBACK_ROUTE;
@@ -173,27 +156,24 @@ export function LessonLayout({
     </>
   ) : null;
 
-  // Resolve every route block once: its stable anchor id, an optional TOC label,
-  // and its rendered node. A null node means the block has no content to show.
+  // Resolve every route block once: its stable anchor id and rendered node.
+  // A null node means the block has no content to show. TOC labels live in
+  // `getLessonTocTree` so the course sidebar can share the same structure.
   type Resolved = {
     key: string;
     anchorId: string;
-    tocLabel: string | null;
     node: ReactNode;
   };
 
   const resolveBlock = (block: RouteBlock, index: number): Resolved | null => {
+    const anchorId = getBlockAnchorId(block, index);
     switch (block.kind) {
       case "formal": {
         const formal = formalById.get(block.formalId);
         if (!formal) return null;
-        const anchorId = `formal-${block.formalId}`;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: plainLabel(
-            formal.label ?? FORMAL_KIND_LABEL[formal.kind] ?? "Statement",
-          ),
           node: (
             <div id={anchorId} className="lesson-layout__formal" tabIndex={-1}>
               <FormalStatement block={formal} />
@@ -202,11 +182,9 @@ export function LessonLayout({
         };
       }
       case "handoff": {
-        const anchorId = `handoff-${index}`;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: null,
           node: (
             <div className="lesson-layout__handoff" id={anchorId}>
               <Link className="lesson-layout__handoff-cta" to={block.to}>
@@ -219,13 +197,9 @@ export function LessonLayout({
       case "section": {
         const content = sectionsById?.get(block.sectionId);
         if (!content) return null;
-        const anchorId = `section-${block.sectionId}`;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: plainLabel(
-            sectionTitleById.get(block.sectionId) ?? "Section",
-          ),
           node: (
             <div id={anchorId} className="lesson-layout__section" tabIndex={-1}>
               {content}
@@ -237,13 +211,9 @@ export function LessonLayout({
         if (block.workedId) {
           const content = workedById?.get(block.workedId);
           if (!content) return null;
-          const anchorId = `worked-${block.workedId}`;
           return {
             key: anchorId,
             anchorId,
-            tocLabel: plainLabel(
-              workedTitleById.get(block.workedId) ?? "Worked example",
-            ),
             node: (
               <Phase
                 id={anchorId}
@@ -257,11 +227,9 @@ export function LessonLayout({
           };
         }
         if (!workedCombinedContent) return null;
-        const anchorId = `worked-${index}`;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: "Worked examples",
           node: (
             <Phase
               id={anchorId}
@@ -279,14 +247,10 @@ export function LessonLayout({
           ? checkpointsById?.get(block.checkpointId)
           : checkpoint;
         if (!content) return null;
-        const anchorId = block.checkpointId
-          ? `check-${block.checkpointId}`
-          : `check-${index}`;
         const present = PHASE_PRESENTATION.check!;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: present.title,
           node: (
             <Phase
               id={anchorId}
@@ -302,12 +266,10 @@ export function LessonLayout({
       case "practice": {
         const content = renderExercises?.(block.exerciseIds, block.title);
         if (!content) return null;
-        const anchorId = `practice-${index}`;
         const label = block.title ?? PHASE_PRESENTATION.practice!.title;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: plainLabel(label),
           node: (
             <Phase
               id={anchorId}
@@ -332,11 +294,9 @@ export function LessonLayout({
         const content = contentByKind[block.kind];
         const present = PHASE_PRESENTATION[block.kind];
         if (!content || !present) return null;
-        const anchorId = `${block.kind}-${index}`;
         return {
           key: anchorId,
           anchorId,
-          tocLabel: present.title,
           node: (
             <Phase
               id={anchorId}
@@ -356,9 +316,8 @@ export function LessonLayout({
     .map((block, index) => resolveBlock(block, index))
     .filter((entry): entry is Resolved => entry !== null);
 
-  const tocItems: LessonTocItem[] = resolved
-    .filter((entry) => entry.tocLabel !== null)
-    .map((entry) => ({ id: entry.anchorId, label: entry.tocLabel! }));
+  const tocItems = getLessonTocTree(lesson);
+  const tocCount = flattenLessonToc(tocItems).length;
 
   return (
     <article className="lesson-layout">
@@ -369,7 +328,7 @@ export function LessonLayout({
         total={total}
       />
 
-      {tocItems.length >= 3 && <LessonTableOfContents items={tocItems} />}
+      {tocCount >= 3 && <LessonTableOfContents items={tocItems} />}
 
       {resolved.map((entry) => (
         <Fragment key={entry.key}>{entry.node}</Fragment>

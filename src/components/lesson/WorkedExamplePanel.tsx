@@ -16,6 +16,8 @@ type WorkedExamplePanelProps = {
    * (expand + 3D extension). Other lessons keep GuidedScenePlayer.
    */
   enableEigenClipStage?: boolean;
+  /** 1-based number for the first example in this panel (lesson-wide numbering). */
+  startNumber?: number;
 };
 
 /**
@@ -27,15 +29,17 @@ export function WorkedExamplePanel({
   examples,
   resetToken = 0,
   enableEigenClipStage = false,
+  startNumber = 1,
 }: WorkedExamplePanelProps) {
   if (examples.length === 0) return null;
 
   return (
     <div className="worked-example-panel" role="region" aria-label="Worked examples">
-      {examples.map((example) => (
+      {examples.map((example, index) => (
         <WorkedExampleBlock
           key={example.id}
           example={example}
+          exampleNumber={startNumber + index}
           resetToken={resetToken}
           enableEigenClipStage={enableEigenClipStage}
         />
@@ -46,10 +50,12 @@ export function WorkedExamplePanel({
 
 function WorkedExampleBlock({
   example,
+  exampleNumber,
   resetToken,
   enableEigenClipStage,
 }: {
   example: WorkedExample;
+  exampleNumber: number;
   resetToken: number;
   enableEigenClipStage: boolean;
 }) {
@@ -70,8 +76,10 @@ function WorkedExampleBlock({
   return (
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
       <header className="worked-example__header">
-        <div className="worked-example__eyebrow" aria-hidden="true">Example</div>
-        <h3 className="worked-example__title" aria-label={example.title}>
+        <div className="worked-example__eyebrow" aria-hidden="true">
+          Example {exampleNumber}
+        </div>
+        <h3 className="worked-example__title" aria-label={`Example ${exampleNumber}: ${example.title}`}>
           <ProseWithMath text={example.title} />
         </h3>
         {example.prompt && (

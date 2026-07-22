@@ -126,6 +126,44 @@
   overflow-wrap: anywhere;
 }
 
+.course-sidebar__sublist {
+  margin: var(--space-1) 0 var(--space-2);
+  padding: 0 0 0 calc(1.6rem + var(--space-3));
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border-left: none;
+}
+
+.course-sidebar__sublist .course-sidebar__sublist {
+  margin: 0.15rem 0 0.15rem var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-divider);
+}
+
+.course-sidebar__subitem {
+  margin: 0;
+}
+
+.course-sidebar__sublink {
+  display: block;
+  padding: 0.2rem var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.course-sidebar__sublink:hover,
+.course-sidebar__sublink:focus-visible {
+  color: var(--color-primary);
+  text-decoration: underline;
+  background: color-mix(in srgb, var(--color-surface-raised) 50%, transparent);
+}
+
 .course-sidebar__future {
   display: flex;
   align-items: flex-start;

@@ -6,6 +6,11 @@ import {
   getLessonIndex,
   getLessonNumber,
 } from "../../lessons/registry";
+import {
+  flattenLessonToc,
+  getLessonTocTree,
+  type LessonTocItem,
+} from "../../lessons/toc";
 import "./CourseSidebar.css";
 
 type CourseSidebarProps = {
@@ -13,9 +18,27 @@ type CourseSidebarProps = {
   onClose: () => void;
 };
 
+function SidebarSublist({ items }: { items: readonly LessonTocItem[] }) {
+  return (
+    <ol className="course-sidebar__sublist">
+      {items.map((item) => (
+        <li key={item.id} className="course-sidebar__subitem">
+          <a className="course-sidebar__sublink" href={`#${item.id}`}>
+            {item.label}
+          </a>
+          {item.children && item.children.length > 0 ? (
+            <SidebarSublist items={item.children} />
+          ) : null}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /**
  * Persistent course table of contents. Registry-driven — no per-lesson
- * branching. Collapses to a drawer on narrow viewports.
+ * branching. Collapses to a drawer on narrow viewports. The current lesson
+ * expands to show that lesson's on-page TOC as a nested sublist.
  */
 export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
   const location = useLocation();
@@ -25,6 +48,11 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
     : undefined;
   const currentIndex =
     currentLessonId !== undefined ? getLessonIndex(currentLessonId) : -1;
+  const currentLesson =
+    currentLessonId !== undefined ? getLessonById(currentLessonId) : undefined;
+  const currentToc =
+    currentLesson !== undefined ? getLessonTocTree(currentLesson) : [];
+  const showCurrentSublist = flattenLessonToc(currentToc).length >= 3;
 
   // Close drawer on route change (narrow layouts).
   useEffect(() => {
@@ -104,6 +132,9 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
                           {lesson.title}
                         </span>
                       </NavLink>
+                      {state === "current" && showCurrentSublist ? (
+                        <SidebarSublist items={currentToc} />
+                      ) : null}
                     </li>
                   );
                 })}

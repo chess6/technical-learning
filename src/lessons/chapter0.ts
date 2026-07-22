@@ -15,7 +15,7 @@ export const chapter0Lesson: LessonDefinition = {
   id: "why-linear-algebra",
   kind: "intro",
   title: "Why Linear Algebra?",
-  subtitle: "Chapter 0 · a first look before the mechanics",
+  subtitle: "A first look before the mechanics",
   learningObjectives: [
     "See that a single 2×2 matrix can move an entire graphic at once.",
     "Notice that a linear transformation always keeps the origin fixed.",

@@ -48,6 +48,7 @@ describe("WorkedExamplePanel (equation-only, no five-field template)", () => {
   it("renders the equation sequence and never the removed labels", () => {
     render(<WorkedExamplePanel examples={[example]} />);
     expect(screen.getByTestId("equation-sequence")).toBeTruthy();
+    expect(screen.getByText("Example 1")).toBeTruthy();
     // The five discarded labels must not render anywhere.
     for (const label of [
       "Object",
@@ -58,6 +59,22 @@ describe("WorkedExamplePanel (equation-only, no five-field template)", () => {
     ]) {
       expect(screen.queryByText(label)).toBeNull();
     }
+  });
+
+  it("numbers examples sequentially across a panel", () => {
+    const second: WorkedExample = {
+      ...example,
+      id: "demo-2",
+      title: "Another calculation",
+    };
+    render(<WorkedExamplePanel examples={[example, second]} />);
+    expect(screen.getByText("Example 1")).toBeTruthy();
+    expect(screen.getByText("Example 2")).toBeTruthy();
+  });
+
+  it("respects startNumber for lesson-wide numbering", () => {
+    render(<WorkedExamplePanel examples={[example]} startNumber={3} />);
+    expect(screen.getByText("Example 3")).toBeTruthy();
   });
 
   it("renders authored depth layers but nothing per-equation", () => {

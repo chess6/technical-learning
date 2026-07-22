@@ -299,7 +299,10 @@ A **course table-of-contents sidebar** is the preferred desktop navigation
 Within a lesson, a **per-lesson table of contents** (`LessonTableOfContents`,
 near the top of the page) lets the learner jump to any block. It is generated
 from the lesson's `route`, so it reflects that lesson's actual composition —
-including repeated or omitted blocks — rather than a fixed template.
+including repeated or omitted blocks — rather than a fixed template. Primary
+phases are top-level entries; sections, formal statements, and per-id worked
+examples nest as **sublists** under the preceding phase. The course sidebar
+mirrors the same nested structure under the current lesson.
 
 ---
 
