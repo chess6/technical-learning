@@ -128,7 +128,7 @@
 
 .course-sidebar__future {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
@@ -142,6 +142,26 @@
   height: 1.6rem;
   border-radius: 50%;
   border: 1.5px dashed var(--color-divider-strong);
+}
+
+.course-sidebar__future-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-top: 0.05rem;
+}
+
+.course-sidebar__future-title {
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.course-sidebar__future-sub {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--color-text-faint);
+  opacity: 0.85;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 960px) {

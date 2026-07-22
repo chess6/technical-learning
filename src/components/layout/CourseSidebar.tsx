@@ -56,7 +56,16 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
                           className="course-sidebar__future"
                           title="Coming in a later milestone"
                         >
-                          {item.title}
+                          <span className="course-sidebar__future-text">
+                            <span className="course-sidebar__future-title">
+                              {item.title}
+                            </span>
+                            {item.subtitle ? (
+                              <span className="course-sidebar__future-sub">
+                                {item.subtitle}
+                              </span>
+                            ) : null}
+                          </span>
                         </span>
                       </li>
                     );
