@@ -14,11 +14,15 @@ Practical enough to follow while building or modifying a lesson. Pair it with:
 - [LESSON_TEMPLATE.md](./LESSON_TEMPLATE.md) — fill-in planning template.
 
 > **Scope note (this POC).** Prefer [Basic accessibility](#basic-accessibility-keep);
-> full disability-product optimization is out of scope. This standard is a
-> **backbone, not a cage**: the six-phase flow is the default, but lessons may add
-> supporting material (e.g. Lesson 1 now carries span, linear dependence, basis, and
-> coordinates-relative-to-a-basis in one intro lesson) when it genuinely helps. See
-> [Flexibility](#flexibility).
+> full disability-product optimization is out of scope. **There is no mandatory
+> lesson sequence.** The named blocks below (Motivate, Watch, Check, Explore,
+> Practice, Summarize, plus formal statements, worked examples, sections, and
+> handoffs) are a **palette of reusable pieces**, not a fixed pipeline. Each lesson
+> **composes its own order** from that palette: a block may appear once, appear
+> several times with different content, or not appear at all — whatever teaches the
+> concept best. Only a few things are non-negotiable (see [Composition &
+> flexibility](#composition--flexibility) and [Guided-to-interactive
+> continuity](#guided-to-interactive-continuity)).
 
 ---
 
@@ -47,24 +51,46 @@ own design tokens.
 
 ---
 
-## Standard lesson flow
+## The block palette
 
-The default full-lesson sequence is six phases. Treat it as the backbone; see
-[Flexibility](#flexibility) for principled deviations.
+A lesson is assembled from **reusable blocks**, declared as an ordered `route`
+on the `LessonDefinition` (see `RouteBlock` in `src/lessons/types.ts`). The route
+is the lesson's real structure — **author it deliberately per lesson**. There is
+no canonical order to conform to and no required set: pick the blocks the concept
+needs, arrange them in the order that teaches best, repeat a block when it helps
+(e.g. a worked example right after the section it illustrates, then another later;
+two short checks around a hard idea), and omit any block a lesson does not need.
 
-1. **Motivate** 2. **Watch** 3. **Check understanding** 4. **Explore** 5. **Practice** 6. **Summarize**
+Available blocks (all optional, any order, repeatable):
 
-**Learner-facing titles.** Do not surface the internal phase names or numbered
-utility labels (e.g. `1 · MOTIVATE`) in the UI. Use conversational headings with a
-subtle numbered rail cue instead:
+- **Motivate** — a concrete question/prediction/puzzle.
+- **Watch** — a guided Motion Canvas sequence (`visual`), optionally beside prose.
+- **Section** — one explanation section (prose + optional inline figure), placed
+  wherever it belongs — interleave sections with formal statements and examples.
+- **Formal statement** — a definition / proposition / theorem / corollary, dropped
+  in exactly where the argument needs it.
+- **Worked example** — a derivation (equations, optionally an embedded clip),
+  placed next to the idea it demonstrates; a lesson may have several, spread out.
+- **Check** — a short conceptual checkpoint (predict / interpret then reveal).
+- **Explore** — a Mafs interactive continuing the guided example.
+- **Practice** — deterministic exercises.
+- **Summarize** — one concise takeaway.
+- **Handoff** — a CTA link onward to another lesson.
 
-| Phase | Learner-facing title |
+**Learner-facing titles.** Do not surface internal phase names or numeric utility
+labels (e.g. `1 · MOTIVATE`) in the UI, and **do not number the blocks** — blocks
+can repeat and be reordered, so a fixed "1, 2, 3…" rail would misrepresent the
+structure. Use conversational headings, and give the learner a per-lesson **table
+of contents** to jump between blocks (see [Navigation](#navigation)):
+
+| Block | Learner-facing title |
 | --- | --- |
 | Motivate | Think about it |
 | Watch | Watch the idea |
-| Check understanding | Quick check |
+| Check | Quick check |
 | Explore | Try it yourself |
 | Practice | Practice |
+| Worked example | Worked examples |
 | Summarize | Remember this |
 
 ### Motivate
@@ -114,16 +140,24 @@ subtle numbered rail cue instead:
 
 ---
 
-## Flexibility
+## Composition & flexibility
 
-The six-phase flow is the default spine, **not a rigid template**. Lessons may:
+There is **no default spine to deviate from** — you compose each lesson's `route`
+from the [block palette](#the-block-palette). Concretely, lessons routinely:
 
-- Insert **supporting/auxiliary concept beats** where they aid understanding —
-  e.g. defining *linear dependence/independence*, *span*, or *unit vector* inside
-  an introductory vectors lesson, or a short notation primer before the checkpoint.
-- Merge or lightly reorder phases for very short concept lessons (e.g. a combined
-  motivate+watch), as long as the learner still watches before exploring.
-- Add a second explore/practice cycle when a lesson carries two linked ideas.
+- **Interleave** sections, formal statements, and worked examples so each idea is
+  stated, then justified, then demonstrated, right where it belongs — rather than
+  dumping all prose, then all theorems, then all examples.
+- **Repeat** a block with different content: several worked examples spread through
+  the lesson; more than one short check bracketing a hard idea; a second
+  explore/practice cycle for a lesson that carries two linked ideas.
+- **Omit** any block a lesson does not need (a short concept lesson may skip the
+  separate check; an intro chapter skips Practice and Summarize entirely).
+- **Add supporting/auxiliary beats** where they aid understanding — e.g. defining
+  *linear dependence*, *span*, or *unit vector* inside the vectors lesson.
+
+The only ordering rule is **guided Watch before learner Explore**. Everything else
+is an authoring decision.
 
 ### Authoring freedom (pedagogy and presentation)
 
@@ -229,16 +263,15 @@ watched."* Do not introduce an unrelated default state in the exploration.
 
 ## Page and information hierarchy
 
-Order:
+The lesson **title/position** comes first and **previous/next navigation** comes
+last; a per-lesson **table of contents** sits near the top. Everything between is
+the lesson's authored `route` (see [The block palette](#the-block-palette)) — the
+sequence below is a *common* arrangement, **not a required order**:
 
-1. lesson title and purpose
-2. motivating question
-3. guided explanation and animation
-4. checkpoint
-5. interactive exploration
-6. exercises
-7. takeaway
-8. previous/next navigation
+- motivating question → guided animation → checkpoint → interactive exploration →
+  exercises → takeaway
+
+Reorder, interleave, repeat, or omit these per lesson as the concept demands.
 
 Rules:
 
@@ -262,6 +295,11 @@ A **course table-of-contents sidebar** is the preferred desktop navigation
 - **no** cramped horizontal lesson tabs;
 - narrow screens use a drawer/compact menu;
 - **no** points, streaks, badges, or gamified progression.
+
+Within a lesson, a **per-lesson table of contents** (`LessonTableOfContents`,
+near the top of the page) lets the learner jump to any block. It is generated
+from the lesson's `route`, so it reflects that lesson's actual composition —
+including repeated or omitted blocks — rather than a fixed template.
 
 ---
 
@@ -467,9 +505,10 @@ Prohibited:
 - exercises disconnected from the visual model;
 - visually plausible but unverified mathematics.
 
-> Note: being **flexible** for supporting concepts is **not** an anti-pattern —
-> see [Flexibility](#flexibility). Rigidly forcing every lesson into an identical
-> six-block shell when a concept needs a supporting beat *is* discouraged.
+> Note: composing a bespoke block order is **not** an anti-pattern — see
+> [Composition & flexibility](#composition--flexibility). Rigidly forcing every
+> lesson into one identical block shell (the same fixed sequence every time) when
+> the concept wants a different composition *is* discouraged.
 
 ---
 
@@ -502,7 +541,7 @@ outside the POC’s product scope — but do **not** strip the basics above.
 
 ## Lesson design acceptance checklist
 
-- [ ] Lesson follows the six-phase flow (or documents a principled deviation)
+- [ ] Lesson composes an intentional `route` from the block palette (blocks may repeat/omit/reorder; guided Watch precedes learner Explore)
 - [ ] Animation teaches one idea at a time
 - [ ] Exploration continues from the guided example
 - [ ] Shared math model reused (no duplicated arithmetic)

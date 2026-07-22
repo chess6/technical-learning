@@ -30,7 +30,7 @@ This document operates at **two levels**, and it is important not to confuse the
   describe *how learning works* and *what understanding means* in this product,
   independent of any particular chapter.
 - **Current chapter examples** are concrete illustrations drawn from today's four
-  lessons — the specific six-phase flow instance, the `--role-*` colors, the
+  lessons — a particular block composition, the `--role-*` colors, the
   eigenvector derivation, the entries in the mental-model table. They exist to
   make a principle tangible. **They are illustrations, not permanent mandates.**
 
@@ -154,14 +154,16 @@ future chapter will have its own.)*
 
 ---
 
-## 4. The learning model (the lesson flow, by pedagogical job)
+## 4. The learning model (the lesson beats, by pedagogical job)
 
-The project uses one canonical flow. LESSON_DESIGN.md names six production phases
-(Motivate, Watch, Check, Explore, Practice, Summarize) with learner-facing
-titles; the original design vocabulary also names an explicit **Introduction** and
-**Think** opening and a **Remember** close. These are the same spine. Here they
-are described by their *pedagogical job* — what each beat is responsible for in
-the learner's head. (For the UI mechanics of each, see LESSON_DESIGN.md.)
+The named beats below are a **palette of pedagogical jobs**, not a fixed pipeline.
+LESSON_DESIGN.md lists the same blocks (Motivate, Watch, Check, Explore, Practice,
+Summarize, plus formal statements and worked examples) and is explicit that each
+lesson **composes its own order** — blocks repeat, reorder, or drop out per
+lesson, with only *guided Watch before learner Explore* fixed. Here each beat is
+described by its *pedagogical job* — what it is responsible for in the learner's
+head — independent of where it lands in any given lesson. (For the UI mechanics
+and the `route` mechanism, see LESSON_DESIGN.md.)
 
 | Beat | Learner-facing | Pedagogical job |
 | --- | --- | --- |

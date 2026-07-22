@@ -15,6 +15,46 @@
   font-variant-numeric: tabular-nums;
 }
 
+.lesson-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.lesson-header__badge {
+  width: 1.9rem;
+  height: 1.9rem;
+  min-width: 1.9rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-divider-strong);
+  background: var(--color-surface-raised);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.lesson-header__badge-number {
+  line-height: 1;
+  font-size: var(--text-sm);
+}
+
+.lesson-header__badge-eyebrow {
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
 .lesson-header__title {
   font-family: var(--font-display);
   font-size: var(--text-4xl);

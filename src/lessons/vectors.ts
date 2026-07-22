@@ -2,11 +2,16 @@ import type { LessonDefinition } from "./types";
 import { LINEAR_COMBINATION_EXAMPLE as EX } from "./exampleData";
 
 export const vectorsLesson: LessonDefinition = {
+  // Composed, not templated: the `check` block appears twice with different
+  // content — an early span/independence check before the basis machinery, and
+  // the default coordinates check after it — and the formal statements lead the
+  // basis section rather than trailing it.
   route: [
     { kind: "motivate" },
     { kind: "visual" },
     { kind: "section", sectionId: "vectors" },
     { kind: "section", sectionId: "combinations" },
+    { kind: "check", checkpointId: "span-reachability" },
     // Develop the theorem formally BEFORE the section that explains coordinates
     // in full, so the definition/theorem lead rather than trail the intuition.
     { kind: "formal", formalId: "def-basis" },
@@ -170,6 +175,15 @@ export const vectorsLesson: LessonDefinition = {
     answer:
       "$\\mathbf{p}$ did not move. Coordinates name a vector relative to a chosen basis, so switching from the standard axes to $B = (\\mathbf{v}, \\mathbf{w})$ changes the coordinate pair — $(4,1)$ becomes $(1,1)$ — while the arrow itself stays exactly where it was.",
   },
+  checkpoints: [
+    {
+      id: "span-reachability",
+      prompt:
+        "As $a$ and $b$ range over all real numbers, which points can $a\\mathbf{v} + b\\mathbf{w}$ reach when $\\mathbf{v}$ and $\\mathbf{w}$ point in different directions? What changes if instead $\\mathbf{w} = 2\\mathbf{v}$?",
+      answer:
+        "Two independent directions span the whole plane, so every point is reachable. If $\\mathbf{w} = 2\\mathbf{v}$ the pair is dependent — every combination stays on the single line through $\\mathbf{v}$, so most of the plane is unreachable and the pair cannot be a basis.",
+    },
+  ],
   exercises: [
     {
       id: "vec-add-compute",

@@ -171,19 +171,27 @@ export type FormalBlock = {
 };
 
 /**
- * A declared lesson route: an ordered list of blocks that overrides the fixed
- * phase order. It stays intentionally small — it references the pieces a lesson
- * already owns (sections, the guided visual, formal blocks, worked examples,
- * the exploration, practice, summary) by identity, rather than being a general
- * textbook DSL.
+ * A declared lesson route: the ordered list of blocks a lesson is assembled
+ * from. **There is no canonical order.** Blocks are a reusable palette — a lesson
+ * composes them in whatever order teaches best, may repeat a block with different
+ * content (e.g. several worked examples spread out, or two checks bracketing a
+ * hard idea), and may omit any block it does not need. The only structural rule
+ * enforced elsewhere is guided Watch before learner Explore.
  *
- * - `watch` renders the guided visual beside ALL sections (legacy combined slot,
- *   used by the default route).
+ * It references the pieces a lesson already owns (sections, the guided visual,
+ * formal blocks, worked examples, checkpoints, exercises) by identity, rather
+ * than being a general textbook DSL.
+ *
+ * - `watch` renders the guided visual beside ALL sections (combined slot).
  * - `visual` renders the guided visual on its own (sections placed separately
  *   via `section`).
  * - `section` renders one lesson section by id (prose + optional inline figure).
  * - `formal` renders one FormalBlock by id.
  * - `worked` renders all worked examples + callouts, or one worked example by id.
+ * - `check` renders the lesson's single `checkpoint`, or a specific one by
+ *   `checkpointId` from `checkpoints` — so a lesson can pose more than one check.
+ * - `practice` renders all exercises, or only `exerciseIds` — so a lesson can
+ *   split practice into more than one set placed where each fits.
  * - `handoff` renders a CTA link to another lesson.
  */
 export type RouteBlock =
@@ -192,15 +200,17 @@ export type RouteBlock =
   | { kind: "visual" }
   | { kind: "section"; sectionId: string }
   | { kind: "formal"; formalId: string }
-  | { kind: "check" }
+  | { kind: "check"; checkpointId?: string }
   | { kind: "worked"; workedId?: string }
   | { kind: "explore" }
-  | { kind: "practice" }
+  | { kind: "practice"; exerciseIds?: string[]; title?: string }
   | { kind: "summary" }
   | { kind: "handoff"; to: string; label: string };
 
-/** A short conceptual check-in shown between the guided scene and exploration. */
+/** A short conceptual check-in. A lesson may own several (see `checkpoints`). */
 export type LessonCheckpoint = {
+  /** Optional id, required only when referenced by a `check` route block. */
+  id?: string;
   prompt: string;
   answer: string;
   solutionReveal?: SolutionReveal;
@@ -221,16 +231,23 @@ export type LessonDefinition = {
   motivatingQuestion?: string;
   sections: LessonSection[];
   /**
-   * Optional declared route. When present, LessonLayout renders blocks in this
-   * order (interleaving formal blocks / handoff); when absent, the fixed phase
-   * order is used. Existing lessons omit it and are unaffected.
+   * The lesson's authored block order (see `RouteBlock`). Every production lesson
+   * should declare one — it is the lesson's real structure. When absent, a plain
+   * linear fallback is used purely so nothing crashes; it is not a template to
+   * aim for.
    */
   route?: RouteBlock[];
   /** Formal blocks referenced by a `formal` route block. */
   formalBlocks?: FormalBlock[];
   guidedSceneId: string;
   explorationId: string;
+  /** The lesson's default/single checkpoint (used by a `check` block with no id). */
   checkpoint?: LessonCheckpoint;
+  /**
+   * Additional checkpoints, referenced by id from `check` route blocks, so a
+   * lesson can pose more than one conceptual check in different places.
+   */
+  checkpoints?: LessonCheckpoint[];
   /**
    * Notebook-style worked examples. A derivation scene, when present, lives
    * on `WorkedExample.guidedSceneId` (taught once, embedded in the example).

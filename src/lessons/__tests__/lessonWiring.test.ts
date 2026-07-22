@@ -164,6 +164,57 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
   });
 });
 
+describe("lessons compose an explicit route from the block palette", () => {
+  it("every registered lesson declares its own route (no reliance on a fixed default)", () => {
+    for (const lesson of lessons) {
+      expect(Array.isArray(lesson.route)).toBe(true);
+      expect(lesson.route!.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("every route reference resolves (section / formal / worked / check ids)", () => {
+    for (const lesson of lessons) {
+      const sectionIds = new Set(lesson.sections.map((s) => s.id));
+      const formalIds = new Set((lesson.formalBlocks ?? []).map((f) => f.id));
+      const workedIds = new Set((lesson.workedExamples ?? []).map((w) => w.id));
+      const checkpointIds = new Set(
+        (lesson.checkpoints ?? []).map((c) => c.id),
+      );
+      const exerciseIds = new Set((lesson.exercises ?? []).map((e) => e.id));
+      for (const block of lesson.route ?? []) {
+        if (block.kind === "section") {
+          expect(sectionIds.has(block.sectionId)).toBe(true);
+        } else if (block.kind === "formal") {
+          expect(formalIds.has(block.formalId)).toBe(true);
+        } else if (block.kind === "worked" && block.workedId) {
+          expect(workedIds.has(block.workedId)).toBe(true);
+        } else if (block.kind === "check" && block.checkpointId) {
+          expect(checkpointIds.has(block.checkpointId)).toBe(true);
+        } else if (block.kind === "practice" && block.exerciseIds) {
+          for (const id of block.exerciseIds) {
+            expect(exerciseIds.has(id)).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("a block may re-appear with different content: vectors poses two distinct checks", () => {
+    const lesson = getLessonById("vectors")!;
+    const checkBlocks = (lesson.route ?? []).filter((b) => b.kind === "check");
+    expect(checkBlocks.length).toBe(2);
+    // One references an extra checkpoint by id; the other uses the default.
+    const referenced = checkBlocks
+      .map((b) => (b.kind === "check" ? b.checkpointId : undefined))
+      .filter(Boolean);
+    expect(referenced).toContain("span-reachability");
+    expect(
+      (lesson.checkpoints ?? []).some((c) => c.id === "span-reachability"),
+    ).toBe(true);
+    expect(lesson.checkpoint).toBeDefined();
+  });
+});
+
 describe("Lesson 1 expanded to vectors, linear combinations, and basis", () => {
   it("is organized into exactly three sections through basis and coordinates", () => {
     const lesson = getLessonById("vectors")!;

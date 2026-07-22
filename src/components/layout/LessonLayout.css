@@ -41,15 +41,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
+}
+
+/* Formal statement wrapper (anchor target for the table of contents). */
+.lesson-layout__formal {
+  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
 }
 
 /* ============================================================
- * Phases — a subtle numbered rail, distinct rhythm per phase.
+ * Blocks — no numbered rail; a small colored accent per block keeps the
+ * distinct rhythm. Blocks can repeat/reorder, so numbering is deliberately
+ * omitted (the per-lesson table of contents handles navigation instead).
  * ============================================================ */
 .phase {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
+}
+
+/* Programmatic focus after a TOC jump should not draw a persistent ring. */
+.phase:focus,
+.lesson-layout__section:focus,
+.lesson-layout__formal:focus {
+  outline: none;
 }
 
 .phase__head {
@@ -58,20 +74,13 @@
   gap: var(--space-3);
 }
 
-.phase__step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.phase__head::before {
+  content: "";
   flex-shrink: 0;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 50%;
-  border: 1.5px solid var(--color-divider-strong);
-  background: var(--color-surface-raised);
-  color: var(--color-text-faint);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  width: 0.4rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: var(--phase-accent, var(--color-divider-strong));
 }
 
 .phase__title {
@@ -97,12 +106,30 @@
   line-height: var(--leading-relaxed);
 }
 
-/* --- Think about it: airy, serif question, faint grid motif --- */
-.phase--think .phase__step {
-  border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent);
-  color: var(--accent-gold);
+/* Per-block accent color (drives the small marker before each title). */
+.phase--think {
+  --phase-accent: var(--accent-gold);
+}
+.phase--watch {
+  --phase-accent: var(--accent-blue);
+}
+.phase--check {
+  --phase-accent: var(--accent-teal);
+}
+.phase--worked {
+  --phase-accent: var(--accent-gold);
+}
+.phase--explore {
+  --phase-accent: var(--accent-coral);
+}
+.phase--practice {
+  --phase-accent: var(--accent-lavender);
+}
+.phase--remember {
+  --phase-accent: var(--color-primary);
 }
 
+/* --- Think about it: airy, serif question, faint grid motif --- */
 .phase--think .phase__body {
   position: relative;
   padding: var(--space-8) var(--space-8) var(--space-10);
@@ -119,11 +146,6 @@
 }
 
 /* --- Watch the idea: animation is the dominant object --- */
-.phase--watch .phase__step {
-  border-color: color-mix(in srgb, var(--accent-blue) 55%, transparent);
-  color: var(--accent-blue);
-}
-
 .lesson-layout__watch {
   display: flex;
   flex-wrap: wrap;
@@ -163,11 +185,6 @@
 }
 
 /* --- Quick check: distinct tinted band, not a heavy box --- */
-.phase--check .phase__step {
-  border-color: color-mix(in srgb, var(--accent-teal) 55%, transparent);
-  color: var(--accent-teal);
-}
-
 .phase--check .phase__body {
   padding: var(--space-6) var(--space-6) var(--space-6) var(--space-6);
   border-radius: var(--radius-lg);
@@ -175,12 +192,7 @@
   background: var(--tint-teal);
 }
 
-/* --- Worked computation --- */
-.phase--worked .phase__step {
-  border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent);
-  color: var(--accent-gold);
-}
-
+/* --- Worked examples --- */
 .lesson-layout__worked {
   min-width: 0;
   display: flex;
@@ -189,30 +201,13 @@
 }
 
 /* --- Try it yourself --- */
-.phase--explore .phase__step {
-  border-color: color-mix(in srgb, var(--accent-coral) 55%, transparent);
-  color: var(--accent-coral);
-}
-
 .lesson-layout__explore {
   min-width: 0;
 }
 
 /* --- Practice --- */
-.phase--practice .phase__step {
-  border-color: color-mix(in srgb, var(--accent-lavender) 55%, transparent);
-  color: var(--accent-lavender);
-}
-
 .lesson-layout__practice {
   max-width: 46rem;
-}
-
-/* --- Remember this --- */
-.phase--remember .phase__step {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #ffffff;
 }
 
 .phase--watch .phase__body {

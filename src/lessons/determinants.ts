@@ -16,6 +16,20 @@ export const determinantsLesson: LessonDefinition = {
   ],
   motivatingQuestion:
     "If a transformation stretches in one direction and compresses in another, what happens to area?",
+  // Composed route: watch the collapse, name the scale factor, check the
+  // singular case, then return for the orientation/sign section before
+  // exploring — the check lands mid-lesson, not after all the prose.
+  route: [
+    { kind: "motivate" },
+    { kind: "visual" },
+    { kind: "section", sectionId: "intro" },
+    { kind: "section", sectionId: "name" },
+    { kind: "check" },
+    { kind: "section", sectionId: "sign" },
+    { kind: "explore" },
+    { kind: "practice" },
+    { kind: "summary" },
+  ],
   sections: [
     {
       id: "intro",

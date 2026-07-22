@@ -32,13 +32,13 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   await page.getByRole("button", { name: "Replay" }).first().click();
 
   await expect(
-    page.getByRole("heading", { name: "Worked computation" }),
+    page.getByRole("heading", { name: "Worked examples" }),
   ).toBeVisible();
   await expect(page.getByTestId("worked-example-eigen-compute-distinct")).toBeVisible();
   await expect(page.getByTestId("misconception-callout").first()).toBeVisible();
 
   // Derivation scene idea dots expose ladder rung titles.
-  const worked = page.getByRole("region", { name: "Worked computation" });
+  const worked = page.getByRole("region", { name: "Worked examples" });
   const ideaDot = worked.locator(".guided-scene-player__idea-dot").nth(2);
   if (await ideaDot.count()) {
     await ideaDot.click();

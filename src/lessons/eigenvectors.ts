@@ -13,6 +13,20 @@ export const eigenvectorsLesson: LessonDefinition = {
   ],
   motivatingQuestion:
     "Are there any directions a transformation can stretch without turning?",
+  // Composed route: the worked derivation comes right after the check and the
+  // "edge cases" section is deliberately placed *after* that computation — the
+  // edge cases only make sense once you have seen the generic case worked out.
+  route: [
+    { kind: "motivate" },
+    { kind: "visual" },
+    { kind: "section", sectionId: "intro" },
+    { kind: "check" },
+    { kind: "worked" },
+    { kind: "section", sectionId: "edge" },
+    { kind: "explore" },
+    { kind: "practice" },
+    { kind: "summary" },
+  ],
   sections: [
     {
       id: "intro",

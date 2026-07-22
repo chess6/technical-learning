@@ -19,6 +19,22 @@ export const karatsubaLesson: LessonDefinition = {
   ],
   motivatingQuestion:
     "$12 \\times 13$ splits into four little products the way FOIL expands $(10+2)(10+3)$. Two of those four are secretly doing the *same* job. Which two — and can we get away with three multiplications instead of four?",
+  // Composed route: set up the two rectangles, check the key insight, work the
+  // examples, then place the cost-curve sections (carrying vs. width, then the
+  // exponent) *after* the worked examples — closer to the practice they feed.
+  route: [
+    { kind: "motivate" },
+    { kind: "visual" },
+    { kind: "section", sectionId: "weighted-rect" },
+    { kind: "section", sectionId: "aux-rect" },
+    { kind: "check" },
+    { kind: "worked" },
+    { kind: "section", sectionId: "carry-vs-width" },
+    { kind: "section", sectionId: "exponent" },
+    { kind: "explore" },
+    { kind: "practice" },
+    { kind: "summary" },
+  ],
   sections: [
     {
       id: "weighted-rect",

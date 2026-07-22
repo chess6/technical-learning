@@ -31,7 +31,7 @@ export function WorkedExamplePanel({
   if (examples.length === 0) return null;
 
   return (
-    <div className="worked-example-panel" role="region" aria-label="Worked computation">
+    <div className="worked-example-panel" role="region" aria-label="Worked examples">
       {examples.map((example) => (
         <WorkedExampleBlock
           key={example.id}
@@ -70,6 +70,7 @@ function WorkedExampleBlock({
   return (
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
       <header className="worked-example__header">
+        <div className="worked-example__eyebrow" aria-hidden="true">Example</div>
         <h3 className="worked-example__title" aria-label={example.title}>
           <ProseWithMath text={example.title} />
         </h3>
@@ -105,6 +106,10 @@ function WorkedExampleBlock({
             />
           </div>
         )}
+
+        <div className="worked-example__solution-label" aria-hidden="true">
+          Solution
+        </div>
 
         <EquationSequence
           className="worked-example__equations"

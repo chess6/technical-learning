@@ -11,9 +11,13 @@ Before modifying **mathematical visualizations**, also read
 
 ## Follow
 
-- Six-phase flow: Motivate → Watch → Check → Explore → Practice → Summarize.
-  It is a backbone, not a cage — supporting concepts (e.g. linear dependence) may
-  be added when they help, keeping Watch-before-Explore and continuity intact.
+- **No mandatory lesson order.** Motivate, Watch, Check, Explore, Practice,
+  Summarize (plus Section, Formal statement, Worked example, Handoff) are a
+  *palette* of reusable blocks. Compose each lesson's `route` deliberately: blocks
+  may repeat with different content, be reordered, or be omitted — interleave
+  sections/formal statements/worked examples where they belong. The only ordering
+  rule is **guided Watch before learner Explore** (plus continuity). Do **not**
+  number the blocks in the UI; give each lesson a per-lesson table of contents.
 - **Equation-first worked computations.** Author a worked computation as a plain
   ordered list of KaTeX expressions (`WorkedExample.equations`). There is **no**
   per-step object/invariant/picture/why-next/learned template — an equation

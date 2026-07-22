@@ -72,6 +72,25 @@ export function LessonPage() {
     ]),
   );
 
+  // Extra checkpoints (beyond the single default) referenced by `check` blocks.
+  const checkpointsById = new Map(
+    (lesson.checkpoints ?? [])
+      .filter((cp) => cp.id)
+      .map((cp) => [
+        cp.id!,
+        <Checkpoint key={cp.id} prompt={cp.prompt} answer={cp.answer} />,
+      ]),
+  );
+
+  const allExercises = lesson.exercises ?? [];
+  const renderExercises = (exerciseIds?: string[]) => {
+    const subset = exerciseIds
+      ? allExercises.filter((ex) => exerciseIds.includes(ex.id))
+      : allExercises;
+    if (subset.length === 0) return undefined;
+    return <ExercisePanel exercises={subset} />;
+  };
+
   return (
     <LessonLayout
       lesson={lesson}
@@ -109,6 +128,7 @@ export function LessonPage() {
           />
         )
       }
+      checkpointsById={checkpointsById}
       workedExamples={
         (lesson.workedExamples && lesson.workedExamples.length > 0) ||
         (lesson.callouts && lesson.callouts.length > 0) ? (
@@ -156,11 +176,7 @@ export function LessonPage() {
           />
         )
       }
-      exercises={
-        lesson.exercises && lesson.exercises.length > 0 ? (
-          <ExercisePanel exercises={lesson.exercises} />
-        ) : undefined
-      }
+      renderExercises={renderExercises}
       summary={
         lesson.keyTakeaway ? (
           <LessonSummary
