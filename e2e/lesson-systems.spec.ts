@@ -35,6 +35,12 @@ test("Systems lesson loads, guided scene plays, and the explorer walks the trich
   const explore = page.getByRole("region", { name: "One system, two pictures" });
   await expect(explore).toBeVisible();
 
+  // Math-space contract: the two panels name their spaces as the primary,
+  // visible caption — not merely "row picture" / "column picture".
+  const spaceLabels = explore.locator(".systems-explorer__caption strong");
+  await expect(spaceLabels.nth(0)).toHaveText("Coefficient space (x, y)");
+  await expect(spaceLabels.nth(1)).toHaveText("Output space");
+
   // Default preset: independent columns → exactly one solution.
   await expect(explore.getByTestId("systems-kind-readout")).toHaveText(
     "one solution",

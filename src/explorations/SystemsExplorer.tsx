@@ -8,6 +8,7 @@ import { ResetButton } from "./ResetButton";
 import { SceneReadout } from "./SceneReadout";
 import { ExplorationToggles } from "./ExplorationToggles";
 import { PresetPicker } from "./PresetPicker";
+import { COEFFICIENT_SPACE, OUTPUT_SPACE } from "./spaces";
 import { LINEAR_SYSTEM_EXAMPLE } from "../lessons/exampleData";
 import {
   classifyLinearSystem2x2,
@@ -464,10 +465,10 @@ export function SystemsExplorer() {
       <div className="systems-explorer__panels">
         <figure className="systems-explorer__panel">
           <figcaption className="systems-explorer__caption">
-            Row picture — <strong>coefficient space (x, y)</strong>: each equation is a line; a solution is a point on both
+            <strong>{COEFFICIENT_SPACE.label}</strong> — row picture: {COEFFICIENT_SPACE.gloss}
           </figcaption>
           <MafsSceneShell
-            ariaLabel="Row picture in coefficient space: the two equations drawn as lines and their intersection"
+            ariaLabel="Coefficient space (x, y), row picture: the two equations drawn as lines and their intersection"
             viewBox={{ x: [-rowExtent, rowExtent], y: [-rowExtent, rowExtent], padding: 0.3 }}
             height={340}
           >
@@ -506,10 +507,10 @@ export function SystemsExplorer() {
 
         <figure className="systems-explorer__panel">
           <figcaption className="systems-explorer__caption">
-            Column picture — <strong>output space</strong>: blend col₁, col₂ to reach b
+            <strong>{OUTPUT_SPACE.label}</strong> — column picture: {OUTPUT_SPACE.gloss}
           </figcaption>
           <MafsSceneShell
-            ariaLabel="Column picture in output space: the two matrix columns, the target b, and the combination reaching it"
+            ariaLabel="Output space, column picture: the two matrix columns, the target b, and the combination reaching it"
             viewBox={{ x: [-VIEW, VIEW], y: [-VIEW, VIEW], padding: 0.3 }}
             height={340}
           >

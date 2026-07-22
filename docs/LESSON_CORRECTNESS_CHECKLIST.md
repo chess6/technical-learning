@@ -93,6 +93,19 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 - [x] Strengthens edges to Lesson 1 (basis ⇒ unique) and Lesson 2 (columns rule) and seeds Lesson 4 (determinant detects the boundary)
 - [x] Practice tiers check / drill / transfer; problem set is sequenced to *derive* the trichotomy — classify → translate-to-`A`-`b` → construct-an-inconsistent-system → generalize-where-inconsistency-lives → counterexample → explain-why (construct / counterexample / explain are genuine `prediction` items, not multiple choice)
 
+#### Math-space contract caption pass (2026-07-21)
+
+- [x] Panel captions now lead with the **space name** as the primary label —
+  **"Coefficient space (x, y)"** and **"Output space"** — not "Row picture" /
+  "Column picture" (see `docs/MATH_SPACE_CONVENTIONS.md`)
+- [x] Labels single-sourced from `COEFFICIENT_SPACE` / `OUTPUT_SPACE` in
+  `src/explorations/spaces.ts`; the descriptors state that the labels are
+  **semantic roles**, and that both planes are the same underlying \(\mathbb{R}^2\)
+- [x] Unit test `src/explorations/__tests__/spaces.test.ts` asserts the two
+  distinct, explicit labels; `e2e/lesson-systems.spec.ts` asserts they render on
+  the lesson page (with the shared `ExercisePanel` still rendering after its
+  capability refactor)
+
 ---
 
 ## Lesson 4 — Determinants as Signed Area Scaling (M5)
