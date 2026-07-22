@@ -158,6 +158,42 @@ describe("migration resolves aliases so a rename never orphans progress", () => 
     expect(state.bookmarks[0]!.lessonId).toBe("systems");
   });
 
+  it("re-keys an attempt under its nested canonical id, not a mismatched outer key", () => {
+    // The record KEY and the nested exerciseId resolve to DIFFERENT canonical
+    // ids. Previously the attempt was filed under the key's canonical id while
+    // carrying the nested id — a silent mismatch. It must be re-keyed under the
+    // nested canonical id so key === stored exerciseId.
+    registerAlias("exercise", "x-nested-solve", "sys-solve-unique");
+    const state = migrateLearnerState({
+      schemaVersion: 1,
+      exerciseAttempts: {
+        // Outer key resolves to itself (a valid, unrelated id)…
+        "elim-matrix-after-step": [
+          {
+            // …but the nested id aliases to a different canonical id.
+            exerciseId: "x-nested-solve",
+            capabilityId: "vector",
+            answerSchemaVersion: 1,
+            answer: [2, -1],
+            at: "2026-07-21T00:00:00.000Z",
+          },
+        ],
+      },
+    });
+    // Filed under the nested id's canonical id, not the outer key.
+    expect(state.exerciseAttempts["sys-solve-unique"]).toHaveLength(1);
+    expect(state.exerciseAttempts["sys-solve-unique"]![0]!.exerciseId).toBe(
+      "sys-solve-unique",
+    );
+    expect(state.exerciseAttempts["elim-matrix-after-step"]).toBeUndefined();
+    // Invariant: every record key equals the stored attempts' exerciseId.
+    for (const [key, attempts] of Object.entries(state.exerciseAttempts)) {
+      for (const attempt of attempts) {
+        expect(attempt.exerciseId).toBe(key);
+      }
+    }
+  });
+
   it("merges two aliased keys that collapse onto one canonical id", () => {
     registerAlias("lesson", "x-legacy-vectors", "vectors");
     const state = migrateLearnerState({

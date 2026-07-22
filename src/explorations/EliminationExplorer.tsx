@@ -15,6 +15,8 @@ import {
   classifyRowConstraint,
   classifyRowOperation,
   eliminationStepToClearX,
+  haveSameSolutionSet,
+  numericalStabilityWarning,
   rowOperationSummary,
   systemMatrix,
   systemRhs,
@@ -114,19 +116,13 @@ export function EliminationExplorer() {
     [initialSystem],
   );
 
-  // Whether the running system still has the SAME solution set as the start:
-  // same trichotomy kind, and (for a unique system) the same solution point.
-  const solutionSetUnchanged =
-    current.kind === baseline.kind &&
-    (current.kind !== "unique" ||
-      (current.solution !== null &&
-        baseline.solution !== null &&
-        Math.hypot(
-          current.solution[0] - baseline.solution[0],
-          current.solution[1] - baseline.solution[1],
-        ) < 1e-6));
+  // Whether the running system STILL has the same solution set as the start —
+  // compared case by case (same point / same line / both empty) through the
+  // shared `haveSameSolutionSet`, never "the kind happens to still match".
+  const solutionSetUnchanged = haveSameSolutionSet(initialSystem, system);
 
   const lastValidity = lastOp ? classifyRowOperation(lastOp) : null;
+  const lastStabilityWarning = lastOp ? numericalStabilityWarning(lastOp) : null;
 
   const rc1 = classifyRowConstraint(system.rows[0][0], system.rows[0][1], system.rows[0][2]);
   const rc2 = classifyRowConstraint(system.rows[1][0], system.rows[1][1], system.rows[1][2]);
@@ -187,8 +183,17 @@ export function EliminationExplorer() {
         ? "infinitely many"
         : "no solution";
 
+  // The solution set is a DIFFERENT geometric object per case, so the "nothing
+  // moved" phrasing must be case-specific: a point, a line, or the empty set.
+  const preservedPhrase =
+    current.kind === "unique"
+      ? "the crossing point never moves"
+      : current.kind === "infinite"
+        ? "the whole solution line is unchanged"
+        : "the solution set stays empty (no solution to move)";
+
   const summary = solutionSetUnchanged
-    ? `Same solution set as the start (${kindLabel}). Elimination is only rewriting the equations — the intersection point never moves.`
+    ? `Same solution set as the start (${kindLabel}). Elimination only rewrites the equations — ${preservedPhrase}.`
     : `⚠ The solution set changed (now ${kindLabel}). The last move was not a reversible row operation, so it did not preserve the solutions — reset and try a legal move.`;
 
   return (
@@ -308,6 +313,15 @@ export function EliminationExplorer() {
                     id: "why",
                     label: lastValidity.reversible ? "why it's safe" : "why it's illegal",
                     value: <span data-testid="elim-op-reason">{lastValidity.reason}</span>,
+                  },
+                ]
+              : []),
+            ...(lastStabilityWarning
+              ? [
+                  {
+                    id: "stability",
+                    label: "numerical caution",
+                    value: <span data-testid="elim-stability-warning">{lastStabilityWarning}</span>,
                   },
                 ]
               : []),

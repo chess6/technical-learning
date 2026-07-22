@@ -3,6 +3,10 @@ import {
   Vector2,
   all,
   easeInOutCubic,
+  // Aliased away from the `use*` name so the react-hooks lint rule does not
+  // mistake this Motion Canvas timeline helper for a React hook.
+  useTime as readTimelineTime,
+  waitFor,
   type SignalValue,
   type SimpleSignal,
   type ThreadGenerator,
@@ -47,6 +51,30 @@ export const ROLE = {
 /** Map a math-space point (y up) to scene pixels. */
 export function toPixels(point: MathVector2): Vector2 {
   return new Vector2(point[0] * SCALE, -point[1] * SCALE);
+}
+
+/**
+ * Run one timeline segment's body, then pad the remainder so the segment
+ * occupies EXACTLY `duration` seconds — by MEASURING real elapsed time
+ * (`useTime`, which accounts for `waitFor` offsets) rather than manually
+ * subtracting a guessed choreography total. This guarantees a scene assembled
+ * as `for (seg of SEGMENTS) yield* runSegment(seg.duration, bodies[seg.id])`
+ * has a total length equal to the sum of the segment durations, so scrubber
+ * steps, next/previous-idea markers, reduced-motion frames, and seek all line
+ * up with the timing metadata. If a body overruns its budget it is not
+ * truncated (the scene simply runs long — caught by the beat-budget test), so
+ * author each body to fit within its segment.
+ */
+export function* runSegment(
+  duration: number,
+  body: () => ThreadGenerator,
+): ThreadGenerator {
+  const start = readTimelineTime();
+  yield* body();
+  const remaining = duration - (readTimelineTime() - start);
+  if (remaining > 1e-6) {
+    yield* waitFor(remaining);
+  }
 }
 
 /** Compact numeric formatting for on-canvas labels (avoids "-0"). */

@@ -91,14 +91,17 @@ export {
   augmentedFromSystem,
   systemMatrix,
   systemRhs,
+  canonicalizeRowOperation,
   applyRowOperation,
   isSolutionPreserving,
+  numericalStabilityWarning,
   classifyRowOperation,
   inverseRowOperation,
   eliminationStepToClearX,
   satisfiesSystem,
   rowOperationSummary,
   assertRowOperationPreservesSolutions,
+  haveSameSolutionSet,
 } from "./elimination";
 export type {
   AugmentedRow,

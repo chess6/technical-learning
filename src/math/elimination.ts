@@ -1,5 +1,5 @@
 import { DEFAULT_TOLERANCE, type Matrix2x2, type Vector2 } from "./types";
-import { classifyLinearSystem2x2 } from "./systems";
+import { classifyLinearSystem2x2, classifyRowConstraint } from "./systems";
 
 /**
  * Gaussian elimination on a 2×2 system, treated as **reversible constraint
@@ -15,10 +15,22 @@ import { classifyLinearSystem2x2 } from "./systems";
  * - **add** — replace one equation with itself plus a multiple of the *other*.
  *
  * Each of these is a bijection on the augmented rows, so it neither gains nor
- * loses solutions. The two illegal moves the lesson diagnoses are scaling by 0
- * (which erases a constraint — irreversible) and "adding a row to itself"
- * (not an elementary operation). All classification flows through the shared
- * `classifyLinearSystem2x2` — this module never reimplements the trichotomy.
+ * loses solutions. The one genuinely illegal move the lesson diagnoses is
+ * scaling by 0 (which erases a constraint — irreversible). "Adding a row to
+ * itself", `R_i ← R_i + k·R_i`, is NOT a fourth kind of move: it is exactly the
+ * scaling `R_i ← (1 + k)·R_i`, so it is a perfectly valid, solution-preserving
+ * operation whenever `1 + k ≠ 0`, and destroys the row only in the single case
+ * `k = -1` (scaling by 0). It simply is not the *canonical third* elementary
+ * operation, which combines two *different* rows. We therefore canonicalize a
+ * self-add to its equivalent scaling rather than rejecting it outright.
+ *
+ * A separate notion — **numerical stability** — is kept distinct from
+ * mathematical validity: scaling by any nonzero factor is exactly reversible in
+ * real arithmetic, but a factor with tiny magnitude is fragile in floating
+ * point. That is a *warning*, not an illegality (see `numericalStabilityWarning`).
+ *
+ * All classification flows through the shared `classifyLinearSystem2x2` — this
+ * module never reimplements the trichotomy.
  */
 
 /** One augmented equation `a·x + b·y = c`, stored as `[a, b, c]`. */
@@ -74,56 +86,93 @@ function addRow(a: AugmentedRow, b: AugmentedRow): AugmentedRow {
 }
 
 /**
+ * Rewrite a self-add `R_i ← R_i + k·R_i` as its equivalent scaling
+ * `R_i ← (1 + k)·R_i`, so every code path treats it uniformly (a self-add is a
+ * disguised scaling, never a distinct fourth operation). All other operations —
+ * swap, scale, and the canonical *distinct-row* add — pass through unchanged.
+ */
+export function canonicalizeRowOperation(op: RowOperation): RowOperation {
+  if (op.kind === "add" && op.source === op.target) {
+    return { kind: "scale", row: op.source, factor: 1 + op.factor };
+  }
+  return op;
+}
+
+/**
  * Apply an elementary row operation, returning a NEW augmented system (the
  * input is never mutated). This is pure arithmetic: it will faithfully carry
  * out a solution-changing move too (e.g. scale by 0), so a renderer can show
  * what actually happens; use `isSolutionPreserving` / `classifyRowOperation`
- * to decide whether the move was legitimate.
+ * to decide whether the move was legitimate. A self-add is canonicalized to the
+ * equivalent scaling first, so it is total (never throws).
  */
 export function applyRowOperation(
   system: AugmentedSystem,
   op: RowOperation,
 ): AugmentedSystem {
+  const canonical = canonicalizeRowOperation(op);
   const [r0, r1] = system.rows;
-  switch (op.kind) {
+  switch (canonical.kind) {
     case "swap":
       return { rows: [r1, r0] };
     case "scale": {
-      const scaled = scaleRow(system.rows[op.row], op.factor);
-      return { rows: op.row === 0 ? [scaled, r1] : [r0, scaled] };
+      const scaled = scaleRow(system.rows[canonical.row], canonical.factor);
+      return { rows: canonical.row === 0 ? [scaled, r1] : [r0, scaled] };
     }
     case "add": {
-      if (op.source === op.target) {
-        throw new Error(
-          "An 'add' row operation must combine two different rows (source ≠ target).",
-        );
-      }
+      // Canonicalization guarantees source ≠ target here.
       const combined = addRow(
-        system.rows[op.target],
-        scaleRow(system.rows[op.source], op.factor),
+        system.rows[canonical.target],
+        scaleRow(system.rows[canonical.source], canonical.factor),
       );
-      return { rows: op.target === 0 ? [combined, r1] : [r0, combined] };
+      return { rows: canonical.target === 0 ? [combined, r1] : [r0, combined] };
     }
   }
 }
 
 /**
- * Whether an operation preserves the solution set: swap always does; scaling
- * does iff the factor is nonzero; adding does iff it combines two distinct
- * rows. (These are exactly the invertible elementary operations.)
+ * Whether an operation preserves the solution set — a statement of *exact*
+ * mathematical validity, independent of floating-point tolerance:
+ *
+ * - **swap** always preserves;
+ * - **scale** preserves iff the factor is exactly nonzero (any nonzero factor
+ *   is reversible by its reciprocal — even a tiny one; tininess is a numerical
+ *   concern surfaced separately by {@link numericalStabilityWarning}, not an
+ *   illegality);
+ * - **add** of two *distinct* rows always preserves; a **self-add** preserves
+ *   iff its equivalent scaling `1 + k` is nonzero (it fails only for `k = -1`).
  */
-export function isSolutionPreserving(
-  op: RowOperation,
-  tolerance = DEFAULT_TOLERANCE,
-): boolean {
-  switch (op.kind) {
+export function isSolutionPreserving(op: RowOperation): boolean {
+  const canonical = canonicalizeRowOperation(op);
+  switch (canonical.kind) {
     case "swap":
       return true;
     case "scale":
-      return Math.abs(op.factor) > tolerance;
+      return canonical.factor !== 0;
     case "add":
-      return op.source !== op.target;
+      return true;
   }
+}
+
+/**
+ * A numerical-stability warning for an otherwise mathematically valid move, or
+ * `null` when there is nothing to warn about. Scaling (or a self-add reduced to
+ * scaling) by a nonzero factor whose magnitude is below `tolerance` is exactly
+ * reversible in real arithmetic but fragile in floating point — a caution, not
+ * an illegal move. Kept deliberately separate from {@link isSolutionPreserving}
+ * so validity and stability are never conflated.
+ */
+export function numericalStabilityWarning(
+  op: RowOperation,
+  tolerance = DEFAULT_TOLERANCE,
+): string | null {
+  const canonical = canonicalizeRowOperation(op);
+  if (canonical.kind !== "scale") return null;
+  const { factor } = canonical;
+  if (factor !== 0 && Math.abs(factor) < tolerance) {
+    return `Scaling by a factor this close to 0 (${factor}) is reversible in exact arithmetic, but numerically fragile — the inverse divides by a near-zero number.`;
+  }
+  return null;
 }
 
 export type RowOperationValidity = {
@@ -133,11 +182,29 @@ export type RowOperationValidity = {
   reason: string;
 };
 
-/** Explain whether an operation is a legitimate (reversible) elimination move. */
-export function classifyRowOperation(
-  op: RowOperation,
-  tolerance = DEFAULT_TOLERANCE,
-): RowOperationValidity {
+/**
+ * Explain whether an operation is a legitimate (reversible) elimination move.
+ * Validity is exact (nonzero scale factors), matching {@link isSolutionPreserving};
+ * numerical fragility of tiny factors is a separate warning, not an illegality.
+ */
+export function classifyRowOperation(op: RowOperation): RowOperationValidity {
+  // A self-add is a disguised scaling; explain it as such rather than pretending
+  // it is a distinct (and always-illegal) move.
+  if (op.kind === "add" && op.source === op.target) {
+    const scaled = 1 + op.factor;
+    return scaled !== 0
+      ? {
+          reversible: true,
+          reason:
+            `Adding ${op.factor}·R${op.source + 1} to itself is really scaling R${op.source + 1} by ${scaled} — a nonzero scale, hence reversible (divide back by ${scaled}), so the solution set is unchanged. (It is not the canonical third operation, which combines two different rows.)`,
+        }
+      : {
+          reversible: false,
+          reason:
+            `Adding −1·R${op.source + 1} to itself scales the row by 0, turning it into 0 = 0 and destroying its constraint. You can never divide back by 0, so this is illegal.`,
+        };
+  }
+
   switch (op.kind) {
     case "swap":
       return {
@@ -146,7 +213,7 @@ export function classifyRowOperation(
           "Swapping two equations only reorders them — every point satisfying both still does, so the solution set is untouched.",
       };
     case "scale":
-      return Math.abs(op.factor) > tolerance
+      return op.factor !== 0
         ? {
             reversible: true,
             reason:
@@ -158,39 +225,37 @@ export function classifyRowOperation(
               "Multiplying a row by 0 turns it into 0 = 0 and destroys its constraint. You can never divide back, so the solution set can only grow — this move is illegal.",
           };
     case "add":
-      return op.source !== op.target
-        ? {
-            reversible: true,
-            reason:
-              "Adding a multiple of one equation to another is reversible (subtract the same multiple back), so no solution is created or lost.",
-          }
-        : {
-            reversible: false,
-            reason:
-              "Adding a row to itself is not an elementary operation — it silently rescales the row and can zero it out, so it is not allowed.",
-          };
+      // Canonical distinct-row add: always reversible.
+      return {
+        reversible: true,
+        reason:
+          "Adding a multiple of one equation to another is reversible (subtract the same multiple back), so no solution is created or lost.",
+      };
   }
 }
 
 /**
  * The operation that undoes `op` (so applying `op` then its inverse returns the
- * original system). Throws for a non-invertible scale (factor 0).
+ * original system). Throws only for a genuinely non-invertible move — a scale
+ * by 0, or the self-add `k = -1` that reduces to it. A self-add is inverted
+ * through its equivalent scaling.
  */
 export function inverseRowOperation(op: RowOperation): RowOperation {
-  switch (op.kind) {
+  const canonical = canonicalizeRowOperation(op);
+  switch (canonical.kind) {
     case "swap":
       return { kind: "swap" };
     case "scale":
-      if (op.factor === 0) {
+      if (canonical.factor === 0) {
         throw new Error("A scale-by-zero row operation has no inverse.");
       }
-      return { kind: "scale", row: op.row, factor: 1 / op.factor };
+      return { kind: "scale", row: canonical.row, factor: 1 / canonical.factor };
     case "add":
       return {
         kind: "add",
-        source: op.source,
-        target: op.target,
-        factor: -op.factor,
+        source: canonical.source,
+        target: canonical.target,
+        factor: -canonical.factor,
       };
   }
 }
@@ -264,7 +329,7 @@ export function assertRowOperationPreservesSolutions(
   op: RowOperation,
   tolerance = 1e-9,
 ): void {
-  if (!isSolutionPreserving(op, tolerance)) {
+  if (!isSolutionPreserving(op)) {
     throw new Error(
       `Row operation "${rowOperationSummary(op)}" is not solution-preserving.`,
     );
@@ -300,6 +365,81 @@ export function assertRowOperationPreservesSolutions(
           "Inverse row operation did not restore the original system.",
         );
       }
+    }
+  }
+}
+
+/**
+ * Canonical `(a, b, c)` representation of the line `a x + b y = c`, normalized
+ * so two descriptions of the *same* line compare equal: unit `(a, b)` with a
+ * fixed sign convention (first nonzero of `(a, b)` positive). Returns `null`
+ * when the row is not a genuine line (`0 = 0` or `0 = c ≠ 0`).
+ */
+function canonicalLine(
+  row: AugmentedRow,
+  tolerance: number,
+): [number, number, number] | null {
+  const [a, b, c] = row;
+  if (classifyRowConstraint(a, b, c, tolerance).kind !== "line") return null;
+  const norm = Math.hypot(a, b);
+  const sign = Math.abs(a) > tolerance ? Math.sign(a) : Math.sign(b);
+  const s = (sign || 1) / norm;
+  return [a * s, b * s, c * s];
+}
+
+/** The line a *consistent* system's rows describe (both rows agree on it), or
+ * `null` if neither row is a genuine line. */
+function solutionLine(
+  system: AugmentedSystem,
+  tolerance: number,
+): [number, number, number] | null {
+  return (
+    canonicalLine(system.rows[0], tolerance) ??
+    canonicalLine(system.rows[1], tolerance)
+  );
+}
+
+/**
+ * Whether two systems have the *identical* solution set — the honest,
+ * case-specific comparison a UI needs rather than "the kind stayed the same":
+ *
+ * - **unique**: the single solution points coincide;
+ * - **infinite**: the solution *lines* coincide (compared as normalized lines,
+ *   so "still infinite" is not mistaken for "same line");
+ * - **none**: both solution sets are empty (empty equals empty).
+ *
+ * Differing trichotomy kinds are never equal. All classification flows through
+ * the shared `classifyLinearSystem2x2`.
+ */
+export function haveSameSolutionSet(
+  a: AugmentedSystem,
+  b: AugmentedSystem,
+  tolerance = DEFAULT_TOLERANCE,
+): boolean {
+  const ca = classifyLinearSystem2x2(systemMatrix(a), systemRhs(a), tolerance);
+  const cb = classifyLinearSystem2x2(systemMatrix(b), systemRhs(b), tolerance);
+  if (ca.kind !== cb.kind) return false;
+  switch (ca.kind) {
+    case "unique": {
+      if (!ca.solution || !cb.solution) return false;
+      return (
+        Math.hypot(
+          ca.solution[0] - cb.solution[0],
+          ca.solution[1] - cb.solution[1],
+        ) <= 1e-6
+      );
+    }
+    case "none":
+      return true; // both empty
+    case "infinite": {
+      const la = solutionLine(a, tolerance);
+      const lb = solutionLine(b, tolerance);
+      if (!la || !lb) return false;
+      return (
+        Math.abs(la[0] - lb[0]) <= 1e-6 &&
+        Math.abs(la[1] - lb[1]) <= 1e-6 &&
+        Math.abs(la[2] - lb[2]) <= 1e-6
+      );
     }
   }
 }

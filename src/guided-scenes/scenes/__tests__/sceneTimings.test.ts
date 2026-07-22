@@ -3,8 +3,11 @@ import {
   DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
+  ELIMINATION_BEATS,
+  ELIMINATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   LINEAR_COMBINATION_SEGMENTS,
+  sumBeats,
   totalDuration,
   toSteps,
 } from "../sceneTimings";
@@ -104,6 +107,52 @@ describe("scene timings (pure data)", () => {
     for (const id of majorIds) {
       expect(meta.steps.some((step) => step.id === id)).toBe(true);
     }
+  });
+
+  // Regression for the timing-drift finding: the elimination scene body used to
+  // subtract guessed choreography totals (waitFor(duration - guess)), so it ran
+  // ~23.8s against 27s of metadata. It now budgets every yield via
+  // ELIMINATION_BEATS and pads with runSegment, so the generated length must
+  // equal the metadata total. We assert the property that guarantees this.
+  describe("elimination timeline matches its declared segment metadata", () => {
+    it("declares 27s total across five segments", () => {
+      expect(ELIMINATION_SEGMENTS.map((s) => s.id)).toEqual([
+        "setup",
+        "operation",
+        "triangular",
+        "invariance",
+        "summary",
+      ]);
+      expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(27);
+    });
+
+    it("every segment body fits its budget, so runSegment only pads (never truncates)", () => {
+      for (const seg of ELIMINATION_SEGMENTS) {
+        const consumed = sumBeats(ELIMINATION_BEATS[seg.id]);
+        expect(consumed).toBeGreaterThanOrEqual(0);
+        // A body must not overrun its segment, or the scene would drift long.
+        expect(consumed).toBeLessThanOrEqual(seg.duration + 1e-9);
+      }
+    });
+
+    it("generated scene length equals totalDuration(ELIMINATION_SEGMENTS)", () => {
+      // runSegment holds each body for max(declared duration, consumed). Because
+      // every body fits its budget (test above), that max is always the declared
+      // duration — so the padded timeline is exactly the metadata total.
+      const generated = ELIMINATION_SEGMENTS.reduce(
+        (sum, seg) => sum + Math.max(seg.duration, sumBeats(ELIMINATION_BEATS[seg.id])),
+        0,
+      );
+      expect(generated).toBeCloseTo(totalDuration(ELIMINATION_SEGMENTS), 9);
+    });
+
+    it("every beat budget is positive (no zero/negative animated yields)", () => {
+      for (const seg of ELIMINATION_SEGMENTS) {
+        for (const [id, dt] of Object.entries(ELIMINATION_BEATS[seg.id] ?? {})) {
+          expect(dt, `${seg.id}.${id}`).toBeGreaterThan(0);
+        }
+      }
+    });
   });
 
   it("karatsuba scene has no deeper beat and ~58s elementary timeline", () => {

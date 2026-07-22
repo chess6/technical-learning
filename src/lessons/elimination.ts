@@ -44,6 +44,13 @@ export const eliminationLesson: LessonDefinition = {
   route: [
     { kind: "motivate" },
     { kind: "section", sectionId: "why-rewrite" },
+    // Committed prediction FIRST — before the operation is ever shown — so it is
+    // a genuine prediction (testing effect), not recall after the reveal.
+    {
+      kind: "practice",
+      exerciseIds: ["elim-predict-fixed-point"],
+      title: "Predict first",
+    },
     // Watch: R2 → R2 − 2·R1 pivots the second line about the fixed crossing,
     // in three synchronized views (equations, augmented matrix, lines).
     { kind: "visual" },
@@ -55,7 +62,18 @@ export const eliminationLesson: LessonDefinition = {
     { kind: "check" },
     { kind: "section", sectionId: "illegal-moves" },
     { kind: "explore" },
-    { kind: "practice" },
+    // The remaining practice (drill → transfer) lands after Explore; the
+    // committed prediction has already been made above, before the reveal.
+    {
+      kind: "practice",
+      exerciseIds: [
+        "elim-sequence-forward",
+        "elim-matrix-after-step",
+        "elim-diagnose-illegal",
+        "elim-construct-inconsistent",
+        "elim-explain-invariance",
+      ],
+    },
     { kind: "summary" },
   ],
   sections: [
@@ -171,7 +189,9 @@ export const eliminationLesson: LessonDefinition = {
   // diagnose an illegal move → construct the inconsistent case elimination
   // exposes → explain the invariance in your own words. These use the platform
   // capabilities (committed prediction, sequence, matrix entry, construction,
-  // self-check) reached through the `custom` escape hatch.
+  // self-check) reached through the `custom` escape hatch. The committed
+  // prediction (`elim-predict-fixed-point`) is placed FIRST in the route, before
+  // the Watch visual, so it is a real prediction; the rest follow after Explore.
   exercises: [
     {
       id: "elim-predict-fixed-point",

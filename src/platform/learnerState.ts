@@ -167,12 +167,18 @@ function normalizeExerciseAttempts(raw: unknown): Record<string, ExerciseAttempt
   const out: Record<string, ExerciseAttempt[]> = {};
   for (const [key, value] of Object.entries(asRecord(raw))) {
     if (!Array.isArray(value)) continue;
-    const canonical = canonicalId("exercise", key);
-    if (!canonical) continue;
+    const keyCanonical = canonicalId("exercise", key);
+    if (!keyCanonical) continue;
     for (const item of value) {
-      const attempt = normalizeAttempt(item, canonical);
+      // `normalizeAttempt` resolves the nested `exerciseId` (falling back to the
+      // key's canonical id only when absent/invalid). We then re-key under that
+      // resolved id, so the record KEY and the stored attempt's `exerciseId` can
+      // never disagree — e.g. an attempt whose nested id aliases to a different
+      // canonical id than the key is filed under its own canonical id, not the
+      // key's. This forwards renamed attempts instead of orphaning or mis-keying.
+      const attempt = normalizeAttempt(item, keyCanonical);
       if (!attempt) continue;
-      (out[canonical] ??= []).push(attempt);
+      (out[attempt.exerciseId] ??= []).push(attempt);
     }
   }
   return out;

@@ -112,6 +112,34 @@ export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "summary", title: "Same solutions, easier system", duration: 4 },
 ];
 
+/**
+ * Explicit per-beat animation budgets the elimination scene consumes INSIDE
+ * each segment. Every animated yield in `eliminationScene` reads its duration
+ * from here (parallel animations in one beat share a single entry — the beat's
+ * wall-clock length), and the scene wraps each segment body in `runSegment`,
+ * which measures real elapsed time and PADS the remainder up to the segment's
+ * declared `duration`. Because these budgets are pure, MC-free data, a unit
+ * test can assert every segment body fits its budget (so `runSegment` only ever
+ * pads, never truncates) and therefore the generated timeline length is exactly
+ * `totalDuration(ELIMINATION_SEGMENTS)`. This replaces the old, drift-prone
+ * `waitFor(duration - guessedTotal)` subtractions.
+ */
+export const ELIMINATION_BEATS: Record<string, Record<string, number>> = {
+  setup: { panels: 0.5, lines: 0.5, dotIn: 0.4, dotPulseUp: 0.4, dotPulseDown: 0.3 },
+  // operation: pulse the fixed point, reveal the scaled −2·R1 term, then slide
+  // it into R2 while the row (and its line) interpolate to the result.
+  operation: { anchorUp: 0.3, anchorDown: 0.3, ghostReveal: 0.6, combine: 2.6, landUp: 0.3, landDown: 0.3 },
+  triangular: { lineUp: 0.3, lineDown: 0.3, dotUp: 0.35, dotDown: 0.35 },
+  invariance: { dim: 0.4, grow: 0.35, shrink: 0.35, restore: 0.4 },
+  summary: { settleUp: 0.2, settleDown: 0.2 },
+};
+
+/** Total animated time a segment body consumes (sum of its beat budgets). */
+export function sumBeats(beats: Record<string, number> | undefined): number {
+  if (!beats) return 0;
+  return Object.values(beats).reduce((sum, d) => sum + d, 0);
+}
+
 export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
   { id: "identity", title: "Identity grid", duration: 0.4 },
   { id: "transform", title: "Apply the matrix", duration: 2 },

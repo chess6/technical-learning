@@ -5,10 +5,13 @@ import {
   applyRowOperation,
   assertRowOperationPreservesSolutions,
   augmentedFromSystem,
+  canonicalizeRowOperation,
   classifyRowOperation,
   eliminationStepToClearX,
+  haveSameSolutionSet,
   inverseRowOperation,
   isSolutionPreserving,
+  numericalStabilityWarning,
   rowOperationSummary,
   satisfiesSystem,
   systemMatrix,
@@ -90,10 +93,58 @@ describe("illegal operations are flagged and never asserted as preserving", () =
     expect(kind).not.toBe("unique");
   });
 
-  it("rejects adding a row to itself", () => {
-    const op = { kind: "add", source: 0, target: 0, factor: 2 } as RowOperation;
+  it("treats self-add R1 ← R1 + 2·R1 as the valid scaling R1 ← 3·R1", () => {
+    // Self-addition is a disguised scaling, not an illegal fourth operation:
+    // R1 + 2·R1 = 3·R1, a nonzero scale, so it preserves the solution set.
+    const op: RowOperation = { kind: "add", source: 0, target: 0, factor: 2 };
+    expect(canonicalizeRowOperation(op)).toEqual({ kind: "scale", row: 0, factor: 3 });
+    expect(isSolutionPreserving(op)).toBe(true);
+    expect(classifyRowOperation(op).reversible).toBe(true);
+    // It genuinely scales row 0 by 3 (and never throws).
+    const after = applyRowOperation(uniqueSystem, op);
+    expect(after.rows[0]).toEqual([3, 9, -3]);
+    expect(after.rows[1]).toEqual(uniqueSystem.rows[1]);
+    expect(() => assertRowOperationPreservesSolutions(uniqueSystem, op)).not.toThrow();
+  });
+
+  it("flags self-add R1 ← R1 − R1 (scale by 0) as the only illegal self-add", () => {
+    const op: RowOperation = { kind: "add", source: 0, target: 0, factor: -1 };
+    expect(canonicalizeRowOperation(op)).toEqual({ kind: "scale", row: 0, factor: 0 });
+    expect(isSolutionPreserving(op)).toBe(false);
     expect(classifyRowOperation(op).reversible).toBe(false);
-    expect(() => applyRowOperation(uniqueSystem, op)).toThrow(/source ≠ target/);
+    expect(() => inverseRowOperation(op)).toThrow(/no inverse/);
+  });
+});
+
+describe("validity is exact; tiny factors are a stability warning, not illegal", () => {
+  it("accepts scaling by an arbitrarily small nonzero factor as solution-preserving", () => {
+    // The formal statement says EVERY nonzero factor is valid. A factor far
+    // below DEFAULT_TOLERANCE is still mathematically reversible — validity is
+    // exact, not tolerance-gated. (The tolerance-based CLASSIFIER may fail to
+    // certify such an extreme numerically; that is the stability concern below,
+    // not an illegality — hence we assert validity directly here.)
+    const tiny: RowOperation = { kind: "scale", row: 1, factor: 1e-12 };
+    expect(isSolutionPreserving(tiny)).toBe(true);
+    expect(classifyRowOperation(tiny).reversible).toBe(true);
+    // The inverse is its reciprocal — an exact bijection on the rows.
+    expect(inverseRowOperation(tiny)).toEqual({ kind: "scale", row: 1, factor: 1e12 });
+  });
+
+  it("separates the numerical-stability warning from validity", () => {
+    // Tiny nonzero factor: valid but fragile -> a warning string.
+    expect(numericalStabilityWarning({ kind: "scale", row: 1, factor: 1e-12 })).toMatch(
+      /numerically fragile/,
+    );
+    // Ordinary factor: no warning.
+    expect(numericalStabilityWarning({ kind: "scale", row: 1, factor: 3 })).toBeNull();
+    // Exactly zero is an illegality (isSolutionPreserving handles it), not a warning.
+    expect(numericalStabilityWarning({ kind: "scale", row: 1, factor: 0 })).toBeNull();
+    // A self-add reducing to a tiny scale warns too (1 + (−1 + ε) ≈ ε).
+    expect(
+      numericalStabilityWarning({ kind: "add", source: 0, target: 0, factor: -1 + 1e-12 }),
+    ).toMatch(/numerically fragile/);
+    // A distinct-row add never carries a stability warning.
+    expect(numericalStabilityWarning({ kind: "add", source: 0, target: 1, factor: -2 })).toBeNull();
   });
 });
 
@@ -120,6 +171,39 @@ describe("elimination step and its inverse", () => {
       expect(restored.rows[0]).toEqual(uniqueSystem.rows[0]);
       expect(restored.rows[1]).toEqual(uniqueSystem.rows[1]);
     }
+  });
+});
+
+describe("haveSameSolutionSet compares solution sets case by case", () => {
+  it("unique: equal iff the single solution points coincide", () => {
+    const after = applyRowOperation(uniqueSystem, { kind: "add", source: 0, target: 1, factor: -2 });
+    expect(haveSameSolutionSet(uniqueSystem, after)).toBe(true);
+    // Scaling by 0 destroys row 2 -> now infinitely many, a different set.
+    const broken = applyRowOperation(uniqueSystem, { kind: "scale", row: 1, factor: 0 });
+    expect(haveSameSolutionSet(uniqueSystem, broken)).toBe(false);
+  });
+
+  it("infinite: equal iff the solution LINES coincide (not merely both infinite)", () => {
+    // A legal op keeps the same solution line.
+    const same = applyRowOperation(infiniteSystem, { kind: "scale", row: 0, factor: 3 });
+    expect(haveSameSolutionSet(infiniteSystem, same)).toBe(true);
+    // A different dependent system that is ALSO infinite but on another line:
+    // x + 2y = 5 (parallel-shifted line, still dependent+consistent as a system).
+    const otherLine: AugmentedSystem = { rows: [[1, 2, 5], [2, 4, 10]] };
+    expect(classifyLinearSystem2x2(systemMatrix(otherLine), systemRhs(otherLine)).kind).toBe(
+      "infinite",
+    );
+    expect(haveSameSolutionSet(infiniteSystem, otherLine)).toBe(false);
+  });
+
+  it("none: two empty solution sets are equal", () => {
+    const after = applyRowOperation(noneSystem, { kind: "swap" });
+    expect(haveSameSolutionSet(noneSystem, after)).toBe(true);
+  });
+
+  it("different trichotomy kinds are never equal", () => {
+    expect(haveSameSolutionSet(uniqueSystem, infiniteSystem)).toBe(false);
+    expect(haveSameSolutionSet(infiniteSystem, noneSystem)).toBe(false);
   });
 });
 
