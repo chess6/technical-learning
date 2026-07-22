@@ -88,6 +88,27 @@ export type {
 } from "./systems";
 
 export {
+  augmentedFromSystem,
+  systemMatrix,
+  systemRhs,
+  applyRowOperation,
+  isSolutionPreserving,
+  classifyRowOperation,
+  inverseRowOperation,
+  eliminationStepToClearX,
+  satisfiesSystem,
+  rowOperationSummary,
+  assertRowOperationPreservesSolutions,
+} from "./elimination";
+export type {
+  AugmentedRow,
+  AugmentedSystem,
+  RowIndex,
+  RowOperation,
+  RowOperationValidity,
+} from "./elimination";
+
+export {
   classifyDeterminant,
   signedParallelogramArea,
 } from "./determinantClassify";
