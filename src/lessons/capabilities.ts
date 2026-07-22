@@ -16,16 +16,11 @@
  */
 
 import { approximatelyEqualVector, type Vector2 } from "../math";
+import type { JsonValue } from "../platform/json";
 import type { ExerciseDefinition, SolutionReveal } from "./types";
 
-/** JSON-safe value: what a serialized answer may contain (persistable). */
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly JsonValue[]
-  | { readonly [key: string]: JsonValue };
+// Re-exported for callers that import JsonValue alongside the capability types.
+export type { JsonValue } from "../platform/json";
 
 export interface GradeResult {
   correct: boolean;
