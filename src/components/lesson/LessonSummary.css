@@ -34,6 +34,106 @@
   background: var(--color-primary);
 }
 
+.lesson-summary__hero-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Structured compression fields — a scannable definition list, not a card wall. */
+.lesson-summary__fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lesson-summary__row {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: var(--space-2) var(--space-5);
+  align-items: baseline;
+}
+
+.lesson-summary__label {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.lesson-summary__value {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.lesson-summary__list {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.lesson-summary__list li + li {
+  margin-top: var(--space-1);
+}
+
+.lesson-summary__more {
+  border-top: 1px solid var(--color-divider);
+  padding-top: var(--space-4);
+}
+
+.lesson-summary__more > summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  list-style: none;
+}
+
+.lesson-summary__more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.lesson-summary__more > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: var(--space-2);
+  color: var(--color-text-faint);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.lesson-summary__more[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.lesson-summary__fields--nested {
+  margin-top: var(--space-4);
+}
+
+.lesson-summary__reentry {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.lesson-summary__glossary-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.lesson-summary__glossary-link:hover {
+  text-decoration: underline;
+}
+
 .lesson-summary__objectives {
   border-top: 1px solid var(--color-divider);
   padding-top: var(--space-4);
@@ -79,5 +179,10 @@
   .lesson-summary__takeaway {
     font-size: var(--text-xl);
     padding: var(--space-5) var(--space-5);
+  }
+
+  .lesson-summary__row {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
   }
 }

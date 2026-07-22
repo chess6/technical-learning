@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
+import { GlossaryPage } from "../pages/GlossaryPage";
 import { HomePage } from "../pages/HomePage";
 import { LazyLessonRoute } from "./LazyLessonRoute";
 
@@ -44,6 +45,10 @@ export const router = createBrowserRouter([
       {
         path: "lesson/:lessonId",
         element: <LazyLessonRoute />,
+      },
+      {
+        path: "glossary",
+        element: <GlossaryPage />,
       },
       ...devRoutes,
       {
