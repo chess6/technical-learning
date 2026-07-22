@@ -9,7 +9,9 @@
   background: var(--color-canvas);
   --mafs-bg: var(--color-canvas);
   --mafs-fg: var(--color-canvas-text);
-  --mafs-origin-color: var(--color-axis);
+  /* Axis ticks/labels use origin-color (inline fill). Keep them on the muted
+   * canvas text token — --color-axis is for strokes and is too dark to read. */
+  --mafs-origin-color: var(--color-canvas-muted);
   --mafs-line-color: var(--color-grid);
 }
 

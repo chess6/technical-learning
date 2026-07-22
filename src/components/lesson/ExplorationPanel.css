@@ -79,6 +79,24 @@
   overflow: hidden;
   background: var(--color-canvas);
   box-shadow: var(--shadow-canvas);
+  /* Keep content clear of the 16px rounded corners (overflow:hidden). */
+  padding: var(--space-5) var(--space-6);
+  box-sizing: border-box;
+  /* Captions / legends live inside this dark canvas region — use canvas
+   * text tokens, not the light-page muted body colors. */
+  color: var(--color-canvas-text);
+}
+
+.exploration-panel__scene :is(
+  .lincomb-explorer__legend,
+  .matrix-explorer__legend,
+  .graphic-explorer__legend,
+  .systems-explorer__legend,
+  .systems-explorer__caption,
+  .elimination-explorer__legend,
+  .elimination-explorer__caption
+) {
+  color: var(--color-canvas-muted);
 }
 
 .exploration-panel__side {

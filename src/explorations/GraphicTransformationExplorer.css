@@ -6,11 +6,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  margin: var(--space-2) 0 0;
+  margin: var(--space-3) 0 0;
   padding: 0;
   list-style: none;
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--color-canvas-muted);
 }
 
 .graphic-explorer__legend li {

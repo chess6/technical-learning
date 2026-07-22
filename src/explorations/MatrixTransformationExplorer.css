@@ -20,7 +20,7 @@
 }
 
 .matrix-explorer__det {
-  color: var(--color-text-faint);
+  color: var(--color-text);
   font-size: var(--text-sm);
 }
 
