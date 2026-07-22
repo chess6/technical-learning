@@ -37,15 +37,8 @@ const ROLE_SPAN = "var(--role-reachable)";
 const ROLE_SOLUTION = "var(--role-selected)";
 const ROLE_MUTED = "var(--role-intermediate)";
 
-const BOX_CORNERS: [number, number][] = [
-  [-VIEW, -VIEW],
-  [VIEW, -VIEW],
-  [VIEW, VIEW],
-  [-VIEW, VIEW],
-];
-
 type Entries = { a: number; b: number; c: number; d: number };
-type Preset = "unique" | "infinite" | "none" | "free";
+type Preset = "unique" | "infinite" | "none" | "near-singular" | "free";
 
 function fmt(n: number): string {
   const r = Math.round(n * 100) / 100;
@@ -68,19 +61,24 @@ const approxVec = (p: Vector2, q: readonly [number, number]) =>
   Math.abs(p[0] - q[0]!) < EPS && Math.abs(p[1] - q[1]!) < EPS;
 
 /**
- * One coefficient pair `(x, y)` that combines the columns toward `b`, using a
- * single free parameter `t` — the heart of the dependent case. When the columns
- * are dependent, the reachable set is a line `s·e` (e = the nonzero column). We
- * fix the combination's endpoint at `s0·e` (the point on that line matching b —
- * this IS b when consistent, or b's projection when not) and let `t` sweep the
- * infinitely many `(x, y)` that all land there. So sliding `t` visibly changes
- * both scaled arrows while the endpoint stays put: "many recipes, one target".
+ * One coefficient pair `(x, y)` that combines the columns toward `b`, driven by
+ * a single parameter `t` — the heart of the dependent case. The reachable set is
+ * the line `s·e` (e = the nonzero column), and the parameter does two DIFFERENT
+ * teaching jobs depending on whether `b` is reachable:
+ *
+ * - **consistent** (`b` on the line): sweep the *null direction*. The endpoint
+ *   stays pinned at `b` while both scaled arrows change — "many recipes, one
+ *   target". This is the infinite family `y = t, x = s0 − k·t`.
+ * - **inconsistent** (`b` off the line): sweep the *endpoint* along the reachable
+ *   line instead (`x = t, y = 0` ⇒ endpoint `t·e`). Every recipe lands somewhere
+ *   on the columns' line and none of them touch `b` — reachability visibly fails.
  */
 function dependentRecipe(
   col1: Vector2,
   col2: Vector2,
   b: Vector2,
   t: number,
+  consistent: boolean,
 ): { x: number; y: number; combo: Vector2 } | null {
   const n1 = Math.hypot(col1[0], col1[1]);
   const n2 = Math.hypot(col2[0], col2[1]);
@@ -91,22 +89,27 @@ function dependentRecipe(
     x * col1[1] + y * col2[1],
   ];
 
-  if (n1 > 1e-9) {
-    // Base direction e = col1; col2 = k·e. Reaching s0·e needs x + k·y = s0.
-    const e = col1;
-    const ee = e[0] * e[0] + e[1] * e[1];
-    const s0 = (b[0] * e[0] + b[1] * e[1]) / ee;
-    const k = Math.abs(e[0]) >= Math.abs(e[1]) ? col2[0] / e[0] : col2[1] / e[1];
+  const useCol1 = n1 > 1e-9;
+  const e: Vector2 = useCol1 ? col1 : col2;
+  const other: Vector2 = useCol1 ? col2 : col1;
+  const ee = e[0] * e[0] + e[1] * e[1];
+  const s0 = (b[0] * e[0] + b[1] * e[1]) / ee; // scalar of b projected onto e
+  const k = Math.abs(e[0]) >= Math.abs(e[1]) ? other[0] / e[0] : other[1] / e[1];
+
+  if (!consistent) {
+    // b unreachable: put all the weight on the nonzero column and let t slide the
+    // endpoint t·e along the whole reachable line — it never equals b.
+    return useCol1
+      ? { x: t, y: 0, combo: combineOf(t, 0) }
+      : { x: 0, y: t, combo: combineOf(0, t) };
+  }
+
+  // b reachable: sweep the null direction; the endpoint s0·e (= b) stays fixed.
+  if (useCol1) {
     const y = t;
     const x = s0 - k * y;
     return { x, y, combo: combineOf(x, y) };
   }
-
-  // col1 ≈ 0, base direction e = col2; col1 = k·e. Reaching s0·e needs k·x + y = s0.
-  const e = col2;
-  const ee = e[0] * e[0] + e[1] * e[1];
-  const s0 = (b[0] * e[0] + b[1] * e[1]) / ee;
-  const k = Math.abs(e[0]) >= Math.abs(e[1]) ? col1[0] / e[0] : col1[1] / e[1];
   const x = t;
   const y = s0 - k * x;
   return { x, y, combo: combineOf(x, y) };
@@ -143,6 +146,7 @@ export function SystemsExplorer() {
     d: EX.a[1][1],
   });
   const [showCombination, setShowCombination] = useState(true);
+  const [autoFit, setAutoFit] = useState(false);
   const [t, setT] = useState(1);
 
   const target = useMovablePoint(EX.b as [number, number], {
@@ -176,13 +180,33 @@ export function SystemsExplorer() {
       ? "infinite"
       : approxEntries(entries, EX.aDependent) && approxVec(b, EX.bNone)
         ? "none"
-        : "free";
+        : approxEntries(entries, EX.aNearSingular) && approxVec(b, EX.bNearSingular)
+          ? "near-singular"
+          : "free";
 
   // A near-singular independent matrix can push the unique solution far outside
   // the fixed view box. Detect it so we can warn instead of silently clipping.
   const solutionOffscreen =
     solution !== null &&
     (Math.abs(solution[0]) > VIEW || Math.abs(solution[1]) > VIEW);
+
+  // Auto-fit: when the unique solution is off-screen, optionally widen the row
+  // (coefficient-space) view just enough to bring it back in, so learners can see
+  // the far-away crossing instead of only being told it exists.
+  const rowExtent =
+    autoFit && solution
+      ? Math.max(VIEW, Math.abs(solution[0]) + 1, Math.abs(solution[1]) + 1)
+      : VIEW;
+  const rowCorners: [number, number][] = [
+    [-rowExtent, -rowExtent],
+    [rowExtent, -rowExtent],
+    [rowExtent, rowExtent],
+    [-rowExtent, rowExtent],
+  ];
+  const solutionInRowView =
+    solution !== null &&
+    Math.abs(solution[0]) <= rowExtent &&
+    Math.abs(solution[1]) <= rowExtent;
 
   // Column-space line (dependent case): draw through the nonzero column.
   const spanDir: Vector2 = Math.hypot(col1[0], col1[1]) > 1e-9 ? col1 : col2;
@@ -195,7 +219,7 @@ export function SystemsExplorer() {
     independentColumns && solution
       ? { x: solution[0], y: solution[1], combo: b }
       : !independentColumns
-        ? dependentRecipe(col1, col2, b, t)
+        ? dependentRecipe(col1, col2, b, t, consistent)
         : null;
   const hasRecipe = recipe !== null;
   const scaled1: Vector2 = recipe
@@ -205,6 +229,11 @@ export function SystemsExplorer() {
   const recipeReachesB = recipe
     ? Math.hypot(comboPt[0] - b[0], comboPt[1] - b[1]) < 1e-6
     : false;
+  // The second (col₂) arrow is hidden when the recipe puts no weight on col₂
+  // (the no-solution sweep uses only the nonzero column) so we never draw a
+  // zero-length vector.
+  const secondArrowVisible =
+    Math.hypot(comboPt[0] - scaled1[0], comboPt[1] - scaled1[1]) > 1e-6;
   const showArrows = showCombination && hasRecipe && !solutionOffscreen;
 
   const applyPreset = useCallback(
@@ -229,6 +258,15 @@ export function SystemsExplorer() {
           d: EX.aDependent[1][1],
         });
         target.setPoint(EX.bNone as [number, number]);
+      } else if (next === "near-singular") {
+        setEntries({
+          a: EX.aNearSingular[0][0],
+          b: EX.aNearSingular[0][1],
+          c: EX.aNearSingular[1][0],
+          d: EX.aNearSingular[1][1],
+        });
+        target.setPoint(EX.bNearSingular as [number, number]);
+        setAutoFit(false);
       }
     },
     [target],
@@ -237,12 +275,13 @@ export function SystemsExplorer() {
   const handleReset = useCallback(() => {
     applyPreset("unique");
     setShowCombination(true);
+    setAutoFit(false);
   }, [applyPreset]);
 
   const summary = (() => {
     if (kind === "unique") {
       if (solutionOffscreen) {
-        return `Independent columns, but only just: A is nearly singular, so the lines cross very far away — the single solution ${solution ? `(${fmt(solution[0])}, ${fmt(solution[1])})` : ""} sits off-screen. There is still exactly one solution; nudge A away from dependent columns to bring it back into view.`;
+        return `Independent columns, but only just: A is nearly singular (det ≈ ${fmt(classification.determinant)}), so the two lines are almost parallel and cross very far away — the single solution ${solution ? `(${fmt(solution[0])}, ${fmt(solution[1])})` : ""} sits off-screen. There is still exactly one solution mathematically, but it is highly sensitive: a tiny nudge of b or A swings it a long way (poor conditioning). Turn on “auto-fit” to pull the crossing into view, or move A away from dependent columns.`;
       }
       return `Independent columns: the map x ↦ A x is reversible, so every target is reached by exactly one recipe. Here the two lines cross once and (x, y) = (${fmt(solution![0])}, ${fmt(solution![1])}). One solution.`;
     }
@@ -260,7 +299,7 @@ export function SystemsExplorer() {
       rc1.kind === "empty" || rc2.kind === "empty"
         ? "One equation reads 0 = c with c ≠ 0 — impossible on its own — so nothing can satisfy the system."
         : "The two lines are parallel and never meet.";
-    return `Dependent columns, and b lies off the line they span, so no recipe reaches it — slide t and watch the endpoint stay on the columns' line, never touching b. ${rows} No solution.`;
+    return `Dependent columns, and b lies off the line they span, so no recipe reaches it — slide t and watch the endpoint slide along the columns' line, never touching b. ${rows} No solution.`;
   })();
 
   const kindLabel =
@@ -284,6 +323,7 @@ export function SystemsExplorer() {
               { id: "unique", label: "One solution", onSelect: () => applyPreset("unique") },
               { id: "infinite", label: "Infinitely many", onSelect: () => applyPreset("infinite") },
               { id: "none", label: "No solution", onSelect: () => applyPreset("none") },
+              { id: "near-singular", label: "Near-singular", onSelect: () => applyPreset("near-singular") },
             ]}
           />
           <ResetButton onReset={handleReset} />
@@ -299,6 +339,12 @@ export function SystemsExplorer() {
                 label: "Show the column combination",
                 checked: showCombination,
                 onChange: setShowCombination,
+              },
+              {
+                id: "toggle-autofit",
+                label: "Auto-fit an off-screen solution",
+                checked: autoFit,
+                onChange: setAutoFit,
               },
             ]}
           />
@@ -403,7 +449,9 @@ export function SystemsExplorer() {
                     label: "heads up",
                     value: (
                       <span data-testid="systems-offscreen-readout">
-                        near-singular A — solution is off-screen
+                        {solutionInRowView
+                          ? "near-singular A — solution fitted into view (sensitive)"
+                          : "near-singular A — solution off-screen; enable auto-fit"}
                       </span>
                     ),
                   },
@@ -420,37 +468,37 @@ export function SystemsExplorer() {
           </figcaption>
           <MafsSceneShell
             ariaLabel="Row picture in coefficient space: the two equations drawn as lines and their intersection"
-            viewBox={{ x: [-VIEW, VIEW], y: [-VIEW, VIEW], padding: 0.3 }}
+            viewBox={{ x: [-rowExtent, rowExtent], y: [-rowExtent, rowExtent], padding: 0.3 }}
             height={340}
           >
             {rc1.kind === "line" && (
               <Line.ThroughPoints point1={rc1.point1 as [number, number]} point2={rc1.point2 as [number, number]} color={ROLE_ROW_1} weight={2.5} />
             )}
             {rc1.kind === "all" && (
-              <Polygon points={BOX_CORNERS} color={ROLE_ROW_1} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
+              <Polygon points={rowCorners} color={ROLE_ROW_1} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
             )}
             {rc2.kind === "line" && (
               <Line.ThroughPoints point1={rc2.point1 as [number, number]} point2={rc2.point2 as [number, number]} color={ROLE_ROW_2} weight={2.5} />
             )}
             {rc2.kind === "all" && (
-              <Polygon points={BOX_CORNERS} color={ROLE_ROW_2} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
+              <Polygon points={rowCorners} color={ROLE_ROW_2} fillOpacity={0.06} strokeOpacity={0.25} weight={1} />
             )}
-            {solution && !solutionOffscreen && (
+            {solution && solutionInRowView && (
               <>
-                <Circle center={solution as [number, number]} radius={0.22} color={ROLE_SOLUTION} fillOpacity={1} />
+                <Circle center={solution as [number, number]} radius={0.03 * rowExtent} color={ROLE_SOLUTION} fillOpacity={1} />
                 <Text x={solution[0]} y={solution[1]} attach="ne" attachDistance={18} color={ROLE_SOLUTION} size={15}>
                   {`(${fmt(solution[0])}, ${fmt(solution[1])})`}
                 </Text>
               </>
             )}
             {rowNotes.map((note, i) => (
-              <Text key={note} x={-VIEW + 0.4} y={VIEW - 0.5 - i * 0.8} attach="e" color={i === 0 ? ROLE_ROW_1 : ROLE_ROW_2} size={13}>
+              <Text key={note} x={-rowExtent + 0.4} y={rowExtent - 0.5 - i * 0.8} attach="e" color={i === 0 ? ROLE_ROW_1 : ROLE_ROW_2} size={13}>
                 {note}
               </Text>
             ))}
-            {solutionOffscreen && (
+            {solutionOffscreen && !solutionInRowView && (
               <Text x={0} y={0} attach="n" attachDistance={6} color={ROLE_SOLUTION} size={14}>
-                solution off-screen (near-singular)
+                solution off-screen (near-singular) — enable auto-fit
               </Text>
             )}
           </MafsSceneShell>
@@ -480,7 +528,9 @@ export function SystemsExplorer() {
             {showArrows && (
               <>
                 <Vector tail={[0, 0]} tip={scaled1 as [number, number]} color={ROLE_COL_1} weight={2} style="dashed" opacity={0.75} />
-                <Vector tail={scaled1 as [number, number]} tip={comboPt as [number, number]} color={ROLE_COL_2} weight={2} style="dashed" opacity={0.75} />
+                {secondArrowVisible && (
+                  <Vector tail={scaled1 as [number, number]} tip={comboPt as [number, number]} color={ROLE_COL_2} weight={2} style="dashed" opacity={0.75} />
+                )}
                 {recipeReachesB ? (
                   <Vector tip={b as [number, number]} color={ROLE_COMBO} weight={3} opacity={0.5} />
                 ) : (

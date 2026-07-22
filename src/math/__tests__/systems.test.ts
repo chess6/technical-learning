@@ -7,6 +7,7 @@ import {
   type Matrix2x2,
   type Vector2,
 } from "../index";
+import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
 
 /**
  * The running example shared with Lesson "Linear Systems": independent columns
@@ -93,6 +94,33 @@ describe("classifyLinearSystem2x2", () => {
     const c = classifyLinearSystem2x2(A, [0, 0]);
     expect(c.kind).toBe("infinite");
     expect(c.consistent).toBe(true);
+  });
+
+  it("near-singular columns still solve uniquely but land far off-screen (conditioning seed)", () => {
+    const A = LINEAR_SYSTEM_EXAMPLE.aNearSingular as Matrix2x2;
+    const b = LINEAR_SYSTEM_EXAMPLE.bNearSingular as Vector2;
+    const c = classifyLinearSystem2x2(A, b);
+    // Independent (det ≈ 0.1 ≠ 0) ⇒ exactly one solution, not "no"/"infinite".
+    expect(c.kind).toBe("unique");
+    expect(c.independentColumns).toBe(true);
+    expect(c.determinant).toBeCloseTo(0.1, 9);
+    // The advertised far-away solution matches the shared example data...
+    expect(c.solution![0]).toBeCloseTo(LINEAR_SYSTEM_EXAMPLE.solutionNearSingular[0], 6);
+    expect(c.solution![1]).toBeCloseTo(LINEAR_SYSTEM_EXAMPLE.solutionNearSingular[1], 6);
+    // ...and it genuinely satisfies A x = b.
+    const back = matrixVectorMultiply(A, c.solution!);
+    expect(back[0]).toBeCloseTo(b[0], 9);
+    expect(back[1]).toBeCloseTo(b[1], 9);
+  });
+
+  it("near-singular systems are sensitive: a tiny change in b swings the solution a lot", () => {
+    const A = LINEAR_SYSTEM_EXAMPLE.aNearSingular as Matrix2x2;
+    const b = LINEAR_SYSTEM_EXAMPLE.bNearSingular as Vector2;
+    const x0 = solveLinearSystem2x2(A, b)!;
+    // Nudge b by 0.1 and watch the solution move by many units (poor conditioning).
+    const x1 = solveLinearSystem2x2(A, [b[0], b[1] + 0.1])!;
+    const shift = Math.hypot(x1[0] - x0[0], x1[1] - x0[1]);
+    expect(shift).toBeGreaterThan(1);
   });
 
   it("agrees with a direct A x = b check on a grid of independent targets", () => {

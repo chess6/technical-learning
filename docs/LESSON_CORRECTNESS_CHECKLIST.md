@@ -59,7 +59,8 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 - [x] Row lines and column arrows computed in math space; pixel / y-flip mapping applied only in the renderer
 - [x] Singular / collapse case is the core content (infinite vs none), not an afterthought
 - [x] Unique solution verified to satisfy `A x = b` (regression test over a grid of targets)
-- [x] Dependent recipe endpoint is `s0·e` (the point on the column line matching `b`) — equals `b` when consistent, `b`'s projection when not; the `t` slider sweeps the recipe without moving the endpoint
+- [x] Dependent recipe parameter `t` does two honest jobs by case: **consistent** → sweeps the null direction with the endpoint pinned at `b` (many recipes, one target); **inconsistent** → sweeps the endpoint `t·e` along the whole reachable line so every recipe visibly misses `b` (reachability fails). Endpoints are all combinations of the shared `matrixColumn`s — no reimplemented algebra
+- [x] Near-singular preset is genuinely independent (`det = 0.1 ≠ 0`) with a far off-screen unique solution `(23, −10)`; regression test asserts unique classification, the exact solution satisfies `A x = b`, and a 0.1 nudge of `b` swings the solution by > 1 unit (conditioning)
 
 ### Visual review
 
@@ -67,9 +68,9 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 - [x] Row picture (`Line.ThroughPoints` / all-space fill / impossible-equation note) and column picture (columns + combination + target) are the SAME system, synchronized
 - [x] Degenerate rows drawn honestly: `0 = 0` as a faint full-plane fill ("no constraint"), `0 = c` as an "impossible" note with no line — never a false intersection
 - [x] Solution dot / classification readout match `classifyLinearSystem2x2`
-- [x] Infinite case demonstrates *infinitely many recipes*: the `t` slider moves both scaled arrows while the endpoint stays on `b`; no-solution case shows the endpoint stuck on the column line, never reaching `b`
+- [x] Infinite case demonstrates *infinitely many recipes*: the `t` slider moves both scaled arrows while the endpoint stays on `b`; no-solution case sweeps the endpoint *along* the columns' line (a single dashed arrow with a "miss" connector to `b`), never reaching `b`
 - [x] Highlighted preset is derived from live state — dragging `b` off a preset falls back to "free" (no stale "Infinitely many" label over a "No solution" readout)
-- [x] Near-singular independent matrix is handled: off-screen solution triggers a warning readout + in-scene note instead of a silently clipped visual
+- [x] Near-singular independent matrix is handled: off-screen solution triggers a sensitivity/conditioning summary + in-scene note + readout, and an **auto-fit** toggle widens only the coefficient-space view to bring the far crossing back in (solution dot radius scales with the fitted extent) instead of a silently clipped visual
 - [x] Distinct role colors + a labelled legend (equations, columns, target); not color-only
 - [x] Guided scene uses a local scale so `b = (-1, 5)` and `(3, 6)` stay inside the safe frame; lines clipped to the box (no thousands-of-pixels segments)
 - [x] Guided scene uses a **true space transition**: the row lines fully fade to 0 and a "coefficient space → output space" tag switches before the columns appear (no overlaid planes)
@@ -77,10 +78,10 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
 
 ### Testing review
 
-- [x] Unit tests for `src/math/systems.ts` (`systems.test.ts`): trichotomy, zero-matrix edge case, grid consistency check, `classifyRowConstraint` line/all/empty, and the zero-row regression (`A = [[0,0],[1,0]]`)
+- [x] Unit tests for `src/math/systems.ts` (`systems.test.ts`): trichotomy, zero-matrix edge case, grid consistency check, `classifyRowConstraint` line/all/empty, the zero-row regression (`A = [[0,0],[1,0]]`), and near-singular unique-but-sensitive solving
 - [x] Wiring tests: lesson order, guided scene + explorer resolve, row/column sections, three worked cases, formal blocks, practice tiers, Lesson 1 number reuse
-- [x] Singular / no-solution / infinite-solution cases all covered
-- [x] Browser check of all three explorer presets + guided scene playback (screenshots in `screenshots/`)
+- [x] Singular / no-solution / infinite-solution / near-singular cases all covered
+- [x] Browser test `e2e/lesson-systems.spec.ts`: guided scene play/replay, all four explorer presets (unique / infinite / no-solution / near-singular), the `t` sweep on no-solution, the auto-fit toggle, reset, and a practice check — zero console errors (screenshots in `screenshots/`)
 
 ### Teaching review
 

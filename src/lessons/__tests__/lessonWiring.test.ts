@@ -352,7 +352,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
     const solve = lesson.exercises!.find((ex) => ex.id === "sys-solve-unique");
     expect(solve).toBeDefined();
     // Solution (2, -1) is Lesson 1's [q]_B — same computation, read as A x = b.
-    expect((solve as { expected: number[] }).expected).toEqual([2, -1]);
+    expect((solve as { expected: readonly number[] }).expected).toEqual([2, -1]);
   });
 });
 
