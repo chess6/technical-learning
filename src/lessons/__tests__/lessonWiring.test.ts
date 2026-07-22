@@ -141,8 +141,10 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
     expect(getLessonNumber("why-linear-algebra")).toBe(0);
     expect(getLessonNumber("vectors")).toBe(1);
     expect(getLessonPosition("vectors").current).toBe(1);
-    // Karatsuba stays put (intro excluded from the count).
-    expect(getLessonNumber("karatsuba")).toBe(5);
+    // Systems is inserted at position 3 (after transformations); Karatsuba
+    // shifts to 6 (intro chapter still excluded from the count).
+    expect(getLessonNumber("systems")).toBe(3);
+    expect(getLessonNumber("karatsuba")).toBe(6);
   });
 
   it("tours scale, rotation, reflection, shear, and projection", () => {
@@ -248,6 +250,58 @@ describe("Lesson 2 recalls the basis and derives the columns rule", () => {
     expect(grid.body.toLowerCase()).toMatch(/consequence/);
     const layerKinds = (grid.layers ?? []).map((l) => l.kind);
     expect(layerKinds).toContain("connection");
+  });
+});
+
+describe("Linear systems lesson (row vs column picture)", () => {
+  it("sits between transformations and determinants", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids).toEqual([
+      "why-linear-algebra",
+      "vectors",
+      "transformations",
+      "systems",
+      "determinants",
+      "eigenvectors",
+      "karatsuba",
+    ]);
+  });
+
+  it("wires its own guided scene and synchronized explorer", () => {
+    const lesson = getLessonById("systems")!;
+    expect(lesson.guidedSceneId).toBe("linear-systems");
+    expect(lesson.explorationId).toBe("linear-systems");
+    expect(hasGuidedScene("linear-systems")).toBe(true);
+    expect(getSceneMeta("linear-systems").id).toBe("linear-systems");
+    expect(getExplorer("linear-systems")).toBeTypeOf("function");
+  });
+
+  it("teaches both the row and column pictures and the trichotomy", () => {
+    const lesson = getLessonById("systems")!;
+    const sectionIds = lesson.sections.map((s) => s.id);
+    expect(sectionIds).toContain("row-picture");
+    expect(sectionIds).toContain("column-picture");
+    const workedIds = (lesson.workedExamples ?? []).map((w) => w.id);
+    expect(workedIds).toEqual(["sys-unique", "sys-infinite", "sys-none"]);
+    const formalIds = (lesson.formalBlocks ?? []).map((f) => f.id);
+    expect(formalIds).toContain("thm-consistency");
+    expect(formalIds).toContain("prop-trichotomy");
+  });
+
+  it("covers check, drill, and transfer practice tiers", () => {
+    const lesson = getLessonById("systems")!;
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+  });
+
+  it("reuses Lesson 1's numbers for continuity", () => {
+    const lesson = getLessonById("systems")!;
+    const solve = lesson.exercises!.find((ex) => ex.id === "sys-solve-unique");
+    expect(solve).toBeDefined();
+    // Solution (2, -1) is Lesson 1's [q]_B — same computation, read as A x = b.
+    expect((solve as { expected: number[] }).expected).toEqual([2, -1]);
   });
 });
 

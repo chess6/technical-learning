@@ -719,11 +719,31 @@ flowchart LR
   combos --> span[Span]
   span --> basis[Basis]
   basis --> transforms[Linear transformations]
-  transforms --> det[Determinant]
-  det --> invert[Invertibility]
+  transforms --> systems[Linear systems Ax=b]
+  span --> systems
+  systems --> det[Determinant]
+  systems --> invert[Invertibility]
+  det --> invert
   transforms --> eigen[Eigenvectors]
   det --> eigen
 ```
+
+**The linear-systems keystone (2026 addition).** `A x = b` is deliberately its
+own lesson placed *after* vectors and transformations and *before* determinants,
+because it is where the most edges converge: it re-reads Lesson 1's span,
+dependence, and unique-coordinates ideas and Lesson 2's columns rule as one
+equation seen two ways — the **row picture** ("which point satisfies every
+constraint?") and the **column picture** ("which recipe of the columns reaches
+`b`?"). The no/one/infinitely-many trichotomy then unifies consistency (`b` in
+the column space), uniqueness (independent columns), and invertibility — which
+is exactly the boundary the determinant lesson is built to *detect*, so the
+determinant no longer arrives as an isolated formula. This answers the
+sequencing question in §15's checklist for this topic: the vector-first
+progression is kept, and systems are introduced as the moment the equation,
+geometric, row, column, and transformation viewpoints become one object. The
+interactive payoff a textbook cannot match is the synchronized dual-picture
+explorer, where dragging the target `b` or editing `A` moves the intersecting
+lines, the column combination, and the solution count together.
 
 **The durable rule: every new lesson should strengthen existing edges, not merely
 add a new node.** Adding an isolated node grows a list; strengthening edges grows

@@ -32,8 +32,17 @@ export const COURSE_SECTIONS: readonly CourseSection[] = [
   {
     id: "transformations",
     title: "Transformations",
+    items: [{ kind: "lesson", lessonId: "transformations" }],
+  },
+  {
+    id: "systems",
+    title: "Linear systems",
+    items: [{ kind: "lesson", lessonId: "systems" }],
+  },
+  {
+    id: "measuring",
+    title: "Determinants & eigenvectors",
     items: [
-      { kind: "lesson", lessonId: "transformations" },
       { kind: "lesson", lessonId: "determinants" },
       { kind: "lesson", lessonId: "eigenvectors" },
     ],

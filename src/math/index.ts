@@ -77,6 +77,15 @@ export type {
 } from "./eigen";
 
 export {
+  classifyLinearSystem2x2,
+  solveLinearSystem2x2,
+} from "./systems";
+export type {
+  LinearSystemKind,
+  LinearSystem2x2Classification,
+} from "./systems";
+
+export {
   classifyDeterminant,
   signedParallelogramArea,
 } from "./determinantClassify";

@@ -42,7 +42,50 @@ notation, visual language) and [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md)
 
 ---
 
-## Lesson 3 — Determinants as Signed Area Scaling (M5)
+## Lesson 3 — Linear Systems: Two Pictures of One Equation
+
+Keystone lesson unifying the row and column interpretations of `A x = b`,
+inserted between *Matrices as Linear Transformations* and *Determinants*
+(numbered content Lesson 3; the later transformation lessons shift down one).
+It reuses Lesson 1's exact numbers so it strengthens that edge rather than
+adding an isolated node: independent columns are the basis `(v, w)`, dependent
+columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
+
+### Mathematical review
+
+- [x] Classification is a single shared source of truth: `classifyLinearSystem2x2` / `solveLinearSystem2x2` in `src/math/systems.ts` (Cramer on the shared `determinant2x2`; consistency for a singular system decided by a span/parallel test)
+- [x] No linear algebra reimplemented in the explorer or the scene — both call the shared helpers / `matrixColumn`
+- [x] Row lines and column arrows computed in math space; pixel / y-flip mapping applied only in the renderer
+- [x] Singular / collapse case is the core content (infinite vs none), not an afterthought
+- [x] Unique solution verified to satisfy `A x = b` (regression test over a grid of targets)
+
+### Visual review
+
+- [x] Row picture (two `Line.ThroughPoints`) and column picture (columns + combination + target) are the SAME system, synchronized
+- [x] Solution dot / classification readout match `classifyLinearSystem2x2`
+- [x] Distinct role colors + a labelled legend (equations, columns, target); not color-only
+- [x] Guided scene uses a local scale so `b = (-1, 5)` and `(3, 6)` stay inside the safe frame; lines clipped to the box (no thousands-of-pixels segments)
+- [x] Scene captions label each case honestly (unique / infinitely many / none)
+
+### Testing review
+
+- [x] Unit tests for `src/math/systems.ts` (`systems.test.ts`): trichotomy, zero-matrix edge case, grid consistency check
+- [x] Wiring tests: lesson order, guided scene + explorer resolve, row/column sections, three worked cases, formal blocks, practice tiers, Lesson 1 number reuse
+- [x] Singular / no-solution / infinite-solution cases all covered
+- [x] Browser check of all three explorer presets + guided scene playback (screenshots in `screenshots/`)
+
+### Teaching review
+
+- [x] One-sentence mental model: one equation, two pictures (rows meet in a point; columns combine to a target)
+- [x] Opens with a genuine question (are the two questions the same?), not a definition
+- [x] Compression payoff: consistency ⇔ `b` in the column space; uniqueness ⇔ independent columns ⇔ invertibility
+- [x] Misconceptions staged as confrontations (row vs column "different problems"; equation count vs independence)
+- [x] Strengthens edges to Lesson 1 (basis ⇒ unique) and Lesson 2 (columns rule) and seeds Lesson 3+ (determinant detects the boundary)
+- [x] Practice tiers check / drill / transfer; includes predict, translate-representation, construct-a-counterexample, explain-why, and invertibility-link items
+
+---
+
+## Lesson 4 — Determinants as Signed Area Scaling (M5)
 
 ### Mathematical review
 

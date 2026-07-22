@@ -78,6 +78,25 @@ export const COLUMNS_RULE_GRAPHIC_SEGMENTS: readonly SceneSegment[] = [
   { id: "all-vertices", title: "Every vertex follows the two columns", duration: 5.5 },
 ];
 
+/**
+ * "Linear Systems" Watch scene — one system `A x = b`, shown as two pictures of
+ * the same question and then the no / one / infinitely-many trichotomy. The
+ * scene shows ONE picture at a time (one conceptual change at a time): first the
+ * row picture (two lines meeting), then the column picture (combine the columns
+ * to reach b), then walks the three cases in the row picture where they read
+ * fastest. Reuses Lesson 1's numbers throughout.
+ */
+export const SYSTEMS_SEGMENTS: readonly SceneSegment[] = [
+  { id: "equations", title: "One system, two equations", duration: 4 },
+  { id: "row", title: "Row picture: lines meet", duration: 6 },
+  { id: "regroup", title: "Regroup by columns", duration: 5 },
+  { id: "column", title: "Column picture: combine to reach b", duration: 7 },
+  { id: "unique", title: "One meeting point, one recipe", duration: 4 },
+  { id: "infinite", title: "Same line: infinitely many", duration: 6 },
+  { id: "none", title: "Parallel lines: no solution", duration: 5.5 },
+  { id: "summary", title: "Two pictures, one question", duration: 4 },
+];
+
 export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
   { id: "identity", title: "Identity grid", duration: 0.4 },
   { id: "transform", title: "Apply the matrix", duration: 2 },

@@ -65,6 +65,56 @@ export const LINEAR_COMBINATION_EXAMPLE: LinearCombinationExample = {
 };
 
 /**
+ * Shared example for the "Linear Systems" lesson. Deliberately built from
+ * Lesson 1's exact numbers so the systems lesson strengthens that edge rather
+ * than introducing fresh data:
+ *
+ * - `A` has columns v = (1, 2) and w = (3, -1) — Lesson 1's independent basis.
+ *   So `A x = b` with `b = q = (-1, 5)` is the very system Lesson 1 solved by
+ *   hand (a·v + b·w = q), unique solution x = (2, -1).
+ * - `aDependent` has columns (1, 2) and (2, 4) = 2·(1, 2) — Lesson 1's
+ *   dependent pair. With `bInfinite = r = (3, 6)` (on the column line) the
+ *   system has infinitely many solutions; with `bNone = (3, 5)` (off the line)
+ *   it has none.
+ *
+ * Matrices are stored column-wise-by-construction: A = [[a11, a12], [a21, a22]]
+ * so column 1 = (a11, a21) = v and column 2 = (a12, a22) = w.
+ */
+export interface LinearSystemExample {
+  id: string;
+  /** Independent-column matrix (columns are Lesson 1's v and w). */
+  a: [[number, number], [number, number]];
+  /** Dependent-column matrix (columns are Lesson 1's v and 2v). */
+  aDependent: [[number, number], [number, number]];
+  /** Target for the unique case (= Lesson 1's q). Solution is `solution`. */
+  b: Vector2;
+  solution: Vector2;
+  /** Target on the dependent column line (= Lesson 1's r): infinitely many. */
+  bInfinite: Vector2;
+  /** Target off the dependent column line: no solution. */
+  bNone: Vector2;
+  /** Symmetric clamp bound for sliders and the draggable target. */
+  bound: number;
+}
+
+export const LINEAR_SYSTEM_EXAMPLE: LinearSystemExample = {
+  id: "systems-default",
+  a: [
+    [1, 3],
+    [2, -1],
+  ],
+  aDependent: [
+    [1, 2],
+    [2, 4],
+  ],
+  b: [-1, 5],
+  solution: [2, -1],
+  bInfinite: [3, 6],
+  bNone: [3, 5],
+  bound: 6,
+};
+
+/**
  * The matrix-as-transformation lesson reuses the shared registry example
  * A = [[2, 1], [0, 1]] rather than redefining it.
  */

@@ -22,6 +22,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.MatrixTransformationExplorer,
     })),
   ),
+  "linear-systems": lazy(() =>
+    import("./SystemsExplorer").then((m) => ({
+      default: m.SystemsExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,

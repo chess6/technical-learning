@@ -22,6 +22,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     ),
   "columns-rule-graphic": () =>
     import("./columnsRuleGraphicScene").then((m) => m.columnsRuleGraphicScene),
+  "linear-systems": () =>
+    import("./linearSystemsScene").then((m) => m.linearSystemsScene),
   "determinant-area-scaling": () =>
     import("./determinantAreaScalingScene").then(
       (m) => m.determinantAreaScalingScene,

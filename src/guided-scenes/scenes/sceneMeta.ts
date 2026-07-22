@@ -9,6 +9,7 @@ import {
   KARATSUBA_SEGMENTS,
   CHAPTER0_SEGMENTS,
   COLUMNS_RULE_GRAPHIC_SEGMENTS,
+  SYSTEMS_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -49,6 +50,7 @@ const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
+const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -79,6 +81,22 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "vertex",
       "image",
       "all-vertices",
+    ]),
+  },
+  "linear-systems": {
+    id: "linear-systems",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for solving a 2 by 2 linear system: the same system is shown first as the row picture, two lines whose intersection is the solution, then as the column picture, combining the two matrix columns to reach the target vector b with the same coefficients; the scene then walks the three cases — a unique solution when the lines cross and the columns are independent, infinitely many when the two lines coincide and b lies on the dependent column line, and none when the lines are parallel and b lies off that line.",
+    steps: SYSTEMS_STEPS,
+    majorSteps: pickMajor(SYSTEMS_STEPS, [
+      "equations",
+      "row",
+      "column",
+      "unique",
+      "infinite",
+      "none",
+      "summary",
     ]),
   },
   "vectors-linear-combinations": {
