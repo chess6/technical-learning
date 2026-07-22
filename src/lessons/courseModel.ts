@@ -98,13 +98,7 @@ export const CURRICULUM: readonly Subject[] = [
             title: "Systems & elimination",
             items: [
               { kind: "lesson", lessonId: "systems" },
-              {
-                kind: "future",
-                id: "elimination",
-                title: "Elimination as Reversible Constraint Manipulation",
-                subtitle:
-                  "Replace a system with an easier one having the same solutions",
-              },
+              { kind: "lesson", lessonId: "elimination" },
               {
                 kind: "future",
                 id: "solution-sets",

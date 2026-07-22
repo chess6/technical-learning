@@ -55,12 +55,7 @@ export const COURSE_SECTIONS: readonly CourseSection[] = [
       // Lesson 3 — Linear systems: row and column pictures.
       { kind: "lesson", lessonId: "systems" },
       // Lesson 4 — Elimination as reversible constraint manipulation.
-      {
-        kind: "future",
-        id: "elimination",
-        title: "Elimination as Reversible Constraint Manipulation",
-        subtitle: "Replace a system with an easier one having the same solutions",
-      },
+      { kind: "lesson", lessonId: "elimination" },
       // Lesson 5 — Solution sets and homogeneous systems.
       {
         kind: "future",

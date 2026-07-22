@@ -141,10 +141,11 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
     expect(getLessonNumber("why-linear-algebra")).toBe(0);
     expect(getLessonNumber("vectors")).toBe(1);
     expect(getLessonPosition("vectors").current).toBe(1);
-    // Systems is inserted at position 3 (after transformations); Karatsuba
-    // shifts to 6 (intro chapter still excluded from the count).
+    // Systems is at position 3 (after transformations); elimination follows at
+    // 4, so Karatsuba shifts to 7 (intro chapter still excluded from the count).
     expect(getLessonNumber("systems")).toBe(3);
-    expect(getLessonNumber("karatsuba")).toBe(6);
+    expect(getLessonNumber("elimination")).toBe(4);
+    expect(getLessonNumber("karatsuba")).toBe(7);
   });
 
   it("tours scale, rotation, reflection, shear, and projection", () => {
@@ -312,6 +313,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "vectors",
       "transformations",
       "systems",
+      "elimination",
       "determinants",
       "eigenvectors",
       "karatsuba",
@@ -353,6 +355,43 @@ describe("Linear systems lesson (row vs column picture)", () => {
     expect(solve).toBeDefined();
     // Solution (2, -1) is Lesson 1's [q]_B — same computation, read as A x = b.
     expect((solve as { expected: readonly number[] }).expected).toEqual([2, -1]);
+  });
+});
+
+describe("Elimination lesson (reversible constraint manipulation)", () => {
+  it("sits between systems and determinants", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("elimination")).toBe(ids.indexOf("systems") + 1);
+    expect(ids.indexOf("elimination")).toBe(ids.indexOf("determinants") - 1);
+  });
+
+  it("wires its own guided scene and synchronized explorer", () => {
+    const lesson = getLessonById("elimination")!;
+    expect(lesson.guidedSceneId).toBe("elimination");
+    expect(lesson.explorationId).toBe("elimination");
+    expect(hasGuidedScene("elimination")).toBe(true);
+    expect(getSceneMeta("elimination").id).toBe("elimination");
+    expect(getExplorer("elimination")).toBeTypeOf("function");
+  });
+
+  it("exercises the new platform capabilities via the custom escape hatch", () => {
+    const lesson = getLessonById("elimination")!;
+    const capabilityIds = lesson
+      .exercises!.filter((ex) => ex.type === "custom")
+      .map((ex) => (ex as { capabilityId: string }).capabilityId);
+    expect(capabilityIds).toContain("committed-prediction");
+    expect(capabilityIds).toContain("exercise-sequence");
+    expect(capabilityIds).toContain("matrix-entry");
+    expect(capabilityIds).toContain("construct-in-explorer");
+    expect(capabilityIds).toContain("self-check");
+  });
+
+  it("states and proves the solution-set invariance theorem", () => {
+    const lesson = getLessonById("elimination")!;
+    const invariance = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-invariance");
+    expect(invariance?.kind).toBe("theorem");
+    // The proof lives in a depth layer (revealed), not the bare statement.
+    expect((invariance?.layers ?? []).some((l) => l.kind === "math-note")).toBe(true);
   });
 });
 

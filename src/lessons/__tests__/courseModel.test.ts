@@ -56,7 +56,7 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
     { built: "vectors" }, // L1
     { built: "transformations" }, // L2
     { built: "systems" }, // L3
-    { future: "elimination" }, // L4
+    { built: "elimination" }, // L4
     { future: "solution-sets" }, // L5
     { future: "matrix-composition" }, // L6
     { built: "determinants" }, // L7

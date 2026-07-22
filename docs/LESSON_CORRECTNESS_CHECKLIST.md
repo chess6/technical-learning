@@ -240,3 +240,78 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
   ordinary vectors (not a spiral), `v`/`Av` stay collinear, cube collapses into `x+y+z=0`
 - [x] 2D Watch scene shows an honest `λ` readout tied to geometry (tip length = λ · ghost length)
   on the highlight/stretch/reverse/collapse beats; captions made symbol-first (not color-named)
+
+---
+
+## Elimination — Rewriting a System Without Changing Its Answer (2026-07-21)
+
+Sits after *Linear Systems* (Lesson 3) and before determinants, so it becomes
+numbered content Lesson 4 (later lessons — Karatsuba, etc. — shift down one).
+Reuses Lesson 3's exact running system \(A=\begin{bmatrix}1&3\\2&-1\end{bmatrix}\),
+\(\mathbf{b}=(-1,5)\), solution \((2,-1)\), so the learner watches a computation
+they already solved get **rewritten** rather than re-solved. Core mental model:
+each row operation replaces the constraints with different constraints that
+describe exactly the same solution set.
+
+### Mathematical review
+
+- [x] All row-operation algebra is a single shared source of truth:
+  `applyRowOperation` / `inverseRowOperation` / `classifyRowOperation` /
+  `eliminationStepToClearX` in `src/math/elimination.ts` (2×2 augmented systems);
+  the explorer and guided scene reimplement none of it
+- [x] Solution-set invariance is the enforced invariant, not an assertion in
+  prose: `assertRowOperationPreservesSolutions` compares the trichotomy +
+  solution point before/after via the shared `classifyLinearSystem2x2`
+- [x] Line geometry for each row routed through `classifyRowConstraint`
+  (`line` / `all` = `0=0` / `empty` = `0=c`), so a row scaled to `0=0` renders
+  as a full-plane fill, never a false line
+- [x] The one **illegal** move (scale by `0`) is modeled honestly:
+  `classifyRowOperation` flags it irreversible, and the explorer readout then
+  reports the solution set changed instead of hiding it
+- [x] Inverse round-trips tested (`inverseRowOperation` undoes each op); illegal
+  ops (scale by 0, add row to itself) detected in `elimination.test.ts`
+
+### Visual review
+
+- [x] Three synchronized views — **written equations**, **augmented matrix
+  \([A\mid\mathbf{b}]\)**, and the **two constraint lines** — driven from one
+  `AugmentedSystem` state; a row operation changes the equations and matrix
+  while the crossing point (solution set) stays fixed
+- [x] Guided scene animates \(R_2 \to R_2 - 2R_1\): the second line **pivots
+  about** the fixed \((2,-1)\) because the added \(-2R_1\) is \(0=0\) there —
+  the theorem drawn, not asserted
+- [x] KaTeX for equations, augmented matrix (`array` with `|` separator), and
+  all readouts; column vectors / standard notation, no raw `[[...]]` in prose
+- [x] Distinct role colors (R1 = original, R2 = transformed, solution = selected,
+  starting-point ghost = invariant) + a labelled legend; not color-only
+- [x] Degenerate rows after an illegal move drawn honestly (full-plane fill +
+  text note), never a fabricated intersection
+
+### Testing review
+
+- [x] Unit tests `src/math/__tests__/elimination.test.ts`: solution-set
+  preservation across unique / infinite / none, illegal-move detection, correct
+  elimination step, inverse round-trips
+- [x] Wiring test block in `lessonWiring.test.ts` (guided scene + explorer
+  resolve, custom capabilities used, invariance theorem present, lesson order /
+  numbering — elimination = 4, Karatsuba shifts to 7)
+- [x] Registry test lists `elimination`; `courseModel.test.ts` marks it built
+- [x] Browser test `e2e/lesson-elimination.spec.ts`: guided scene play/replay,
+  the triple-view explorer, a legal op keeps `(2,-1)` + `data-preserved="true"`
+  while the matrix changes, the illegal scale-by-0 flips to `infinitely many` /
+  `data-preserved="false"`, reset restores, and the committed-prediction
+  practice grades correct — zero console errors (screenshot in `screenshots/`)
+
+### Teaching review
+
+- [x] One-sentence mental model: a row operation swaps the constraints for
+  different ones with exactly the same solution set (not a bag of tricks)
+- [x] Opens with a genuine question (if you change the equations, how do you know
+  you have not changed the answer?), reuses Lesson 3's solved system
+- [x] Proof block (`thm-invariance`) proves invariance both directions (nothing
+  lost / nothing gained) and pins reversibility as the reason
+- [x] Determinant not taught here — framed in reversibility / equivalence; only a
+  "looking ahead" aside names the next lesson
+- [x] Exercises validate the new platform capabilities: committed prediction,
+  exercise sequence, matrix entry, error diagnosis (illegal move), construction
+  of an inconsistent system, and a self-checked invariance proof
