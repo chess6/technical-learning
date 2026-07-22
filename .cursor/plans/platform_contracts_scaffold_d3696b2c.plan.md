@@ -4,13 +4,13 @@ overview: Establish a thin, expandable foundation for four platform contracts â€
 todos:
   - id: identity
     content: "src/platform/identity.ts: entity-specific branded IDs (LessonId, ExerciseId, CourseId, UnitId, ConceptId) with existing unnamespaced IDs remaining canonical; per-entity alias maps + resolveId; SCHEMA_VERSION + a migration runner; experimental-namespace escape hatch."
-    status: in_progress
+    status: completed
   - id: identity-tests
     content: Tests target the migration runner (chained version upgrades) and alias resolution/branding guards â€” not per-migration idempotency.
     status: pending
   - id: course-model
     content: Add CURRICULUM tree (Subject -> Course -> Unit -> Lesson refs) as NEW data only; model Karatsuba in its own algorithms course in the model. No lesson files change.
-    status: pending
+    status: completed
   - id: course-adapter
     content: Add a compatibility adapter mapping CURRICULUM to the current navigation shape; UI keeps reading existing sources. Test asserts the adapter reproduces today's sidebar, home order, numbering, and Prev/Next exactly.
     status: pending
@@ -40,10 +40,10 @@ todos:
     status: pending
   - id: umbrella-doc
     content: docs/PLATFORM_CONTRACTS.md umbrella spec linking the four contracts, the capability-envelope/escape-hatch philosophy, and an explicit Non-goals section.
-    status: pending
+    status: completed
   - id: verify
     content: "Run npm run lint, npm run test, and npm run test:e2e (targeted at minimum): the Systems captions and ExercisePanel refactor are visible UI changes."
-    status: pending
+    status: completed
 isProject: false
 ---
 
