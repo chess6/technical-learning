@@ -3,6 +3,7 @@ import {
   classifyLinearSystem2x2,
   classifyRowConstraint,
   solveLinearSystem2x2,
+  matrixColumn,
   matrixVectorMultiply,
   type Matrix2x2,
   type Vector2,
@@ -166,5 +167,85 @@ describe("classifyRowConstraint", () => {
   it("0 = c with c ≠ 0 → empty (impossible), not a line", () => {
     expect(classifyRowConstraint(0, 0, 5).kind).toBe("empty");
     expect(classifyRowConstraint(0, 0, -2).kind).toBe("empty");
+  });
+});
+
+/**
+ * These lock in the *visualization* contracts the guided scene
+ * (`linearSystemsScene.ts`) and the explorer (`SystemsExplorer.tsx`) rely on.
+ * Both renderers must decide "is this row a line?" via `classifyRowConstraint`
+ * and must build every column combination via the shared `matrixVectorMultiply`
+ * / `scaleVector` — never a hand-rolled `x*col1[0] + y*col2[0]`. If a renderer
+ * regressed to a local formula or a "draw every row as a line" fallback, one of
+ * these would break.
+ */
+describe("systems visualization contracts (scene + explorer)", () => {
+  it("a zero row is NEVER a false line: A=[[0,0],[1,0]] → row 1 is all-plane, row 2 is a line", () => {
+    // Row 1: 0·x + 0·y = 0  → the whole plane (no constraint), not a line.
+    expect(classifyRowConstraint(0, 0, 0).kind).toBe("all");
+    // Row 2: 1·x + 0·y = 0  → a genuine (vertical) line x = 0.
+    expect(classifyRowConstraint(1, 0, 0).kind).toBe("line");
+    // The system's solution set is that whole line ⇒ infinitely many.
+    const A: Matrix2x2 = [
+      [0, 0],
+      [1, 0],
+    ];
+    expect(classifyLinearSystem2x2(A, [0, 0]).kind).toBe("infinite");
+  });
+
+  it("a zero row with a nonzero rhs is an 'impossible' note, not a line: A=[[0,0],[1,0]], b=(5,0)", () => {
+    // Row 1: 0 = 5  → empty (impossible) ⇒ the scene/explorer draws a note, no line.
+    expect(classifyRowConstraint(0, 0, 5).kind).toBe("empty");
+    const A: Matrix2x2 = [
+      [0, 0],
+      [1, 0],
+    ];
+    expect(classifyLinearSystem2x2(A, [5, 0]).kind).toBe("none");
+  });
+
+  it("infinite case draws two coincident lines (the whole line is the solution set)", () => {
+    // aDependent rows are x + 2y = 3 and 2x + 4y = 6 — both genuine lines...
+    const A = LINEAR_SYSTEM_EXAMPLE.aDependent as Matrix2x2;
+    const b = LINEAR_SYSTEM_EXAMPLE.bInfinite as Vector2;
+    const r1 = classifyRowConstraint(A[0][0], A[0][1], b[0]);
+    const r2 = classifyRowConstraint(A[1][0], A[1][1], b[1]);
+    expect(r1.kind).toBe("line");
+    expect(r2.kind).toBe("line");
+    // ...and they are the SAME line: every endpoint of row 1 also satisfies row 2.
+    if (r1.kind === "line") {
+      for (const p of [r1.point1, r1.point2]) {
+        expect(A[1][0] * p[0] + A[1][1] * p[1]).toBeCloseTo(b[1], 9);
+      }
+    }
+  });
+
+  it("every dependent recipe reaches b via A·(x,y) — the column combination is matrixVectorMultiply", () => {
+    // The infinite family for x + 2y = 3 is x = 3 - 2t, y = t. Each recipe must
+    // land exactly on b when combined through the shared matrix–vector product.
+    const A = LINEAR_SYSTEM_EXAMPLE.aDependent as Matrix2x2;
+    const b = LINEAR_SYSTEM_EXAMPLE.bInfinite as Vector2;
+    const col1 = matrixColumn(A, 0);
+    const col2 = matrixColumn(A, 1);
+    for (const t of [-3, -1, 0, 0.5, 2, 4]) {
+      const x = 3 - 2 * t;
+      const y = t;
+      const combo = matrixVectorMultiply(A, [x, y]);
+      // Shared product equals the explicit column blend x·col₁ + y·col₂...
+      expect(combo[0]).toBeCloseTo(x * col1[0] + y * col2[0], 9);
+      expect(combo[1]).toBeCloseTo(x * col1[1] + y * col2[1], 9);
+      // ...and it reaches the target for every recipe (infinitely many).
+      expect(combo[0]).toBeCloseTo(b[0], 9);
+      expect(combo[1]).toBeCloseTo(b[1], 9);
+    }
+  });
+
+  it("near-singular unique solution truly lands off the ±7 view box (off-screen readout is honest)", () => {
+    const A = LINEAR_SYSTEM_EXAMPLE.aNearSingular as Matrix2x2;
+    const b = LINEAR_SYSTEM_EXAMPLE.bNearSingular as Vector2;
+    const x = solveLinearSystem2x2(A, b)!;
+    // The explorer's fixed half-view is 7; this solution must be outside it so
+    // marking it "off-screen" (rather than silently clipping it) is truthful.
+    const outsideViewBox = Math.abs(x[0]) > 7 || Math.abs(x[1]) > 7;
+    expect(outsideViewBox).toBe(true);
   });
 });

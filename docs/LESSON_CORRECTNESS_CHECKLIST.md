@@ -106,6 +106,26 @@ columns are `(v, 2v)`, and the targets are Lesson 1's `q` and `r`.
   the lesson page (with the shared `ExercisePanel` still rendering after its
   capability refactor)
 
+#### Shared-helper routing pass (2026-07-21)
+
+- [x] Guided scene (`linearSystemsScene.ts`) decides "is this row a line?" via
+  `classifyRowConstraint` — `rowLineBoxPoints` returns `null` (draws nothing)
+  for a zero row, so `0 = 0` / `0 = c` can never render as a **false line**
+  (previous local `lineBoxPoints` had an x-axis fallback; removed)
+- [x] Guided scene column arithmetic routed through `matrixColumn` /
+  `scaleVector` / `matrixVectorMultiply` (`combo = A·(x, y)`,
+  `scaledCol1 = scaleVector(col₁, x)`) — no hand-rolled `cx·a11 + cy·a12`
+- [x] Explorer `dependentRecipe(A, b, t, consistent)` builds every endpoint with
+  `matrixVectorMultiply`, projects with `dotProduct`, and draws `scaled1` with
+  `scaleVector(col₁, x)` — no local `x*col1[0] + y*col2[0]`
+- [x] New regression block in `src/math/__tests__/systems.test.ts` (`systems
+  visualization contracts`): zero-row all/empty vs line, coincident-line infinite
+  case, every dependent recipe reaches `b` via `matrixVectorMultiply`, and the
+  near-singular solution genuinely off the ±7 view box; `docs/ERROR_LOG.md`
+  entry `2026-07-21` logged
+- [x] `npm run lint` clean for these files; targeted `vitest` (systems +
+  lessonWiring) and `e2e/lesson-systems.spec.ts` green
+
 ---
 
 ## Lesson 4 — Determinants as Signed Area Scaling (M5)

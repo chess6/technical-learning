@@ -120,5 +120,11 @@ test("Systems lesson loads, guided scene plays, and the explorer walks the trich
     practice.locator('.exercise-panel__feedback[data-state="correct"]').first(),
   ).toContainText("Correct");
 
+  // Capture a proof-of-life screenshot of the explorer (gitignored screenshots/).
+  await explore.scrollIntoViewIfNeeded();
+  await explore.screenshot({
+    path: "/home/thomas/Dev/technical-learning/screenshots/systems-trackA.png",
+  });
+
   expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
 });

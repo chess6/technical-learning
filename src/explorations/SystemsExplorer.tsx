@@ -14,6 +14,9 @@ import {
   classifyLinearSystem2x2,
   classifyRowConstraint,
   clamp,
+  dotProduct,
+  matrixColumn,
+  matrixVectorMultiply,
   scaleVector,
   type Matrix2x2,
   type RowConstraint,
@@ -75,26 +78,27 @@ const approxVec = (p: Vector2, q: readonly [number, number]) =>
  *   on the columns' line and none of them touch `b` — reachability visibly fails.
  */
 function dependentRecipe(
-  col1: Vector2,
-  col2: Vector2,
+  A: Matrix2x2,
   b: Vector2,
   t: number,
   consistent: boolean,
 ): { x: number; y: number; combo: Vector2 } | null {
+  const col1 = matrixColumn(A, 0);
+  const col2 = matrixColumn(A, 1);
   const n1 = Math.hypot(col1[0], col1[1]);
   const n2 = Math.hypot(col2[0], col2[1]);
   if (n1 <= 1e-9 && n2 <= 1e-9) return null; // zero matrix — nothing to combine
 
-  const combineOf = (x: number, y: number): Vector2 => [
-    x * col1[0] + y * col2[0],
-    x * col1[1] + y * col2[1],
-  ];
+  // Every endpoint is the shared matrix–vector product A·(x, y) = x·col₁ + y·col₂;
+  // no column arithmetic is reimplemented here.
+  const combineOf = (x: number, y: number): Vector2 =>
+    matrixVectorMultiply(A, [x, y]);
 
   const useCol1 = n1 > 1e-9;
   const e: Vector2 = useCol1 ? col1 : col2;
   const other: Vector2 = useCol1 ? col2 : col1;
-  const ee = e[0] * e[0] + e[1] * e[1];
-  const s0 = (b[0] * e[0] + b[1] * e[1]) / ee; // scalar of b projected onto e
+  const ee = dotProduct(e, e);
+  const s0 = dotProduct(b, e) / ee; // scalar of b projected onto e
   const k = Math.abs(e[0]) >= Math.abs(e[1]) ? other[0] / e[0] : other[1] / e[1];
 
   if (!consistent) {
@@ -220,12 +224,12 @@ export function SystemsExplorer() {
     independentColumns && solution
       ? { x: solution[0], y: solution[1], combo: b }
       : !independentColumns
-        ? dependentRecipe(col1, col2, b, t, consistent)
+        ? dependentRecipe(A, b, t, consistent)
         : null;
   const hasRecipe = recipe !== null;
-  const scaled1: Vector2 = recipe
-    ? [recipe.x * col1[0], recipe.x * col1[1]]
-    : [0, 0];
+  // The first leg of the combination is x·col₁ — the shared scaleVector, never
+  // a hand-rolled component product.
+  const scaled1: Vector2 = recipe ? scaleVector(col1, recipe.x) : [0, 0];
   const comboPt: Vector2 = recipe ? recipe.combo : [0, 0];
   const recipeReachesB = recipe
     ? Math.hypot(comboPt[0] - b[0], comboPt[1] - b[1]) < 1e-6
