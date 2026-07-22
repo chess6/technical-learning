@@ -8,6 +8,12 @@ single coherent arc rather than a pile of topics.
 This document answers "what is the whole course, and why in this order?" It is
 distinct from its neighbors:
 
+- [CURRICULUM_ARCHITECTURE.md](./CURRICULUM_ARCHITECTURE.md) — the
+  *encoding-facing* formalization of this spine: the explicit prerequisite graph
+  (edge table + Mermaid), the stable concept-ID catalog, the recurring canonical
+  examples, the platform-feature-to-lesson matrix, and the next-lesson
+  recommendation. Read it when *encoding* the sequence; read this when deciding
+  *what the sequence is*.
 - [MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md](./MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md)
   — the *platform data model* (subjects → courses → modules → lessons, and the
   eventual graph). That is about **structure/plumbing**; this is about
@@ -246,10 +252,11 @@ Notes:
 - **L12 before L13, L14**: projection is the engine of both least squares and the
   geometric reading of SVD.
 
-This ordering is currently *implicit* in the `curriculum.ts` sequence. Making it
-an explicit prerequisite graph is deferred to the platform model — see
-`MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §3 (typed `prerequisite` edges + DAG
-validation).
+This ordering is currently *implicit* in the `curriculum.ts` sequence. It is now
+made **explicit** as a prerequisite edge table + DAG in
+[CURRICULUM_ARCHITECTURE.md](./CURRICULUM_ARCHITECTURE.md) §2 (the content for the
+typed `prerequisite` edges that `MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` §3
+defers to the platform model, with DAG validation).
 
 ---
 
