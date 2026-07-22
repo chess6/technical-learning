@@ -10,6 +10,7 @@ import {
   CHAPTER0_SEGMENTS,
   COLUMNS_RULE_GRAPHIC_SEGMENTS,
   SYSTEMS_SEGMENTS,
+  ELIMINATION_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -51,6 +52,7 @@ const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
+const ELIMINATION_STEPS = toSteps(ELIMINATION_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -96,6 +98,20 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "unique",
       "infinite",
       "none",
+      "summary",
+    ]),
+  },
+  elimination: {
+    id: "elimination",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for Gaussian elimination on a 2 by 2 system, shown as three synchronized views: the written equations, the augmented matrix, and the two constraint lines. One elementary row operation, replacing row two with row two minus twice row one, rewrites the equations and the matrix while the second line pivots around the fixed intersection point, which never moves; the system becomes triangular so the solution is read off by back-substitution, illustrating that a row operation replaces the constraints with different constraints having exactly the same solution set.",
+    steps: ELIMINATION_STEPS,
+    majorSteps: pickMajor(ELIMINATION_STEPS, [
+      "setup",
+      "operation",
+      "triangular",
+      "invariance",
       "summary",
     ]),
   },

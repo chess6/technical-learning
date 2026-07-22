@@ -97,6 +97,21 @@ export const SYSTEMS_SEGMENTS: readonly SceneSegment[] = [
   { id: "summary", title: "Two pictures, one question", duration: 4 },
 ];
 
+/**
+ * "Elimination" Watch scene — one row operation as reversible constraint
+ * manipulation. Three synchronized views (written equations, augmented matrix,
+ * the two constraint lines) stay in sync while R2 → R2 − 2·R1 pivots the second
+ * line around the fixed intersection, ending on a triangular system read off by
+ * back-substitution. Reuses Lesson 3's system A = [[1,3],[2,-1]], b = (−1,5).
+ */
+export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
+  { id: "setup", title: "One system, three views", duration: 5 },
+  { id: "operation", title: "R2 → R2 − 2·R1", duration: 7 },
+  { id: "triangular", title: "Triangular: read off y, back-substitute", duration: 6 },
+  { id: "invariance", title: "The crossing never moved", duration: 5 },
+  { id: "summary", title: "Same solutions, easier system", duration: 4 },
+];
+
 export const SPIKE_SEGMENTS: readonly SceneSegment[] = [
   { id: "identity", title: "Identity grid", duration: 0.4 },
   { id: "transform", title: "Apply the matrix", duration: 2 },

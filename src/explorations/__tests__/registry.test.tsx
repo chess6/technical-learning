@@ -6,6 +6,7 @@ describe("explorer registry (M6 lazy-loading)", () => {
   it("reports known explorers and rejects unknown ids", () => {
     expect(hasExplorer("linear-combination")).toBe(true);
     expect(hasExplorer("matrix-transformation")).toBe(true);
+    expect(hasExplorer("elimination")).toBe(true);
     expect(hasExplorer("determinant-area-scaling")).toBe(true);
     expect(hasExplorer("eigenvectors-invariant-directions")).toBe(true);
     expect(hasExplorer("karatsuba-cross-terms")).toBe(true);
