@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { asExerciseId, asLessonId, SCHEMA_VERSION } from "../identity";
+import { asExerciseId, asLessonId, registerAlias, SCHEMA_VERSION } from "../identity";
 import {
   createEmptyLearnerState,
   makeAttempt,
   migrateLearnerState,
+  normalizeLearnerState,
   type ExerciseAttempt,
   type LearnerState,
 } from "../learnerState";
@@ -51,6 +52,136 @@ describe("migration to the current envelope", () => {
     expect(() => migrateLearnerState({ schemaVersion: 999 })).toThrow(
       /newer than the app/,
     );
+  });
+});
+
+describe("migration normalizes and repairs every version (not just v0)", () => {
+  it("repairs an already-current but malformed envelope (missing collections)", () => {
+    // Previously bypassed normalization and returned a malformed LearnerState.
+    const state = migrateLearnerState({ schemaVersion: 1 });
+    expect(state.schemaVersion).toBe(1);
+    expect(state.lessonProgress).toEqual({});
+    expect(state.exerciseAttempts).toEqual({});
+    expect(state.bookmarks).toEqual([]);
+  });
+
+  it("drops malformed nested entries instead of trusting their shape", () => {
+    const state = migrateLearnerState({
+      schemaVersion: 1,
+      lessonProgress: {
+        vectors: "not-an-object",
+        systems: { lessonId: "systems", visited: true },
+      },
+      exerciseAttempts: {
+        "sys-solve-unique": [
+          {
+            exerciseId: "sys-solve-unique",
+            capabilityId: "vector",
+            answerSchemaVersion: 1,
+            answer: [2, -1],
+            at: "2026-07-21T00:00:00.000Z",
+          },
+          { capabilityId: "vector" }, // missing required fields -> dropped
+          "garbage",
+        ],
+      },
+      bookmarks: [
+        { lessonId: "systems", createdAt: "2026-07-21T00:00:00.000Z" },
+        { note: "no lesson id" }, // dropped
+        5,
+      ],
+    });
+    expect(Object.keys(state.lessonProgress)).toEqual(["systems"]);
+    expect(state.lessonProgress.systems!.visited).toBe(true);
+    expect(state.exerciseAttempts["sys-solve-unique"]).toHaveLength(1);
+    expect(state.bookmarks).toHaveLength(1);
+  });
+
+  it("rejects a stored answer that is not JSON-safe", () => {
+    const state = migrateLearnerState({
+      schemaVersion: 1,
+      exerciseAttempts: {
+        "ex-1": [
+          {
+            exerciseId: "ex-1",
+            capabilityId: "vector",
+            answerSchemaVersion: 1,
+            answer: [Number.NaN], // NaN is not JSON-safe -> attempt dropped
+            at: "2026-07-21T00:00:00.000Z",
+          },
+        ],
+      },
+    });
+    expect(state.exerciseAttempts["ex-1"]).toBeUndefined();
+  });
+
+  it("normalizeLearnerState is idempotent on a well-formed state", () => {
+    const once = normalizeLearnerState({
+      schemaVersion: 1,
+      lessonProgress: { systems: { lessonId: "systems", visited: true, completed: true } },
+      exerciseAttempts: {},
+      bookmarks: [],
+    });
+    expect(normalizeLearnerState(once)).toEqual(once);
+  });
+});
+
+describe("migration resolves aliases so a rename never orphans progress", () => {
+  it("re-keys lesson/exercise progress and nested ids to the canonical id", () => {
+    registerAlias("lesson", "x-old-systems", "systems");
+    registerAlias("exercise", "x-old-solve", "sys-solve-unique");
+    const state = migrateLearnerState({
+      schemaVersion: 1,
+      lessonProgress: {
+        "x-old-systems": { lessonId: "x-old-systems", visited: true, completed: true },
+      },
+      exerciseAttempts: {
+        "x-old-solve": [
+          {
+            exerciseId: "x-old-solve",
+            capabilityId: "vector",
+            answerSchemaVersion: 1,
+            answer: [2, -1],
+            correct: true,
+            at: "2026-07-21T00:00:00.000Z",
+          },
+        ],
+      },
+      bookmarks: [{ lessonId: "x-old-systems", createdAt: "2026-07-21T00:00:00.000Z" }],
+    });
+    // Keyed by the canonical id, not the retired one.
+    expect(state.lessonProgress.systems!.completed).toBe(true);
+    expect(state.lessonProgress["x-old-systems"]).toBeUndefined();
+    expect(state.exerciseAttempts["sys-solve-unique"]).toHaveLength(1);
+    expect(state.exerciseAttempts["sys-solve-unique"]![0]!.exerciseId).toBe("sys-solve-unique");
+    expect(state.exerciseAttempts["x-old-solve"]).toBeUndefined();
+    expect(state.bookmarks[0]!.lessonId).toBe("systems");
+  });
+
+  it("merges two aliased keys that collapse onto one canonical id", () => {
+    registerAlias("lesson", "x-legacy-vectors", "vectors");
+    const state = migrateLearnerState({
+      schemaVersion: 1,
+      lessonProgress: {
+        "x-legacy-vectors": {
+          lessonId: "x-legacy-vectors",
+          visited: true,
+          completed: false,
+          lastVisitedAt: "2026-01-01T00:00:00.000Z",
+        },
+        vectors: {
+          lessonId: "vectors",
+          visited: false,
+          completed: true,
+          lastVisitedAt: "2026-02-01T00:00:00.000Z",
+        },
+      },
+    });
+    expect(Object.keys(state.lessonProgress)).toEqual(["vectors"]);
+    const merged = state.lessonProgress.vectors!;
+    expect(merged.visited).toBe(true); // OR across both keys
+    expect(merged.completed).toBe(true);
+    expect(merged.lastVisitedAt).toBe("2026-02-01T00:00:00.000Z"); // later timestamp wins
   });
 });
 
