@@ -112,9 +112,20 @@ describe("scene timings (pure data)", () => {
   // Regression for the timing-drift finding: the elimination scene body used to
   // subtract guessed choreography totals (waitFor(duration - guess)), so it ran
   // ~23.8s against 27s of metadata. It now budgets every yield via
-  // ELIMINATION_BEATS and pads with runSegment, so the generated length must
-  // equal the metadata total. We assert the property that guarantees this.
-  describe("elimination timeline matches its declared segment metadata", () => {
+  // ELIMINATION_BEATS and pads with `runSegment`.
+  //
+  // IMPORTANT (scope of these tests): they are PURE DATA checks. They do NOT
+  // instantiate or run the Motion Canvas scene (that only executes in the
+  // browser player), so they do NOT directly measure the rendered timeline.
+  // What they prove is the necessary precondition for `runSegment` to hit the
+  // declared total: each segment's declared beat budget fits within its
+  // segment, so `runSegment(duration, body)` — which holds for
+  // max(duration, consumed) — can only ever PAD (never truncate) each segment.
+  // The Playwright spec (`e2e/lesson-elimination.spec.ts`) is the behavioral
+  // evidence that the actual rendered timeline is aligned: it scrubs to 28% of
+  // the timeline and asserts the operation-beat marker is showing, and steps
+  // through all five idea markers derived from this same metadata.
+  describe("elimination declared beat budgets fit within their segments (runSegment then only pads)", () => {
     it("declares 27s total across five segments", () => {
       expect(ELIMINATION_SEGMENTS.map((s) => s.id)).toEqual([
         "setup",
@@ -126,7 +137,7 @@ describe("scene timings (pure data)", () => {
       expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(27);
     });
 
-    it("every segment body fits its budget, so runSegment only pads (never truncates)", () => {
+    it("every declared segment body fits its budget, so runSegment only pads (never truncates)", () => {
       for (const seg of ELIMINATION_SEGMENTS) {
         const consumed = sumBeats(ELIMINATION_BEATS[seg.id]);
         expect(consumed).toBeGreaterThanOrEqual(0);
@@ -135,15 +146,19 @@ describe("scene timings (pure data)", () => {
       }
     });
 
-    it("generated scene length equals totalDuration(ELIMINATION_SEGMENTS)", () => {
-      // runSegment holds each body for max(declared duration, consumed). Because
-      // every body fits its budget (test above), that max is always the declared
-      // duration — so the padded timeline is exactly the metadata total.
-      const generated = ELIMINATION_SEGMENTS.reduce(
+    it("padded declared-segment lengths sum to totalDuration(ELIMINATION_SEGMENTS)", () => {
+      // This is the PADDING ARITHMETIC that `runSegment` performs, computed from
+      // the declared budgets — NOT a measurement of the executed scene. Because
+      // every body fits its budget (test above), runSegment's
+      // max(declared duration, consumed) is always the declared duration, so the
+      // padded declared timeline equals the metadata total. Whether the RUNNING
+      // scene actually lands here is asserted behaviorally by the Playwright
+      // scrubber/marker checks, not by this unit test.
+      const paddedDeclared = ELIMINATION_SEGMENTS.reduce(
         (sum, seg) => sum + Math.max(seg.duration, sumBeats(ELIMINATION_BEATS[seg.id])),
         0,
       );
-      expect(generated).toBeCloseTo(totalDuration(ELIMINATION_SEGMENTS), 9);
+      expect(paddedDeclared).toBeCloseTo(totalDuration(ELIMINATION_SEGMENTS), 9);
     });
 
     it("every beat budget is positive (no zero/negative animated yields)", () => {

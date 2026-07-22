@@ -27,6 +27,27 @@ rules over one-off patches.
 
 ---
 
+### 2026-07-22 — Elimination: non-finite row-op factors accepted, all-zero system mis-compared, explorer language assumed a crossing point
+
+- **Date:** 2026-07-22
+- **Title:** `RowOperation` validity only tested against zero (accepting `NaN`/`±∞`), `haveSameSolutionSet` assumed every infinite system is a line (so the whole-plane zero system compared unequal to itself), and the elimination explorer's permanent description / canvas caption / accessible Mafs label described a unique "crossing point" for the infinite and inconsistent presets too
+- **Symptom:**
+  1. `isSolutionPreserving` / `classifyRowOperation` used `factor !== 0`, so `scale`/`add`/self-add with `NaN`, `Infinity`, or `-Infinity` were reported reversible/solution-preserving; `inverseRowOperation` returned garbage (e.g. `1/∞ = 0`, a scale-by-0) instead of failing.
+  2. `haveSameSolutionSet` fetched a single `solutionLine` for the `infinite` branch and returned `false` when it was `null`. The all-zero system `0x+0y=0, 0x+0y=0` (classified `infinite`, but its solution set is the **entire plane**) has no line, so it compared **unequal even to itself**.
+  3. The explorer's `description`, the canvas `figcaption`, and the `MafsSceneShell` `ariaLabel` were fixed strings naming "the crossing point" / "their fixed intersection point" — mathematically false for the `infinite` (coincident lines, a shared solution line) and `none` (parallel lines, empty set) presets.
+- **Mathematical expectation:** A row-operation factor must be **finite and (for scale / the `1+k` self-add) nonzero** to be a reversible bijection on the rows; non-finite factors are illegal, not a stability warning. An `infinite` 2×2 system's solution set is either **one line** or the **whole plane**; equality must compare like-for-like (line=line by normalized coefficients, plane=plane, line≠plane). Learner-facing language must match the case: a point (unique), a shared line (infinite), or the empty set (none) — never a crossing point for infinite/none.
+- **Root cause:** Validity conflated "nonzero" with "valid" and never checked finiteness; the infinite-case comparison modeled only the line geometry; the explorer hardcoded unique-case copy in three synchronized representations.
+- **Affected files:** `src/math/elimination.ts`, `src/explorations/EliminationExplorer.tsx`
+- **Fix:**
+  1. `isSolutionPreserving` / `classifyRowOperation` / `numericalStabilityWarning` / `inverseRowOperation` now require `Number.isFinite(factor)` (self-add via its canonical `1+k` scale); `inverseRowOperation` throws for non-finite factors; the stability warning stays strictly separate (non-finite ⇒ illegal, never a warning).
+  2. New internal `infiniteSolutionGeometry` returns `{ kind: "line" | "plane" }` by reusing `solutionLine` / `classifyRowConstraint`; `haveSameSolutionSet` compares plane=plane equal, line=line by coefficients, and line≠plane.
+  3. The explorer derives `description` / caption / aria label from `current.kind` (unique = fixed intersection point, infinite = coincident lines with a shared solution line, none = parallel lines with an empty set).
+- **Regression test added:** `src/math/__tests__/elimination.test.ts` — a non-finite-factor block (NaN/±∞ across scale, distinct-row add, self-add: invalid, no inverse, not asserted preserving, no stability warning) and whole-plane cases (all-zero system equals itself; line-vs-plane unequal both orders). `src/explorations/__tests__/EliminationExplorer.test.tsx` and `e2e/lesson-elimination.spec.ts` assert the preset-sensitive description/caption/aria label for all three presets.
+- **General lesson / prevention rule:** Operation validity must check **finiteness**, not only nonzero-ness, and keep it separate from numerical-stability warnings. Solution-set comparison must model **every** geometry a classification allows (an `infinite` system can be a line OR the whole plane). Synchronized learner-facing representations (prose description, caption, accessible label) must be derived from the live classification, never hardcoded to one case.
+- **Status:** fixed
+
+---
+
 ### 2026-07-21 — Linear Systems: guided scene + explorer reimplemented column arithmetic and could draw a false zero-row line
 
 - **Date:** 2026-07-21

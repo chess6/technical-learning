@@ -116,6 +116,58 @@ describe("illegal operations are flagged and never asserted as preserving", () =
   });
 });
 
+describe("non-finite factors (NaN / ±Infinity) are rejected as invalid, not just nonzero", () => {
+  const NON_FINITE: [string, number][] = [
+    ["NaN", NaN],
+    ["Infinity", Infinity],
+    ["-Infinity", -Infinity],
+  ];
+
+  it.each(NON_FINITE)("rejects scale by %s", (_label, factor) => {
+    const op: RowOperation = { kind: "scale", row: 1, factor };
+    expect(isSolutionPreserving(op)).toBe(false);
+    expect(classifyRowOperation(op).reversible).toBe(false);
+    // A non-finite factor is an illegality, NOT a numerical-stability warning.
+    expect(numericalStabilityWarning(op)).toBeNull();
+    expect(() => inverseRowOperation(op)).toThrow(/no inverse/);
+    expect(() => assertRowOperationPreservesSolutions(uniqueSystem, op)).toThrow(
+      /not solution-preserving/,
+    );
+  });
+
+  it.each(NON_FINITE)("rejects a distinct-row add with factor %s", (_label, factor) => {
+    const op: RowOperation = { kind: "add", source: 0, target: 1, factor };
+    expect(isSolutionPreserving(op)).toBe(false);
+    expect(classifyRowOperation(op).reversible).toBe(false);
+    expect(numericalStabilityWarning(op)).toBeNull();
+    expect(() => inverseRowOperation(op)).toThrow(/no inverse/);
+    expect(() => assertRowOperationPreservesSolutions(uniqueSystem, op)).toThrow(
+      /not solution-preserving/,
+    );
+  });
+
+  it.each(NON_FINITE)("rejects a self-add with factor %s (canonicalizes to a non-finite scale)", (_label, factor) => {
+    const op: RowOperation = { kind: "add", source: 0, target: 0, factor };
+    // Canonicalizes to scale by 1 + k, which is non-finite for a non-finite k.
+    const canonical = canonicalizeRowOperation(op);
+    expect(canonical.kind).toBe("scale");
+    expect(Number.isFinite((canonical as { factor: number }).factor)).toBe(false);
+    expect(isSolutionPreserving(op)).toBe(false);
+    expect(classifyRowOperation(op).reversible).toBe(false);
+    expect(numericalStabilityWarning(op)).toBeNull();
+    expect(() => inverseRowOperation(op)).toThrow(/no inverse/);
+    expect(() => assertRowOperationPreservesSolutions(uniqueSystem, op)).toThrow(
+      /not solution-preserving/,
+    );
+  });
+
+  it("still accepts an ordinary finite nonzero factor (guard did not over-reject)", () => {
+    expect(isSolutionPreserving({ kind: "scale", row: 1, factor: -2 })).toBe(true);
+    expect(isSolutionPreserving({ kind: "add", source: 0, target: 1, factor: 3 })).toBe(true);
+    expect(isSolutionPreserving({ kind: "add", source: 0, target: 0, factor: 2 })).toBe(true);
+  });
+});
+
 describe("validity is exact; tiny factors are a stability warning, not illegal", () => {
   it("accepts scaling by an arbitrarily small nonzero factor as solution-preserving", () => {
     // The formal statement says EVERY nonzero factor is valid. A factor far
@@ -199,6 +251,27 @@ describe("haveSameSolutionSet compares solution sets case by case", () => {
   it("none: two empty solution sets are equal", () => {
     const after = applyRowOperation(noneSystem, { kind: "swap" });
     expect(haveSameSolutionSet(noneSystem, after)).toBe(true);
+  });
+
+  it("infinite: the whole-plane (all-zero) system equals itself", () => {
+    // 0x + 0y = 0 twice: every point of the plane is a solution. The classifier
+    // calls this `infinite`, but its solution set is the plane, not a line.
+    const zeroSystem: AugmentedSystem = { rows: [[0, 0, 0], [0, 0, 0]] };
+    expect(classifyLinearSystem2x2(systemMatrix(zeroSystem), systemRhs(zeroSystem)).kind).toBe(
+      "infinite",
+    );
+    // Must compare equal to itself (the historical bug returned false here).
+    expect(haveSameSolutionSet(zeroSystem, zeroSystem)).toBe(true);
+    // A different all-zero encoding is still the whole plane, hence equal.
+    const alsoZero: AugmentedSystem = { rows: [[0, 0, 0], [0, 0, 0]] };
+    expect(haveSameSolutionSet(zeroSystem, alsoZero)).toBe(true);
+  });
+
+  it("infinite: a solution line and the whole plane are NOT equal (either order)", () => {
+    const zeroSystem: AugmentedSystem = { rows: [[0, 0, 0], [0, 0, 0]] };
+    // infiniteSystem is a genuine line (x + 2y = 3); the zero system is the plane.
+    expect(haveSameSolutionSet(infiniteSystem, zeroSystem)).toBe(false);
+    expect(haveSameSolutionSet(zeroSystem, infiniteSystem)).toBe(false);
   });
 
   it("different trichotomy kinds are never equal", () => {

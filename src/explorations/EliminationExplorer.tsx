@@ -183,6 +183,37 @@ export function EliminationExplorer() {
         ? "infinitely many"
         : "no solution";
 
+  // The solution set is a DIFFERENT geometric object per case, so the permanent
+  // description, the canvas caption, and the diagram's accessible label must all
+  // match the current system rather than assuming a unique crossing point:
+  //   unique   → two lines with a fixed intersection point,
+  //   infinite → coincident constraints with the same solution line,
+  //   none     → constraints with an empty solution set (no crossing).
+  const geometryText =
+    current.kind === "unique"
+      ? {
+          description:
+            "One system A x = b in three synchronized views — the written equations, the augmented matrix [A | b], and the two constraint lines meeting at a fixed intersection point. Apply an elementary row operation and watch the equations and matrix change while that crossing point (the whole solution set) stays fixed.",
+          caption: "Constraint lines — the crossing point is the solution set",
+          ariaLabel:
+            "The two constraint lines and their fixed intersection point, redrawn as row operations are applied",
+        }
+      : current.kind === "infinite"
+        ? {
+            description:
+              "One system A x = b in three synchronized views — the written equations, the augmented matrix [A | b], and the two coincident constraint lines. Apply an elementary row operation and watch the equations and matrix change while the shared solution line (the whole solution set) stays fixed.",
+            caption: "Constraint lines — the shared line is the solution set",
+            ariaLabel:
+              "The two coincident constraint lines sharing one solution line, redrawn as row operations are applied",
+          }
+        : {
+            description:
+              "One system A x = b in three synchronized views — the written equations, the augmented matrix [A | b], and the two parallel constraint lines that never meet. Apply an elementary row operation and watch the equations and matrix change while the solution set stays empty.",
+            caption: "Constraint lines — no crossing, so the solution set is empty",
+            ariaLabel:
+              "The two parallel constraint lines with no intersection, so the solution set is empty, redrawn as row operations are applied",
+          };
+
   // The solution set is a DIFFERENT geometric object per case, so the "nothing
   // moved" phrasing must be case-specific: a point, a line, or the empty set.
   const preservedPhrase =
@@ -200,7 +231,7 @@ export function EliminationExplorer() {
     <ExplorationPanel
       explorationId="elimination"
       title="Elimination: rewrite the system, keep the solutions"
-      description="One system A x = b in three synchronized views — the written equations, the augmented matrix [A | b], and the two constraint lines. Apply an elementary row operation and watch the equations and matrix change while the crossing point (the whole solution set) stays fixed."
+      description={geometryText.description}
       toolbar={
         <>
           <PresetPicker
@@ -356,11 +387,11 @@ export function EliminationExplorer() {
           </figure>
         </div>
         <figure className="elimination-explorer__panel elimination-explorer__panel--canvas">
-          <figcaption className="elimination-explorer__caption">
-            Constraint lines — the crossing is the solution set
+          <figcaption className="elimination-explorer__caption" data-testid="elim-canvas-caption">
+            {geometryText.caption}
           </figcaption>
           <MafsSceneShell
-            ariaLabel="The two equations drawn as lines and their fixed intersection point as row operations are applied"
+            ariaLabel={geometryText.ariaLabel}
             viewBox={{ x: [-VIEW, VIEW], y: [-VIEW, VIEW], padding: 0.3 }}
             height={340}
           >

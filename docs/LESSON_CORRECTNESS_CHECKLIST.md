@@ -315,3 +315,30 @@ describe exactly the same solution set.
 - [x] Exercises validate the new platform capabilities: committed prediction,
   exercise sequence, matrix entry, error diagnosis (illegal move), construction
   of an inconsistent system, and a self-checked invariance proof
+
+#### Correctness pass (2026-07-22)
+
+- [x] Row-operation validity requires a **finite** factor (not just nonzero):
+  `isSolutionPreserving` / `classifyRowOperation` / `inverseRowOperation` /
+  `numericalStabilityWarning` reject `NaN`/`±∞` (self-add via its canonical
+  `1+k` scale); non-finite is an illegality, kept separate from the
+  tiny-factor stability warning (regression block in `elimination.test.ts`)
+- [x] `haveSameSolutionSet` models both infinite geometries — one **line** or
+  the whole **plane** — via `infiniteSolutionGeometry` (reusing `solutionLine` /
+  `classifyRowConstraint`), so the all-zero system equals itself and a line ≠
+  the plane (regression tests added)
+- [x] Explorer's permanent description, canvas caption, and Mafs accessible
+  label are preset-sensitive (unique = fixed intersection point; infinite =
+  coincident lines / shared solution line; none = parallel lines / empty set) —
+  no crossing-point language for infinite or inconsistent presets
+  (`EliminationExplorer.test.tsx` + `e2e/lesson-elimination.spec.ts` cover all
+  three presets, incl. the accessible label)
+- [x] Scene-timing unit tests reworded to claim only that declared
+  `ELIMINATION_BEATS` budgets fit within their segments and that `runSegment`
+  pads (never truncates) — they do **not** execute the Motion Canvas scene, so
+  the actual rendered-timeline alignment is evidenced by the Playwright
+  scrubber/marker checks, not the unit test
+- [x] `docs/ERROR_LOG.md` entry `2026-07-22` logged; `npm run lint` clean,
+  full `vitest` suite (460) green, `e2e/lesson-elimination.spec.ts` green
+  (pre-existing `tsc -b` errors in `capabilities.ts` / `learnerState.ts` are
+  unrelated to this change and present on clean HEAD)

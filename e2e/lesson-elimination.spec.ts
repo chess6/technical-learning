@@ -164,6 +164,41 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
     "true",
   );
 
+  // --- Preset-sensitive language: the permanent description, the canvas
+  // caption, and the diagram's accessible (Mafs) label must match the selected
+  // system's solution geometry — a crossing point ONLY for the unique case. ---
+  const description = explore.locator(".exploration-panel__description");
+  const caption = explore.getByTestId("elim-canvas-caption");
+  const diagram = explore.getByRole("img", { name: /constraint lines/i });
+
+  // unique: two lines with a fixed intersection point.
+  await expect(caption).toHaveText("Constraint lines — the crossing point is the solution set");
+  await expect(description).toContainText("meeting at a fixed intersection point");
+  await expect(diagram).toHaveAttribute(
+    "aria-label",
+    /fixed intersection point/,
+  );
+
+  // infinite: coincident constraints with the same solution line — no crossing point.
+  await explore.getByRole("button", { name: "Infinitely many" }).click();
+  await expect(explore.getByTestId("elim-kind-readout")).toHaveText("infinitely many");
+  await expect(caption).toHaveText("Constraint lines — the shared line is the solution set");
+  await expect(description).toContainText("coincident constraint lines");
+  await expect(description).not.toContainText("crossing point");
+  await expect(diagram).toHaveAttribute("aria-label", /coincident constraint lines/);
+
+  // none: constraints with an empty solution set — no crossing point.
+  await explore.getByRole("button", { name: "No solution" }).click();
+  await expect(explore.getByTestId("elim-kind-readout")).toHaveText("no solution");
+  await expect(caption).toHaveText("Constraint lines — no crossing, so the solution set is empty");
+  await expect(description).toContainText("never meet");
+  await expect(description).not.toContainText("crossing point");
+  await expect(diagram).toHaveAttribute("aria-label", /no intersection/);
+
+  // Return to the unique preset for the proof-of-life screenshot below.
+  await explore.getByRole("button", { name: "One solution" }).click();
+  await expect(explore.getByTestId("elim-kind-readout")).toHaveText("one solution");
+
   // Proof-of-life screenshot of the triple-view explorer (gitignored, portable).
   await explore.scrollIntoViewIfNeeded();
   await explore.screenshot({ path: screenshotPath("elimination-explorer.png") });

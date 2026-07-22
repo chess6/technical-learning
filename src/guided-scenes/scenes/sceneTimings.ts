@@ -120,8 +120,12 @@ export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
  * which measures real elapsed time and PADS the remainder up to the segment's
  * declared `duration`. Because these budgets are pure, MC-free data, a unit
  * test can assert every segment body fits its budget (so `runSegment` only ever
- * pads, never truncates) and therefore the generated timeline length is exactly
- * `totalDuration(ELIMINATION_SEGMENTS)`. This replaces the old, drift-prone
+ * pads, never truncates) — the necessary precondition for the padded timeline
+ * to equal `totalDuration(ELIMINATION_SEGMENTS)`. That unit test does NOT run
+ * the Motion Canvas scene, so it does not directly measure the rendered
+ * timeline; the Playwright scrubber/marker checks in
+ * `e2e/lesson-elimination.spec.ts` are the behavioral evidence that the running
+ * scene stays aligned. This replaces the old, drift-prone
  * `waitFor(duration - guessedTotal)` subtractions.
  */
 export const ELIMINATION_BEATS: Record<string, Record<string, number>> = {

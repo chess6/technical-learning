@@ -24,10 +24,17 @@ import { classifyLinearSystem2x2, classifyRowConstraint } from "./systems";
  * operation, which combines two *different* rows. We therefore canonicalize a
  * self-add to its equivalent scaling rather than rejecting it outright.
  *
+ * A factor must additionally be a **finite** real number: `NaN`, `Infinity`,
+ * and `-Infinity` are not valid multipliers (they are not invertible in real
+ * arithmetic), so every validity check requires finiteness as well as
+ * nonzero-ness before certifying a move.
+ *
  * A separate notion — **numerical stability** — is kept distinct from
- * mathematical validity: scaling by any nonzero factor is exactly reversible in
- * real arithmetic, but a factor with tiny magnitude is fragile in floating
- * point. That is a *warning*, not an illegality (see `numericalStabilityWarning`).
+ * mathematical validity: scaling by any finite nonzero factor is exactly
+ * reversible in real arithmetic, but a factor with tiny magnitude is fragile in
+ * floating point. That is a *warning*, not an illegality (see
+ * `numericalStabilityWarning`); a non-finite factor is an illegality, never a
+ * mere stability warning.
  *
  * All classification flows through the shared `classifyLinearSystem2x2` — this
  * module never reimplements the trichotomy.
@@ -104,7 +111,9 @@ export function canonicalizeRowOperation(op: RowOperation): RowOperation {
  * out a solution-changing move too (e.g. scale by 0), so a renderer can show
  * what actually happens; use `isSolutionPreserving` / `classifyRowOperation`
  * to decide whether the move was legitimate. A self-add is canonicalized to the
- * equivalent scaling first, so it is total (never throws).
+ * equivalent scaling first, so it is total (never throws) — a non-finite factor
+ * simply produces non-finite row entries here (deterministically), and the
+ * validity helpers reject it rather than this function crashing.
  */
 export function applyRowOperation(
   system: AugmentedSystem,
@@ -135,12 +144,13 @@ export function applyRowOperation(
  * mathematical validity, independent of floating-point tolerance:
  *
  * - **swap** always preserves;
- * - **scale** preserves iff the factor is exactly nonzero (any nonzero factor
- *   is reversible by its reciprocal — even a tiny one; tininess is a numerical
- *   concern surfaced separately by {@link numericalStabilityWarning}, not an
- *   illegality);
- * - **add** of two *distinct* rows always preserves; a **self-add** preserves
- *   iff its equivalent scaling `1 + k` is nonzero (it fails only for `k = -1`).
+ * - **scale** preserves iff the factor is **finite and nonzero** (any finite
+ *   nonzero factor is reversible by its reciprocal — even a tiny one; tininess
+ *   is a numerical concern surfaced separately by {@link numericalStabilityWarning},
+ *   not an illegality — while `NaN`/`±Infinity` are simply not valid multipliers);
+ * - **add** of two *distinct* rows preserves iff the factor is **finite**; a
+ *   **self-add** preserves iff its equivalent scaling `1 + k` is finite and
+ *   nonzero (it fails for `k = -1`, and for any non-finite `k`).
  */
 export function isSolutionPreserving(op: RowOperation): boolean {
   const canonical = canonicalizeRowOperation(op);
@@ -148,9 +158,11 @@ export function isSolutionPreserving(op: RowOperation): boolean {
     case "swap":
       return true;
     case "scale":
-      return canonical.factor !== 0;
+      // Finiteness first: a self-add canonicalizes to scale by `1 + k`, so a
+      // non-finite `k` lands here as a non-finite scale and is rejected.
+      return Number.isFinite(canonical.factor) && canonical.factor !== 0;
     case "add":
-      return true;
+      return Number.isFinite(canonical.factor);
   }
 }
 
@@ -169,6 +181,9 @@ export function numericalStabilityWarning(
   const canonical = canonicalizeRowOperation(op);
   if (canonical.kind !== "scale") return null;
   const { factor } = canonical;
+  // A non-finite factor is an *illegality* (see isSolutionPreserving), never a
+  // stability warning — validity and stability stay strictly separate.
+  if (!Number.isFinite(factor)) return null;
   if (factor !== 0 && Math.abs(factor) < tolerance) {
     return `Scaling by a factor this close to 0 (${factor}) is reversible in exact arithmetic, but numerically fragile — the inverse divides by a near-zero number.`;
   }
@@ -192,6 +207,13 @@ export function classifyRowOperation(op: RowOperation): RowOperationValidity {
   // it is a distinct (and always-illegal) move.
   if (op.kind === "add" && op.source === op.target) {
     const scaled = 1 + op.factor;
+    if (!Number.isFinite(op.factor) || !Number.isFinite(scaled)) {
+      return {
+        reversible: false,
+        reason:
+          `Adding a non-finite multiple (${op.factor}) of R${op.source + 1} to itself is not a well-defined scaling of R${op.source + 1}, so it is not a reversible operation and cannot preserve the solution set.`,
+      };
+    }
     return scaled !== 0
       ? {
           reversible: true,
@@ -213,11 +235,18 @@ export function classifyRowOperation(op: RowOperation): RowOperationValidity {
           "Swapping two equations only reorders them — every point satisfying both still does, so the solution set is untouched.",
       };
     case "scale":
+      if (!Number.isFinite(op.factor)) {
+        return {
+          reversible: false,
+          reason:
+            `Multiplying a row by a non-finite factor (${op.factor}) is not a valid operation — there is no finite number to divide back by, so it cannot preserve the solution set.`,
+        };
+      }
       return op.factor !== 0
         ? {
             reversible: true,
             reason:
-              "Multiplying an equation by a nonzero number is reversible (divide back by the same number), so the same points satisfy it.",
+              "Multiplying an equation by a finite nonzero number is reversible (divide back by the same number), so the same points satisfy it.",
           }
         : {
             reversible: false,
@@ -225,11 +254,18 @@ export function classifyRowOperation(op: RowOperation): RowOperationValidity {
               "Multiplying a row by 0 turns it into 0 = 0 and destroys its constraint. You can never divide back, so the solution set can only grow — this move is illegal.",
           };
     case "add":
-      // Canonical distinct-row add: always reversible.
+      // Canonical distinct-row add: reversible iff the factor is finite.
+      if (!Number.isFinite(op.factor)) {
+        return {
+          reversible: false,
+          reason:
+            `Adding a non-finite multiple (${op.factor}) of one equation to another is not a valid operation, so it cannot preserve the solution set.`,
+        };
+      }
       return {
         reversible: true,
         reason:
-          "Adding a multiple of one equation to another is reversible (subtract the same multiple back), so no solution is created or lost.",
+          "Adding a finite multiple of one equation to another is reversible (subtract the same multiple back), so no solution is created or lost.",
       };
   }
 }
@@ -237,8 +273,9 @@ export function classifyRowOperation(op: RowOperation): RowOperationValidity {
 /**
  * The operation that undoes `op` (so applying `op` then its inverse returns the
  * original system). Throws only for a genuinely non-invertible move — a scale
- * by 0, or the self-add `k = -1` that reduces to it. A self-add is inverted
- * through its equivalent scaling.
+ * by 0, the self-add `k = -1` that reduces to it, or any **non-finite** factor
+ * (`NaN`/`±Infinity`) on a scale or add. A self-add is inverted through its
+ * equivalent scaling.
  */
 export function inverseRowOperation(op: RowOperation): RowOperation {
   const canonical = canonicalizeRowOperation(op);
@@ -249,8 +286,14 @@ export function inverseRowOperation(op: RowOperation): RowOperation {
       if (canonical.factor === 0) {
         throw new Error("A scale-by-zero row operation has no inverse.");
       }
+      if (!Number.isFinite(canonical.factor)) {
+        throw new Error("A non-finite scale row operation has no inverse.");
+      }
       return { kind: "scale", row: canonical.row, factor: 1 / canonical.factor };
     case "add":
+      if (!Number.isFinite(canonical.factor)) {
+        throw new Error("A non-finite add row operation has no inverse.");
+      }
       return {
         kind: "add",
         source: canonical.source,
@@ -400,16 +443,44 @@ function solutionLine(
 }
 
 /**
+ * The geometry of an **infinite** system's solution set — deliberately NOT
+ * assumed to always be a line:
+ *
+ * - `line` — both rows agree on one solution line (the usual dependent case);
+ * - `plane` — the **entire plane**, which happens exactly when neither row is a
+ *   genuine line, i.e. both rows are the trivial `0 = 0` (the all-zero system).
+ *
+ * Only meaningful for a system the shared classifier calls `infinite`; for such
+ * a system a missing line can only mean every constraint is `0 = 0`, so the
+ * solution set is all of \(\mathbb{R}^2\). Reuses `solutionLine` /
+ * `classifyRowConstraint` rather than re-deriving any linear algebra.
+ */
+type InfiniteSolutionGeometry =
+  | { kind: "plane" }
+  | { kind: "line"; line: readonly [number, number, number] };
+
+function infiniteSolutionGeometry(
+  system: AugmentedSystem,
+  tolerance: number,
+): InfiniteSolutionGeometry {
+  const line = solutionLine(system, tolerance);
+  return line ? { kind: "line", line } : { kind: "plane" };
+}
+
+/**
  * Whether two systems have the *identical* solution set — the honest,
  * case-specific comparison a UI needs rather than "the kind stayed the same":
  *
  * - **unique**: the single solution points coincide;
- * - **infinite**: the solution *lines* coincide (compared as normalized lines,
- *   so "still infinite" is not mistaken for "same line");
+ * - **infinite**: the solution *geometry* coincides — either the same solution
+ *   line (compared as normalized lines, so "still infinite" is not mistaken for
+ *   "same line") OR both are the **whole plane** (the all-zero system, whose
+ *   solution set is every point). A line and the whole plane are never equal;
  * - **none**: both solution sets are empty (empty equals empty).
  *
  * Differing trichotomy kinds are never equal. All classification flows through
- * the shared `classifyLinearSystem2x2`.
+ * the shared `classifyLinearSystem2x2` (and `classifyRowConstraint` for the row
+ * geometry) — no linear algebra is duplicated here.
  */
 export function haveSameSolutionSet(
   a: AugmentedSystem,
@@ -432,13 +503,15 @@ export function haveSameSolutionSet(
     case "none":
       return true; // both empty
     case "infinite": {
-      const la = solutionLine(a, tolerance);
-      const lb = solutionLine(b, tolerance);
-      if (!la || !lb) return false;
+      const ga = infiniteSolutionGeometry(a, tolerance);
+      const gb = infiniteSolutionGeometry(b, tolerance);
+      if (ga.kind !== gb.kind) return false; // a line vs the whole plane
+      if (ga.kind === "plane") return true; // both are all of the plane
+      const lb = (gb as { line: readonly [number, number, number] }).line;
       return (
-        Math.abs(la[0] - lb[0]) <= 1e-6 &&
-        Math.abs(la[1] - lb[1]) <= 1e-6 &&
-        Math.abs(la[2] - lb[2]) <= 1e-6
+        Math.abs(ga.line[0] - lb[0]) <= 1e-6 &&
+        Math.abs(ga.line[1] - lb[1]) <= 1e-6 &&
+        Math.abs(ga.line[2] - lb[2]) <= 1e-6
       );
     }
   }
