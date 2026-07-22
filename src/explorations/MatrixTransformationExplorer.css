@@ -23,3 +23,14 @@
   color: var(--color-text-faint);
   font-size: var(--text-sm);
 }
+
+.matrix-explorer__challenge-hint {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--role-selected);
+  background: var(--color-surface-muted, #f8f6f1);
+  border-radius: 0 0.4rem 0.4rem 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}

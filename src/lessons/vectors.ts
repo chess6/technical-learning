@@ -4,9 +4,14 @@ import { LINEAR_COMBINATION_EXAMPLE as EX } from "./exampleData";
 export const vectorsLesson: LessonDefinition = {
   route: [
     { kind: "motivate" },
-    { kind: "watch" },
+    { kind: "visual" },
+    { kind: "section", sectionId: "vectors" },
+    { kind: "section", sectionId: "combinations" },
+    // Develop the theorem formally BEFORE the section that explains coordinates
+    // in full, so the definition/theorem lead rather than trail the intuition.
     { kind: "formal", formalId: "def-basis" },
     { kind: "formal", formalId: "thm-unique-representation" },
+    { kind: "section", sectionId: "basis" },
     { kind: "check" },
     { kind: "worked" },
     { kind: "explore" },

@@ -11,6 +11,7 @@ import { EigenClipStage } from "../components/lesson/EigenClipStage";
 import { LessonSummary } from "../components/lesson/LessonSummary";
 import { WorkedExamplePanel } from "../components/lesson/WorkedExamplePanel";
 import { DepthLayerList } from "../components/lesson/DepthLayer";
+import { getLessonVisual } from "../components/lesson/lessonVisuals";
 import { MisconceptionCallout } from "../components/lesson/MisconceptionCallout";
 import { EigenSolutionDiagram } from "../components/lesson/solutionVisuals/EigenSolutionDiagram";
 import { LessonLayout } from "../components/layout/LessonLayout";
@@ -42,26 +43,47 @@ export function LessonPage() {
 
   const Explorer = getExplorer(lesson.explorationId);
 
+  const renderSection = (section: (typeof lesson.sections)[number]) => (
+    <div key={section.id} className="lesson-section">
+      <ExplanationBlock
+        title={section.title}
+        body={section.body}
+        observation={section.observation}
+      />
+      {section.equation && <EquationBlock tex={section.equation} />}
+      <DepthLayerList layers={section.layers} />
+      {section.visualId && getLessonVisual(section.visualId)}
+    </div>
+  );
+
+  const sectionsById = new Map(
+    lesson.sections.map((section) => [section.id, renderSection(section)]),
+  );
+
+  const workedById = new Map(
+    (lesson.workedExamples ?? []).map((example) => [
+      example.id,
+      <WorkedExamplePanel
+        key={example.id}
+        examples={[example]}
+        resetToken={resetToken}
+        enableEigenClipStage={isEigenLesson}
+      />,
+    ]),
+  );
+
   return (
     <LessonLayout
       lesson={lesson}
       onReset={handleReset}
+      sectionsById={sectionsById}
+      workedById={workedById}
       motivation={
         lesson.motivatingQuestion && (
           <MotivatingQuestion question={lesson.motivatingQuestion} />
         )
       }
-      explanation={lesson.sections.map((section) => (
-        <div key={section.id} className="lesson-section">
-          <ExplanationBlock
-            title={section.title}
-            body={section.body}
-            observation={section.observation}
-          />
-          {section.equation && <EquationBlock tex={section.equation} />}
-          <DepthLayerList layers={section.layers} />
-        </div>
-      ))}
+      explanation={lesson.sections.map(renderSection)}
       visualization={
         isEigenLesson ? (
           <EigenClipStage

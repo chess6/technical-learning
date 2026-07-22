@@ -1,0 +1,57 @@
+.linearity-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+}
+
+@media (max-width: 60rem) {
+  .linearity-comparison {
+    grid-template-columns: 1fr;
+  }
+}
+
+.linearity-comparison__panel {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border, #e3ded3);
+  border-radius: 0.5rem;
+  background: var(--color-surface, #fffdf8);
+}
+
+.linearity-comparison__title {
+  font-weight: 650;
+  font-size: var(--text-sm);
+  color: var(--color-text, #26221b);
+  margin-bottom: var(--space-2);
+}
+
+.linearity-comparison__mafs {
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.linearity-comparison__facts {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  font-size: var(--text-xs);
+}
+
+.linearity-comparison__facts li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.linearity-comparison__facts li[data-ok="true"] span {
+  color: var(--role-basis-1, #3b8f52);
+  font-weight: 700;
+}
+
+.linearity-comparison__facts li[data-ok="false"] span {
+  color: var(--role-result, #e87a9a);
+  font-weight: 700;
+}

@@ -10,6 +10,7 @@ import {
 } from "@motion-canvas/core";
 import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
+import type { GraphicRole, OpeningGraphic } from "../../lessons/openingGraphic";
 import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
 
 export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
@@ -154,6 +155,81 @@ export function makeGraphic(
     points: () =>
       outline.map((v) => toPixels(matrixVectorMultiply(matrixAt(), v))),
   });
+}
+
+/** Stroke colour per graphic part role, from the shared semantic palette. */
+const GRAPHIC_ROLE_STROKE: Record<GraphicRole, string> = {
+  hull: ROLE.transformed,
+  cockpit: ROLE.selected,
+  fin: ROLE.transformed,
+  panel: ROLE.original,
+  thruster: ROLE.result,
+};
+
+/**
+ * Render the shared multi-part opening graphic as a group of `Line` nodes whose
+ * vertices all follow a single live matrix. Every part (hull, cockpit, panel,
+ * thruster) is transformed by the SAME matrix through the shared math, so the
+ * internal features stay aligned to the hull under scale/shear/reflect/collapse.
+ *
+ * When `ghost` is true the parts render dashed + faint (the "original" state);
+ * otherwise solid (the "transformed" state). A ghost uses the identity matrix so
+ * it stays put while the live graphic deforms.
+ */
+export function makeGraphicParts(
+  matrixAt: () => Matrix2x2,
+  graphic: OpeningGraphic,
+  options: { ghost?: boolean; color?: string } = {},
+): Node {
+  const group = new Node({});
+  const pointsOf = (part: OpeningGraphic["parts"][number]) => () =>
+    part.points.map((v) => toPixels(matrixVectorMultiply(matrixAt(), v)));
+
+  for (const part of graphic.parts) {
+    const stroke = options.color ?? GRAPHIC_ROLE_STROKE[part.role];
+    const isHull = part.role === "hull";
+
+    if (options.ghost) {
+      group.add(
+        new Line({
+          stroke,
+          lineWidth: 2,
+          lineJoin: "round",
+          lineCap: "round",
+          closed: part.closed,
+          opacity: isHull ? 0.28 : 0.2,
+          lineDash: [8, 8],
+          points: pointsOf(part),
+        }),
+      );
+      continue;
+    }
+
+    // Solid graphic: a translucent fill body (closed parts) under a bright
+    // opaque stroke, so the hull reads as a filled, outlined object.
+    if (part.closed) {
+      group.add(
+        new Line({
+          fill: stroke,
+          lineWidth: 0,
+          closed: true,
+          opacity: isHull ? 0.16 : 0.28,
+          points: pointsOf(part),
+        }),
+      );
+    }
+    group.add(
+      new Line({
+        stroke,
+        lineWidth: isHull ? 4 : part.closed ? 2.5 : 3,
+        lineJoin: "round",
+        lineCap: "round",
+        closed: part.closed,
+        points: pointsOf(part),
+      }),
+    );
+  }
+  return group;
 }
 
 export function makeArrow(

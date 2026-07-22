@@ -46,18 +46,36 @@ export const MATRIX_TRANSFORMATION_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
- * Chapter 0 — "Why Linear Algebra?" walking skeleton. A recognizable graphic is
- * carried through a short tour of canonical 2×2 transformations, ending on the
- * central mystery. No column/derivation teaching here (that is Lesson 2).
+ * Chapter 0 — "Why Linear Algebra?" A recognizable multi-part craft is the
+ * visual subject: it is established first, then the basis vectors and one marked
+ * vertex are revealed, then each canonical transform is shown by RESETTING to
+ * the identity and animating I → A_preset (never morphing one unrelated preset
+ * straight into another). A translation beat shows the one move a 2×2 matrix
+ * cannot make, and the scene freezes on the central mystery. No
+ * column/derivation teaching here (that is Lesson 2).
  */
 export const CHAPTER0_SEGMENTS: readonly SceneSegment[] = [
   { id: "establish", title: "One craft on a grid", duration: 4 },
+  { id: "reveal", title: "Axes and one marked vertex", duration: 4 },
   { id: "scale", title: "Scaling", duration: 5 },
   { id: "rotation", title: "Rotation", duration: 5 },
   { id: "reflection", title: "Reflection", duration: 5 },
   { id: "shear", title: "Shear", duration: 5 },
   { id: "projection", title: "Projection collapses the plane", duration: 5 },
+  { id: "translation", title: "The one move a matrix can't make", duration: 5.5 },
   { id: "mystery", title: "Four numbers, every vertex", duration: 5 },
+];
+
+/**
+ * Lesson 2 callback — a short "return to the graphic" animation shown AFTER the
+ * columns rule is derived. It writes a vertex as x = a·e₁ + b·e₂, then shows the
+ * image is a·T(e₁) + b·T(e₂), and applies that to several marked vertices of the
+ * shared craft. Resolves Chapter 0's mystery with the derived rule.
+ */
+export const COLUMNS_RULE_GRAPHIC_SEGMENTS: readonly SceneSegment[] = [
+  { id: "vertex", title: "One vertex as a·e₁ + b·e₂", duration: 5 },
+  { id: "image", title: "Its image is a·T(e₁) + b·T(e₂)", duration: 5.5 },
+  { id: "all-vertices", title: "Every vertex follows the two columns", duration: 5.5 },
 ];
 
 export const SPIKE_SEGMENTS: readonly SceneSegment[] = [

@@ -75,11 +75,18 @@ export const chapter0Lesson: LessonDefinition = {
   ],
   route: [
     { kind: "motivate" },
-    { kind: "watch" },
+    // Visual mystery first — the recognizable craft moving under one matrix —
+    // before any explanatory detail.
+    { kind: "visual" },
+    { kind: "section", sectionId: "mystery" },
     { kind: "explore" },
+    { kind: "section", sectionId: "where-you-see-this" },
+    { kind: "section", sectionId: "translation-limit" },
     { kind: "formal", formalId: "ch0-open-question" },
     { kind: "handoff", to: "/lesson/vectors", label: "Begin Lesson 1: Vectors & Coordinates" },
   ],
   guidedSceneId: "why-linear-algebra",
-  explorationId: "matrix-transformation",
+  // Chapter 0's OWN bounded explorer — craft + presets + scrubber + one vertex.
+  // No determinant / column space / basis change / column-building task here.
+  explorationId: "graphic-transformation",
 };

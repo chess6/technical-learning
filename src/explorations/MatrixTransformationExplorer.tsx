@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Line, Point, Polygon, Text, Vector, useMovablePoint } from "mafs";
+import { Line, Point, Text, Vector, useMovablePoint } from "mafs";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
 import { MatrixTeX, VectorTeX } from "../components/lesson/ProseWithMath";
 import { MafsSceneShell } from "./MafsSceneShell";
@@ -8,11 +8,12 @@ import { ResetButton } from "./ResetButton";
 import { SceneReadout } from "./SceneReadout";
 import { ExplorationToggles } from "./ExplorationToggles";
 import { PresetPicker } from "./PresetPicker";
+import { GraphicShape } from "./GraphicShape";
+import { OPENING_GRAPHIC } from "../lessons/openingGraphic";
 import {
   MATRIX_LESSON_EXAMPLE,
   TRANSFORM_LESSON_PRESETS,
 } from "../lessons/exampleData";
-import { OPENING_GRAPHIC } from "../lessons/openingGraphic";
 import {
   applyMatrixToPoints,
   clamp,
@@ -27,9 +28,8 @@ import {
 } from "../math";
 import "./MatrixTransformationExplorer.css";
 
-const GRAPHIC = OPENING_GRAPHIC.outline as readonly [number, number][];
-const ANCHORS = OPENING_GRAPHIC.anchors;
 const ROLE_SELECTED = "var(--role-selected)";
+const OUTLINE = OPENING_GRAPHIC.outline as readonly [number, number][];
 
 /** Reflection across y = x — the "same map, two matrices" example. */
 const REFLECTION_XY: Matrix2x2 = [
@@ -37,7 +37,7 @@ const REFLECTION_XY: Matrix2x2 = [
   [1, 0],
 ];
 
-function matrixApproxEqual(m: Matrix2x2, n: Matrix2x2, tol = 0.05): boolean {
+function matrixApproxEqual(m: Matrix2x2, n: Matrix2x2, tol = 0.08): boolean {
   return (
     Math.abs(m[0][0] - n[0][0]) < tol &&
     Math.abs(m[0][1] - n[0][1]) < tol &&
@@ -61,6 +61,14 @@ const ROLE_BASIS_2 = "var(--role-basis-2)";
 const ROLE_GRID = "var(--role-intermediate)";
 
 type Entries = { a: number; b: number; c: number; d: number };
+type Mode = "transform" | "graphic-challenge";
+
+/** Challenge targets: match the craft by placing the two column arrows. */
+const CHALLENGE_TARGETS: readonly { id: string; label: string; exampleId: string }[] = [
+  { id: "rotation", label: "Rotation", exampleId: "rotation" },
+  { id: "reflection-xy", label: "Reflect y = x", exampleId: "reflection-xy" },
+  { id: "shear", label: "Shear", exampleId: "shear-2-1" },
+];
 
 function toEntries(m: Matrix2x2): Entries {
   return { a: m[0][0], b: m[0][1], c: m[1][0], d: m[1][1] };
@@ -102,18 +110,16 @@ function TransformedGrid({ matrix, color }: { matrix: Matrix2x2; color: string }
 }
 
 export function MatrixTransformationExplorer() {
+  const [mode, setMode] = useState<Mode>("transform");
   const [entries, setEntries] = useState<Entries>(() =>
     toEntries(DEFAULT_EXAMPLE.matrix),
   );
   const [t, setT] = useState(1);
   const [showTransformedGrid, setShowTransformedGrid] = useState(true);
   const [showBasis, setShowBasis] = useState(true);
-  const [showGraphic, setShowGraphic] = useState(true);
-  const [targetMatrix, setTargetMatrix] = useState<Matrix2x2 | null>(null);
+  const [challengeExampleId, setChallengeExampleId] = useState("rotation");
 
-  const target = useMemo(() => toMatrix(entries), [entries]);
-  const current = useMemo(() => lerpIdentityToMatrix(target, t), [target, t]);
-
+  // Input vector (transform mode only): draggable arbitrary v.
   const inputPoint = useMovablePoint(INITIAL_INPUT as [number, number], {
     color: ROLE_ORIGINAL,
     constrain: (p) =>
@@ -125,25 +131,52 @@ export function MatrixTransformationExplorer() {
   const { x, y, element: inputElement, setPoint } = inputPoint;
   const input: Vector2 = [x, y];
 
+  // Challenge mode: the two matrix columns ARE the draggable arrows the learner
+  // controls (T(e₁) and T(e₂)); the matrix is read off their tips.
+  const col1 = useMovablePoint([1, 0], {
+    color: ROLE_BASIS_1,
+    constrain: (p) =>
+      [clamp(p[0], ENTRY_MIN, ENTRY_MAX), clamp(p[1], ENTRY_MIN, ENTRY_MAX)] as [
+        number,
+        number,
+      ],
+  });
+  const col2 = useMovablePoint([0, 1], {
+    color: ROLE_BASIS_2,
+    constrain: (p) =>
+      [clamp(p[0], ENTRY_MIN, ENTRY_MAX), clamp(p[1], ENTRY_MIN, ENTRY_MAX)] as [
+        number,
+        number,
+      ],
+  });
+
+  // Single source of truth for the matrix, chosen by mode.
+  const target: Matrix2x2 =
+    mode === "graphic-challenge"
+      ? [
+          [col1.x, col2.x],
+          [col1.y, col2.y],
+        ]
+      : toMatrix(entries);
+  const current =
+    mode === "graphic-challenge" ? target : lerpIdentityToMatrix(target, t);
+
   const output = matrixVectorMultiply(current, input);
   const e1 = matrixVectorMultiply(current, [1, 0]);
   const e2 = matrixVectorMultiply(current, [0, 1]);
   const det = determinant2x2(target);
   const singular = Math.abs(det) < 1e-9;
 
-  // Shared graphic: transform every vertex through the shared math (never ad-hoc).
-  const graphicTransformed = applyMatrixToPoints(current, GRAPHIC);
-  const noseImage = matrixVectorMultiply(current, GRAPHIC[ANCHORS.nose]!);
-  const finImage = matrixVectorMultiply(current, GRAPHIC[ANCHORS.rightFin]!);
-  const noseOriginal = GRAPHIC[ANCHORS.nose]!;
-  const finOriginal = GRAPHIC[ANCHORS.rightFin]!;
+  const challengeTarget = useMemo(
+    () => requireMatrixExample(challengeExampleId).matrix as Matrix2x2,
+    [challengeExampleId],
+  );
+  const targetGraphic = applyMatrixToPoints(challengeTarget, OUTLINE);
+  const currentGraphic = applyMatrixToPoints(current, OUTLINE);
+  const targetMatched = matrixApproxEqual(target, challengeTarget);
 
   // "Same map, two matrices": reflection across y = x is diag(1, -1) in B.
   const isReflectionXY = matrixApproxEqual(target, REFLECTION_XY);
-
-  // Build-a-matrix target-match task.
-  const targetGraphic = targetMatrix ? applyMatrixToPoints(targetMatrix, GRAPHIC) : null;
-  const targetMatched = targetMatrix ? matrixApproxEqual(target, targetMatrix) : false;
 
   const showDiagnosticPresets = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -164,26 +197,34 @@ export function MatrixTransformationExplorer() {
   const applyPreset = useCallback((exampleId: string) => {
     setEntries(toEntries(requireMatrixExample(exampleId).matrix));
     setT(1);
-    setTargetMatrix(null);
   }, []);
 
-  const startMatch = useCallback((exampleId: string) => {
-    // Learner rebuilds the map from its basis images: start at the identity so
-    // the two columns must be set to hit the target graphic.
-    setTargetMatrix(requireMatrixExample(exampleId).matrix as Matrix2x2);
-    setEntries(toEntries(requireMatrixExample("identity").matrix));
-    setT(1);
+  const enterChallenge = useCallback(
+    (exampleId: string) => {
+      setMode("graphic-challenge");
+      setChallengeExampleId(exampleId);
+      // Start from the identity columns, so the learner must build the map.
+      col1.setPoint([1, 0]);
+      col2.setPoint([0, 1]);
+      setT(1);
+    },
+    [col1, col2],
+  );
+
+  const leaveChallenge = useCallback(() => {
+    setMode("transform");
   }, []);
 
   const handleReset = useCallback(() => {
+    setMode("transform");
     setEntries(toEntries(DEFAULT_EXAMPLE.matrix));
     setT(1);
     setShowTransformedGrid(true);
     setShowBasis(true);
-    setShowGraphic(true);
-    setTargetMatrix(null);
     setPoint(INITIAL_INPUT as [number, number]);
-  }, [setPoint]);
+    col1.setPoint([1, 0]);
+    col2.setPoint([0, 1]);
+  }, [setPoint, col1, col2]);
 
   const learnerPresets = TRANSFORM_LESSON_PRESETS.map((p) => ({
     id: p.id,
@@ -202,75 +243,100 @@ export function MatrixTransformationExplorer() {
       })
     : [];
 
+  const inChallenge = mode === "graphic-challenge";
+
   return (
     <ExplorationPanel
       explorationId="matrix-transformation"
       title="Transform the plane"
-      description="Edit the same matrix A from the guided animation. Drag v, or scrub the identity→A transition."
+      description="Edit the matrix A from the guided animation, or switch to the graphic challenge and place the two column arrows to match a target craft."
       toolbar={
         <>
           <PresetPicker
-            label="Presets"
+            label="Mode"
+            activeId={mode}
             presets={[
-              ...learnerPresets,
+              { id: "transform", label: "Transform the plane", onSelect: leaveChallenge },
               {
-                id: "reflection-xy",
-                label: "Reflect y = x",
-                onSelect: () => applyPreset("reflection-xy"),
+                id: "graphic-challenge",
+                label: "Graphic challenge",
+                onSelect: () => enterChallenge(challengeExampleId),
               },
-              ...diagnosticPresets,
             ]}
           />
-          <PresetPicker
-            label="Build a matrix (set the two columns to match the target)"
-            activeId={targetMatrix ? "on" : "off"}
-            presets={[
-              { id: "match-rotation", label: "Target: rotation", onSelect: () => startMatch("rotation") },
-              { id: "match-reflection", label: "Target: reflect y = x", onSelect: () => startMatch("reflection-xy") },
-              { id: "match-off", label: "Free explore", onSelect: () => setTargetMatrix(null) },
-            ]}
-          />
+          {inChallenge ? (
+            <PresetPicker
+              label="Target craft (place T(e₁), T(e₂) to match)"
+              activeId={challengeExampleId}
+              presets={CHALLENGE_TARGETS.map((tgt) => ({
+                id: tgt.id,
+                label: tgt.label,
+                onSelect: () => enterChallenge(tgt.exampleId),
+              }))}
+            />
+          ) : (
+            <PresetPicker
+              label="Presets"
+              presets={[
+                ...learnerPresets,
+                {
+                  id: "reflection-xy",
+                  label: "Reflect y = x",
+                  onSelect: () => applyPreset("reflection-xy"),
+                },
+                ...diagnosticPresets,
+              ]}
+            />
+          )}
           <ResetButton onReset={handleReset} />
         </>
       }
       controls={
-        <>
-          <ParameterControls
-            title="Matrix A"
-            controls={[
-              { id: "m-a", label: "a₁₁", value: entries.a, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("a", v) },
-              { id: "m-b", label: "a₁₂", value: entries.b, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("b", v) },
-              { id: "m-c", label: "a₂₁", value: entries.c, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("c", v) },
-              { id: "m-d", label: "a₂₂", value: entries.d, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("d", v) },
-            ]}
-          />
-          <details className="exploration-details">
-            <summary>Numeric v, display &amp; transition</summary>
-            <div className="exploration-details__body">
-              <ParameterControls
-                title="Input vector v (also draggable)"
-                controls={[
-                  { id: "in-x", label: "vₓ", value: x, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([clamp(val, VEC_MIN, VEC_MAX), y]) },
-                  { id: "in-y", label: "v_y", value: y, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([x, clamp(val, VEC_MIN, VEC_MAX)]) },
-                ]}
-              />
-              <ParameterControls
-                title="Identity → A"
-                controls={[
-                  { id: "progress", label: "Transition", value: t, min: 0, max: 1, step: 0.01, onChange: setT },
-                ]}
-              />
-              <ExplorationToggles
-                title="Display"
-                toggles={[
-                  { id: "toggle-grid", label: "Transformed grid", checked: showTransformedGrid, onChange: setShowTransformedGrid },
-                  { id: "toggle-basis", label: "Basis vectors", checked: showBasis, onChange: setShowBasis },
-                  { id: "toggle-graphic", label: "Show graphic (craft)", checked: showGraphic, onChange: setShowGraphic },
-                ]}
-              />
-            </div>
-          </details>
-        </>
+        inChallenge ? (
+          <p className="matrix-explorer__challenge-hint">
+            Drag the two column arrows <strong>T(e₁)</strong> and{" "}
+            <strong>T(e₂)</strong>. The matrix columns update from where you place
+            them — match the faint target craft. You are controlling two vectors,
+            not four sliders.
+          </p>
+        ) : (
+          <>
+            <ParameterControls
+              title="Matrix A"
+              controls={[
+                { id: "m-a", label: "a₁₁", value: entries.a, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("a", v) },
+                { id: "m-b", label: "a₁₂", value: entries.b, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("b", v) },
+                { id: "m-c", label: "a₂₁", value: entries.c, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("c", v) },
+                { id: "m-d", label: "a₂₂", value: entries.d, min: ENTRY_MIN, max: ENTRY_MAX, onChange: (v) => setEntry("d", v) },
+              ]}
+            />
+            <details className="exploration-details">
+              <summary>Numeric v, display &amp; transition</summary>
+              <div className="exploration-details__body">
+                <ParameterControls
+                  title="Input vector v (also draggable)"
+                  controls={[
+                    { id: "in-x", label: "vₓ", value: x, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([clamp(val, VEC_MIN, VEC_MAX), y]) },
+                    { id: "in-y", label: "v_y", value: y, min: VEC_MIN, max: VEC_MAX, onChange: (val) => setPoint([x, clamp(val, VEC_MIN, VEC_MAX)]) },
+                  ]}
+                />
+                <ParameterControls
+                  title="Identity → A"
+                  controls={[
+                    { id: "progress", label: "Transition", value: t, min: 0, max: 1, step: 0.01, onChange: setT },
+                  ]}
+                />
+                <ExplorationToggles
+                  title="Display"
+                  toggles={[
+                    { id: "toggle-grid", label: "Transformed grid", checked: showTransformedGrid, onChange: setShowTransformedGrid },
+                    { id: "toggle-basis", label: "Basis vectors", checked: showBasis, onChange: setShowBasis },
+                  ]}
+                />
+              </div>
+            </details>
+          </>
+        )
       }
       readout={
         <SceneReadout
@@ -285,24 +351,28 @@ export function MatrixTransformationExplorer() {
                 </span>
               ),
             },
-            {
-              id: "input",
-              label: "Input v",
-              value: (
-                <span data-testid="input-readout" data-plain={`(${fmt(input[0])}, ${fmt(input[1])})`}>
-                  <VectorTeX x={input[0]} y={input[1]} name="v" />
-                </span>
-              ),
-            },
-            {
-              id: "output",
-              label: "A v",
-              value: (
-                <span data-testid="output-readout" data-plain={`(${fmt(output[0])}, ${fmt(output[1])})`}>
-                  <VectorTeX x={output[0]} y={output[1]} />
-                </span>
-              ),
-            },
+            ...(inChallenge
+              ? []
+              : [
+                  {
+                    id: "input",
+                    label: "Input v",
+                    value: (
+                      <span data-testid="input-readout" data-plain={`(${fmt(input[0])}, ${fmt(input[1])})`}>
+                        <VectorTeX x={input[0]} y={input[1]} name="v" />
+                      </span>
+                    ),
+                  },
+                  {
+                    id: "output",
+                    label: "A v",
+                    value: (
+                      <span data-testid="output-readout" data-plain={`(${fmt(output[0])}, ${fmt(output[1])})`}>
+                        <VectorTeX x={output[0]} y={output[1]} />
+                      </span>
+                    ),
+                  },
+                ]),
             {
               id: "e1",
               label: "Column 1 = A·e₁",
@@ -331,20 +401,20 @@ export function MatrixTransformationExplorer() {
                 </span>
               ),
             },
-            ...(singular
+            ...(!inChallenge && singular
               ? [
                   {
                     id: "graphic-collapse",
-                    label: "Graphic",
+                    label: "Note",
                     value: (
                       <span data-testid="graphic-collapse-readout">
-                        collapsed onto a line (vertices coincide)
+                        dependent columns — outputs collapse onto a line
                       </span>
                     ),
                   },
                 ]
               : []),
-            ...(isReflectionXY
+            ...(!inChallenge && isReflectionXY
               ? [
                   {
                     id: "two-matrices",
@@ -357,14 +427,14 @@ export function MatrixTransformationExplorer() {
                   },
                 ]
               : []),
-            ...(targetMatrix
+            ...(inChallenge
               ? [
                   {
                     id: "target-match",
                     label: "Target match",
                     value: (
                       <span data-testid="target-match-readout">
-                        {targetMatched ? "matched" : "set both columns to match"}
+                        {targetMatched ? "matched ✓" : "place both column arrows to match"}
                       </span>
                     ),
                   },
@@ -376,52 +446,31 @@ export function MatrixTransformationExplorer() {
     >
       <div className="matrix-explorer__scene">
         <MafsSceneShell
-          ariaLabel="Input vector and its image under the matrix, with transformed basis and grid"
+          ariaLabel={
+            inChallenge
+              ? "Graphic challenge: place the two column arrows to transform the craft onto the faint target craft"
+              : "Input vector and its image under the matrix, with transformed basis and grid"
+          }
           viewBox={{ x: [-4, 5.5], y: [-3.5, 4.5], padding: 0.45 }}
           height={380}
         >
           {showTransformedGrid && (
             <TransformedGrid matrix={current} color={ROLE_GRID} />
           )}
-          {showGraphic && (
+
+          {inChallenge && (
             <>
-              {/* Ghost original craft (dashed) for before/after correspondence. */}
-              <Polygon
-                points={GRAPHIC as [number, number][]}
-                color={ROLE_ORIGINAL}
-                fillOpacity={0.05}
-                strokeOpacity={0.5}
-                weight={1.5}
-              />
-              {/* Optional target ghost (build-a-matrix task). */}
-              {targetGraphic && (
-                <Polygon
-                  points={targetGraphic as [number, number][]}
-                  color={ROLE_SELECTED}
-                  fillOpacity={0.04}
-                  strokeOpacity={0.6}
-                  weight={2}
-                />
-              )}
-              {/* Transformed craft (solid) — every vertex via applyMatrixToPoints. */}
-              <Polygon
-                points={graphicTransformed as [number, number][]}
-                color={ROLE_TRANSFORMED}
-                fillOpacity={0.14}
-                strokeOpacity={0.95}
-                weight={2}
-              />
-              {/* Gold anchors: nose and right fin, tracked across the transform. */}
-              <Point x={noseOriginal[0]} y={noseOriginal[1]} color={ROLE_ORIGINAL} />
-              <Point x={finOriginal[0]} y={finOriginal[1]} color={ROLE_ORIGINAL} />
-              <Point x={noseImage[0]} y={noseImage[1]} color={ROLE_SELECTED} />
-              <Point x={finImage[0]} y={finImage[1]} color={ROLE_SELECTED} />
-              <Text x={noseImage[0]} y={noseImage[1]} attach="n" attachDistance={12} color={ROLE_SELECTED} size={13}>
-                nose
-              </Text>
+              {/* Faint original craft + faint target craft + live transformed craft. */}
+              <GraphicShape matrix={[[1, 0], [0, 1]]} variant="ghost" />
+              <GraphicShape matrix={challengeTarget} variant="target" />
+              <GraphicShape matrix={current} variant="solid" />
+              {/* Vertex correspondence at the nose helps read the match. */}
+              <Point x={targetGraphic[0]![0]} y={targetGraphic[0]![1]} color={ROLE_SELECTED} />
+              <Point x={currentGraphic[0]![0]} y={currentGraphic[0]![1]} color={ROLE_TRANSFORMED} />
             </>
           )}
-          {showBasis && (
+
+          {showBasis && !inChallenge && (
             <>
               <Vector tip={e1 as [number, number]} color={ROLE_BASIS_1} weight={3} />
               <Vector tip={e2 as [number, number]} color={ROLE_BASIS_2} weight={3} />
@@ -433,22 +482,51 @@ export function MatrixTransformationExplorer() {
               </Text>
             </>
           )}
-          <Vector tip={input as [number, number]} color={ROLE_ORIGINAL} weight={3} style="solid" />
-          <Vector tip={output as [number, number]} color={ROLE_TRANSFORMED} weight={3} style="dashed" />
-          <Text x={input[0]} y={input[1]} attach="nw" attachDistance={12} color={ROLE_ORIGINAL} size={15}>
-            v
-          </Text>
-          <Text x={output[0]} y={output[1]} attach="ne" attachDistance={12} color={ROLE_TRANSFORMED} size={15}>
-            A v
-          </Text>
-          {inputElement}
+
+          {inChallenge ? (
+            <>
+              {/* The column arrows the learner drags = T(e₁), T(e₂). */}
+              <Vector tip={[col1.x, col1.y]} color={ROLE_BASIS_1} weight={3} />
+              <Vector tip={[col2.x, col2.y]} color={ROLE_BASIS_2} weight={3} />
+              <Text x={col1.x} y={col1.y} attach="ne" attachDistance={12} color={ROLE_BASIS_1} size={15}>
+                T(e₁)
+              </Text>
+              <Text x={col2.x} y={col2.y} attach="ne" attachDistance={12} color={ROLE_BASIS_2} size={15}>
+                T(e₂)
+              </Text>
+              {col1.element}
+              {col2.element}
+            </>
+          ) : (
+            <>
+              <Vector tip={input as [number, number]} color={ROLE_ORIGINAL} weight={3} style="solid" />
+              <Vector tip={output as [number, number]} color={ROLE_TRANSFORMED} weight={3} style="dashed" />
+              <Text x={input[0]} y={input[1]} attach="nw" attachDistance={12} color={ROLE_ORIGINAL} size={15}>
+                v
+              </Text>
+              <Text x={output[0]} y={output[1]} attach="ne" attachDistance={12} color={ROLE_TRANSFORMED} size={15}>
+                A v
+              </Text>
+              {inputElement}
+            </>
+          )}
         </MafsSceneShell>
       </div>
       <ul className="matrix-explorer__legend" aria-label="Legend">
-        <li><span className="swatch swatch--original" /> Input v (solid)</li>
-        <li><span className="swatch swatch--transformed" /> Output A·v (dashed)</li>
-        <li><span className="swatch swatch--basis1" /> Transformed e₁</li>
-        <li><span className="swatch swatch--basis2" /> Transformed e₂</li>
+        {inChallenge ? (
+          <>
+            <li><span className="swatch swatch--basis1" /> T(e₁) = column 1 (drag)</li>
+            <li><span className="swatch swatch--basis2" /> T(e₂) = column 2 (drag)</li>
+            <li><span className="swatch swatch--transformed" /> Your craft · faint = target</li>
+          </>
+        ) : (
+          <>
+            <li><span className="swatch swatch--original" /> Input v (solid)</li>
+            <li><span className="swatch swatch--transformed" /> Output A·v (dashed)</li>
+            <li><span className="swatch swatch--basis1" /> Transformed e₁</li>
+            <li><span className="swatch swatch--basis2" /> Transformed e₂</li>
+          </>
+        )}
       </ul>
     </ExplorationPanel>
   );

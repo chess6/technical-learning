@@ -20,6 +20,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./matrixTransformationScene").then(
       (m) => m.matrixTransformationScene,
     ),
+  "columns-rule-graphic": () =>
+    import("./columnsRuleGraphicScene").then((m) => m.columnsRuleGraphicScene),
   "determinant-area-scaling": () =>
     import("./determinantAreaScalingScene").then(
       (m) => m.determinantAreaScalingScene,

@@ -19,13 +19,21 @@ export const transformationsLesson: LessonDefinition = {
   route: [
     { kind: "motivate" },
     { kind: "formal", formalId: "def-linear" },
-    { kind: "watch" },
+    { kind: "section", sectionId: "intro" },
+    { kind: "visual" },
+    { kind: "section", sectionId: "grid" },
     { kind: "formal", formalId: "prop-basis-determination" },
-    { kind: "worked" },
+    // Derive the columns rule BEFORE stating it as the answer.
+    { kind: "worked", workedId: "columns-rule-derivation" },
     { kind: "formal", formalId: "cor-columns" },
     { kind: "formal", formalId: "cor-consequences" },
+    // Only AFTER the derivation: the callback animation returns to the craft.
+    { kind: "worked", workedId: "columns-rule-graphic" },
+    { kind: "section", sectionId: "back-to-graphic" },
     { kind: "check" },
     { kind: "formal", formalId: "prop-matrix-basis" },
+    // Linear vs affine (translation) vs nonlinear warp comparison figure.
+    { kind: "section", sectionId: "not-linear" },
     { kind: "explore" },
     { kind: "practice" },
     { kind: "summary" },
@@ -94,21 +102,28 @@ export const transformationsLesson: LessonDefinition = {
       interpretation:
         "Same geometric map, two different matrices — the matrix is $T$ *relative to* a basis, not identical to $T$. (The general change-of-basis formula is deferred; here we just see it happen.)",
       visibility: "visible",
+      layers: [
+        {
+          kind: "trap",
+          title: "\u201cThe matrix *is* the transformation\u201d",
+          body: "It is tempting to say a linear map just *is* its $2\\times 2$ matrix. But the reflection above is $[[0,1],[1,0]]$ in the standard basis and $\\operatorname{diag}(1,-1)$ in $B$ — one geometric map, two matrices. The map is the invariant object; the matrix is its description in a chosen coordinate language.",
+        },
+      ],
     },
   ],
   sections: [
     {
       id: "intro",
-      title: "From table to map",
-      body: "Recall from Lesson 1 that $\\mathbf{e}_1 = (1, 0)$ and $\\mathbf{e}_2 = (0, 1)$ are the standard basis, so every vector has unique coordinates: $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$. A $2\\times 2$ matrix tells every vector where to go, and the cleanest way to read it is by columns: the first column is where $\\mathbf{e}_1$ lands, the second where $\\mathbf{e}_2$ lands.",
+      title: "A matrix is a map of the whole plane",
+      body: "Recall from Lesson 1 that $\\mathbf{e}_1 = (1, 0)$ and $\\mathbf{e}_2 = (0, 1)$ are the standard basis, so every vector has unique coordinates: $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$. A $2\\times 2$ matrix sends every vector to a new one — it moves the entire plane at once. The puzzle from Chapter 0 was that only four numbers do this. What in those four numbers pins down where *every* vector goes?",
       equation: `A = \\begin{bmatrix} ${A[0][0]} & ${A[0][1]} \\\\ ${A[1][0]} & ${A[1][1]} \\end{bmatrix}`,
       observation:
-        "Once you know where $\\mathbf{e}_1$ and $\\mathbf{e}_2$ go, every other vector follows by linearity.",
+        "Hold the answer for a moment — we will watch what $A$ does to $\\mathbf{e}_1$ and $\\mathbf{e}_2$ first, then derive why that is enough.",
     },
     {
       id: "grid",
       title: "Linearity carries the grid",
-      body: "Because $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$ uniquely, linearity forces $A\\mathbf{v} = x\\,(A\\mathbf{e}_1) + y\\,(A\\mathbf{e}_2)$. So the two columns $A\\mathbf{e}_1, A\\mathbf{e}_2$ decide where every vector goes — the columns rule is a consequence of unique coordinates, not a separate fact. The whole grid deforms into a scaled, sheared lattice while lines stay straight and evenly spaced.",
+      body: "Because $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$ uniquely, linearity forces $A\\mathbf{v} = x\\,(A\\mathbf{e}_1) + y\\,(A\\mathbf{e}_2)$: the map acts on each basis piece and re-adds the results. The whole grid deforms into a scaled, sheared lattice while lines stay straight and evenly spaced. This strongly suggests the images of the two basis vectors are what matter — a *consequence* of unique coordinates we will derive next, not a rule to memorize yet.",
       equation: "A(x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2) = x\\,A\\mathbf{e}_1 + y\\,A\\mathbf{e}_2",
       observation:
         "The identity-to-$A$ frames you scrub are an educational visual transition, not a matrix factorization.",
@@ -123,9 +138,10 @@ export const transformationsLesson: LessonDefinition = {
     {
       id: "not-linear",
       title: "Not every motion is a matrix",
-      body: "Two useful motions are *not* linear. A **translation** slides the whole craft sideways — but it moves the origin, so no $2\\times 2$ matrix can produce it (it is *affine*). A **nonlinear warp** bends the grid lines so they are no longer straight or evenly spaced. Both matter in practice; neither has a columns rule.",
+      body: "Two useful motions are *not* linear. A **translation** slides the whole plane sideways — but it moves the origin, so no $2\\times 2$ matrix can produce it (it is *affine*). A **nonlinear warp** bends the grid lines so they are no longer straight or evenly spaced. Compare all three below: watch the origin, whether lines stay straight, and whether spacing stays even.",
       observation:
         "The affine fix — homogeneous coordinates — is named only, and deferred. For now, a matrix means a linear map that fixes the origin.",
+      visualId: "linearity-comparison",
     },
     {
       id: "back-to-graphic",
@@ -161,17 +177,20 @@ export const transformationsLesson: LessonDefinition = {
         },
       ],
     },
-  ],
-  callouts: [
     {
-      id: "matrix-is-not-transformation",
-      title: "\u201cThe matrix is the transformation\u201d",
-      belief:
-        "It is tempting to say a linear map just *is* its $2\\times 2$ matrix.",
-      confront:
-        "But the reflection across $y = x$ is $\\begin{bmatrix} 0 & 1 \\\\ 1 & 0 \\end{bmatrix}$ in the standard basis and $\\begin{bmatrix} 1 & 0 \\\\ 0 & -1 \\end{bmatrix}$ in $B = ((1,1),(1,-1))$ — one geometric map, two matrices.",
-      resolve:
-        "The matrix represents $T$ *relative to a chosen basis*. The map is the invariant object; the matrix is its description in a coordinate language.",
+      id: "columns-rule-graphic",
+      title: "Back to the craft: two columns move every vertex",
+      prompt:
+        "The columns rule is derived — now watch it resolve Chapter 0. One vertex is $a\\,\\mathbf{e}_1 + b\\,\\mathbf{e}_2$; its image is $a\\,T(\\mathbf{e}_1) + b\\,T(\\mathbf{e}_2)$, and every vertex uses the same two columns.",
+      guidedSceneId: "columns-rule-graphic",
+      exampleId: "shear-2-1",
+      equations: [
+        "\\mathbf{x} = a\\,\\mathbf{e}_1 + b\\,\\mathbf{e}_2",
+        "T(\\mathbf{x}) = a\\,T(\\mathbf{e}_1) + b\\,T(\\mathbf{e}_2)",
+        "\\text{same } (a, b) \\text{ — only the basis images changed}",
+      ],
+      equationsAriaLabel:
+        "A vertex x equals a times e one plus b times e two; its image is a times T of e one plus b times T of e two, using the same a and b, with only the basis images changed.",
     },
   ],
   checkpoint: {

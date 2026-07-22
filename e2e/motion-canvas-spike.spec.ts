@@ -125,7 +125,8 @@ test("repeated navigation never leaks engines", async ({ page }) => {
 
     // Navigate to another single-player lesson: old engine disposed, new one
     // created, so still exactly one active (no accumulation across routes).
-    await page.goto("/lesson/transformations");
+    // (Lesson 2 now embeds a second callback player, so use determinants here.)
+    await page.goto("/lesson/determinants");
     await expect(page.locator(canvas).first()).toBeVisible();
     await expect.poll(async () => (await counters(page)).activeEngines).toBe(1);
 
@@ -148,8 +149,10 @@ test("scene resizes with its container", async ({ page }) => {
   // Stay in the two-column watch layout: with the desktop sidebar the watch
   // body only reaches its ~58rem two-column threshold above ~1330px, so both
   // sizes sit comfortably above it to compare like-for-like column widths.
+  // (vectors is now a full-width standalone visual, so use determinants, which
+  // keeps the two-column watch layout.)
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto("/lesson/vectors");
+  await page.goto("/lesson/determinants");
   await expect(page.locator(canvas).first()).toBeVisible();
   const wide = await page.locator(canvas).first().boundingBox();
 

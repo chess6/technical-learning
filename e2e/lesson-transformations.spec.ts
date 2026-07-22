@@ -21,19 +21,21 @@ test("route loads, guided scene plays and resets, no console errors", async ({
   await page.goto("/lesson/transformations");
 
   await expect(page.getByRole("heading", { name: "Matrices as Linear Transformations" })).toBeVisible();
-  await expect(page.locator(canvas)).toBeVisible();
+  // Lesson 2 renders two guided players (main scene + columns-rule callback);
+  // exercise the first, which is the main basis/grid scene.
+  await expect(page.locator(canvas).first()).toBeVisible();
 
-  const play = page.getByRole("button", { name: "Play", exact: true });
+  const play = page.getByRole("button", { name: "Play", exact: true }).first();
   if (await play.count()) {
     await play.click();
   }
-  await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled({ timeout: 8000 });
+  await expect(page.getByRole("button", { name: "Pause" }).first()).toBeEnabled({ timeout: 8000 });
   await expect
-    .poll(async () => Number(await page.locator(scrubber).inputValue()), { timeout: 5000 })
+    .poll(async () => Number(await page.locator(scrubber).first().inputValue()), { timeout: 5000 })
     .toBeGreaterThan(0);
 
-  await page.getByRole("button", { name: "Replay" }).click();
-  await expect(page.getByRole("button", { name: "Pause" })).toBeEnabled();
+  await page.getByRole("button", { name: "Replay" }).first().click();
+  await expect(page.getByRole("button", { name: "Pause" }).first()).toBeEnabled();
 
   expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
 });

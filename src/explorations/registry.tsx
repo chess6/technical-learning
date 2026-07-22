@@ -22,6 +22,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.MatrixTransformationExplorer,
     })),
   ),
+  "graphic-transformation": lazy(() =>
+    import("./GraphicTransformationExplorer").then((m) => ({
+      default: m.GraphicTransformationExplorer,
+    })),
+  ),
   "determinant-area-scaling": lazy(() =>
     import("./DeterminantExplorer").then((m) => ({
       default: m.DeterminantExplorer,

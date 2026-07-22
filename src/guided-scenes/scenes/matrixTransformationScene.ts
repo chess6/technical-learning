@@ -8,7 +8,6 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { MATRIX_LESSON_EXAMPLE } from "../../lessons/exampleData";
-import { OPENING_GRAPHIC } from "../../lessons/openingGraphic";
 import { matrixVectorMultiply, type Matrix2x2 } from "../../math";
 import { MATRIX_TRANSFORMATION_SEGMENTS } from "./sceneTimings";
 import {
@@ -18,8 +17,6 @@ import {
   formatSceneNumber,
   focusOpacities,
   makeArrow,
-  makeGhostClosedRegion,
-  makeGraphic,
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
@@ -32,6 +29,12 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * Guided scene for Lesson 2: a 2x2 matrix moves the basis vectors, deforms the
  * grid, carries a sample vector along, and tours a few canonical
  * transformations. The concrete matrix is the shared A = [[2, 1], [0, 1]].
+ *
+ * This scene is deliberately UNCLUTTERED: it focuses on e₁, e₂, their images,
+ * the matrix columns, one general vector, and the transformed grid — the
+ * derivation of the columns rule. The shared craft is NOT carried through here;
+ * it returns in a dedicated callback scene (columnsRuleGraphicScene) after the
+ * rule is derived.
  *
  * Quality-bar focus: column→Aeᵢ identity (tip coordinates bind column to
  * vector), attention focus during column beats, shared morph helper.
@@ -66,17 +69,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   const tGrid = makeTransformedGrid(matrix, OVERLAY_CLEAR_HALF_EXTENT);
   tGrid.opacity(0);
   view.add(tGrid);
-
-  // Shared opening graphic (same craft as Chapter 0). Ghost = original (dashed),
-  // solid = transformed; both go through the shared math via makeGraphic.
-  const craftGhost = makeGhostClosedRegion(
-    OPENING_GRAPHIC.outline.map((v) => px(v)),
-  );
-  craftGhost.opacity(0);
-  view.add(craftGhost);
-  const craft = makeGraphic(matrix, OPENING_GRAPHIC.outline);
-  craft.opacity(0);
-  view.add(craft);
 
   const origin = new Circle({ size: 14, fill: ROLE.text });
   view.add(origin);
@@ -230,18 +222,16 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       yield* waitFor(seconds["transform-sample"] - 0.9);
     },
     *grid() {
-      setCaption("The whole grid — and the craft — follow the same rule");
+      setCaption("The whole grid follows the same rule — lines stay straight");
       yield* all(
         tGrid.opacity(0.9, 1),
-        craftGhost.opacity(0.6, 1),
-        craft.opacity(1, 1),
         e1Coords.opacity(0.25, 0.5),
         e2Coords.opacity(0.25, 0.5),
       );
       yield* waitFor(seconds.grid - 1);
     },
     *compare() {
-      setCaption("Faint = original craft · bright = transformed");
+      setCaption("Faint = original axes · bright = transformed basis");
       yield* all(e1Ghost.opacity(0.7, 0.6), e2Ghost.opacity(0.7, 0.6));
       yield* waitFor(seconds.compare - 0.6);
     },
@@ -251,7 +241,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         ["Scale", [[2, 0], [0, 2]]],
         ["Rotation", [[0, -1], [1, 0]]],
         ["Reflection", [[1, 0], [0, -1]]],
-        ["Projection onto x — the craft flattens", [[1, 0], [0, 0]]],
+        ["Projection onto x — the plane flattens", [[1, 0], [0, 0]]],
         ["Singular collapse", [[2, 4], [1, 2]]],
       ];
       const per = (seconds.presets - 0.4) / tour.length;

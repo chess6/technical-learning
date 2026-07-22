@@ -132,6 +132,12 @@ export type LessonSection = {
   equation?: string;
   observation?: string;
   layers?: DepthLayer[];
+  /**
+   * Optional inline figure rendered after the prose, resolved through the
+   * lesson-visuals registry (`src/components/lesson/lessonVisuals`). Keeps
+   * sections composable without a per-lesson branch in the page shell.
+   */
+  visualId?: string;
 };
 
 /**
@@ -166,15 +172,28 @@ export type FormalBlock = {
 
 /**
  * A declared lesson route: an ordered list of blocks that overrides the fixed
- * phase order. Phase-like blocks reuse existing slots; `formal` renders a
- * FormalBlock inline; `handoff` renders a CTA link to another lesson.
+ * phase order. It stays intentionally small — it references the pieces a lesson
+ * already owns (sections, the guided visual, formal blocks, worked examples,
+ * the exploration, practice, summary) by identity, rather than being a general
+ * textbook DSL.
+ *
+ * - `watch` renders the guided visual beside ALL sections (legacy combined slot,
+ *   used by the default route).
+ * - `visual` renders the guided visual on its own (sections placed separately
+ *   via `section`).
+ * - `section` renders one lesson section by id (prose + optional inline figure).
+ * - `formal` renders one FormalBlock by id.
+ * - `worked` renders all worked examples + callouts, or one worked example by id.
+ * - `handoff` renders a CTA link to another lesson.
  */
 export type RouteBlock =
   | { kind: "motivate" }
   | { kind: "watch" }
+  | { kind: "visual" }
+  | { kind: "section"; sectionId: string }
   | { kind: "formal"; formalId: string }
   | { kind: "check" }
-  | { kind: "worked" }
+  | { kind: "worked"; workedId?: string }
   | { kind: "explore" }
   | { kind: "practice" }
   | { kind: "summary" }

@@ -35,6 +35,14 @@
   text-decoration: none;
 }
 
+/* Standalone section (declared-route "section" block): explanatory prose that
+   is placed on its own in a compositional route (e.g. after a formal block). */
+.lesson-layout__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
 /* ============================================================
  * Phases — a subtle numbered rail, distinct rhythm per phase.
  * ============================================================ */
@@ -143,6 +151,15 @@
   min-width: min(100%, var(--guided-scene-min-width));
   max-width: 100%;
   position: static;
+}
+
+/* Standalone guided visual (declared-route "visual" block): the clip stands on
+   its own, full content width, with sections placed separately in the route. */
+.lesson-layout__viz--standalone {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: var(--guided-scene-standalone-max, 60rem);
+  margin-inline: auto;
 }
 
 /* --- Quick check: distinct tinted band, not a heavy box --- */

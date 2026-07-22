@@ -14,11 +14,16 @@ import "./LessonLayout.css";
 type LessonLayoutProps = {
   lesson: LessonDefinition;
   motivation?: ReactNode;
+  /** All sections rendered together (used by the legacy `watch` slot). */
   explanation: ReactNode;
+  /** Individual sections by id (used by `section` route blocks). */
+  sectionsById?: Map<string, ReactNode>;
   visualization?: ReactNode;
   checkpoint?: ReactNode;
   /** Worked computation (derivation scene + notebook) — after Check, before Explore. */
   workedExamples?: ReactNode;
+  /** Individual worked examples by id (used by `worked` blocks with a workedId). */
+  workedById?: Map<string, ReactNode>;
   exploration?: ReactNode;
   exercises?: ReactNode;
   summary?: ReactNode;
@@ -73,9 +78,11 @@ export function LessonLayout({
   lesson,
   motivation,
   explanation,
+  sectionsById,
   visualization,
   checkpoint,
   workedExamples,
+  workedById,
   exploration,
   exercises,
   summary,
@@ -97,6 +104,15 @@ export function LessonLayout({
       ) : (
         <div className="lesson-layout__explain">{explanation}</div>
       ),
+    },
+    visual: {
+      title: "Watch the idea",
+      variant: "watch",
+      content: visualization ? (
+        <div className="lesson-layout__viz lesson-layout__viz--standalone">
+          {visualization}
+        </div>
+      ) : null,
     },
     check: { title: "Quick check", variant: "check", content: checkpoint },
     worked: {
@@ -167,6 +183,33 @@ export function LessonLayout({
                 {block.label}
               </Link>
             </div>
+          );
+        }
+        if (block.kind === "section") {
+          const content = sectionsById?.get(block.sectionId);
+          return content ? (
+            <div
+              className="lesson-layout__section"
+              key={`section:${block.sectionId}`}
+            >
+              {content}
+            </div>
+          ) : null;
+        }
+        if (block.kind === "worked" && block.workedId) {
+          const content = workedById?.get(block.workedId);
+          if (!content) return null;
+          step += 1;
+          return (
+            <Phase
+              key={`worked:${block.workedId}`}
+              step={step}
+              title="Worked computation"
+              ariaLabel="Worked computation"
+              variant="worked"
+            >
+              <div className="lesson-layout__worked">{content}</div>
+            </Phase>
           );
         }
         const slot = phaseSlots[block.kind];

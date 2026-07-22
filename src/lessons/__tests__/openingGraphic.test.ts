@@ -14,20 +14,35 @@ import {
  * helpers, so Chapter 0 and Lesson 2 can never drift geometrically.
  */
 describe("OPENING_GRAPHIC", () => {
-  it("is a closed asymmetric outline with valid anchor indices", () => {
+  it("is a closed asymmetric hull with valid anchor indices", () => {
     expect(OPENING_GRAPHIC.outline.length).toBeGreaterThanOrEqual(6);
-    const { nose, rightFin } = OPENING_GRAPHIC.anchors;
+    const { nose, fin } = OPENING_GRAPHIC.anchors;
     expect(OPENING_GRAPHIC.outline[nose]).toBeDefined();
-    expect(OPENING_GRAPHIC.outline[rightFin]).toBeDefined();
-    // Asymmetric: the right fin is not the mirror of any left vertex.
-    const [fx] = OPENING_GRAPHIC.outline[rightFin]!;
-    expect(fx).toBeGreaterThan(0);
+    expect(OPENING_GRAPHIC.outline[fin]).toBeDefined();
+    // Asymmetric top/bottom: the tall dorsal fin has no ventral mirror.
+    const [, finY] = OPENING_GRAPHIC.outline[fin]!;
+    const maxY = Math.max(...OPENING_GRAPHIC.outline.map(([, y]) => y));
+    const minY = Math.min(...OPENING_GRAPHIC.outline.map(([, y]) => y));
+    expect(finY).toBe(maxY);
+    expect(maxY).toBeGreaterThan(Math.abs(minY)); // dorsal fin taller than ventral
   });
 
-  it("stays on-frame for teaching-range matrices (|coord| <= 1.7)", () => {
-    for (const [x, y] of OPENING_GRAPHIC.outline) {
-      expect(Math.abs(x)).toBeLessThanOrEqual(1.7);
-      expect(Math.abs(y)).toBeLessThanOrEqual(1.7);
+  it("exposes multiple aligned parts (hull, cockpit, panel, thruster)", () => {
+    const ids = OPENING_GRAPHIC.parts.map((p) => p.id);
+    expect(ids).toEqual(["hull", "cockpit", "panel", "thruster"]);
+    // The hull part shares the outline array exactly (single source of truth).
+    const hull = OPENING_GRAPHIC.parts.find((p) => p.id === "hull")!;
+    expect(hull.points).toBe(OPENING_GRAPHIC.outline);
+    expect(hull.closed).toBe(true);
+    expect(OPENING_GRAPHIC.parts.find((p) => p.id === "panel")!.closed).toBe(false);
+  });
+
+  it("keeps every part on-frame for teaching-range matrices (|coord| <= 1.7)", () => {
+    for (const part of OPENING_GRAPHIC.parts) {
+      for (const [x, y] of part.points) {
+        expect(Math.abs(x)).toBeLessThanOrEqual(1.7);
+        expect(Math.abs(y)).toBeLessThanOrEqual(1.7);
+      }
     }
   });
 

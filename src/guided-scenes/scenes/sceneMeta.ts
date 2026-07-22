@@ -8,6 +8,7 @@ import {
   EIGEN_DERIVATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   CHAPTER0_SEGMENTS,
+  COLUMNS_RULE_GRAPHIC_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -47,22 +48,37 @@ const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
+const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
     id: "why-linear-algebra",
     size: SCENE_SIZE,
     ariaLabel:
-      "Chapter 0 animation: a small asymmetric vector graphic on a coordinate grid is transformed by a live 2 by 2 matrix through scaling, rotation, reflection, shear, and a projection that collapses the plane onto a line, while the standard basis vectors, their images, and one highlighted vertex and its image track the change — ending on the question of how four numbers move every vertex.",
+      "Chapter 0 animation: a small asymmetric multi-part craft on a coordinate grid is established first, then the standard basis vectors and one marked vertex are revealed, then a live 2 by 2 matrix resets to the identity and animates into scaling, rotation, reflection, shear, and a projection that collapses the plane onto a line; a translation beat shows that no 2 by 2 matrix can slide the craft because the origin is pinned, and the scene ends on the question of how four numbers move every vertex.",
     steps: CHAPTER0_STEPS,
     majorSteps: pickMajor(CHAPTER0_STEPS, [
       "establish",
+      "reveal",
       "scale",
       "rotation",
       "reflection",
       "shear",
       "projection",
+      "translation",
       "mystery",
+    ]),
+  },
+  "columns-rule-graphic": {
+    id: "columns-rule-graphic",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Lesson 2 callback animation: one vertex of the shared craft is written as a times e one plus b times e two, its image is shown to be a times T of e one plus b times T of e two, and the same rule is then applied to every marked vertex so the two matrix columns reposition the whole craft — resolving Chapter 0's mystery.",
+    steps: COLUMNS_RULE_GRAPHIC_STEPS,
+    majorSteps: pickMajor(COLUMNS_RULE_GRAPHIC_STEPS, [
+      "vertex",
+      "image",
+      "all-vertices",
     ]),
   },
   "vectors-linear-combinations": {
