@@ -79,6 +79,21 @@ export type ExerciseDefinition =
       expected: number | readonly number[];
       tolerance?: number;
       explanation: string;
+    })
+  | (ExerciseCommon & {
+      id: string;
+      /**
+       * The expandable escape hatch. A `custom` exercise names ONE
+       * `capabilityId` that resolves a bundled capability (grading in
+       * `capabilities.ts`, rendering beside `ExercisePanel`). New interactions
+       * (e.g. committed prediction) ship as registered capabilities reached
+       * this way — without adding a new union member or editing a central
+       * switch. `config` is opaque, capability-owned, and JSON-safe.
+       */
+      type: "custom";
+      capabilityId: string;
+      prompt: string;
+      config?: Record<string, unknown>;
     });
 
 /**

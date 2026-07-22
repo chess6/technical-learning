@@ -149,6 +149,13 @@
   font-size: 1.1em;
 }
 
+/* Pre-commit selection (committed prediction): highlight the chosen option
+   before grading. Graded data-state rules below override this after commit. */
+.exercise-panel__choice[aria-pressed="true"]:not([data-state]) {
+  border-color: var(--color-primary);
+  background: var(--tint-blue);
+}
+
 .exercise-panel__choice[data-state="correct"] {
   border-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
