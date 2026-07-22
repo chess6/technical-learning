@@ -11,8 +11,8 @@ error boundaries with learner-facing retry, a polished home page, and a
 responsive/accessibility/consistency pass across all four lessons. Details:
 [docs/m6-release-polish.md](docs/m6-release-polish.md).
 
-**Milestone 5 complete** — Lessons 3 (Determinants as Signed Area Scaling) and
-4 (Eigenvectors and Eigenvalues) are fully implemented with guided scenes,
+**Milestone 5 complete** — the Determinants as Signed Area Scaling and
+Eigenvectors and Eigenvalues lessons are fully implemented with guided scenes,
 Mafs explorers, deterministic practice, and shared math/examples. Details:
 [docs/m5-lessons.md](docs/m5-lessons.md).
 
@@ -134,10 +134,17 @@ through the engine, so lesson data and React never touch Motion Canvas.
 
 ## Lessons
 
-1. Vectors and Linear Combinations — `/lesson/vectors` (complete)
-2. Matrices as Linear Transformations — `/lesson/transformations` (complete)
-3. Determinants as Signed Area Scaling — `/lesson/determinants` (complete)
-4. Eigenvectors and Eigenvalues — `/lesson/eigenvectors` (complete)
+Built lessons, in registry order (the sidebar numbers the built lessons
+positionally; the authoritative L1–L14 spine lives in
+[docs/LINEAR_ALGEBRA_COURSE_SPINE.md](docs/LINEAR_ALGEBRA_COURSE_SPINE.md)):
+
+- Chapter 0. Why Linear Algebra? — `/lesson/why-linear-algebra` (intro)
+1. Vectors, Linear Combinations, and Basis — `/lesson/vectors`
+2. Matrices as Linear Transformations — `/lesson/transformations`
+3. Linear Systems: Two Pictures of One Equation — `/lesson/systems`
+4. Determinants as Signed Area Scaling — `/lesson/determinants`
+5. Eigenvectors and Eigenvalues — `/lesson/eigenvectors`
+6. Karatsuba: three multiplications instead of four — `/lesson/karatsuba`
 
 Dev-only Motion Canvas spike: `/dev/transform-spike` (explicit id only — never
 a silent fallback). Development-only; excluded from production route tables
