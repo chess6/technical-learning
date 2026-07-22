@@ -93,6 +93,16 @@ export interface LinearSystemExample {
   bInfinite: Vector2;
   /** Target off the dependent column line: no solution. */
   bNone: Vector2;
+  /**
+   * Nearly-dependent columns (2, 4.1) ≈ 2·(1, 2): still independent, so the
+   * system is uniquely solvable, but `det = 0.1` is tiny — the solution is far
+   * off-screen and extremely sensitive to `b`. An early seed for conditioning.
+   */
+  aNearSingular: [[number, number], [number, number]];
+  /** Target used with `aNearSingular`; its unique solution is `solutionNearSingular`. */
+  bNearSingular: Vector2;
+  /** The far off-screen unique solution of the near-singular system. */
+  solutionNearSingular: Vector2;
   /** Symmetric clamp bound for sliders and the draggable target. */
   bound: number;
 }
@@ -111,6 +121,14 @@ export const LINEAR_SYSTEM_EXAMPLE: LinearSystemExample = {
   solution: [2, -1],
   bInfinite: [3, 6],
   bNone: [3, 5],
+  // Columns (1, 2) and (2, 4.1): det = 1·4.1 − 2·2 = 0.1 (nearly singular).
+  // With b = (3, 5) the unique solution is (23, −10) — far outside the view box.
+  aNearSingular: [
+    [1, 2],
+    [2, 4.1],
+  ],
+  bNearSingular: [3, 5],
+  solutionNearSingular: [23, -10],
   bound: 6,
 };
 

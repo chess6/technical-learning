@@ -178,10 +178,11 @@ export function LessonPage() {
       }
       renderExercises={renderExercises}
       summary={
-        lesson.keyTakeaway ? (
+        lesson.keyTakeaway || lesson.structuredSummary ? (
           <LessonSummary
-            takeaway={lesson.keyTakeaway}
+            takeaway={lesson.keyTakeaway ?? ""}
             objectives={lesson.learningObjectives}
+            structured={lesson.structuredSummary}
           />
         ) : undefined
       }

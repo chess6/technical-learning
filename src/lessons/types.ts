@@ -79,6 +79,21 @@ export type ExerciseDefinition =
       expected: number | readonly number[];
       tolerance?: number;
       explanation: string;
+    })
+  | (ExerciseCommon & {
+      id: string;
+      /**
+       * The expandable escape hatch. A `custom` exercise names ONE
+       * `capabilityId` that resolves a bundled capability (grading in
+       * `capabilities.ts`, rendering beside `ExercisePanel`). New interactions
+       * (e.g. committed prediction) ship as registered capabilities reached
+       * this way — without adding a new union member or editing a central
+       * switch. `config` is opaque, capability-owned, and JSON-safe.
+       */
+      type: "custom";
+      capabilityId: string;
+      prompt: string;
+      config?: Record<string, unknown>;
     });
 
 /**
@@ -207,6 +222,39 @@ export type RouteBlock =
   | { kind: "summary" }
   | { kind: "handoff"; to: string; label: string };
 
+/**
+ * A structured, scannable "Remember this" summary — the compression payoff
+ * (INTERACTIVE_TEXTBOOK_VISION §3) turned into a small set of labeled, reusable
+ * fields, and a re-entry point for a returning learner (§14).
+ *
+ * Every field is **optional** and authored as KaTeX-in-prose (`$...$`) rendered
+ * through `ProseWithMath`. Fields that hold a small set of items may be a single
+ * string or a short `string[]`. When this whole object is absent, `LessonSummary`
+ * falls back to the legacy `keyTakeaway` blockquote + `learningObjectives`
+ * disclosure — so existing lessons keep rendering unchanged.
+ *
+ * Keep each field terse: this is a compression surface, not a second lesson.
+ * Do not restate lesson prose; name the one reusable idea and its anchors.
+ */
+export type StructuredSummary = {
+  /** The one-sentence intuitive handle the lesson collapses into (§7). */
+  coreMentalModel?: string;
+  /** The formal object(s) named in the lesson. */
+  definitionsIntroduced?: string | string[];
+  /** The lesson's headline theorem / result, stated compactly. */
+  mainResult?: string;
+  /** How the geometric / symbolic / numeric views were bound together (§2). */
+  representationsConnected?: string | string[];
+  /** The misconception this lesson confronts, in one line (§12). */
+  commonMistake?: string;
+  /** The canonical worked example / running example to recall. */
+  canonicalExample?: string;
+  /** The single problem worth keeping in memory as the lesson's signature. */
+  oneProblemWorthRemembering?: string;
+  /** The forward concept-graph edge this lesson opens (§14). */
+  whatThisUnlocksNext?: string;
+};
+
 /** A short conceptual check-in. A lesson may own several (see `checkpoints`). */
 export type LessonCheckpoint = {
   /** Optional id, required only when referenced by a `check` route block. */
@@ -262,6 +310,12 @@ export type LessonDefinition = {
   exercises?: ExerciseDefinition[];
   /** Optional so an intro chapter can omit a "Remember this" summary. */
   keyTakeaway?: string;
+  /**
+   * Optional structured "Remember this" summary. When present, `LessonSummary`
+   * renders the labeled compression fields (with progressive disclosure);
+   * when absent it falls back to `keyTakeaway` + `learningObjectives`.
+   */
+  structuredSummary?: StructuredSummary;
   /** Shared example id used by both guided scene and exploration. */
   exampleId?: string;
 };

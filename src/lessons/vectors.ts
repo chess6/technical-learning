@@ -295,4 +295,27 @@ export const vectorsLesson: LessonDefinition = {
   ],
   keyTakeaway:
     "In the plane, two independent vectors span the plane, so they form a basis; every vector is then a unique $\\mathbf{p} = a\\mathbf{v} + b\\mathbf{w}$, and $(a, b)$ are its coordinates in that basis. The standard axes are just the most familiar basis.",
+  structuredSummary: {
+    coreMentalModel:
+      "A vector is an arrow; a basis is a *coordinate language* for the plane, and $(a, b)$ is only the arrow's name in that language.",
+    definitionsIntroduced: [
+      "*Linear combination* $a\\mathbf{v} + b\\mathbf{w}$ and its *span* (the set of reachable points)",
+      "*Independence* (neither vector is a scalar multiple of the other) vs. *dependence* (a shared line)",
+      "*Basis* of the plane, and *coordinates* $[\\mathbf{p}]_B$ relative to it",
+    ],
+    mainResult:
+      "$B = (\\mathbf{v}, \\mathbf{w})$ is a basis **iff** every $\\mathbf{x}$ has one and only one representation $a\\mathbf{v} + b\\mathbf{w}$ — spanning gives existence, independence gives uniqueness.",
+    representationsConnected: [
+      "Arrows head-to-tail (geometry) $\\leftrightarrow$ the combination $a\\mathbf{v} + b\\mathbf{w}$ (symbol)",
+      "The reachable region (picture) $\\leftrightarrow$ span (word) $\\leftrightarrow$ solvability of $a\\mathbf{v} + b\\mathbf{w} = \\mathbf{x}$ (algebra)",
+    ],
+    commonMistake:
+      "Thinking the coordinates *are* the vector, or that a basis must be perpendicular. The same arrow $\\mathbf{p}$ is $(4,1)$ in the standard basis but $(1,1)$ in $B$ — the arrow never moved.",
+    canonicalExample:
+      "$\\mathbf{v} = (1, 2)$, $\\mathbf{w} = (3, -1)$, with the fixed point $\\mathbf{p} = \\mathbf{v} + \\mathbf{w} = (4, 1)$, so $[\\mathbf{p}]_B = (1, 1)$.",
+    oneProblemWorthRemembering:
+      "Given $\\mathbf{q} = (-1, 5)$, solve $a\\mathbf{v} + b\\mathbf{w} = \\mathbf{q}$ to get $[\\mathbf{q}]_B = (2, -1)$ — reading a vector into a chosen basis is solving a $2\\times2$ system.",
+    whatThisUnlocksNext:
+      "Coordinates-in-a-basis is what Lesson 2 runs on: a matrix reads a vector's standard coordinates and rebuilds the output from where the basis vectors land.",
+  },
 };

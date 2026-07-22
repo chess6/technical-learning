@@ -27,6 +27,26 @@ rules over one-off patches.
 
 ---
 
+### 2026-07-21 — Linear Systems: guided scene + explorer reimplemented column arithmetic and could draw a false zero-row line
+
+- **Date:** 2026-07-21
+- **Title:** Linear Systems guided scene drew every row via a local line helper (a zero row would become a false line) and both scene + explorer combined columns with hand-rolled arithmetic instead of the shared `src/math` helpers
+- **Symptom:**
+  1. The guided scene (`linearSystemsScene.ts`) built each row line with a local `lineBoxPoints(a, b, c, ext)` whose degenerate branch **fell back to drawing the x-axis** (`[-ext,0]→[ext,0]`). For a zero row (`0·x + 0·y = 0` ⇒ the whole plane; `0·x + 0·y = c ≠ 0` ⇒ impossible) it would therefore render a **false line** implying a spurious intersection, instead of "no constraint" / "impossible".
+  2. The scene combined columns with a local `combo() = [cx·a11 + cy·a12, cx·a21 + cy·a22]` and `scaledCol1() = [cx·a11, cx·a21]`, and the explorer's `dependentRecipe()` / `scaled1` used `x*col1[0] + y*col2[0]` — duplicated matrix–vector arithmetic that could silently desync from the tested source of truth.
+- **Mathematical expectation:** Whether a row `a·x + b·y = c` is a line is decided **only** by `classifyRowConstraint` (`line` / `all` / `empty`); a zero row is never a line. Every column combination `x·col₁ + y·col₂` is exactly the shared `matrixVectorMultiply(A, [x, y])`, and `x·col₁` is `scaleVector(matrixColumn(A, 0), x)`.
+- **Root cause:** The renderers pre-dated (or bypassed) the shared helpers and reimplemented the linear algebra locally, violating the "`src/math` is the only source of truth" rule; the scene additionally had an x-axis fallback for the non-line case.
+- **Affected files:** `src/guided-scenes/scenes/linearSystemsScene.ts`, `src/explorations/SystemsExplorer.tsx`
+- **Fix:**
+  1. Scene: `rowLineBoxPoints` now first calls `classifyRowConstraint`; it returns `null` (⇒ the `Line` gets empty points and draws nothing) unless the row is a genuine `line`, so a zero row can never become a false line. The box-clipping is only reached for real lines.
+  2. Scene column arithmetic now flows through `matrixColumn` / `scaleVector` / `matrixVectorMultiply` (`combo = A·(x, y)`, `scaledCol1 = scaleVector(col₁, x)`).
+  3. Explorer `dependentRecipe(A, b, t, consistent)` builds every endpoint via `matrixVectorMultiply(A, …)`, projects with `dotProduct`, and `scaled1 = scaleVector(col₁, recipe.x)`. The explorer already classified rows with `classifyRowConstraint` (all-plane tint / impossible note) — that path is preserved.
+- **Regression test added:** `src/math/__tests__/systems.test.ts` — new "systems visualization contracts" block: `A=[[0,0],[1,0]]` row 1 = `all` / row 2 = `line` (system infinite), zero row with nonzero rhs = `empty` (system none), the infinite dependent example draws two **coincident** lines, every dependent recipe reaches `b` through `matrixVectorMultiply`, and the near-singular unique solution genuinely lands outside the ±7 view box (off-screen readout is honest).
+- **General lesson / prevention rule:** Renderers must ask `classifyRowConstraint` "is this a line?" before drawing a row — never a "draw every equation as a line" fallback — and must build every column combination from `matrixVectorMultiply` / `scaleVector` / `matrixColumn`, never a local `x*col1[0] + …`.
+- **Status:** fixed
+
+---
+
 ### 2026-07-20 — Karatsuba Watch scene: bare weight labels, text-only trees, carry beat still showed 12×13
 
 - **Date:** 2026-07-20

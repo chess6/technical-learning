@@ -8,7 +8,14 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
-import type { Vector2 as MathVector2 } from "../../math";
+import {
+  classifyRowConstraint,
+  matrixColumn,
+  matrixVectorMultiply,
+  scaleVector,
+  type Matrix2x2,
+  type Vector2 as MathVector2,
+} from "../../math";
 import { SYSTEMS_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
@@ -41,16 +48,26 @@ const EXT = 6;
 const px = (p: MathVector2): Vector2 => new Vector2(p[0] * SCALE_S, -p[1] * SCALE_S);
 
 /**
- * The segment of the line `a·x + b·y = c` clipped to the box [-ext, ext]².
- * Returns two boundary crossings so we never draw a line thousands of pixels
- * offstage. Every line in this scene crosses the box.
+ * The segment of the equation `a·x + b·y = c` clipped to the box [-ext, ext]²,
+ * or `null` when the equation is NOT a line.
+ *
+ * Whether the row is a genuine line is decided by the shared
+ * `classifyRowConstraint` (the single source of truth): a zero row is `all`
+ * (`0 = 0`, no constraint) or `empty` (`0 = c ≠ 0`, impossible) and must never
+ * be drawn as a false line (e.g. a spurious x-axis). Only when it is a real
+ * `line` do we clip it to two boundary crossings so we never draw a segment
+ * thousands of pixels offstage. Every genuine line in this scene crosses the
+ * box.
  */
-function lineBoxPoints(
+function rowLineBoxPoints(
   a: number,
   b: number,
   c: number,
   ext: number,
-): [MathVector2, MathVector2] {
+): [MathVector2, MathVector2] | null {
+  // Source of truth: is this row a line at all? A zero row is not.
+  if (classifyRowConstraint(a, b, c).kind !== "line") return null;
+
   const pts: MathVector2[] = [];
   const inRange = (t: number) => t >= -ext - 1e-6 && t <= ext + 1e-6;
   if (Math.abs(b) > 1e-9) {
@@ -71,12 +88,7 @@ function lineBoxPoints(
       distinct.push(p);
     }
   }
-  if (distinct.length >= 2) return [distinct[0]!, distinct[1]!];
-  // Degenerate fallback (should not happen for these examples).
-  return [
-    [-ext, 0],
-    [ext, 0],
-  ];
+  return distinct.length >= 2 ? [distinct[0]!, distinct[1]!] : null;
 }
 
 export const linearSystemsScene = makeScene2D(function* (view) {
@@ -93,13 +105,18 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const cx = createSignal(0);
   const cy = createSignal(0);
 
-  const col1 = (): MathVector2 => [a11(), a21()];
-  const col2 = (): MathVector2 => [a12(), a22()];
-  const scaledCol1 = (): MathVector2 => [cx() * a11(), cx() * a21()];
-  const combo = (): MathVector2 => [
-    cx() * a11() + cy() * a12(),
-    cx() * a21() + cy() * a22(),
+  // All column arithmetic flows through the shared src/math helpers — this scene
+  // never re-packs a matrix or reimplements the column combination.
+  const matrix = (): Matrix2x2 => [
+    [a11(), a12()],
+    [a21(), a22()],
   ];
+  const col1 = (): MathVector2 => matrixColumn(matrix(), 0);
+  const col2 = (): MathVector2 => matrixColumn(matrix(), 1);
+  // x·col₁ is the matrix acting on (x, 0); equivalently the first column scaled.
+  const scaledCol1 = (): MathVector2 => scaleVector(matrixColumn(matrix(), 0), cx());
+  // The running combination x·col₁ + y·col₂ is exactly A·(x, y).
+  const combo = (): MathVector2 => matrixVectorMultiply(matrix(), [cx(), cy()]);
 
   // --- Static reference grid + axes (subdued) ---
   const grid = new Line({ points: [], stroke: ROLE.grid, lineWidth: 1 });
@@ -129,14 +146,15 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   // --- Row picture: two lines ---
   const line1 = makeSegment(ROLE.original, 4);
   line1.points(() => {
-    const [p, q] = lineBoxPoints(a11(), a12(), b1(), EXT);
-    return [px(p), px(q)];
+    const seg = rowLineBoxPoints(a11(), a12(), b1(), EXT);
+    // A non-line row (0 = 0 / 0 = c) draws nothing — never a false line.
+    return seg ? [px(seg[0]), px(seg[1])] : [];
   });
   line1.opacity(0);
   const line2 = makeSegment(ROLE.transformed, 4);
   line2.points(() => {
-    const [p, q] = lineBoxPoints(a21(), a22(), b2(), EXT);
-    return [px(p), px(q)];
+    const seg = rowLineBoxPoints(a21(), a22(), b2(), EXT);
+    return seg ? [px(seg[0]), px(seg[1])] : [];
   });
   line2.opacity(0);
   view.add(line1);
