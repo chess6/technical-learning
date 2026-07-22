@@ -91,6 +91,11 @@ export function LinearCombinationExplorer() {
   const isChallengeQ = preset === "challenge-q";
   const isInside = preset === "dependent-inside";
   const hasTarget = isChallengeP || isChallengeQ || isInside;
+  // In a coordinate task the basis (v, w) is fixed — you are finding the
+  // coefficients that reach a target. Dragging the basis would make "the
+  // coordinates of p" ill-defined, so drag/edit of v, w is only offered in the
+  // open Independent / Dependent explore tasks.
+  const explore = !hasTarget;
   const target = isChallengeP ? P : isChallengeQ ? Q : isInside ? R : null;
   const targetName = isChallengeP ? "p" : isChallengeQ ? "q" : "r";
 
@@ -228,17 +233,19 @@ export function LinearCombinationExplorer() {
             />
           )}
           <details className="exploration-details">
-            <summary>Display options &amp; numeric vectors</summary>
+            <summary>Display options{explore ? " & numeric vectors" : ""}</summary>
             <div className="exploration-details__body">
-              <ParameterControls
-                title="Vectors (also draggable)"
-                controls={[
-                  { id: "vx", label: "vₓ", value: v[0], min: -BOUND, max: BOUND, onChange: (val) => vPoint.setPoint([clamp(val, -BOUND, BOUND), v[1]]) },
-                  { id: "vy", label: "v_y", value: v[1], min: -BOUND, max: BOUND, onChange: (val) => vPoint.setPoint([v[0], clamp(val, -BOUND, BOUND)]) },
-                  { id: "wx", label: "wₓ", value: w[0], min: -BOUND, max: BOUND, onChange: (val) => wPoint.setPoint([clamp(val, -BOUND, BOUND), w[1]]) },
-                  { id: "wy", label: "w_y", value: w[1], min: -BOUND, max: BOUND, onChange: (val) => wPoint.setPoint([w[0], clamp(val, -BOUND, BOUND)]) },
-                ]}
-              />
+              {explore && (
+                <ParameterControls
+                  title="Vectors (also draggable)"
+                  controls={[
+                    { id: "vx", label: "vₓ", value: v[0], min: -BOUND, max: BOUND, onChange: (val) => vPoint.setPoint([clamp(val, -BOUND, BOUND), v[1]]) },
+                    { id: "vy", label: "v_y", value: v[1], min: -BOUND, max: BOUND, onChange: (val) => vPoint.setPoint([v[0], clamp(val, -BOUND, BOUND)]) },
+                    { id: "wx", label: "wₓ", value: w[0], min: -BOUND, max: BOUND, onChange: (val) => wPoint.setPoint([clamp(val, -BOUND, BOUND), w[1]]) },
+                    { id: "wy", label: "w_y", value: w[1], min: -BOUND, max: BOUND, onChange: (val) => wPoint.setPoint([w[0], clamp(val, -BOUND, BOUND)]) },
+                  ]}
+                />
+              )}
               <ExplorationToggles
                 toggles={[
                   { id: "toggle-components", label: "Components of v", checked: showComponents, onChange: setShowComponents },
@@ -402,8 +409,8 @@ export function LinearCombinationExplorer() {
             a v + b w
           </Text>
 
-          {vPoint.element}
-          {wPoint.element}
+          {explore && vPoint.element}
+          {explore && wPoint.element}
         </MafsSceneShell>
       </div>
       <ul className="lincomb-explorer__legend" aria-label="Legend">
