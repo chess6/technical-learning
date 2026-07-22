@@ -390,6 +390,144 @@ export function gradeSequenceStep(
 }
 
 /* --------------------------------------------------------------------------
+ * Validated answer decoding
+ *
+ * Persisted/generic answers arrive as opaque `JsonValue`. Instead of trusting a
+ * blind `as` cast (which can smuggle a self-check-shaped answer into the
+ * matrix-entry grader, or a malformed blob out of storage), each capability
+ * decodes its answer through these guards and raises a controlled
+ * `AnswerDecodeError` on any shape mismatch.
+ * ------------------------------------------------------------------------ */
+
+export class AnswerDecodeError extends Error {
+  constructor(capabilityId: string, detail: string) {
+    super(`Cannot decode "${capabilityId}" answer: ${detail}`);
+    this.name = "AnswerDecodeError";
+  }
+}
+
+/**
+ * Assert the answer is a `custom` answer produced FOR this capability, then
+ * return its JSON value. Guarantees `answer.capabilityId === capabilityId`, so a
+ * capability never grades or serializes an answer authored for another one.
+ */
+function customValue(answer: ExerciseAnswer, capabilityId: string): JsonValue {
+  if (answer.kind !== "custom") {
+    throw new Error(`Expected a custom answer for "${capabilityId}"`);
+  }
+  if (answer.capabilityId !== capabilityId) {
+    throw new Error(
+      `Answer capability "${answer.capabilityId}" does not match ` +
+        `exercise capability "${capabilityId}"`,
+    );
+  }
+  return answer.value;
+}
+
+function decodeObject(
+  raw: JsonValue | undefined,
+  cap: string,
+): { readonly [key: string]: JsonValue } {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new AnswerDecodeError(cap, "expected a JSON object");
+  }
+  return raw;
+}
+
+function decodeFiniteNumber(raw: JsonValue | undefined, cap: string, field: string): number {
+  if (typeof raw !== "number" || !Number.isFinite(raw)) {
+    throw new AnswerDecodeError(cap, `"${field}" must be a finite number`);
+  }
+  return raw;
+}
+
+function decodeString(raw: JsonValue | undefined, cap: string, field: string): string {
+  if (typeof raw !== "string") {
+    throw new AnswerDecodeError(cap, `"${field}" must be a string`);
+  }
+  return raw;
+}
+
+function decodeArray(
+  raw: JsonValue | undefined,
+  cap: string,
+  field: string,
+): readonly JsonValue[] {
+  if (!Array.isArray(raw)) {
+    throw new AnswerDecodeError(cap, `"${field}" must be an array`);
+  }
+  return raw;
+}
+
+function decodeVector2(raw: JsonValue | undefined, cap: string): [number, number] {
+  const arr = decodeArray(raw, cap, "vector");
+  if (arr.length !== 2) {
+    throw new AnswerDecodeError(cap, "vector must have exactly 2 components");
+  }
+  return [
+    decodeFiniteNumber(arr[0], cap, "vector[0]"),
+    decodeFiniteNumber(arr[1], cap, "vector[1]"),
+  ];
+}
+
+function decodeNumberArray(raw: JsonValue | undefined, cap: string, field: string): number[] {
+  return decodeArray(raw, cap, field).map((n, i) =>
+    decodeFiniteNumber(n, cap, `${field}[${i}]`),
+  );
+}
+
+function decodeCommittedPredictionAnswer(raw: JsonValue | undefined): CommittedPredictionAnswer {
+  const o = decodeObject(raw, COMMITTED_PREDICTION_ID);
+  return {
+    committedIndex: decodeFiniteNumber(o.committedIndex, COMMITTED_PREDICTION_ID, "committedIndex"),
+  };
+}
+
+function decodeMatrixEntryAnswer(raw: JsonValue | undefined): MatrixEntryAnswer {
+  const o = decodeObject(raw, MATRIX_ENTRY_ID);
+  const rows = decodeArray(o.entries, MATRIX_ENTRY_ID, "entries");
+  return {
+    entries: rows.map((row, i) => decodeNumberArray(row, MATRIX_ENTRY_ID, `entries[${i}]`)),
+  };
+}
+
+function decodeConstructAnswer(raw: JsonValue | undefined): ConstructInExplorerAnswer {
+  const o = decodeObject(raw, CONSTRUCT_IN_EXPLORER_ID);
+  return { vector: decodeVector2(o.vector, CONSTRUCT_IN_EXPLORER_ID) };
+}
+
+function decodeSelfCheckAnswer(raw: JsonValue | undefined): SelfCheckAnswer {
+  const o = decodeObject(raw, SELF_CHECK_ID);
+  const text = decodeString(o.text, SELF_CHECK_ID, "text");
+  const selfMark = decodeString(o.selfMark, SELF_CHECK_ID, "selfMark");
+  if (selfMark !== "understood" && selfMark !== "not-yet") {
+    throw new AnswerDecodeError(SELF_CHECK_ID, `"selfMark" must be "understood" or "not-yet"`);
+  }
+  return { text, selfMark };
+}
+
+function decodeSequenceAnswer(raw: JsonValue | undefined): ExerciseSequenceAnswer {
+  const o = decodeObject(raw, EXERCISE_SEQUENCE_ID);
+  const responses = decodeArray(o.responses, EXERCISE_SEQUENCE_ID, "responses").map(
+    (item): SequenceResponse => {
+      const r = decodeObject(item, EXERCISE_SEQUENCE_ID);
+      const kind = decodeString(r.kind, EXERCISE_SEQUENCE_ID, "kind");
+      if (kind === "numeric") {
+        return { kind: "numeric", value: decodeFiniteNumber(r.value, EXERCISE_SEQUENCE_ID, "value") };
+      }
+      if (kind === "multiple-choice") {
+        return {
+          kind: "multiple-choice",
+          choice: decodeFiniteNumber(r.choice, EXERCISE_SEQUENCE_ID, "choice"),
+        };
+      }
+      throw new AnswerDecodeError(EXERCISE_SEQUENCE_ID, `unknown response kind "${kind}"`);
+    },
+  );
+  return { responses };
+}
+
+/* --------------------------------------------------------------------------
  * Registry
  * ------------------------------------------------------------------------ */
 
@@ -418,8 +556,11 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       return { choice: answer.choice };
     },
     parseAnswer(raw) {
-      const r = raw as { choice: number };
-      return { kind: "multiple-choice", choice: r.choice };
+      const o = decodeObject(raw, "multiple-choice");
+      return {
+        kind: "multiple-choice",
+        choice: decodeFiniteNumber(o.choice, "multiple-choice", "choice"),
+      };
     },
   },
 
@@ -443,8 +584,8 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       return { value: answer.value };
     },
     parseAnswer(raw) {
-      const r = raw as { value: number };
-      return { kind: "numeric", value: r.value };
+      const o = decodeObject(raw, "numeric");
+      return { kind: "numeric", value: decodeFiniteNumber(o.value, "numeric", "value") };
     },
   },
 
@@ -472,8 +613,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       return [answer.value[0], answer.value[1]];
     },
     parseAnswer(raw) {
-      const r = raw as [number, number];
-      return { kind: "vector", value: [r[0], r[1]] };
+      return { kind: "vector", value: decodeVector2(raw, "vector") };
     },
   },
 
@@ -502,8 +642,8 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       return Array.isArray(answer.value) ? [...answer.value] : [answer.value as number];
     },
     parseAnswer(raw) {
-      const r = raw as number[];
-      return { kind: "eigenvalue", value: r.length === 1 ? r[0]! : r };
+      const values = decodeNumberArray(raw, "eigenvalue", "value");
+      return { kind: "eigenvalue", value: values.length === 1 ? values[0]! : values };
     },
   },
 
@@ -529,10 +669,9 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     answerSchemaVersion: 1,
     grade(exercise, answer) {
       const config = committedPredictionConfig(exercise);
-      if (answer.kind !== "custom") {
-        throw new Error("Expected a custom answer for committed-prediction");
-      }
-      const value = answer.value as CommittedPredictionAnswer;
+      const value = decodeCommittedPredictionAnswer(
+        customValue(answer, COMMITTED_PREDICTION_ID),
+      );
       if (typeof config.correctIndex === "number") {
         const correct = value.committedIndex === config.correctIndex;
         return {
@@ -544,16 +683,16 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       return { correct: true, feedback: config.reveal };
     },
     serializeAnswer(answer) {
-      if (answer.kind !== "custom") throw new Error("wrong answer kind");
-      const value = answer.value as CommittedPredictionAnswer;
+      const value = decodeCommittedPredictionAnswer(
+        customValue(answer, COMMITTED_PREDICTION_ID),
+      );
       return { committedIndex: value.committedIndex };
     },
     parseAnswer(raw) {
-      const r = raw as { committedIndex: number };
       return {
         kind: "custom",
         capabilityId: COMMITTED_PREDICTION_ID,
-        value: { committedIndex: r.committedIndex },
+        value: decodeCommittedPredictionAnswer(raw),
       };
     },
   },
@@ -563,10 +702,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     answerSchemaVersion: 1,
     grade(exercise, answer) {
       const config = matrixEntryConfig(exercise);
-      if (answer.kind !== "custom") {
-        throw new Error("Expected a custom answer for matrix-entry");
-      }
-      const value = answer.value as MatrixEntryAnswer;
+      const value = decodeMatrixEntryAnswer(customValue(answer, MATRIX_ENTRY_ID));
       const tolerance = config.tolerance ?? DEFAULT_NUMERIC_TOLERANCE;
       const dimsMatch =
         value.entries.length === config.rows &&
@@ -585,16 +721,14 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       };
     },
     serializeAnswer(answer) {
-      if (answer.kind !== "custom") throw new Error("wrong answer kind");
-      const value = answer.value as MatrixEntryAnswer;
+      const value = decodeMatrixEntryAnswer(customValue(answer, MATRIX_ENTRY_ID));
       return { entries: value.entries.map((row) => [...row]) };
     },
     parseAnswer(raw) {
-      const r = raw as { entries: number[][] };
       return {
         kind: "custom",
         capabilityId: MATRIX_ENTRY_ID,
-        value: { entries: r.entries.map((row) => [...row]) },
+        value: decodeMatrixEntryAnswer(raw),
       };
     },
   },
@@ -604,10 +738,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     answerSchemaVersion: 1,
     grade(exercise, answer) {
       const config = constructInExplorerConfig(exercise);
-      if (answer.kind !== "custom") {
-        throw new Error("Expected a custom answer for construct-in-explorer");
-      }
-      const value = answer.value as ConstructInExplorerAnswer;
+      const value = decodeConstructAnswer(customValue(answer, CONSTRUCT_IN_EXPLORER_ID));
       const vector: Vector2 = [value.vector[0], value.vector[1]];
       const { pass, because } = evaluateConstructCheck(
         config.check,
@@ -620,16 +751,14 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       };
     },
     serializeAnswer(answer) {
-      if (answer.kind !== "custom") throw new Error("wrong answer kind");
-      const value = answer.value as ConstructInExplorerAnswer;
+      const value = decodeConstructAnswer(customValue(answer, CONSTRUCT_IN_EXPLORER_ID));
       return { vector: [value.vector[0], value.vector[1]] };
     },
     parseAnswer(raw) {
-      const r = raw as { vector: [number, number] };
       return {
         kind: "custom",
         capabilityId: CONSTRUCT_IN_EXPLORER_ID,
-        value: { vector: [r.vector[0], r.vector[1]] },
+        value: decodeConstructAnswer(raw),
       };
     },
   },
@@ -639,10 +768,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     answerSchemaVersion: 1,
     grade(exercise, answer) {
       const config = selfCheckConfig(exercise);
-      if (answer.kind !== "custom") {
-        throw new Error("Expected a custom answer for self-check");
-      }
-      const value = answer.value as SelfCheckAnswer;
+      const value = decodeSelfCheckAnswer(customValue(answer, SELF_CHECK_ID));
       const understood = value.selfMark === "understood";
       return {
         // Self-marked, not machine-graded: "correct" mirrors the learner's mark.
@@ -653,16 +779,14 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       };
     },
     serializeAnswer(answer) {
-      if (answer.kind !== "custom") throw new Error("wrong answer kind");
-      const value = answer.value as SelfCheckAnswer;
+      const value = decodeSelfCheckAnswer(customValue(answer, SELF_CHECK_ID));
       return { text: value.text, selfMark: value.selfMark };
     },
     parseAnswer(raw) {
-      const r = raw as { text: string; selfMark: SelfMark };
       return {
         kind: "custom",
         capabilityId: SELF_CHECK_ID,
-        value: { text: r.text, selfMark: r.selfMark },
+        value: decodeSelfCheckAnswer(raw),
       };
     },
   },
@@ -672,10 +796,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     answerSchemaVersion: 1,
     grade(exercise, answer) {
       const config = exerciseSequenceConfig(exercise);
-      if (answer.kind !== "custom") {
-        throw new Error("Expected a custom answer for exercise-sequence");
-      }
-      const value = answer.value as ExerciseSequenceAnswer;
+      const value = decodeSequenceAnswer(customValue(answer, EXERCISE_SEQUENCE_ID));
       const results = config.steps.map((step, index) => {
         const response = value.responses[index];
         if (!response) return { correct: false, feedback: "Not yet answered." };
@@ -692,8 +813,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       };
     },
     serializeAnswer(answer) {
-      if (answer.kind !== "custom") throw new Error("wrong answer kind");
-      const value = answer.value as ExerciseSequenceAnswer;
+      const value = decodeSequenceAnswer(customValue(answer, EXERCISE_SEQUENCE_ID));
       return {
         responses: value.responses.map((response): JsonValue =>
           response.kind === "numeric"
@@ -703,20 +823,10 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       };
     },
     parseAnswer(raw) {
-      const r = raw as {
-        responses: Array<
-          { kind: "numeric"; value: number } | { kind: "multiple-choice"; choice: number }
-        >;
-      };
-      const responses: SequenceResponse[] = r.responses.map((response) =>
-        response.kind === "numeric"
-          ? { kind: "numeric", value: response.value }
-          : { kind: "multiple-choice", choice: response.choice },
-      );
       return {
         kind: "custom",
         capabilityId: EXERCISE_SEQUENCE_ID,
-        value: { responses },
+        value: decodeSequenceAnswer(raw),
       };
     },
   },

@@ -1,4 +1,5 @@
 import type { Vector2 } from "../math/types";
+import type { JsonObject } from "../platform/json";
 
 export type { Matrix2x2, MatrixExample, Vector2 } from "../math/types";
 
@@ -93,7 +94,13 @@ export type ExerciseDefinition =
       type: "custom";
       capabilityId: string;
       prompt: string;
-      config?: Record<string, unknown>;
+      /**
+       * Opaque, capability-owned configuration. Typed as `JsonObject` (not
+       * `Record<string, unknown>`) so it provably contains only JSON-safe values
+       * — no functions, class instances, or `Date`. The owning capability
+       * validates its concrete shape at runtime.
+       */
+      config?: JsonObject;
     });
 
 /**

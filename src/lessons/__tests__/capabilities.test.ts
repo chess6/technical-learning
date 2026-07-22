@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  AnswerDecodeError,
   COMMITTED_PREDICTION_ID,
   CONSTRUCT_IN_EXPLORER_ID,
   EXERCISE_SEQUENCE_ID,
@@ -11,6 +12,7 @@ import {
   getGradingCapability,
   resolveCapabilityId,
   type ExerciseAnswer,
+  type JsonValue,
 } from "../capabilities";
 import { gradeExercise } from "../grading";
 import { lessons } from "../registry";
@@ -328,6 +330,66 @@ describe("exercise-sequence capability (scaffolded sub-steps)", () => {
     });
     expect(partial.correct).toBe(false);
     expect(partial.feedback).toContain("1 of 2 steps");
+  });
+});
+
+describe("capability-id agreement + validated decoding (safety)", () => {
+  const matrixExercise: ExerciseDefinition = {
+    id: "me-safe",
+    type: "custom",
+    capabilityId: MATRIX_ENTRY_ID,
+    prompt: "Enter the identity.",
+    config: { rows: 2, cols: 2, expected: [[1, 0], [0, 1]], explanation: "It is I." },
+  };
+
+  it("refuses an answer whose capabilityId does not match the exercise", () => {
+    // A self-check-shaped answer must not be graded by matrix-entry.
+    expect(() =>
+      gradeExercise(matrixExercise, {
+        kind: "custom",
+        capabilityId: SELF_CHECK_ID,
+        value: { text: "unrelated", selfMark: "understood" },
+      }),
+    ).toThrow(/does not match/);
+  });
+
+  it("still grades a correctly-addressed custom answer", () => {
+    const result = gradeExercise(matrixExercise, {
+      kind: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      value: { entries: [[1, 0], [0, 1]] },
+    });
+    expect(result.correct).toBe(true);
+  });
+
+  it("raises a controlled AnswerDecodeError for a malformed persisted answer", () => {
+    const cap = gradingCapabilities[MATRIX_ENTRY_ID]!;
+    expect(() => cap.parseAnswer({ entries: "not-a-grid" } as unknown as JsonValue)).toThrow(
+      AnswerDecodeError,
+    );
+    expect(() => cap.parseAnswer(null)).toThrow(AnswerDecodeError);
+    expect(() => cap.parseAnswer({ entries: [[1, "x"]] } as unknown as JsonValue)).toThrow(
+      AnswerDecodeError,
+    );
+  });
+
+  it("rejects a self-check answer with an invalid self-mark", () => {
+    const cap = gradingCapabilities[SELF_CHECK_ID]!;
+    expect(() =>
+      cap.parseAnswer({ text: "x", selfMark: "maybe" } as unknown as JsonValue),
+    ).toThrow(/selfMark/);
+  });
+
+  it("rejects a non-finite numeric answer on decode", () => {
+    const cap = gradingCapabilities.numeric!;
+    expect(() => cap.parseAnswer({ value: Number.NaN } as unknown as JsonValue)).toThrow(
+      AnswerDecodeError,
+    );
+  });
+
+  it("rejects a vector answer of the wrong arity on decode", () => {
+    const cap = gradingCapabilities.vector!;
+    expect(() => cap.parseAnswer([1, 2, 3] as unknown as JsonValue)).toThrow(AnswerDecodeError);
   });
 });
 
