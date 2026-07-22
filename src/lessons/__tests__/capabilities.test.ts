@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   COMMITTED_PREDICTION_ID,
+  CONSTRUCT_IN_EXPLORER_ID,
+  EXERCISE_SEQUENCE_ID,
+  MATRIX_ENTRY_ID,
+  SELF_CHECK_ID,
+  evaluateConstructCheck,
+  gradeSequenceStep,
   gradingCapabilities,
   getGradingCapability,
   resolveCapabilityId,
@@ -107,6 +113,224 @@ describe("committed prediction pilot (reached via the custom escape hatch)", () 
   });
 });
 
+describe("matrix-entry capability (custom escape hatch)", () => {
+  const exercise: ExerciseDefinition = {
+    id: "me",
+    type: "custom",
+    capabilityId: MATRIX_ENTRY_ID,
+    prompt: "Enter the shear matrix.",
+    config: {
+      rows: 2,
+      cols: 2,
+      expected: [
+        [1, 1],
+        [0, 1],
+      ],
+      explanation: "A shear keeps e_1 fixed and sends e_2 to (1, 1).",
+      matrixName: "A",
+    },
+  };
+
+  it("grades a correct matrix entry-wise", () => {
+    const result = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      value: { entries: [[1, 1], [0, 1]] },
+    });
+    expect(result.correct).toBe(true);
+    expect(result.feedback).toContain("Correct");
+  });
+
+  it("rejects an entry outside tolerance and reveals the expected matrix", () => {
+    const result = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      value: { entries: [[1, 0], [0, 1]] },
+    });
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toContain("Not quite");
+    // Learner-facing matrix rendered as KaTeX bmatrix.
+    expect(result.feedback).toContain("\\begin{bmatrix}");
+  });
+
+  it("respects a configured tolerance", () => {
+    const loose: ExerciseDefinition = {
+      ...exercise,
+      config: { ...(exercise as { config: object }).config, tolerance: 0.5 },
+    };
+    const result = gradeExercise(loose, {
+      kind: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      value: { entries: [[1.3, 0.7], [0.2, 1.2]] },
+    });
+    expect(result.correct).toBe(true);
+  });
+});
+
+describe("construct-in-explorer capability (pure predicate over a committed vector)", () => {
+  const inconsistent: ExerciseDefinition = {
+    id: "cie-none",
+    type: "custom",
+    capabilityId: CONSTRUCT_IN_EXPLORER_ID,
+    prompt: "Pick a b that makes the system inconsistent.",
+    config: {
+      target: "vector2",
+      check: {
+        kind: "system-classification",
+        matrix: [
+          [1, 2],
+          [2, 4],
+        ],
+        expect: "none",
+      },
+      reveal: "That b lies off the columns' line, so there is no solution.",
+    },
+  };
+
+  it("passes a b off the dependent columns' line (no solution)", () => {
+    const result = gradeExercise(inconsistent, {
+      kind: "custom",
+      capabilityId: CONSTRUCT_IN_EXPLORER_ID,
+      value: { vector: [1, 0] },
+    });
+    expect(result.correct).toBe(true);
+    expect(result.feedback).toContain("no solution");
+  });
+
+  it("fails a b on the columns' line (infinitely many solutions)", () => {
+    const result = gradeExercise(inconsistent, {
+      kind: "custom",
+      capabilityId: CONSTRUCT_IN_EXPLORER_ID,
+      value: { vector: [1, 2] },
+    });
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toContain("Not quite");
+  });
+
+  it("evaluates the eigenvector predicate against src/math", () => {
+    const check = {
+      kind: "eigenvector" as const,
+      matrix: [
+        [2, 0],
+        [0, 3],
+      ],
+      eigenvalue: 2,
+    };
+    // (1, 0) is an eigenvector for λ = 2; (1, 1) is not.
+    expect(evaluateConstructCheck(check, [1, 0]).pass).toBe(true);
+    expect(evaluateConstructCheck(check, [1, 1]).pass).toBe(false);
+    // The zero vector is never an eigenvector.
+    expect(evaluateConstructCheck(check, [0, 0]).pass).toBe(false);
+  });
+
+  it("evaluates off-line / on-line predicates", () => {
+    const spanning = [1, 1] as const;
+    expect(evaluateConstructCheck({ kind: "vector-off-line", spanning }, [1, -1]).pass).toBe(true);
+    expect(evaluateConstructCheck({ kind: "vector-off-line", spanning }, [2, 2]).pass).toBe(false);
+    expect(evaluateConstructCheck({ kind: "vector-on-line", spanning }, [3, 3]).pass).toBe(true);
+    expect(evaluateConstructCheck({ kind: "vector-on-line", spanning }, [0, 0]).pass).toBe(false);
+  });
+});
+
+describe("self-check capability (free-text + self-mark)", () => {
+  const exercise: ExerciseDefinition = {
+    id: "sc",
+    type: "custom",
+    capabilityId: SELF_CHECK_ID,
+    prompt: "Explain why the determinant measures area scaling.",
+    config: {
+      modelAnswer: "The determinant is the signed area of the unit square's image.",
+    },
+  };
+
+  it("reads 'understood' as correct and includes the model answer", () => {
+    const result = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: SELF_CHECK_ID,
+      value: { text: "It scales areas.", selfMark: "understood" },
+    });
+    expect(result.correct).toBe(true);
+    expect(result.feedback).toContain("signed area");
+  });
+
+  it("reads 'not-yet' as not correct but still reveals the model answer", () => {
+    const result = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: SELF_CHECK_ID,
+      value: { text: "unsure", selfMark: "not-yet" },
+    });
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toContain("signed area");
+  });
+});
+
+describe("exercise-sequence capability (scaffolded sub-steps)", () => {
+  const exercise: ExerciseDefinition = {
+    id: "seq",
+    type: "custom",
+    capabilityId: EXERCISE_SEQUENCE_ID,
+    prompt: "Compute A v step by step.",
+    config: {
+      steps: [
+        {
+          kind: "numeric",
+          prompt: "First component of A v?",
+          expected: 4,
+          explanation: "Row 1 dot v = 2·1 + 1·2 = 4.",
+        },
+        {
+          kind: "multiple-choice",
+          prompt: "Which column stayed fixed?",
+          choices: ["e_1", "e_2"],
+          correctChoice: 0,
+          explanation: "The shear fixes e_1.",
+        },
+      ],
+    },
+  };
+
+  it("grades a single step through the exported helper", () => {
+    const right = gradeSequenceStep(
+      { kind: "numeric", prompt: "", expected: 4, explanation: "" },
+      { kind: "numeric", value: 4 },
+    );
+    expect(right.correct).toBe(true);
+    const wrong = gradeSequenceStep(
+      { kind: "numeric", prompt: "", expected: 4, explanation: "" },
+      { kind: "numeric", value: 5 },
+    );
+    expect(wrong.correct).toBe(false);
+  });
+
+  it("is correct only when every step is correct", () => {
+    const all = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      value: {
+        responses: [
+          { kind: "numeric", value: 4 },
+          { kind: "multiple-choice", choice: 0 },
+        ],
+      },
+    });
+    expect(all.correct).toBe(true);
+    expect(all.feedback).toContain("All 2 steps");
+
+    const partial = gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      value: {
+        responses: [
+          { kind: "numeric", value: 4 },
+          { kind: "multiple-choice", choice: 1 },
+        ],
+      },
+    });
+    expect(partial.correct).toBe(false);
+    expect(partial.feedback).toContain("1 of 2 steps");
+  });
+});
+
 describe("JSON-safe answer serialization round-trips", () => {
   const cases: Array<{ id: string; answer: ExerciseAnswer }> = [
     { id: "multiple-choice", answer: { kind: "multiple-choice", choice: 2 } },
@@ -116,6 +340,43 @@ describe("JSON-safe answer serialization round-trips", () => {
     {
       id: COMMITTED_PREDICTION_ID,
       answer: { kind: "custom", capabilityId: COMMITTED_PREDICTION_ID, value: { committedIndex: 1 } },
+    },
+    {
+      id: MATRIX_ENTRY_ID,
+      answer: {
+        kind: "custom",
+        capabilityId: MATRIX_ENTRY_ID,
+        value: { entries: [[1, 1], [0, 1]] },
+      },
+    },
+    {
+      id: CONSTRUCT_IN_EXPLORER_ID,
+      answer: {
+        kind: "custom",
+        capabilityId: CONSTRUCT_IN_EXPLORER_ID,
+        value: { vector: [1, -2] },
+      },
+    },
+    {
+      id: SELF_CHECK_ID,
+      answer: {
+        kind: "custom",
+        capabilityId: SELF_CHECK_ID,
+        value: { text: "my reason", selfMark: "understood" },
+      },
+    },
+    {
+      id: EXERCISE_SEQUENCE_ID,
+      answer: {
+        kind: "custom",
+        capabilityId: EXERCISE_SEQUENCE_ID,
+        value: {
+          responses: [
+            { kind: "numeric", value: 4 },
+            { kind: "multiple-choice", choice: 0 },
+          ],
+        },
+      },
     },
   ];
 

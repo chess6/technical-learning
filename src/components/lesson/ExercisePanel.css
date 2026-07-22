@@ -211,6 +211,109 @@
   color: var(--color-text-faint);
 }
 
+/* ---- Matrix entry ---- */
+.exercise-panel__matrix {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--color-text-muted);
+  border-right: 2px solid var(--color-text-muted);
+  border-radius: 3px;
+}
+
+.exercise-panel__matrix-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.exercise-panel__matrix-cell {
+  width: 3.75rem;
+  min-height: var(--control-height);
+  padding: var(--space-2);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+/* ---- Self-check (free-text explanation) ---- */
+.exercise-panel__self-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.exercise-panel__field--block {
+  display: block;
+}
+
+.exercise-panel__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  resize: vertical;
+}
+
+.exercise-panel__self-mark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.exercise-panel__self-mark-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.exercise-panel__self-mark .btn[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: var(--tint-blue);
+}
+
+/* ---- Exercise sequence (scaffolded sub-steps) ---- */
+.exercise-panel__sequence {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sequence-step;
+}
+
+.exercise-panel__sequence-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-5);
+  border-left: 2px solid var(--color-divider-strong);
+  counter-increment: sequence-step;
+}
+
+.exercise-panel__sequence-prompt {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+.exercise-panel__sequence-prompt::before {
+  content: "Step " counter(sequence-step) ". ";
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
 /* ---- Feedback ---- */
 .exercise-panel__feedback {
   flex-basis: 100%;
