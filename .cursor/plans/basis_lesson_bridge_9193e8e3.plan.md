@@ -25,7 +25,7 @@ todos:
     status: completed
   - id: verify
     content: Run lint, unit, e2e; browser review desktop/mobile/zoom/reduced-motion into screenshots/
-    status: completed
+    status: in_progress
 isProject: false
 ---
 
