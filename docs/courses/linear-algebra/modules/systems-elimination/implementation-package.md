@@ -20,8 +20,10 @@ every named item against its actual capability in
 > on each side); a **full two-coordinate** column confirmation (L3); a **produced**
 > diagnosis + repair on an **unfamiliar** system and an **E4 degenerate zero-pivot** transfer
 > where the learner **chooses an unnamed legal operation** and enters the resulting
-> equivalent matrix, **predicate-graded** so any reversible op giving a nonzero \(a_{11}\)
-> passes (L4); a **complete parametric set that
+> matrix, **predicate-graded** (shared `singleRowOperationBetween`) so a matrix passes iff it
+> is reachable by **exactly one** legal operation giving a nonzero \(a_{11}\) — the swap or
+> \(R_1\to R_1+k\,R_2\) — rejecting a full RREF/multi-step result, a solution-changing
+> matrix, or an unrelated same-solution system (L4); a **complete parametric set that
 > predicate-grades a learner-chosen** \(\mathbf{x}_p\) and null direction (both coords each),
 > a **produced difference-of-solutions** verification, a **produced** ∅-refusal, and a
 > **scored E4** null-direction construction (L5). To support the learner-chosen complete
@@ -134,7 +136,7 @@ New/changed items and their **honest** level under the strict rules
 | `elim-sequence-forward-fresh`, `elim-matrix-after-step-fresh` | fresh elimination run | **E3** ✅ |
 | `elim-diagnose-repair-fresh` | **rewritten (2nd pass)**: **produced** diagnosis (erroneous coefficient) + **produced** repair on an **unfamiliar** system (no MC identify step) | **E4** ✅ |
 | `elim-diagnose-explain-fresh` | **new (2nd pass)** self-check: produced written explanation of the error | **E6 surface, unscored** → F |
-| `elim-degenerate-pivot-transfer` | **predicate-graded matrix-entry**: degenerate zero pivot; prompt asks the learner to **choose and apply one legal elementary operation** that creates a usable pivot (**operation not named**) and enter the resulting matrix — graded by `row-equivalent-usable-pivot` (any reversible op giving a nonzero \(a_{11}\) passes), so the method **selection** is the transfer; routine back-substitution is *not* graded | **E4** ✅ (unfamiliar transfer, method selection) |
+| `elim-degenerate-pivot-transfer` | **predicate-graded matrix-entry**: degenerate zero pivot; prompt asks the learner to **choose and apply one legal elementary operation** that creates a usable pivot (**operation not named**) and enter the resulting matrix — graded by `row-equivalent-usable-pivot` (shared `singleRowOperationBetween`): passes iff reachable by **exactly one** legal op giving a nonzero \(a_{11}\) (swap or \(R_1\to R_1+k\,R_2\)); rejects RREF/multi-step, solution-changing, and unrelated same-solution matrices — so the method **selection** is the transfer; routine back-substitution is *not* graded | **E4** ✅ (unfamiliar transfer, method selection) |
 | `elim-contradiction-row-fresh` | matrix-entry: run elimination → contradiction row | **E3** ✅ |
 | `elim-construct-infinite` | construct-in-explorer, distinct cols + ∞ case | **E3 construction** (beneath the E4 degenerate transfer) |
 | `elim-construct-inconsistent` | **removed** — duplicated L3's columns \((1,2),(3,6)\) | — |
@@ -156,7 +158,8 @@ now **produced with a *typed* count** per system (E3, a free-text step — no mu
 with no class displayed or named before the response),
 the column confirmation checks **both coordinates**, the L3 characterization assesses the
 **general** boundary and both L4 diagnosis/degenerate outcomes reach **E4** (the degenerate
-one a **learner-chosen unnamed operation, predicate-graded on the resulting matrix**), the
+one a **learner-chosen unnamed operation, predicate-graded as exactly one legal row
+operation on the original**), the
 L5 difference-of-solutions is **produced** (E3),
 the parametric set is **complete and predicate-grades learner-chosen vectors**, the
 inconsistency refusal is **produced**, and the L5 one-difference distinction reaches

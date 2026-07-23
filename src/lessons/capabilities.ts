@@ -19,9 +19,9 @@ import {
   approximatelyEqualVector,
   areParallel,
   classifyLinearSystem2x2,
-  haveSameSolutionSet,
   magnitude,
   matrixVectorMultiply,
+  singleRowOperationBetween,
   verifiesEigenpair,
   type AugmentedSystem,
   type LinearSystemKind,
@@ -127,13 +127,18 @@ function committedPredictionConfig(
 /**
  * A declarative, JSON-safe predicate over the learner's entered augmented matrix
  * — used when the correct answer is NOT a single fixed matrix. `row-equivalent-
- * usable-pivot` accepts *any* augmented `[A|b]` the learner reaches by a legal
- * (reversible) elementary row operation on `original` **that also** places a
- * nonzero entry in the `pivot` position. This lets a prompt ask the learner to
- * *choose and apply* an operation (method selection) without naming it: every
- * valid choice passes, and the operation stays undisclosed until commitment.
- * Row-equivalence is decided by the shared `haveSameSolutionSet` (src/math), so
- * no linear algebra is reimplemented here.
+ * usable-pivot` accepts an augmented `[A|b]` iff it is reachable from `original`
+ * by **exactly one** legal (reversible) elementary row operation **that also**
+ * places a nonzero entry in the `pivot` position. This lets a prompt ask the
+ * learner to *choose and apply* one operation (method selection) without naming
+ * it: every valid single-operation choice passes, and the operation stays
+ * undisclosed until commitment.
+ *
+ * The single-operation test is the shared `singleRowOperationBetween` (src/math),
+ * which reuses the row-operation arithmetic and rejects anything needing more
+ * than one move — a full RREF, a multi-step reduction, or an unrelated system
+ * that merely shares the same solution set. "Same solution set" is deliberately
+ * **not** treated as "one operation"; no linear algebra is reimplemented here.
  */
 export type MatrixCheck = {
   kind: "row-equivalent-usable-pivot";
@@ -210,18 +215,22 @@ function evaluateMatrixCheck(
       const [pr, pc] = check.pivot;
       const pivotValue = entries[pr]?.[pc] ?? 0;
       const pivotOk = Math.abs(pivotValue) > tolerance;
-      const sameSolutions = haveSameSolutionSet(
-        toAugmented2x3(entries),
+      // Exactly ONE legal elementary operation from the original — NOT merely the
+      // same solution set (which a full reduction or an unrelated system can share).
+      const op = singleRowOperationBetween(
         toAugmented2x3(check.original),
+        toAugmented2x3(entries),
+        tolerance,
       );
-      const correct = pivotOk && sameSolutions;
+      const oneLegalOp = op !== null;
+      const correct = pivotOk && oneLegalOp;
       return {
         correct,
-        because: !sameSolutions
-          ? "that changes the solution set — only a reversible row operation is allowed"
-          : !pivotOk
-            ? "the pivot position is still 0 — choose an operation that brings a nonzero entry there"
-            : "you produced an equivalent system with a usable pivot",
+        because: !pivotOk
+          ? "the pivot position is still 0 — choose an operation that brings a nonzero entry there"
+          : !oneLegalOp
+            ? "that is not the result of a single legal row operation on the original — use one elementary operation (a swap, or add a multiple of one row to the other)"
+            : "you produced the original after one legal operation, with a usable pivot",
       };
     }
   }

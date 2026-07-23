@@ -744,16 +744,18 @@ differ.
   removes "row swap" and \(R_1\leftrightarrow R_2\) from the prompt; it asks the learner to
   **choose and apply one legal elementary operation** that puts a nonzero entry in the
   \(a_{11}\) pivot and enter the resulting matrix. Grading is the new **`row-equivalent-usable-pivot`**
-  `matrix-entry` predicate (via the shared `haveSameSolutionSet`): **any** reversible op giving
-  a nonzero \(a_{11}\) passes, so no single answer is leaked and the method **selection** is
-  the E4 evidence. The row-swap explanation is revealed only in post-commit feedback
+  `matrix-entry` predicate (via the shared **`singleRowOperationBetween`**): a matrix passes
+  iff it is reachable by **exactly one** legal operation giving a nonzero \(a_{11}\) — the swap
+  or \(R_1\to R_1+k\,R_2\) — so no single answer is leaked and the method **selection** is
+  the E4 evidence. The row-swap explanation is revealed only in post-commit feedback.
+  *(Tightened below: "same solution set" is no longer treated as "one operation".)*
 
 ### Capability / infrastructure (lesson-interaction only)
 
 - [x] `exercise-sequence` gained a **`text`** step kind (normalized-accept grading via the
   exported `normalizeAnswerText`); `matrix-entry` gained an optional **`check`** predicate
   (`row-equivalent-usable-pivot`) that grades an open-ended matrix by shared `src/math`
-  (`haveSameSolutionSet`) rather than a fixed `expected`. Pure logic in `capabilities.ts`;
+  rather than a fixed `expected`. Pure logic in `capabilities.ts`;
   a text input rendered in `ExercisePanel.tsx`. Not the Package F module runner
 
 ### Testing review
@@ -766,3 +768,34 @@ differ.
   rejects the unchanged original and any solution-changing matrix
 - [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean; targeted `vitest` green; e2e +
   browser verification of the new interactions
+
+---
+
+## Systems–Elimination module — L4 pivot predicate = exactly one operation (2026-07-23, pre-Package-F)
+
+Final correction so `row-equivalent-usable-pivot` is not satisfied by *any* equivalent
+matrix but only by a genuine **single-operation** image of the original. Capability + shared
+math + tests + contracts only — **no math/visualization renderer changed**. **Gate 8 stays
+NOT PASSED** (human-scored reasoning/proofs).
+
+- [x] **New shared helper `singleRowOperationBetween(from, to, tol)`** in `src/math/elimination.ts`
+  (exported via `src/math/index.ts`): returns the single elementary `RowOperation` mapping
+  `from → to`, or `null` when `to` needs more than one operation. It **infers** each candidate
+  factor from the most stable component and **verifies** by actually applying the op with the
+  existing `applyRowOperation` + `isSolutionPreserving` — reusing the row-operation
+  arithmetic, never re-deriving it. It explicitly does **not** equate "same solution set" with
+  "one operation"
+- [x] **`row-equivalent-usable-pivot` now uses it:** a matrix passes iff it is **exactly one**
+  legal operation from the original **and** has a nonzero pivot. For the current zero-pivot
+  system it accepts the **swap** and \(R_1\to R_1+k\,R_2\) for any nonzero \(k\); it rejects
+  the **unchanged** matrix, **solution-changing** matrices, the **full RREF / any multi-step**
+  result, and an **unrelated** system that merely shares the same unique solution
+- [x] **Regression tests added:** `elimination.test.ts` (round-trips each reversible op, accepts
+  swap + \(R_1\to R_1+k\,R_2\), rejects RREF / unrelated / solution-changing, and proves a
+  two-op image with the same solution set returns `null`); `capabilities.test.ts` and
+  `remediationExercises.test.ts` extended with the RREF and unrelated-same-solution rejections
+- [x] `tsc -b` 0 errors; `npm run lint` clean; **full `vitest` 529 passing**
+
+**Outcome:** with this correction passing, Packages **B–E are approved**; **Package F**
+(human-scoring capture) is the next authorized planning target. Gate 8 stays **NOT PASSED**
+pending human scoring of the reasoning/proof surfaces.

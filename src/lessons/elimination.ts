@@ -500,11 +500,14 @@ export const eliminationLesson: LessonDefinition = {
       // repairs the pivot. The prompt deliberately does NOT name the operation
       // (no "row swap", no $R_1\leftrightarrow R_2$): choosing it is the E4 method
       // selection, so it must stay undisclosed until commitment. Grading is a
-      // predicate (`row-equivalent-usable-pivot`) that accepts ANY legal
-      // (reversible) operation producing a nonzero $a_{11}$ — a swap, or e.g.
-      // $R_1\to R_1+R_2$ — so a single fixed answer is never leaked and every valid
-      // choice passes. Entering the matrix is the execution of the chosen move; the
-      // routine back-substitution that follows is not graded as the transfer.
+      // predicate (`row-equivalent-usable-pivot`) that accepts a matrix iff it is
+      // the result of EXACTLY ONE legal (reversible) operation on the original that
+      // produces a nonzero $a_{11}$ — a swap, or $R_1\to R_1+k\,R_2$ for nonzero
+      // $k$. It rejects the unchanged matrix, solution-changing matrices, a full
+      // RREF or any multi-step result, and an unrelated system that merely shares
+      // the same solution. So no single fixed answer is leaked, yet every valid
+      // one-operation choice passes. Entering the matrix executes the chosen move;
+      // the routine back-substitution that follows is not graded as the transfer.
       id: "elim-degenerate-pivot-transfer",
       type: "custom",
       capabilityId: MATRIX_ENTRY_ID,

@@ -194,13 +194,17 @@ describe("matrix-entry capability (custom escape hatch)", () => {
     const grade = (entries: number[][]) =>
       gradeExercise(openEnded, { kind: "custom", capabilityId: MATRIX_ENTRY_ID, value: { entries } })
         .correct;
-    // The swap and the replacement R1 -> R1 + R2 both pass (same solution, a11 != 0).
+    // A SINGLE legal op giving a nonzero a11 passes: the swap, and R1 -> R1 + k·R2.
     expect(grade([[2, 3, 10], [0, 1, 4]])).toBe(true);
-    expect(grade([[2, 4, 14], [2, 3, 10]])).toBe(true);
+    expect(grade([[2, 4, 14], [2, 3, 10]])).toBe(true); // k = 1
+    expect(grade([[4, 7, 24], [2, 3, 10]])).toBe(true); // k = 2
     // Unchanged original (a11 = 0) fails.
     expect(grade([[0, 1, 4], [2, 3, 10]])).toBe(false);
     // Nonzero a11 but a changed solution set fails.
     expect(grade([[2, 3, 11], [0, 1, 4]])).toBe(false);
+    // Same solution set but NOT one operation → rejected (RREF; unrelated system).
+    expect(grade([[1, 0, -1], [0, 1, 4]])).toBe(false); // full RREF (multi-step)
+    expect(grade([[5, 1, -1], [1, 1, 3]])).toBe(false); // unrelated, same unique solution
   });
 });
 

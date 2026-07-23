@@ -110,6 +110,7 @@ export {
   rowOperationSummary,
   assertRowOperationPreservesSolutions,
   haveSameSolutionSet,
+  singleRowOperationBetween,
 } from "./elimination";
 export type {
   AugmentedRow,

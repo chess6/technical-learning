@@ -412,6 +412,83 @@ export function assertRowOperationPreservesSolutions(
   }
 }
 
+/** Index of the entry of `row` with the largest absolute value (most stable pivot). */
+function indexOfLargestAbs(row: AugmentedRow): 0 | 1 | 2 {
+  let best: 0 | 1 | 2 = 0;
+  for (const j of [1, 2] as const) {
+    if (Math.abs(row[j]) > Math.abs(row[best])) best = j;
+  }
+  return best;
+}
+
+function rowsApproximatelyEqual(
+  a: AugmentedRow,
+  b: AugmentedRow,
+  tolerance: number,
+): boolean {
+  return a.every((v, i) => Math.abs(v - b[i]) <= tolerance);
+}
+
+/**
+ * Find a **single** elementary row operation that turns `from` into `to`
+ * (entry-wise within `tolerance`), or `null` when `to` is **not** reachable from
+ * `from` by *exactly one* elementary operation. This is deliberately stricter
+ * than {@link haveSameSolutionSet}: two systems can share a solution set without
+ * one being a single-operation image of the other (e.g. a full RREF, a
+ * multi-step reduction, or an unrelated system that merely happens to have the
+ * same unique solution). "Same solution set" is **not** "one operation".
+ *
+ * Only **solution-preserving** operations are considered (see
+ * {@link isSolutionPreserving}); every candidate is confirmed by actually
+ * applying it with {@link applyRowOperation} and comparing entry-wise, so the
+ * arithmetic is never re-derived here — the candidate `factor`s are only
+ * *inferred* (from the most stable component) and then verified. A no-op image
+ * (`from` unchanged) is reported as the identity scaling `scale(row 0, 1)`; a
+ * caller that requires a genuine change (e.g. "create a nonzero pivot") must
+ * check that separately.
+ */
+export function singleRowOperationBetween(
+  from: AugmentedSystem,
+  to: AugmentedSystem,
+  tolerance = DEFAULT_TOLERANCE,
+): RowOperation | null {
+  const candidates: RowOperation[] = [{ kind: "swap" }];
+
+  // Scale row i by f: the OTHER row is unchanged, and this row is f·(original).
+  for (const row of [0, 1] as const) {
+    const src = from.rows[row];
+    const dst = to.rows[row];
+    const j = indexOfLargestAbs(src);
+    if (Math.abs(src[j]) > tolerance) {
+      candidates.push({ kind: "scale", row, factor: dst[j] / src[j] });
+    }
+  }
+
+  // Add k·(source) to target (source ≠ target): the SOURCE row is unchanged, and
+  // target becomes R_target + k·R_source.
+  for (const target of [0, 1] as const) {
+    const source = target === 0 ? 1 : 0;
+    const s = from.rows[source];
+    const j = indexOfLargestAbs(s);
+    if (Math.abs(s[j]) > tolerance) {
+      const k = (to.rows[target][j] - from.rows[target][j]) / s[j];
+      candidates.push({ kind: "add", source, target, factor: k });
+    }
+  }
+
+  for (const op of candidates) {
+    if (!isSolutionPreserving(op)) continue;
+    const applied = applyRowOperation(from, op);
+    if (
+      rowsApproximatelyEqual(applied.rows[0], to.rows[0], tolerance) &&
+      rowsApproximatelyEqual(applied.rows[1], to.rows[1], tolerance)
+    ) {
+      return op;
+    }
+  }
+  return null;
+}
+
 /**
  * Canonical `(a, b, c)` representation of the line `a x + b y = c`, normalized
  * so two descriptions of the *same* line compare equal: unit `(a, b)` with a

@@ -14,6 +14,7 @@ import {
   numericalStabilityWarning,
   rowOperationSummary,
   satisfiesSystem,
+  singleRowOperationBetween,
   systemMatrix,
   systemRhs,
   type AugmentedSystem,
@@ -290,5 +291,52 @@ describe("row operation summaries name moves consistently", () => {
     expect(rowOperationSummary({ kind: "add", source: 1, target: 0, factor: 1 })).toBe(
       "R1 → R1 + R2",
     );
+  });
+});
+
+describe("singleRowOperationBetween finds exactly-one-operation images (not same-solution)", () => {
+  // A degenerate zero-pivot system: R1 = (0,1,4), R2 = (2,3,10); solution (-1, 4).
+  const zeroPivot: AugmentedSystem = { rows: [[0, 1, 4], [2, 3, 10]] };
+  const image = (op: RowOperation) => applyRowOperation(zeroPivot, op);
+
+  it("identifies each single elementary operation and verifies it round-trips", () => {
+    for (const op of REVERSIBLE_OPS) {
+      const found = singleRowOperationBetween(zeroPivot, image(op));
+      expect(found).not.toBeNull();
+      // The found op reproduces the same image (it need not be structurally identical,
+      // but it must map `from` to the same matrix).
+      expect(applyRowOperation(zeroPivot, found!).rows).toEqual(image(op).rows);
+    }
+  });
+
+  it("accepts the swap and R1 → R1 + k·R2 for any nonzero k", () => {
+    expect(singleRowOperationBetween(zeroPivot, { rows: [[2, 3, 10], [0, 1, 4]] })).toEqual({
+      kind: "swap",
+    });
+    for (const k of [1, 2, -3, 0.5]) {
+      const to: AugmentedSystem = { rows: [[2 * k, 1 + 3 * k, 4 + 10 * k], [2, 3, 10]] };
+      const op = singleRowOperationBetween(zeroPivot, to);
+      expect(op).toEqual({ kind: "add", source: 1, target: 0, factor: k });
+    }
+  });
+
+  it("rejects images that require more than one operation or are unrelated", () => {
+    // Full RREF: shares the unique solution (-1, 4) but needs multiple operations.
+    expect(singleRowOperationBetween(zeroPivot, { rows: [[1, 0, -1], [0, 1, 4]] })).toBeNull();
+    // Unrelated system with the same unique solution, not a one-op image.
+    expect(singleRowOperationBetween(zeroPivot, { rows: [[5, 1, -1], [1, 1, 3]] })).toBeNull();
+    // A solution-changing matrix.
+    expect(singleRowOperationBetween(zeroPivot, { rows: [[2, 3, 11], [0, 1, 4]] })).toBeNull();
+  });
+
+  it("does not treat 'same solution set' as 'one operation'", () => {
+    const from = augmentedFromSystem(EX.a, EX.b);
+    // Reduce twice: scale then add — the result shares the solution but is two ops.
+    const twoOps = applyRowOperation(
+      applyRowOperation(from, { kind: "scale", row: 0, factor: 2 }),
+      { kind: "add", source: 0, target: 1, factor: 1 },
+    );
+    expect(haveSameSolutionSet(from, twoOps)).toBe(true);
+    expect(singleRowOperationBetween(from, twoOps)).toBeNull();
   });
 });

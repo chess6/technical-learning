@@ -381,7 +381,7 @@ describe("L4 elimination — corrected remediation items", () => {
     expect(e.prompt.toLowerCase()).not.toContain("row swap");
     expect(e.prompt.toLowerCase()).not.toContain("swap");
     expect(e.prompt).not.toContain("\\leftrightarrow");
-    // Predicate-graded: ANY legal (reversible) op giving a nonzero a11 passes —
+    // Predicate-graded: only a SINGLE legal op giving a nonzero a11 passes —
     // the swap...
     expect(
       gradeExercise(e, matrix([
@@ -389,11 +389,17 @@ describe("L4 elimination — corrected remediation items", () => {
         [0, 1, 4],
       ])).correct,
     ).toBe(true);
-    // ...and a different legal choice, R1 -> R1 + R2, also passes (same solutions,
-    // nonzero a11). This is why a single fixed answer must NOT be leaked.
+    // ...and R1 -> R1 + k·R2 for any nonzero k (here k = 1 and k = 2), each one
+    // operation with a nonzero a11. This is why a single fixed answer must NOT be leaked.
     expect(
       gradeExercise(e, matrix([
         [2, 4, 14],
+        [2, 3, 10],
+      ])).correct,
+    ).toBe(true);
+    expect(
+      gradeExercise(e, matrix([
+        [4, 7, 24],
         [2, 3, 10],
       ])).correct,
     ).toBe(true);
@@ -409,6 +415,21 @@ describe("L4 elimination — corrected remediation items", () => {
       gradeExercise(e, matrix([
         [2, 3, 11],
         [0, 1, 4],
+      ])).correct,
+    ).toBe(false);
+    // The full RREF shares the solution but needs MULTIPLE operations → rejected.
+    expect(
+      gradeExercise(e, matrix([
+        [1, 0, -1],
+        [0, 1, 4],
+      ])).correct,
+    ).toBe(false);
+    // An UNRELATED system with the same unique solution (-1, 4) but not one op
+    // from the original → rejected (same solution ≠ one operation).
+    expect(
+      gradeExercise(e, matrix([
+        [5, 1, -1],
+        [1, 1, 3],
       ])).correct,
     ).toBe(false);
   });

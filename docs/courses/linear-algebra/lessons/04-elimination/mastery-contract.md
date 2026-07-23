@@ -96,7 +96,7 @@ below its required level; ⬜ module-owned (Gate 9).
 | Run forward elimination + back-substitute, correct multiplier | D3 | lesson | ✅ `elim-sequence-forward-fresh` (exercise-sequence, **fresh**) + `elim-matrix-after-step-fresh` (matrix-entry, **fresh**) + taught-number twins | **E3** — intermediates (multiplier, triangular row, back-sub) graded on a fresh system | E3 |
 | Diagnose an illegal/erroneous row op **and repair it** | D13 | lesson | ✅ `elim-diagnose-repair-fresh` (exercise-sequence on an **unfamiliar** system: **produce** the erroneous coefficient + **produce** the repaired row) + 🟡 `elim-diagnose-explain-fresh` (self-check, produced explanation); `elim-diagnose-illegal` (MC, E1) | **E4** for the produced diagnosis + repair on the unfamiliar erroneous elimination; the written *explanation* is a produced-but-unscored surface | E4 |
 | Certify "no solution" via an elimination contradiction row | D3/D7 | lesson | ✅ `elim-contradiction-row-fresh` (matrix-entry, **run elimination** on a fresh inconsistent system → \(0=c\) row) | **E3** — fresh production of the contradiction row | E3 |
-| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (**matrix-entry**, **E4**: a zero-pivot system never walked through; the prompt asks the learner to **CHOOSE and apply one legal elementary operation** that creates a usable pivot — **the operation is not named** — and enter the resulting matrix, **predicate-graded** (`row-equivalent-usable-pivot`) so *any* reversible op giving a nonzero \(a_{11}\) passes; routine back-substitution is *not* graded); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — the method **selection** (choosing a repair for an unfamiliar zero pivot, undisclosed until commitment) is the transfer; entering the matrix executes it; the ∞-construction is an E3 beneath it | E4 |
+| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (**matrix-entry**, **E4**: a zero-pivot system never walked through; the prompt asks the learner to **CHOOSE and apply one legal elementary operation** that creates a usable pivot — **the operation is not named** — and enter the resulting matrix, **predicate-graded** (`row-equivalent-usable-pivot`, via the shared `singleRowOperationBetween`) so a matrix passes iff it is the result of **exactly one** legal operation giving a nonzero \(a_{11}\) — the swap or \(R_1\to R_1+k\,R_2\); a full RREF, any multi-step result, a solution-changing matrix, or an unrelated system with the same solution is **rejected**; routine back-substitution is *not* graded); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — the method **selection** (choosing a repair for an unfamiliar zero pivot, undisclosed until commitment) is the transfer; entering the matrix executes it; the ∞-construction is an E3 beneath it | E4 |
 | Prove invariance in both directions (reversibility) | D6 | lesson | 🟡 `elim-explain-invariance` (self-check + model answer + rubric) | **E6 surface, unscored** — learner writes the proof; `self-check` self-marks, so credit awaits human scoring | E6 (human-scored) |
 | Select elimination vs another method unprompted | D8 | ⬜ **module** | module set (not built) | not built | E3 (Gate 9) |
 | Use elimination in an unfamiliar/cumulative item (compute \(\mathbf{x}_p\), combine with L5) | D9/D10 | ⬜ **module** | module set (not built) | not built | E4/E5 (Gate 9) |
@@ -204,10 +204,13 @@ remediation, under the **P3 override**, against the runtime audit
       configuration (never walked through) and asks the learner to **choose and apply one
       legal elementary operation** that creates a usable pivot — **the operation is not named
       in the prompt**, so selecting it is the E4 method selection. Grading is the
-      predicate `row-equivalent-usable-pivot` (any reversible op giving a nonzero \(a_{11}\)
-      passes), so no single answer is leaked; entering the matrix executes the chosen op and
-      routine back-substitution is not counted as the transfer; `elim-construct-infinite`
-      remains an E3 construction beneath it.
+      predicate `row-equivalent-usable-pivot` (shared `singleRowOperationBetween`): a matrix
+      passes iff it is reachable by **exactly one** legal operation giving a nonzero
+      \(a_{11}\) — the swap or \(R_1\to R_1+k\,R_2\) — while a full RREF, any multi-step
+      result, a solution-changing matrix, or an unrelated same-solution system is rejected.
+      No single answer is leaked; entering the matrix executes the chosen op and routine
+      back-substitution is not counted as the transfer; `elim-construct-infinite` remains an
+      E3 construction beneath it.
 - [ ] **Lesson-owned P3 (proof) reaches independently demonstrated — NOT YET.**
       `elim-explain-invariance` (which is *also* the fixed-point justification) and the
       diagnosis explanation surface are genuine E6 *surfaces*; `self-check` is self-marked,
