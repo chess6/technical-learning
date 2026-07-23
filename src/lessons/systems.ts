@@ -3,6 +3,8 @@ import { LINEAR_SYSTEM_EXAMPLE as EX, LINEAR_SYSTEM_FRESH as EX2 } from "./examp
 import {
   COMMITTED_PREDICTION_ID,
   CONSTRUCT_IN_EXPLORER_ID,
+  EXERCISE_SEQUENCE_ID,
+  MATRIX_ENTRY_ID,
   SELF_CHECK_ID,
 } from "./capabilities";
 
@@ -249,15 +251,17 @@ export const systemsLesson: LessonDefinition = {
     answer:
       "Exactly one, for every $\\mathbf{b}$. Independent columns span the whole plane, so every target is reachable (existence) and reachable in only one way (uniqueness) — the same reason a basis gives unique coordinates. Only when the columns are dependent does the count depend on $\\mathbf{b}$: none if $\\mathbf{b}$ is off their line, infinitely many if it is on it.",
   },
-  // The problem set is built to *derive* the trichotomy, not just quiz it, and to
-  // produce real evidence rather than reveal-only exposure. The taught-example
-  // Checks build recognition; the **fresh-instance** drills (`*-fresh`, on the
-  // `systems-fresh` numbers) demand independent production (E3); the construction
-  // is a genuinely graded `construct-in-explorer` (E4); the "why" items are
-  // commit-before-reveal `committed-prediction`s on fresh scenarios (not
-  // auto-correct `prediction`s); and the proof items are learner-written
-  // `self-check`s (an E6 *surface* — full proof credit needs human scoring per the
-  // module assessment plan, not the in-app self-mark).
+  // Evidence-honest problem set (canonical levels from mastery-standard §5):
+  //  - multiple-choice AND committed multiple-choice are **E1 recognition**
+  //    (commit-before-reveal makes an item valid evidence, it does NOT make it E3);
+  //  - **E3** requires fresh, unaided production of the COMPLETE outcome
+  //    (`sys-solve-confirm-fresh` = solve by rows + confirm by columns;
+  //    `sys-translate-augmented-fresh` = the whole [A|b]);
+  //  - **E4** is genuine construction (`sys-construct-inconsistent`);
+  //  - `self-check` is an **unscored E6 surface** (reasoning + proofs).
+  // Because several lesson-owned outcomes still top out at E1 (classification,
+  // invertibility link) and the proofs are unscored, Gate 8 stays NOT PASSED — see
+  // the mastery contract's acceptance record.
   exercises: [
     {
       id: "sys-count-infinite",
@@ -292,6 +296,28 @@ export const systemsLesson: LessonDefinition = {
         "Doubling row 1 forces $2x + 4y = 6$, contradicting $2x + 4y = 5$: the lines are parallel and never meet. In the column picture, $\\mathbf{b} = (3,5)$ lies off the columns' line, so it is unreachable — no solution.",
     },
     {
+      // Fresh, unaided classification (a DIFFERENT system than the two above).
+      // Honest level: E1 recognition — a three-way choice is recognition even when
+      // fresh and committed. It is valid evidence of the classify outcome, but it
+      // does not reach the E3 the outcome requires.
+      id: "sys-classify-fresh",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
+      tier: "check",
+      prompt:
+        "Commit first. How many solutions does $\\begin{cases} 2x + 4y = 5 \\\\ x + 2y = 3 \\end{cases}$ have?",
+      config: {
+        options: [
+          "Exactly one",
+          "Infinitely many",
+          "None — the two equations contradict each other",
+        ],
+        correctIndex: 2,
+        reveal:
+          "The columns $(2, 1)$ and $(4, 2)$ are dependent (the second is twice the first), so the column space is the line $\\{s\\,(2,1)\\}$. Doubling row 2 gives $2x + 4y = 6 \\ne 5$: $\\mathbf{b} = (5, 3)$ lies off that line, so there is no solution.",
+      },
+    },
+    {
       id: "sys-solve-unique",
       type: "vector",
       tier: "drill",
@@ -303,17 +329,41 @@ export const systemsLesson: LessonDefinition = {
         "From row 2, $y = 2x - 5$; substituting gives $7x = 14$, so $x = 2$, $y = -1$. Equivalently $2\\,\\mathbf{a}_1 - \\mathbf{a}_2 = (-1, 5)$ in the column picture. The columns point in different directions (independent), so this is the only solution.",
     },
     {
-      // Package B — fresh-instance production (E3): a DIFFERENT system, so the
-      // learner must solve, not recall the worked answer.
-      id: "sys-solve-unique-fresh",
-      type: "vector",
+      // Fresh-instance production (E3) of the COMPLETE outcome: solve by rows AND
+      // confirm by columns. A different system than the worked one, so it cannot be
+      // recalled. No determinant argument (the determinant is L7); the forward
+      // bridge points to elimination (L4), the actual next lesson.
+      id: "sys-solve-confirm-fresh",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
       prompt:
-        "A different system: solve $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$. Enter $(x, y)$.",
-      expected: [EX2.solution[0], EX2.solution[1]],
-      tolerance: 0.01,
-      explanation:
-        "From row 1, $x = 4 - 2y$; substituting into row 2 gives $3(4 - 2y) + y = -3$, i.e. $12 - 5y = -3$, so $y = 3$ and $x = 4 - 6 = -2$. The columns $(1, 3)$ and $(2, 1)$ are independent (det $= -5 \\ne 0$), so $(-2, 3)$ is the only solution.",
+        "A different system: $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$. Solve it by rows, then confirm the answer by combining the columns.",
+      config: {
+        steps: [
+          {
+            kind: "numeric",
+            prompt: "Solve by rows: what is $x$?",
+            expected: EX2.solution[0],
+            explanation:
+              "From row 1, $x = 4 - 2y$; substituting into row 2 gives $12 - 5y = -3$, so $y = 3$ and $x = -2$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "And what is $y$?",
+            expected: EX2.solution[1],
+            explanation: "$-5y = -15$, so $y = 3$.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Confirm by columns: compute the first entry of $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2 = x(1,3) + y(2,1)$, i.e. $x\\cdot 1 + y\\cdot 2$.",
+            expected: EX2.b[0],
+            explanation:
+              "$(-2)(1) + (3)(2) = 4$, which is the first entry of $\\mathbf{b} = (4, -3)$: the columns really do combine to reach $\\mathbf{b}$. The columns point in different directions, so this is the only solution. Next up is **elimination** (Lesson 4), which automates this row-solve; the determinant that certifies independence at a glance comes later, in Lesson 7.",
+          },
+        ],
+      },
     },
     {
       id: "sys-translate-columns",
@@ -327,16 +377,26 @@ export const systemsLesson: LessonDefinition = {
         "Reading *down* the $x$-coefficients gives $\\mathbf{a}_1 = (1, 2)$; the $y$-coefficients give $\\mathbf{a}_2 = (3, -1)$; the right-hand sides give $\\mathbf{b} = (-1, 5)$. Rows read across (equations); columns read down (the arrows you blend). Same nine numbers, regrouped.",
     },
     {
-      // Package B — fresh-instance production (E3) of the row → column translation.
-      id: "sys-translate-columns-fresh",
-      type: "vector",
+      // Fresh-instance production (E3) of the COMPLETE translation: the whole
+      // augmented matrix [A | b], not just one column. Entry-graded against src/math
+      // numbers.
+      id: "sys-translate-augmented-fresh",
+      type: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
       tier: "transfer",
       prompt:
-        "A different system: translate $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$ into $A\\mathbf{x} = \\mathbf{b}$. Enter the **first column** $\\mathbf{a}_1$ of $A$ (the coefficients that multiply $x$).",
-      expected: [EX2.a[0][0], EX2.a[1][0]],
-      tolerance: 0.01,
-      explanation:
-        "Read the $x$-coefficients *down* the equations: $\\mathbf{a}_1 = (1, 3)$. Likewise $\\mathbf{a}_2 = (2, 1)$ and $\\mathbf{b} = (4, -3)$. The first column collects each equation's $x$-coefficient, top to bottom.",
+        "A different system: translate $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$ into the augmented matrix $[A \\mid \\mathbf{b}]$. Enter all six entries.",
+      config: {
+        rows: 2,
+        cols: 3,
+        expected: [
+          [EX2.a[0][0], EX2.a[0][1], EX2.b[0]],
+          [EX2.a[1][0], EX2.a[1][1], EX2.b[1]],
+        ],
+        explanation:
+          "Read each equation across for a row: $(1, 2 \\mid 4)$ and $(3, 1 \\mid -3)$. Reading *down* instead gives the columns $\\mathbf{a}_1 = (1, 3)$, $\\mathbf{a}_2 = (2, 1)$ and the target $\\mathbf{b} = (4, -3)$.",
+        matrixName: "[A\\,|\\,b]",
+      },
     },
     {
       id: "sys-column-reading",
@@ -415,23 +475,22 @@ export const systemsLesson: LessonDefinition = {
       },
     },
     {
-      // Package C — was a reveal-only `prediction`; now a committed choice of the
-      // correct mechanism (why dependent ⇒ never exactly one).
-      id: "sys-explain-dependent",
+      // Genuine reasoning evidence (produced, not chosen) for the dependent-count
+      // mechanism. Self-check captures the learner's written argument; it is an
+      // UNSCORED E6 surface (the self-mark is not proof credit). A committed-MC
+      // version of this would only be E1 recognition, so the outcome is evidenced
+      // in writing here.
+      id: "sys-reason-dependent-count",
       type: "custom",
-      capabilityId: COMMITTED_PREDICTION_ID,
+      capabilityId: SELF_CHECK_ID,
       tier: "transfer",
       prompt:
-        "Commit before revealing. Why can a system with **dependent** columns never have *exactly one* solution — only none or infinitely many?",
+        "Explain in your own words: why can a system with **dependent** columns never have *exactly one* solution — only none or infinitely many? Write your reasoning, then compare with the model answer.",
       config: {
-        options: [
-          "Dependent columns always make the system inconsistent, so there is never any solution",
-          "Dependent columns span only a line: a target off it is unreachable (none); a target on it is reachable in infinitely many ways — so exactly one is impossible",
-          "Dependent columns double every solution, so there are always exactly two",
-        ],
-        correctIndex: 1,
-        reveal:
-          "The column space collapses from the plane to a line. Off that line $\\mathbf{b}$ is unreachable (**none**). On it, one column is a multiple of the other, so $(x, y)$ can shift by any multiple of the dependency without changing $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ — **infinitely many** recipes. The middle case, exactly one, is precisely what independence would restore.",
+        modelAnswer:
+          "Dependent columns span only a line $L = \\operatorname{span}\\{\\mathbf{a}_1\\}$, not the whole plane. Existence splits on where $\\mathbf{b}$ lies: if $\\mathbf{b} \\notin L$ it is unreachable, so **none**. If $\\mathbf{b} \\in L$, at least one recipe exists — and because the columns are dependent there is a nonzero relation $\\alpha\\,\\mathbf{a}_1 + \\beta\\,\\mathbf{a}_2 = \\mathbf{0}$, so adding any multiple of $(\\alpha, \\beta)$ to a solution changes $(x, y)$ but not $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$: **infinitely many**. Exactly one is impossible because a nonzero homogeneous solution always exists. Independence is exactly what removes that homogeneous freedom and restores the unique case.",
+        rubric:
+          "A strong answer separates existence (is $\\mathbf{b}$ on the columns' line?) from multiplicity (a nonzero homogeneous solution $(\\alpha,\\beta)$ from the dependency lets solutions shift), and concludes exactly-one is impossible whenever the columns are dependent.",
       },
     },
     {
@@ -479,12 +538,12 @@ export const systemsLesson: LessonDefinition = {
         "Prove it: for a $2\\times 2$ matrix, show that if the columns are **independent** then $A\\mathbf{x} = \\mathbf{b}$ has exactly one solution for every $\\mathbf{b}$, and if they are **dependent** then every $\\mathbf{b}$ gives either none or infinitely many. Do **not** use the determinant.",
       config: {
         modelAnswer:
-          "Independent case: two independent vectors in the plane form a basis, so every $\\mathbf{b}$ is a linear combination of them (existence) and the combination is unique (uniqueness) — if $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2 = x'\\,\\mathbf{a}_1 + y'\\,\\mathbf{a}_2$ then $(x - x')\\,\\mathbf{a}_1 + (y - y')\\,\\mathbf{a}_2 = \\mathbf{0}$, and independence forces $x = x'$, $y = y'$. So there is exactly one $(x, y)$ with $A\\mathbf{x} = \\mathbf{b}$, for every $\\mathbf{b}$. Dependent case: the columns span only a line $L = \\operatorname{span}\\{\\mathbf{a}_1\\}$. If $\\mathbf{b} \\notin L$ it is unreachable, so no solution. If $\\mathbf{b} \\in L$, one solution exists; and since $\\mathbf{a}_2 = c\\,\\mathbf{a}_1$ (dependence) the vector $(c, -1)$ is a nonzero solution of $A\\mathbf{x} = \\mathbf{0}$, so adding any multiple of it to a solution gives another — infinitely many. Never exactly one in the dependent case.",
+          "Independent case: two independent vectors in the plane form a basis, so every $\\mathbf{b}$ is a linear combination of them (existence) and the combination is unique (uniqueness) — if $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2 = x'\\,\\mathbf{a}_1 + y'\\,\\mathbf{a}_2$ then $(x - x')\\,\\mathbf{a}_1 + (y - y')\\,\\mathbf{a}_2 = \\mathbf{0}$, and independence forces $x = x'$, $y = y'$. So there is exactly one $(x, y)$ with $A\\mathbf{x} = \\mathbf{b}$, for every $\\mathbf{b}$. Dependent case (general): dependence means there is a **nonzero** pair $(\\alpha, \\beta) \\ne (0,0)$ with $\\alpha\\,\\mathbf{a}_1 + \\beta\\,\\mathbf{a}_2 = \\mathbf{0}$; then $\\mathbf{n} = (\\alpha, \\beta)$ is a nonzero solution of $A\\mathbf{x} = \\mathbf{0}$. Such a relation always exists: if some column is nonzero the two columns lie on one line $L$ (one is a scalar multiple of the other, giving $(\\alpha,\\beta)$ — e.g. a zero first column $\\mathbf{a}_1 = \\mathbf{0}$ gives the relation $(1, 0)$); and if $A = 0$ then $L = \\{\\mathbf{0}\\}$ and any nonzero $(\\alpha,\\beta)$ works. Now split on $\\mathbf{b}$: the reachable set is the columns' span $L$ (a line, or $\\{\\mathbf{0}\\}$ when $A=0$). If $\\mathbf{b} \\notin L$, no solution. If $\\mathbf{b} \\in L$, at least one solution $\\mathbf{x}_p$ exists, and $\\mathbf{x}_p + t\\,\\mathbf{n}$ solves it for every $t$ — infinitely many. Never exactly one in the dependent case.",
         rubric:
-          "A strong answer derives uniqueness from independence (a basis gives unique coordinates) and existence from spanning; in the dependent case it exhibits a nonzero homogeneous solution to get the none/infinitely-many split. It must not invoke the determinant.",
+          "A strong answer derives uniqueness from independence (a basis gives unique coordinates) and existence from spanning; in the dependent case it exhibits a **nonzero** homogeneous solution from a relation $\\alpha\\,\\mathbf{a}_1 + \\beta\\,\\mathbf{a}_2 = \\mathbf{0}$ (covering a zero column and the zero matrix, not just $\\mathbf{a}_2 = c\\,\\mathbf{a}_1$) to get the none/infinitely-many split. It must not invoke the determinant.",
       },
     },
   ],
   keyTakeaway:
-    "$A\\mathbf{x} = \\mathbf{b}$ is one equation with two pictures: rows are lines whose intersection is the solution, columns are arrows you blend to reach $\\mathbf{b}$. A solution exists exactly when $\\mathbf{b}$ is in the span of the columns; it is unique exactly when the columns are independent. Independent ⇒ one solution for every $\\mathbf{b}$ (invertible); dependent ⇒ none or infinitely many, depending on $\\mathbf{b}$. The next lesson introduces one number — the determinant — that detects independence at a glance.",
+    "$A\\mathbf{x} = \\mathbf{b}$ is one equation with two pictures: rows are lines whose intersection is the solution, columns are arrows you blend to reach $\\mathbf{b}$. A solution exists exactly when $\\mathbf{b}$ is in the span of the columns; it is unique exactly when the columns are independent. Independent ⇒ one solution for every $\\mathbf{b}$ (invertible); dependent ⇒ none or infinitely many, depending on $\\mathbf{b}$. Next comes **elimination**, a reliable procedure for finding those solutions; later, in Lesson 7, one number — the determinant — will detect independence at a glance.",
 };

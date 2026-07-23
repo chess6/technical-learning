@@ -24,9 +24,15 @@ import {
  * The whole lesson is organized around one visual fact: when R2 → R2 − 2·R1,
  * the added multiple of R1 vanishes at the solution, so the second line pivots
  * about the fixed crossing point. The point does not move — which is *why* the
- * rewrite is legitimate. This lesson exercises the new platform capabilities
- * (committed prediction, exercise sequences, construction, error diagnosis via
- * multiple choice, and a self-checked proof) against that single idea.
+ * rewrite is legitimate. This lesson exercises the platform capabilities
+ * (committed prediction, exercise sequences, matrix entry, construction, a fresh
+ * error diagnosis + repair, and a self-checked proof) against that single idea.
+ *
+ * Evidence honesty (mastery-standard §5): multiple-choice and committed-MC are E1
+ * recognition; E3 requires fresh unaided production of the complete outcome; the
+ * self-check proof is an unscored E6 surface. Because the invariance proof is
+ * unscored and some outcomes remain at recognition, Gate 8 is NOT PASSED — see the
+ * mastery contract.
  */
 export const eliminationLesson: LessonDefinition = {
   id: "elimination",
@@ -70,11 +76,17 @@ export const eliminationLesson: LessonDefinition = {
       exerciseIds: [
         "elim-sequence-forward",
         "elim-matrix-after-step",
-        // Package B — fresh-instance production (E3) on a different system.
+        // Fresh-instance production (E3) on a different system.
         "elim-sequence-forward-fresh",
         "elim-matrix-after-step-fresh",
+        // Recognition check (E1) kept, plus a FRESH diagnosis + repair (produce the
+        // corrected row) and an elimination-to-contradiction-row production.
         "elim-diagnose-illegal",
-        "elim-construct-inconsistent",
+        "elim-diagnose-repair-fresh",
+        "elim-contradiction-row-fresh",
+        // A non-duplicative construction (distinct columns + the infinite case) —
+        // the previous construct duplicated the L3 item and is removed.
+        "elim-construct-infinite",
         "elim-explain-invariance",
       ],
     },
@@ -370,26 +382,91 @@ export const eliminationLesson: LessonDefinition = {
         "Scaling by $0$ turns $R_2$ into $0 = 0$, erasing its constraint. It is irreversible (you cannot divide back by $0$), so solutions that violated the old $R_2$ can appear — the solution set can grow. The other three are reversible and safe.",
     },
     {
-      // Package D — genuine graded construction (E4) on FRESH dependent columns,
-      // with the answer-giving hint removed so the learner reasons unaided.
-      id: "elim-construct-inconsistent",
+      // Fresh error diagnosis + REPAIR: a wrong-sign multiplier on a system not
+      // used in the worked example. The learner locates the mistake (recognition)
+      // and then PRODUCES the corrected row (E3 repair) — no reveal-only self-grade.
+      id: "elim-diagnose-repair-fresh",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "transfer",
+      prompt:
+        "A classmate tried to clear $x$ from $R_2$ of $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$ and wrote $R_2 \\to R_2 + 3\\,R_1$. Diagnose the error, then repair it.",
+      config: {
+        steps: [
+          {
+            kind: "multiple-choice",
+            prompt: "What went wrong?",
+            choices: [
+              "Nothing — $x$ is cleared correctly",
+              "Adding $3\\,R_1$ makes the $x$-coefficient $3 + 3 = 6$, not $0$; clearing $x$ needs subtraction: $R_2 \\to R_2 - 3\\,R_1$",
+              "The rows should have been swapped first",
+              "$R_1$ should be scaled by $3$ before combining",
+            ],
+            correctChoice: 1,
+            explanation:
+              "The pivot is $1$ and the entry below it is $3$, so the multiplier is $-3$: you must **subtract** $3\\,R_1$. Adding sends the $x$-coefficient to $6$, the opposite of clearing it.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Repair it: after the correct $R_2 \\to R_2 - 3\\,R_1$, what is the new $y$-coefficient in $R_2$?",
+            expected: -5,
+            explanation: "$1 - 3\\cdot 2 = -5$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "And the new right-hand side of $R_2$?",
+            expected: -15,
+            explanation:
+              "$-3 - 3\\cdot 4 = -15$, giving the triangular row $-5y = -15$ (so $y = 3$). The repaired move is reversible; the classmate's was not the clearing step at all.",
+          },
+        ],
+      },
+    },
+    {
+      // Replaces the former construct that DUPLICATED the L3 columns (1,2),(3,6).
+      // Here the learner actually RUNS elimination on a fresh inconsistent system
+      // and produces the resulting contradiction row (E3 production).
+      id: "elim-contradiction-row-fresh",
+      type: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      tier: "transfer",
+      prompt:
+        "Run one elimination step on the fresh system $\\left[\\begin{array}{cc|c} 1 & 2 & 1 \\\\ 4 & 8 & 6 \\end{array}\\right]$: apply $R_2 \\to R_2 - 4\\,R_1$ and enter the resulting augmented matrix.",
+      config: {
+        rows: 2,
+        cols: 3,
+        expected: [
+          [1, 2, 1],
+          [0, 0, 2],
+        ],
+        explanation:
+          "$R_2$ becomes $(4, 8, 6) - 4(1, 2, 1) = (0, 0, 2)$ — the contradiction row $0 = 2$. The coefficients vanished but the right-hand side did not, so the system is inconsistent (no solution). This is how elimination *certifies* 'no solution': a row $0 = (\\text{nonzero})$.",
+        matrixName: "[A\\,|\\,b]",
+      },
+    },
+    {
+      // Genuine graded construction (E4) — distinct columns from L3 AND the other
+      // classification (infinitely many), so it is not a duplicate. Keeps the
+      // construct-in-explorer capability exercised in this lesson.
+      id: "elim-construct-infinite",
       type: "custom",
       capabilityId: CONSTRUCT_IN_EXPLORER_ID,
       tier: "transfer",
       prompt:
-        "Elimination exposes an unsolvable system as a contradiction row $0 = (\\text{nonzero})$. Take the dependent coefficients whose columns are $(1, 2)$ and $(3, 6)$. Commit a target $\\mathbf{b}$ for which $A\\mathbf{x} = \\mathbf{b}$ has **no solution**.",
+        "The other degenerate outcome: take the dependent coefficients whose columns are $(1, 3)$ and $(2, 6)$. Commit a target $\\mathbf{b}$ for which elimination collapses $R_2$ to $0 = 0$ — i.e. $A\\mathbf{x} = \\mathbf{b}$ has **infinitely many** solutions.",
       config: {
         target: "vector2",
         check: {
           kind: "system-classification",
           matrix: [
-            [1, 3],
-            [2, 6],
+            [1, 2],
+            [3, 6],
           ],
-          expect: "none",
+          expect: "infinite",
         },
         reveal:
-          "Any $\\mathbf{b}$ off the line spanned by $(1, 2)$ works — for instance $(1, 0)$ or $(0, 1)$. Eliminating $x$ then leaves a row $0 = c$ with $c \\neq 0$: the impossible equation that certifies 'no solution'. A $\\mathbf{b}$ on the line, like $(2, 4)$, would instead collapse to $0 = 0$ and give infinitely many.",
+          "Any $\\mathbf{b}$ **on** the line spanned by $(1, 3)$ works — for instance $(1, 3)$ or $(2, 6)$. Eliminating $x$ then leaves $0 = 0$: a true-but-empty row that drops one constraint, so the surviving line's worth of points all solve the system. A $\\mathbf{b}$ off the line would instead give $0 = (\\text{nonzero})$ and no solution.",
       },
     },
     {

@@ -63,14 +63,15 @@ for a lesson's Gate 8**: each must first be *independently demonstrated in-lesso
 instances, integrates them, provides the **human-scored** surface for proofs, and
 re-fires them after a delay.
 
-> **Status after the lesson-owned remediation (Packages B–E built).** The **P1/P2
-> fluency** outcomes below are now *independently demonstrated in-lesson* at E3 (fresh
-> graded items), so reassessing them here is no longer inflation — they are unblocked at
-> the lesson and now wait only on **Package F** (the module runner). The **D6 proof**
-> outcomes have genuine in-lesson proof *surfaces* but their E6 credit still needs
-> **human scoring** (Package F), so the proof reassessments remain blocked on F. Class B
-> stays **not-yet-runnable until F exists**, but the *reason* has narrowed from "no
-> in-lesson evidence" to "no module runner / no human-scoring surface yet".
+> **Status after the corrected lesson-owned remediation.** The specific **P1/P2 fluency**
+> outcomes below now have genuine *in-lesson E3 evidence* (fresh graded production), so
+> reassessing them here would no longer be inflation. **However, none of L3/L4/L5 has
+> passed Gate 8** — Gate 8 is a single gate and each lesson still has lesson-owned
+> outcomes below their required level (classification E1, inconsistency-refusal E1, E4
+> unfamiliar-transfer not built) or unscored (all proof/reasoning `self-check`s). So this
+> Class-B reassessment is blocked **twice over**: by the missing module runner /
+> human-scoring surface (**Package F**) *and* by the owning lessons not yet clearing
+> Gate 8. Class B stays **not-yet-runnable**; the plan remains **PLANNED**.
 
 | Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
 | --- | --- | --- | --- | --- | --- |
@@ -152,21 +153,22 @@ Covers the seven areas the module must assess under the declared profile:
 ## Results & readiness
 - **Class A (module-owned) discharged:** `0 / 5` core with real evidence (**planned** —
   no assessment surface built yet); enrichment `mod-enrich-ode` separate, off the bar.
-- **Class B (lesson-owned reassessment):** `not yet runnable` — the owning lessons now
-  have **real E3/E4 in-lesson evidence** for their P1/P2 outcomes (Gate 8 PASS for those;
-  P3 proof line conditional on human scoring), so reassessment is no longer inflation. It
-  cannot begin only because **Package F** (the module runner + human-scoring surface +
-  scheduler) does not exist yet.
+- **Class B (lesson-owned reassessment):** `not yet runnable` — several owning-lesson
+  outcomes now have **real in-lesson E3 evidence** (fresh production), but **no lesson has
+  passed Gate 8** (single gate; classification/inconsistency-refusal still E1, E4
+  transfer not built, proofs/reasoning unscored). Reassessment is blocked both by the
+  missing **Package F** (module runner + human-scoring surface + scheduler) **and** by the
+  lessons not yet clearing Gate 8.
 - **Delayed-retention verified:** no (not yet administered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
   **none at the module level.** The built lessons now evidence **independent performance
-  (E3) and transfer/construction (E4)** in-lesson for computational/characterization
-  outcomes, and provide proof *surfaces* (E6 credit pending human scoring). But there is
-  still **no module-level** cumulative, timed (S3), delayed-retention (D12), applied
+  (E3)** in-lesson for a set of computational/procedural outcomes and provide
+  proof/reasoning *surfaces*, but **Gate 8 is NOT PASSED** for L3/L4/L5 and there is still
+  **no module-level** cumulative, timed (S3), delayed-retention (D12), applied
   multi-variable (P2 module slice), or human-scored-proof (E6) evidence
   ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)). No "module
-  mastered / exam ready / proof-ready" claim may be made until this plan is built
-  (Package F onward) and run.
+  mastered / exam ready / proof-ready" claim may be made until the lessons clear Gate 8
+  and this plan is built (Package F onward) and run.
 
 Feeds the course-level benchmark validation (`validation.md` in this directory) /
 Gate 10, to be created once real results exist.

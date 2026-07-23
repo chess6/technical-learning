@@ -1,6 +1,10 @@
 import type { LessonDefinition } from "./types";
 import { LINEAR_SYSTEM_FRESH as EX2 } from "./exampleData";
-import { COMMITTED_PREDICTION_ID, SELF_CHECK_ID } from "./capabilities";
+import {
+  COMMITTED_PREDICTION_ID,
+  EXERCISE_SEQUENCE_ID,
+  SELF_CHECK_ID,
+} from "./capabilities";
 
 /**
  * Lesson: "Solution Sets & Homogeneous Systems".
@@ -326,23 +330,44 @@ export const solutionSetsLesson: LessonDefinition = {
         "Add the null vector to the known solution: $(4, 0) + (3, -1) = (7, -1)$, and $A(7, -1) = (4, 8) = \\mathbf{b}$. Every $(4 + 3t,\\ -t)$ is a solution; this is the $t = 1$ result.",
     },
     {
-      // Package C — was a reveal-only `prediction`; now a commit-before-reveal
-      // choice of the correct solution-set description on FRESH numbers.
-      id: "sol-whole-set",
+      // Learner-PRODUCED complete parametric solution set (E3) on a fresh system:
+      // the learner finds the particular solution and the null direction
+      // themselves (a fixed free-variable value makes each unique and gradeable),
+      // then instantiates the set. Choosing a displayed formula (the old
+      // committed-MC version) is recognition, not production, so it is replaced.
+      id: "sol-produce-parametric-fresh",
       type: "custom",
-      capabilityId: COMMITTED_PREDICTION_ID,
+      capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "Commit before revealing. Which is the *entire* solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ (particular solution $(4, 0)$, null direction $(3, -1)$)?",
+        "Build the entire solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ yourself (its columns are dependent).",
       config: {
-        options: [
-          "Just the two points $(4, 0)$ and $(7, -1)$",
-          "$(4, 0) + \\{t\\,(3, -1) : t \\in \\mathbb{R}\\} = \\{(4 + 3t,\\ -t)\\}$ — an affine line",
-          "$\\{t\\,(3, -1) : t \\in \\mathbb{R}\\}$ — the null line through the origin",
+        steps: [
+          {
+            kind: "numeric",
+            prompt:
+              "Find a particular solution with $y = 0$: substitute into $x + 3y = 4$ and enter $x$.",
+            expected: EX2.particular[0],
+            explanation:
+              "With $y = 0$, $x = 4$, so $\\mathbf{x}_p = (4, 0)$ (and indeed $2(4) + 6(0) = 8$).",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Find a null direction: solve the homogeneous $x + 3y = 0$ with $y = -1$, and enter $x$.",
+            expected: EX2.nullDirection[0],
+            explanation:
+              "$x = -3y = -3(-1) = 3$, so $\\mathbf{v} = (3, -1) \\in \\operatorname{Null}(A)$.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "So $\\operatorname{Sol} = (4, 0) + t\\,(3, -1)$. Enter the $x$-coordinate at $t = 2$.",
+            expected: EX2.particular[0] + 2 * EX2.nullDirection[0],
+            explanation:
+              "$(4, 0) + 2(3, -1) = (10, -2)$. You have produced the whole set: $\\{(4 + 3t,\\ -t) : t \\in \\mathbb{R}\\}$ — the null line $\\{t(3,-1)\\}$ slid to pass through $(4, 0)$. It is affine (it misses the origin), and a whole line, not two points.",
+          },
         ],
-        correctIndex: 1,
-        reveal:
-          "The set is $\\mathbf{x}_p + \\operatorname{Null}(A) = (4, 0) + \\{t\\,(3, -1)\\}$. The **direction** $(3, -1)$ is a basis of $\\operatorname{Null}(A)$; the **location** is the particular solution $(4, 0)$. It is the null line carried off the origin — affine, so option 3 (through the origin) is wrong, and it is a whole line, so option 1 undercounts it.",
       },
     },
     {
@@ -412,6 +437,69 @@ export const solutionSetsLesson: LessonDefinition = {
       correctChoice: 1,
       explanation:
         "One free variable means $\\dim\\operatorname{Null}(A) = 1$: the null space is a line. A consistent system's set is that line translated by $\\mathbf{x}_p$ — an affine line. The number of free variables is the dimension of the solution set.",
+    },
+    {
+      // Fresh free-variable / dimension PRODUCTION (E3): the learner eliminates a
+      // different dependent system and produces the free-variable count and the
+      // solution-set dimension, rather than recognizing them.
+      id: "sol-freevars-dimension-fresh",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "drill",
+      prompt:
+        "A different homogeneous system: $\\begin{cases} 3x + y = 0 \\\\ 6x + 2y = 0 \\end{cases}$.",
+      config: {
+        steps: [
+          {
+            kind: "numeric",
+            prompt:
+              "Eliminate with $R_2 \\to R_2 - 2\\,R_1$, then count: how many free variables remain?",
+            expected: 1,
+            explanation:
+              "$R_2$ becomes $(6,2) - 2(3,1) = (0,0)$: one pivot (in $x$), so $y$ is free — one free variable.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "So what is the dimension of the solution set of any *consistent* $A\\mathbf{x} = \\mathbf{b}$ with this same $A$?",
+            expected: 1,
+            explanation:
+              "$\\dim\\operatorname{Null}(A) = \\#\\text{free variables} = 1$, and the solution set is a translate of $\\operatorname{Null}(A)$, so it has the same dimension: an affine line.",
+          },
+        ],
+      },
+    },
+    {
+      // Genuine reasoning evidence (produced, not chosen) for the existence-vs-
+      // multiplicity distinction. Unscored E6 surface (self-mark is not credit).
+      id: "sol-justify-existence-multiplicity",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Explain in your own words: why does $\\operatorname{Null}(A) = \\{\\mathbf{0}\\}$ guarantee *uniqueness* (at most one solution per $\\mathbf{b}$) but **not** *existence* (that every $\\mathbf{b}$ is reachable)? Write your reasoning, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "Uniqueness: if $A\\mathbf{x}_1 = A\\mathbf{x}_2 = \\mathbf{b}$ then $A(\\mathbf{x}_1 - \\mathbf{x}_2) = \\mathbf{0}$, so $\\mathbf{x}_1 - \\mathbf{x}_2 \\in \\operatorname{Null}(A) = \\{\\mathbf{0}\\}$, forcing $\\mathbf{x}_1 = \\mathbf{x}_2$. So there is at most one solution for every $\\mathbf{b}$ — this is a statement about *multiplicity*. Existence is separate: whether a given $\\mathbf{b}$ has *any* solution asks if $\\mathbf{b}$ lies in the column space (is $\\mathbf{b}$ a combination of the columns?). The null space says nothing about that. Example: a tall map with independent columns has $\\operatorname{Null}(A) = \\{\\mathbf{0}\\}$ yet misses most targets $\\mathbf{b}$. 'Exactly one for every $\\mathbf{b}$' needs *both* a trivial null space (uniqueness) and columns that span (existence).",
+        rubric:
+          "A strong answer derives uniqueness from a trivial null space via the difference of two solutions, and separately identifies existence as the column-space/reachability question that the null space does not control.",
+      },
+    },
+    {
+      // Genuine reasoning evidence (produced) for the one-direction-vs-whole-null-
+      // space distinction. Unscored E6 surface.
+      id: "sol-justify-one-direction",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Explain in your own words: two solutions give you one null direction, so at least a line of solutions. Why is that line **not always the whole** solution set? Write your reasoning, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "Subtracting two solutions yields one nonzero vector $\\mathbf{v} \\in \\operatorname{Null}(A)$, so $\\mathbf{x}_p + t\\,\\mathbf{v}$ are all solutions — at least an affine line. But the full solution set is $\\mathbf{x}_p + \\operatorname{Null}(A)$, and $\\operatorname{Null}(A)$ can have dimension greater than $1$. A single vector $\\mathbf{v}$ only spans a line inside it, so it captures the whole set exactly when $\\dim\\operatorname{Null}(A) = 1$. Counterexample: $A = \\mathbf{0}$ in the plane has $\\operatorname{Null}(A) = \\mathbb{R}^2$; two solutions still give just one direction, yet the solution set is the entire plane. To describe the full set you need a *basis* of $\\operatorname{Null}(A)$ — one independent direction per free variable.",
+        rubric:
+          "A strong answer distinguishes 'one difference = one direction = at least a line' from 'the whole set = $\\mathbf{x}_p + \\operatorname{Null}(A)$', notes the line is the whole set only when nullity is $1$, and gives a nullity-$2$ counterexample (e.g. $A = \\mathbf{0}$).",
+      },
     },
     {
       // Package E — proof-construction surface (E6). Self-check captures the

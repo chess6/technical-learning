@@ -493,3 +493,82 @@ math/visualization renderer changed — only lesson content + one pure-data exam
   not-yet-defined determinant (matches the corrected L3 insight contract)
 - [x] Mastery contracts (L3/L4/L5) Gate 8 records updated: **PASS for lesson-owned
   P1/P2 outcomes (E3/E4)**; **P3 proof line CONDITIONAL** pending human scoring
+
+---
+
+## Systems–Elimination module — Packages B–E evidence-integrity correction (2026-07-23)
+
+Corrects the over-claim recorded in the 2026-07-22 pass above. Under the active
+**P3 override** for this module, Gate 8 is a single gate and cannot PASS while any
+lesson-owned outcome sits below its required level or a proof surface stays
+unscored. Re-audits every named item against the canonical evidence definitions
+(`multiple-choice` / committed-MC = **E1** recognition; commit-before-reveal makes
+an item *valid* but not automatically E3; **E3** = fresh unaided production of the
+*complete* outcome; **E4** = unfamiliar transfer/construction; `self-check` = an
+**unscored E6 surface**), completes the missing lesson-owned evidence, and
+restores all three Gate 8 verdicts to **NOT PASSED**. No math/visualization
+renderer changed — lesson content, contracts, and the implementation package only.
+
+### Evidence re-audit (honest levels)
+
+- [x] L3 systems: `sys-classify-fresh` (committed-MC) and `sys-invertible-link`
+  are **E1**; `sys-solve-confirm-fresh` (sequence: rows → column confirmation) and
+  `sys-translate-augmented-fresh` (full \([A\mid\mathbf b]\) matrix-entry) are **E3**;
+  `sys-construct-inconsistent` is **E3** construction (not E4 — same familiar frame);
+  `sys-reason-dependent-count` and the two proofs are **E6 surfaces** (unscored)
+- [x] L4 elimination: committed-prediction / diagnosis-identification MC are **E1**;
+  `elim-diagnose-repair-fresh` (identify **E1** + numeric repair **E3**),
+  `elim-contradiction-row-fresh` (matrix-entry **E3**) and `elim-construct-infinite`
+  (construct-in-explorer **E3**) supply fresh production/construction below the P3
+  **E4** target; the invariance proof is an **E6 surface**
+- [x] L5 solution-sets: committed-MC items are **E1**; `sol-produce-parametric-fresh`
+  and `sol-freevars-dimension-fresh` (sequences) are **E3** production;
+  inconsistency-refusal is **E1**; `sol-justify-existence-multiplicity`,
+  `sol-justify-one-direction`, and the proofs are **E6 surfaces**
+- [x] **Gate 8 = NOT PASSED** for L3, L4, and L5 — recorded as a single verdict per
+  lesson (no per-outcome PASS), with the remaining gaps enumerated precisely in the
+  [implementation package](../courses/linear-algebra/modules/systems-elimination/implementation-package.md)
+- [x] Gate 9 module assessment plan kept **PLANNED**; Class A (module-owned deferred)
+  vs Class B (cumulative reassessment of lesson-owned outcomes) ownership preserved
+
+### Mathematical review
+
+- [x] L3 trichotomy proof (`sys-prove-trichotomy`) generalized to **all** dependent
+  \(2\times2\) matrices via a nonzero null relation
+  \(\alpha\mathbf a_1+\beta\mathbf a_2=\mathbf 0\); explicitly covers a **zero first
+  column** (\(\mathbf a_1=\mathbf 0\Rightarrow(\alpha,\beta)=(1,0)\)) and the **zero
+  matrix** (\(L=\{\mathbf 0\}\), any nonzero \((\alpha,\beta)\)) — no determinant used
+- [x] L3 fresh exercise (`sys-solve-confirm-fresh`) forward bridge corrected: **next
+  is elimination (Lesson 4)**; the determinant that certifies independence at a glance
+  is **Lesson 7** — no determinant argument in the learner-facing L3 explanation
+- [x] L4 duplicated construction removed; replaced by a **different** inconsistent
+  system driven to its contradiction row \((0,0\mid 2)\) (fresh matrix-entry) plus a
+  distinct infinite-solutions construction
+- [x] New / fresh systems hand- and test-checked against `src/math` helpers
+  (`classifyLinearSystem2x2`, `matrixVectorMultiply`, `solutionSet2x2`)
+
+### Testing review
+
+- [x] New unit test `src/lessons/__tests__/remediationExercises.test.ts` grades every
+  new/changed item on both the **correct** and an **incorrect** path
+  (committed-prediction, exercise-sequence, matrix-entry, construct-in-explorer,
+  self-check), verifies the inline fresh systems against `src/math`, and asserts the
+  L3 trichotomy model answer uses no determinant argument
+- [x] Full `vitest` suite green (**505**); `npm run lint` (oxlint) clean; `tsc -b` 0 errors
+- [x] `e2e` for the three touched lessons green (`lesson-systems`, `lesson-elimination`,
+  `lesson-solution-sets`; 5 tests)
+- [x] Browser verification (Playwright, dev server): every new interaction reachable and
+  behaving as described — L3 full \([A\mid\mathbf b]\) matrix-entry grades **correct**;
+  L4 all 9 main-practice items reachable and the contradiction-row matrix-entry grades
+  **correct** (with the taught/fresh elimination matrices correctly rejecting wrong
+  values); L5 all 13 items reachable and `sol-produce-parametric-fresh` driven step-by-step
+  to **"All 3 steps correct"** via real user gestures
+
+### Teaching review
+
+- [x] Fresh drills demand production, not recall; framed as "a different system" for
+  continuity with the taught running example
+- [x] Proof and justification `self-check` items honestly framed as **E6 surfaces**
+  (learner writes the argument + model answer + rubric); **E6 credit requires human
+  scoring** (module Package F), never the in-app self-mark
+- [x] KaTeX / column vectors throughout; no raw `[[...]]` in learner-facing prose
