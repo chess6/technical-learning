@@ -2,6 +2,7 @@ import { Circle, Line, Txt, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
+  waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
@@ -212,6 +213,14 @@ export const solutionSetsScene = makeScene2D(function* (view) {
   lblD.position(px(D).add(new Vector2(30, 18)));
   lblD.opacity(0);
   view.add(lblD);
+  const emptyMark = makeTip("Sol(A, b) = ∅", ROLE.selected);
+  emptyMark.position(new Vector2(0, -HY * S * 0.55));
+  emptyMark.opacity(0);
+  view.add(emptyMark);
+  const pointMark = makeTip("Null(A) = {0} ⇒ one point", ROLE.result);
+  pointMark.position(px(XP).add(new Vector2(28, -28)));
+  pointMark.opacity(0);
+  view.add(pointMark);
 
   // --- Overlay title + caption (safe bands) ---
   const top = makeOverlayLabel("Solution sets: one solution plus the null space", ROLE.text, 34);
@@ -268,22 +277,55 @@ export const solutionSetsScene = makeScene2D(function* (view) {
     },
     *cases() {
       setTop("Empty, a point, or a line");
-      setCaption("Off the column space ⇒ no xₚ ⇒ the set is empty (the shift has nothing to move)");
-      // Dim the shifted set + its offset to evoke the empty case; null line stays.
-      yield* all(
-        solLine.opacity(0.15, 0.5),
-        offset.opacity(0.15, 0.5),
-        dot1.opacity(0.2, 0.5),
-        dot3.opacity(0.2, 0.5),
-      );
-      setCaption("Trivial null space (independent columns) ⇒ exactly one point. Here: a line.");
-      yield* all(
-        solLine.opacity(1, 0.5),
-        offset.opacity(1, 0.5),
-        dot1.opacity(1, 0.5),
-        dot3.opacity(1, 0.5),
-      );
-      yield* all(dot1.size(26, 0.3), dot1.size(20, 0.3));
+      // Snap-then-hold (not long opacity tweens): the geometry change must read
+      // under scrubbing and reduced-motion, not only during continuous play.
+      // --- Empty: no particular solution → remove the shifted set. Null(A) stays. ---
+      setCaption("Off the column space ⇒ no xₚ ⇒ Sol(A, b) = ∅ (Null(A) is unchanged)");
+      solLine.opacity(0);
+      offset.opacity(0);
+      lblXp.opacity(0);
+      genArrow.opacity(0);
+      dot1.opacity(0);
+      lbl1.opacity(0);
+      dot2.opacity(0);
+      lbl2.opacity(0);
+      dot3.opacity(0);
+      lbl3.opacity(0);
+      diffNatural.opacity(0);
+      diffAtOrigin.opacity(0);
+      lblD.opacity(0);
+      pointMark.opacity(0);
+      emptyMark.opacity(1);
+      nullLine.opacity(1);
+      yield* waitFor(1.6);
+      // --- Point: trivial null space → collapse Null(A); one solution remains. ---
+      setCaption("Trivial null space (independent columns) ⇒ exactly one solution point");
+      emptyMark.opacity(0);
+      nullLine.opacity(0);
+      offset.opacity(1);
+      lblXp.opacity(1);
+      dot1.opacity(1);
+      lbl1.opacity(0); // avoid stacking "x₁ = (3,0)" on the point-case caption
+      pointMark.opacity(1);
+      yield* all(dot1.size(28, 0.25), dot1.size(20, 0.25));
+      yield* waitFor(1.5);
+      // --- Line: restore the main dependent example. ---
+      setCaption("Nontrivial Null(A) and a reachable b ⇒ the null line, shifted: Sol = xₚ + Null(A)");
+      pointMark.opacity(0);
+      nullLine.opacity(1);
+      solLine.opacity(1);
+      genArrow.opacity(1);
+      lbl1.opacity(1);
+      dot2.opacity(1);
+      lbl2.opacity(1);
+      dot3.opacity(1);
+      lbl3.opacity(1);
+      diffNatural.opacity(1);
+      diffAtOrigin.opacity(1);
+      lblD.opacity(1);
+      yield* solLine.lineWidth(6, 0.25);
+      yield* solLine.lineWidth(4, 0.25);
+      yield* waitFor(1.4);
     },
   };
 

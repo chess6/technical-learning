@@ -389,7 +389,12 @@ empty when the system is inconsistent.
   drawn, not asserted
 - [x] Guided scene animates the discovery arc (two solutions → subtract → add back
   to generate → the null line → the shifted set → the empty/point/line cases) in
-  solution space, reusing Lesson 3's numbers
+  solution space, reusing Lesson 3's numbers. The final beat **visually** clears
+  the shifted set for ∅, collapses Null(A) for the unique-point case, then
+  restores the affine line — not caption-only.
+- [x] Whole-plane preset exposes **two** free-variable sliders \(t_1, t_2\) with
+  readout \(\mathbf{x} = t_1\mathbf{e}_1 + t_2\mathbf{e}_2\), so nullity-2 is
+  experienced (Package 3 abstraction return), not only stated
 - [x] KaTeX for the particular-solution and generated-solution readouts (column
   vectors via `VectorTeX`); no raw `[[...]]` in learner-facing prose
 - [x] Distinct role colors (Null(A), solution set, particular `x_p`, generated
@@ -398,6 +403,8 @@ empty when the system is inconsistent.
   is unreachable" note), never a fabricated line
 - [x] Paused establishing frame at `t=0`; reduced-motion path shows the first
   major idea without autoplay (shared player)
+- [x] Difference toggle is named for what it controls ("translated to the origin");
+  the natural difference arrow stays visible as the thing being translated
 
 ### Testing review
 

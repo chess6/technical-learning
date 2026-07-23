@@ -108,11 +108,12 @@ const VIEW_CORNERS: [number, number][] = [
  *  - **right** `A x = b` — its solution set is `x_p + Null(A)` (the same shape
  *    slid off the origin), or empty when `b` is unreachable.
  *
- * A free-variable slider `t` slides a second solution `x_p + t·v` along the set,
- * and the difference of two solutions is drawn translated to the origin, landing
- * on the null line — the discovery engine that any two solutions differ by a
- * homogeneous solution. All structure comes from the shared `solutionSet2x2` /
- * `nullspaceBasis2x2`; nothing here re-derives the linear algebra.
+ * A free-variable slider `t` slides a second solution `x_p + t·v` along a line
+ * set; in the whole-plane case (`A = 0`), two free-variable sliders `t₁, t₂`
+ * trace `x = t₁ e₁ + t₂ e₂` so nullity-2 is experienced, not only stated. The
+ * difference of two solutions on a line is drawn translated to the origin,
+ * landing on the null line. All structure comes from the shared
+ * `solutionSet2x2` / `nullspaceBasis2x2`; nothing here re-derives the linear algebra.
  */
 export function SolutionSetExplorer() {
   const [entries, setEntries] = useState<Entries>({
@@ -123,6 +124,9 @@ export function SolutionSetExplorer() {
   });
   const [b, setB] = useState<Vector2>(EX.bInfinite as Vector2);
   const [t, setT] = useState(1);
+  /** Free-variable coordinates on the standard basis when Null(A) = ℝ². */
+  const [t1, setT1] = useState(2);
+  const [t2, setT2] = useState(1);
   const [showDifference, setShowDifference] = useState(true);
 
   const A: Matrix2x2 = [
@@ -139,6 +143,9 @@ export function SolutionSetExplorer() {
   const particular: Vector2 | null = set.kind === "empty" ? null : set.particular;
   const second: Vector2 | null =
     direction && particular ? generateSolution(particular, direction, t) : null;
+  // Nullity-2 (A = 0): every (t₁, t₂) is a solution; the point is t₁ e₁ + t₂ e₂.
+  // Built from the standard basis by coordinate arithmetic only — no new algebra.
+  const planePoint: Vector2 | null = set.kind === "plane" ? [t1, t2] : null;
   // The difference second − x_p = t·v is a homogeneous solution: A·(diff) = 0.
   const difference: Vector2 | null =
     second && particular ? [second[0] - particular[0], second[1] - particular[1]] : null;
@@ -171,6 +178,8 @@ export function SolutionSetExplorer() {
 
   const applyPreset = useCallback((next: Exclude<Preset, "free">) => {
     setT(1);
+    setT1(2);
+    setT2(1);
     if (next === "infinite") {
       setEntries({ a: 1, b: 2, c: 2, d: 4 });
       setB(EX.bInfinite as Vector2);
@@ -226,7 +235,7 @@ export function SolutionSetExplorer() {
       return `Independent columns, so Null(A) = {0}: there is nothing to add to the one solution x_p = (${fmt(set.particular[0])}, ${fmt(set.particular[1])}). The solution set is a single point. Every b is reachable exactly once — uniqueness comes from the trivial null space.`;
     }
     if (set.kind === "plane") {
-      return `A sends every vector to 0, so Null(A) is the whole plane — and with b = 0 the solution set is the whole plane too. This is the caveat case: a single difference vector gives only one direction, not the whole set, because the null space is 2-dimensional. You need both independent null directions to pin the shape.`;
+      return `A sends every vector to 0, so Null(A) is the whole plane — and with b = 0 the solution set is the whole plane too. Slide the two free variables t₁ and t₂: every point is x = t₁ e₁ + t₂ e₂. A single difference vector still gives only one direction; you need both independent null directions to fill the plane.`;
     }
     // line
     const anchor = isHomogeneous
@@ -239,7 +248,7 @@ export function SolutionSetExplorer() {
     <ExplorationPanel
       explorationId="solution-sets"
       title="Solution set = null space, carried off the origin"
-      description="Left: the homogeneous system A x = 0, whose solutions form Null(A) — a subspace through the origin. Right: A x = b, whose solutions are x_p + Null(A) — the same shape slid to pass through one particular solution (or empty when b is unreachable). Slide the free-variable t to generate more solutions; the difference of any two is a null vector."
+      description="Left: the homogeneous system A x = 0, whose solutions form Null(A) — a subspace through the origin. Right: A x = b, whose solutions are x_p + Null(A) — the same shape slid to pass through one particular solution (or empty when b is unreachable). Slide free-variable coordinates to generate more solutions; on a line, the difference of any two is a null vector."
       toolbar={
         <>
           <PresetPicker
@@ -264,7 +273,7 @@ export function SolutionSetExplorer() {
               toggles={[
                 {
                   id: "toggle-difference",
-                  label: "Show the difference of two solutions is a null vector",
+                  label: "Show the difference translated to the origin",
                   checked: showDifference,
                   onChange: setShowDifference,
                 },
@@ -276,6 +285,15 @@ export function SolutionSetExplorer() {
               title="Free variable t — slide the second solution along the set"
               controls={[
                 { id: "sol-t", label: "t", value: t, min: -4, max: 4, onChange: setT },
+              ]}
+            />
+          )}
+          {set.kind === "plane" && (
+            <ParameterControls
+              title="Free variables t₁, t₂ — coordinates on Null(A) = span{e₁, e₂}"
+              controls={[
+                { id: "sol-t1", label: "t₁", value: t1, min: -4, max: 4, onChange: setT1 },
+                { id: "sol-t2", label: "t₂", value: t2, min: -4, max: 4, onChange: setT2 },
               ]}
             />
           )}
@@ -356,6 +374,28 @@ export function SolutionSetExplorer() {
                   },
                 ]
               : []),
+            ...(planePoint
+              ? [
+                  {
+                    id: "plane-point",
+                    label: "x = t₁ e₁ + t₂ e₂",
+                    value: (
+                      <span data-testid="solset-plane-point-readout" data-plain={`(${fmt(planePoint[0])}, ${fmt(planePoint[1])})`}>
+                        <VectorTeX x={planePoint[0]} y={planePoint[1]} />
+                      </span>
+                    ),
+                  },
+                  {
+                    id: "plane-check",
+                    label: "is every (t₁, t₂) a solution?",
+                    value: (
+                      <span data-testid="solset-plane-check-readout">
+                        yes — Null(A) = ℝ² needs both free variables
+                      </span>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }
@@ -406,7 +446,7 @@ export function SolutionSetExplorer() {
               <Line.Segment point1={solLine[0]} point2={solLine[1]} color={ROLE_SOLUTION} weight={3} />
             )}
 
-            {particular && (
+            {particular && set.kind !== "plane" && (
               <>
                 {/* Offset arrow origin → x_p: the translate that carries the null space off the origin. */}
                 {!approxVec(particular, [0, 0]) && (
@@ -421,7 +461,8 @@ export function SolutionSetExplorer() {
 
             {second && particular && (
               <>
-                {/* Difference at its natural place: x_p → second solution. */}
+                {/* Difference at its natural place: x_p → second solution (always shown —
+                    it is what the translated overlay copies). */}
                 <Vector tail={particular as [number, number]} tip={second as [number, number]} color={ROLE_DIFFERENCE} weight={2} opacity={0.85} />
                 <Circle center={second as [number, number]} radius={0.12} color={ROLE_SECOND} fillOpacity={1} />
                 <Text x={second[0]} y={second[1]} attach="se" attachDistance={14} color={ROLE_SECOND} size={14}>
@@ -444,6 +485,41 @@ export function SolutionSetExplorer() {
               </>
             )}
 
+            {/* Nullity-2: one movable point x = t₁ e₁ + t₂ e₂, with both null directions. */}
+            {planePoint && (
+              <>
+                {Math.abs(t1) > EPS && (
+                  <Vector
+                    tail={[0, 0]}
+                    tip={[t1, 0]}
+                    color={ROLE_NULL}
+                    weight={2}
+                    opacity={0.85}
+                  />
+                )}
+                {Math.abs(t2) > EPS && (
+                  <Vector
+                    tail={[t1, 0]}
+                    tip={planePoint as [number, number]}
+                    color={ROLE_DIFFERENCE}
+                    weight={2}
+                    opacity={0.85}
+                  />
+                )}
+                <Circle center={planePoint as [number, number]} radius={0.14} color={ROLE_SECOND} fillOpacity={1} />
+                <Text
+                  x={planePoint[0]}
+                  y={planePoint[1]}
+                  attach="ne"
+                  attachDistance={14}
+                  color={ROLE_SECOND}
+                  size={14}
+                >
+                  t₁ e₁ + t₂ e₂
+                </Text>
+              </>
+            )}
+
             {set.kind === "empty" && (
               <Text x={0} y={0} attach="n" attachDistance={8} color={ROLE_SOLUTION} size={15}>
                 Sol(A, b) = ∅ — b is unreachable
@@ -456,8 +532,8 @@ export function SolutionSetExplorer() {
         <li><span className="swatch swatch--null" /> Null(A) — homogeneous</li>
         <li><span className="swatch swatch--solution" /> solution set A x = b</li>
         <li><span className="swatch swatch--particular" /> particular xₚ</li>
-        <li><span className="swatch swatch--second" /> generated xₚ + t·v</li>
-        <li><span className="swatch swatch--difference" /> difference (a null vector)</li>
+        <li><span className="swatch swatch--second" /> generated solution</li>
+        <li><span className="swatch swatch--difference" /> null direction / difference</li>
       </ul>
     </ExplorationPanel>
   );

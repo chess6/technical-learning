@@ -79,7 +79,7 @@ export const solutionSetsLesson: LessonDefinition = {
       kind: "proposition",
       label: "The null space is a subspace",
       statement:
-        "$\\operatorname{Null}(A)$ is a **subspace**: it contains $\\mathbf{0}$, and if $\\mathbf{u}, \\mathbf{v} \\in \\operatorname{Null}(A)$ then $\\mathbf{u} + \\mathbf{v} \\in \\operatorname{Null}(A)$ and $c\\,\\mathbf{u} \\in \\operatorname{Null}(A)$ for every scalar $c$. Geometrically it is a point, a line, or a plane **through the origin**.",
+        "$\\operatorname{Null}(A)$ is a **subspace**: it contains $\\mathbf{0}$, and if $\\mathbf{u}, \\mathbf{v} \\in \\operatorname{Null}(A)$ then $\\mathbf{u} + \\mathbf{v} \\in \\operatorname{Null}(A)$ and $c\\,\\mathbf{u} \\in \\operatorname{Null}(A)$ for every scalar $c$. In the $2\\times 2$ cases here it is geometrically a point, a line, or a plane **through the origin**; in general it is a subspace of dimension equal to the number of free variables.",
       interpretation:
         "Homogeneous solutions are closed under the two moves that build combinations — adding and scaling — so $\\operatorname{Null}(A)$ is a flat object anchored at the origin. Its dimension is the **nullity**.",
       visibility: "revealed",

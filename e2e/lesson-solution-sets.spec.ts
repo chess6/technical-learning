@@ -90,6 +90,11 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
     .click();
   await expect(stageTitle).toHaveText("The set is the null line, shifted");
 
+  await scene
+    .getByRole("button", { name: "Idea 6: Empty, a point, or a line" })
+    .click();
+  await expect(stageTitle).toHaveText("Empty, a point, or a line");
+
   // --- Interactive explorer: the two linked solution-space panels. ---
   const explore = page.getByRole("region", {
     name: "Solution set = null space, carried off the origin",
@@ -128,9 +133,10 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
     "yes — and so is every t",
   );
 
-  // The difference-of-two-solutions overlay toggles on/off.
+  // The difference-translated-to-origin overlay toggles on/off (the natural
+  // difference arrow from x_p to the generated solution stays visible).
   const diffToggle = explore.getByRole("checkbox", {
-    name: "Show the difference of two solutions is a null vector",
+    name: "Show the difference translated to the origin",
   });
   await expect(diffToggle).toBeChecked();
   await diffToggle.click();
@@ -156,14 +162,25 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
   await expect(reach).toHaveText("no — b is off the column space");
   await expect(nul).toContainText("a line through the origin");
 
-  // Whole plane (A = 0): the caveat case — a 2-dimensional null space, so one
-  // difference direction is NOT the whole set.
+  // Whole plane (A = 0): the caveat case — a 2-dimensional null space. Two free
+  // variables t₁, t₂ let the learner move in both independent null directions
+  // (Package 3's abstraction return: x = t₁ e₁ + t₂ e₂).
   await explore.getByRole("button", { name: "Whole plane (A = 0)" }).click();
   await expect(kind).toHaveText("the whole plane (dimension 2)");
   await expect(nul).toHaveText("the whole plane ℝ²");
   await expect(explore.locator(".exploration-panel__summary")).toContainText(
-    "you need both independent null directions to pin the shape",
+    "you need both independent null directions",
     { ignoreCase: true },
+  );
+  await expect(explore.locator("#sol-t1")).toBeVisible();
+  await expect(explore.locator("#sol-t2")).toBeVisible();
+  const planePoint = explore.getByTestId("solset-plane-point-readout");
+  await expect(planePoint).toHaveAttribute("data-plain", "(2, 1)");
+  await setRange(page, "#sol-t1", -1);
+  await setRange(page, "#sol-t2", 3);
+  await expect(planePoint).toHaveAttribute("data-plain", "(-1, 3)");
+  await expect(explore.getByTestId("solset-plane-check-readout")).toContainText(
+    "Null(A) = ℝ² needs both free variables",
   );
 
   // Homogeneous (b = 0): the solution set is Null(A) itself, through the origin.
