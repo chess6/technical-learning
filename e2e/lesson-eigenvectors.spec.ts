@@ -144,6 +144,9 @@ test("Lesson 4 expand modal and 3D extension preserve semantic step and single r
   await page.goto("/");
   await page.goto("/lesson/eigenvectors");
   await expect(page.getByTestId("eigen-clip-stage").first()).toBeVisible();
+  // The clip-stage element mounts slightly before its Motion Canvas / WebGL
+  // canvas paints; wait for at least one canvas so the count is not raced.
+  await expect(page.locator("canvas").first()).toBeVisible({ timeout: 15000 });
   const canvasCount = await page.locator("canvas").count();
   expect(canvasCount).toBeGreaterThan(0);
   expect(canvasCount).toBeLessThan(12);

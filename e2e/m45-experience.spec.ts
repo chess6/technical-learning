@@ -17,9 +17,13 @@ test("sidebar lists course structure and highlights the current lesson", async (
   await page.goto("/lesson/vectors");
 
   const nav = page.getByRole("navigation", { name: "Course contents" });
+  // Multiple course sections are listed: the current lesson lives under
+  // "Foundations", and later chapters (e.g. "Systems & elimination") are present.
   await expect(nav.getByText("Foundations", { exact: true })).toBeVisible();
   await expect(
-    nav.locator(".course-sidebar__section-title", { hasText: "Transformations" }),
+    nav.locator(".course-sidebar__section-title", {
+      hasText: "Systems & elimination",
+    }),
   ).toBeVisible();
   await expect(
     nav.getByRole("link", { name: /Vectors, Linear Combinations/ }),
