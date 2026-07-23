@@ -71,6 +71,12 @@ export interface LearnerState {
   /** Keyed by canonical exercise id; most-recent-last. */
   exerciseAttempts: Record<string, ExerciseAttempt[]>;
   bookmarks: Bookmark[];
+  /**
+   * Open index so `LearnerState` is a subtype of `VersionedState`
+   * (`{ schemaVersion } & Record<string, unknown>`). Migration steps may introduce
+   * transient keys; named fields above keep their precise types on access.
+   */
+  [key: string]: unknown;
 }
 
 export function createEmptyLearnerState(): LearnerState {

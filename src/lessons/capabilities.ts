@@ -25,7 +25,7 @@ import {
   type Matrix2x2,
   type Vector2,
 } from "../math";
-import type { JsonValue } from "../platform/json";
+import type { JsonObject, JsonValue } from "../platform/json";
 import type { ExerciseDefinition, SolutionReveal } from "./types";
 
 // Re-exported for callers that import JsonValue alongside the capability types.
@@ -427,11 +427,13 @@ function customValue(answer: ExerciseAnswer, capabilityId: string): JsonValue {
 function decodeObject(
   raw: JsonValue | undefined,
   cap: string,
-): { readonly [key: string]: JsonValue } {
+): JsonObject {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
     throw new AnswerDecodeError(cap, "expected a JSON object");
   }
-  return raw;
+  // `Array.isArray` is typed as `arg is any[]`, so the false branch does not
+  // exclude `readonly JsonValue[]` from the JsonValue union — assert the object arm.
+  return raw as JsonObject;
 }
 
 function decodeFiniteNumber(raw: JsonValue | undefined, cap: string, field: string): number {
