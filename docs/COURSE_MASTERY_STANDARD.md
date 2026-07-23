@@ -421,6 +421,12 @@ lists its **purpose, required input, output artifact, rejection conditions, and
 relationship to the next stage.** Gates reference upstream artifacts rather than
 duplicating them.
 
+> **Entry point.** [COURSE_AUTHORING_WORKFLOW.md](./COURSE_AUTHORING_WORKFLOW.md)
+> is the practical dispatcher over the gates below: it classifies a request into a
+> mode (architecture / planning / implementation / validation), tells the agent
+> which gates and docs to run in order, and marks the approval boundaries. Start
+> any authoring request there; this section is the gates' canonical definition.
+
 ```mermaid
 flowchart TD
   G1["1. Course profile + benchmark outcomes"] --> G2["2. Course spine + dependency map"]
@@ -461,6 +467,7 @@ copy with a reference.
 
 | Layer | Documents | Owns |
 | --- | --- | --- |
+| **Entry point (how to start)** | [COURSE_AUTHORING_WORKFLOW.md](./COURSE_AUTHORING_WORKFLOW.md) | Routing a request to a mode + gate sequence; approval boundaries. |
 | **Learning theory (why)** | [INTERACTIVE_TEXTBOOK_VISION.md](./INTERACTIVE_TEXTBOOK_VISION.md) | Mental models, compression, principles, "enough depth". |
 | **Conceptual spine (what insight)** | [INSIGHT_DISCOVERY_GATE.md](./INSIGHT_DISCOVERY_GATE.md) → Approved Insight Contracts | The one model-changing idea per lesson. |
 | **Mastery assurance (did they learn it)** | **COURSE_MASTERY_STANDARD.md** (this) → [LESSON_MASTERY_CONTRACT.md](./LESSON_MASTERY_CONTRACT.md) | Coverage, rigor, evidence, assessment, retention, coherence, workflow. |

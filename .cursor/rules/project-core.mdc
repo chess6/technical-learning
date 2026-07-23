@@ -19,9 +19,18 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
 
 ## Scope
 
-- Lessons 1–2 + M4.5 polish are the active product surface.
-- Do **not** implement Lessons 3–4 / determinants / eigenvectors milestones unless the user explicitly reopens that work.
+- **Built surface** (in `src/lessons/curriculum.ts` as `kind: "lesson"`):
+  `why-linear-algebra`, `vectors`, `transformations`, `systems`, `elimination`,
+  `solution-sets`, `determinants`, `eigenvectors` (intro), plus the `karatsuba`
+  track. These are the active product.
+- Spine nodes marked `kind: "future"` are **closed**: do not build, promote, or
+  author a `future` lesson (or any Lesson 6+/later milestone) unless the user
+  **explicitly reopens that specific lesson**. This is an approval boundary.
 - Prefer fixing visual/math correctness and shared helpers over new lesson content.
+- **Any course or lesson authoring request** — architecture, planning, or
+  implementation — must be routed through
+  [docs/COURSE_AUTHORING_WORKFLOW.md](../../docs/COURSE_AUTHORING_WORKFLOW.md) first
+  (see the `course-authoring` rule).
 
 ## Math & copy
 
