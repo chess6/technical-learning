@@ -88,6 +88,14 @@ export type {
 } from "./systems";
 
 export {
+  particularSolution2x2,
+  solutionSet2x2,
+  differenceLiesInNullspace,
+  generateSolution,
+} from "./solutionSets";
+export type { SolutionSet2x2 } from "./solutionSets";
+
+export {
   augmentedFromSystem,
   systemMatrix,
   systemRhs,

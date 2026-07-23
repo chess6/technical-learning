@@ -113,6 +113,25 @@ export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
+ * "Solution Sets & Homogeneous Systems" Watch scene — the difference-of-solutions
+ * discovery engine, in solution space `(x, y)`. Two solutions of one consistent
+ * system are subtracted to reveal a homogeneous solution; adding it back
+ * generates more; all differences fill `Null(A)` through the origin; and the
+ * whole solution set is that null line translated by a particular solution —
+ * empty when no particular solution exists. Reuses Lesson 3's dependent system
+ * (columns (1,2),(2,4), b = (3,6)): x_p = (3,0), null direction (2,−1), so
+ * (3,0),(1,1),(5,−1) are all solutions.
+ */
+export const SOLUTION_SETS_SEGMENTS: readonly SceneSegment[] = [
+  { id: "two-solutions", title: "Two solutions of one system", duration: 5 },
+  { id: "difference", title: "Subtract them: a homogeneous solution", duration: 6 },
+  { id: "generate", title: "Add it back to make more", duration: 6 },
+  { id: "null-line", title: "The homogeneous line Null(A)", duration: 5 },
+  { id: "translate", title: "The set is the null line, shifted", duration: 6 },
+  { id: "cases", title: "Empty, a point, or a line", duration: 6 },
+];
+
+/**
  * Explicit per-beat animation budgets the elimination scene consumes INSIDE
  * each segment. Every animated yield in `eliminationScene` reads its duration
  * from here (parallel animations in one beat share a single entry — the beat's

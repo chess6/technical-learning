@@ -342,3 +342,93 @@ describe exactly the same solution set.
   full `vitest` suite (460) green, `e2e/lesson-elimination.spec.ts` green
   (pre-existing `tsc -b` errors in `capabilities.ts` / `learnerState.ts` are
   unrelated to this change and present on clean HEAD)
+
+---
+
+## Solution Sets & Homogeneous Systems (2026-07-22)
+
+Sits after *Elimination* (Lesson 4) and before *Composition, inverses &
+determinants*, so it becomes numbered content Lesson 5 (later lessons —
+Karatsuba, etc. — shift down one). Reuses Lesson 3's dependent running system
+(columns \((1,2),(2,4)\), \(\mathbf{b}=(3,6)\)): \(\mathbf{x}_p=(3,0)\), null
+direction \((2,-1)\), so \((3,0),(1,1),(5,-1)\) are all solutions. Discovery
+engine: two solutions of one consistent system differ by a vector sent to zero,
+which makes the decomposition \(\mathrm{Sol}(A,\mathbf b)=\mathbf x_p+\mathrm{Null}(A)\)
+inevitable; the solution set is the null space **translated off the origin**, and
+empty when the system is inconsistent.
+
+### Mathematical review
+
+- [x] All solution-set structure is a single shared source of truth:
+  `solutionSet2x2` / `particularSolution2x2` / `differenceLiesInNullspace` /
+  `generateSolution` in `src/math/solutionSets.ts`; the explorer and guided scene
+  reimplement none of it (they map math → screen only)
+- [x] `solutionSet2x2` short-circuits an **independent** (invertible) `A` to the
+  trivial null space `{0}` before consulting `nullspaceBasis2x2` (which assumes a
+  singular matrix), so a unique system is a `point`, not a spurious line
+- [x] Corrected scope enforced in code and copy: two distinct solutions establish
+  **at least an affine line**; one difference direction does **not** determine the
+  whole set when \(\dim\mathrm{Null}(A)>1\) (the `A=0` whole-plane caveat is a
+  first-class explorer preset and readout)
+- [x] Existence vs multiplicity kept separate: an inconsistent `b` yields the
+  **empty** set with `Null(A)` unchanged; a trivial null space gives uniqueness,
+  **not** reachability (both are distinct readouts, not conflated)
+- [x] `generateSolution(x_p, v, t)` produces `x_p + t·v` and every result is
+  verified to satisfy \(A\mathbf x=\mathbf b\); differences verified in `Null(A)`
+- [x] Basis-column convention untouched (this surface consumes columns via the
+  shared `classifyLinearSystem2x2` / `matrixVectorMultiply`; no local algebra)
+
+### Visual review
+
+- [x] Two linked solution-space panels of the **same** `A`: left = homogeneous
+  `A x = 0` (Null(A) through the origin: point / line / whole plane), right =
+  `A x = b` (`x_p + Null(A)`, the same shape slid off the origin, or empty)
+- [x] The offset arrow origin → `x_p` is drawn as the translate; the difference of
+  two solutions is drawn both at its natural place (`x_p → x_p+t·v`) and
+  **translated to the origin**, where it lands on the null line — the theorem
+  drawn, not asserted
+- [x] Guided scene animates the discovery arc (two solutions → subtract → add back
+  to generate → the null line → the shifted set → the empty/point/line cases) in
+  solution space, reusing Lesson 3's numbers
+- [x] KaTeX for the particular-solution and generated-solution readouts (column
+  vectors via `VectorTeX`); no raw `[[...]]` in learner-facing prose
+- [x] Distinct role colors (Null(A), solution set, particular `x_p`, generated
+  `x_p+t·v`, difference) + a labelled legend; not color-only
+- [x] Whole-plane / empty degenerate states drawn honestly (shaded region / "∅ — b
+  is unreachable" note), never a fabricated line
+- [x] Paused establishing frame at `t=0`; reduced-motion path shows the first
+  major idea without autoplay (shared player)
+
+### Testing review
+
+- [x] Unit tests `src/math/__tests__/solutionSets.test.ts`: `particularSolution2x2`
+  (unique / dependent-consistent / inconsistent / zero-matrix), `solutionSet2x2`
+  (point / line / empty / whole-plane / homogeneous), and the discovery-engine
+  invariants (`differenceLiesInNullspace`, `generateSolution` stays a solution)
+- [x] Asymmetric / dependent matrix covered (columns `(1,2),(2,4)`); singular
+  collapse (`A=0` whole plane) and trivial null space (`point`) both covered
+- [x] Wiring block in `lessonWiring.test.ts` (guided scene + explorer resolve,
+  theorem + misconception guards present, exercise tiers, lesson order /
+  numbering — solution-sets = 5, Karatsuba shifts to 8); `courseModel.test.ts`
+  marks it built; registry lists `solution-sets`
+- [x] Browser test `e2e/lesson-solution-sets.spec.ts`: guided scene
+  play/replay + six ordered idea markers, the free-variable `t` sweep generating a
+  new solution, the difference toggle, and every explorer preset
+  (line / point / empty / whole-plane / homogeneous) with its readouts — zero
+  console errors (screenshots in `screenshots/`)
+
+### Teaching review
+
+- [x] One-sentence mental model: the solution set is the null space carried off the
+  origin — one particular solution anchors it, `Null(A)` supplies every other
+- [x] Opens with a genuine question (what *shape* is "infinitely many"?), building
+  on Lesson 3's trichotomy rather than restating it
+- [x] Discovery before theorem: the learner subtracts two solutions and generates a
+  third **without re-solving** before the decomposition is named
+- [x] Consistency condition never dropped: the decomposition is stated **only** for
+  consistent systems; the inconsistent case is the empty-set confrontation
+- [x] Supporting ideas integrated, not bolted on: homogeneous systems separate
+  multiplicity from existence; free variables are coordinates on independent null
+  directions (seeds rank–nullity) — both surface inside the one lesson
+- [x] `npm run lint` clean; full `vitest` suite (479) green; `npm run build` green;
+  `e2e` suite (46) green including the new spec

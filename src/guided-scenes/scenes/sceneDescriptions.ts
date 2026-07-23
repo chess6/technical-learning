@@ -26,6 +26,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./linearSystemsScene").then((m) => m.linearSystemsScene),
   elimination: () =>
     import("./eliminationScene").then((m) => m.eliminationScene),
+  "solution-sets": () =>
+    import("./solutionSetsScene").then((m) => m.solutionSetsScene),
   "determinant-area-scaling": () =>
     import("./determinantAreaScalingScene").then(
       (m) => m.determinantAreaScalingScene,

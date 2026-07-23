@@ -99,12 +99,7 @@ export const CURRICULUM: readonly Subject[] = [
             items: [
               { kind: "lesson", lessonId: "systems" },
               { kind: "lesson", lessonId: "elimination" },
-              {
-                kind: "future",
-                id: "solution-sets",
-                title: "Solution Sets & Homogeneous Systems",
-                subtitle: "Particular solution + null directions; affine vs linear",
-              },
+              { kind: "lesson", lessonId: "solution-sets" },
             ],
           },
           {

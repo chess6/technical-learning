@@ -32,6 +32,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.EliminationExplorer,
     })),
   ),
+  "solution-sets": lazy(() =>
+    import("./SolutionSetExplorer").then((m) => ({
+      default: m.SolutionSetExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,

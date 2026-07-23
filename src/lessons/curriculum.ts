@@ -57,12 +57,7 @@ export const COURSE_SECTIONS: readonly CourseSection[] = [
       // Lesson 4 — Elimination as reversible constraint manipulation.
       { kind: "lesson", lessonId: "elimination" },
       // Lesson 5 — Solution sets and homogeneous systems.
-      {
-        kind: "future",
-        id: "solution-sets",
-        title: "Solution Sets & Homogeneous Systems",
-        subtitle: "Particular solution + null directions; affine vs linear",
-      },
+      { kind: "lesson", lessonId: "solution-sets" },
     ],
   },
   {

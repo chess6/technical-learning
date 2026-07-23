@@ -145,7 +145,8 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
     // 4, so Karatsuba shifts to 7 (intro chapter still excluded from the count).
     expect(getLessonNumber("systems")).toBe(3);
     expect(getLessonNumber("elimination")).toBe(4);
-    expect(getLessonNumber("karatsuba")).toBe(7);
+    expect(getLessonNumber("solution-sets")).toBe(5);
+    expect(getLessonNumber("karatsuba")).toBe(8);
   });
 
   it("tours scale, rotation, reflection, shear, and projection", () => {
@@ -314,6 +315,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "transformations",
       "systems",
       "elimination",
+      "solution-sets",
       "determinants",
       "eigenvectors",
       "karatsuba",
@@ -359,10 +361,10 @@ describe("Linear systems lesson (row vs column picture)", () => {
 });
 
 describe("Elimination lesson (reversible constraint manipulation)", () => {
-  it("sits between systems and determinants", () => {
+  it("sits between systems and solution sets", () => {
     const ids = lessons.map((l) => l.id);
     expect(ids.indexOf("elimination")).toBe(ids.indexOf("systems") + 1);
-    expect(ids.indexOf("elimination")).toBe(ids.indexOf("determinants") - 1);
+    expect(ids.indexOf("elimination")).toBe(ids.indexOf("solution-sets") - 1);
   });
 
   it("wires its own guided scene and synchronized explorer", () => {
@@ -392,6 +394,56 @@ describe("Elimination lesson (reversible constraint manipulation)", () => {
     expect(invariance?.kind).toBe("theorem");
     // The proof lives in a depth layer (revealed), not the bare statement.
     expect((invariance?.layers ?? []).some((l) => l.kind === "math-note")).toBe(true);
+  });
+});
+
+describe("Solution Sets & Homogeneous Systems lesson", () => {
+  it("sits between elimination and determinants", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("solution-sets")).toBe(ids.indexOf("elimination") + 1);
+    expect(ids.indexOf("solution-sets")).toBe(ids.indexOf("determinants") - 1);
+  });
+
+  it("wires its own guided scene and synchronized explorer", () => {
+    const lesson = getLessonById("solution-sets")!;
+    expect(lesson.guidedSceneId).toBe("solution-sets");
+    expect(lesson.explorationId).toBe("solution-sets");
+    expect(hasGuidedScene("solution-sets")).toBe(true);
+    expect(getSceneMeta("solution-sets").id).toBe("solution-sets");
+    expect(getExplorer("solution-sets")).toBeTypeOf("function");
+  });
+
+  it("reuses Lesson 3's shared example for continuity", () => {
+    const lesson = getLessonById("solution-sets")!;
+    expect(lesson.exampleId).toBe("systems-default");
+  });
+
+  it("earns the decomposition theorem and separates existence from multiplicity", () => {
+    const lesson = getLessonById("solution-sets")!;
+    const formalIds = (lesson.formalBlocks ?? []).map((f) => f.id);
+    expect(formalIds).toContain("thm-solution-structure");
+    expect(formalIds).toContain("cor-uniqueness");
+    // Guided Watch before learner Explore (the one structural ordering rule).
+    const route = lesson.route ?? [];
+    const watchAt = route.findIndex((b) => b.kind === "visual" || b.kind === "watch");
+    const exploreAt = route.findIndex((b) => b.kind === "explore");
+    expect(watchAt).toBeGreaterThanOrEqual(0);
+    expect(exploreAt).toBeGreaterThan(watchAt);
+  });
+
+  it("guards the corrected scope in a misconception callout (one difference ≠ whole set)", () => {
+    const lesson = getLessonById("solution-sets")!;
+    const ids = new Set((lesson.callouts ?? []).map((c) => c.id));
+    expect(ids.has("one-difference-not-whole-set")).toBe(true);
+    expect(ids.has("trivial-null-not-reachable")).toBe(true);
+  });
+
+  it("covers check, drill, and transfer practice tiers", () => {
+    const lesson = getLessonById("solution-sets")!;
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
   });
 });
 

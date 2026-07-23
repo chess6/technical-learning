@@ -11,6 +11,7 @@ import {
   COLUMNS_RULE_GRAPHIC_SEGMENTS,
   SYSTEMS_SEGMENTS,
   ELIMINATION_SEGMENTS,
+  SOLUTION_SETS_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -53,6 +54,7 @@ const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
 const ELIMINATION_STEPS = toSteps(ELIMINATION_SEGMENTS);
+const SOLUTION_SETS_STEPS = toSteps(SOLUTION_SETS_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -113,6 +115,21 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "triangular",
       "invariance",
       "summary",
+    ]),
+  },
+  "solution-sets": {
+    id: "solution-sets",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for the structure of the solution set of a 2 by 2 linear system, drawn in solution space. Two solutions of the same consistent system are marked, then subtracted: their difference is a solution of the homogeneous system A x equals zero. Adding that difference back to a solution generates a third solution without solving again. All such differences fill the null space, a line through the origin. The full solution set is that null line translated by one particular solution — the null space carried off the origin, an affine line that does not pass through the origin unless b is zero — and it is empty when the system is inconsistent because no particular solution exists.",
+    steps: SOLUTION_SETS_STEPS,
+    majorSteps: pickMajor(SOLUTION_SETS_STEPS, [
+      "two-solutions",
+      "difference",
+      "generate",
+      "null-line",
+      "translate",
+      "cases",
     ]),
   },
   "vectors-linear-combinations": {
