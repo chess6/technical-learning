@@ -45,7 +45,7 @@ describe("compatibility adapter reproduces current navigation (semantic equivale
 });
 
 describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
-  // Authoritative sequence — see docs/LINEAR_ALGEBRA_COURSE_SPINE.md. Locks the
+  // Authoritative sequence — see docs/courses/linear-algebra/course-spine.md. Locks the
   // full spine (built lessons + ordered `future` nodes) so a stray edit cannot
   // silently drop or reorder a spine position.
   const SPINE: readonly (

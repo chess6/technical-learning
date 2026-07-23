@@ -8,11 +8,11 @@
  * `future` nodes placed in their correct spine position, each carrying a
  * one-line central insight. The authoritative spine — central insights,
  * ordering rationale, and application threads — lives in
- * `docs/LINEAR_ALGEBRA_COURSE_SPINE.md`.
+ * `docs/courses/linear-algebra/course-spine.md`.
  *
  * Note (POC, positional numbering): sidebar badges number the *built* lessons,
  * while the spine positions (L1…L14) are the authoritative sequence. See
- * `docs/MULTI_DOMAIN_CURRICULUM_ARCHITECTURE.md` for why numbering is positional
+ * `docs/courses/multi-domain-architecture.md` for why numbering is positional
  * against the registry today and how a path-aware model would replace it.
  */
 

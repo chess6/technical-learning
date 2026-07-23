@@ -5,9 +5,9 @@ alwaysApply: true
 
 # Lesson design
 
-Before adding or modifying **lesson content**, read `docs/LESSON_DESIGN.md`.
+Before adding or modifying **lesson content**, read `docs/authoring/lesson-design.md`.
 Before modifying **mathematical visualizations**, also read
-`docs/MATH_CORRECTNESS.md` and `docs/ERROR_LOG.md`.
+`docs/engineering/math-correctness.md` and `docs/quality/known-failure-modes.md`.
 
 ## Follow
 
@@ -18,7 +18,7 @@ Before modifying **mathematical visualizations**, also read
   sections/formal statements/worked examples where they belong. The default
   ordering rule is **guided Watch before learner Explore** (plus continuity); the
   only sanctioned reversal is a Lesson-Mastery-Contract-justified
-  exploration-first opening (see `docs/SEMANTIC_PAGE_GRAMMAR.md` §2). Do **not**
+  exploration-first opening (see `docs/product/semantic-page-grammar.md` §2). Do **not**
   number the blocks in the UI; give each lesson a per-lesson table of contents.
 - **Equation-first worked computations.** Author a worked computation as a plain
   ordered list of KaTeX expressions (`WorkedExample.equations`). There is **no**
@@ -42,9 +42,9 @@ Before modifying **mathematical visualizations**, also read
   text readouts, reduced-motion-aware autoplay. Full disability-product work is
   out of scope; do not strip the basics.
 - Guided scenes: paused t=0 must still show an establishing frame (grid/origin/caption).
-- Add/update lesson **tests** and complete `docs/LESSON_CORRECTNESS_CHECKLIST.md`.
+- Add/update lesson **tests** and complete `docs/quality/lesson-correctness-checklist.md`.
 
 ## When in doubt
 
-- If you intentionally deviate from this standard, update `docs/LESSON_DESIGN.md`.
+- If you intentionally deviate from this standard, update `docs/authoring/lesson-design.md`.
 - **Stop and explain** if a proposed design conflicts with mathematical correctness.

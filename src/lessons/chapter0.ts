@@ -4,7 +4,7 @@ import type { LessonDefinition } from "./types";
  * Chapter 0 — "Why Linear Algebra?"
  *
  * Gated by the joint opening-slice Insight Contract
- * (docs/insights/linear-algebra-opening.md, PASS). Chapter 0 opens the mystery
+ * (docs/courses/linear-algebra/lessons/00-opening-slice/insight.md, PASS). Chapter 0 opens the mystery
  * — a single 2×2 matrix relocating every vertex of a graphic at once — through a
  * guided scene and a bounded interaction, connects it to real applications,
  * exposes translation as a productive limitation, and hands off to Lesson 1.

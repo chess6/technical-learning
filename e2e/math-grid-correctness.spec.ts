@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 /**
  * Browser regression for the transformed-grid orientation bug
- * (docs/ERROR_LOG.md — A = [[1.8, 0], [1.8, 2.2]]).
+ * (docs/quality/known-failure-modes.md — A = [[1.8, 0], [1.8, 2.2]]).
  */
 
 function collectConsoleErrors(page: Page): string[] {

@@ -68,7 +68,7 @@ const ZERO_MATRIX: [[number, number], [number, number]] = [
  * The null space of `A`, drawn correctly for BOTH independent and singular `A`.
  * `nullspaceBasis2x2` assumes a singular matrix (it returns a vector orthogonal
  * to a row), so an independent (invertible) matrix must short-circuit to the
- * trivial null space {0} before we ever consult it. See docs/insights/solution-sets.md.
+ * trivial null space {0} before we ever consult it. See docs/courses/linear-algebra/lessons/05-solution-sets/insight.md.
  */
 function nullSpaceOf(A: Matrix2x2): Subspace2D {
   const cls = classifyLinearSystem2x2(A, [0, 0]);

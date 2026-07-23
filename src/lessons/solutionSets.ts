@@ -4,8 +4,8 @@ import type { LessonDefinition } from "./types";
  * Lesson: "Solution Sets & Homogeneous Systems".
  *
  * Stage 3 of the Insight Discovery Gate for this topic. Built on the PASS
- * contract `docs/insights/solution-sets.md` and the plan
- * `docs/lesson-plan-solution-sets.md`.
+ * contract `docs/courses/linear-algebra/lessons/05-solution-sets/insight.md` and the plan
+ * `docs/courses/linear-algebra/lessons/05-solution-sets/lesson-plan.md`.
  *
  * Primary insight (preserved from Stage 1/2): any two solutions of a consistent
  * `A x = b` differ by a solution of `A x = 0`, so once one solution exists the

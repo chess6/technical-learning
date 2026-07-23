@@ -3,7 +3,7 @@
  *
  * The mathematical-space contract standardizes how we *name* the space a panel
  * or axis lives in, so a learner is never left guessing whether two pictures
- * share a frame. See `docs/MATH_SPACE_CONVENTIONS.md`.
+ * share a frame. See `docs/engineering/math-space-conventions.md`.
  *
  * IMPORTANT: these labels describe SEMANTIC ROLES, not vector-space identity.
  * Distinct labels do not always imply distinct underlying vector spaces — the

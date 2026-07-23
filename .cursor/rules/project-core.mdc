@@ -29,7 +29,7 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
 - Prefer fixing visual/math correctness and shared helpers over new lesson content.
 - **Any course or lesson authoring request** — architecture, planning, or
   implementation — must be routed through
-  [docs/COURSE_AUTHORING_WORKFLOW.md](../../docs/COURSE_AUTHORING_WORKFLOW.md) first
+  [docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md) first
   (see the `course-authoring` rule).
 
 ## Math & copy
@@ -39,7 +39,7 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
 
 ## Correctness docs
 
-Before changing math or visualizations: `docs/MATH_CORRECTNESS.md`, `docs/ERROR_LOG.md`. Checklist: `docs/LESSON_CORRECTNESS_CHECKLIST.md`.
+Before changing math or visualizations: `docs/engineering/math-correctness.md`, `docs/quality/known-failure-modes.md`. Checklist: `docs/quality/lesson-correctness-checklist.md`.
 
 ## Verify
 

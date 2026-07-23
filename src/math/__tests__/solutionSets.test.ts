@@ -13,7 +13,7 @@ import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
 /**
  * Solution-set structure for `A x = b`, exercised against the SAME shared numbers
  * the earlier lessons use (`systems-default`). The winning insight
- * (docs/insights/solution-sets.md) is: Sol(A, b) = x_p + Null(A) when consistent,
+ * (docs/courses/linear-algebra/lessons/05-solution-sets/insight.md) is: Sol(A, b) = x_p + Null(A) when consistent,
  * ∅ otherwise — with the corrected scope that a single difference gives at least a
  * line, never the whole set when the null space is 2-dimensional.
  */

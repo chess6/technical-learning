@@ -2,7 +2,7 @@ import type { LessonDefinition } from "./types";
 
 /**
  * Karatsuba multiplication lesson. Built around the approved insight contract
- * (docs/insights/karatsuba.md). Numbers live in karatsubaData.ts.
+ * (docs/courses/algorithms/lessons/karatsuba/insight.md). Numbers live in karatsubaData.ts.
  */
 export const karatsubaLesson: LessonDefinition = {
   id: "karatsuba",

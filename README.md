@@ -9,29 +9,29 @@ readiness: route/scene/explorer-level lazy loading (home page no longer
 loads Motion Canvas, Mafs, or KaTeX), production gating of dev-only routes,
 error boundaries with learner-facing retry, a polished home page, and a
 responsive/accessibility/consistency pass across all four lessons. Details:
-[docs/m6-release-polish.md](docs/m6-release-polish.md).
+[docs/archive/milestones/m6-release-polish.md](docs/archive/milestones/m6-release-polish.md).
 
 **Milestone 5 complete** — the Determinants as Signed Area Scaling and
 Eigenvectors and Eigenvalues lessons are fully implemented with guided scenes,
 Mafs explorers, deterministic practice, and shared math/examples. Details:
-[docs/m5-lessons.md](docs/m5-lessons.md).
+[docs/archive/milestones/m5-lessons.md](docs/archive/milestones/m5-lessons.md).
 
 **Milestone 4.5 complete** — visual, layout, and learning-experience refinement
 of Lessons 1–2 (sidebar TOC, autoplay, safe-frame clipping fix, KaTeX prose,
 learner-facing player controls, progressive disclosure). Details:
-[docs/m45-refinement.md](docs/m45-refinement.md) and
-[docs/visual-design-refinement.md](docs/visual-design-refinement.md).
+[docs/archive/milestones/m45-refinement.md](docs/archive/milestones/m45-refinement.md) and
+[docs/archive/milestones/visual-design-refinement.md](docs/archive/milestones/visual-design-refinement.md).
 
 **Milestone 4 complete** — Lessons 1 (Vectors and Linear Combinations) and 2
 (Matrices as Linear Transformations) are fully implemented: guided Motion Canvas
 scenes, Mafs explorations, KaTeX equations, deterministic exercises, and a
 motivating-question → guide → checkpoint → explore → exercise → takeaway flow.
-Details: [docs/m4-lessons.md](docs/m4-lessons.md).
+Details: [docs/archive/milestones/m4-lessons.md](docs/archive/milestones/m4-lessons.md).
 
 Earlier milestones: shared pure math layer + Mafs foundation
-([docs/m3-math-and-mafs.md](docs/m3-math-and-mafs.md)) and Motion Canvas
+([docs/archive/milestones/m3-math-and-mafs.md](docs/archive/milestones/m3-math-and-mafs.md)) and Motion Canvas
 embedding behind `GuidedSceneEngine`
-([docs/motion-canvas-spike.md](docs/motion-canvas-spike.md)).
+([docs/archive/experiments/motion-canvas-spike.md](docs/archive/experiments/motion-canvas-spike.md)).
 
 ## Commands
 
@@ -81,7 +81,7 @@ Guided and interactive scenes must consume the same example ids — never duplic
 ### Why Motion Canvas and Mafs have separate roles
 
 Motion Canvas drives the **guided, read-only** animation (deliberate pacing,
-staged reveals, one conceptual change at a time — see [LESSON_DESIGN.md](docs/LESSON_DESIGN.md#motion-canvas-responsibilities)).
+staged reveals, one conceptual change at a time — see [authoring/lesson-design.md](docs/authoring/lesson-design.md#motion-canvas-responsibilities)).
 Mafs drives the **learner-controlled** exploration (draggable vectors,
 sliders, immediate feedback). Both consume the same `src/math` utilities and
 the same example data, but neither is a general-purpose UI framework, so
@@ -93,26 +93,26 @@ Both libraries are large, so neither loads on the home page. `LessonPage` is
 route-lazy; each guided scene module (`src/guided-scenes/scenes/sceneDescriptions.ts`)
 and each interactive explorer (`src/explorations/registry.tsx`) is its own
 dynamic import, fetched only when a learner opens the lesson that needs it.
-See [docs/m6-release-polish.md](docs/m6-release-polish.md) for before/after
+See [docs/archive/milestones/m6-release-polish.md](docs/archive/milestones/m6-release-polish.md) for before/after
 bundle sizes and the full M6 write-up.
 
 ## Project standards
 
 Read these before adding or changing lessons or math visualizations:
 
-- **Lesson design:** [docs/LESSON_DESIGN.md](docs/LESSON_DESIGN.md) — pedagogy, flow, notation, visual language, anti-patterns.
-- **Visual system:** [docs/visual-design-refinement.md](docs/visual-design-refinement.md) — light-first palette & tokens, typography roles, six-phase hierarchy, guided/explorer/exercise presentation (Lesson 1 is the reference).
-- **M5 lessons:** [docs/m5-lessons.md](docs/m5-lessons.md) — determinants and eigenvectors.
-- **M6 release polish:** [docs/m6-release-polish.md](docs/m6-release-polish.md) — bundle sizes, code splitting, dev-route gating, accessibility/responsive audits.
-- **Lesson template:** [docs/LESSON_TEMPLATE.md](docs/LESSON_TEMPLATE.md) — fill-in planning template.
-- **Mathematical conventions:** [docs/MATH_CORRECTNESS.md](docs/MATH_CORRECTNESS.md).
-- **Error log / prevention:** [docs/ERROR_LOG.md](docs/ERROR_LOG.md).
-- **Lesson checklist:** [docs/LESSON_CORRECTNESS_CHECKLIST.md](docs/LESSON_CORRECTNESS_CHECKLIST.md).
+- **Lesson design:** [docs/authoring/lesson-design.md](docs/authoring/lesson-design.md) — pedagogy, flow, notation, visual language, anti-patterns.
+- **Visual system:** [docs/archive/milestones/visual-design-refinement.md](docs/archive/milestones/visual-design-refinement.md) — light-first palette & tokens, typography roles, six-phase hierarchy, guided/explorer/exercise presentation (Lesson 1 is the reference).
+- **M5 lessons:** [docs/archive/milestones/m5-lessons.md](docs/archive/milestones/m5-lessons.md) — determinants and eigenvectors.
+- **M6 release polish:** [docs/archive/milestones/m6-release-polish.md](docs/archive/milestones/m6-release-polish.md) — bundle sizes, code splitting, dev-route gating, accessibility/responsive audits.
+- **Lesson template:** [docs/authoring/templates/lesson-plan.md](docs/authoring/templates/lesson-plan.md) — fill-in planning template.
+- **Mathematical conventions:** [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md).
+- **Error log / prevention:** [docs/quality/known-failure-modes.md](docs/quality/known-failure-modes.md).
+- **Lesson checklist:** [docs/quality/lesson-correctness-checklist.md](docs/quality/lesson-correctness-checklist.md).
 
 Notation uses conventional symbols: standard basis \(\mathbf{e}_1, \mathbf{e}_2\);
 bold vectors \(\mathbf{v}, \mathbf{w}\); matrix \(A\). Keep basic accessibility
 (labels, focus, readouts, reduced-motion autoplay); full disability-product work
-is out of scope (see LESSON_DESIGN.md).
+is out of scope (see authoring/lesson-design.md).
 
 ## Guided animation
 
@@ -136,7 +136,7 @@ through the engine, so lesson data and React never touch Motion Canvas.
 
 Built lessons, in registry order (the sidebar numbers the built lessons
 positionally; the authoritative L1–L14 spine lives in
-[docs/LINEAR_ALGEBRA_COURSE_SPINE.md](docs/LINEAR_ALGEBRA_COURSE_SPINE.md)):
+[docs/courses/linear-algebra/course-spine.md](docs/courses/linear-algebra/course-spine.md)):
 
 - Chapter 0. Why Linear Algebra? — `/lesson/why-linear-algebra` (intro)
 1. Vectors, Linear Combinations, and Basis — `/lesson/vectors`
@@ -149,6 +149,6 @@ positionally; the authoritative L1–L14 spine lives in
 Dev-only Motion Canvas spike: `/dev/transform-spike` (explicit id only — never
 a silent fallback). Development-only; excluded from production route tables
 and builds via `import.meta.env.DEV` (see `src/app/routes.tsx` and
-[docs/m6-release-polish.md](docs/m6-release-polish.md)).
+[docs/archive/milestones/m6-release-polish.md](docs/archive/milestones/m6-release-polish.md)).
 
 `mathjs` is a **dev-only** dependency (cross-check tests); no production module imports it.

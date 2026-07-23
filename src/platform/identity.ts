@@ -6,7 +6,7 @@
  * across renames and schema changes. It governs load-bearing seams only — it
  * says nothing about pedagogy, lesson composition, or presentation.
  *
- * Key decisions (see docs/PLATFORM_CONTRACTS.md):
+ * Key decisions (see docs/engineering/platform-contracts.md):
  * - Existing unnamespaced ids (e.g. "vectors", "vec-add-compute") remain
  *   CANONICAL. Branding below is a compile-time guard; it does not renamespace
  *   any id.

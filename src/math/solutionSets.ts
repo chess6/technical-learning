@@ -22,7 +22,7 @@ import { nullspaceBasis2x2 } from "./eigen";
  * `nullspaceBasis2x2`. Coordinates stay in math space; any pixel / y-flip
  * mapping happens in the renderer, never here.
  *
- * Correctness note (see docs/insights/solution-sets.md): `nullspaceBasis2x2`
+ * Correctness note (see docs/courses/linear-algebra/lessons/05-solution-sets/insight.md): `nullspaceBasis2x2`
  * returns a vector orthogonal to a row, which is the null space ONLY when `A` is
  * singular (rank ≤ 1). We therefore branch on column independence FIRST — an
  * independent (invertible) `A` has null space {0} and a single-point solution

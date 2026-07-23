@@ -7,7 +7,7 @@ alwaysApply: true
 
 **Before acting on any request to design, plan, extend, or build a course,
 module, lesson, exercise bank, assessment, or interactive learning object, read
-[docs/COURSE_AUTHORING_WORKFLOW.md](../../docs/COURSE_AUTHORING_WORKFLOW.md)
+[docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md)
 first.** It is the single entry point; it routes the request to the correct
 sequence of standards and gates without duplicating them. Do not jump straight to
 code.

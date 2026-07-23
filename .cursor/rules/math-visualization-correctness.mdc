@@ -7,8 +7,8 @@ alwaysApply: true
 
 Before modifying math or visualization code (explorers, guided scenes, SVG fallback):
 
-1. Read `docs/MATH_CORRECTNESS.md`.
-2. Read `docs/ERROR_LOG.md` for known failure modes.
+1. Read `docs/engineering/math-correctness.md`.
+2. Read `docs/quality/known-failure-modes.md` for known failure modes.
 
 ## Rules
 
@@ -18,7 +18,7 @@ Before modifying math or visualization code (explorers, guided scenes, SVG fallb
 - **Grids:** transform endpoints via `transformedGridSegments` / `matrixVectorMultiply`. Do not derive slopes from rows or trust untested third-party matrix packing.
 - **Separate coordinates:** compute in math space first; apply pixel scale / y-flip only afterward.
 - **Tests:** every corrected math/visualization bug needs a regression test; prefer asymmetric matrices (`diagnostic-asymmetric`, `grid-bug-repro`) over identity/scaling alone.
-- **Logging:** when a mathematically incorrect visualization is found, add an entry to `docs/ERROR_LOG.md`.
+- **Logging:** when a mathematically incorrect visualization is found, add an entry to `docs/quality/known-failure-modes.md`.
 - **Uncertainty:** stop and report rather than guessing a visually plausible fix.
 
-Use `src/math/invariants.ts` helpers in tests. Complete `docs/LESSON_CORRECTNESS_CHECKLIST.md` when shipping visualization changes.
+Use `src/math/invariants.ts` helpers in tests. Complete `docs/quality/lesson-correctness-checklist.md` when shipping visualization changes.
