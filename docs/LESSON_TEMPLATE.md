@@ -14,6 +14,15 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 > mathematical meaning and causal chain. Keep the exact insight sentence verbatim
 > in the planning metadata below (for traceability); learner-facing prose may use
 > shorter, clearer wording.
+>
+> **Mastery-contract prerequisite (also required before planning).** Complete the
+> [Lesson Mastery Contract](./LESSON_MASTERY_CONTRACT.md) for this topic first
+> (workflow Gate 5). It fixes the coverage, rigor, practice, transfer, cumulative
+> connections, assessment evidence, and delayed-retention obligations this
+> template then implements. The **Learning objectives** below must be the
+> contract's operational **outcomes-with-evidence**, not vague goals, and the
+> **Exercises** must match the contract's assessment set. Presentation follows
+> [SEMANTIC_PAGE_GRAMMAR.md](./SEMANTIC_PAGE_GRAMMAR.md).
 
 ## Approved insight (gate)
 - Insight Contract: `docs/insights/<topic>.md`

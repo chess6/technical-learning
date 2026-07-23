@@ -6,6 +6,16 @@ breakthrough, not a definition, a routine derivation, or a relatable story.
 
 This is a checklist, not a pedagogy essay. Keep each artifact short and concrete.
 
+> **This gate is one of two.** It answers *"what model-changing insight should
+> organize this lesson?"* — the conceptual **spine**. It deliberately does **not**
+> guarantee coverage, procedural fluency, transfer, retention, or exam
+> performance. That is the job of the complementary
+> [Course Mastery Standard](./COURSE_MASTERY_STANDARD.md) and its per-lesson
+> [Lesson Mastery Contract](./LESSON_MASTERY_CONTRACT.md), completed **after** a
+> `PASS` here and **before** implementation (workflow Gate 5). The Insight
+> Contract's causal chain is an *input* to the mastery contract, not a substitute
+> for it — and neither weakens the other. A lesson needs both to ship.
+
 ---
 
 ## What counts as an insight

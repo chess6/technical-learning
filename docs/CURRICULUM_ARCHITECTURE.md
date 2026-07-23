@@ -29,6 +29,10 @@ It sits between its neighbors and duplicates neither:
 - [LESSON_DESIGN.md](./LESSON_DESIGN.md) / [INTERACTIVE_TEXTBOOK_VISION.md](./INTERACTIVE_TEXTBOOK_VISION.md)
   — how a *single* lesson is built and why. §5's feature matrix references the
   block palette defined there.
+- [LINEAR_ALGEBRA_BENCHMARK_MATRIX.md](./LINEAR_ALGEBRA_BENCHMARK_MATRIX.md) — the
+  per-profile depth calibration for each spine node (what a computational /
+  applied / proof-based course expects), and the honest gap list against this
+  built sequence.
 
 > **Scope note (durable).** This document is **architecture, not an authoring
 > reopening.** Per `.cursor/rules/project-core.mdc`, the active product surface is

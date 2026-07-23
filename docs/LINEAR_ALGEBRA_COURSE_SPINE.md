@@ -22,6 +22,11 @@ distinct from its neighbors:
   from the block palette.
 - [INTERACTIVE_TEXTBOOK_VISION.md](./INTERACTIVE_TEXTBOOK_VISION.md) — the
   pedagogical philosophy the spine serves.
+- [LINEAR_ALGEBRA_BENCHMARK_MATRIX.md](./LINEAR_ALGEBRA_BENCHMARK_MATRIX.md) — the
+  *external calibration* of this spine against representative university course
+  profiles (computational / applied / proof-based), and what each spine node owes
+  each profile. Read it when deciding *how deep* a topic must go for a target
+  profile; read this when deciding *what the sequence is*.
 
 The runnable encoding of this spine is `src/lessons/curriculum.ts`
 (`COURSE_SECTIONS`): built lessons are `lesson` refs; not-yet-authored lessons

@@ -7,7 +7,14 @@ target and a known failure mode.
 
 Pair it with:
 
-- [LESSON_DESIGN.md](./LESSON_DESIGN.md) — the six-phase flow
+- [LESSON_MASTERY_CONTRACT.md §3](./LESSON_MASTERY_CONTRACT.md#3-exercise-and-assessment-standard)
+  and [COURSE_MASTERY_STANDARD.md §6](./COURSE_MASTERY_STANDARD.md#6-assessment-architecture)
+  — the **governing** standard for *how much* assessment a lesson/course owes and
+  *how* patterns combine into an architecture. This document is the reusable
+  **pattern library** those standards draw from. The three validation levels used
+  here (recall / reconstruction / transfer) are the seed of the seven
+  [evidence levels E1–E7](./COURSE_MASTERY_STANDARD.md#5-evidence-levels).
+- [LESSON_DESIGN.md](./LESSON_DESIGN.md) — the block palette
   (Motivate → Watch → **Check** → **Explore** → **Practice** → Summarize) and the
   exercise/feedback bar.
 - [INSIGHT_VALIDATION_PROTOCOL.md](./INSIGHT_VALIDATION_PROTOCOL.md) — the

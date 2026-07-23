@@ -16,6 +16,7 @@ conceptual understanding every lesson must reach.
 Read alongside:
 
 - [LESSON_DESIGN.md](./LESSON_DESIGN.md) — the mechanical lesson standard.
+- [COURSE_MASTERY_STANDARD.md](./COURSE_MASTERY_STANDARD.md) / [LESSON_MASTERY_CONTRACT.md](./LESSON_MASTERY_CONTRACT.md) — the mastery-assurance standard. This document defines *what understanding means*; the mastery standard defines *how we verify the learner acquired it* (coverage, rigor, assessment, retention). The "enough depth" test in §17 is the pedagogical seed of the mastery gate's evidence levels.
 - [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md) — mathematical conventions (source of truth for geometry).
 - [ERROR_LOG.md](./ERROR_LOG.md) — known math/visualization failure modes.
 - [LESSON_CORRECTNESS_CHECKLIST.md](./LESSON_CORRECTNESS_CHECKLIST.md) — per-lesson sign-off.

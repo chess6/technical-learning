@@ -7,6 +7,8 @@ flow, visual language, interaction model, and quality bar.
 Practical enough to follow while building or modifying a lesson. Pair it with:
 
 - [INTERACTIVE_TEXTBOOK_VISION.md](./INTERACTIVE_TEXTBOOK_VISION.md) — educational philosophy (depth, mental models, worked examples).
+- [SEMANTIC_PAGE_GRAMMAR.md](./SEMANTIC_PAGE_GRAMMAR.md) — how a lesson *reads*: content-specific headings instead of a repeated generic phase rail, lesson openings, representation-appropriate teaching, the abstraction path. **This document owns the block mechanics; the page grammar owns what the learner actually sees.**
+- [COURSE_MASTERY_STANDARD.md](./COURSE_MASTERY_STANDARD.md) / [LESSON_MASTERY_CONTRACT.md](./LESSON_MASTERY_CONTRACT.md) — the mastery gate: coverage, rigor, practice, transfer, assessment, and retention a lesson must evidence (complements the Insight Discovery Gate).
 - [lesson-depth-pattern.md](./lesson-depth-pattern.md) — medium-agnostic pattern for deepening lessons (Lesson 4 reference).
 - [MATH_CORRECTNESS.md](./MATH_CORRECTNESS.md) — mathematical conventions (source of truth for geometry).
 - [ERROR_LOG.md](./ERROR_LOG.md) — known math/visualization failure modes.
@@ -30,7 +32,11 @@ Practical enough to follow while building or modifying a lesson. Pair it with:
 
 The product is:
 
-- a **visual-first** interactive mathematics course;
+- an interactive mathematics course that uses the **representation best suited to
+  the mathematical job** — visualization dominates for motion/geometry/invariance/
+  transformation, but prose, formal definitions, and proofs lead where they give
+  greater precision (see [SEMANTIC_PAGE_GRAMMAR.md](./SEMANTIC_PAGE_GRAMMAR.md) §5;
+  this refines the earlier blanket "visual-first" rule);
 - **intuition before notation**, while preserving rigor;
 - **guided explanation** followed by **learner-controlled exploration**;
 - **concise prose** supported by diagrams;
@@ -81,9 +87,17 @@ Available blocks (all optional, any order, repeatable):
 labels (e.g. `1 · MOTIVATE`) in the UI, and **do not number the blocks** — blocks
 can repeat and be reordered, so a fixed "1, 2, 3…" rail would misrepresent the
 structure. Use conversational headings, and give the learner a per-lesson **table
-of contents** to jump between blocks (see [Navigation](#navigation)):
+of contents** to jump between blocks (see [Navigation](#navigation)).
 
-| Block | Learner-facing title |
+> **The titles below are internal / analytics / accessibility naming, not a
+> mandatory visible heading on every lesson.** Per
+> [SEMANTIC_PAGE_GRAMMAR.md](./SEMANTIC_PAGE_GRAMMAR.md) §1, a reader should
+> infer a block's role from **content-specific headings and typography**, not
+> from a repeated generic phase rail. Use these generic titles for the table of
+> contents, block metadata, and a11y labels; prefer a heading in the lesson's own
+> words ("When does a system have no solution?") for the visible block heading.
+
+| Block | Internal / a11y title (not a mandatory visible heading) |
 | --- | --- |
 | Motivate | Think about it |
 | Watch | Watch the idea |
