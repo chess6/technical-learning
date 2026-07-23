@@ -77,29 +77,11 @@ Naming the obstacles from the gate's list:
 "Procedural overload" is real but is a *symptom* of the ordering, not the root
 obstacle. The difficulty is **structural and representational**, not semantic:
 these are abstract objects with no natural real-world goal to import, so I do
-**not** manufacture a themed analogy. The representational lever that *does* fit is
-a picture of the actual mathematics (below), and the honest 1c comparison here is
-not abstract-vs-story but **procedure-first vs structure-first ordering of the same
-mathematics** — an alternative presentation that preserves every mathematical
-relation, not a formal isomorphism.
-
-## 1c. Conventional vs alternative presentation — same mathematics, two discovery orders
-
-| | Procedure-first (conventional) | Structure-first (candidate order) |
-| --- | --- | --- |
-| First move | Row-reduce \(A\mathbf{x}=\mathbf{b}\); classify columns pivot/free | Take a system already known to have many solutions; exhibit **two** actual solutions |
-| Middle | Parameterize free variables; solve pivots | Notice their **difference is killed by \(A\)**; test that this always holds |
-| Decomposition | Re-group the finished answer into \(\mathbf{x}_p+\text{homog.}\) | The decomposition is **forced**: fix one solution, every other is it plus a null vector |
-| Learner's state | Has computed *an* answer; the structure is an afterthought | Predicts non-uniqueness and a further solution, *before* any formula |
-
-**Unchanged mathematically:** identical solution sets, identical
-\(\operatorname{Null}(A)\), identical role of free variables. **Easier to infer in
-the structure-first order:** *why* the pieces combine, and the consistency caveat
-(no \(\mathbf{x}_p\) exists ⇒ empty set — visible up front, not a special case
-bolted on). **Introduced knowledge:** none external — this is reorganization, not
-grounding. **Transfer:** the structure-first habit ("difference of two solutions is
-homogeneous") is exactly the move behind uniqueness/injectivity, rank–nullity, and
-later least-squares residuals, so it is likely to transfer.
+**not** manufacture a themed analogy. This flags the gate's step **1c** (compare
+conventional vs alternative presentations). Because the useful comparison is
+centered on the eventual winner (procedure-first vs structure-first order of the
+*same* mathematics), it is deferred to a **post-ranking comparison** placed after
+§1d — keeping candidate generation ahead of selection.
 
 ---
 
@@ -143,8 +125,9 @@ leads are clustered before ranking (see [clustering](#candidate-clustering)).
 ### C4. \(A\mathbf{x}=\mathbf{0}\) is the universal uniqueness detector — *this is what it's for*
 
 - Model change: "the homogeneous system is trivial/pointless" → "\(A\mathbf{x}=\mathbf{b}\)
-  is unique **for every** \(\mathbf{b}\) iff \(\operatorname{Null}(A)=\{\mathbf{0}\}\)
-  — so \(A\mathbf{x}=\mathbf{0}\) alone decides uniqueness for the whole family."
+  has **at most one** solution for every \(\mathbf{b}\) iff
+  \(\operatorname{Null}(A)=\{\mathbf{0}\}\) — so \(A\mathbf{x}=\mathbf{0}\) alone
+  decides **uniqueness (not existence)** for the whole family."
 - New capability: test uniqueness once by solving \(A\mathbf{x}=\mathbf{0}\),
   ignoring \(\mathbf{b}\).
 - Mechanism: structural + predictive.
@@ -366,17 +349,23 @@ Members: **C4** (uniqueness detector), **C8** (homogeneous always consistent),
 - Structural reveal: existence (is \(\mathbf{b}\) in the column span?) and
   multiplicity (what is \(\operatorname{Null}(A)\)?) are **independent axes** (C7);
   \(A\mathbf{x}=\mathbf{0}\) is always consistent, so it is *pure multiplicity* (C8);
-  and \(A\mathbf{x}=\mathbf{b}\) is unique **for every** \(\mathbf{b}\) iff
-  \(\operatorname{Null}(A)=\{\mathbf{0}\}\) (C4) — the homogeneous system decides
-  uniqueness for the whole family at once.
+  and every **consistent** \(A\mathbf{x}=\mathbf{b}\) has **exactly one** solution iff
+  \(\operatorname{Null}(A)=\{\mathbf{0}\}\) — equivalently, \(A\mathbf{x}=\mathbf{b}\)
+  has **at most one** solution for every \(\mathbf{b}\) iff
+  \(\operatorname{Null}(A)=\{\mathbf{0}\}\) (C4). So the homogeneous system decides
+  **uniqueness (not existence)** for the whole family at once; *exactly one solution
+  for every* \(\mathbf{b}\) additionally requires surjectivity (column span \(=\)
+  whole codomain).
 - Minimal derivation: a nonzero \(\mathbf{x}_h\) yields two solutions
   \(\mathbf{x}_p,\mathbf{x}_p+\mathbf{x}_h\) (non-unique); a trivial null space forces
-  \(\mathbf{x}_1=\mathbf{x}_2\) (unique). Consistency is a statement about
-  \(\mathbf{b}\) and the columns; multiplicity about \(\operatorname{Null}(A)\) alone.
-  \(A\mathbf{0}=\mathbf{0}\) always.
-- Visual/interactive: a 2×2 outcome grid (reachable? × trivial null space?) → {empty,
-  point, line, plane}; shrink \(\operatorname{Null}(A)\) to the origin and watch every
-  consistent system collapse to one solution.
+  \(\mathbf{x}_1=\mathbf{x}_2\) (**at most one** solution). Consistency is a statement
+  about \(\mathbf{b}\) and the columns; multiplicity about \(\operatorname{Null}(A)\)
+  alone. \(A\mathbf{0}=\mathbf{0}\) always.
+- Visual/interactive: a 2×2 outcome grid (reachable? × trivial/nontrivial null
+  space?) → {empty, a point, a **positive-dimensional affine set**}; the exact
+  dimension (line, plane, …) needs the **nullity** and belongs to Package 3. Shrink
+  \(\operatorname{Null}(A)\) to the origin and watch every consistent system collapse
+  to one solution.
 - New prediction: test uniqueness once by solving \(A\mathbf{x}=\mathbf{0}\), ignoring
   \(\mathbf{b}\); changing \(\mathbf{b}\) toggles existence but never the shape when
   the set is nonempty.
@@ -390,9 +379,9 @@ Members: **C4** (uniqueness detector), **C8** (homogeneous always consistent),
 purpose) and the deepest onward transfer; exact. **Why not primary:** it is more a
 *uniqueness* story than the solution-set breakthrough itself, and reads best as
 Package 1's **payoff** — "now that the set is \(\mathbf{x}_p+\operatorname{Null}(A)\),
-\(\operatorname{Null}(A)\) alone decides uniqueness for every reachable
-\(\mathbf{b}\)." C7's consistency axis is a mandatory downstream guardrail regardless
-of packaging.
+\(\operatorname{Null}(A)=\{\mathbf{0}\}\) makes every **consistent** \(\mathbf{b}\)'s
+solution set a single point." C7's consistency axis is a mandatory downstream
+guardrail regardless of packaging.
 
 ### Package 3 — "Free variables are coordinates on the null space" (procedure → structure, reading the set)
 
@@ -447,6 +436,32 @@ direction); exact (C9 corrected so the recipe set is an affine translate, only i
 direction null). **Why not primary:** heaviest prerequisite load — it needs Lesson
 4's reduced form to *see* free variables — so it is the deeper **reading/continuity**
 package, best sequenced *after* the Package 1 breakthrough rather than as the opening move.
+
+---
+
+## Post-ranking comparison (gate 1c) — winning package vs the conventional presentation
+
+This fulfills the gate's step 1c. It is placed **after** ranking on purpose: the
+comparison is centered on the winning package (Package 1's differencing move), so
+presenting it before the candidate search would preview the winner. The two columns
+are the **same mathematics** in two discovery orders — an alternative presentation
+that preserves every mathematical relation, not a formal isomorphism.
+
+| | Procedure-first (conventional) | Structure-first (Package 1) |
+| --- | --- | --- |
+| First move | Row-reduce \(A\mathbf{x}=\mathbf{b}\); classify columns pivot/free | Take a system already known to have many solutions; exhibit **two** actual solutions |
+| Middle | Parameterize free variables; solve pivots | Notice their **difference is killed by \(A\)**; test that this always holds |
+| Decomposition | Re-group the finished answer into \(\mathbf{x}_p+\text{homog.}\) | The decomposition is **forced**: fix one solution, every other is it plus a null vector |
+| Learner's state | Has computed *an* answer; the structure is an afterthought | Predicts non-uniqueness and a further solution, *before* any formula |
+
+**Unchanged mathematically:** identical solution sets, identical
+\(\operatorname{Null}(A)\), identical role of free variables. **Easier to infer in
+the structure-first order:** *why* the pieces combine, and the consistency caveat
+(no \(\mathbf{x}_p\) exists ⇒ empty set — visible up front, not a special case
+bolted on). **Introduced knowledge:** none external — this is reorganization, not
+grounding. **Transfer:** the structure-first habit ("difference of two solutions is
+homogeneous") is exactly the move behind uniqueness/injectivity, rank–nullity, and
+later least-squares residuals, so it is likely to transfer.
 
 ---
 
