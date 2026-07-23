@@ -79,36 +79,58 @@ module [implementation package](../../modules/systems-elimination/implementation
 
 ### 1d. Outcomes, each paired with evidence
 
-| Outcome (operational) | Dimension | Owner | Target level | Evidence item | Highest attainment required |
+Every core outcome's **required** level is *independently demonstrated* (E3+). The
+**current honest level** is the runtime behavior of the built item, audited against
+[`src/lessons/capabilities.ts`](#evidence-audit-runtime-checked) below — **not** the
+tier label the exercise carries.
+
+| Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Classify none/one/∞ for a given \(2\times2\) system *before* solving, from (reachable?)×(independent?) | D1/D5 | lesson | E3 | `sys-count-infinite`, `sys-count-none` (built) | independently demonstrated |
-| Solve a \(2\times2\) system by rows and confirm by the column blend | D3 | lesson | E3 | `sys-solve-unique` (built) — **but reuses worked numbers**; needs a **fresh-instance** drill | independently demonstrated |
-| Translate a system to \(A,\mathbf{b}\) and read the column-picture meaning | D4 | lesson | E3 | `sys-translate-columns`, `sys-column-reading` (built) | independently demonstrated |
-| State & justify: consistency ⇔ \(\mathbf{b}\in\operatorname{Col}(A)\) | D6 | lesson | E6 | **gap** — no proof-construction item (needs `self-check`) | independently demonstrated |
-| Prove the trichotomy (independent ⇒ unique ∀\(\mathbf{b}\); dependent ⇒ none/∞) | D6 | lesson | E6 | **gap** — `sys-explain-dependent` is an informal `prediction`, not a P3 proof-construction item | independently demonstrated |
-| Given dependent columns, characterize exactly which \(\mathbf{b}\) are inconsistent | D5/D7 | lesson | E4 | `sys-construct-inconsistent`, `sys-generalize-inconsistent` (built) | independently demonstrated |
-| Select rows-vs-columns unprompted on a mixed problem | D8 | **module** | E3 | module method-selection set (Gate 9) | independently demonstrated (Gate 9) |
-| Recognize \(A\mathbf{x}=\mathbf{b}\) structure inside an unfamiliar cumulative item | D9/D10 | **module** | E4/E5 | module cumulative set (Gate 9) | independently demonstrated (Gate 9) |
+| Classify none/one/∞ before solving | D1/D5 | lesson | `sys-count-infinite`, `sys-count-none` (multiple-choice) | **E1** — recognition on the lesson's *own* worked systems | E3 |
+| Solve a 2×2 by rows + confirm by columns | D3 | lesson | `sys-solve-unique` (vector) | **E2** — graded production, but reuses the worked numbers (near-copy) | E3 |
+| Translate a system to \(A,\mathbf{b}\); read the column meaning | D4 | lesson | `sys-translate-columns` (vector), `sys-column-reading` (MC) | **E2 / E1** — near-copy production / definition recognition | E3 |
+| Characterize which \(\mathbf{b}\) are inconsistent (dependent cols) | D5/D7 | lesson | `sys-generalize-inconsistent` (MC); `sys-construct-inconsistent` (**prediction**) | **E1–E2** — MC recognition; the "construct" item is a **reveal-only `prediction`** (auto-"correct", no answer captured) | E4 |
+| Justify consistency ⇔ \(\mathbf{b}\in\operatorname{Col}(A)\) | D6 | lesson | — (`sys-explain-dependent`, `sys-counterexample-uniqueness` are **prediction**) | **E1** — reveal-only exposure; no graded/scored justification | E6 |
+| Prove the trichotomy | D6 | lesson | — | **none** — no proof item; a `self-check` would be self-marked, **not** proof evidence | E6 |
+| Select rows-vs-columns unprompted | D8 | **module** | module set (not built) | not built | E3 (Gate 9) |
+| Recognize \(A\mathbf{x}=\mathbf{b}\) in a cumulative item | D9/D10 | **module** | module set (not built) | not built | E4/E5 (Gate 9) |
+
+#### Evidence audit (runtime-checked)
+
+Rules applied (from [mastery-standard §5](../../../../authoring/mastery-standard.md#5-evidence-levels)):
+ordinary `prediction` auto-returns `correct: true` and captures no answer → **E1
+exposure, never demonstration**; same-example multiple-choice is **E1 recognition**;
+near-copy graded production (worked numbers) is **E2 reproduction**; **E3+ requires a
+fresh, unaided instance**; `self-check` is self-marked (not human-scored) → **not
+proof evidence**. Result for L3: **highest genuine level is E2**; every item is
+recognition-only, reveal-only, or near-copy. **No lesson-owned outcome is
+independently demonstrated.**
 
 ### 1e. Coverage-status classification (required vs reached)
 
-- **Independently demonstrated (built):** classification of the count; translate to
-  \(A,\mathbf{b}\); characterize inconsistent \(\mathbf{b}\).
-- **Practiced but not yet on a fresh instance:** row-solve + column-check (drills
-  reuse the running numbers) — **reaches "practiced," required "independently
-  demonstrated."** Gap.
-- **Taught only (P3 proof depth not yet demonstrated by learner):** the two proof
-  outcomes (consistency⇔span; trichotomy) are *presented* with "why" layers but have
-  no learner proof-construction item — **reaches "taught," required "independently
-  demonstrated."** Gap (rejection #5/#8 under P3).
+Honest ceiling under the runtime audit: **E1–E2. No lesson-owned core outcome
+reaches "independently demonstrated" (E3+).**
+
+- **Taught (level 1):** all listed content is presented.
+- **Practiced (level 2) — the ceiling actually reached:** row-solve/column-check and
+  translate, but only on the running numbers (E2 near-copy).
+- **Reveal-only (not evidence):** `sys-construct-inconsistent`,
+  `sys-counterexample-uniqueness`, `sys-explain-dependent` are `prediction` items
+  (E1 exposure); previously mislabeled E3/E4.
+- **Recognition-only:** classification and column-reading MC are E1 on the lesson's
+  own examples.
+- **No proof evidence:** the two D6 outcomes have no graded/scored justification;
+  `self-check` cannot supply E6.
 - **Module-owned (planned Gate 9):** method selection (D8); cumulative recognition.
 
 ### 1f. Connections, assessment, retention
 - **Cumulative connections (D10):** fires L1 basis ⇔ unique coordinates as "unique
   solution for every \(\mathbf{b}\)"; fires L2 columns rule as the column picture.
-- **Assessment evidence (summary):** 2 Check (MC classify), Explore (drag
-  \(\mathbf{b}\)), Practice drills + transfer/prediction items. Does not merely
-  repeat instruction, **except** the row-solve drill reuses the worked numbers.
+- **Assessment evidence (summary):** 2 Check (same-example MC classify), Explore (drag
+  \(\mathbf{b}\)), Practice = near-copy row-solve/translate (E2) + several **reveal-only
+  `prediction`** items (E1). **Most of the surface either recognizes or re-runs the
+  taught example** — the honest ceiling is E1–E2 (see the [evidence
+  audit](#evidence-audit-runtime-checked)).
 - **Delayed-retention requirement (D12):** the trichotomy and consistency⇔span must
   resurface in the module spaced set and again when L7 (determinant) and L8 (column
   space) build on them.
@@ -131,27 +153,33 @@ module [implementation package](../../modules/systems-elimination/implementation
 ## 6. Acceptance record (Gate 8)
 
 Gate 8 certifies **this lesson** on its **lesson-owned** outcomes. Honest status of
-the current build under the **P3 override**:
+the current build under the **P3 override**, corrected against the runtime evidence
+audit ([§1d](#1d-outcomes-each-paired-with-evidence)):
 
-- [x] Insight Contract linked and `PASS`; primary insight preserved in meaning.
+- [x] Insight Contract linked and `PASS` (trichotomy now derived without the
+      determinant); primary insight preserved in meaning.
 - [x] Every field in §1 filled; upstream artifacts linked, not restated.
 - [x] Every outcome operational, marked lesson/module-owned, paired with evidence.
 - [ ] Every **lesson-owned** core outcome reaches **independently demonstrated with
-      real in-lesson evidence** — **NOT YET**: (i) row-solve/column-check has no
-      fresh-instance E3 drill; (ii) the two D6 proof outcomes have no learner
-      proof-construction item required by P3.
-- [x] Every **module-owned** core outcome recorded as a Gate-9 obligation (D8
-      selection; D10 cumulative), not claimed mastered.
-- [ ] Assessment set matches §3c — **NOT YET** under P3: missing a proof-construction
-      item; the fresh-instance procedural item is missing.
+      real in-lesson evidence** — **FAILS**: the honest ceiling is **E2**. Every item
+      is same-example recognition (E1), reveal-only `prediction` (E1), or near-copy
+      production (E2). **No E3+ evidence exists.**
+- [x] Every **module-owned** core outcome recorded as a Gate-9 obligation (D8; D10).
+- [ ] Assessment set matches §3c — **FAILS**: no fresh-instance E3 item; no
+      proof item; three of the "practice" items are reveal-only predictions.
 - [x] Backward bridge + forward edge present; ≥1 cumulative connection (D10).
 - [x] Delayed-retention hook (D12) recorded.
 - [x] Correctness gate passed (built lesson has passing math/tests).
-- [ ] No rejection condition holds — **currently trips #3 (near-copy drill),
-      #5/#8 (asserted theorem / lesson-owned proof outcome at "taught" under P3)**.
-- [ ] Profile-dependent items (D6 proof depth) match the declared profile — **NOT
-      YET** (P3 proof construction absent).
+- [ ] No rejection condition holds — **trips #3 (near-copy / reveal-only practice,
+      no fresh E3), #5 (theorems asserted; no justification evidence), #7 (graded
+      items re-run instruction / are reveal-only), #8 (lesson-owned outcomes stall at
+      E1–E2)**.
+- [ ] Profile-dependent items (D6 proof depth) match the declared profile — **FAILS**
+      (no proof evidence of any kind).
 
-**Verdict:** the lesson is **accepted for P1/P2 content coverage** but **does not yet
-meet the P3 override**. Remaining **lesson-owned** gaps → implementation package
-items **B (proof construction)** and **C (fresh drills)**. Module-owned outcomes → Gate 9.
+**Corrected verdict: Gate 8 NOT PASSED.** Earlier acceptance "for P1/P2 coverage" was
+**inflated** — recognition/reveal/near-copy items do not evidence independent
+demonstration at any profile. The lesson currently supports **exposure and
+reproduction (E1–E2) only**. Remaining **lesson-owned** work → implementation-package
+items **B–E** (fresh E3 production, transfer/construction, proof under human scoring,
+and de-inflated Checks). Module-owned outcomes → Gate 9.

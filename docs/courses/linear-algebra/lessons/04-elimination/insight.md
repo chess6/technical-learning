@@ -169,7 +169,12 @@ concept.
   - "Elimination is a bag of arithmetic tricks." (Each step is one reversible
     rewrite whose correctness is guaranteed.)
   - "Scaling a row by \(0\) is fine." (It erases a constraint; irreversible.)
-  - "Adding a row to itself is an elementary move." (It is a disguised scaling.)
+  - "Adding a row to itself is *illegal*." (Not so: \(R_i\to R_i+R_i=2R_i\) is
+    scaling by \(2\neq0\) — a legal, reversible move that preserves the solution set
+    over \(\mathbb{R}\). The row-*replacement* form \(R_i\to R_i+kR_j\) is *defined*
+    with \(i\neq j\) only to keep the three elementary types distinct, **not** because
+    self-addition changes the answer. Contrast the genuinely illegal
+    \(R_i\to 0\cdot R_i\).)
   - "The triangular system is an approximation/shortcut." (It is the *same* system.)
   - "The multiplier is \(+(\text{entry})/(\text{pivot})\)." (Sign flips: subtract.)
 
@@ -214,8 +219,8 @@ and use to diagnose illegal moves, and it draws that proof as the fixed pivot po
 | Contract author | Cursor agent (AI) | Complete (retrospective) |
 | Mathematical reviewer | Cursor agent (AI) — **not independent** | Self-review; Audit A passed. Consistent with built `src/lessons/elimination.ts` (whose `thm-invariance` proof matches §7). |
 | Pedagogical reviewer | Cursor agent (AI) — **not independent** | Self-review; chain items 1–14 present. |
-| User / domain-owner approval | Repository owner | Standing authorization to proceed on PASS (docs-only); independent human sign-off advisable. |
-| Outstanding concerns | — | None blocking. Reviews self-performed. |
+| User / domain-owner approval | Repository owner | **Pending review.** A docs-only authorization to run the retrospective is **not** substantive owner approval of this contract; independent human sign-off is required before any readiness/mastery claim or promotion. |
+| Outstanding concerns | — | Math/pedagogical reviews are self-performed (not independent); owner approval pending. |
 
 ---
 

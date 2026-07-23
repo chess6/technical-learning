@@ -22,23 +22,63 @@ References the lesson mastery contracts; does not restate them.
   structure and row-op invariance), on top of the course primary **P2** and the
   research-bridge overlay — from
   [course-spine §0](../../course-spine.md#0-declared-course-target-gate-1). So this
-  plan must evidence **proof competence (P3)**, **applied \(\mathbb{R}^n\) fluency
-  (P2)**, and **timed performance (S3)**, with enrichment kept off the exam bar.
+  plan must evidence **proof competence (P3)**; a **concrete multi-variable applied
+  slice (P2)** — fresh 3×3 / rectangular elimination and complete parametric solution
+  sets; and **timed performance (S3)**, with enrichment kept off the exam bar. It does
+  **not** claim general \(\mathbb{R}^n\) null-space / rank–nullity fluency — that is
+  owned by the **structure module (L8/L9)** and is only cross-referenced here.
 
-## Module-owned outcomes to discharge here
-Pulled from the lessons' mastery contracts (their **module-owned** rows:
-[L3](../../lessons/03-systems/mastery-contract.md#1d-outcomes-each-paired-with-evidence),
+## Outcomes handled here — two distinct ownership classes
+
+The module assessment carries two kinds of outcome that must **not** be conflated:
+they have different owners and different consequences for readiness. Pulled from the
+lessons' mastery contracts
+([L3](../../lessons/03-systems/mastery-contract.md#1d-outcomes-each-paired-with-evidence),
 [L4](../../lessons/04-elimination/mastery-contract.md#1d-outcomes-each-paired-with-evidence),
 [L5](../../lessons/05-solution-sets/mastery-contract.md#1d-outcomes-each-paired-with-evidence)).
 
-| Outcome (operational) | From lesson | Dimension | Target level | Assessment item | Result |
+### Class A — genuinely module-owned (deferred from lessons; the *module* is the owner)
+
+Outcomes a single lesson cannot own. The lessons correctly defer them, and Gate 9
+**discharges** them here with real evidence.
+
+| Outcome (operational) | From lesson | Dimension | Target | Item | Result |
 | --- | --- | --- | --- | --- | --- |
 | Select rows / columns / elimination unprompted for a given system | L3, L4 | D8 | E3 | `mod-select-method` | planned |
-| Given an unfamiliar system, classify none/one/∞ and justify from reachability × independence | L3 | D9 | E4 | `mod-transfer-classify` | planned |
-| Solve a system by elimination, then express the full solution set (combine L4 + L5) | L4, L5 | D10 | E5 | `mod-cumulative-elim-solset` | planned |
-| Prove row-op invariance **and** solution-set structure on a fresh statement | L4, L5 | D6 | E6 | `mod-proof-invariance`, `mod-proof-structure` | planned |
-| Retrieve the trichotomy / uniqueness-≠-reachability after a delay | L3, L5 | D12 | E3 | `mod-spaced-*` (see below) | planned |
+| Classify an **unfamiliar** system none/one/∞ and justify (reachability × independence) | L3 | D9 | E4 | `mod-transfer-classify` | planned |
+| Describe a **fresh** solution set via free-variable count (concrete dims) | L5 | D9 | E4 | `mod-transfer-solset-fresh` | planned |
+| Combine elimination + solution-set structure across lessons | L4, L5 | D10 | E5 | `mod-cumulative-elim-solset` | planned |
 | Complete the module under time pressure with deferred feedback | all | D11 | E3–E5 | `mod-timed-mock` | planned |
+| *(enrichment, off the exam bar)* transfer "general = particular + homogeneous" to a new operator | — | D14 | E7 | `mod-enrich-ode` | planned |
+
+Cross-reference (**not** dischargeable here): general \(\mathbb{R}^n\) null space &
+rank–nullity is owned by the **structure module (L8/L9)** — see the L5 contract's
+[deferral](../../lessons/05-solution-sets/mastery-contract.md#1g-correctness--scope).
+
+### Class B — cumulative reassessment / retention of **lesson-owned** outcomes (ownership stays with the lesson)
+
+These are **lesson-owned**. The module does **not** own them and **cannot substitute
+for a lesson's Gate 8**: each must first be *independently demonstrated in-lesson*
+(implementation-package items B–E). The module then reassesses them on fresh
+instances, integrates them, provides the **human-scored** surface for proofs, and
+re-fires them after a delay.
+
+> **Currently blocked.** Per the corrected evidence audit, **none** of these is yet
+> independently demonstrated in any lesson (honest ceiling E1–E2). Reassessing or
+> claiming retention of an outcome the learner never demonstrated would re-introduce
+> exactly the inflation this correction removes. Class B is **blocked → planned**: it
+> becomes schedulable only after the owning lesson reaches Gate 8 with real E3+/E6
+> evidence.
+
+| Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
+| --- | --- | --- | --- | --- | --- |
+| Elimination → triangular + back-sub on a fresh system | L4 | D3 | fresh reassessment + retention | `mod-fluency-elim` | blocked → planned |
+| Write a complete parametric solution set (fresh) | L5 | D3 | reassessment + integration | `mod-fluency-solset` | blocked → planned |
+| Read dimension from free-variable count (fresh) | L5 | D3/D4 | retention | `mod-fluency-dim` | blocked → planned |
+| Prove row-op invariance (both directions) | L4 | D6 | human-scored proof surface | `mod-proof-invariance` | blocked → planned |
+| Prove solution-set structure (both inclusions) | L5 | D6 | human-scored proof surface | `mod-proof-structure` | blocked → planned |
+| Justify the trichotomy **without the determinant** | L3 | D6 | human-scored proof surface | `mod-proof-trichotomy` | blocked → planned |
+| Retrieve trichotomy / uniqueness-≠-reachability / row-op legality after a delay | L3–L5 | D12 | spaced retention | `mod-spaced-*` | blocked → planned |
 
 ## Abstraction-return deferrals discharged here
 Any accountable abstraction-return whose **owner is this module**
@@ -57,21 +97,35 @@ Any accountable abstraction-return whose **owner is this module**
 
 Covers the seven areas the module must assess under the declared profile:
 
-- **Computational fluency (D3, P2).** Fresh-instance items with *different numbers*
-  than the lessons' running example: (i) solve a \(2\times2\) system by elimination
-  (grade the multiplier + triangular row, not just \((x,y)\)); (ii) write the full
-  solution set of a fresh consistent dependent system; (iii) count free variables →
-  dimension for a fresh \(A\). Items `mod-fluency-elim`, `mod-fluency-solset`,
-  `mod-fluency-dim`.
+- **Computational fluency (D3, 2×2 baseline).** Fresh-instance items with *different
+  numbers* than the lessons' running example: (i) solve a \(2\times2\) system by
+  elimination (grade the multiplier + triangular row, not just \((x,y)\)); (ii) write
+  the full solution set of a fresh consistent dependent system; (iii) count free
+  variables → dimension for a fresh \(A\). Items `mod-fluency-elim`,
+  `mod-fluency-solset`, `mod-fluency-dim`.
+- **Applied multi-variable slice (D3, P2 — executable).** At least one **fresh 3×3 or
+  rectangular** (e.g. 2×3 or 3×4) system: run elimination to reduced/triangular form,
+  identify the pivot and **free** variables, and write the **complete parametric
+  solution set** \(\{\mathbf{x}_p+\sum t_i\mathbf{v}_i\}\) — including an inconsistent
+  variant that must terminate in a contradiction row. This makes the P2 applied claim
+  *concrete and checkable*. Items `mod-p2-applied-3x3` (square) and
+  `mod-p2-applied-rect` (rectangular). **Scope guard:** these exercise concrete
+  multi-variable elimination and parameterization only; they do **not** evidence
+  general \(\mathbb{R}^n\) null-space theory or rank–nullity, which stay owned by
+  L8/L9.
 - **Method selection (D8).** Problems that do **not** name the method: a mix where
   the efficient path is sometimes the column/reachability check (classify without
   solving), sometimes elimination. `mod-select-method` (interleaved).
-- **Proof competence (D6, P3).** Learner-constructed proofs on fresh statements,
-  self-check + model answer + rubric (human-scored in the pilot): row-op invariance
-  (both directions, via reversibility) and solution-set structure (both inclusions,
-  with the consistency hypothesis used). `mod-proof-invariance`, `mod-proof-structure`.
-  A **missing-assumption** item: "which hypothesis makes
-  \(\operatorname{Sol}=\mathbf{x}_p+\operatorname{Null}(A)\) hold?" `mod-proof-hyp`.
+- **Proof competence (D6, P3) — human-scored.** Learner-constructed proofs on fresh
+  statements: row-op invariance (both directions, via reversibility), solution-set
+  structure (both inclusions, consistency hypothesis used), and the trichotomy
+  (independence/basis, **without** the determinant). `mod-proof-invariance`,
+  `mod-proof-structure`, `mod-proof-trichotomy`. **The app's `self-check` is
+  self-marked and does not score correctness** ([capabilities.ts](../../../../../src/lessons/capabilities.ts));
+  E6 evidence therefore requires **human scoring** against the rubric (validation
+  pilot / instructor), not the in-app self-mark. A **missing-assumption** item: "which
+  hypothesis makes \(\operatorname{Sol}=\mathbf{x}_p+\operatorname{Null}(A)\) hold?"
+  `mod-proof-hyp`.
 - **Unfamiliar transfer (D9).** An untelegraphed system/setup the learner has not
   seen: classify + justify (`mod-transfer-classify`); describe a fresh solution set
   (`mod-transfer-solset-fresh`). *(Enrichment/overlay, off the exam bar:* the
@@ -94,15 +148,20 @@ Covers the seven areas the module must assess under the declared profile:
   system. `mod-error-diagnose`.
 
 ## Results & readiness
-- **Module-owned outcomes discharged:** `0 / 6` with real evidence (**planned** — no
-  assessment surface built yet).
+- **Class A (module-owned) discharged:** `0 / 5` core with real evidence (**planned** —
+  no assessment surface built yet); enrichment `mod-enrich-ode` separate, off the bar.
+- **Class B (lesson-owned reassessment):** `blocked` — the owning lessons have **no
+  E3+/E6 in-lesson evidence yet** (corrected Gate 8: all three NOT PASSED), so their
+  module reassessment/retention cannot begin.
 - **Delayed-retention verified:** no (not yet administered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
-  **none yet.** The built module currently supports at most P1 S1–S3 in 2D
-  ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)); P2 applied
-  fluency, the P3 proof bar, and S3 timed performance are **not** yet evidenced. No
-  "module mastered / exam ready / proof-ready" claim may be made until this plan is
-  built and run.
+  **none.** The corrected audit shows the built lessons evidence only **exposure and
+  reproduction (E1–E2)** — recognition, reveal-only prediction, and near-copy items;
+  there is **no** independent-performance (E3+), transfer (E4), proof (E6), applied
+  multi-variable (P2), or timed (S3) evidence yet
+  ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)). No "module
+  mastered / exam ready / proof-ready" claim may be made until the in-lesson upgrades
+  (implementation-package B–E) land **and** this plan is built and run.
 
 Feeds the course-level benchmark validation (`validation.md` in this directory) /
 Gate 10, to be created once real results exist.

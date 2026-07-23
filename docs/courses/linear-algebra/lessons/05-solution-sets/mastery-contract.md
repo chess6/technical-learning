@@ -79,43 +79,56 @@ module [implementation package](../../modules/systems-elimination/implementation
 
 ### 1d. Outcomes, each paired with evidence
 
-| Outcome (operational) | Dimension | Owner | Target level | Evidence item | Highest attainment required |
+Every core outcome's **required** level is *independently demonstrated* (E3+); the
+**current honest level** is the runtime behavior audited against
+[`src/lessons/capabilities.ts`](#evidence-audit-runtime-checked) — not the tier label.
+
+| Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Show the difference of two solutions lies in \(\operatorname{Null}(A)\) | D5/D6 | lesson | E3 | `sol-difference-homogeneous` (built) | independently demonstrated |
-| Generate a third solution from a known one without re-solving | D3 | lesson | E3 | `sol-generate-third` (built) — **reuses worked numbers**; needs a **fresh-instance** item | independently demonstrated |
-| Write the complete solution set parametrically; name where direction & location come from | D3/D4 | lesson | E3/E4 | `sol-whole-set` (built, prediction) | independently demonstrated |
-| Distinguish one-difference (≥ a line) from whole null space (full shape/dimension) | D5/D7 | lesson | E4 | `sol-nullity-caveat` (built) | independently demonstrated |
-| Separate existence (reachability) from multiplicity (trivial null space) | D5 | lesson | E3 | `sol-existence-vs-multiplicity` (built) | independently demonstrated |
-| Refuse the decomposition for an inconsistent system (∅) | D7 | lesson | E4 | `sol-inconsistent-empty` (built, prediction) | independently demonstrated |
-| Read dimension off the free-variable count | D3/D4 | lesson | E3 | `sol-free-variables-dimension` (built) | independently demonstrated |
-| Prove the structure theorem (both inclusions) and null-space closure | D6 | lesson | E6 | **gap** — proofs are presented, no learner proof-construction (`self-check`) item | independently demonstrated |
-| Operate on a **general \(\mathbb{R}^n\)** null space / rank–nullity (abstraction return beyond 2D) | D4/D9 | **module** | E4/E5 | deferred — owner **structure module** L8/L9 (see §1g) | independently demonstrated (Gate 9 / structure module) |
-| Combine elimination (L4) + solution-set structure on a mixed cumulative item | D10 | **module** | E5 | module cumulative set (Gate 9) | independently demonstrated (Gate 9) |
-| Transfer the "general = particular + homogeneous" pattern to an unfamiliar operator (e.g. linear ODE/recurrence) | D9 | **module** | E4 | module transfer/enrichment item | independently demonstrated (Gate 9) / D14 if enrichment |
+| Show the difference of two solutions lies in \(\operatorname{Null}(A)\) | D5/D6 | lesson | `sol-difference-homogeneous` (multiple-choice) | **E1** — recognition | E3 |
+| Generate a third solution without re-solving | D3 | lesson | `sol-generate-third` (vector) | **E2** — graded production, but reuses the worked numbers *and hands over the null vector* (near-copy) | E3 |
+| Write the complete solution set parametrically; name direction & location | D3/D4 | lesson | `sol-whole-set` (**prediction**) | **E1** — reveal-only exposure (auto-"correct", no answer captured) | E3/E4 |
+| Distinguish one-difference (≥ a line) from the whole null space | D5/D7 | lesson | `sol-nullity-caveat` (multiple-choice) | **E1–E2** — recognition (the \(A=\mathbf{0}\) scenario is fresh-ish but still MC) | E4 |
+| Separate existence (reachability) from multiplicity (trivial null space) | D5 | lesson | `sol-existence-vs-multiplicity` (multiple-choice) | **E1** — recognition | E3 |
+| Refuse the decomposition for an inconsistent system (∅) | D7 | lesson | `sol-inconsistent-empty` (**prediction**) | **E1** — reveal-only exposure | E4 |
+| Read dimension off the free-variable count | D3/D4 | lesson | `sol-free-variables-dimension` (multiple-choice) | **E1–E2** — recognition | E3 |
+| Prove the structure theorem (both inclusions) + null-space closure | D6 | lesson | — | **none** — proofs are *presented* only; no graded/scored item; `self-check` would be self-marked | E6 |
+| Operate on a **general \(\mathbb{R}^n\)** null space / rank–nullity | D4/D9 | **module** | deferred → structure module L8/L9 (see §1g) | not built | E4/E5 (structure module) |
+| Combine elimination (L4) + solution-set structure (mixed cumulative) | D10 | **module** | module set (not built) | not built | E5 (Gate 9) |
+| Transfer "general = particular + homogeneous" to an unfamiliar operator | D9/D14 | **module** | module set (not built) | not built | E4 (Gate 9) / D14 enrichment |
+
+#### Evidence audit (runtime-checked)
+
+`prediction` items (`sol-whole-set`, `sol-inconsistent-empty`) auto-return `correct`
+and capture no answer ⇒ **E1 exposure**, not the E3/E4 their tiers claimed. The
+multiple-choice items are **E1 recognition**. `sol-generate-third` is the only graded
+production and it is near-copy (worked numbers, null vector supplied) ⇒ **E2**. No
+proof item exists; a `self-check` would be self-marked, not proof. **Result for L5:
+honest ceiling E2; no lesson-owned outcome independently demonstrated; no proof
+evidence.**
 
 ### 1e. Coverage-status classification (required vs reached)
-- **Independently demonstrated (built):** difference→null; whole set parametrically;
-  nullity caveat; existence-vs-multiplicity; inconsistent → ∅; free-variable
-  dimension.
-- **Practiced but not on a fresh instance:** generate-third and the parametric write
-  reuse the running numbers — **required "independently demonstrated"** needs a
-  fresh-instance item. Gap.
-- **Taught only (P3 proof depth not demonstrated by learner):** structure theorem
-  (both inclusions) and null-space closure are *presented* but have no learner
-  proof-construction item — **reaches "taught," required "independently
-  demonstrated"** under P3. Gap (rejection #5/#8).
+Honest ceiling under the runtime audit: **E1–E2. No lesson-owned core outcome reaches
+"independently demonstrated" (E3+).**
+- **Practiced (level 2) — ceiling reached:** `sol-generate-third` only, and near-copy.
+- **Reveal-only (not evidence):** `sol-whole-set`, `sol-inconsistent-empty`
+  (`prediction`, E1) — previously mislabeled E3/E4.
+- **Recognition-only:** the four multiple-choice items (E1–E2).
+- **No proof evidence:** structure theorem + null-space closure are presented but
+  never graded/scored.
 - **Module-owned (planned):** general \(\mathbb{R}^n\) null space / rank–nullity
-  (abstraction return); cumulative L4+L5; ODE/recurrence transfer (may be D14
-  enrichment).
+  (abstraction return, owner structure module); cumulative L4+L5; ODE/recurrence
+  transfer (D14 enrichment).
 
 ### 1f. Connections, assessment, retention
 - **Cumulative connections (D10):** sharpens L3's trichotomy (∞ ⇒
   \(\mathbf{x}_p+\operatorname{Null}(A)\)); uses L4 elimination for the free-variable
   basis; uses L1 subspace closure.
-- **Assessment evidence (summary):** 1 Check; Explore (sliders = null directions);
-  Practice = generate / describe / caveat / existence-vs-multiplicity / inconsistent /
-  dimension. Does not repeat instruction, **except** procedural items reuse the
-  running numbers.
+- **Assessment evidence (summary):** 1 Check (recognition, E1); Explore (sliders =
+  null directions); Practice = one near-copy `generate` (E2) + four recognition MC
+  (E1–E2) + two **reveal-only `prediction`** items (`sol-whole-set`,
+  `sol-inconsistent-empty`, E1). Honest ceiling E2 (see the [evidence
+  audit](#evidence-audit-runtime-checked)).
 - **Delayed-retention requirement (D12):** \(\mathbf{x}_p+\operatorname{Null}(A)\),
   affine-vs-subspace, and uniqueness-≠-reachability must resurface in the module
   spaced set and again in L8 (column vs null space) and L9 (rank–nullity).
@@ -146,27 +159,34 @@ module [implementation package](../../modules/systems-elimination/implementation
 
 ## 6. Acceptance record (Gate 8)
 
-Honest status of the current build under the **P3 override**:
+Honest status of the current build under the **P3 override**, corrected against the
+runtime evidence audit ([§1d](#1d-outcomes-each-paired-with-evidence)):
 
 - [x] Insight Contract linked and `PASS`; primary insight preserved in meaning.
 - [x] Every field in §1 filled; upstream artifacts linked, not restated.
 - [x] Every outcome operational, marked lesson/module-owned, paired with evidence.
 - [ ] Every **lesson-owned** core outcome reaches **independently demonstrated with
-      real in-lesson evidence** — **NOT YET**: (i) procedural items lack a fresh
-      instance; (ii) the D6 proof outcome has no learner proof-construction item.
+      real in-lesson evidence** — **FAILS**: honest ceiling **E2**. Two "transfer"
+      items are reveal-only `prediction` (E1); the rest are MC recognition (E1) or one
+      near-copy production (E2). **No E3+ evidence.**
 - [x] Every **module-owned** core outcome recorded as a Gate-9 obligation (D10; ℝⁿ
       abstraction return; ODE transfer), not claimed mastered.
-- [ ] Assessment set matches §3c — **NOT YET** under P3: missing a proof-construction
-      item and a fresh-instance procedural item.
+- [ ] Assessment set matches §3c — **FAILS** under P3: no proof item, no fresh-instance
+      procedural item, and two Practice items are reveal-only predictions.
 - [x] Backward bridge + forward edge present; ≥1 cumulative connection (D10).
 - [x] Delayed-retention hook (D12) recorded.
 - [x] Correctness gate passed (built lesson has passing math/tests, incl. nullity-2).
 - [x] Abstraction return **accountably deferred** (owner/destination/evidence logged) — #4 not tripped.
-- [ ] No rejection condition holds — **currently trips #3 (near-copy drills),
-      #5/#8 (proof outcome at "taught" under P3)**.
-- [ ] Profile-dependent items (D6 proof depth) match P3 — **NOT YET**.
+- [ ] No rejection condition holds — **trips #3 (near-copy / reveal-only, no fresh E3),
+      #5 (theorems asserted; no justification evidence), #7 (reveal-only items), #8
+      (lesson-owned outcomes stall at E1–E2)**.
+- [ ] Profile-dependent items (D6 proof depth) match P3 — **FAILS** (no proof evidence).
 
-**Verdict:** rich coverage and an accountable abstraction-return deferral, but **does
-not yet meet the P3 override**. Remaining **lesson-owned** gaps → implementation
-package items **B (proof construction)** and **C (fresh drills)**. Module-owned
-outcomes (ℝⁿ return, cumulative, transfer) → Gate 9 / structure module.
+**Corrected verdict: Gate 8 NOT PASSED.** The lesson's *content* is rich and its
+abstraction-return deferral is accountable, but its **evidence** is E1–E2 only: two
+"transfer" items are reveal-only predictions, the rest recognition or near-copy, and
+the proofs are presented but never scored. Remaining **lesson-owned** work →
+implementation-package items **B** (fresh E3 production), **C** (de-inflate the
+reveal-only Checks), **D** (fresh E4 transfer/construction), **E** (human-scored
+proof). Module-owned outcomes (ℝⁿ return, cumulative, transfer) → Gate 9 / structure
+module.

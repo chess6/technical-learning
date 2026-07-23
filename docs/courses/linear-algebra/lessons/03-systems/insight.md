@@ -86,12 +86,21 @@ therefore decided by two independent switches: (is \(\mathbf{b}\) reachable?) ×
 **Consistency.** \(A\mathbf{x}=\mathbf{b}\) is consistent \(\iff\)
 \(\mathbf{b}\in\operatorname{span}\{\mathbf{a}_1,\dots,\mathbf{a}_n\}=\operatorname{Col}(A)\),
 directly from \(A\mathbf{x}=\sum x_i\mathbf{a}_i\).
-**Trichotomy (\(2\times2\)).** If \(\det A\neq0\) (columns independent), the map is
-a bijection of \(\mathbb{R}^2\), so exactly one solution for every \(\mathbf{b}\).
-If \(\det A=0\) (dependent), \(\operatorname{Col}(A)\) is a line \(L\): for
-\(\mathbf{b}\notin L\), none; for \(\mathbf{b}\in L\), the solution set is a line
-(\(\{\mathbf{x}_0+t\mathbf{d}\}\) with \(\mathbf{d}\) the dependency), hence
-infinitely many. (The full "why infinitely many is a line" is *proved* in L5.)
+**Trichotomy (\(2\times2\)), derived from independence — *not* the determinant.**
+Suppose the columns \(\mathbf{a}_1,\mathbf{a}_2\) are **independent**. Two
+independent vectors in \(\mathbb{R}^2\) span the plane and form a **basis**, so every
+\(\mathbf{b}\) has a *unique* representation \(\mathbf{b}=x\mathbf{a}_1+y\mathbf{a}_2\)
+(basis ⇔ unique coordinates, L1) — exactly one solution for every \(\mathbf{b}\).
+Suppose instead the columns are **dependent**: one is a scalar multiple of the other
+(\(\mathbf{a}_2=c\,\mathbf{a}_1\)), so \(\operatorname{Col}(A)\) is a single line
+\(L\) through the origin. If \(\mathbf{b}\notin L\), no combination reaches it —
+**none**. If \(\mathbf{b}\in L\), a combination exists and is **not** unique: for any
+solution \((x,y)\), the pairs \((x+ct,\,y-t)\) give the identical combination for
+every \(t\in\mathbb{R}\), so there are **infinitely many**. "Never exactly two"
+follows: the dependent-consistent case already forces a whole one-parameter family.
+(That this infinite set is exactly an *affine line* is proved in L5.) The
+**determinant is not used** in this derivation — it is introduced later (L7) as the
+single number that *detects* the independent/dependent switch the trichotomy turns on.
 
 ### 8. Equivalence to the original object
 The row set \(\{(x,y):x+3y=-1,\ 2x-y=5\}\), the intersection point, and the column
@@ -222,8 +231,8 @@ grinding, and unifies four ideas the standard order leaves scattered.
 | Contract author | Cursor agent (AI) | Complete (retrospective) |
 | Mathematical reviewer | Cursor agent (AI) — **not independent** | Self-review; Audit A passed. Consistent with built `src/lessons/systems.ts` and its tests. |
 | Pedagogical reviewer | Cursor agent (AI) — **not independent** | Self-review; chain items 1–14 present. |
-| User / domain-owner approval | Repository owner | Standing authorization to proceed on PASS (docs-only); independent human sign-off advisable. |
-| Outstanding concerns | — | None blocking. Reviews self-performed. |
+| User / domain-owner approval | Repository owner | **Pending review.** A docs-only authorization to run the retrospective is **not** substantive owner approval of this contract; independent human sign-off is required before any readiness/mastery claim or promotion. |
+| Outstanding concerns | — | Math/pedagogical reviews are self-performed (not independent); owner approval pending. |
 
 ---
 

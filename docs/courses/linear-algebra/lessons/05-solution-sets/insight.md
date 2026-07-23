@@ -318,8 +318,8 @@ silently self-certify. Current honest status:
 | Contract author | Cursor agent (AI) | Complete |
 | Mathematical reviewer | Cursor agent (AI) — **not independent** | Self-review; Audit A passed. Incorporates the external Stage-1 review's C4 (uniqueness vs existence) and single-difference-scope corrections. |
 | Pedagogical reviewer | Cursor agent (AI) — **not independent** | Self-review; chain items 1–14 present. |
-| User / domain-owner approval | Repository owner | Standing authorization to proceed on PASS (this task); independent human sign-off still advisable before publishing. |
-| Outstanding concerns | — | None blocking. Math/pedagogical reviews are self-performed. |
+| User / domain-owner approval | Repository owner | **Pending review.** A docs-only authorization to run the retrospective is **not** substantive owner approval of this contract; independent human sign-off is required before any readiness/mastery claim or promotion. |
+| Outstanding concerns | — | Math/pedagogical reviews are self-performed (not independent); owner approval pending. |
 
 ---
 
