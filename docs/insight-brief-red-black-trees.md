@@ -45,7 +45,7 @@ axioms.
 
 ## Mathematical audit note
 
-This brief was revised under the gate's [Mathematical Audit](./INSIGHT_DISCOVERY_GATE.md#mathematical-audit-stage-2-mandatory)
+This brief was revised under the gate's [Audit A — Mathematical](./INSIGHT_DISCOVERY_GATE.md#audit-a--mathematical-stage-2)
 checklist. The corrections applied throughout (and inherited by every candidate
 that touches them):
 

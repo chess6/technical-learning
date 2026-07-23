@@ -329,7 +329,17 @@ text, ordering, region-shading, learner-built expressions), this is called out a
   needed as a fixed combination, so compute the combination directly") unaided.
 - **Common false positives:** surface pattern-matching on shared vocabulary;
   reciting a related fact (e.g. Strassen) as *recall* rather than deriving it;
-  the prompt leaking the technique.
+  the prompt leaking the technique; **for a grounded insight, solving only the
+  familiar scenario** (e.g. the drinking-age Wason task but not an unfamiliar
+  symbolic one) — that is learning the story, not the concept.
+- **Abstraction return (grounded insights).** When the insight was taught through a
+  semantic/operational bridge (see the gate's
+  [grounding audit](./INSIGHT_DISCOVERY_GATE.md#audit-b--grounding--model-change-stage-2)),
+  the transfer probes should distinguish four levels, not collapse them:
+  (1) recognizing the familiar story; (2) explaining the structural mapping;
+  (3) transferring the inference to a *different* context; (4) solving the abstract
+  form. Credit acquisition only from levels 3–4. The unaided level-4 case belongs in
+  **learner validation**, not stacked into Practice.
 - **Suitable interaction formats:** `multiple-choice` for a guided transfer item;
   genuine, unaided transfer needs the **learner-validation pilot** (Phase 4 T1,
   which deliberately never says "Karatsuba").

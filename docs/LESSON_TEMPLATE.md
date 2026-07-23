@@ -21,6 +21,14 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 - Exact primary insight — **verbatim, planning metadata only** (learner-facing
   prose may reword while preserving the meaning and causal chain): `<...>`
 - Learner-facing phrasing (optimized for clarity): `<...>`
+- Diagnosed cognitive obstacle: `<...>`
+- Insight mechanism(s): `<structural compression | semantic grounding | operational
+  grounding | representational change | predictive/causal reorganization>`
+- **If the insight is grounded** (uses a semantic/operational/representational
+  bridge), also record — these become traceability obligations below:
+  - Bridge (familiar goal/process/representation): `<...>`
+  - Named analogy limits / pragmatic additions to discard: `<...>`
+  - Abstraction return (grounded → correspondence → unfamiliar → symbolic): `<...>`
 
 ---
 
@@ -82,7 +90,10 @@ Follow [LESSON_DESIGN.md](./LESSON_DESIGN.md) and
 > Map **every** obligation in the approved Insight Contract's causal chain to a
 > learner-facing location and observable evidence of understanding. A plan does
 > **not** pass by merely linking the contract or repeating the primary-insight
-> sentence — each causal step needs a location and evidence.
+> sentence — each causal step needs a location and evidence. **For a grounded
+> insight, also map the bridge, each named analogy limit, and the abstraction
+> return** — the last with evidence the learner returns to the symbolic form, not
+> just success on the familiar story.
 
 | Contract obligation | Learner-facing location | Evidence of understanding |
 | --- | --- | --- |
