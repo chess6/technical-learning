@@ -60,10 +60,18 @@ Per-lesson planning artifacts live under the lesson they belong to, e.g.
 - `insight.md` — Stage 2 Approved Insight Contract (must end `Gate result: PASS`)
 - `mastery-contract.md` — the per-lesson Lesson Mastery Contract
 - `lesson-plan.md` — Stage 3 implementation-ready plan
-- `validation.md` — assessment/benchmark validation record
 
-**Never create a new loose `docs/insight-*.md`.** New briefs, contracts, and
-plans go under `courses/<course>/lessons/<lesson>/`.
+**Module** (Gate 9–10) artifacts live under the module (= `curriculum.ts` section
+id), e.g. `courses/linear-algebra/modules/systems-elimination/`:
+
+- `assessment-plan.md` — Gate 9 cumulative module assessment (discharges
+  module-owned outcomes); template [authoring/templates/module-assessment-plan.md](authoring/templates/module-assessment-plan.md)
+- `validation.md` — Gate 10 covered/missing/deferred vs the benchmark + declared
+  target; template [authoring/templates/module-validation.md](authoring/templates/module-validation.md)
+
+**Never create a new loose `docs/insight-*.md`.** New briefs, contracts, plans go
+under `courses/<course>/lessons/<lesson>/`; module assessment/validation go under
+`courses/<course>/modules/<module>/`.
 
 ## The lasting rule
 

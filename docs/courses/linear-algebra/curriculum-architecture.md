@@ -114,16 +114,20 @@ Consequences to plan for when future lessons are promoted:
 
 ### 1.2 Section grouping (matches `curriculum.ts` today)
 
-| Section id | Title | Spine members |
-| --- | --- | --- |
-| `foundations` | Foundations | Ch0, L1, L2 |
-| `systems-elimination` | Systems & elimination | L3, L4, L5 |
-| `maps-inverses-determinants` | Composition, inverses & determinants | L6, L7 |
-| `structure` | Structure of linear maps | L8, L9, L10 |
-| `spectra-geometry-data` | Spectra, geometry & data | L11, L12, L13, L14 |
-| `algorithms` | Algorithms & complexity | `karatsuba` |
+| Section id | Title | Spine members | Profile target |
+| --- | --- | --- | --- |
+| `foundations` | Foundations | Ch0, L1, L2 | P2 (course primary) |
+| `systems-elimination` | Systems & elimination | L3, L4, L5 | **P3 override** |
+| `maps-inverses-determinants` | Composition, inverses & determinants | L6, L7 | P2 |
+| `structure` | Structure of linear maps | L8, L9, L10 | **P3 override** |
+| `spectra-geometry-data` | Spectra, geometry & data | L11, L12, L13, L14 | P2 |
+| `algorithms` | Algorithms & complexity | `karatsuba` | separate course |
 
-No section change is proposed; this table is the reconciliation, not an edit.
+No section change is proposed; this table is the reconciliation, not an edit. The
+**Profile target** column reflects the course's Gate 1 declaration
+([course-spine §0](course-spine.md#0-declared-course-target-gate-1)): P2 primary +
+research-bridge overlay, with P3 overrides on `systems-elimination` and
+`structure`. (A *target*, not current attainment.)
 
 ---
 
@@ -199,14 +203,18 @@ flowchart TD
 ```
 
 The graph is acyclic; a topological sort of it reproduces the spine order
-`Ch0, L1…L14` (with the L4/L5 vs L6/L7 branches interleavable — see §2.3).
+`Ch0, L1…L14` (several future nodes are independently DAG-ready — see §2.3). This
+edge set is **identical** to the course-spine dependency fence
+([course-spine.md §5](course-spine.md#5-dependency-order-why-this-sequence)).
 
 ### 2.3 Ordering notes
 
-- **`elimination` (L4) branch vs. `composition` (L6) branch are independent.**
-  Both depend only on `systems` (L6 also on `transformations`). The spine
-  interleaves them L4→L5→L6→L7 for narrative flow, but the DAG permits building
-  L6/L7 before L4/L5. This matters for §6: the next lesson need not be L4.
+- **Several future nodes are DAG-ready; sequencing, not prerequisites, orders
+  them.** With L4/L5 now built, the future nodes whose hard prerequisites are all
+  built are `matrix-composition` (L6; needs L2+L3), `change-of-basis` (L10; needs
+  L1+L2), and `orthogonality` (L12; needs L1). The DAG permits any of them next;
+  the spine deliberately builds L6 first (earliest gap, unblocks L8) and defers
+  L10/L12 to their narrative slots. See §6.
 - **`determinants` (built, L7) currently ships before its ideal prerequisite
   `matrix-composition` (L6) exists.** The built lesson stands; when L6 lands, the
   determinant lesson should reference L6's non-invertibility motivation rather
@@ -355,18 +363,30 @@ to prove with the right next lesson.
 ## 6. Next-lesson recommendation
 
 `elimination` (L4) and `solution-sets` (L5) are now **built**, so the former
-recommendation is discharged. The **unique next unbuilt spine node is
-`matrix-composition` (L6)** — it is the earliest `future` node in spine order and
-the only unbuilt lesson whose hard prerequisites are all already built.
+recommendation is discharged. **`matrix-composition` (L6) is the unique
+recommended next lesson** — it is the **earliest unresolved spine gap** (the first
+`future` node in spine order) and therefore the explicit next-node recommendation.
 
 **Recommendation: build `matrix-composition` (L6) next.** This is a
 recommendation, **not** an authorization — promoting a `future` node still
 requires an explicit reopen (scope note above; `project-core` Scope).
 
+> **L6 is not the *only* DAG-ready future node.** By hard prerequisites alone,
+> `change-of-basis` (L10, needs L1+L2) and `orthogonality` (L12, needs L1) are
+> **also** buildable today — their prerequisites are all built. They are
+> **intentionally deferred by course sequencing**, not by missing prerequisites:
+> L10 is held until just before the full eigen/diagonalization treatment (its
+> payoff), and L12 opens the geometry/data arc (L12–L14) that the spine places
+> after the structural core. L6 is recommended over them because it is the
+> earliest gap and it unblocks that structural core; readiness in the DAG does not
+> override the authored sequence.
+
 ### Why L6 (for)
 
-- **Prerequisites are all built.** L6 depends only on `transformations` (L2) and
-  `systems` (L3), both built (§2.1) — no other unbuilt lesson is unblocked.
+- **Prerequisites are all built** and it is the **earliest** such gap. L6 depends
+  only on `transformations` (L2) and `systems` (L3), both built (§2.1); building
+  it in spine order keeps the built prefix contiguous (L10/L12 are ready too but
+  deferred — see the note above).
 - **It unblocks the structural core.** L6 is the hard prerequisite for
   `subspaces-rank` (L8) and the ideal motivation for `determinants` (L7, already
   built): once L6 lands, the determinant lesson can reference L6's

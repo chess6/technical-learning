@@ -25,10 +25,19 @@ code.
 3. **Name the mode and gate you are entering** so the user can redirect early,
    especially for short prompts that rely on repo context (workflow Step 6).
 
+A **uniquely resolved** short prompt (e.g. "plan the next lesson" → one unbuilt
+spine node) authorizes **Mode B planning (Gates 3–5), docs only** — name the node
+first, then proceed. It does **not** authorize implementation. Ask only when the
+resolution is ambiguous.
+
 ## Approval boundaries (stop and ask — do not self-authorize)
 
-- Building or promoting a `future` spine node (closed per `project-core` Scope).
-- Starting lesson planning without a `Gate result: PASS` insight contract.
+- **Building or promoting** a `future` spine node — writing lesson code or
+  `future → built` (Mode C, closed per `project-core` Scope). *(Docs-only Mode B
+  planning for a uniquely resolved node is allowed, above.)*
+- Beginning **Gate 5 (the Lesson Mastery Contract)** without a `Gate result: PASS`
+  insight contract. *(Gates 3–4 produce that `PASS`, so starting Gate 3 does not
+  require one.)*
 - Writing lesson code before the user approves the Mode B plan.
 - Deviating from a standard, or shipping an unverified math/visualization result.
 - Claiming a course profile/stage the assessments do not support.

@@ -44,6 +44,35 @@ in sync.**
 
 ---
 
+## 0. Declared course target (Gate 1)
+
+The linear-algebra course's declared
+[profile](../../authoring/mastery-standard.md#3-course-profiles) target — the
+Gate 1 declaration the rest of the workflow calibrates against:
+
+- **Primary core profile: P2 — demanding applied.** The course aims for confident
+  \(\mathbb{R}^n\) work, decompositions, conditioning, and applied multi-step
+  problems (calibrated to [ext-1806] in the
+  [benchmark matrix](benchmark-matrix.md)).
+- **Research-bridge overlay: enabled.** Investigation habits (D14 / E7) are
+  offered as clearly-labeled enrichment, **never** on the core exam bar.
+- **P3 (proof/honors) module overrides:**
+  - the **Systems & elimination** module (`systems-elimination`: L3 systems, L4
+    elimination, L5 solution-sets) — proof of solution-set structure and row-op
+    invariance;
+  - the future **Structure of linear maps** module (`structure`: L8 subspaces &
+    rank, L9 rank–nullity, L10 change of basis) — subspace and rank–nullity
+    proofs.
+
+> **This is a target, not a claim of current attainment.** The built vertical
+> slice does **not** yet satisfy P2 or the P3 overrides — see the honest
+> [gap summary](benchmark-matrix.md#3-course-level-gaps-summary), which currently
+> reports the built prefix best serving **P1 S1–S3 in 2D**. The declaration fixes
+> what each lesson/module is *built toward*; Gate 10 validation reports the real
+> distance to it.
+
+---
+
 ## 1. The design principle behind the spine
 
 The course is **vector-first** and **transformation-centric**. Its
@@ -236,16 +265,24 @@ its inverse") so the thread reads as one story, not a coincidence.
 Hard prerequisites (a lesson genuinely needs the earlier idea):
 
 ```
-Ch0 → L1 → L2 → L3
+Ch0 → L1
+L1 → L2
+L1, L2 → L3
 L3 → L4 → L5
-L2, L3 → L6 → L7
+L2, L3 → L6
+L3, L6 → L7
 L3, L6 → L8 → L9
 L1, L2 → L10
 L2, L7, L10 → L11
-L1, L12 (dot product) → L12
+L1 → L12            (dot product acts on vectors)
 L3, L8, L12 → L13
 L2, L8, L12 → L14
 ```
+
+This fence is the **exact** edge set of the curriculum DAG
+([curriculum-architecture.md §2.1/§2.2](curriculum-architecture.md#2-explicit-prerequisite-graph));
+the two must stay identical. It is acyclic — the topological order
+`Ch0, L1, …, L14` respects every edge.
 
 Notes:
 

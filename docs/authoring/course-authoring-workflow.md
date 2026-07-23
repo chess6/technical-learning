@@ -95,7 +95,8 @@ a loose `docs/insight-*.md` at the docs root (see
    → `docs/courses/<course>/lessons/<lesson>/lesson-plan.md`, consuming the insight
    contract + mastery contract (do not restate them).
 
-Mode D adds `validation.md` (assessment/benchmark record) in the same directory.
+Mode D artifacts are **module-scoped**, not per-lesson: they live under
+`docs/courses/<course>/modules/<module>/` (see [Step 4](#step-4--mode-d-assessment--validation)).
 
 **Output:** brief + contract (PASS) + mastery contract + lesson plan, all under the
 lesson directory. **No lesson code.** **Boundary:** stop here for approval before
@@ -129,13 +130,23 @@ Turning an approved plan into a working lesson. Requires a completed Mode B.
 
 ## Step 4 — Mode D: Assessment & validation
 
-After lessons exist. Do not skip once a module is complete.
+After lessons exist. Do not skip once a module is complete. Both artifacts are
+**module-scoped**, under `docs/courses/<course>/modules/<module>/` (module id = the
+`curriculum.ts` section id, e.g. `systems-elimination`).
 
 1. **Cumulative module assessment** (Gate 9) — a cumulative, interleaved, spaced
-   set per [authoring/mastery-standard.md §6](mastery-standard.md#6-assessment-architecture).
-   Reusable patterns: [authoring/assessment-patterns.md](assessment-patterns.md).
-2. **Course benchmark validation** (Gate 10) — report covered / missing /
-   deferred against [the benchmark matrix](../courses/linear-algebra/benchmark-matrix.md);
+   set per [authoring/mastery-standard.md §6](mastery-standard.md#6-assessment-architecture),
+   filling [authoring/templates/module-assessment-plan.md](templates/module-assessment-plan.md)
+   → `modules/<module>/assessment-plan.md`. This is where a lesson's **module-owned**
+   outcomes and any **module-owned abstraction-return deferrals** are discharged
+   with real evidence. Reusable patterns:
+   [authoring/assessment-patterns.md](assessment-patterns.md).
+2. **Benchmark validation** (Gate 10) — fill
+   [authoring/templates/module-validation.md](templates/module-validation.md)
+   → `modules/<module>/validation.md` (module scope), then roll modules up into the
+   course report; report covered / missing / deferred against the subject
+   [benchmark matrix](../courses/linear-algebra/benchmark-matrix.md) and the
+   [declared target](../courses/linear-algebra/course-spine.md#0-declared-course-target-gate-1);
    never claim a profile the assessments do not support.
 3. **Learner-validation pilot** (post-ship, optional) —
    [authoring/insight-validation-protocol.md](insight-validation-protocol.md).
@@ -152,8 +163,12 @@ self-authorize.
   code for, or promoting (`future → built`), a `future` spine node requires an
   explicit user go-ahead. *(Producing a Mode B **plan** for the uniquely resolved
   next node is not promotion — see [Step 6](#step-6--handling-short-prompts-from-repo-context).)*
-- **Insight contract not `PASS`.** Never begin lesson planning (Gate 5+) without a
-  `Gate result: PASS` insight contract — this is out of process.
+- **Gate 5 without a `PASS` insight contract.** The **Lesson Mastery Contract
+  (Gate 5)** and everything after it require a `Gate result: PASS` insight
+  contract. Gates 3–4 (the insight brief and the contract itself) are how that
+  `PASS` is *produced*, so **beginning Gate 3 does not require a prior `PASS`** — a
+  uniquely resolved short prompt may open Mode B at Gate 3. Do not skip ahead to
+  Gate 5 while the insight contract is still unresolved.
 - **Planning → implementation.** Never write lesson code (Mode C) from a plan the
   user has not approved. Finish Mode B, present the plan, wait.
 - **Changing a standard.** If a request conflicts with a standard, propose the

@@ -23,9 +23,13 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
   `why-linear-algebra`, `vectors`, `transformations`, `systems`, `elimination`,
   `solution-sets`, `determinants`, `eigenvectors` (intro), plus the `karatsuba`
   track. These are the active product.
-- Spine nodes marked `kind: "future"` are **closed**: do not build, promote, or
-  author a `future` lesson (or any Lesson 6+/later milestone) unless the user
-  **explicitly reopens that specific lesson**. This is an approval boundary.
+- Spine nodes marked `kind: "future"` are **closed to implementation**: do not
+  write lesson code for, or promote (`future → built`), a `future` lesson unless
+  the user **explicitly reopens that specific lesson**. This is a hard approval
+  boundary (Mode C). *Docs-only Mode B **planning*** (insight brief → insight
+  contract → mastery contract → plan, Gates 3–5) **may** proceed for a uniquely
+  resolved next node — see the workflow's short-prompt rule — but must stop before
+  any code or promotion.
 - Prefer fixing visual/math correctness and shared helpers over new lesson content.
 - **Any course or lesson authoring request** — architecture, planning, or
   implementation — must be routed through

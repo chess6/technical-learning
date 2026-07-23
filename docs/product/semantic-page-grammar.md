@@ -278,8 +278,10 @@ Rules:
     learner *operating* in the general case, not merely reading about it. This
     evidence may live in **either** the owning
     [Lesson Mastery Contract](../authoring/templates/lesson-mastery-contract.md) (an in-lesson
-    or lesson-owned return) **or** the owning **module-assessment plan** (a
-    module-owned return discharged at Gate 9) — wherever the named owner discharges
+    or lesson-owned return) **or** the owning **module assessment plan**
+    (`docs/courses/<course>/modules/<module>/assessment-plan.md`, from
+    [module-assessment-plan.md](../authoring/templates/module-assessment-plan.md)) — a
+    module-owned return discharged at Gate 9 — wherever the named owner discharges
     it.
 
   An in-lesson return still owes the evidence; its owner and destination are then

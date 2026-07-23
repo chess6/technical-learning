@@ -37,8 +37,11 @@ new owner is needed, say so and get agreement first.
 
 These are defined in the rules and workflow — do not self-authorize:
 
-- Building or promoting a `future` spine node (the built surface is fixed).
-- Starting lesson planning without a `Gate result: PASS` insight contract.
+- **Building or promoting** a `future` spine node — writing its lesson code or
+  `future → built` (the built surface is fixed). A uniquely resolved short prompt
+  may still run **docs-only Mode B planning** (Gates 3–5) for the next node.
+- Beginning **Gate 5 (Lesson Mastery Contract)** without a `Gate result: PASS`
+  insight contract — Gates 3–4 are how that `PASS` is produced.
 - Writing lesson code before an approved Mode B plan.
 - Deviating from a standard, or shipping unverified math/visualization results.
 

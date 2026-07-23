@@ -27,13 +27,13 @@ external evidence is marked **[ext]** with its source. Each source lists its
 [source-to-claim mapping](#source-to-claim-mapping) below ties each [ext] tag to
 the specific rows it supports.
 
-| Ref | Source (edition / semester) | Link | Role in calibration |
+| Ref | Source (edition / semester) | Official link | Role in calibration |
 | --- | --- | --- | --- |
-| **[ext-Lay]** | Lay, Lay & McDonald, *Linear Algebra and Its Applications*, **5th/6th ed.** (2016 / 2021) — a standard sophomore service-course text. | `pearson.com` (title page) | **P1** (standard computational first course): topic set, computational emphasis. |
-| **[ext-1806]** | MIT **18.06** *Linear Algebra* — Strang, *Introduction to Linear Algebra*, **5th ed.** (2016); calibrated to **OCW Spring 2010** syllabus (most fully documented offering). Catalog: "matrix theory and linear algebra, emphasizing topics useful in other disciplines… Uses linear algebra software." Assessment (OCW 2010): 3 in-class exams + final; weight ≈ psets 15% / exams 45% / final 40%. | `ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/` | **P2** (demanding engineering/applied): topic breadth (LU/QR/SVD), software use, timed closed-book assessment, applications. |
-| **[ext-Axler]** | Axler, *Linear Algebra Done Right*, **4th ed.** (2024, open access). Abstract vector spaces & linear maps; determinants deferred to the final chapter; determinant-free proof of the existence of eigenvalues. A **second**, proof-based course for math majors. | `linear.axler.net` | **P3** (proof-based / honors): proof style, abstraction ceiling, determinant-late ordering. |
-| **[ext-18700]** | MIT **18.700** *Linear Algebra* (the more theoretical counterpart to 18.06, per the 18.06 catalog note "compared with 18.700, more emphasis on matrix algorithms"); OCW **Fall 2013**. | `ocw.mit.edu/courses/18-700-linear-algebra-fall-2013/` | **P3** corroboration (first proof-based course): proof-heavy assessment. |
-| **[ext-FIS]** | Friedberg, Insel & Spence, *Linear Algebra*, **4th/5th ed.** (2002 / 2018) — a common **first** proof-based course text. | `pearson.com` (title page) | **P3** corroboration as a *first* course (proof emphasis without Axler's second-course ceiling). |
+| **[ext-Lay]** | Lay, Lay & McDonald, *Linear Algebra and Its Applications*, **6th ed.** (© 2021) — a standard sophomore service-course text. | [pearson.com — Lay 6e](https://www.pearson.com/en-us/subject-catalog/p/linear-algebra-and-its-applications/P200000006235) | **P1** (standard computational first course): topic set, computational emphasis. |
+| **[ext-1806]** | MIT **18.06** *Linear Algebra* — Strang, [*Introduction to Linear Algebra*, **5th ed.** (2016)](https://math.mit.edu/~gs/linearalgebra/); calibrated to the **OCW Spring 2010** offering (most fully documented). Catalog: "matrix theory and linear algebra, emphasizing topics useful in other disciplines… Uses linear algebra software." Assessment (OCW 2010): 3 in-class exams + final; weight ≈ psets 15% / exams 45% / final 40%. | [ocw.mit.edu — 18.06 Spring 2010](https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/) | **P2** (demanding engineering/applied): topic breadth (LU/QR/SVD), software use, timed closed-book assessment, applications. |
+| **[ext-Axler]** | Axler, *Linear Algebra Done Right*, **4th ed.** (2024, open access). Abstract vector spaces & linear maps; determinants deferred to the final chapter; determinant-free proof of the existence of eigenvalues. A **second**, proof-based course for math majors. | [linear.axler.net](https://linear.axler.net/) | **P3** (proof-based / honors): proof style, abstraction ceiling, determinant-late ordering. |
+| **[ext-18700]** | MIT **18.700** *Linear Algebra* (the more theoretical counterpart to 18.06, per the 18.06 catalog note "compared with 18.700, more emphasis on matrix algorithms"); OCW **Fall 2013**. | [ocw.mit.edu — 18.700 Fall 2013](https://ocw.mit.edu/courses/18-700-linear-algebra-fall-2013/) | **P3** corroboration (first proof-based course): proof-heavy assessment. |
+| **[ext-FIS]** | Friedberg, Insel & Spence, *Linear Algebra*, **5th ed.** (© 2022; text usable as a strong-theory *first* course). | [pearson.com — FIS 5e](https://www.pearson.com/en-us/subject-catalog/p/linear-algebra/P200000006185) | **P3** corroboration as a *first* course (proof emphasis without Axler's second-course ceiling). |
 
 Note that 18.06 [ext-1806] uses Strang's *Introduction to Linear Algebra*; Axler
 [ext-Axler] is explicitly a **second** course. A first proof-based *honors*
@@ -70,6 +70,12 @@ each [ext] tag against its use):
 | **Speed requirements** | Moderate; time-limited exams on routine computation. | High; timed exams with substantial problems. [ext-1806] | Lower on speed, higher on rigor; proofs are not races. |
 | **Calculator / software** | Basic calculator; software optional. | **Software assumed** (e.g. Julia/MATLAB/NumPy) for large problems; **closed-book for exams**. [ext-1806] | Minimal; the object of study is the argument, not the arithmetic. |
 | **Cumulative integration** | Final is cumulative; topics fairly modular. | Strong: later topics (SVD, least squares) reuse most of the course. | Very strong: the whole course is one developing theory. |
+
+This linear-algebra course's **declared target** ([course-spine §0](course-spine.md#0-declared-course-target-gate-1))
+is **P2 primary + research-bridge overlay, with P3 overrides** on the
+`systems-elimination` and `structure` modules; this matrix is the calibration that
+target is measured against (it does **not** assert the target is met — see the
+[gap summary](#3-course-level-gaps-summary)).
 
 P1, P2, and P3 are the **three mutually exclusive core profiles**; a course
 declares exactly one as primary (per-module overrides aside). The
