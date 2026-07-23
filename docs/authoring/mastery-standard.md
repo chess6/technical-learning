@@ -64,8 +64,8 @@ does not assess.
 | **S1 Conceptual understanding** | Sees the object behind the symbol; can explain it in words and pictures. | Insight Gate + Vision §2/§7 |
 | **S2 Computational fluency** | Executes the standard procedures correctly, efficiently, and reliably. | Mastery: procedural dimension + drill |
 | **S3 Exam-level independent performance** | Selects methods unprompted, combines topics, works under time pressure, catches own errors. | Mastery: assessment architecture (§6) |
-| **S4 Proof-based maturity** | Reasons from definitions, proves both directions, builds counterexamples, repairs arguments. | Mastery: proof dimension + Profile B |
-| **S5 Research-oriented habits** | Forms conjectures, varies assumptions, reads unfamiliar prose, communicates findings. | Mastery: investigation dimension + Profile C enrichment |
+| **S4 Proof-based maturity** | Reasons from definitions, proves both directions, builds counterexamples, repairs arguments. | Mastery: proof dimension + Profile P3 |
+| **S5 Research-oriented habits** | Forms conjectures, varies assumptions, reads unfamiliar prose, communicates findings. | Mastery: investigation dimension + the research-bridge overlay |
 
 The stages are **cumulative in dependency but not in requirement**: a course may
 deliberately stop at S3, or reach S4 for some topics and S3 for others. What is
@@ -112,18 +112,28 @@ of process* (Insight Gate rule) and also does not ship.
 
 ## 3. Course profiles
 
-A course must declare **one primary profile** and may declare **per-module
-overrides** (e.g. a computational course whose capstone module reaches for
-Profile B on one theorem). The profile sets which mastery dimensions are
-*mandatory*, which are *profile-dependent*, and which are *optional enrichment*
-(see [§4](#4-mastery-dimensions)), and it sets the assessment styles in
+There are **three mutually exclusive core profiles** — **P1 standard
+computational**, **P2 demanding applied**, **P3 proof-based / honors** — plus one
+optional **research-bridge overlay** that sits *on top of* a core profile. A
+course declares **exactly one core profile as primary** and may declare
+**per-module overrides** (e.g. a P1 course whose capstone module reaches for P3
+on one theorem). The core profile sets which mastery dimensions are *mandatory*,
+which are *profile-dependent*, and which are *optional enrichment* (see
+[§4](#4-mastery-dimensions)), and it sets the assessment styles in
 [§6](#6-assessment-architecture).
 
-The three profiles are **calibration targets**, not a claim the app currently
-meets any of them. Their linear-algebra instantiation is in
+The profiles are **calibration targets**, not a claim the app currently meets any
+of them. Their linear-algebra instantiation (and the external courses each is
+calibrated against) is in
 [courses/linear-algebra/benchmark-matrix.md](../courses/linear-algebra/benchmark-matrix.md).
 
-### A. Computational university mastery
+> **P1, P2, P3 are alternatives; the research bridge is an overlay.** A course is
+> P1 *or* P2 *or* P3 — not two of them at once. The research bridge is **never** a
+> fourth standalone profile and never replaces a core profile's computational or
+> proof expectations; it is enrichment added to whichever core profile a course
+> already targets (typically P2 or P3).
+
+### P1 — Standard computational (core)
 
 The learner can, on unfamiliar variants and under exam conditions:
 
@@ -140,14 +150,32 @@ The learner can, on unfamiliar variants and under exam conditions:
 
 *Linear-algebra span:* elimination, solution sets, matrix transformations,
 determinants, bases, eigenvalues, projections, least squares, and related
-standard first-course material.
+standard first-course material (calibrated to [ext-Lay]).
 
 *Proof expectation:* short justifications and "why does this work" explanations,
 **not** a full two-direction proof program.
 
-### B. Proof-based / honors mastery
+### P2 — Demanding applied (core)
 
-Everything in Profile A, plus the learner can:
+Everything in P1, at greater breadth and scale, with an **algorithmic /
+numerical** emphasis (calibrated to [ext-1806]). The learner can additionally:
+
+- work confidently in \(\mathbb{R}^n\), not only \(\mathbb{R}^2/\mathbb{R}^3\);
+- use and interpret standard **decompositions** (LU/QR/SVD) and know their cost;
+- reason about **conditioning / numerical stability** and when to *avoid* a method
+  (e.g. explicit inverses);
+- apply linear algebra to realistic, multi-step, mixed-topic problems (networks,
+  Markov chains, least-squares fitting, differential equations), **software
+  assumed** for large instances;
+- perform under **timed, closed-book** exam conditions on substantial problems.
+
+*Proof expectation:* derivations and "why the method works" arguments, with the
+occasional short proof — **not** the full two-direction proof program of P3.
+
+### P3 — Proof-based / honors (core)
+
+A proof-driven treatment (calibrated to [ext-Axler] / [ext-FIS] / [ext-18700]).
+The learner can:
 
 - reason directly from definitions;
 - state theorem hypotheses and conclusions precisely, and say *where each
@@ -161,13 +189,16 @@ Everything in Profile A, plus the learner can:
   / \(\mathbb{R}^n\);
 - write a coherent multi-step argument independently.
 
-Not every introductory course must reach Profile B. A course that targets B must
-say so and must assess proof construction, not just proof *reading*.
+P3 is not "P1 plus harder computation" — its **assessment centers on reasoning**.
+A course that targets P3 must say so and must assess proof *construction*, not
+just proof *reading*. (P3 still expects the P1 computational baseline; it simply
+does not make computation the object of assessment.)
 
-### C. Research bridge (research-oriented *preparation*, not readiness)
+### Research-bridge overlay (optional; research-oriented *preparation*, not readiness)
 
-Profile A or B, plus the learner begins developing (as **enrichment**, clearly
-labeled and never part of the core exam bar):
+An **overlay on a core profile** (usually P2 or P3), offered as **enrichment** —
+clearly labeled, and **never part of the core exam bar**. On top of its core
+profile, the learner begins developing:
 
 - forming conjectures from examples;
 - varying assumptions and identifying which result breaks and *why*;
@@ -178,10 +209,14 @@ labeled and never part of the core exam bar):
 - connecting several results into a longer argument;
 - communicating a finding in a short mathematical note or mini-project.
 
-**Honesty constraint (durable).** Profile C is *research-oriented preparation*.
-No course document, lesson, or UI string may claim the learner is "research
-ready" or a "researcher." The credible claim is: *"has begun developing the
-habits advanced study requires."*
+The overlay **adds** D14 (E7 investigation) to a course; it does **not** relax any
+core computational or proof requirement, and a course may not substitute overlay
+enrichment for unmet core coverage.
+
+**Honesty constraint (durable).** The research bridge is *research-oriented
+preparation*. No course document, lesson, or UI string may claim the learner is
+"research ready" or a "researcher." The credible claim is: *"has begun developing
+the habits advanced study requires."*
 
 ---
 
@@ -196,18 +231,18 @@ must exercise all of them.
 | --- | --- | --- | --- |
 | D1 | Motivation & conceptual model | Lesson | Every lesson (this is the Insight Gate's territory). |
 | D2 | Precise vocabulary & definitions | Lesson | Every lesson that introduces an object. |
-| D3 | Computational / procedural fluency | Lesson → Module | Every lesson with a procedure (Profile A/B). |
+| D3 | Computational / procedural fluency | Lesson → Module | Every lesson with a procedure (all core profiles; heaviest for P1/P2). |
 | D4 | Representation translation | Lesson → Module | Every lesson with ≥2 representations of its object. |
 | D5 | Theorem use | Lesson → Module | Lessons that state a theorem/proposition/invariant. |
-| D6 | Proof & justification | Lesson → Module | **Profile B mandatory; Profile A = short "why" only.** |
+| D6 | Proof & justification | Lesson → Module | **P3 mandatory (full proofs); P1 = short "why"; P2 = derivations + occasional proof.** |
 | D7 | Examples, nonexamples, boundary & counterexamples | Lesson | Every lesson with a definition or theorem. |
 | D8 | Method selection | Module | Any module with ≥2 methods that could apply. |
 | D9 | Transfer to unfamiliar problems | Module | Every module (≥1 genuine transfer item). |
 | D10 | Cumulative integration | Module → Course | Every module after the first. |
-| D11 | Speed & reliability | Module → Course | Where a profile names a speed expectation (usually A/exam). |
+| D11 | Speed & reliability | Module → Course | Where a profile names a speed expectation (usually P1/P2 exams). |
 | D12 | Delayed retention | Module → Course | Every module (spaced retrieval of prior material). |
 | D13 | Metacognitive error diagnosis | Module → Course | Every course (≥1 error-diagnosis item per module). |
-| D14 | Research-oriented investigation | Course (enrichment) | **Profile C only; never a core exam requirement.** |
+| D14 | Research-oriented investigation | Course (enrichment) | **Research-bridge overlay only; never a core exam requirement.** |
 
 Rules for using the table:
 
@@ -242,7 +277,7 @@ inventing a competing one.
 | **E4** | Transfer | applies the idea in an unfamiliar representation or context, technique unnamed. | `transfer` tier; validation "transfer" (level 4) |
 | **E5** | Integration | combines the idea with earlier ideas in one problem. | cumulative/mixed sets; validation "reconstruction" |
 | **E6** | Justification | explains or proves *why* it works; states where a hypothesis is used. | proof items; Vision "enough depth" #2/#5 |
-| **E7** | Investigation | varies assumptions, forms/tests a conjecture, finds a boundary. | Profile C enrichment; research bridge |
+| **E7** | Investigation | varies assumptions, forms/tests a conjecture, finds a boundary. | research-bridge overlay enrichment |
 
 Ordering note: E1–E4 form a difficulty ladder; **E5, E6, E7 are largely
 orthogonal to that ladder** (a learner can justify (E6) a simple result before
@@ -328,7 +363,7 @@ supports them. Do not invent psychometric precision (see [§6.3](#63-honesty-abo
 | **"Ready for the next lesson"** | Prerequisite check passed **and** ≥ E3 on this lesson's must-demonstrate outcomes (not just E1–E2). |
 | **"Module mastered"** | E3–E5 across the module's must-demonstrate outcomes on a cumulative set, **plus** one delayed retrieval success (D12). |
 | **"Exam ready"** | Breadth of E3–E5 under **exam mode** on fresh, mixed, timed problems at the profile's complexity, with method selection (D8) exercised. |
-| **"Proof-ready"** | E6 evidence: at least one independent proof (both directions where applicable) and one argument repair or counterexample, per the Profile-B module bar. |
+| **"Proof-ready"** | E6 evidence: at least one independent proof (both directions where applicable) and one argument repair or counterexample, per the Profile-P3 module bar. |
 | **"Requires remediation"** | A recurring error class (D13) identified by post-assessment classification, mapped to a specific beat. |
 
 ### 6.3 Honesty about measurement
@@ -395,8 +430,8 @@ Re-run this validation whenever a standard changes.
 | 3 | A learner who succeeds **only when the problem resembles the visual lesson**. | Evidence levels: only E1–E2 evidenced; no E3/E4 items. |
 | 4 | A lesson that **stays entirely in \(\mathbb{R}^2\)** while teaching a general concept. | Abstraction path (SEMANTIC_PAGE_GRAMMAR §4); contract "return to the general case". |
 | 5 | Several exercises testing **recognition but not method selection**. | Assessment architecture: D8 selection required; ASSESSMENT_PATTERNS "cap recall". |
-| 6 | A **theorem asserted without proof** in a profile that requires proof. | Profile B + D6; contract rejection condition. |
-| 7 | A **proof-focused lesson with no computational fluency**. | D3 mandatory for Profile A/B lessons with a procedure. |
+| 6 | A **theorem asserted without proof** in a profile that requires proof. | Profile P3 + D6; contract rejection condition. |
+| 7 | A **proof-focused lesson with no computational fluency**. | D3 mandatory for any core-profile lesson with a procedure. |
 | 8 | Strong content with **no connection to earlier/later lessons**. | Coherence (§7); contract's cumulative-connection field. |
 | 9 | A module with **no cumulative or delayed assessment**. | Assessment architecture: D10 + D12 module requirement. |
 | 10 | A learner completing every page yet **failing an unfamiliar timed exam**. | Anti-completion rule (§5); exam-mode requirement (§6). |
@@ -405,12 +440,12 @@ Re-run this validation whenever a standard changes.
 
 | Over-reaction | Guardrail |
 | --- | --- |
-| Forcing a theorem **proof into every introductory lesson**. | D6 is Profile-B mandatory only; Profile A wants short "why", not proofs. |
+| Forcing a theorem **proof into every introductory lesson**. | D6 full proof is P3-mandatory only; P1 wants short "why" and P2 a derivation, not a full proof. |
 | Forcing a **real-world application** where none adds value. | Applications are *threads that recur with value* (spine §4), never a per-lesson tax; Insight Gate's anti-decoration rule. |
 | Requiring **every lesson to exercise every dimension**. | Dimensions are scoped to lesson/module/course (§4); the contract records which apply. |
 | Making **exploratory/visual lessons unnecessarily formal**. | Representation-appropriate teaching (SEMANTIC_PAGE_GRAMMAR §5); an intro chapter may omit Practice/Summary. |
 | Turning authoring into an **impractically large bureaucracy**. | The contract is *one page*; it references, never restates, upstream artifacts (§9). |
-| Confusing **research enrichment with core exam requirements**. | D14/Profile C is enrichment, explicitly excluded from the exam bar (§3C, §4). |
+| Confusing **research enrichment with core exam requirements**. | D14 / the research-bridge overlay is enrichment, explicitly excluded from the core exam bar ([§3 overlay](#3-course-profiles), §4). |
 
 ---
 
@@ -451,8 +486,8 @@ flowchart TD
 | 5 | **Lesson Mastery Contract** | Guarantee coverage, rigor, practice, transfer, retention around the insight. | The `PASS` contract + profile + spine row. | A completed [Lesson Mastery Contract](templates/lesson-mastery-contract.md). | Any contract [rejection condition](templates/lesson-mastery-contract.md#5-rejection-conditions-the-mastery-gate). |
 | 6 | **Lesson spec + authoring** | Build the lesson from the block palette + page grammar. | Mastery contract; [authoring/templates/lesson-plan.md](templates/lesson-plan.md); [authoring/lesson-design.md](lesson-design.md); [product/semantic-page-grammar.md](../product/semantic-page-grammar.md). | Typed `LessonDefinition` + scenes + explorers + exercises. | Missing must-teach content; page leads with a purposeless visual (grammar §3). |
 | 7 | **Mathematical correctness review** | Ensure every shown quantity is mathematically correct. | The built lesson. | Completed [quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md) + [engineering/math-correctness.md](../engineering/math-correctness.md) sign-off. | Any unverified/plausible-but-wrong math; missing regression test. |
-| 8 | **Lesson-level acceptance** | Confirm the lesson meets its own mastery contract. | Contract + built lesson + tests. | Acceptance record (contract outcomes ↔ evidence, all met). | An outcome with no evidencing item; only near-copy exercises; assessment repeats instruction. |
-| 9 | **Cumulative module assessment** | Certify integration + delayed retention across the module. | All accepted lessons in the module. | A module assessment set (cumulative, interleaved, spaced) + results. | No cumulative/delayed items (case #9); no method-selection items. |
+| 8 | **Lesson-level acceptance** | Confirm the lesson meets its own mastery contract, on its **lesson-owned** outcomes. | Contract + built lesson + tests. | Acceptance record: every lesson-owned core outcome independently demonstrated with **real in-lesson evidence**; module-owned outcomes carried forward as planned Gate-9 obligations. | A **lesson-owned** outcome with no real evidencing item; accepting a lesson-owned outcome on *planned* module evidence; only near-copy exercises; assessment repeats instruction. |
+| 9 | **Cumulative module assessment** | Certify integration + delayed retention across the module, and **discharge module-owned outcomes** with real evidence. | All accepted lessons in the module + their module-owned obligations. | A module assessment set (cumulative, interleaved, spaced) + results verifying the module-owned outcomes. | No cumulative/delayed items (case #9); no method-selection items; a module-owned outcome claimed mastered without real results. |
 | 10 | **Course benchmark validation** | Check the whole course against the profile benchmark. | All modules; the [benchmark matrix](../courses/linear-algebra/benchmark-matrix.md). | A benchmark validation report (covered / missing / deferred). | Claims a profile the assessments don't support; silent coverage gaps. |
 
 **Relationship rule.** Later gates *consume* earlier artifacts and never restate

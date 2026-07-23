@@ -36,10 +36,10 @@ It sits between its neighbors and duplicates neither:
 
 > **Scope note (durable).** This document is **architecture, not an authoring
 > reopening.** Per `.cursor/rules/project-core.mdc`, the active product surface is
-> the built vertical slice plus M4.5 polish. Listing L4–L14 here — and
-> recommending L4 in §6 — does not authorize building them without an explicit
-> reopen. Concept ids and edges are a *commitment* so the pieces land coherently
-> when each lesson is actually built.
+> the built lessons (§1 Status column). Listing the `future` lessons here — and
+> recommending the next unbuilt node in §6 — does not authorize building them
+> without an explicit reopen. Concept ids and edges are a *commitment* so the
+> pieces land coherently when each lesson is actually built.
 
 Verified source-of-truth files this doc reconciles against:
 
@@ -68,18 +68,18 @@ Two orderings coexist today and must not be confused:
 | L1 | Vectors, combinations, span, basis, coordinates | `vectors` | built | LA | Lesson 1 |
 | L2 | Linear transformations & the columns rule | `transformations` | built | LA | Lesson 2 |
 | L3 | Linear systems: row & column pictures | `systems` | built | LA | Lesson 3 |
-| L4 | Elimination as reversible constraint manipulation | `elimination` | future | LA | — |
-| L5 | Solution sets & homogeneous systems | `solution-sets` | future | LA | — |
+| L4 | Elimination as reversible constraint manipulation | `elimination` | built | LA | **Lesson 4** |
+| L5 | Solution sets & homogeneous systems | `solution-sets` | built | LA | **Lesson 5** |
 | L6 | Matrix composition & inverses | `matrix-composition` | future | LA | — |
-| L7 | Determinants | `determinants` | built | LA | **Lesson 4** |
+| L7 | Determinants | `determinants` | built | LA | **Lesson 6** |
 | L8 | Subspaces, column space, null space, rank | `subspaces-rank` | future | LA | — |
 | L9 | Dimension & rank–nullity | `rank-nullity` | future | LA | — |
 | L10 | Change of basis | `change-of-basis` | future | LA | — |
-| L11 | Eigenvectors & diagonalization | `eigenvectors` | built (intro) | LA | **Lesson 5** |
+| L11 | Eigenvectors & diagonalization | `eigenvectors` | built (intro) | LA | **Lesson 7** |
 | L12 | Orthogonality & projections | `orthogonality` | future | LA | — |
 | L13 | Least squares | `least-squares` | future | LA | — |
 | L14 | Singular value decomposition | `svd` | future | LA | — |
-| — | Karatsuba multiplication | `karatsuba` | built | Algorithms | **Lesson 6** |
+| — | Karatsuba multiplication | `karatsuba` | built | Algorithms | **Lesson 8** |
 
 ### 1.1 Renumbering implications (no code change proposed here)
 
@@ -87,25 +87,30 @@ Because `getLessonNumber` is **positional over the built registry**, the printed
 badge already disagrees with the spine position for every built lesson after
 `systems`:
 
-- `determinants` prints **"Lesson 4"** but is spine **L7**.
-- `eigenvectors` prints **"Lesson 5"** but is spine **L11**.
-- `karatsuba` prints **"Lesson 6"** but is not on the LA spine at all — it is a
+- `elimination` prints **"Lesson 4"** and is spine **L4** (agrees today).
+- `solution-sets` prints **"Lesson 5"** and is spine **L5** (agrees today).
+- `determinants` prints **"Lesson 6"** but is spine **L7**.
+- `eigenvectors` prints **"Lesson 7"** but is spine **L11**.
+- `karatsuba` prints **"Lesson 8"** but is not on the LA spine at all — it is a
   separate **Algorithms** track (already modeled as its own course in
   `courseModel.ts`; it only shares the platform, not the LA dependency order).
 
 Consequences to plan for when future lessons are promoted:
 
 - **Every insertion before a built lesson shifts that lesson's badge.** Building
-  `elimination` (L4) alone bumps `determinants` 4→5, `eigenvectors` 5→6,
-  `karatsuba` 6→7. This is why **no L-number may be baked into any id, route, test
-  fixture, or learner-facing string.** Numbers are a *view*, ids are the identity.
+  `elimination` and `solution-sets` already bumped `determinants` (was "Lesson 4",
+  now "Lesson 6"), `eigenvectors` (now "Lesson 7"), and `karatsuba` (now "Lesson
+  8"). Building the next node, `matrix-composition` (L6), will bump `determinants`
+  6→7, `eigenvectors` 7→8, and `karatsuba` 8→9. This is why **no L-number may be
+  baked into any id, route, test fixture, or learner-facing string.** Numbers are
+  a *view*, ids are the identity.
 - **Prefer path-relative numbering.** The fix is the path-aware numbering in
   `courses/multi-domain-architecture.md` §2 (number within the active course's
   flattened path, and drop `karatsuba` out of the LA count). Until then, treat the
   badge as positional and cite the **spine position** in docs/tests.
 - **`karatsuba` should stop counting as an LA lesson.** It already lives in its
   own course in the validated `courseModel.ts`; the visible badge is the last
-  place still treating it as "LA Lesson 6."
+  place still treating it as "LA Lesson 8."
 
 ### 1.2 Section grouping (matches `curriculum.ts` today)
 
@@ -335,7 +340,7 @@ most naturally stresses the feature; "also uses" = other current coverage.
 | Misconception callouts | `eigenvectors` — "same line, not same direction"; defective-λ | `vectors`, `systems`, `karatsuba` | The elicit→confront→resolve pattern (VISION §12). |
 | Multiple checkpoints | `vectors` (uses `checkpoints[]`) | others use the single `checkpoint` | Proves more-than-one-check-per-lesson. |
 | Depth layers (why/trap/connection/…) | `eigenvectors` / `systems` | most lessons | Main line must read complete with all closed. |
-| Reference summary ("Remember this" / `keyTakeaway`) | any content lesson | all content lessons | The compression payoff (VISION §3). |
+| Reference summary (Summarize block / `keyTakeaway`) | any content lesson | all content lessons | The compression payoff (VISION §3); its visible heading names the synthesis, not "Remember this" (SEMANTIC_PAGE_GRAMMAR §1.1, §5.2). |
 | Progress / learner state | — (contract only) | `platform/learnerState.ts` (validated envelope) | **Gap:** persisted shape + migrations exist; UI is still positional, not path-aware (see MULTI_DOMAIN §2). |
 | Glossary | **none** | — | **Gap:** no glossary feature exists. The concept catalog (§3) is its natural data source when built. |
 | Handoff (CTA to next lesson) | route block available | check per-lesson routes | Low-risk; wire when path-aware navigation lands. |
@@ -349,55 +354,48 @@ to prove with the right next lesson.
 
 ## 6. Next-lesson recommendation
 
-**Recommendation: build `elimination` (L4) next — scoped explicitly as a platform
-scale-test — with `matrix-composition` (L6) as the lower-risk fallback.**
+`elimination` (L4) and `solution-sets` (L5) are now **built**, so the former
+recommendation is discharged. The **unique next unbuilt spine node is
+`matrix-composition` (L6)** — it is the earliest `future` node in spine order and
+the only unbuilt lesson whose hard prerequisites are all already built.
 
-### Why L4 (for)
+**Recommendation: build `matrix-composition` (L6) next.** This is a
+recommendation, **not** an authorization — promoting a `future` node still
+requires an explicit reopen (scope note above; `project-core` Scope).
 
-- **Spine contiguity.** It is the immediate successor to the built `systems`
-  (L3), keeping the built LA prefix `Ch0→L1→L2→L3→L4` unbroken, and it unlocks
-  L5 (`solution-sets`), which depends only on it (§2.1).
-- **Continuity is free.** It reuses `systems-default` verbatim — the dependent
-  columns and on/off-line targets in that example were *authored to pre-stage
-  elimination* (`exampleData.ts` comments). No new canonical example is needed.
-- **It stress-tests the two biggest platform gaps at once:**
-  - a **process/timeline guided scene** — elimination is a *sequence* of
-    reversible row operations reaching echelon form, which pushes the Motion
-    Canvas layer beyond the single-transform "deform the grid" idiom it has
-    proven so far (a genuinely new scene shape to validate);
-  - the **`committed-prediction` custom capability** — "which of these operations
-    preserves the solution set?" is a natural committed-prediction, finally
-    giving that built-but-unproven escape hatch a real consumer (§5 gap a).
-- **New, reusable concept ids.** Introduces `elimination`, `echelon-form`,
-  `pivot`, `free-variable` (§3) — the vocabulary L5, L8, and L9 all reuse.
+### Why L6 (for)
 
-### Why not L4 (against)
+- **Prerequisites are all built.** L6 depends only on `transformations` (L2) and
+  `systems` (L3), both built (§2.1) — no other unbuilt lesson is unblocked.
+- **It unblocks the structural core.** L6 is the hard prerequisite for
+  `subspaces-rank` (L8) and the ideal motivation for `determinants` (L7, already
+  built): once L6 lands, the determinant lesson can reference L6's
+  non-invertibility motivation instead of introducing collapse cold (§2.3, spine
+  §3 L7 note).
+- **Continuity is cheap.** It reuses `shear-2-1` and the *existing* moving-space /
+  transform-composition visual grammar the platform is strongest at (§4), so it is
+  a **lower-risk** build than a new process/timeline idiom.
+- **New, reusable concept ids.** Introduces `matrix-composition` and
+  `invertibility` (§3) — vocabulary L7, L8, and L9 all reuse.
 
-- **The procedure trap.** Elimination is the course's most "algorithmic" topic;
-  done carelessly it becomes "memorize Gaussian elimination," directly violating
-  VISION §5.2/§5.3 (objects before procedures, every procedure answers "why").
-  The insight must lead: *replace a system with an easier one having the same
-  solution set.* This is a real authoring risk, not just a platform one.
-- **The visualization is subtle.** "Rewrite the constraints without moving their
-  intersection" does not map onto the deforming-grid grammar the platform is
-  strongest at; it may need a new visual idiom (row picture animating while the
-  solution point stays fixed), which is exactly the scale-test — but also the
-  risk.
-- **L6 is the safer platform test.** `matrix-composition` (L6) depends only on
-  L2+L3 (both built, §2.3), reuses `shear-2-1` and the *existing* moving-space /
-  transform-composition grammar, and would validate composition visuals at lower
-  risk — at the cost of leaving the L4/L5 gap open.
+### Why not L6 / cautions
+
+- **Order matters (`AB ≠ BA`) is the real teaching risk**, not the visuals: the
+  lesson must make non-commutativity and "undoing a map" felt, not asserted
+  (VISION §5.2/§5.3 — objects before procedures).
+- **The `future` structural lessons (L8–L10) remain closed** and are the larger
+  gap; L6 is a step toward them, not a substitute.
+- **Two platform gaps from §5 are still unproven** and are *not* addressed by L6:
+  the `committed-prediction` custom capability still has no consumer, and there is
+  no glossary surfacing the §3 catalog. A later lesson (or a deliberate scope note
+  on L6) should pick these up.
 
 ### Verdict
 
-Build **L4 `elimination`** because it advances the spine, reuses existing data,
-and deliberately exercises the platform's two weakest-proven capabilities
-(process animation + the custom-capability escape hatch). Gate it on the
-anti-procedure framing above. If the wave's goal is a *low-risk* platform
-validation rather than spine progress, fall back to **L6 `matrix-composition`**,
-which reuses the most-proven visual grammar.
-
-Either way: **do not bake an L-number into any id or fixture** (§1.1), reserve the
-§3 concept ids at authoring time, and complete
+When the next LA lesson is reopened, build **L6 `matrix-composition`**: it is the
+unique next spine node, all its prerequisites are built, it reuses the
+most-proven visual grammar, and it unblocks the structural core (L8) and the
+determinant reframing (L7). **Do not bake an L-number into any id or fixture**
+(§1.1), reserve the §3 concept ids at authoring time, and complete
 [quality/lesson-correctness-checklist.md](../../quality/lesson-correctness-checklist.md) plus the
 spine's promotion checklist (`future → built`).

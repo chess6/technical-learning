@@ -71,22 +71,30 @@ Available blocks (all optional, any order, repeatable):
 - **Summarize** — one concise takeaway; do not repeat the whole lesson.
 - **Handoff** — a CTA link onward to another lesson.
 
-**Learner-facing titles.** Do **not** surface internal phase names or numbers
-(`1 · MOTIVATE`) in the UI, and **do not number the blocks** — they can repeat and
-reorder. Use content-specific headings in the lesson's own words ("When does a
-system have no solution?"); reserve the generic titles below for the table of
-contents, block metadata, and a11y labels (per
-[semantic-page-grammar §1](../product/semantic-page-grammar.md)).
+**Visible naming is owned by the page grammar.**
+[semantic-page-grammar §1](../product/semantic-page-grammar.md#1-the-core-shift-infer-the-role-do-not-announce-it)
+is the source of truth for what the learner sees. In short: **do not** surface
+internal phase names or numbers (`1 · MOTIVATE`) in the UI, **do not number the
+blocks** (they repeat and reorder), and use **content-specific headings** in the
+lesson's own words ("When does a system have no solution?"). The **table of
+contents also uses those content-specific headings**, never the generic phase
+names. The generic names below are **internal block / analytics / a11y metadata
+only** — not ToC entries and not visible headings (the four naming layers are in
+[grammar §1.1](../product/semantic-page-grammar.md#11-four-naming-layers-kept-distinct)).
 
-| Block | Internal / a11y title (not a mandatory visible heading) |
+| Block | Internal / a11y label (metadata only — never a visible heading or ToC entry) |
 | --- | --- |
-| Motivate | Think about it |
-| Watch | Watch the idea |
-| Check | Quick check |
-| Explore | Try it yourself |
-| Practice | Practice |
-| Worked example | Worked examples |
-| Summarize | Remember this |
+| Motivate | motivate |
+| Watch | watch |
+| Check | check |
+| Explore | explore |
+| Practice | practice |
+| Worked example | worked |
+| Summarize | summary |
+
+A Summarize block's **visible** heading names the actual synthesis ("The solution
+set is a point plus a subspace"), never a generic "Remember this"
+([grammar §5.2](../product/semantic-page-grammar.md#52-block-treatments-the-textbook-furniture)).
 
 ---
 
@@ -124,8 +132,8 @@ justified and correctness is preserved:
   mathematics; add explanation only when it contributes something the expression,
   the adjacent visual, or reasonable learner inference does not already provide.*
 - A **visual needs no caption** when its role is already clear from context.
-- Prior lesson patterns (including Lesson 4's structure) are **reusable tools, not
-  requirements.**
+- Prior lesson patterns (including the **eigenvectors** lesson's structure) are
+  **reusable tools, not requirements.**
 
 This freedom applies to pedagogy and presentation — **not** to mathematical
 honesty, accessibility, testing, semantic-color consistency, object-identity
@@ -166,10 +174,10 @@ Reserve full cinematic scenes for genuinely new ideas — not every drill item.
 Keep KaTeX/prose formatting out of `src/math` (structured values only); build
 learner-facing strings in a presentation layer (e.g. `src/lessons/eigenFormat.ts`).
 
-> **Lesson 4 is the worked reference** for this pattern (derivation *inside* the
-> worked example, one math spine feeding scene + notebook + diagram + tests,
-> misconceptions authored as callouts where they arise). The detailed adoption
-> note is archived at
+> **The eigenvectors lesson is the worked reference** for this pattern (derivation
+> *inside* the worked example, one math spine feeding scene + notebook + diagram +
+> tests, misconceptions authored as callouts where they arise). The detailed
+> adoption note is archived at
 > [archive/lesson-depth-pattern.md](../archive/lesson-depth-pattern.md); copy it in
 > spirit, not in medium.
 
@@ -198,8 +206,9 @@ Guided-scene requirements:
   outside the teaching half-extent so text and arrows are never clipped (see
   `safeFrame.ts`; failure modes in [quality/known-failure-modes.md](../quality/known-failure-modes.md) §6).
 - **No audio dependency**; no continuous motion without an educational purpose.
-- **Optional dimensional extension (Lesson 4):** a "See it in 3D" control may open
-  a **3D extension** with a *different* curated example — not an interchangeable
+- **Optional dimensional extension (eigenvectors lesson):** a "See it in 3D"
+  control may open a **3D extension** with a *different* curated example — not an
+  interchangeable
   render of the same 2D derivation. Label "2D derivation" / "See it in 3D" / "3D
   extension"; sync by semantic `majorStepId`, not raw progress; mount at most one
   renderer per clip at a time.
@@ -299,7 +308,9 @@ Representation fit (which object gets which notation) is owned by
   lesson clear, narrow screens use a drawer. **No** cramped horizontal lesson tabs;
   **no** points/streaks/badges. The **per-lesson table of contents**
   (`LessonTableOfContents`) is generated from the `route`, so it reflects that
-  lesson's real composition (repeats/omissions included).
+  lesson's real composition (repeats/omissions included); its entries use the
+  block's **content-specific heading**, not the generic phase name
+  ([grammar §1.1](../product/semantic-page-grammar.md#11-four-naming-layers-kept-distinct)).
 - **Progressive disclosure.** Do not show all controls at once; primary
   information first, secondary controls under *Display options* / *Advanced
   controls*. Do not repeat the same values across panels without a teaching reason.

@@ -71,7 +71,7 @@ In segment metadata, `kind: "horizontal"` / `"vertical"` refers to the **identit
 - Scalar matrices (\(A = \lambda I\)) and defective matrices are different kinds in `analyzeEigen2x2` — do not invent a second basis vector for defective cases.
 - Complex / no-real-eigenvector cases must not fabricate real directions.
 
-## 3×3 curated extension (Lesson 4 only)
+## 3×3 curated extension (eigenvectors lesson only)
 
 A genuine 3D extension may use **one** curated \(3\times 3\) example with a
 **declared** real eigenvalue — not a general cubic eigen solver.

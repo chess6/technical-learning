@@ -167,14 +167,19 @@ described by its *pedagogical job* — what it is responsible for in the learner
 head — independent of where it lands in any given lesson. (For the UI mechanics
 and the `route` mechanism, see authoring/lesson-design.md.)
 
-| Beat | Learner-facing | Pedagogical job |
-| --- | --- | --- |
-| Introduction / Think | "Think about it" | Orient the learner and open a **genuine question** they can hold. Create the itch the rest of the lesson scratches. Invite a prediction *only* where it would materially expose a misconception or set up an important contrast — not before every explanation. |
-| Watch | "Watch the idea" | Show the idea forming, one conceptual change at a time, with symbol and geometry synchronized. Build the mental model before the learner has to steer. |
-| Check | "Quick check" | Retrieve, don't restate. Ask for an interpretation (or a prediction, where it sets up a contrast) *before* revealing. This is a learning event (testing effect), not an assessment. |
-| Explore | "Try it yourself" | Hand over the *same* example to manipulate, in service of a specific question. Let the learner test the boundaries of the model they just built. |
-| Practice | "Practice" | Apply and transfer. Every reveal continues teaching (see §11). |
-| Remember | "Remember this" | Compress. State the one reusable idea the lesson collapses into (see §3). |
+The **beat name** below is an *internal* pedagogical label, not a visible heading.
+What the learner actually sees (content-specific headings, ToC entries) is owned
+by [product/semantic-page-grammar.md §1](semantic-page-grammar.md#1-the-core-shift-infer-the-role-do-not-announce-it)
+— do **not** surface these names (or "Remember this") as visible headings.
+
+| Beat (internal) | Pedagogical job |
+| --- | --- |
+| Introduction / Think | Orient the learner and open a **genuine question** they can hold. Create the itch the rest of the lesson scratches. Invite a prediction *only* where it would materially expose a misconception or set up an important contrast — not before every explanation. |
+| Watch | Show the idea forming, one conceptual change at a time, with symbol and geometry synchronized. Build the mental model before the learner has to steer. |
+| Check | Retrieve, don't restate. Ask for an interpretation (or a prediction, where it sets up a contrast) *before* revealing. This is a learning event (testing effect), not an assessment. |
+| Explore | Hand over the *same* example to manipulate, in service of a specific question. Let the learner test the boundaries of the model they just built. |
+| Practice | Apply and transfer. Every reveal continues teaching (see §11). |
+| Remember (Summarize) | Compress. State the one reusable idea the lesson collapses into (see §3). The visible heading names that idea, not "Remember this". |
 
 Two durable ordering commitments underlie this flow:
 
@@ -764,8 +769,9 @@ This has research backing on both sides and a tension worth managing: strongly
 connected knowledge transfers and is retained far better than isolated facts, but
 a tight narrative can make a lesson hard to **re-enter** for review. Mitigate with
 re-entry points — the concept map above, explicit "Connection" / "Looking ahead"
-layers (§13), and a scannable "Remember this" close — so a returning learner can
-rejoin mid-story without replaying the whole plot.
+layers (§13), and a scannable **summary** close (whose heading names the synthesis,
+not "Remember this") — so a returning learner can rejoin mid-story without
+replaying the whole plot.
 
 The `Vectors → … → Basis` edge is delivered **within Lesson 1**
 ([src/lessons/vectors.ts](../../src/lessons/vectors.ts), retitled "Vectors, Linear

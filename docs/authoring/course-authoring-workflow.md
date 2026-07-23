@@ -40,22 +40,34 @@ order (B then C), and **stop at the approval boundary between them**
 ## Step 1 — Mode A: Course architecture
 
 Designing or changing course structure, profiles, sequence, prerequisites, or the
-benchmark. Read/produce in this order:
+benchmark. **First resolve the subject** — Mode A always operates on *that
+subject's own* spine and benchmark, never the linear-algebra files by default:
 
-1. **Profile + target outcomes** (Gate 1) — declare the
-   [course profile(s)](mastery-standard.md#3-course-profiles) and which
-   S1–S5 stages the course targets. Calibrate against
-   [courses/linear-algebra/benchmark-matrix.md](../courses/linear-algebra/benchmark-matrix.md) (or
-   write a sibling `<SUBJECT>_BENCHMARK_MATRIX.md` for a new subject).
-2. **Spine + dependency map** (Gate 2) — update
-   [courses/linear-algebra/course-spine.md](../courses/linear-algebra/course-spine.md) and the
-   prerequisite DAG / concept ids in
-   [courses/linear-algebra/curriculum-architecture.md](../courses/linear-algebra/curriculum-architecture.md). Platform structure
-   (subjects → courses → modules) lives in
+- **Existing subject** (e.g. linear algebra) → use its files under
+  `docs/courses/<subject>/` (for LA: [course-spine.md](../courses/linear-algebra/course-spine.md),
+  [curriculum-architecture.md](../courses/linear-algebra/curriculum-architecture.md),
+  [benchmark-matrix.md](../courses/linear-algebra/benchmark-matrix.md)).
+- **New subject** → create the sibling set under `docs/courses/<subject>/`
+  (`course-spine.md`, `curriculum-architecture.md`, `benchmark-matrix.md`) with its
+  **own** external calibration. The subject-agnostic standards (mastery standard,
+  lesson contract, page grammar, workflow) are **reused unchanged** — do not copy
+  the linear-algebra particulars into them, and do not point a new course at the
+  LA files.
+
+Then read/produce in this order:
+
+1. **Profile + target outcomes** (Gate 1) — declare the subject's
+   [core profile](mastery-standard.md#3-course-profiles) (P1/P2/P3, plus an
+   optional research-bridge overlay) and which S1–S5 stages the course targets.
+   Calibrate against **that subject's** benchmark matrix.
+2. **Spine + dependency map** (Gate 2) — update **that subject's** course spine and
+   the prerequisite DAG / concept ids in its curriculum-architecture. Platform
+   structure (subjects → courses → modules) lives in
    [courses/multi-domain-architecture.md](../courses/multi-domain-architecture.md).
 
-**Output:** updated spine/architecture/benchmark docs. **No lesson code.**
-**Boundary:** do not promote a `future` node to "build now" here — that is an
+**Output:** updated (or newly created) spine/architecture/benchmark docs for the
+resolved subject. **No lesson code.** **Boundary:** do not promote a `future` node
+to "build now" here — that is an
 [approval boundary](#step-5--approval-boundaries-hard-stops).
 
 ---
@@ -135,9 +147,11 @@ After lessons exist. Do not skip once a module is complete.
 Stop and get explicit user approval before crossing any of these. Do not
 self-authorize.
 
-- **Reopening a `future` lesson.** The built surface is fixed (see
-  [project-core](../../.cursor/rules/project-core.mdc) Scope). Building or promoting
-  a `future` spine node requires an explicit user go-ahead.
+- **Building or promoting a `future` lesson (Mode C).** The built surface is fixed
+  (see [project-core](../../.cursor/rules/project-core.mdc) Scope). Writing lesson
+  code for, or promoting (`future → built`), a `future` spine node requires an
+  explicit user go-ahead. *(Producing a Mode B **plan** for the uniquely resolved
+  next node is not promotion — see [Step 6](#step-6--handling-short-prompts-from-repo-context).)*
 - **Insight contract not `PASS`.** Never begin lesson planning (Gate 5+) without a
   `Gate result: PASS` insight contract — this is out of process.
 - **Planning → implementation.** Never write lesson code (Mode C) from a plan the
@@ -158,11 +172,14 @@ Short prompts rely on repository state. Resolve before acting:
 
 | Prompt shape | Resolve via |
 | --- | --- |
-| "Build/plan **the next lesson**" | [courses/linear-algebra/curriculum-architecture.md §6](../courses/linear-algebra/curriculum-architecture.md) next-lesson recommendation + spine status; confirm it is not a still-closed `future` node (approval boundary). |
-| "Plan/build **`<topic>`**" | Map topic → spine node + concept ids; check the lesson directory `docs/courses/<course>/lessons/<lesson>/` for an existing `insight-brief.md` / `insight.md` / `mastery-contract.md` / `lesson-plan.md` and resume from the furthest completed gate. |
+| "**Plan the next lesson**" | Resolve the next node from the subject's curriculum-architecture next-lesson recommendation + spine status (LA: [§6](../courses/linear-algebra/curriculum-architecture.md)). **If it resolves to exactly one unique next unbuilt spine node, treat the prompt as authorization to run Mode B (planning only) for that node** — **name the node first** ("Planning L6 `matrix-composition`…"), then produce the brief → insight contract → mastery contract → plan. Do **not** write code or promote the node. |
+| "**Build the next lesson**" | Same resolution, but *building* crosses the [Mode C boundary](#step-5--approval-boundaries-hard-stops): resolve + name the node, run Mode B if not already planned, then **stop for explicit approval** before implementation. |
+| "Plan/build **`<topic>`**" | Map topic → spine node + concept ids; check the lesson directory `docs/courses/<course>/lessons/<lesson>/` for an existing `insight-brief.md` / `insight.md` / `mastery-contract.md` / `lesson-plan.md` and resume from the furthest completed gate. Planning is authorized; building stops at the Mode C boundary. |
 | "Fix / improve **`<lesson>`**" | Usually Mode C polish under correctness + design rules; if it changes coverage/assessment, re-open its Lesson Mastery Contract. |
-| "Add a **course/subject**" | Mode A; new benchmark matrix + spine; reuse the subject-agnostic standards unchanged. |
-| Ambiguous scope | State the assumed mode + gate you are entering; if it crosses an approval boundary, ask first. |
+| "Add a **course/subject**" | Mode A; **resolve or create that subject's** spine + benchmark matrix (Step 1); reuse the subject-agnostic standards unchanged. |
+| **Ambiguous resolution** | If "the next lesson" does **not** resolve to a unique node (branch point in the DAG, multiple `future` nodes equally ready, or unclear subject), **ask** which node before planning. Otherwise state the assumed mode + gate you are entering. |
 
-Always name the mode and the gate you are starting in, so the user can redirect
-early.
+**Rule of thumb:** a short prompt authorizes **planning** (Mode B) for a uniquely
+resolved node once you name it; it never authorizes **implementation** (Mode C),
+which is always a hard stop. Always name the mode and gate you are starting in, so
+the user can redirect early.

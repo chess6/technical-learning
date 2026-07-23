@@ -167,7 +167,7 @@ export const CURRICULUM: readonly Subject[] = [ /* see §5 */ ];
 - **`registry.ts` `lessons[]`** — still the content source of truth and still the
   set of lessons that actually exist. `getLessonById` is unchanged and is how the
   tree's `lessonId` refs resolve to content.
-- **The six-phase lesson flow, math layering, all rendering** — untouched.
+- **The lesson block palette / `route`, math layering, all rendering** — untouched.
 
 ### What must change (and how)
 

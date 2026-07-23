@@ -350,8 +350,10 @@ text, ordering, region-shading, learner-built expressions), this is called out a
 - **Suitable interaction formats:** `multiple-choice` for a guided transfer item;
   genuine, unaided transfer needs the **learner-validation pilot** (Phase 4 T1,
   which deliberately never says "Karatsuba").
-- **Placement:** **exactly one** guided `transfer` item in Practice; the real,
-  unaided transfer in **learner validation**.
+- **Placement:** **at most one** guided `transfer` item in Practice (and none when
+  the lesson owns no transfer outcome — see
+  [lesson-mastery-contract §3](templates/lesson-mastery-contract.md#3-exercise-and-assessment-standard));
+  the real, unaided transfer in **learner validation**.
 - **Karatsuba example (Practice):** "Strassen multiplies two \(2\times2\) blocks
   with 7 multiplications instead of 8, recursively. Its exponent is?" →
   `multiple-choice` \(\log_2 7 \approx 2.807\). *(Validation T1 instead poses a
@@ -410,7 +412,8 @@ out of the in-lesson surface into the pilot.
     method could also produce;
   - 1 **boundary-case** item (or a mirrored pair when the lesson explicitly split
     two edge effects, as Karatsuba does with carrying vs operand width);
-  - **exactly one** genuine **transfer** item.
+  - **at most one** genuine **transfer** item — one where the lesson owns a
+    transfer outcome, none where it does not.
 - **Learner validation (the pilot):** reserve **full unaided reconstruction**,
   **counterexample/explanation construction**, and **untelegraphed transfer** for
   here. Do **not** stack these into Practice — in-app they collapse into
@@ -438,8 +441,9 @@ tend to crowd out stronger patterns. Guard against it:
 - **Bundle "which + why."** For multiple-choice error-diagnosis and complexity
   items, make the reason part of the selected option so fluent-sounding wrong
   reasoning is a distractor, not a free pass.
-- **One transfer, done honestly.** More than one guided transfer item usually means
-  the extras are recall in disguise; keep the untelegraphed transfer in validation.
+- **At most one transfer, done honestly.** When the lesson owns a transfer
+  outcome, one guided transfer item is usually enough; more than one usually means
+  the extras are recall in disguise. Keep the untelegraphed transfer in validation.
 
 ### Tiers ↔ phases
 
@@ -450,10 +454,10 @@ the three validation levels:
 | --- | --- | --- | --- |
 | `check` | Check (and light Practice openers) | prediction, recall, explanation-lite | Recall |
 | `drill` | Practice (and scaffolded Explore) | procedural execution, reconstruction slices, invariant, boundary case | Reconstruction |
-| `transfer` | Practice (the single transfer item) | transfer, complexity reasoning, counterexample selection | Transfer |
+| `transfer` | Practice (the transfer item, if any) | transfer, complexity reasoning, counterexample selection | Transfer |
 
 Keep the **counts** small and the **tier mix** balanced: a lesson that is all
 `check` measures only recall; a lesson that is all `drill` is a problem set. One
-`check`, a couple of `drill`, and exactly one `transfer` covers the three levels
+`check`, a couple of `drill`, and at most one `transfer` covers the three levels
 while staying light — and the deepest reconstruction and transfer evidence is
 collected in the learner-validation pilot, not by stacking probes into the lesson.

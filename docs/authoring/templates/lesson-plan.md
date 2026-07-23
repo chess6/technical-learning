@@ -147,7 +147,10 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
       metadata; learner-facing wording preserves meaning + causal chain
 - [ ] Insight traceability table complete — every contract obligation mapped to a
       learner-facing location and observable evidence
-- [ ] Six-phase flow (or documented deviation)
+- [ ] Intentional `route` composed from the block palette (no mandatory sequence;
+      Watch precedes Explore by default — see lesson-design.md); any deviation noted
+- [ ] Visible headings + ToC are content-specific, not generic phase names
+      ([semantic-page-grammar §1](../../product/semantic-page-grammar.md))
 - [ ] Guided-to-interactive continuity (same example/notation/roles)
 - [ ] Progressive disclosure applied
 - [ ] KaTeX + \(\mathbf{e}_1, \mathbf{e}_2\) notation consistent

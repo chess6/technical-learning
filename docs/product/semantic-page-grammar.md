@@ -28,6 +28,13 @@ Read alongside:
 
 ## 1. The core shift: infer the role, do not announce it
 
+> **This section is the source of truth for visible naming.** What the learner
+> sees — visible headings, table-of-contents entries, and how block roles are
+> signalled — is governed here (the [four naming layers](#11-four-naming-layers-kept-distinct)).
+> `authoring/lesson-design.md`, `product/vision.md`, and the course docs defer to
+> this section for anything learner-visible and keep the generic block names
+> (Motivate/Watch/…) strictly as **internal / analytics / a11y** metadata.
+
 The block palette in authoring/lesson-design.md has internal names — **Motivate, Watch,
 Check, Explore, Practice, Summarize**. Those names are useful as **internal block
 types, analytics categories, and the basis for accessibility metadata** — they are
@@ -267,9 +274,13 @@ Rules:
   - **Owner** — the specific lesson or module (by id) responsible for the return;
   - **Destination** — where the general case is actually reached (e.g.
     \(\mathbb{R}^n\), an abstract vector space, or a coordinate-free statement);
-  - **Assessment evidence** — the exercise or assessment item, in that owner's
-    [Lesson Mastery Contract](../authoring/templates/lesson-mastery-contract.md), that shows the learner
-    *operating* in the general case, not merely reading about it.
+  - **Assessment evidence** — the exercise or assessment item that shows the
+    learner *operating* in the general case, not merely reading about it. This
+    evidence may live in **either** the owning
+    [Lesson Mastery Contract](../authoring/templates/lesson-mastery-contract.md) (an in-lesson
+    or lesson-owned return) **or** the owning **module-assessment plan** (a
+    module-owned return discharged at Gate 9) — wherever the named owner discharges
+    it.
 
   An in-lesson return still owes the evidence; its owner and destination are then
   simply "this lesson, here". A general concept taught in \(\mathbb{R}^2\) with

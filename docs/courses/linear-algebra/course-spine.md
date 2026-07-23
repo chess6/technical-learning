@@ -35,11 +35,12 @@ insight. **This document is the source of truth for the sequence; keep the two
 in sync.**
 
 > **Scope note (durable).** Listing all 14 lessons here does **not** reopen
-> authoring of Lessons 4–14. Per `.cursor/rules/project-core.mdc`, the active
-> product surface is the built vertical slice; the future lessons are an
-> *architecture commitment*, authored later one at a time. This spine exists so
-> that when each is built it lands in a coherent whole, and so the earlier
-> lessons can *foreshadow* what is coming instead of contradicting it.
+> authoring of the `future` lessons. Per `.cursor/rules/project-core.mdc`, the
+> active product surface is the built lessons (see the Status column); the
+> `future` lessons are an *architecture commitment*, authored later one at a time
+> on explicit request. This spine exists so that when each is built it lands in a
+> coherent whole, and so the earlier lessons can *foreshadow* what is coming
+> instead of contradicting it.
 
 ---
 
@@ -79,8 +80,8 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 | L1 | Vectors, combinations, span, basis, coordinates | A vector is data you can *combine*; a basis makes coordinates a *choice*, not a fact. | built | `vectors` |
 | L2 | Linear transformations & the columns rule | A linear map is fixed by where the basis lands — its **columns**. | built | `transformations` |
 | L3 | Linear systems: row & column pictures | \(A\mathbf{x}=\mathbf{b}\) is *both* intersecting constraints (rows) *and* "which combination of columns is \(\mathbf{b}\)?" | built | `systems` |
-| L4 | Elimination as reversible constraint manipulation | **Replace a system with an easier system having exactly the same solution set.** | future | `elimination` |
-| L5 | Solution sets & homogeneous systems | Every solution set is *one particular solution + all null directions*; linear vs affine. | future | `solution-sets` |
+| L4 | Elimination as reversible constraint manipulation | **Replace a system with an easier system having exactly the same solution set.** | built | `elimination` |
+| L5 | Solution sets & homogeneous systems | Every solution set is *one particular solution + all null directions*; linear vs affine. | built | `solution-sets` |
 | L6 | Matrix composition & inverses | "Apply \(B\), then \(A\)" is a new map \(AB\); an inverse *undoes* a map (when it can). | future | `matrix-composition` |
 | L7 | Determinants | A geometric/algebraic **detector of invertibility** (signed area/volume scale), not the first sighting of collapse. | built | `determinants` |
 | L8 | Subspaces, column space, null space, rank | **Column space controls possible outputs; null space controls non-uniqueness; rank counts independent output directions.** | future | `subspaces-rank` |
@@ -99,11 +100,12 @@ linear-algebra dependency order.
 
 ## 3. Per-lesson central insight & content
 
-Only Lessons 4–14 are detailed here (Ch 0–L3 and L11 are built; see their lesson
-definitions). Each future lesson must lead with its insight, reuse a prior
-example wherever possible, and preserve semantic roles/notation.
+The `future` lessons (L6, L8–L10, L12–L14) are the ones still to be authored;
+Ch 0–L5, L7, and L11 (intro) are built (see their lesson definitions). L4/L5/L7
+are detailed below for the record. Each future lesson must lead with its insight,
+reuse a prior example wherever possible, and preserve semantic roles/notation.
 
-### L4 — Elimination as reversible constraint manipulation *(major missing lesson)*
+### L4 — Elimination as reversible constraint manipulation *(built)*
 
 **Insight:** *not* "memorize Gaussian elimination" but **replace a system with an
 easier system that has exactly the same solution set.** Visualize each row
@@ -116,7 +118,7 @@ The reversibility (each operation is invertible ⇒ solution set is preserved) i
 the load-bearing idea and the bridge to L6 (inverses) and L7 (determinants
 unchanged up to sign/scale under these operations).
 
-### L5 — Solution sets & homogeneous systems
+### L5 — Solution sets & homogeneous systems *(built)*
 
 **Insight:** every solution set is **one particular solution plus all solutions
 of \(A\mathbf{x}=\mathbf{0}\)** (the homogeneous/null directions).
