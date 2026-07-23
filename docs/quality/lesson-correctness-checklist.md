@@ -439,3 +439,57 @@ empty when the system is inconsistent.
   directions (seeds rank–nullity) — both surface inside the one lesson
 - [x] `npm run lint` clean; full `vitest` suite (479) green; `npm run build` green;
   `e2e` suite (46) green including the new spec
+
+---
+
+## Systems–Elimination module — lesson-owned mastery remediation (2026-07-22)
+
+Implements Packages **B–E** of the
+[implementation package](../courses/linear-algebra/modules/systems-elimination/implementation-package.md)
+across L3 systems, L4 elimination, L5 solution-sets: fresh-instance E3 production,
+de-inflated Checks (reveal-only `prediction` → `committed-prediction` on fresh cases),
+genuine E4 construction on fresh columns, and learner-written proof surfaces. Adds one
+new shared example (`systems-fresh`) and the L4 self-addition-legality prose fix. No
+math/visualization renderer changed — only lesson content + one pure-data example.
+
+### Mathematical review
+
+- [x] Every number in the new `systems-fresh` example verified against the shared
+  `src/math` source of truth (Cramer solve, `classifyLinearSystem2x2`,
+  `particularSolution2x2`, `solutionSet2x2`, `generateSolution`,
+  `differenceLiesInNullspace`) — no algebra reimplemented in lesson code
+- [x] Asymmetric matrices used (independent det \(=-5\); a genuinely dependent pair
+  \((1,2),(3,6)\) with null direction \((3,-1)\)); distinct from `systems-default` so a
+  drill cannot be passed by recall (guarded by a test)
+- [x] Fresh elimination arithmetic hand-checked and test-checked (multiplier 3,
+  triangular row \((0,-5\mid-15)\), \(y=3\), \(x=-2\))
+- [x] `construct-in-explorer` items grade against `classifyLinearSystem2x2` (expect
+  `none`) — a real predicate, not a self-mark
+- [x] L4 illegal-moves prose corrected: \(R_i\to R_i+R_i=2R_i\) is a legal nonzero
+  scaling (reversible); \(i\ne j\) is only the definitional boundary of *replacement*
+  (matches the L4 insight contract)
+
+### Testing review
+
+- [x] New unit test `src/lessons/__tests__/freshExample.test.ts` (8 cases) covers the
+  independent solve, fresh elimination arithmetic, dependent consistent line, generate-
+  a-third, and the inconsistent (empty) case
+- [x] Full `vitest` suite green (**487**, +8) incl. `lessonWiring` (route ids resolve,
+  tiers), `courseModel`, `ExercisePanel`, `capabilities`, `contentValidation`
+- [x] `npm run lint` (oxlint) clean; `tsc -b` reports 0 errors on the edited files
+- [x] `e2e` for the three touched lessons green
+  (`lesson-systems`, `lesson-elimination`, `lesson-solution-sets`; 5 tests) — no console
+  errors; committed-prediction still grades
+
+### Teaching review
+
+- [x] Fresh drills are labeled "a different system" so continuity with the taught
+  running example is preserved while the drills demand production, not recall
+- [x] KaTeX / column vectors throughout; no raw `[[...]]` in learner-facing prose
+- [x] Proof `self-check` items are honestly framed as E6 *surfaces* (learner writes the
+  proof + model answer + rubric); the contracts and implementation package state that E6
+  **credit** requires human scoring (module Package F), not the in-app self-mark
+- [x] L3 trichotomy proof item derives the result from independence/basis, **not** the
+  not-yet-defined determinant (matches the corrected L3 insight contract)
+- [x] Mastery contracts (L3/L4/L5) Gate 8 records updated: **PASS for lesson-owned
+  P1/P2 outcomes (E3/E4)**; **P3 proof line CONDITIONAL** pending human scoring

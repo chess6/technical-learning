@@ -63,22 +63,24 @@ for a lesson's Gate 8**: each must first be *independently demonstrated in-lesso
 instances, integrates them, provides the **human-scored** surface for proofs, and
 re-fires them after a delay.
 
-> **Currently blocked.** Per the corrected evidence audit, **none** of these is yet
-> independently demonstrated in any lesson (honest ceiling E1–E2). Reassessing or
-> claiming retention of an outcome the learner never demonstrated would re-introduce
-> exactly the inflation this correction removes. Class B is **blocked → planned**: it
-> becomes schedulable only after the owning lesson reaches Gate 8 with real E3+/E6
-> evidence.
+> **Status after the lesson-owned remediation (Packages B–E built).** The **P1/P2
+> fluency** outcomes below are now *independently demonstrated in-lesson* at E3 (fresh
+> graded items), so reassessing them here is no longer inflation — they are unblocked at
+> the lesson and now wait only on **Package F** (the module runner). The **D6 proof**
+> outcomes have genuine in-lesson proof *surfaces* but their E6 credit still needs
+> **human scoring** (Package F), so the proof reassessments remain blocked on F. Class B
+> stays **not-yet-runnable until F exists**, but the *reason* has narrowed from "no
+> in-lesson evidence" to "no module runner / no human-scoring surface yet".
 
 | Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
 | --- | --- | --- | --- | --- | --- |
-| Elimination → triangular + back-sub on a fresh system | L4 | D3 | fresh reassessment + retention | `mod-fluency-elim` | blocked → planned |
-| Write a complete parametric solution set (fresh) | L5 | D3 | reassessment + integration | `mod-fluency-solset` | blocked → planned |
-| Read dimension from free-variable count (fresh) | L5 | D3/D4 | retention | `mod-fluency-dim` | blocked → planned |
-| Prove row-op invariance (both directions) | L4 | D6 | human-scored proof surface | `mod-proof-invariance` | blocked → planned |
-| Prove solution-set structure (both inclusions) | L5 | D6 | human-scored proof surface | `mod-proof-structure` | blocked → planned |
-| Justify the trichotomy **without the determinant** | L3 | D6 | human-scored proof surface | `mod-proof-trichotomy` | blocked → planned |
-| Retrieve trichotomy / uniqueness-≠-reachability / row-op legality after a delay | L3–L5 | D12 | spaced retention | `mod-spaced-*` | blocked → planned |
+| Elimination → triangular + back-sub on a fresh system | L4 | D3 | fresh reassessment + retention | `mod-fluency-elim` | lesson E3 ✅ → awaits F (runner) |
+| Write a complete parametric solution set (fresh) | L5 | D3 | reassessment + integration | `mod-fluency-solset` | lesson E3 ✅ → awaits F (runner) |
+| Read dimension from free-variable count (fresh) | L5 | D3/D4 | retention | `mod-fluency-dim` | awaits F (runner) |
+| Prove row-op invariance (both directions) | L4 | D6 | human-scored proof surface | `mod-proof-invariance` | surface built 🟡 → awaits F (human scoring) |
+| Prove solution-set structure (both inclusions) | L5 | D6 | human-scored proof surface | `mod-proof-structure` | surface built 🟡 → awaits F (human scoring) |
+| Justify the trichotomy **without the determinant** | L3 | D6 | human-scored proof surface | `mod-proof-trichotomy` | surface built 🟡 → awaits F (human scoring) |
+| Retrieve trichotomy / uniqueness-≠-reachability / row-op legality after a delay | L3–L5 | D12 | spaced retention | `mod-spaced-*` | awaits F (scheduler) |
 
 ## Abstraction-return deferrals discharged here
 Any accountable abstraction-return whose **owner is this module**
@@ -150,18 +152,21 @@ Covers the seven areas the module must assess under the declared profile:
 ## Results & readiness
 - **Class A (module-owned) discharged:** `0 / 5` core with real evidence (**planned** —
   no assessment surface built yet); enrichment `mod-enrich-ode` separate, off the bar.
-- **Class B (lesson-owned reassessment):** `blocked` — the owning lessons have **no
-  E3+/E6 in-lesson evidence yet** (corrected Gate 8: all three NOT PASSED), so their
-  module reassessment/retention cannot begin.
+- **Class B (lesson-owned reassessment):** `not yet runnable` — the owning lessons now
+  have **real E3/E4 in-lesson evidence** for their P1/P2 outcomes (Gate 8 PASS for those;
+  P3 proof line conditional on human scoring), so reassessment is no longer inflation. It
+  cannot begin only because **Package F** (the module runner + human-scoring surface +
+  scheduler) does not exist yet.
 - **Delayed-retention verified:** no (not yet administered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
-  **none.** The corrected audit shows the built lessons evidence only **exposure and
-  reproduction (E1–E2)** — recognition, reveal-only prediction, and near-copy items;
-  there is **no** independent-performance (E3+), transfer (E4), proof (E6), applied
-  multi-variable (P2), or timed (S3) evidence yet
+  **none at the module level.** The built lessons now evidence **independent performance
+  (E3) and transfer/construction (E4)** in-lesson for computational/characterization
+  outcomes, and provide proof *surfaces* (E6 credit pending human scoring). But there is
+  still **no module-level** cumulative, timed (S3), delayed-retention (D12), applied
+  multi-variable (P2 module slice), or human-scored-proof (E6) evidence
   ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)). No "module
-  mastered / exam ready / proof-ready" claim may be made until the in-lesson upgrades
-  (implementation-package B–E) land **and** this plan is built and run.
+  mastered / exam ready / proof-ready" claim may be made until this plan is built
+  (Package F onward) and run.
 
 Feeds the course-level benchmark validation (`validation.md` in this directory) /
 Gate 10, to be created once real results exist.

@@ -77,47 +77,53 @@ Every core outcome's **required** level is *independently demonstrated* (E3+); t
 **current honest level** is the runtime behavior audited against
 [`src/lessons/capabilities.ts`](#evidence-audit-runtime-checked) — not the tier label.
 
+Status key: ✅ built & verified; 🟡 proof *surface* built, E6 credit awaits human
+scoring (Package F); ⬜ module-owned (Gate 9).
+
 | Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Predict a legal row op leaves the solution fixed, and say why | D1/D13 | lesson | `elim-predict-fixed-point` (committed-prediction) | **E1** — commit-before-reveal, **but the lesson's own instance** ⇒ a learning event, not evidence (mastery-standard §5) | E3 |
-| Run forward elimination + back-substitute, correct multiplier | D3 | lesson | `elim-sequence-forward` (exercise-sequence), `elim-matrix-after-step` (matrix-entry) | **E2** — intermediates genuinely graded, but on the worked numbers (near-copy) | E3 |
-| Diagnose an illegal row op and explain why | D13 | lesson | `elim-diagnose-illegal` (multiple-choice) | **E1–E2** — recognition of a directly-taught fact | E4 |
-| Construct a \(\mathbf{b}\) yielding a contradiction row | D3/D7 | lesson | `elim-construct-inconsistent` (construct-in-explorer) | **E2 (borderline E3)** — a *genuinely graded* construction (the module's only one), but same dependent columns **and a hint naming an answer** ⇒ scaffolded | E4 |
-| Prove invariance in both directions (reversibility) | D6 | lesson | `elim-explain-invariance` (self-check) | **E1** — the model answer is *revealed* and the learner **self-marks**; `correct` mirrors the self-mark (capabilities.ts). **Not** human-scored ⇒ **not proof evidence** | E6 |
-| Select elimination vs another method unprompted | D8 | **module** | module set (not built) | not built | E3 (Gate 9) |
-| Use elimination in an unfamiliar/cumulative item (compute \(\mathbf{x}_p\), combine with L5) | D9/D10 | **module** | module set (not built) | not built | E4/E5 (Gate 9) |
+| Predict a legal row op leaves the solution fixed, and say why | D1/D13 | lesson | `elim-predict-fixed-point` (committed-prediction, **pre-Watch**) | **E1** — commit-before-reveal on the taught instance; kept **by design** as the pre-Watch prediction (testing effect), a learning event | E3 (evidenced via proof + fresh runs) |
+| Run forward elimination + back-substitute, correct multiplier | D3 | lesson | ✅ `elim-sequence-forward-fresh` (exercise-sequence, **fresh**) + `elim-matrix-after-step-fresh` (matrix-entry, **fresh**) + the taught-number twins | **E3** — intermediates (multiplier, triangular row, back-sub) graded on a fresh system | E3 |
+| Diagnose an illegal row op and explain why | D13 | lesson | `elim-diagnose-illegal` (multiple-choice) | **E1–E2** — recognition of a directly-taught fact (retained as support) | E4 |
+| Construct a \(\mathbf{b}\) yielding a contradiction row | D3/D7 | lesson | ✅ `elim-construct-inconsistent` (construct-in-explorer, **fresh cols \((1,2),(3,6)\), hint removed**) | **E4** — genuinely graded construction, now unaided on a fresh instance | E4 |
+| Prove invariance in both directions (reversibility) | D6 | lesson | 🟡 `elim-explain-invariance` (self-check + model answer + rubric) | **E6 surface** — learner writes the proof; `self-check` self-marks (capabilities.ts), so credit awaits human scoring | E6 (human-scored) |
+| Select elimination vs another method unprompted | D8 | ⬜ **module** | module set (not built) | not built | E3 (Gate 9) |
+| Use elimination in an unfamiliar/cumulative item (compute \(\mathbf{x}_p\), combine with L5) | D9/D10 | ⬜ **module** | module set (not built) | not built | E4/E5 (Gate 9) |
 
 #### Evidence audit (runtime-checked)
 
-`committed-prediction` counts as evidence **only** when the learner commits before the
-reveal **and the item is a fresh (non-lesson) instance** (mastery-standard §5); this
-item uses the taught example ⇒ E1. `self-check` sets `correct` to the learner's own
-`selfMark` and is never machine- or human-scored in-app ⇒ it **cannot** supply E6.
-The one genuinely graded construction (`elim-construct-inconsistent`) is hinted and
-reuses the taught columns ⇒ E2, not the E4 its tier claimed. **Result for L4: honest
-ceiling E2 (one borderline-E3 construction); no valid proof evidence.** This is the
-strongest lesson operationally, but its earlier "P3 met" verdict was **incorrect**.
+`committed-prediction` is evidence only on a **fresh** instance (mastery-standard §5);
+`elim-predict-fixed-point` stays on the taught example on purpose (it is the pre-Watch
+prediction), so it is a learning event, not the D3 evidence. `self-check` self-marks and
+is never scored in-app ⇒ an **E6 surface, not E6 evidence**. **Result for L4 after the
+lesson-owned remediation (Packages B–E):** the procedural D3 outcome now reaches **E3**
+via the fresh `elim-sequence-forward-fresh` / `elim-matrix-after-step-fresh`, and the
+contradiction-row construction reaches **E4** (de-hinted, fresh columns). The invariance
+**proof** is a genuine E6 *surface* whose credit is **blocked on human scoring**
+(Package F). Fresh numbers verified in
+[`freshExample.test.ts`](../../../../../src/lessons/__tests__/freshExample.test.ts).
 
 ### 1e. Coverage-status classification (required vs reached)
-Honest ceiling under the runtime audit: **E1–E2. No lesson-owned core outcome reaches
-"independently demonstrated" (E3+); P3 proof depth is *not* met.**
-- **Practiced (level 2) — ceiling reached:** forward elimination + back-sub grade
-  intermediates, but on the running numbers (E2 near-copy); the contradiction-row
-  construction is graded but hinted (E2, borderline E3).
-- **Learning events, not evidence:** `elim-predict-fixed-point` (commit-before-reveal
-  on the *taught* instance) is E1.
-- **No proof evidence:** `elim-explain-invariance` is self-marked; it exposes a model
-  answer but proves nothing — the P3 obligation is unmet.
+Honest ceiling **after Packages B–E**: procedural/construction outcomes reach **E3/E4**;
+the D6 proof outcome reaches an **E6 surface** whose credit is blocked on human scoring.
+- **Independently demonstrated (E3+) — now reached:** fresh forward elimination +
+  back-sub (`elim-sequence-forward-fresh`, `elim-matrix-after-step-fresh`; E3); fresh,
+  unaided contradiction-row construction (`elim-construct-inconsistent`; E4).
+- **Learning event, by design:** `elim-predict-fixed-point` (pre-Watch prediction) — E1.
+- **Recognition (support):** `elim-diagnose-illegal` (E1–E2).
+- **Proof surface, credit pending (🟡):** `elim-explain-invariance` — model answer +
+  rubric captured; the in-app self-mark is not E6 scoring (Package F).
 - **Module-owned (planned Gate 9):** method selection (D8); cumulative use with L5.
 
 ### 1f. Connections, assessment, retention
 - **Cumulative connections (D10):** fires L3's consistency (contradiction row = "no
   solution") and reuses the exact L3 system; feeds L5 (free variables, \(\mathbf{x}_p\)).
-- **Assessment evidence (summary):** 1 committed-prediction Check (on the *taught*
-  instance → E1); Explore; Practice = sequence + matrix entry (near-copy, E2) + error
-  diagnosis (E1–E2) + one genuinely-graded but hinted construction (E2, borderline E3)
-  + a `self-check` "proof" that is **self-marked, not scored** (no proof evidence).
-  Honest ceiling E2 (see the [evidence audit](#evidence-audit-runtime-checked)).
+- **Assessment evidence (summary):** 1 committed-prediction pre-Watch Check (taught
+  instance → E1, by design); Explore; Practice now includes **fresh** sequence + matrix
+  entry (E3), error diagnosis (E1–E2, support), a **de-hinted fresh** construction (E4),
+  and a `self-check` invariance **proof surface** (E6 credit pending human scoring).
+  Honest ceiling now **E3–E4** for procedural/construction; proof captured but unscored
+  (see the [evidence audit](#evidence-audit-runtime-checked)).
 - **Delayed-retention requirement (D12):** the invariance theorem and the legal/illegal
   distinction must resurface in the module spaced set and when L7 studies the
   determinant's behavior under row operations.
@@ -138,32 +144,32 @@ Honest ceiling under the runtime audit: **E1–E2. No lesson-owned core outcome 
 
 ## 6. Acceptance record (Gate 8)
 
-Honest status of the current build under the **P3 override**, corrected against the
-runtime evidence audit ([§1d](#1d-outcomes-each-paired-with-evidence)):
+Status of the build **after the lesson-owned remediation (Packages B–E built)** under
+the **P3 override**, against the runtime evidence audit
+([§1d](#1d-outcomes-each-paired-with-evidence)):
 
 - [x] Insight Contract linked and `PASS`; primary insight preserved in meaning.
 - [x] Every field in §1 filled; upstream artifacts linked, not restated.
 - [x] Every outcome operational, marked lesson/module-owned, paired with evidence.
-- [ ] Every **lesson-owned** core outcome reaches **independently demonstrated with
-      real in-lesson evidence** — **FAILS**: honest ceiling is **E2** (one
-      borderline-E3 hinted construction). The commit-before-reveal item uses the taught
-      instance (E1); the procedural runs are near-copy (E2); **no fresh E3 exists.**
+- [x] Every **lesson-owned P1/P2 (procedural + construction)** outcome reaches
+      **independently demonstrated (E3/E4)** — fresh graded elimination runs and a
+      de-hinted fresh contradiction-row construction now exist.
+- [ ] Every **lesson-owned P3 (proof)** outcome reaches independently demonstrated —
+      **NOT YET**: `elim-explain-invariance` is a genuine E6 *surface*; `self-check` is
+      self-marked, so E6 credit is **blocked on human scoring** (Package F).
 - [x] Every **module-owned** core outcome recorded as a Gate-9 obligation (D8; D10).
-- [ ] Assessment set matches §3c — **FAILS** under P3: the "proof" item is a
-      self-marked `self-check` (not proof evidence); no fresh-instance procedural item.
+- [x] Assessment set matches §3c for procedural/construction — fresh-instance E3 runs
+      and an E4 construction now present.
 - [x] Backward bridge + forward edge present; ≥1 cumulative connection (D10).
 - [x] Delayed-retention hook (D12) recorded.
-- [x] Correctness gate passed (built lesson has passing math/tests).
-- [ ] No rejection condition holds — **trips #3 (near-copy, no fresh E3), #5 (theorem
-      justification not evidenced — self-mark is not scoring), #8 (lesson-owned
-      outcomes stall at E1–E2)**.
-- [ ] Profile-dependent items (D6 proof depth) match P3 — **FAILS**: `self-check` is
-      self-marked, so the P3 proof obligation is **not** met (correction of the
-      earlier "P3 met" claim).
+- [x] Correctness gate passed (lint + 202 unit tests green, incl. fresh-example math).
+- [ ] No rejection condition holds — **#3 cleared** (fresh E3 exists); still **open on
+      #5 for the P3 proof line only** until the invariance proof is human-scored.
+- [ ] Profile-dependent items (D6 proof depth) match **P3** — **NOT YET** (proof
+      surface built; human scoring pending).
 
-**Corrected verdict: Gate 8 NOT PASSED.** L4 is the strongest lesson operationally —
-it has genuine graded intermediates and the module's only real graded construction —
-but its earlier "P3 met" verdict was **wrong**: a self-marked `self-check` is not
-proof evidence, and no item reaches a fresh, unaided E3. Remaining **lesson-owned**
-work → implementation-package items **B** (fresh E3 run), **D** (de-hint the
-construction / add a fresh E4), **E** (human-scored proof). Module-owned → Gate 9.
+**Verdict: Gate 8 PASS for the lesson-owned P1/P2 (procedural + construction) outcomes
+at E3/E4; the P3 proof obligation (D6) is CONDITIONAL — the invariance proof surface is
+built, but E6 credit awaits human scoring (Package F).** L4 remains the strongest lesson
+operationally and now has fresh, unaided E3/E4 evidence; the one remaining lesson-relevant
+gap is proof *scoring*, which is module-owned infrastructure (Package F).

@@ -1,4 +1,6 @@
 import type { LessonDefinition } from "./types";
+import { LINEAR_SYSTEM_FRESH as EX2 } from "./exampleData";
+import { COMMITTED_PREDICTION_ID, SELF_CHECK_ID } from "./capabilities";
 
 /**
  * Lesson: "Solution Sets & Homogeneous Systems".
@@ -311,13 +313,37 @@ export const solutionSetsLesson: LessonDefinition = {
         "Add the null vector to the known solution: $(3, 0) + (2, -1) = (5, -1)$, and $A(5,-1) = (3,6) = \\mathbf{b}$. Every $(3 + 2t,\\ -t)$ is a solution too — e.g. $t = -1$ gives $(1, 1)$ — but this step asks for the $t = 1$ result, $(5, -1)$.",
     },
     {
+      // Package B — fresh-instance production (E3): a DIFFERENT dependent system,
+      // so the learner must apply "add a null vector", not recall (5, -1).
+      id: "sol-generate-third-fresh",
+      type: "vector",
+      tier: "drill",
+      prompt:
+        "A different system: $x + 3y = 4,\\ 2x + 6y = 8$ has the solution $(4, 0)$, and $(3, -1) \\in \\operatorname{Null}(A)$. Add that null vector to $(4, 0)$ and enter the resulting solution.",
+      expected: [EX2.thirdSolution[0], EX2.thirdSolution[1]],
+      tolerance: 0.01,
+      explanation:
+        "Add the null vector to the known solution: $(4, 0) + (3, -1) = (7, -1)$, and $A(7, -1) = (4, 8) = \\mathbf{b}$. Every $(4 + 3t,\\ -t)$ is a solution; this is the $t = 1$ result.",
+    },
+    {
+      // Package C — was a reveal-only `prediction`; now a commit-before-reveal
+      // choice of the correct solution-set description on FRESH numbers.
       id: "sol-whole-set",
-      type: "prediction",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
       tier: "transfer",
       prompt:
-        "Describe the *entire* solution set of $x + 2y = 3,\\ 2x + 4y = 6$, and say where its direction and its location come from.",
-      reveal:
-        "$\\operatorname{Sol}(A, \\mathbf{b}) = (3, 0) + \\{t\\,(2, -1) : t \\in \\mathbb{R}\\} = \\{(3 + 2t,\\ -t)\\}$. The **direction** $(2, -1)$ is a basis of $\\operatorname{Null}(A)$ (from the homogeneous system); the **location** is any particular solution, e.g. $(3, 0)$. So the set is the null line carried off the origin to pass through $(3,0)$ — affine, not through the origin.",
+        "Commit before revealing. Which is the *entire* solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ (particular solution $(4, 0)$, null direction $(3, -1)$)?",
+      config: {
+        options: [
+          "Just the two points $(4, 0)$ and $(7, -1)$",
+          "$(4, 0) + \\{t\\,(3, -1) : t \\in \\mathbb{R}\\} = \\{(4 + 3t,\\ -t)\\}$ — an affine line",
+          "$\\{t\\,(3, -1) : t \\in \\mathbb{R}\\}$ — the null line through the origin",
+        ],
+        correctIndex: 1,
+        reveal:
+          "The set is $\\mathbf{x}_p + \\operatorname{Null}(A) = (4, 0) + \\{t\\,(3, -1)\\}$. The **direction** $(3, -1)$ is a basis of $\\operatorname{Null}(A)$; the **location** is the particular solution $(4, 0)$. It is the null line carried off the origin — affine, so option 3 (through the origin) is wrong, and it is a whole line, so option 1 undercounts it.",
+      },
     },
     {
       id: "sol-nullity-caveat",
@@ -352,13 +378,24 @@ export const solutionSetsLesson: LessonDefinition = {
         "A trivial null space forbids two distinct solutions, so there is *at most one* for every $\\mathbf{b}$ (uniqueness). It does not force existence: reachability is the separate column-space question. \u201cExactly one for every $\\mathbf{b}$\u201d additionally requires the columns to span the space.",
     },
     {
+      // Package C — was a reveal-only `prediction`; now a commit-before-reveal
+      // choice on a FRESH inconsistent target.
       id: "sol-inconsistent-empty",
-      type: "prediction",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
       tier: "transfer",
       prompt:
-        "Keep the dependent columns $(1,2),(2,4)$ but take $\\mathbf{b} = (3, 5)$, off their line. What is the solution set, and why can't you write $\\mathbf{x}_p + \\operatorname{Null}(A)$?",
-      reveal:
-        "The set is empty, $\\varnothing$. $\\mathbf{b} = (3,5)$ is not in the column space, so there is no particular solution $\\mathbf{x}_p$. The decomposition $\\mathbf{x}_p + \\operatorname{Null}(A)$ needs an anchor to translate the null space to; with no $\\mathbf{x}_p$ there is nothing to shift, and $\\operatorname{Null}(A)$ itself is *not* the answer (that would claim $\\mathbf{0}$ solves it, but $A\\mathbf{0} = \\mathbf{0} \\ne \\mathbf{b}$).",
+        "Commit before revealing. Take the dependent columns $(1, 2), (3, 6)$ with $\\mathbf{b} = (4, 9)$, off their line. What is the solution set, and why can't you write $\\mathbf{x}_p + \\operatorname{Null}(A)$?",
+      config: {
+        options: [
+          "$\\operatorname{Null}(A)$ itself — the null line through the origin",
+          "Empty ($\\varnothing$): $\\mathbf{b}$ is off the column space, so there is no particular solution $\\mathbf{x}_p$ to anchor the translate",
+          "A single point, because the columns are dependent",
+        ],
+        correctIndex: 1,
+        reveal:
+          "The set is $\\varnothing$. $\\mathbf{b} = (4, 9)$ is not in the column space (the line $\\{s(1,2)\\}$), so no $\\mathbf{x}_p$ exists. The decomposition $\\mathbf{x}_p + \\operatorname{Null}(A)$ needs an anchor to translate the null space to; with no $\\mathbf{x}_p$ there is nothing to shift. $\\operatorname{Null}(A)$ itself is *not* the answer — that would claim $\\mathbf{0}$ solves it, but $A\\mathbf{0} = \\mathbf{0} \\ne \\mathbf{b}$.",
+      },
     },
     {
       id: "sol-free-variables-dimension",
@@ -375,6 +412,38 @@ export const solutionSetsLesson: LessonDefinition = {
       correctChoice: 1,
       explanation:
         "One free variable means $\\dim\\operatorname{Null}(A) = 1$: the null space is a line. A consistent system's set is that line translated by $\\mathbf{x}_p$ — an affine line. The number of free variables is the dimension of the solution set.",
+    },
+    {
+      // Package E — proof-construction surface (E6). Self-check captures the
+      // learner's written proof + shows a model answer and rubric; full proof
+      // credit is awarded by human scoring in the module assessment.
+      id: "sol-prove-null-subspace",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Prove it: show that $\\operatorname{Null}(A)$ is a subspace — it contains $\\mathbf{0}$, and it is closed under addition and scalar multiplication. Write your proof, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "Contains $\\mathbf{0}$: $A\\mathbf{0} = \\mathbf{0}$, so $\\mathbf{0} \\in \\operatorname{Null}(A)$. Closed under addition: if $\\mathbf{u}, \\mathbf{v} \\in \\operatorname{Null}(A)$ then $A\\mathbf{u} = \\mathbf{0}$ and $A\\mathbf{v} = \\mathbf{0}$, so by linearity $A(\\mathbf{u} + \\mathbf{v}) = A\\mathbf{u} + A\\mathbf{v} = \\mathbf{0} + \\mathbf{0} = \\mathbf{0}$, hence $\\mathbf{u} + \\mathbf{v} \\in \\operatorname{Null}(A)$. Closed under scaling: for any scalar $c$, $A(c\\,\\mathbf{u}) = c\\,A\\mathbf{u} = c\\,\\mathbf{0} = \\mathbf{0}$, so $c\\,\\mathbf{u} \\in \\operatorname{Null}(A)$. All three closure conditions hold, so $\\operatorname{Null}(A)$ is a subspace.",
+        rubric:
+          "A strong answer checks all three conditions (contains $\\mathbf{0}$, closed under $+$, closed under scaling) and derives each from linearity of $A$ ($A(\\mathbf{u}+\\mathbf{v}) = A\\mathbf{u}+A\\mathbf{v}$, $A(c\\mathbf{u}) = cA\\mathbf{u}$).",
+      },
+    },
+    {
+      // Package E — the headline structure theorem, both inclusions.
+      id: "sol-prove-structure",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Prove it: for a **consistent** system with a particular solution $\\mathbf{x}_p$, show that its solution set equals $\\mathbf{x}_p + \\operatorname{Null}(A)$. Prove both inclusions.",
+      config: {
+        modelAnswer:
+          "($\\supseteq$) Let $\\mathbf{x}_h \\in \\operatorname{Null}(A)$. Then $A(\\mathbf{x}_p + \\mathbf{x}_h) = A\\mathbf{x}_p + A\\mathbf{x}_h = \\mathbf{b} + \\mathbf{0} = \\mathbf{b}$, so $\\mathbf{x}_p + \\mathbf{x}_h$ is a solution: every element of $\\mathbf{x}_p + \\operatorname{Null}(A)$ solves the system. ($\\subseteq$) Let $\\mathbf{x}$ be any solution, so $A\\mathbf{x} = \\mathbf{b}$. Then $A(\\mathbf{x} - \\mathbf{x}_p) = A\\mathbf{x} - A\\mathbf{x}_p = \\mathbf{b} - \\mathbf{b} = \\mathbf{0}$, so $\\mathbf{x} - \\mathbf{x}_p \\in \\operatorname{Null}(A)$, i.e. $\\mathbf{x} = \\mathbf{x}_p + \\mathbf{x}_h$ for some $\\mathbf{x}_h \\in \\operatorname{Null}(A)$. Each set contains the other, so they are equal. (This needs a particular solution to exist, which is exactly consistency.)",
+        rubric:
+          "A strong answer proves both inclusions: any $\\mathbf{x}_p + \\mathbf{x}_h$ solves the system, and any solution minus $\\mathbf{x}_p$ lies in $\\operatorname{Null}(A)$. It should note the argument depends on consistency (an $\\mathbf{x}_p$ existing).",
+      },
     },
   ],
   keyTakeaway:

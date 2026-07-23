@@ -1,4 +1,5 @@
 import type { LessonDefinition } from "./types";
+import { LINEAR_SYSTEM_FRESH as EX2 } from "./exampleData";
 import {
   COMMITTED_PREDICTION_ID,
   CONSTRUCT_IN_EXPLORER_ID,
@@ -69,6 +70,9 @@ export const eliminationLesson: LessonDefinition = {
       exerciseIds: [
         "elim-sequence-forward",
         "elim-matrix-after-step",
+        // Package B — fresh-instance production (E3) on a different system.
+        "elim-sequence-forward-fresh",
+        "elim-matrix-after-step-fresh",
         "elim-diagnose-illegal",
         "elim-construct-inconsistent",
         "elim-explain-invariance",
@@ -98,7 +102,7 @@ export const eliminationLesson: LessonDefinition = {
     {
       id: "illegal-moves",
       title: "The move that is not allowed",
-      body: "The nonzero condition on scaling is not fussiness — it is the whole safety guarantee. Multiplying a row by $0$ turns it into $0 = 0$, which every point satisfies: the constraint is **gone**, and you can never divide back to recover it. A system with one solution can suddenly appear to have a whole line of them. (Likewise, 'adding a row to itself' is really a disguised scaling, not an elementary move.) Diagnosing an illegal step is a real skill: if a manipulation is not reversible, the solution set is no longer guaranteed to be the one you started with.",
+      body: "The nonzero condition on scaling is not fussiness — it is the whole safety guarantee. Multiplying a row by $0$ turns it into $0 = 0$, which every point satisfies: the constraint is **gone**, and you can never divide back to recover it. A system with one solution can suddenly appear to have a whole line of them. (Adding a row *to itself*, $R_i \\to R_i + R_i$, is perfectly legal — it is just the nonzero scaling $R_i \\to 2R_i$ in disguise, and it is reversible. The replacement operation is *defined* with $i \\ne j$ only so it names a genuinely different move; the $i = j$ case is not illegal, merely a scaling.) Diagnosing an illegal step is a real skill: if a manipulation is not reversible, the solution set is no longer guaranteed to be the one you started with.",
       observation:
         "Legal row operations are exactly the reversible ones. Scaling by $0$ is irreversible — so it is off-limits.",
     },
@@ -186,12 +190,16 @@ export const eliminationLesson: LessonDefinition = {
   },
   // Practice derives the idea rather than quizzing it: predict the effect of an
   // operation → step through one elimination → record the result as a matrix →
-  // diagnose an illegal move → construct the inconsistent case elimination
-  // exposes → explain the invariance in your own words. These use the platform
-  // capabilities (committed prediction, sequence, matrix entry, construction,
-  // self-check) reached through the `custom` escape hatch. The committed
-  // prediction (`elim-predict-fixed-point`) is placed FIRST in the route, before
-  // the Watch visual, so it is a real prediction; the rest follow after Explore.
+  // repeat both on a FRESH system (the `*-fresh` E3 production drills, on
+  // `systems-fresh`, so the answer cannot be recalled) → diagnose an illegal move
+  // → construct the inconsistent case elimination exposes (unaided, no
+  // answer-giving hint) → explain the invariance in your own words. These use the
+  // platform capabilities (committed prediction, sequence, matrix entry,
+  // construction, self-check) reached through the `custom` escape hatch. The
+  // committed prediction (`elim-predict-fixed-point`) is placed FIRST in the
+  // route, before the Watch visual, so it is a real prediction; the rest follow
+  // after Explore. The self-checked proof is an E6 *surface*: full proof credit is
+  // awarded by human scoring in the module assessment, not the in-app self-mark.
   exercises: [
     {
       id: "elim-predict-fixed-point",
@@ -278,6 +286,74 @@ export const eliminationLesson: LessonDefinition = {
       },
     },
     {
+      // Package B — fresh-instance elimination (E3): a DIFFERENT system, so the
+      // multiplier, pivot arithmetic, and result cannot be recalled from the
+      // worked example. System: x + 2y = 4 ; 3x + y = -3, solution (-2, 3).
+      id: "elim-sequence-forward-fresh",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "drill",
+      prompt:
+        "A different system: step through forward elimination on $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$.",
+      config: {
+        steps: [
+          {
+            kind: "multiple-choice",
+            prompt:
+              "Which operation clears $x$ from $R_2$, using $R_1$ as the pivot?",
+            choices: [
+              "$R_2 \\to R_2 - 3\\,R_1$",
+              "$R_2 \\to R_2 - 2\\,R_1$",
+              "$R_1 \\leftrightarrow R_2$",
+              "$R_2 \\to R_2 + 3\\,R_1$",
+            ],
+            correctChoice: 0,
+            explanation:
+              "The entry below the pivot is $3$ and the pivot is $1$, so the multiplier is $-3/1 = -3$: subtract $3\\,R_1$ from $R_2$.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "After $R_2 \\to R_2 - 3\\,R_1$, what is the new coefficient of $y$ in $R_2$?",
+            expected: -5,
+            explanation: "The $y$-coefficient becomes $1 - 3\\cdot 2 = -5$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "The new $R_2$ reads $-5y = -15$. What is $y$?",
+            expected: EX2.solution[1],
+            explanation: "$y = -15 / (-5) = 3$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "Back-substitute into $R_1$ ($x + 2y = 4$). What is $x$?",
+            expected: EX2.solution[0],
+            explanation: "$x = 4 - 2(3) = -2$, so $(x, y) = (-2, 3)$.",
+          },
+        ],
+      },
+    },
+    {
+      // Package B — fresh-instance matrix production (E3).
+      id: "elim-matrix-after-step-fresh",
+      type: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      tier: "drill",
+      prompt:
+        "Enter the augmented matrix $[A \\mid \\mathbf{b}]$ that results from applying $R_2 \\to R_2 - 3\\,R_1$ to $\\left[\\begin{array}{cc|c} 1 & 2 & 4 \\\\ 3 & 1 & -3 \\end{array}\\right]$.",
+      config: {
+        rows: 2,
+        cols: 3,
+        expected: [
+          [1, 2, 4],
+          [0, -5, -15],
+        ],
+        explanation:
+          "$R_1$ is unchanged. $R_2$ becomes $(3, 1, -3) - 3(1, 2, 4) = (0, -5, -15)$ — the triangular system $x + 2y = 4$, $-5y = -15$.",
+        matrixName: "[A\\,|\\,b]",
+      },
+    },
+    {
       id: "elim-diagnose-illegal",
       type: "multiple-choice",
       tier: "transfer",
@@ -294,26 +370,26 @@ export const eliminationLesson: LessonDefinition = {
         "Scaling by $0$ turns $R_2$ into $0 = 0$, erasing its constraint. It is irreversible (you cannot divide back by $0$), so solutions that violated the old $R_2$ can appear — the solution set can grow. The other three are reversible and safe.",
     },
     {
+      // Package D — genuine graded construction (E4) on FRESH dependent columns,
+      // with the answer-giving hint removed so the learner reasons unaided.
       id: "elim-construct-inconsistent",
       type: "custom",
       capabilityId: CONSTRUCT_IN_EXPLORER_ID,
       tier: "transfer",
       prompt:
-        "Elimination exposes an unsolvable system as a contradiction row $0 = (\\text{nonzero})$. Take the dependent coefficients whose columns are $(1, 2)$ and $(2, 4)$. Commit a target $\\mathbf{b}$ for which $A\\mathbf{x} = \\mathbf{b}$ has **no solution**.",
+        "Elimination exposes an unsolvable system as a contradiction row $0 = (\\text{nonzero})$. Take the dependent coefficients whose columns are $(1, 2)$ and $(3, 6)$. Commit a target $\\mathbf{b}$ for which $A\\mathbf{x} = \\mathbf{b}$ has **no solution**.",
       config: {
         target: "vector2",
         check: {
           kind: "system-classification",
           matrix: [
-            [1, 2],
-            [2, 4],
+            [1, 3],
+            [2, 6],
           ],
           expect: "none",
         },
         reveal:
-          "Any $\\mathbf{b}$ off the line spanned by $(1, 2)$ works — e.g. $(1, 0)$. Eliminating $x$ then leaves a row $0 = c$ with $c \\neq 0$: the impossible equation that certifies 'no solution'.",
-        hint:
-          "Pick a $\\mathbf{b}$ that is not a multiple of $(1, 2)$ — say $(1, 0)$ — so it lies off the columns' line.",
+          "Any $\\mathbf{b}$ off the line spanned by $(1, 2)$ works — for instance $(1, 0)$ or $(0, 1)$. Eliminating $x$ then leaves a row $0 = c$ with $c \\neq 0$: the impossible equation that certifies 'no solution'. A $\\mathbf{b}$ on the line, like $(2, 4)$, would instead collapse to $0 = 0$ and give infinitely many.",
       },
     },
     {

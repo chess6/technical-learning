@@ -1,5 +1,10 @@
 import type { LessonDefinition } from "./types";
-import { LINEAR_SYSTEM_EXAMPLE as EX } from "./exampleData";
+import { LINEAR_SYSTEM_EXAMPLE as EX, LINEAR_SYSTEM_FRESH as EX2 } from "./exampleData";
+import {
+  COMMITTED_PREDICTION_ID,
+  CONSTRUCT_IN_EXPLORER_ID,
+  SELF_CHECK_ID,
+} from "./capabilities";
 
 /**
  * Lesson: "Linear Systems — Two Pictures of One Equation".
@@ -244,11 +249,15 @@ export const systemsLesson: LessonDefinition = {
     answer:
       "Exactly one, for every $\\mathbf{b}$. Independent columns span the whole plane, so every target is reachable (existence) and reachable in only one way (uniqueness) — the same reason a basis gives unique coordinates. Only when the columns are dependent does the count depend on $\\mathbf{b}$: none if $\\mathbf{b}$ is off their line, infinitely many if it is on it.",
   },
-  // The problem set is built to *derive* the trichotomy, not just quiz it:
-  // classify → translate a system into A, b → construct an inconsistent system →
-  // generalize where inconsistency lives → produce counterexamples → explain the
-  // mechanism. Construct / counterexample / explain are `prediction` items: the
-  // learner commits their own answer, then a worked reveal confirms it.
+  // The problem set is built to *derive* the trichotomy, not just quiz it, and to
+  // produce real evidence rather than reveal-only exposure. The taught-example
+  // Checks build recognition; the **fresh-instance** drills (`*-fresh`, on the
+  // `systems-fresh` numbers) demand independent production (E3); the construction
+  // is a genuinely graded `construct-in-explorer` (E4); the "why" items are
+  // commit-before-reveal `committed-prediction`s on fresh scenarios (not
+  // auto-correct `prediction`s); and the proof items are learner-written
+  // `self-check`s (an E6 *surface* — full proof credit needs human scoring per the
+  // module assessment plan, not the in-app self-mark).
   exercises: [
     {
       id: "sys-count-infinite",
@@ -294,6 +303,19 @@ export const systemsLesson: LessonDefinition = {
         "From row 2, $y = 2x - 5$; substituting gives $7x = 14$, so $x = 2$, $y = -1$. Equivalently $2\\,\\mathbf{a}_1 - \\mathbf{a}_2 = (-1, 5)$ in the column picture. The columns point in different directions (independent), so this is the only solution.",
     },
     {
+      // Package B — fresh-instance production (E3): a DIFFERENT system, so the
+      // learner must solve, not recall the worked answer.
+      id: "sys-solve-unique-fresh",
+      type: "vector",
+      tier: "drill",
+      prompt:
+        "A different system: solve $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$. Enter $(x, y)$.",
+      expected: [EX2.solution[0], EX2.solution[1]],
+      tolerance: 0.01,
+      explanation:
+        "From row 1, $x = 4 - 2y$; substituting into row 2 gives $3(4 - 2y) + y = -3$, i.e. $12 - 5y = -3$, so $y = 3$ and $x = 4 - 6 = -2$. The columns $(1, 3)$ and $(2, 1)$ are independent (det $= -5 \\ne 0$), so $(-2, 3)$ is the only solution.",
+    },
+    {
       id: "sys-translate-columns",
       type: "vector",
       tier: "transfer",
@@ -303,6 +325,18 @@ export const systemsLesson: LessonDefinition = {
       tolerance: 0.01,
       explanation:
         "Reading *down* the $x$-coefficients gives $\\mathbf{a}_1 = (1, 2)$; the $y$-coefficients give $\\mathbf{a}_2 = (3, -1)$; the right-hand sides give $\\mathbf{b} = (-1, 5)$. Rows read across (equations); columns read down (the arrows you blend). Same nine numbers, regrouped.",
+    },
+    {
+      // Package B — fresh-instance production (E3) of the row → column translation.
+      id: "sys-translate-columns-fresh",
+      type: "vector",
+      tier: "transfer",
+      prompt:
+        "A different system: translate $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$ into $A\\mathbf{x} = \\mathbf{b}$. Enter the **first column** $\\mathbf{a}_1$ of $A$ (the coefficients that multiply $x$).",
+      expected: [EX2.a[0][0], EX2.a[1][0]],
+      tolerance: 0.01,
+      explanation:
+        "Read the $x$-coefficients *down* the equations: $\\mathbf{a}_1 = (1, 3)$. Likewise $\\mathbf{a}_2 = (2, 1)$ and $\\mathbf{b} = (4, -3)$. The first column collects each equation's $x$-coefficient, top to bottom.",
     },
     {
       id: "sys-column-reading",
@@ -321,13 +355,28 @@ export const systemsLesson: LessonDefinition = {
         "The column reading treats $A\\mathbf{x}$ as $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ (the columns rule) and asks for the blend that reaches $\\mathbf{b}$. The first choice is the row reading; both describe the same solution set.",
     },
     {
+      // Package D — genuine graded construction (E4) on FRESH dependent columns.
+      // The learner commits a target and the shared system classifier checks it
+      // is truly inconsistent; no reveal-only self-grading.
       id: "sys-construct-inconsistent",
-      type: "prediction",
+      type: "custom",
+      capabilityId: CONSTRUCT_IN_EXPLORER_ID,
       tier: "transfer",
       prompt:
-        "Construct: open the explorer with the dependent columns $\\mathbf{a}_1 = (1, 2)$, $\\mathbf{a}_2 = (2, 4)$. Drag the target $\\mathbf{b}$ until the system has **no solution**. Write down one $\\mathbf{b}$ that works, and state the rule for exactly which $\\mathbf{b}$ make it inconsistent.",
-      reveal:
-        "Any $\\mathbf{b}$ that is *not* a multiple of $(1, 2)$ works — e.g. $\\mathbf{b} = (1, 0)$, $(0, 1)$, or $(3, 5)$. The columns span only the line $\\{s\\,(1,2)\\}$, so $A\\mathbf{x} = \\mathbf{b}$ is inconsistent exactly when $\\mathbf{b}$ lies **off that line** ($\\mathbf{b} \\notin \\operatorname{span}\\{\\mathbf{a}_1\\}$). In the explorer you will see the recipe endpoint slide along the columns' line but never touch a $\\mathbf{b}$ you dragged off it.",
+        "Construct: take the dependent columns $\\mathbf{a}_1 = (1, 2)$ and $\\mathbf{a}_2 = (3, 6)$. Commit a target $\\mathbf{b}$ for which $A\\mathbf{x} = \\mathbf{b}$ has **no solution**.",
+      config: {
+        target: "vector2",
+        check: {
+          kind: "system-classification",
+          matrix: [
+            [1, 3],
+            [2, 6],
+          ],
+          expect: "none",
+        },
+        reveal:
+          "The columns span only the line $\\{s\\,(1, 2)\\}$, so $A\\mathbf{x} = \\mathbf{b}$ is inconsistent exactly when $\\mathbf{b}$ lies **off** that line ($\\mathbf{b} \\notin \\operatorname{span}\\{\\mathbf{a}_1\\}$) — for example $(1, 0)$ or $(0, 1)$. A target on the line, like $(2, 4)$, would instead give infinitely many solutions.",
+      },
     },
     {
       id: "sys-generalize-inconsistent",
@@ -346,22 +395,44 @@ export const systemsLesson: LessonDefinition = {
         "The reachable set (column space) is the whole line $\\{s\\,(1,2)\\}$. A target on that line is reachable (infinitely many recipes); a target off it is unreachable — no solution. So the inconsistent targets are precisely the points off the line.",
     },
     {
+      // Package C — was a reveal-only `prediction`; now a commit-before-reveal
+      // choice on the *mechanism*, with fresh counterexamples in the reveal.
       id: "sys-counterexample-uniqueness",
-      type: "prediction",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
       tier: "transfer",
       prompt:
-        "Counterexample: disprove the claim \u201ctwo equations in two unknowns always have exactly one solution.\u201d Give one system that fails by having *no* solution and one that fails by having *infinitely many*.",
-      reveal:
-        "The claim is false whenever the two constraints are not independent. Infinitely many: $\\begin{cases} x + 2y = 3 \\\\ 2x + 4y = 6 \\end{cases}$ (row 2 is twice row 1 — one real constraint). None: $\\begin{cases} x + 2y = 3 \\\\ 2x + 4y = 5 \\end{cases}$ (doubling row 1 gives $2x+4y=6 \\neq 5$). 'Exactly one solution' holds only when the columns are independent; counting equations is not enough.",
+        "Commit before revealing. The claim \u201ctwo equations in two unknowns always have exactly one solution\u201d is false. What exactly makes it fail?",
+      config: {
+        options: [
+          "It fails only when one equation contains an arithmetic mistake",
+          "It fails exactly when the two constraints are not independent (dependent columns) — then the system has none or infinitely many",
+          "It fails only when both right-hand sides are zero",
+        ],
+        correctIndex: 1,
+        reveal:
+          "Independence, not the count of equations, controls uniqueness. Two fresh counterexamples with dependent columns: infinitely many — $\\begin{cases} x + 3y = 4 \\\\ 2x + 6y = 8 \\end{cases}$ (row 2 is twice row 1, one real constraint); none — $\\begin{cases} x + 3y = 4 \\\\ 2x + 6y = 9 \\end{cases}$ (doubling row 1 forces $2x + 6y = 8 \\ne 9$).",
+      },
     },
     {
+      // Package C — was a reveal-only `prediction`; now a committed choice of the
+      // correct mechanism (why dependent ⇒ never exactly one).
       id: "sys-explain-dependent",
-      type: "prediction",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
       tier: "transfer",
       prompt:
-        "Explain: why can a system with **dependent** columns never have *exactly one* solution — only none or infinitely many?",
-      reveal:
-        "Dependent columns span only a line (their column space collapses from the plane to a line). If $\\mathbf{b}$ lies off that line it is unreachable — **no** solution. If $\\mathbf{b}$ lies on it, then because one column is a multiple of the other you can always trade between the coefficients along that relation ($x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ is unchanged if you shift $(x, y)$ by any multiple of the dependency), producing **infinitely many** recipes. Either way, exactly one is impossible — that middle case is exactly what independence would rule out.",
+        "Commit before revealing. Why can a system with **dependent** columns never have *exactly one* solution — only none or infinitely many?",
+      config: {
+        options: [
+          "Dependent columns always make the system inconsistent, so there is never any solution",
+          "Dependent columns span only a line: a target off it is unreachable (none); a target on it is reachable in infinitely many ways — so exactly one is impossible",
+          "Dependent columns double every solution, so there are always exactly two",
+        ],
+        correctIndex: 1,
+        reveal:
+          "The column space collapses from the plane to a line. Off that line $\\mathbf{b}$ is unreachable (**none**). On it, one column is a multiple of the other, so $(x, y)$ can shift by any multiple of the dependency without changing $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ — **infinitely many** recipes. The middle case, exactly one, is precisely what independence would restore.",
+      },
     },
     {
       id: "sys-invertibility-link",
@@ -378,6 +449,40 @@ export const systemsLesson: LessonDefinition = {
       correctChoice: 1,
       explanation:
         "Independent columns span the plane (existence for every $\\mathbf{b}$) and give unique combinations (uniqueness). That is exactly invertibility — the map $\\mathbf{x} \\mapsto A\\mathbf{x}$ can be reversed. The next lesson meets the single number that certifies independence at a glance.",
+    },
+    {
+      // Package E — proof-construction surface (E6). Self-check captures the
+      // learner's written proof and shows a model answer + rubric; full proof
+      // credit is awarded by human scoring in the module assessment, not the
+      // in-app self-mark.
+      id: "sys-prove-consistency",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Prove it: show that $A\\mathbf{x} = \\mathbf{b}$ has a solution **if and only if** $\\mathbf{b}$ lies in the span of the columns of $A$. Write your proof, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "By the columns rule, $A\\mathbf{x} = x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ where $\\mathbf{x} = (x, y)$. ($\\Rightarrow$) If some $\\mathbf{x}$ solves $A\\mathbf{x} = \\mathbf{b}$, then $\\mathbf{b} = x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ is by definition a linear combination of the columns, so $\\mathbf{b} \\in \\operatorname{span}\\{\\mathbf{a}_1, \\mathbf{a}_2\\}$. ($\\Leftarrow$) If $\\mathbf{b} \\in \\operatorname{span}\\{\\mathbf{a}_1, \\mathbf{a}_2\\}$, then $\\mathbf{b} = x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2$ for some scalars $x, y$; that pair $(x, y)$ satisfies $A\\mathbf{x} = \\mathbf{b}$. So a solution exists exactly when $\\mathbf{b}$ is in the column span.",
+        rubric:
+          "A strong answer uses the columns rule to turn 'a solution exists' into '$\\mathbf{b}$ is a combination of the columns', and proves both directions (a solution gives membership; membership gives a solution).",
+      },
+    },
+    {
+      // Package E — the L3 trichotomy proved from independence/basis, NOT the
+      // (not-yet-defined) determinant.
+      id: "sys-prove-trichotomy",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Prove it: for a $2\\times 2$ matrix, show that if the columns are **independent** then $A\\mathbf{x} = \\mathbf{b}$ has exactly one solution for every $\\mathbf{b}$, and if they are **dependent** then every $\\mathbf{b}$ gives either none or infinitely many. Do **not** use the determinant.",
+      config: {
+        modelAnswer:
+          "Independent case: two independent vectors in the plane form a basis, so every $\\mathbf{b}$ is a linear combination of them (existence) and the combination is unique (uniqueness) — if $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2 = x'\\,\\mathbf{a}_1 + y'\\,\\mathbf{a}_2$ then $(x - x')\\,\\mathbf{a}_1 + (y - y')\\,\\mathbf{a}_2 = \\mathbf{0}$, and independence forces $x = x'$, $y = y'$. So there is exactly one $(x, y)$ with $A\\mathbf{x} = \\mathbf{b}$, for every $\\mathbf{b}$. Dependent case: the columns span only a line $L = \\operatorname{span}\\{\\mathbf{a}_1\\}$. If $\\mathbf{b} \\notin L$ it is unreachable, so no solution. If $\\mathbf{b} \\in L$, one solution exists; and since $\\mathbf{a}_2 = c\\,\\mathbf{a}_1$ (dependence) the vector $(c, -1)$ is a nonzero solution of $A\\mathbf{x} = \\mathbf{0}$, so adding any multiple of it to a solution gives another — infinitely many. Never exactly one in the dependent case.",
+        rubric:
+          "A strong answer derives uniqueness from independence (a basis gives unique coordinates) and existence from spanning; in the dependent case it exhibits a nonzero homogeneous solution to get the none/infinitely-many split. It must not invoke the determinant.",
+      },
     },
   ],
   keyTakeaway:

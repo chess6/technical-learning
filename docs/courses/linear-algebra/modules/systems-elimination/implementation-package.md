@@ -7,11 +7,14 @@ research-bridge overlay). Rebuilt from the **corrected evidence-integrity audit*
 every named item against its actual capability in
 [`src/lessons/capabilities.ts`](../../../../../src/lessons/capabilities.ts).
 
-> **Planning only — STOP at the Mode C boundary.** This document identifies and
-> orders work. It **does not** implement it. Building any item (lesson code or the
-> assessment system) is **Mode C** and requires explicit approval per
+> **Status update (lesson-owned remediation implemented).** With explicit user
+> approval, the **lesson-owned Packages B, C, D, and E** were built (see
+> [§ Post-remediation state](#post-remediation-state-b-e-built)). The **Mode C boundary
+> now sits before Package F** (module-assessment infrastructure): building F onward still
+> requires explicit approval per
 > [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) /
-> `.cursor/rules/course-authoring.mdc`. No lesson or application code was changed.
+> `.cursor/rules/course-authoring.mdc`. The audit below is preserved as the
+> **as-found baseline**; the post-remediation section records the new state.
 
 ## Corrected evidence audit — what the built items actually are
 
@@ -49,11 +52,13 @@ Runtime facts (from `capabilities.ts`) that drive every level below:
 | L5 | `sol-generate-third` | vector | E2 | near-copy (null vector handed over) |
 | L5 | `sol-whole-set`, `sol-inconsistent-empty` | **prediction** | E1 | **reveal-only** |
 
-**Headline:** the honest ceiling across all three lessons is **E2**. There is **no**
-fresh unaided E3, **no** genuine E4 transfer, and **no** valid E6 proof. All three
-lessons' corrected Gate 8 verdict is **NOT PASSED** (exposure/reproduction only). The
-gaps are therefore broader than "proofs + fresh arithmetic": reveal-only Checks,
-recognition-only MC, and a self-marked "proof" all need upgrading.
+**Headline (as-found baseline, before remediation):** the honest ceiling across all
+three lessons was **E2** — no fresh unaided E3, no genuine E4 transfer, no valid E6
+proof — so the pre-remediation Gate 8 verdict was **NOT PASSED** (exposure/reproduction
+only). The gaps were broader than "proofs + fresh arithmetic": reveal-only Checks,
+recognition-only MC, and a self-marked "proof" all needed upgrading. The
+[post-remediation state](#post-remediation-state-b-e-built) records how Packages B–E
+closed the lesson-owned gaps.
 
 ### Enumerated upgrade list (every item, by defect)
 
@@ -79,10 +84,40 @@ recognition-only MC, and a self-marked "proof" all need upgrading.
   R_i+R_i=2R_i\) is a legal nonzero scaling; the \(i\neq j\) restriction is only the
   definitional boundary of the *replacement* type (see the L4 insight contract).
 
+<a id="post-remediation-state-b-e-built"></a>
+## Post-remediation state (B–E built)
+
+The lesson-owned packages were implemented against the existing capabilities plus one
+new **fresh** shared example (`systems-fresh` in `src/lessons/exampleData.ts`, every
+number verified in
+[`freshExample.test.ts`](../../../../../src/lessons/__tests__/freshExample.test.ts)).
+New/changed levels (see each lesson's mastery-contract §1d):
+
+| Item | Change | New level |
+| --- | --- | --- |
+| `sys-solve-unique-fresh`, `sys-translate-columns-fresh` | **new** fresh vector production | E3 |
+| `sys-construct-inconsistent` | prediction → **construct-in-explorer**, fresh cols \((1,2),(3,6)\) | E4 |
+| `sys-counterexample-uniqueness`, `sys-explain-dependent` | prediction → **committed-prediction**, fresh | E3 |
+| `sys-prove-consistency`, `sys-prove-trichotomy` | **new** `self-check` proof surfaces | E6 surface (credit → F) |
+| `elim-sequence-forward-fresh`, `elim-matrix-after-step-fresh` | **new** fresh elimination run | E3 |
+| `elim-construct-inconsistent` | **de-hinted** + fresh cols \((1,2),(3,6)\) | E4 |
+| `elim` illegal-moves prose | self-addition legality **corrected** (\(R_i+R_i=2R_i\), legal) | — |
+| `sol-generate-third-fresh` | **new** fresh vector production | E3 |
+| `sol-whole-set`, `sol-inconsistent-empty` | prediction → **committed-prediction**, fresh | E3 |
+| `sol-prove-null-subspace`, `sol-prove-structure` | **new** `self-check` proof surfaces | E6 surface (credit → F) |
+
+**Net Gate 8 effect:** L3/L4/L5 now **PASS Gate 8 for their lesson-owned P1/P2
+(computational, characterization, generativity) outcomes at E3/E4**. The **P3 proof
+obligation (D6) is CONDITIONAL** in all three: genuine learner proof *surfaces* exist,
+but `self-check` self-marks, so **E6 credit is blocked on human scoring (Package F)**.
+No reveal-only `prediction` or answer-giving hint remains in the module. `elim-predict-
+fixed-point` intentionally stays a taught-instance pre-Watch prediction (a learning
+event, not evidence). Verified: `npm run lint` clean; 202 unit tests green.
+
 ## Ordered implementation package
 
-**Package A is this completed retrospective audit** — so the buildable work begins at
-**B**, not at an unexplained "B".
+**Package A is the completed retrospective audit; Packages B–E are now BUILT** (this
+task); the remaining buildable work begins at **F**.
 
 ### Package A — Retrospective mastery audit *(COMPLETE — docs only, this task)*
 The corrected Approved Insight Contracts (L3 trichotomy derived without the
@@ -91,7 +126,7 @@ review*), the three Lesson Mastery Contracts with runtime-checked evidence audit
 corrected **Gate 8 = NOT PASSED** verdicts, the two-ownership-class Gate 9
 [assessment plan](assessment-plan.md), and this package. **No code changed.**
 
-### Package B — Fresh, unaided E3 production drills · lesson-owned · D3
+### Package B — Fresh, unaided E3 production drills · lesson-owned · D3 · ✅ BUILT
 *Closes:* the near-copy gap (rejection #3) for all three lessons; lifts D3 from E2→E3.
 *Depends on:* a **second** canonical example (distinct numbers) added to
 `src/lessons/exampleData.ts` so drills do not reuse `systems-default`. Reuses existing
@@ -101,7 +136,7 @@ corrected **Gate 8 = NOT PASSED** verdicts, the two-ownership-class Gate 9
   dimension-from-free-variables. *Upgrades:* the five near-copy items above.
 *Size:* small–medium (one shared example + items + regression tests).
 
-### Package C — De-inflate the Checks (reveal-only + recognition-only) · lesson-owned
+### Package C — De-inflate the Checks (reveal-only + recognition-only) · lesson-owned · ✅ BUILT
 *Closes:* rejection #7 (graded items re-run instruction / are reveal-only) and the
 E1 recognition ceiling.
 - Convert the five **reveal-only `prediction`** items to graded `committed-prediction`
@@ -111,7 +146,7 @@ E1 recognition ceiling.
   production items). *Upgrades:* all reveal-only + same-example items enumerated above.
 *Size:* small (content; existing capabilities).
 
-### Package D — Genuine transfer / construction (E4) on fresh instances · lesson-owned · D9/D7
+### Package D — Genuine transfer / construction (E4) on fresh instances · lesson-owned · D9/D7 · ✅ BUILT (lesson slice)
 *Closes:* the missing E4 transfer evidence.
 - L3: rebuild "characterize which \(\mathbf{b}\) are inconsistent" as a real graded
   `construct-in-explorer` (currently a reveal-only `prediction`).
@@ -119,20 +154,27 @@ E1 recognition ceiling.
 - L5: a fresh, graded solution-set description (replacing the reveal-only
   `sol-whole-set`). *Size:* small–medium (existing `construct-in-explorer`; new checks).
 
-### Package E — Proof evidence (E6) via human scoring · lesson-owned · D6 (P3)
-*Closes:* the P3 proof obligation for L3/L4/L5 — currently **unmet** because
-`self-check` is self-marked.
-- Add a **human-scored** proof surface (rubric capture + reviewer mark), or route
-  proofs through the [insight-validation-protocol](../../../../authoring/insight-validation-protocol.md)
-  pilot. Covers: row-op invariance (L4), solution-set structure (L5, both inclusions),
-  trichotomy without the determinant (L3).
-- Apply the L4 lesson-prose correction (self-addition legality) while touching the file.
-*Size:* medium (new scoring capability/flow + content). **Prerequisite for any P3
-Gate 8 claim.**
+### Package E — Proof-construction surfaces + prose fix · lesson-owned · D6 (P3) · 🟡 SURFACES BUILT (scoring → F)
+*Closes:* the lesson-owned half of the P3 proof obligation — the learner now
+**constructs** each proof against a model answer + rubric.
+- **Built:** proof `self-check` items for every P3 theorem — trichotomy without the
+  determinant (L3 `sys-prove-trichotomy`), consistency ⇔ column-span (L3
+  `sys-prove-consistency`), row-op invariance (L4 `elim-explain-invariance`, pre-existing),
+  solution-set structure both inclusions (L5 `sol-prove-structure`), null-space closure
+  (L5 `sol-prove-null-subspace`).
+- **Built:** the L4 lesson-prose correction (self-addition legality: \(R_i+R_i=2R_i\) is
+  a legal scaling; \(i\ne j\) is only the definitional boundary of *replacement*).
+- **Still open (→ Package F):** `self-check` self-marks, so **E6 credit** needs the
+  **human-scored** capture (rubric + reviewer mark), or routing proofs through the
+  [insight-validation-protocol](../../../../authoring/insight-validation-protocol.md)
+  pilot. **This scoring is the only remaining blocker on a full P3 Gate 8 pass** and is
+  module-owned infrastructure, not more lesson content.
+*Size:* content DONE; the scoring mechanism is folded into F.
 
-> Packages **B–E are lesson-owned** and, together, are what each lesson needs to reach
-> **Gate 8 = PASS** under P3. Until they land, the module's Class-B reassessment is
-> blocked ([assessment-plan Class B](assessment-plan.md#class-b--cumulative-reassessment--retention-of-lesson-owned-outcomes-ownership-stays-with-the-lesson)).
+> Packages **B–E (lesson-owned) are built.** Each lesson now **passes Gate 8 for its
+> P1/P2 outcomes at E3/E4**; the **P3 proof line remains conditional** on the human
+> scoring in **F**. The module's Class-B reassessment therefore stays blocked until F
+> exists ([assessment-plan Class B](assessment-plan.md#class-b--cumulative-reassessment--retention-of-lesson-owned-outcomes-ownership-stays-with-the-lesson)).
 
 ### Package F — Module assessment surface (infrastructure)
 *Closes:* prerequisite for **all** Class-A module-owned outcomes and Class-B module
@@ -171,11 +213,12 @@ scheduled at ~1 week / ~1 month; also wired as L7/L8/L9 prerequisite checks.
 
 ## Recommended order
 
-1. **B, C, D** (lesson-owned, existing capabilities) — remove reveal-only /
-   recognition-only / near-copy inflation and reach fresh E3/E4.
-2. **E** (human-scored proofs) — the only path to P3 E6; unblocks the P3 Gate 8 claim.
-   → With B–E, each lesson can reach **Gate 8 = PASS**.
-3. **F** (assessment surface) — the keystone infrastructure.
+1. ✅ **B, C, D** (lesson-owned) — reveal-only / recognition-only / near-copy inflation
+   removed; fresh E3/E4 evidence now exists. **Done.**
+2. 🟡 **E** (proof construction) — proof *surfaces* built for every P3 theorem + the L4
+   prose fix. **Human scoring** (the E6 credit) is deferred into **F**.
+3. **F** (assessment surface, incl. the human-scoring capture) — the keystone
+   infrastructure and the **only remaining blocker on a full P3 Gate 8 pass**.
 4. **G, H, I** (Class-A sets, spacing, timed) on F — discharge module-owned outcomes
    and enable Class-B reassessment at Gate 9.
 5. Run [assessment-plan.md](assessment-plan.md); record real results; create
@@ -187,5 +230,6 @@ claim be made (COURSE §6.2).
 
 ---
 
-**Approval boundary.** Proceeding to build **B** onward is Mode C. Await explicit
-approval before writing lesson or assessment-system code.
+**Approval boundary.** Lesson-owned **B–E were built with explicit approval.** Proceeding
+to build **F onward** (module-assessment infrastructure, including human-scored proof
+capture) is Mode C and requires explicit approval before writing that code.

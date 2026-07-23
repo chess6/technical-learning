@@ -133,6 +133,67 @@ export const LINEAR_SYSTEM_EXAMPLE: LinearSystemExample = {
 };
 
 /**
+ * A SECOND, deliberately fresh system for the systems/elimination/solution-set
+ * module — distinct numbers from `systems-default` so a drill cannot be passed by
+ * recalling the worked answer. Used for the module's fresh-instance (E3) drills:
+ *
+ * - Independent `a` has columns (1, 3) and (2, 1) — det = -5 — so `A x = b` with
+ *   `b = (4, -3)` has the unique solution `(-2, 3)`. Elimination on the row form
+ *   `x + 2y = 4`, `3x + y = -3` uses multiplier 3 (R2 → R2 - 3R1), giving the
+ *   triangular row `(0, -5 | -15)`, then `y = 3`, `x = -2`.
+ * - Dependent `aDependent` has columns (1, 2) and (3, 6) = 3·(1, 2). With
+ *   `bInfinite = (4, 8)` (on the column line) the system is consistent with
+ *   particular solution `(4, 0)`, null direction `(3, -1)`, and a third solution
+ *   `(7, -1)`. With `bNone = (4, 9)` (off the line) it has no solution.
+ *
+ * Every number here is verified against the shared `src/math` helpers in
+ * `src/lessons/__tests__/freshExample.test.ts` (Cramer solve, classification,
+ * particular solution, null space, generativity).
+ */
+export interface LinearSystemFreshExample {
+  id: string;
+  /** Independent-column matrix; columns (1, 3) and (2, 1); det = -5. */
+  a: [[number, number], [number, number]];
+  /** Target for the unique case. Its unique solution is `solution`. */
+  b: Vector2;
+  solution: Vector2;
+  /** Dependent-column matrix; columns (1, 2) and (3, 6) = 3·(1, 2). */
+  aDependent: [[number, number], [number, number]];
+  /** Target on the dependent column line: infinitely many solutions. */
+  bInfinite: Vector2;
+  /** A particular solution `x_p` of the dependent consistent system. */
+  particular: Vector2;
+  /** A basis vector of `Null(aDependent)`. */
+  nullDirection: Vector2;
+  /** `particular + nullDirection` — a second solution made without re-solving. */
+  thirdSolution: Vector2;
+  /** Target off the dependent column line: no solution. */
+  bNone: Vector2;
+  /** Symmetric clamp bound for sliders and the draggable target. */
+  bound: number;
+}
+
+export const LINEAR_SYSTEM_FRESH: LinearSystemFreshExample = {
+  id: "systems-fresh",
+  a: [
+    [1, 2],
+    [3, 1],
+  ],
+  b: [4, -3],
+  solution: [-2, 3],
+  aDependent: [
+    [1, 3],
+    [2, 6],
+  ],
+  bInfinite: [4, 8],
+  particular: [4, 0],
+  nullDirection: [3, -1],
+  thirdSolution: [7, -1],
+  bNone: [4, 9],
+  bound: 9,
+};
+
+/**
  * The matrix-as-transformation lesson reuses the shared registry example
  * A = [[2, 1], [0, 1]] rather than redefining it.
  */
