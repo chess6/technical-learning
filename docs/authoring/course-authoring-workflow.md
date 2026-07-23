@@ -90,7 +90,7 @@ Turning an approved plan into a working lesson. Requires a completed Mode B.
    [authoring/lesson-design.md](lesson-design.md) (block palette, `route`, continuity,
    accessibility) and [product/semantic-page-grammar.md](../product/semantic-page-grammar.md)
    (content-specific headings, orient-before-visual, representation fit). Keep the
-   layering in [project-core](../.cursor/rules/project-core.mdc); math only in
+   layering in [project-core](../../.cursor/rules/project-core.mdc); math only in
    `src/math`.
 2. **Mathematical correctness review** (Gate 7) —
    [engineering/math-correctness.md](../engineering/math-correctness.md), [quality/known-failure-modes.md](../quality/known-failure-modes.md),
@@ -126,7 +126,7 @@ Stop and get explicit user approval before crossing any of these. Do not
 self-authorize.
 
 - **Reopening a `future` lesson.** The built surface is fixed (see
-  [project-core](../.cursor/rules/project-core.mdc) Scope). Building or promoting
+  [project-core](../../.cursor/rules/project-core.mdc) Scope). Building or promoting
   a `future` spine node requires an explicit user go-ahead.
 - **Insight contract not `PASS`.** Never begin lesson planning (Gate 5+) without a
   `Gate result: PASS` insight contract — this is out of process.
@@ -134,7 +134,7 @@ self-authorize.
   user has not approved. Finish Mode B, present the plan, wait.
 - **Changing a standard.** If a request conflicts with a standard, propose the
   standard change and get approval — do not silently deviate (see
-  [lesson-design](../.cursor/rules/lesson-design.mdc) "When in doubt").
+  [lesson-design](../../.cursor/rules/lesson-design.mdc) "When in doubt").
 - **Mathematical correctness conflict.** Stop and report rather than shipping a
   visually plausible but unverified result (MATH_CORRECTNESS rule).
 - **Profile inflation.** Do not claim a profile/stage the course does not assess

@@ -58,9 +58,9 @@ screen-reader description never substitutes for a visible label.
 
 | Layer | Purpose | Audience | Examples | Source of truth |
 | --- | --- | --- | --- | --- |
-| **Visible mathematical label** | Names the *kind* of a formal object where mathematical convention expects it. | Learner, on the page | *Definition*, *Theorem*, *Lemma*, *Proof*, *Example* | math convention; `FormalBlock.kind` ([types.ts](../src/lessons/types.ts)) |
+| **Visible mathematical label** | Names the *kind* of a formal object where mathematical convention expects it. | Learner, on the page | *Definition*, *Theorem*, *Lemma*, *Proof*, *Example* | math convention; `FormalBlock.kind` ([types.ts](../../src/lessons/types.ts)) |
 | **Content-specific visible heading** | Says what *this* block is actually about, in the lesson's own words. | Learner, on the page | "When does a system have no solution?" | authored per lesson |
-| **Internal block / analytics type** | Drives `route`, sequencing, telemetry, rendering. Never surfaced as a heading. | Tooling / authors | `motivate`, `watch`, `check`, `explore`, `practice`, `summary` | `RouteBlock.kind` ([types.ts](../src/lessons/types.ts)) |
+| **Internal block / analytics type** | Drives `route`, sequencing, telemetry, rendering. Never surfaced as a heading. | Tooling / authors | `motivate`, `watch`, `check`, `explore`, `practice`, `summary` | `RouteBlock.kind` ([types.ts](../../src/lessons/types.ts)) |
 | **Screen-reader-only functional description** | Announces a block's function to assistive tech when the visible heading alone would not. | Assistive-tech users | "Interactive exploration:", "Guided animation:" prefixes | a11y metadata |
 
 - The **table of contents uses content-specific headings** (row 2), never the
@@ -206,7 +206,7 @@ near-term build order):
 - **mathematical statements as first-class objects** — with hypotheses,
   conclusions, dependencies, and *proof status* (proved / assumed / conjectured),
   aligning with the `FormalBlock` `kind`/`visibility` model in
-  [`src/lessons/types.ts`](../src/lessons/types.ts).
+  [`src/lessons/types.ts`](../../src/lessons/types.ts).
 
 Where the platform does not yet model one of these, that is a **known gap**
 (cross-reference the [benchmark gaps](../courses/linear-algebra/benchmark-matrix.md#3-course-level-gaps-summary)),

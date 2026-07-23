@@ -33,7 +33,7 @@ The current model is two flat structures that quietly assume "one course, one
 linear path."
 
 **The registry is a single global ordered list.**
-[src/lessons/registry.ts](../src/lessons/registry.ts) exports
+[src/lessons/registry.ts](../../src/lessons/registry.ts) exports
 `lessons: LessonDefinition[]`, and *every* navigation and progress affordance is
 derived from that array's index:
 
@@ -52,12 +52,12 @@ progress**. As soon as there is a second course, "lesson 5 of 5" and
 sequel to eigenvectors, it just happens to be next in the array.
 
 **The course name is hardcoded.**
-[src/components/layout/CourseSidebar.tsx](../src/components/layout/CourseSidebar.tsx)
+[src/components/layout/CourseSidebar.tsx](../../src/components/layout/CourseSidebar.tsx)
 prints the literal string `Linear Algebra` / `Visual Learning`. There is no data
 model for "which course am I in," so a second course cannot relabel the header.
 
 **There is no subject / course / module nesting.**
-[src/lessons/curriculum.ts](../src/lessons/curriculum.ts) is a flat list of
+[src/lessons/curriculum.ts](../../src/lessons/curriculum.ts) is a flat list of
 `CourseSection`s. A `CourseSection` is a heading with items; there is no level
 above it (subject, course) and the one level it has (section) is doing
 double duty as "module." Karatsuba already sits awkwardly as an
@@ -87,7 +87,7 @@ There is no data for "eigenvectors connects to nonlinear stability" that the UI
 could surface as a *deeper connection* the way the vision document intends.
 
 **Flat routing, no namespacing.**
-[src/app/routes.tsx](../src/app/routes.tsx) has exactly `/lesson/:lessonId`.
+[src/app/routes.tsx](../../src/app/routes.tsx) has exactly `/lesson/:lessonId`.
 There is no `/subject/...`, `/course/...`, or `/module/...` segment, so a lesson
 has no addressable context — the URL cannot express "eigenvectors, as reached via
 the dynamical-systems path."

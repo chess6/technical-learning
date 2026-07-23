@@ -256,7 +256,7 @@ E6; "research-oriented" needs E7.
 **Success at E1, watching an animation to the end, or marking a lesson
 `completed` is not evidence of mastery and must never be treated as such.** The
 platform's persisted `LessonProgress.completed` flag
-([learnerState.ts](../src/platform/learnerState.ts)) records *exposure*, not
+([learnerState.ts](../../src/platform/learnerState.ts)) records *exposure*, not
 acquisition. Concretely:
 
 - No mastery claim (§7) may be derived from `visited` / `completed` alone.
@@ -314,7 +314,7 @@ families and progression live in
 must provide at least one assessment surface that withholds hints and immediate
 correctness feedback until submission, drawn from fresh problem instances. Note
 the current platform grades and reveals immediately
-([capabilities.ts](../src/lessons/capabilities.ts)); exam mode is therefore
+([capabilities.ts](../../src/lessons/capabilities.ts)); exam mode is therefore
 flagged as **new support needed** (deferred-feedback attempt flow), not something
 to fake with the existing per-item reveal.
 

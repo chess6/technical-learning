@@ -1,4 +1,11 @@
-# Lesson depth pattern (medium-agnostic)
+# Lesson depth pattern (Lesson 4 adoption note — archived)
+
+> **Archived / historical.** The durable rule (math spine → derivation
+> representation → solution visual, medium follows the objective, equation-first
+> worked computations) now lives in
+> [authoring/lesson-design.md](../authoring/lesson-design.md) → *Choosing the
+> medium*. This note is retained as the detailed **Lesson 4-derived adoption
+> checklist**; read the standard first.
 
 Authoring note for deepening Lessons 1–3 (and future chapters) using the pattern
 proven in Lesson 4. Complements [authoring/lesson-design.md](../authoring/lesson-design.md) (mechanics)

@@ -194,7 +194,7 @@ Each ties to the correctness docs and cannot be offset by polish:
   learner-facing location; the learner must invent it.
 - **Failing verification on the lesson surface** — `npm run lint`, `npm run test`,
   or `npm run test:e2e` failing for this lesson (per
-  [project-core](../.cursor/rules/project-core.mdc)).
+  [project-core](../../../.cursor/rules/project-core.mdc)).
 
 Any hard blocker ⇒ **REVISE**. Fix it and re-review; do not average it away.
 
@@ -283,7 +283,7 @@ and exercise the lesson as a learner.
 workspace, always with an absolute path (e.g.
 `/home/thomas/Dev/technical-learning/screenshots/<name>.png`). Never write review
 captures to the home directory, Downloads, or unrelated locations
-([project-core](../.cursor/rules/project-core.mdc)).
+([project-core](../../../.cursor/rules/project-core.mdc)).
 
 ---
 

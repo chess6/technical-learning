@@ -39,8 +39,8 @@ Throughout, examples that could be mistaken for mandates are marked with a note
 like *(Example, not a mandate.)* A future author is free to add a lesson whose
 mental model, palette usage, or worked example differs from today's, **as long as
 the durable principle is honored.** The value source of truth for anything
-concrete lives in code — [src/styles/tokens.css](../src/styles/tokens.css) for
-colors, the files in [src/lessons/](../src/lessons/) for examples — not in this
+concrete lives in code — [src/styles/tokens.css](../../src/styles/tokens.css) for
+colors, the files in [src/lessons/](../../src/lessons) for examples — not in this
 document. This document owns the *meaning*; the code owns the *values*.
 
 A quick test when in doubt: *"If we deleted every current lesson tomorrow, would
@@ -477,7 +477,7 @@ false mathematics.
 The application has something textbooks do not: a **persistent visual language**.
 Documenting it here keeps future lessons from inventing new, conflicting
 conventions. This section is the **meaning dictionary**;
-[src/styles/tokens.css](../src/styles/tokens.css) remains the **value** source of
+[src/styles/tokens.css](../../src/styles/tokens.css) remains the **value** source of
 truth (see authoring/lesson-design.md's Visual language section for production usage).
 
 ### 9a. Three kinds of visuals
@@ -596,7 +596,7 @@ fact. That reuse is the point: the ladder is where earlier compressions pay off.
 
 ### The motivating gap this fixes
 
-The current eigenvectors lesson ([src/lessons/eigenvectors.ts](../src/lessons/eigenvectors.ts))
+The current eigenvectors lesson ([src/lessons/eigenvectors.ts](../../src/lessons/eigenvectors.ts))
 explains *what* eigenvectors are — directions preserved up to scaling, with honest
 edge cases (scalar, defective, rotation) — and this is good. But it does **not yet
 teach the learner to compute them.** There is no ladder from \(A\mathbf{v} =
@@ -768,13 +768,13 @@ layers (§13), and a scannable "Remember this" close — so a returning learner 
 rejoin mid-story without replaying the whole plot.
 
 The `Vectors → … → Basis` edge is delivered **within Lesson 1**
-([src/lessons/vectors.ts](../src/lessons/vectors.ts), retitled "Vectors, Linear
+([src/lessons/vectors.ts](../../src/lessons/vectors.ts), retitled "Vectors, Linear
 Combinations, and Basis"), not as a separate lesson: it teaches span, independence,
 basis, and coordinates-relative-to-a-basis, landing on the fixed point
 \(\mathbf{p}=(4,1)=[\mathbf{p}]_E\) being \([\mathbf{p}]_B=(1,1)\) in \(B=(\mathbf{v},\mathbf{w})\).
 Lesson 2 then recalls unique standard-basis coordinates to *derive* the matrix-columns
 rule. Forward edges to the current "Later topics"
-([src/lessons/curriculum.ts](../src/lessons/curriculum.ts)) — change of basis and
+([src/lessons/curriculum.ts](../../src/lessons/curriculum.ts)) — change of basis and
 SVD — are therefore seeded explicitly: "the same arrow has different coordinates in
 a different basis" is the direct seed of change of basis.
 

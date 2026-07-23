@@ -24,8 +24,9 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Work on the linear-algebra course | [courses/linear-algebra/](courses/linear-algebra/) |
 | Understand the multi-subject platform model | [courses/multi-domain-architecture.md](courses/multi-domain-architecture.md) |
 | Change math or a visualization | [engineering/math-correctness.md](engineering/math-correctness.md) + [quality/known-failure-modes.md](quality/known-failure-modes.md) |
-| Understand the code architecture / contracts | [engineering/platform-contracts.md](engineering/platform-contracts.md), [engineering/math-space-conventions.md](engineering/math-space-conventions.md) |
+| Understand the code architecture / contracts | [engineering/architecture.md](engineering/architecture.md), [engineering/platform-contracts.md](engineering/platform-contracts.md) |
 | Ship a lesson/visualization change | complete [quality/lesson-correctness-checklist.md](quality/lesson-correctness-checklist.md) |
+| Understand a past decision | [engineering/decisions/](engineering/decisions/) |
 | Find historical milestones/experiments | [archive/](archive/) |
 
 ## Tree
@@ -35,7 +36,7 @@ docs/
   product/       durable "what/why": vision, page grammar, visual language
   authoring/     how to build lessons; standards, gates, templates
   courses/       per-course spine/architecture/benchmark + per-lesson artifacts
-  engineering/   contracts, math correctness, decision records (ADRs)
+  engineering/   architecture, math correctness, decision records (ADRs)
   quality/       correctness checklist + curated known failure modes
   archive/       milestones, experiments, superseded plans (historical)
 ```

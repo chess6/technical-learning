@@ -37,7 +37,7 @@ const VERSIONS: Versions = {
  *
  * `bootstrap` and `MetaFile` are marked @internal by Motion Canvas; this is the
  * one unavoidable use of internal APIs required for plugin-free embedding (see
- * docs/archive/experiments/motion-canvas-spike.md). They are used only for construction, never for
+ * docs/engineering/decisions/001-motion-canvas-runtime.md). They are used only for construction, never for
  * lifecycle instrumentation.
  */
 async function buildProject(sceneId: string): Promise<Project> {

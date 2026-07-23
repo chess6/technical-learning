@@ -1,5 +1,10 @@
 # Motion Canvas Embedding Spike (M2)
 
+> **Historical.** This is the full M2 spike report, kept for its rationale and
+> measurements. The active decision and its constraints are recorded in
+> [../../engineering/decisions/001-motion-canvas-runtime.md](../../engineering/decisions/001-motion-canvas-runtime.md);
+> read that first. Do not treat this report as current instruction.
+
 ## Result: PASS
 
 Motion Canvas embeds cleanly inside the React SPA with full programmatic

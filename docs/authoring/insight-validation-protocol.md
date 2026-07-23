@@ -8,7 +8,7 @@ or repeat the steps. Worked application throughout: **Karatsuba multiplication**
 - **Validates:** the approved insight in [insights/karatsuba.md](../courses/algorithms/lessons/karatsuba/insight.md)
   (the Stage 2 contract). The lesson under test is
   [lesson-plans/karatsuba.md](../courses/algorithms/lessons/karatsuba/lesson-plan.md) /
-  [`src/lessons/karatsuba.ts`](../src/lessons/karatsuba.ts).
+  [`src/lessons/karatsuba.ts`](../../src/lessons/karatsuba.ts).
 - **Format:** 1 facilitator + 1 learner. Screen + audio recording recommended.
 - **Time:** 20–30 min per learner. **Sample:** 5–8 learners (pilot, not a study).
 - **Tone / accessibility:** follow [authoring/lesson-design.md](lesson-design.md) — no leading

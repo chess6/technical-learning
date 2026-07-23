@@ -1,5 +1,11 @@
 # M4.5 — Visual, Layout & Learning-Experience Refinement
 
+> **Historical milestone.** Not current policy. Its surviving rules — the autoplay
+> and safe-frame conventions and the CourseSidebar navigation — now live in
+> [authoring/lesson-design.md](../../authoring/lesson-design.md) (Motion Canvas
+> responsibilities, Navigation). Read the standard, not this milestone, for current
+> guidance.
+
 Refinement of Lessons 1 and 2 only. Lessons 3–4 remain placeholders.
 
 ## Autoplay rule

@@ -16,10 +16,10 @@ by adopting it; the token additions proposed in §2 are *proposals* to add to
 
 > **Constraints carried over (do not restate at length).**
 > - Semantic `--role-*` tokens, never raw hex in learner-facing visuals
->   ([tokens.css](../src/styles/tokens.css), [lesson-design rule](../.cursor/rules/lesson-design.mdc)).
+>   ([tokens.css](../../src/styles/tokens.css), [lesson-design rule](../../.cursor/rules/lesson-design.mdc)).
 > - `src/math` is the **only** source of truth for computation; visual layers map
 >   math → screen and never reimplement it
->   ([math-visualization-correctness rule](../.cursor/rules/math-visualization-correctness.mdc)).
+>   ([math-visualization-correctness rule](../../.cursor/rules/math-visualization-correctness.mdc)).
 > - Object-identity continuity, attention choreography, the paused establishing
 >   frame at `t=0`, reduced-motion behavior, and KaTeX for learner-facing notation
 >   are already required elsewhere; this doc **applies** them per primitive rather

@@ -15,8 +15,8 @@ export type GuidedSceneBackend = "motion-canvas" | "svg-fallback";
 /**
  * The active guided-animation backend.
  *
- * Spike result (see docs/archive/experiments/motion-canvas-spike.md): Motion Canvas PASSED, so it
- * is the active backend. Switching to "svg-fallback" here is the single change
+ * Decision (see docs/engineering/decisions/001-motion-canvas-runtime.md): Motion
+ * Canvas is the active backend. Switching to "svg-fallback" here is the single change
  * required to fall back, because every consumer depends only on the
  * GuidedSceneEngine interface.
  */
