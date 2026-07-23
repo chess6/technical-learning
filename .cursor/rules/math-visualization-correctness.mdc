@@ -18,7 +18,7 @@ Before modifying math or visualization code (explorers, guided scenes, SVG fallb
 - **Grids:** transform endpoints via `transformedGridSegments` / `matrixVectorMultiply`. Do not derive slopes from rows or trust untested third-party matrix packing.
 - **Separate coordinates:** compute in math space first; apply pixel scale / y-flip only afterward.
 - **Tests:** every corrected math/visualization bug needs a regression test; prefer asymmetric matrices (`diagnostic-asymmetric`, `grid-bug-repro`) over identity/scaling alone.
-- **Logging:** when a mathematically incorrect visualization is found, add an entry to `docs/quality/known-failure-modes.md`.
+- **Logging:** fix the bug and add a **regression test** — the test and commit own the incident. Only add to `docs/quality/known-failure-modes.md` when it is a **new class of recurring hazard**; if an existing hazard already covers it, strengthen that rule instead of appending a duplicate (keep it curated, not an error log).
 - **Uncertainty:** stop and report rather than guessing a visually plausible fix.
 
 Use `src/math/invariants.ts` helpers in tests. Complete `docs/quality/lesson-correctness-checklist.md` when shipping visualization changes.

@@ -24,8 +24,10 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
 > **Exercises** must match the contract's assessment set. Presentation follows
 > [product/semantic-page-grammar.md](../../product/semantic-page-grammar.md).
 
+> **Saved as:** `docs/courses/<course>/lessons/<lesson>/lesson-plan.md`.
+
 ## Approved insight (gate)
-- Insight Contract: `docs/insights/<topic>.md`
+- Insight Contract: `docs/courses/<course>/lessons/<lesson>/insight.md`
 - [ ] `Gate result: PASS` confirmed
 - Exact primary insight — **verbatim, planning metadata only** (learner-facing
   prose may reword while preserving the meaning and causal chain): `<...>`

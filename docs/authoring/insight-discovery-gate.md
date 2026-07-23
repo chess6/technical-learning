@@ -77,11 +77,12 @@ flowchart LR
 1. **Insight Discovery Brief** — diagnose the cognitive obstacle, generate 8–12
    raw leads across the mechanisms above, consolidate them into 3–6 distinct
    candidate packages, and rank the packages.
-   Output lives at `docs/insight-brief-<topic>.md`.
+   Output lives at `docs/courses/<course>/lessons/<lesson>/insight-brief.md`.
 2. **Approved Insight Contract** — select one primary breakthrough and verify its
    complete mathematical and pedagogical chain, plus the mathematical audit and
    (when grounding is used) the grounding & model-change audit.
-   Output lives at `docs/insights/<topic>.md` and must end with a gate result.
+   Output lives at `docs/courses/<course>/lessons/<lesson>/insight.md` and must end
+   with a gate result.
 3. **Lesson Plan** — may begin **only after** the Insight Contract result is
    `PASS`. Use [authoring/templates/lesson-plan.md](templates/lesson-plan.md).
 
@@ -552,10 +553,14 @@ them in Stage 2:
 
 ## File layout
 
-- `docs/insight-brief-<topic>.md` — Stage 1.
-- `docs/insights/<topic>.md` — Stage 2 approved contract (ends with gate result).
-- Lesson plan (Stage 3) via `docs/authoring/templates/lesson-plan.md`, which requires a linked
-  `PASS` contract before planning begins.
+All artifacts live under the lesson's own directory,
+`docs/courses/<course>/lessons/<lesson>/` — never a loose `docs/insight-*.md`
+(see [docs/README.md](../README.md#course-artifacts)):
+
+- `insight-brief.md` — Stage 1.
+- `insight.md` — Stage 2 approved contract (ends with gate result).
+- Lesson plan (Stage 3) `lesson-plan.md` via `docs/authoring/templates/lesson-plan.md`,
+  which requires a linked `PASS` contract before planning begins.
 
 Worked reference: [courses/algorithms/lessons/karatsuba/insight-brief.md](../courses/algorithms/lessons/karatsuba/insight-brief.md)
 (Stage 1) and [insights/karatsuba.md](../courses/algorithms/lessons/karatsuba/insight.md) (Stage 2, PASS).

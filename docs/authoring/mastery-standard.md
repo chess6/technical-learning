@@ -96,7 +96,7 @@ flowchart LR
 | Concern | Insight Discovery Gate | Course Mastery System |
 | --- | --- | --- |
 | Central question | *What one insight reorganizes the model?* | *Did the learner acquire everything the topic requires?* |
-| Output artifact | Approved Insight Contract (`docs/insights/<topic>.md`) | Lesson Mastery Contract + assessment set + benchmark row |
+| Output artifact | Approved Insight Contract (`docs/courses/<course>/lessons/<lesson>/insight.md`) | Lesson Mastery Contract + assessment set + benchmark row |
 | Failure it prevents | A lesson built on a definition, a story, or a routine derivation instead of a real breakthrough. | An elegant, insightful lesson that still leaves definitions, practice, transfer, or retention missing. |
 | What it does *not* do | Guarantee coverage, fluency, transfer, retention, or exam readiness. | Choose or validate the organizing insight. |
 
@@ -446,8 +446,8 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Course profile + outcomes** | Fix which profile(s) and which stages (S1–S5) the course targets. | Product intent; benchmark matrix. | A profile declaration + target outcomes per module. | Claims a stage with no planned assessment; mixes profiles silently. |
 | 2 | **Spine + dependency map** | Order topics as re-interpretations of prior ones; fix prerequisites. | Profile; existing [spine](../courses/linear-algebra/course-spine.md) + [DAG](../courses/linear-algebra/curriculum-architecture.md). | Updated spine row + prerequisite edges + concept ids. | A lesson's prerequisites aren't taught earlier; cycle in the DAG. |
-| 3 | **Insight Discovery Brief** | Diagnose the obstacle; generate & rank insight candidates. | Spine insight (as *inherited hypothesis*, not answer). | `docs/insight-brief-<topic>.md`. | See [Insight Gate Stage 1](insight-discovery-gate.md#stage-1--insight-discovery-brief). |
-| 4 | **Approved Insight Contract** | Commit to one insight; prove its chain; run audits. | The brief. | `docs/insights/<topic>.md` ending `Gate result: PASS`. | See [Insight Gate Stage 2](insight-discovery-gate.md#stage-2--approved-insight-contract). |
+| 3 | **Insight Discovery Brief** | Diagnose the obstacle; generate & rank insight candidates. | Spine insight (as *inherited hypothesis*, not answer). | `docs/courses/<course>/lessons/<lesson>/insight-brief.md`. | See [Insight Gate Stage 1](insight-discovery-gate.md#stage-1--insight-discovery-brief). |
+| 4 | **Approved Insight Contract** | Commit to one insight; prove its chain; run audits. | The brief. | `docs/courses/<course>/lessons/<lesson>/insight.md` ending `Gate result: PASS`. | See [Insight Gate Stage 2](insight-discovery-gate.md#stage-2--approved-insight-contract). |
 | 5 | **Lesson Mastery Contract** | Guarantee coverage, rigor, practice, transfer, retention around the insight. | The `PASS` contract + profile + spine row. | A completed [Lesson Mastery Contract](templates/lesson-mastery-contract.md). | Any contract [rejection condition](templates/lesson-mastery-contract.md#5-rejection-conditions-the-mastery-gate). |
 | 6 | **Lesson spec + authoring** | Build the lesson from the block palette + page grammar. | Mastery contract; [authoring/templates/lesson-plan.md](templates/lesson-plan.md); [authoring/lesson-design.md](lesson-design.md); [product/semantic-page-grammar.md](../product/semantic-page-grammar.md). | Typed `LessonDefinition` + scenes + explorers + exercises. | Missing must-teach content; page leads with a purposeless visual (grammar §3). |
 | 7 | **Mathematical correctness review** | Ensure every shown quantity is mathematically correct. | The built lesson. | Completed [quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md) + [engineering/math-correctness.md](../engineering/math-correctness.md) sign-off. | Any unverified/plausible-but-wrong math; missing regression test. |

@@ -43,8 +43,9 @@ Every field is required unless marked *(optional)* or *(profile-dependent)*.
   [spine](../../courses/linear-algebra/course-spine.md) row).
 - **Course profile in force:** `<A computational | B proof/honors | C research-bridge>`
   (+ any per-lesson override, with reason).
-- **Approved Insight Contract:** `docs/insights/<topic>.md` — `PASS` confirmed;
-  primary-insight sentence **linked, not copied**.
+- **Approved Insight Contract:** `docs/courses/<course>/lessons/<lesson>/insight.md`
+  — `PASS` confirmed; primary-insight sentence **linked, not copied**.
+- **Saved as:** `docs/courses/<course>/lessons/<lesson>/mastery-contract.md`.
 - **Concept ids introduced / reused:** `<from CURRICULUM_ARCHITECTURE §3>`.
 
 ### 1b. Role, bridge, and need

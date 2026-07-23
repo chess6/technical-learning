@@ -64,20 +64,30 @@ benchmark. Read/produce in this order:
 
 Designing one lesson fully, **before any code**. This is the heart of the process.
 
-1. **Insight Discovery Brief** (Gate 3) — [authoring/insight-discovery-gate.md](insight-discovery-gate.md)
-   Stage 1 → `docs/insight-brief-<topic>.md`.
-2. **Approved Insight Contract** (Gate 4) — Stage 2 → `docs/insights/<topic>.md`,
-   ending in `Gate result: PASS`. **A `PASS` is a hard gate**: no planning
-   proceeds without it.
-3. **Lesson Mastery Contract** (Gate 5) — [authoring/templates/lesson-mastery-contract.md](templates/lesson-mastery-contract.md).
-   Fixes coverage, rigor, outcomes-with-evidence, exercise ecology, cumulative
-   connections, assessment, and retention around the insight. Presentation intent
-   follows [product/semantic-page-grammar.md](../product/semantic-page-grammar.md).
-4. **Lesson plan** — fill [authoring/templates/lesson-plan.md](templates/lesson-plan.md) (Stage 3),
-   consuming the insight contract + mastery contract (do not restate them).
+All Mode B artifacts live **together under the lesson's own directory**,
+`docs/courses/<course>/lessons/<lesson>/`, using the fixed filenames below — never
+a loose `docs/insight-*.md` at the docs root (see
+[docs/README.md](../README.md#course-artifacts)).
 
-**Output:** brief + contract (PASS) + mastery contract + lesson plan.
-**No lesson code.** **Boundary:** stop here for approval before Mode C.
+1. **Insight Discovery Brief** (Gate 3) — [authoring/insight-discovery-gate.md](insight-discovery-gate.md)
+   Stage 1 → `docs/courses/<course>/lessons/<lesson>/insight-brief.md`.
+2. **Approved Insight Contract** (Gate 4) — Stage 2 →
+   `docs/courses/<course>/lessons/<lesson>/insight.md`, ending in
+   `Gate result: PASS`. **A `PASS` is a hard gate**: no planning proceeds without it.
+3. **Lesson Mastery Contract** (Gate 5) — fill [authoring/templates/lesson-mastery-contract.md](templates/lesson-mastery-contract.md)
+   → `docs/courses/<course>/lessons/<lesson>/mastery-contract.md`. Fixes coverage,
+   rigor, outcomes-with-evidence, exercise ecology, cumulative connections,
+   assessment, and retention around the insight. Presentation intent follows
+   [product/semantic-page-grammar.md](../product/semantic-page-grammar.md).
+4. **Lesson plan** — fill [authoring/templates/lesson-plan.md](templates/lesson-plan.md) (Stage 3)
+   → `docs/courses/<course>/lessons/<lesson>/lesson-plan.md`, consuming the insight
+   contract + mastery contract (do not restate them).
+
+Mode D adds `validation.md` (assessment/benchmark record) in the same directory.
+
+**Output:** brief + contract (PASS) + mastery contract + lesson plan, all under the
+lesson directory. **No lesson code.** **Boundary:** stop here for approval before
+Mode C.
 
 ---
 
@@ -149,7 +159,7 @@ Short prompts rely on repository state. Resolve before acting:
 | Prompt shape | Resolve via |
 | --- | --- |
 | "Build/plan **the next lesson**" | [courses/linear-algebra/curriculum-architecture.md §6](../courses/linear-algebra/curriculum-architecture.md) next-lesson recommendation + spine status; confirm it is not a still-closed `future` node (approval boundary). |
-| "Plan/build **`<topic>`**" | Map topic → spine node + concept ids; check for an existing `docs/insight-brief-<topic>.md` / `docs/insights/<topic>.md` and resume from the furthest completed gate. |
+| "Plan/build **`<topic>`**" | Map topic → spine node + concept ids; check the lesson directory `docs/courses/<course>/lessons/<lesson>/` for an existing `insight-brief.md` / `insight.md` / `mastery-contract.md` / `lesson-plan.md` and resume from the furthest completed gate. |
 | "Fix / improve **`<lesson>`**" | Usually Mode C polish under correctness + design rules; if it changes coverage/assessment, re-open its Lesson Mastery Contract. |
 | "Add a **course/subject**" | Mode A; new benchmark matrix + spine; reuse the subject-agnostic standards unchanged. |
 | Ambiguous scope | State the assumed mode + gate you are entering; if it crosses an approval boundary, ask first. |
