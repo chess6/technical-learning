@@ -294,22 +294,31 @@ classification and inconsistency-refusal outcomes (2nd pass).
 *Closes:* prerequisite for **all** Class-A module-owned outcomes and Class-B module
 reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obligation
 (human-scoring the Package E proof/reasoning surfaces).
-- A **cumulative / interleaved set runner** across L3–L5.
+- A **cumulative / interleaved set runner** across L3–L5, with each released attempt
+  **snapshotting** its set/version + ordered items + rubric so review mode is
+  reproducible even after the source lessons change.
 - An **exam-mode / deferred-feedback** attempt flow (no per-item reveal until submit)
   — new support per [mastery-standard §6.1](../../../../authoring/mastery-standard.md#61-the-assessment-layers).
-- **Human-scoring capture** for proofs (shared with E) and a **spacing/scheduler** hook.
-- Introduces the **first real persistence** (local, single-user) — supersedes the
+- **Human-scoring capture** for proofs (shared with E) and an **idempotent
+  spacing/scheduler** release hook.
+- Introduces the **first real persistence** (local, single-user, **hydration-safe** —
+  initializes before saving and never overwrites a newer/corrupt blob) — supersedes the
   `platform-contracts.md` "no persistence layer" non-goal for the assessment surface.
+- Reports a **conservative machine blocker** (`REVIEW_PENDING` / `REVIEW_COMPLETE` /
+  `REVIEW_FAILED`) and **does not decide Gate 8** — substantive approval stays
+  author-controlled.
 *Size:* large (new platform capability + UI + state). The keystone.
 
 > **Implementation-ready plan:** the full F1–F4 slice plan (files, data flow / state
 > transitions, migration & backward-compat, acceptance criteria, tests, and failure /
 > recovery for each slice) lives in **[package-f-plan.md](package-f-plan.md)**. Slices:
-> **F1** attempt/set domain model + persistence · **F2** module runner +
-> deferred-feedback flow · **F3** human-review & scoring workflow + Gate-8 selector ·
-> **F4** scheduler extension point + integration + full verification. Packages **G–I
-> and all assessment content stay out of scope**; building any slice is Mode C and
-> needs explicit approval.
+> **F1** hydration-safe attempt/set domain model + persistence (+ Export/Import) ·
+> **F2** module runner + snapshotting + deferred-feedback flow (dev-origin) · **F3**
+> human-review & scoring workflow + conservative `reviewStatus` blocker · **F4**
+> idempotent scheduler extension point + integration + full verification (incl. the
+> **mandatory** end-to-end review e2e). Both pilot surfaces (runner + reviewer) are
+> **dev-gated on the same origin**. Packages **G–I and all assessment content stay out
+> of scope**; building any slice is Mode C and needs explicit approval.
 
 ### Package G — Class-A module item sets (on F) · module-owned
 *Closes:* D8, D9, D10, D13, **and the executable P2 applied slice**.
