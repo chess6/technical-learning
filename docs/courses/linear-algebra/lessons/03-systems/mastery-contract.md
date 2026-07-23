@@ -93,11 +93,11 @@ scoring; 🔴 lesson-owned outcome still **below** its required level; ⬜ modul
 
 | Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Classify none/one/∞ before solving | D1/D5 | lesson | 🔴 `sys-count-infinite`, `sys-count-none`, `sys-classify-fresh` (MC / committed-MC, incl. a **fresh** system) | **E1** — a three-way choice is recognition even when fresh & committed | E3 |
-| Solve a 2×2 by rows + confirm by columns | D3 | lesson | ✅ `sys-solve-confirm-fresh` (**exercise-sequence**, fresh: produce \(x\), \(y\), **and** the column-combination check) + `sys-solve-unique` (E2) | **E3** — fresh unaided production of the *complete* outcome (rows **and** column confirmation) | E3 |
+| Classify none/one/∞ before solving | D1/D5 | lesson | ✅ `sys-classify-produce-fresh` (**exercise-sequence**, fresh: PRODUCE the witness of each class — the forced solution, a second distinct solution, the contradiction value); `sys-count-*`, `sys-classify-fresh` (MC/committed-MC, E1 backups) | **E3** — the class is the output of computation the learner performed, not a three-way pick | E3 |
+| Solve a 2×2 by rows + confirm by columns | D3 | lesson | ✅ `sys-solve-confirm-fresh` (**exercise-sequence**, fresh: produce \(x\), \(y\), **and both coordinates** of \(x\mathbf{a}_1+y\mathbf{a}_2=\mathbf{b}\)) + `sys-solve-unique` (E2) | **E3** — fresh unaided production of the *complete* outcome (rows **and** the full two-coordinate column confirmation) | E3 |
 | Translate a system to \(A,\mathbf{b}\) (complete \([A\mid\mathbf{b}]\)) | D4 | lesson | ✅ `sys-translate-augmented-fresh` (**matrix-entry**, all six entries, fresh) + `sys-column-reading` (MC, E1) | **E3** — fresh production of the whole augmented matrix | E3 |
-| Characterize which \(\mathbf{b}\) are inconsistent (dependent cols) | D5/D7 | lesson | 🟡 `sys-construct-inconsistent` (**construct-in-explorer**, fresh cols, checked by `classifyLinearSystem2x2`); `sys-generalize-inconsistent` (MC, E1) | **E3 construction** — genuine graded production, but *within the taught pattern*; the unfamiliar-transfer E4 variant is deferred to the module set | E4 |
-| Reason about the dependent-count mechanism | D5 | lesson | 🟡 `sys-reason-dependent-count` (**self-check**, produced reasoning); `sys-counterexample-uniqueness` (committed-MC, E1) | **E6 surface, unscored** — reasoning is now *produced* (not chosen), but the self-mark is not scoring; recognition backup is E1 | E3 (scored) |
+| Characterize which \(\mathbf{b}\) are inconsistent (dependent cols) | D5/D7 | lesson | ✅ `sys-characterize-parameter-fresh` (**exercise-sequence**, E4: pin the dependency parameter \(h\), the on-line target coordinate, and a witnessing solution — a *symbolic-parameter* task never walked through); `sys-construct-inconsistent` (construct-in-explorer, E3 within pattern); `sys-generalize-inconsistent` (MC, E1) | **E4** — unfamiliar-transfer characterization of the solvable/unsolvable boundary | E4 |
+| Reason about the dependent-count mechanism | D5 | lesson | 🟡 `sys-reason-dependent-count` (**self-check**, produced reasoning; model now uses a **general nonzero relation** \(\alpha\mathbf{a}_1+\beta\mathbf{a}_2=\mathbf{0}\), incl. zero first column & zero matrix); `sys-counterexample-uniqueness` (committed-MC, E1) | **E6 surface, unscored** — reasoning is *produced* (not chosen), but the self-mark is not scoring; recognition backup is E1 | E3 (scored) |
 | Justify consistency ⇔ \(\mathbf{b}\in\operatorname{Col}(A)\) | D6 | lesson | 🟡 `sys-prove-consistency` (**self-check**, both directions) | **E6 surface, unscored** — learner writes the proof + model answer/rubric, but the self-mark is not scoring | E6 (human-scored) |
 | Prove the trichotomy (no determinant) | D6 | lesson | 🟡 `sys-prove-trichotomy` (**self-check**, general nonzero null-relation \(\alpha\mathbf{a}_1+\beta\mathbf{a}_2=\mathbf{0}\), incl. zero column & zero matrix) | **E6 surface, unscored** — proof captured; credit pending human scoring | E6 (human-scored) |
 | Select rows-vs-columns unprompted | D8 | ⬜ **module** | module set (not built) | not built | E3 (Gate 9) |
@@ -114,50 +114,59 @@ near-copy graded production (worked numbers) is **E2 reproduction**;
 **E3 requires fresh, unaided production of the *complete* outcome**;
 **E4 requires unfamiliar transfer/construction**, not a renamed recognition;
 `self-check` is self-marked → an **unscored E6 surface**, not E6 (or E3-reasoning)
-evidence. Result for L3: the **row-solve + column-confirmation** (D3) and the
-**complete translation** (D4) now reach **E3** (fresh production); the inconsistency
-**construction** (D5/D7) is a genuine graded production (E3, within the taught
-pattern); but **classification stays E1** (a three-way choice), the **dependent-count
-reasoning** is a produced-but-unscored surface, and the **two D6 proofs** are unscored
-E6 surfaces. Several lesson-owned outcomes therefore remain below their required level,
-so **Gate 8 is NOT PASSED** (see [§6](#6-acceptance-record-gate-8)). Fresh numbers and
+evidence. Result for L3 after the second remediation pass: **classification** now
+reaches **E3** (produced witnesses in `sys-classify-produce-fresh`, not a three-way
+pick); the **row-solve + full two-coordinate column-confirmation** (D3) and the
+**complete translation** (D4) reach **E3**; the inconsistency **characterization**
+(D5/D7) now reaches **E4** via `sys-characterize-parameter-fresh` (a symbolic-parameter
+transfer), with `sys-construct-inconsistent` an E3 construction beneath it. The only
+lesson-owned outcomes still below their required level are the ones that need **human
+scoring**: the **dependent-count reasoning** (produced, unscored) and the **two D6
+proofs** (unscored E6 surfaces). So **Gate 8 is NOT PASSED** solely because those
+proof/reasoning surfaces are unscored (module Package F) — see
+[§6](#6-acceptance-record-gate-8). Fresh numbers and
 each new item's correct/incorrect grading paths are verified in
 [`freshExample.test.ts`](../../../../../src/lessons/__tests__/freshExample.test.ts) and
 [`remediationExercises.test.ts`](../../../../../src/lessons/__tests__/remediationExercises.test.ts).
 
 ### 1e. Coverage-status classification (required vs reached)
 
-Honest ceiling: the row-solve+confirm and complete-translation outcomes reach **E3**
-(fresh production); the inconsistency construction is a fresh graded **E3** production;
-**classification remains E1**; the dependent-count reasoning and both proofs are
-**produced but unscored surfaces**.
+Honest ceiling: classification, the row-solve + full column-confirmation, and the
+complete translation reach **E3** (fresh production); the inconsistency
+**characterization** reaches **E4** (symbolic-parameter transfer); the dependent-count
+reasoning and both proofs are **produced but unscored surfaces**.
 
 - **Taught (level 1):** all listed content is presented.
-- **Independently demonstrated (E3) — reached:** fresh row-solve **and** column
+- **Independently demonstrated (E3) — reached:** produced none/one/∞ classification
+  (`sys-classify-produce-fresh`); fresh row-solve **and** full two-coordinate column
   confirmation (`sys-solve-confirm-fresh`); complete augmented-matrix translation
   (`sys-translate-augmented-fresh`); fresh graded construction of an inconsistent
   \(\mathbf{b}\) (`sys-construct-inconsistent`).
-- **Recognition only (E1 — below required):** classification (`sys-count-*`,
-  `sys-classify-fresh`), column-reading, generalize, invertibility-link, and the
-  committed-MC counterexample item.
-- **Produced but unscored surface (🟡):** `sys-reason-dependent-count` (reasoning),
-  `sys-prove-consistency`, `sys-prove-trichotomy` (proofs) — the in-app `self-check`
-  mark is **not** scoring; human scoring is owned by the module assessment (Package F).
+- **Unfamiliar transfer (E4) — reached:** `sys-characterize-parameter-fresh`
+  (characterize the dependency/consistency boundary on a symbolic parameter).
+- **Recognition only (E1 — support, not the evidence of record):** the MC classification
+  backups (`sys-count-*`, `sys-classify-fresh`), column-reading, generalize,
+  invertibility-link, and the committed-MC counterexample item.
+- **Produced but unscored surface (🟡 — the only remaining lesson-owned blockers):**
+  `sys-reason-dependent-count` (reasoning), `sys-prove-consistency`,
+  `sys-prove-trichotomy` (proofs) — the in-app `self-check` mark is **not** scoring;
+  human scoring is owned by the module assessment (Package F).
 - **Module-owned (planned Gate 9):** method selection (D8); cumulative recognition.
 
 ### 1f. Connections, assessment, retention
 - **Cumulative connections (D10):** fires L1 basis ⇔ unique coordinates as "unique
   solution for every \(\mathbf{b}\)"; fires L2 columns rule as the column picture.
-- **Assessment evidence (summary):** classification is recognition MC — including a
-  *fresh* committed classification (`sys-classify-fresh`) that is still **E1**; Explore
-  (drag \(\mathbf{b}\)); Practice includes **fresh-instance** production of the complete
-  outcomes — row-solve **and** column-confirmation (`sys-solve-confirm-fresh`, E3) and
-  the full augmented matrix (`sys-translate-augmented-fresh`, E3) — a **graded
-  construction** on fresh columns (`sys-construct-inconsistent`, E3), a **produced**
-  dependent-count reasoning surface (`sys-reason-dependent-count`, unscored), and two
-  **learner-written proof surfaces** (unscored). Honest ceiling: **E3 for the two
-  computational outcomes and the construction**; classification stays **E1**; reasoning
-  and proofs are **produced but unscored**. See the
+- **Assessment evidence (summary):** classification is now **produced** at E3
+  (`sys-classify-produce-fresh`) with MC backups at E1; Explore (drag \(\mathbf{b}\));
+  Practice includes **fresh-instance** production of the complete outcomes — row-solve
+  **and** the full two-coordinate column-confirmation (`sys-solve-confirm-fresh`, E3) and
+  the full augmented matrix (`sys-translate-augmented-fresh`, E3) — an **E4
+  characterization** on a symbolic parameter (`sys-characterize-parameter-fresh`), a
+  **graded construction** on fresh columns (`sys-construct-inconsistent`, E3), a
+  **produced** dependent-count reasoning surface (`sys-reason-dependent-count`,
+  unscored), and two **learner-written proof surfaces** (unscored). Honest ceiling:
+  **E3 for classification + the two computational outcomes, E4 for the characterization**;
+  reasoning and proofs are **produced but unscored** (Package F). See the
   [evidence audit](#evidence-audit-runtime-checked).
 - **Delayed-retention requirement (D12):** the trichotomy and consistency⇔span must
   resurface in the module spaced set and again when L7 (determinant) and L8 (column
@@ -190,18 +199,20 @@ remediation, under the **P3 override**, against the runtime audit
       general nonzero null-relation proof); primary insight preserved in meaning.
 - [x] Every field in §1 filled; upstream artifacts linked, not restated.
 - [x] Every outcome operational, marked lesson/module-owned, paired with evidence.
-- [x] **Two computational outcomes reach E3:** row-solve **and** column confirmation
-      (`sys-solve-confirm-fresh`) and the complete augmented-matrix translation
-      (`sys-translate-augmented-fresh`) are fresh, unaided production of the full outcome.
-- [ ] **Classification (D1/D5) reaches its required E3 — NOT YET.** All classification
-      items (incl. the fresh `sys-classify-fresh`) are three-way choices → **E1
-      recognition**. A fresh *production* of the none/one/∞ result is still missing.
-- [ ] **Characterization (D5/D7) reaches its required E4 — NOT YET.** The construction
-      is a genuine graded **E3**, but within the taught pattern; the unfamiliar-transfer
-      E4 variant is deferred to the module set.
-- [ ] **Dependent-count reasoning reaches scored E3 — NOT YET.** Now *produced*
-      (`sys-reason-dependent-count`) rather than chosen, but the `self-check` mark is not
-      scoring.
+- [x] **The computational outcomes reach E3:** produced classification
+      (`sys-classify-produce-fresh`), row-solve **and** the full two-coordinate column
+      confirmation (`sys-solve-confirm-fresh`), and the complete augmented-matrix
+      translation (`sys-translate-augmented-fresh`) are fresh, unaided production of the
+      full outcome.
+- [x] **Classification (D1/D5) reaches its required E3.** `sys-classify-produce-fresh`
+      makes the learner PRODUCE the witness of each class (forced solution / a second
+      distinct solution / the contradiction value); the MC items are E1 backups.
+- [x] **Characterization (D5/D7) reaches its required E4.** `sys-characterize-parameter-fresh`
+      is an unfamiliar-transfer characterization on a symbolic parameter (never walked
+      through); `sys-construct-inconsistent` remains an E3 construction beneath it.
+- [ ] **Dependent-count reasoning reaches scored E3 — NOT YET.** *Produced*
+      (`sys-reason-dependent-count`, model now general: nonzero relation, zero column,
+      zero matrix) rather than chosen, but the `self-check` mark is not scoring.
 - [ ] **Every lesson-owned P3 (proof) outcome reaches independently demonstrated —
       NOT YET.** `sys-prove-consistency` / `sys-prove-trichotomy` are genuine E6
       *surfaces*, but `self-check` is self-marked, so **E6 credit is blocked on human
@@ -211,15 +222,15 @@ remediation, under the **P3 override**, against the runtime audit
 - [x] Delayed-retention hook (D12) recorded.
 - [x] Correctness gate passed (lint + unit tests green, incl. fresh-example and new-item
       grading tests).
-- [ ] No rejection condition holds — **still open**: classification/characterization
-      below level, and proof/reasoning evidence unscored.
+- [ ] No rejection condition holds — **still open only on scoring**: the proof/reasoning
+      surfaces are unscored (human scoring → Package F).
 
-**Verdict: Gate 8 NOT PASSED.** The remediation genuinely lifted two computational
-outcomes to fresh E3 production and added a fresh graded construction, a produced
-reasoning surface, and a corrected general proof surface — real progress over the
-earlier exposure/reproduction build. But Gate 8 is a single gate and cannot pass while
-(a) classification is still E1 recognition, (b) the characterization outcome's required
-E4 unfamiliar-transfer is not yet built, and (c) the reasoning/proof surfaces are
-unscored. Remaining lesson-owned gaps are enumerated in the module
+**Verdict: Gate 8 NOT PASSED.** The second remediation pass closed every non-scoring
+lesson-owned gap: classification is now **produced E3**, the column confirmation checks
+**both coordinates**, and the inconsistency characterization reaches **E4** on a symbolic
+parameter. The **only** remaining lesson-owned blocker is that the dependent-count
+reasoning and the two proofs are **produced but unscored** `self-check` surfaces — Gate 8
+is a single gate and cannot pass until those are **human-scored** (module Package F).
+Remaining obligations are enumerated in the module
 [implementation package](../../modules/systems-elimination/implementation-package.md);
-proof/reasoning *scoring* is module infrastructure (Package F).
+they are now **scoring-only** — no missing lesson interactions remain.

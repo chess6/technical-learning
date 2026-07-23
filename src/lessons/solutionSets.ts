@@ -1,7 +1,7 @@
 import type { LessonDefinition } from "./types";
 import { LINEAR_SYSTEM_FRESH as EX2 } from "./exampleData";
 import {
-  COMMITTED_PREDICTION_ID,
+  CONSTRUCT_IN_EXPLORER_ID,
   EXERCISE_SEQUENCE_ID,
   SELF_CHECK_ID,
 } from "./capabilities";
@@ -330,42 +330,66 @@ export const solutionSetsLesson: LessonDefinition = {
         "Add the null vector to the known solution: $(4, 0) + (3, -1) = (7, -1)$, and $A(7, -1) = (4, 8) = \\mathbf{b}$. Every $(4 + 3t,\\ -t)$ is a solution; this is the $t = 1$ result.",
     },
     {
-      // Learner-PRODUCED complete parametric solution set (E3) on a fresh system:
-      // the learner finds the particular solution and the null direction
-      // themselves (a fixed free-variable value makes each unique and gradeable),
-      // then instantiates the set. Choosing a displayed formula (the old
-      // committed-MC version) is recognition, not production, so it is replaced.
+      // Learner-PRODUCED complete parametric solution set (E3) on a fresh system.
+      // The reviewer flagged the earlier version for (a) handing over one coordinate
+      // of each object and (b) DISPLAYING the parametric formula before the point was
+      // committed. This version captures every component the learner produces — the
+      // complete particular vector (both coords, verified against the second
+      // equation), the complete null direction (both coords, verified as a null
+      // vector), and the complete instantiated point (both coords) — WITHOUT showing
+      // the answer formula before commitment.
       id: "sol-produce-parametric-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "Build the entire solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ yourself (its columns are dependent).",
+        "Build the entire solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ yourself (its columns are dependent). You will produce the particular solution, the null direction, and a point on the set — every coordinate, no formula handed to you.",
       config: {
         steps: [
           {
             kind: "numeric",
             prompt:
-              "Find a particular solution with $y = 0$: substitute into $x + 3y = 4$ and enter $x$.",
+              "Particular solution: take $y = 0$ in $x + 3y = 4$ and enter $x$.",
             expected: EX2.particular[0],
             explanation:
-              "With $y = 0$, $x = 4$, so $\\mathbf{x}_p = (4, 0)$ (and indeed $2(4) + 6(0) = 8$).",
+              "With $y = 0$, $x = 4$: the $x$-coordinate of $\\mathbf{x}_p$.",
           },
           {
             kind: "numeric",
             prompt:
-              "Find a null direction: solve the homogeneous $x + 3y = 0$ with $y = -1$, and enter $x$.",
+              "Verify your complete $\\mathbf{x}_p = (4, 0)$ against the OTHER equation: compute $2x + 6y$ for it.",
+            expected: EX2.bInfinite[1],
+            explanation:
+              "$2(4) + 6(0) = 8 = \\mathbf{b}_2$, so $\\mathbf{x}_p = (4, 0)$ really solves both equations.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Null direction: solve the homogeneous $x + 3y = 0$ with $y = -1$ and enter $x$.",
             expected: EX2.nullDirection[0],
-            explanation:
-              "$x = -3y = -3(-1) = 3$, so $\\mathbf{v} = (3, -1) \\in \\operatorname{Null}(A)$.",
+            explanation: "$x = -3y = 3$: the $x$-coordinate of the null direction.",
           },
           {
             kind: "numeric",
             prompt:
-              "So $\\operatorname{Sol} = (4, 0) + t\\,(3, -1)$. Enter the $x$-coordinate at $t = 2$.",
-            expected: EX2.particular[0] + 2 * EX2.nullDirection[0],
+              "Verify your complete $\\mathbf{v} = (3, -1)$ is a null vector: compute $2x + 6y$ for it.",
+            expected: 0,
             explanation:
-              "$(4, 0) + 2(3, -1) = (10, -2)$. You have produced the whole set: $\\{(4 + 3t,\\ -t) : t \\in \\mathbb{R}\\}$ — the null line $\\{t(3,-1)\\}$ slid to pass through $(4, 0)$. It is affine (it misses the origin), and a whole line, not two points.",
+              "$2(3) + 6(-1) = 0$, so $\\mathbf{v} = (3, -1) \\in \\operatorname{Null}(A)$ (and $x + 3y = 0$ too).",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Instantiate at $t = 2$ using YOUR $\\mathbf{x}_p = (4, 0)$ and $\\mathbf{v} = (3, -1)$: enter the $x$-coordinate of $\\mathbf{x}_p + 2\\mathbf{v}$.",
+            expected: EX2.particular[0] + 2 * EX2.nullDirection[0],
+            explanation: "$(4, 0) + 2(3, -1)$ has $x = 4 + 6 = 10$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "…and its $y$-coordinate.",
+            expected: EX2.particular[1] + 2 * EX2.nullDirection[1],
+            explanation:
+              "$y = 0 + 2(-1) = -2$, so the point is $(10, -2)$. You have produced the whole set $\\{\\mathbf{x}_p + t\\,\\mathbf{v}\\} = \\{(4 + 3t,\\ -t) : t \\in \\mathbb{R}\\}$ — the null line $\\{t(3,-1)\\}$ slid to pass through $(4, 0)$. It is affine (it misses the origin), and a whole line, not two points.",
           },
         ],
       },
@@ -387,6 +411,30 @@ export const solutionSetsLesson: LessonDefinition = {
         "One difference gives one direction, hence at least a line of solutions. But $A = \\mathbf{0}$ has $\\operatorname{Null}(A) = \\mathbb{R}^2$ (the whole plane, dimension 2), so a single direction undercounts the set. You need a basis of $\\operatorname{Null}(A)$ — every free-variable direction — to state the full shape.",
     },
     {
+      // In-lesson E4 distinction (produced construction). The lesson only ever WORKED
+      // nullity-1 lines; here the learner transfers the one-direction-vs-whole-null-
+      // space distinction to the unfamiliar nullity-2 operator A = 0 by CONSTRUCTING
+      // a null vector off the line the single difference produced — proving that one
+      // difference undercounts. Graded by the shared `vector-off-line` predicate.
+      id: "sol-construct-second-null-direction",
+      type: "custom",
+      capabilityId: CONSTRUCT_IN_EXPLORER_ID,
+      tier: "transfer",
+      prompt:
+        "Transfer it. Let $A = \\mathbf{0}$ (the $2\\times 2$ zero matrix), so every vector solves $A\\mathbf{x} = \\mathbf{0}$. The solutions $(1, 0)$ and $(0, 0)$ differ by $(1, 0)$, giving only the line $\\{t\\,(1, 0)\\}$ (the $x$-axis). Commit a null vector that shows the solution set is bigger than that line — a null vector **off** the $x$-axis.",
+      config: {
+        target: "vector2",
+        check: {
+          kind: "vector-off-line",
+          spanning: [1, 0],
+        },
+        reveal:
+          "Any nonzero vector with a nonzero $y$-component — e.g. $(0, 1)$ or $(1, 1)$ — is a solution of $A\\mathbf{x} = \\mathbf{0}$ (every vector is, since $A = \\mathbf{0}$) yet lies off the $x$-axis. So $\\operatorname{Null}(A) = \\mathbb{R}^2$ is two-dimensional: the single difference $(1, 0)$ captured only a line, and you need a *second* independent direction (one per free variable) to describe the whole set.",
+        hint:
+          "You need a nonzero vector that is not a multiple of $(1, 0)$ — i.e. its $y$-component must be nonzero.",
+      },
+    },
+    {
       id: "sol-existence-vs-multiplicity",
       type: "multiple-choice",
       tier: "transfer",
@@ -403,23 +451,51 @@ export const solutionSetsLesson: LessonDefinition = {
         "A trivial null space forbids two distinct solutions, so there is *at most one* for every $\\mathbf{b}$ (uniqueness). It does not force existence: reachability is the separate column-space question. \u201cExactly one for every $\\mathbf{b}$\u201d additionally requires the columns to span the space.",
     },
     {
-      // Package C — was a reveal-only `prediction`; now a commit-before-reveal
-      // choice on a FRESH inconsistent target.
-      id: "sol-inconsistent-empty",
+      // Replaces the committed-MC inconsistency refusal (E1) with PRODUCED evidence:
+      // the learner eliminates a fresh inconsistent dependent system, produces the
+      // contradiction row's right-hand side and the solution count (0). Producing the
+      // $0 = c$ witness is the demonstration that the set is empty.
+      id: "sol-refuse-inconsistent-fresh",
       type: "custom",
-      capabilityId: COMMITTED_PREDICTION_ID,
+      capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "Commit before revealing. Take the dependent columns $(1, 2), (3, 6)$ with $\\mathbf{b} = (4, 9)$, off their line. What is the solution set, and why can't you write $\\mathbf{x}_p + \\operatorname{Null}(A)$?",
+        "A fresh dependent system: $\\begin{cases} x + 2y = 5 \\\\ 3x + 6y = 20 \\end{cases}$. Decide its solution set by producing the evidence.",
       config: {
-        options: [
-          "$\\operatorname{Null}(A)$ itself — the null line through the origin",
-          "Empty ($\\varnothing$): $\\mathbf{b}$ is off the column space, so there is no particular solution $\\mathbf{x}_p$ to anchor the translate",
-          "A single point, because the columns are dependent",
+        steps: [
+          {
+            kind: "numeric",
+            prompt:
+              "Eliminate with $R_2 \\to R_2 - 3\\,R_1$. The coefficients collapse to $(0, 0)$; what is the resulting right-hand side of $R_2$?",
+            expected: 5,
+            explanation:
+              "$20 - 3\\cdot 5 = 5$, so $R_2$ becomes $0 = 5$ — the columns $(1,3),(2,6)$ are dependent and $\\mathbf{b}$ is off their line.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "The eliminated row reads $0 = 5$. How many solutions does the system have? (Enter the count; use $0$ for none.)",
+            expected: 0,
+            explanation:
+              "$0 = 5$ is impossible, so no $(x, y)$ works: the solution set is empty, $\\varnothing$. This is why you must *refuse* the decomposition — see the next item.",
+          },
         ],
-        correctIndex: 1,
-        reveal:
-          "The set is $\\varnothing$. $\\mathbf{b} = (4, 9)$ is not in the column space (the line $\\{s(1,2)\\}$), so no $\\mathbf{x}_p$ exists. The decomposition $\\mathbf{x}_p + \\operatorname{Null}(A)$ needs an anchor to translate the null space to; with no $\\mathbf{x}_p$ there is nothing to shift. $\\operatorname{Null}(A)$ itself is *not* the answer — that would claim $\\mathbf{0}$ solves it, but $A\\mathbf{0} = \\mathbf{0} \\ne \\mathbf{b}$.",
+      },
+    },
+    {
+      // The produced-reasoning half of the refusal: WHY you cannot write
+      // x_p + Null(A) for an inconsistent system. Unscored E6 surface (scoring → F).
+      id: "sol-justify-inconsistent-refusal",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "Explain in your own words: for that inconsistent system, why is the solution set $\\varnothing$ and NOT $\\operatorname{Null}(A)$ — i.e. why can't you write $\\mathbf{x}_p + \\operatorname{Null}(A)$? Write your reasoning, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "The decomposition $\\mathbf{x}_p + \\operatorname{Null}(A)$ *presupposes* a particular solution $\\mathbf{x}_p$ to anchor the translate. Here $\\mathbf{b} = (5, 20)$ is off the column space (the line $\\{s(1,2)^{\\!\\top}\\}$ spanned by the dependent columns), so no $\\mathbf{x}_p$ exists — the elimination row $0 = 5$ is exactly that obstruction. With nothing to shift the null space onto, the set is empty, $\\varnothing$. It is **not** $\\operatorname{Null}(A)$: writing $\\operatorname{Null}(A)$ would claim $\\mathbf{0}$ solves the system, but $A\\mathbf{0} = \\mathbf{0} \\ne \\mathbf{b}$. So consistency must be checked *before* applying the structure formula.",
+        rubric:
+          "A strong answer says the structure formula needs an $\\mathbf{x}_p$ (consistency), notes $\\mathbf{b}$ off the column space means none exists (the $0 = c$ row), concludes $\\varnothing$, and rejects $\\operatorname{Null}(A)$ because $A\\mathbf{0} = \\mathbf{0} \\ne \\mathbf{b}$.",
       },
     },
     {

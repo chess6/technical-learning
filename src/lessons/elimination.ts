@@ -29,10 +29,12 @@ import {
  * error diagnosis + repair, and a self-checked proof) against that single idea.
  *
  * Evidence honesty (mastery-standard §5): multiple-choice and committed-MC are E1
- * recognition; E3 requires fresh unaided production of the complete outcome; the
- * self-check proof is an unscored E6 surface. Because the invariance proof is
- * unscored and some outcomes remain at recognition, Gate 8 is NOT PASSED — see the
- * mastery contract.
+ * recognition; E3 requires fresh unaided production of the complete outcome; E4 is
+ * unfamiliar transfer/construction; self-check is an unscored E6 surface. The
+ * diagnosis (produced on an unfamiliar erroneous elimination) and the degenerate
+ * zero-pivot swap are the in-lesson E4 transfers; the invariance proof and the
+ * diagnosis explanation stay unscored E6 surfaces, so Gate 8 is NOT PASSED until
+ * human scoring (module Package F) — see the mastery contract.
  */
 export const eliminationLesson: LessonDefinition = {
   id: "elimination",
@@ -79,14 +81,19 @@ export const eliminationLesson: LessonDefinition = {
         // Fresh-instance production (E3) on a different system.
         "elim-sequence-forward-fresh",
         "elim-matrix-after-step-fresh",
-        // Recognition check (E1) kept, plus a FRESH diagnosis + repair (produce the
-        // corrected row) and an elimination-to-contradiction-row production.
+        // Recognition check (E1) kept, plus a FRESH, unfamiliar diagnosis where the
+        // learner PRODUCES the erroneous coefficient + repair (E4 transfer) and then
+        // writes the explanation, then an elimination-to-contradiction-row production.
         "elim-diagnose-illegal",
         "elim-diagnose-repair-fresh",
+        "elim-diagnose-explain-fresh",
         "elim-contradiction-row-fresh",
         // A non-duplicative construction (distinct columns + the infinite case) —
         // the previous construct duplicated the L3 item and is removed.
         "elim-construct-infinite",
+        // In-lesson E4 unfamiliar-transfer: a zero-pivot configuration that forces a
+        // row swap (never walked through in the worked example or drills).
+        "elim-degenerate-pivot-transfer",
         "elim-explain-invariance",
       ],
     },
@@ -204,14 +211,16 @@ export const eliminationLesson: LessonDefinition = {
   // operation → step through one elimination → record the result as a matrix →
   // repeat both on a FRESH system (the `*-fresh` E3 production drills, on
   // `systems-fresh`, so the answer cannot be recalled) → diagnose an illegal move
-  // → construct the inconsistent case elimination exposes (unaided, no
-  // answer-giving hint) → explain the invariance in your own words. These use the
-  // platform capabilities (committed prediction, sequence, matrix entry,
-  // construction, self-check) reached through the `custom` escape hatch. The
-  // committed prediction (`elim-predict-fixed-point`) is placed FIRST in the
-  // route, before the Watch visual, so it is a real prediction; the rest follow
-  // after Explore. The self-checked proof is an E6 *surface*: full proof credit is
-  // awarded by human scoring in the module assessment, not the in-app self-mark.
+  // → PRODUCE the diagnosis + repair on an UNFAMILIAR erroneous elimination and
+  // explain it → run elimination to a contradiction row → construct the infinite
+  // case → transfer to a DEGENERATE zero-pivot system that forces a swap (E4) →
+  // explain the invariance in your own words. These use the platform capabilities
+  // (committed prediction, sequence, matrix entry, construction, self-check)
+  // reached through the `custom` escape hatch. The committed prediction
+  // (`elim-predict-fixed-point`) is placed FIRST in the route, before the Watch
+  // visual, so it is a real prediction; the rest follow after Explore. The
+  // self-checked proof and the diagnosis explanation are E6 *surfaces*: full credit
+  // is awarded by human scoring in the module assessment, not the in-app self-mark.
   exercises: [
     {
       id: "elim-predict-fixed-point",
@@ -382,45 +391,59 @@ export const eliminationLesson: LessonDefinition = {
         "Scaling by $0$ turns $R_2$ into $0 = 0$, erasing its constraint. It is irreversible (you cannot divide back by $0$), so solutions that violated the old $R_2$ can appear — the solution set can grow. The other three are reversible and safe.",
     },
     {
-      // Fresh error diagnosis + REPAIR: a wrong-sign multiplier on a system not
-      // used in the worked example. The learner locates the mistake (recognition)
-      // and then PRODUCES the corrected row (E3 repair) — no reveal-only self-grade.
+      // In-lesson E4 unfamiliar transfer: a wrong-sign multiplier on a system used
+      // NOWHERE else in the module. The learner PRODUCES the diagnosis (computes the
+      // erroneous x-coefficient the bad move yields, which should have been 0) and
+      // then PRODUCES the repaired row — no multiple-choice recognition step.
       id: "elim-diagnose-repair-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "A classmate tried to clear $x$ from $R_2$ of $\\begin{cases} x + 2y = 4 \\\\ 3x + y = -3 \\end{cases}$ and wrote $R_2 \\to R_2 + 3\\,R_1$. Diagnose the error, then repair it.",
+        "A classmate tried to clear $x$ from $R_2$ of $\\begin{cases} x + 4y = 9 \\\\ 2x + 3y = 8 \\end{cases}$ and wrote $R_2 \\to R_2 + 2\\,R_1$. Produce the diagnosis, then repair it.",
       config: {
         steps: [
           {
-            kind: "multiple-choice",
-            prompt: "What went wrong?",
-            choices: [
-              "Nothing — $x$ is cleared correctly",
-              "Adding $3\\,R_1$ makes the $x$-coefficient $3 + 3 = 6$, not $0$; clearing $x$ needs subtraction: $R_2 \\to R_2 - 3\\,R_1$",
-              "The rows should have been swapped first",
-              "$R_1$ should be scaled by $3$ before combining",
-            ],
-            correctChoice: 1,
+            kind: "numeric",
+            prompt:
+              "Diagnose by computing: after the classmate's $R_2 \\to R_2 + 2\\,R_1$, what is the new $x$-coefficient in $R_2$? (Clearing $x$ should make it $0$.)",
+            expected: 4,
             explanation:
-              "The pivot is $1$ and the entry below it is $3$, so the multiplier is $-3$: you must **subtract** $3\\,R_1$. Adding sends the $x$-coefficient to $6$, the opposite of clearing it.",
+              "$2 + 2\\cdot 1 = 4$ — not $0$. Adding $2\\,R_1$ pushes the $x$-coefficient to $4$ instead of cancelling it: the multiplier has the wrong sign.",
           },
           {
             kind: "numeric",
             prompt:
-              "Repair it: after the correct $R_2 \\to R_2 - 3\\,R_1$, what is the new $y$-coefficient in $R_2$?",
+              "Repair it: with the correct $R_2 \\to R_2 - 2\\,R_1$, what is the new $y$-coefficient in $R_2$?",
             expected: -5,
-            explanation: "$1 - 3\\cdot 2 = -5$.",
+            explanation: "$3 - 2\\cdot 4 = -5$.",
           },
           {
             kind: "numeric",
             prompt: "And the new right-hand side of $R_2$?",
-            expected: -15,
+            expected: -10,
             explanation:
-              "$-3 - 3\\cdot 4 = -15$, giving the triangular row $-5y = -15$ (so $y = 3$). The repaired move is reversible; the classmate's was not the clearing step at all.",
+              "$8 - 2\\cdot 9 = -10$, giving the triangular row $-5y = -10$ (so $y = 2$, then $x = 1$). The repaired move is reversible; the classmate's $+2\\,R_1$ was not a clearing step at all.",
           },
         ],
+      },
+    },
+    {
+      // The produced EXPLANATION half of the diagnosis (the reviewer's "produced
+      // diagnosis/explanation"): the learner writes WHY adding fails and what rule
+      // fixes it. An unscored E6 surface — the self-mark is not credit; human scoring
+      // is module Package F.
+      id: "elim-diagnose-explain-fresh",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt:
+        "In your own words: explain why the classmate's $R_2 \\to R_2 + 2\\,R_1$ fails to clear $x$, and state the rule that gives the correct multiplier. Write your explanation, then compare with the model answer.",
+      config: {
+        modelAnswer:
+          "To clear $x$ from $R_2$ you must cancel the entry $2$ below the pivot $1$. The replacement $R_2 \\to R_2 + m\\,R_1$ changes the $x$-coefficient to $2 + m\\cdot 1$, which is $0$ only when $m = -2$. Adding ($m = +2$) drives it to $4$ — the wrong direction. The rule: the multiplier is $m = -(\\text{entry below the pivot}) / (\\text{pivot}) = -2/1 = -2$, i.e. **subtract** $2\\,R_1$. That move is reversible (undo with $R_2 \\to R_2 + 2\\,R_1$), so it preserves the solution set; the classmate's was simply not the clearing operation.",
+        rubric:
+          "A strong answer states that clearing needs the $x$-coefficient $2 + m$ to be $0$, so $m = -2$ (subtract), identifies the multiplier rule $m = -(\\text{below})/(\\text{pivot})$, and notes the correct move is reversible.",
       },
     },
     {
@@ -467,6 +490,50 @@ export const eliminationLesson: LessonDefinition = {
         },
         reveal:
           "Any $\\mathbf{b}$ **on** the line spanned by $(1, 3)$ works — for instance $(1, 3)$ or $(2, 6)$. Eliminating $x$ then leaves $0 = 0$: a true-but-empty row that drops one constraint, so the surviving line's worth of points all solve the system. A $\\mathbf{b}$ off the line would instead give $0 = (\\text{nonzero})$ and no solution.",
+      },
+    },
+    {
+      // In-lesson E4 unfamiliar transfer: a DEGENERATE zero-pivot configuration. The
+      // worked example and every drill had a nonzero pivot in place; here $a_{11}=0$,
+      // so $R_1$ cannot clear $x$ and the learner must transfer the (so-far unused)
+      // swap operation, then produce the solution by the non-standard route.
+      id: "elim-degenerate-pivot-transfer",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "transfer",
+      prompt:
+        "A degenerate case you have not seen: $\\left[\\begin{array}{cc|c} 0 & 1 & 4 \\\\ 2 & 3 & 10 \\end{array}\\right]$. The pivot position $a_{11}$ is $0$.",
+      config: {
+        steps: [
+          {
+            kind: "multiple-choice",
+            prompt:
+              "Since $a_{11} = 0$, $R_1$ cannot be used to clear $x$ from $R_2$. Which legal operation lets elimination proceed?",
+            choices: [
+              "Swap $R_1 \\leftrightarrow R_2$",
+              "Scale $R_1$ by $0$",
+              "$R_2 \\to R_2 + R_1$",
+              "Multiply $R_2$ by $0$",
+            ],
+            correctChoice: 0,
+            explanation:
+              "Swapping brings the nonzero pivot ($2$) into the top-left. Scaling by $0$ is illegal (irreversible), and adding $R_1$ leaves $a_{11} = 0$ untouched.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "After $R_1 \\leftrightarrow R_2$ the system is $\\left[\\begin{array}{cc|c} 2 & 3 & 10 \\\\ 0 & 1 & 4 \\end{array}\\right]$ — already triangular. Read off $y$ from the new $R_2$.",
+            expected: 4,
+            explanation: "The new $R_2$ is $y = 4$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "Back-substitute into $2x + 3y = 10$. Enter $x$.",
+            expected: -1,
+            explanation:
+              "$2x + 3(4) = 10 \\Rightarrow 2x = -2 \\Rightarrow x = -1$, so $(x, y) = (-1, 4)$. A row swap is one of the three legal operations, so it preserves the solution set — you just needed to transfer it to a case the drills never forced.",
+          },
+        ],
       },
     },
     {

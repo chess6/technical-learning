@@ -1,13 +1,15 @@
 /**
  * Targeted grading tests for the systems-elimination lesson-owned remediation.
  *
- * For every NEW or CHANGED exercise (Packages B–E, corrected), this checks:
+ * For every NEW or CHANGED exercise, this checks:
  *  - the item is present and resolves to the expected capability;
  *  - a CORRECT answer grades `correct: true`;
- *  - an INCORRECT answer grades `correct: false`.
- * It also verifies the fresh inline systems used by the new items against the
- * shared `src/math` helpers (so a wrong literal in a lesson would fail here, not
- * just self-grade against itself).
+ *  - an INCORRECT answer grades `correct: false`, including a wrong value in EACH
+ *    component the item claims to capture (both coordinates of a column
+ *    confirmation; every component of a produced parametric set);
+ *  - the fresh inline systems used by the new items are verified against the
+ *    shared `src/math` helpers (so a wrong literal in a lesson fails here, not just
+ *    self-grades against itself).
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -18,6 +20,7 @@ import {
   SELF_CHECK_ID,
   resolveCapabilityId,
   type ExerciseAnswer,
+  type ExerciseSequenceConfig,
 } from "../capabilities";
 import { gradeExercise } from "../grading";
 import { systemsLesson } from "../systems";
@@ -35,6 +38,11 @@ function ex(lesson: LessonDefinition, id: string): ExerciseDefinition {
   const found = (lesson.exercises ?? []).find((e) => e.id === id);
   if (!found) throw new Error(`exercise ${id} not found in ${lesson.id}`);
   return found;
+}
+
+function stepsOf(e: ExerciseDefinition) {
+  if (e.type !== "custom") throw new Error(`exercise ${e.id} is not a custom exercise`);
+  return (e.config as ExerciseSequenceConfig).steps;
 }
 
 const mc = (choice: number): ExerciseAnswer => ({
@@ -64,39 +72,39 @@ const seq = (
   capabilityId: EXERCISE_SEQUENCE_ID,
   value: { responses },
 });
+const nums = (values: number[]): ExerciseAnswer =>
+  seq(values.map((value) => ({ kind: "numeric", value })));
 
 describe("L3 systems — corrected remediation items", () => {
-  it("sys-classify-fresh: committed-MC (E1), correct vs incorrect", () => {
+  it("sys-classify-fresh: committed-MC (E1) recognition backup, correct vs incorrect", () => {
     const e = ex(systemsLesson, "sys-classify-fresh");
     expect(resolveCapabilityId(e)).toBe(COMMITTED_PREDICTION_ID);
     expect(gradeExercise(e, mc(2)).correct).toBe(true);
     expect(gradeExercise(e, mc(0)).correct).toBe(false);
   });
 
-  it("sys-solve-confirm-fresh: sequence produces x, y, and the column confirmation", () => {
+  it("sys-classify-produce-fresh: PRODUCES the none/one/∞ witnesses (E3), all four steps checked", () => {
+    const e = ex(systemsLesson, "sys-classify-produce-fresh");
+    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
+    expect(stepsOf(e)).toHaveLength(4);
+    // unique (x=2,y=1) → second solution of the ∞ system (y=2) → contradiction (4)
+    expect(gradeExercise(e, nums([2, 1, 2, 4])).correct).toBe(true);
+    // each witness must be right: wrong uniqueness, wrong ∞ witness, wrong contradiction
+    expect(gradeExercise(e, nums([3, 1, 2, 4])).correct).toBe(false);
+    expect(gradeExercise(e, nums([2, 1, 5, 4])).correct).toBe(false);
+    expect(gradeExercise(e, nums([2, 1, 2, 5])).correct).toBe(false);
+  });
+
+  it("sys-solve-confirm-fresh: FULL two-coordinate column confirmation (both entries checked)", () => {
     const e = ex(systemsLesson, "sys-solve-confirm-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: -2 },
-          { kind: "numeric", value: 3 },
-          { kind: "numeric", value: 4 },
-        ]),
-      ).correct,
-    ).toBe(true);
-    // wrong column-confirmation step
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: -2 },
-          { kind: "numeric", value: 3 },
-          { kind: "numeric", value: 0 },
-        ]),
-      ).correct,
-    ).toBe(false);
+    // x, y, first column entry (4), second column entry (-3)
+    expect(stepsOf(e)).toHaveLength(4);
+    expect(gradeExercise(e, nums([-2, 3, 4, -3])).correct).toBe(true);
+    // wrong FIRST column coordinate fails
+    expect(gradeExercise(e, nums([-2, 3, 0, -3])).correct).toBe(false);
+    // wrong SECOND column coordinate fails (the entire vector must equal b)
+    expect(gradeExercise(e, nums([-2, 3, 4, 0])).correct).toBe(false);
   });
 
   it("sys-translate-augmented-fresh: complete [A|b] matrix entry", () => {
@@ -123,6 +131,15 @@ describe("L3 systems — corrected remediation items", () => {
     expect(gradeExercise(e, vec([2, 4])).correct).toBe(false); // on the line → infinite
   });
 
+  it("sys-characterize-parameter-fresh: E4 symbolic-parameter characterization (find h, on-line k, witness)", () => {
+    const e = ex(systemsLesson, "sys-characterize-parameter-fresh");
+    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
+    expect(stepsOf(e)).toHaveLength(3);
+    expect(gradeExercise(e, nums([6, 4, 2])).correct).toBe(true);
+    expect(gradeExercise(e, nums([4, 4, 2])).correct).toBe(false); // wrong dependency h
+    expect(gradeExercise(e, nums([6, 3, 2])).correct).toBe(false); // wrong on-line k
+  });
+
   it("sys-reason-dependent-count / proofs: self-check surfaces mirror the self-mark", () => {
     for (const id of ["sys-reason-dependent-count", "sys-prove-consistency", "sys-prove-trichotomy"]) {
       const e = ex(systemsLesson, id);
@@ -130,6 +147,18 @@ describe("L3 systems — corrected remediation items", () => {
       expect(gradeExercise(e, selfCheck("understood")).correct).toBe(true);
       expect(gradeExercise(e, selfCheck("not-yet")).correct).toBe(false);
     }
+  });
+
+  it("sys-reason-dependent-count model uses a general nonzero relation (zero column & zero matrix)", () => {
+    const e = ex(systemsLesson, "sys-reason-dependent-count") as Extract<
+      ExerciseDefinition,
+      { type: "custom" }
+    >;
+    const model = (e.config as { modelAnswer: string }).modelAnswer;
+    expect(model).toMatch(/alpha|\\alpha/);
+    // must cover the degenerate cases, not just a2 = c a1
+    expect(model.toLowerCase()).toContain("zero first column");
+    expect(model).toContain("A = \\mathbf{0}");
   });
 
   it("sys-prove-trichotomy model answer uses a general nonzero null relation (no determinant)", () => {
@@ -142,6 +171,26 @@ describe("L3 systems — corrected remediation items", () => {
     expect(model.toLowerCase()).not.toContain("determinant");
   });
 
+  it("no learner-facing 'determinant is next' claim survives in L3", () => {
+    const haystacks: string[] = [];
+    for (const s of systemsLesson.sections) haystacks.push(s.title, s.body);
+    for (const f of systemsLesson.formalBlocks ?? []) {
+      haystacks.push(f.interpretation ?? "");
+      for (const l of f.layers ?? []) haystacks.push(l.title, l.body);
+    }
+    haystacks.push(systemsLesson.keyTakeaway ?? "");
+    const text = haystacks.join(" ").toLowerCase();
+    // The determinant must never be presented as the *next* lesson; it is L7.
+    expect(text).not.toContain("why the determinant is next");
+    expect(text).not.toContain("the determinant is next");
+    expect(text).not.toContain("next lesson introduces a single number");
+    // ...and "the next lesson" must not introduce the determinant within a sentence.
+    expect(text).not.toMatch(/the next lesson[^.]*\bdeterminant\b/);
+    expect(text).not.toMatch(/the next lesson[^.]*single number/);
+    // Elimination is named as the next lesson somewhere.
+    expect(text).toContain("elimination");
+  });
+
   it("sys-solve-confirm-fresh model text mentions elimination-next and determinant-L7, not det here", () => {
     const e = ex(systemsLesson, "sys-solve-confirm-fresh") as Extract<
       ExerciseDefinition,
@@ -151,8 +200,6 @@ describe("L3 systems — corrected remediation items", () => {
     const joined = steps.map((s) => s.explanation).join(" ");
     expect(joined).toContain("elimination");
     expect(joined).toContain("Lesson 7");
-    // The determinant may be named as a forward pointer (to L7), but the
-    // determinant *argument* (det = … ≠ 0) must not be used to justify the answer.
     expect(joined).not.toContain("det =");
     expect(joined).not.toContain("det $=$");
     expect(joined).not.toContain("\\ne 0");
@@ -166,29 +213,22 @@ describe("L4 elimination — corrected remediation items", () => {
     );
   });
 
-  it("elim-diagnose-repair-fresh: identify the wrong op then produce the repaired row", () => {
+  it("elim-diagnose-repair-fresh: PRODUCED diagnosis (numeric) + repair on an unfamiliar system", () => {
     const e = ex(eliminationLesson, "elim-diagnose-repair-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "multiple-choice", choice: 1 },
-          { kind: "numeric", value: -5 },
-          { kind: "numeric", value: -15 },
-        ]),
-      ).correct,
-    ).toBe(true);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "multiple-choice", choice: 0 },
-          { kind: "numeric", value: -5 },
-          { kind: "numeric", value: -15 },
-        ]),
-      ).correct,
-    ).toBe(false);
+    // diagnosis is now produced, not multiple-choice
+    expect(stepsOf(e)[0]!.kind).toBe("numeric");
+    // erroneous x-coefficient (4), repaired y-coeff (-5), repaired RHS (-10)
+    expect(gradeExercise(e, nums([4, -5, -10])).correct).toBe(true);
+    expect(gradeExercise(e, nums([0, -5, -10])).correct).toBe(false); // wrong diagnosis
+    expect(gradeExercise(e, nums([4, -5, -15])).correct).toBe(false); // wrong repair
+  });
+
+  it("elim-diagnose-explain-fresh: produced explanation is a self-check surface", () => {
+    const e = ex(eliminationLesson, "elim-diagnose-explain-fresh");
+    expect(resolveCapabilityId(e)).toBe(SELF_CHECK_ID);
+    expect(gradeExercise(e, selfCheck("understood")).correct).toBe(true);
+    expect(gradeExercise(e, selfCheck("not-yet")).correct).toBe(false);
   });
 
   it("elim-contradiction-row-fresh: elimination result with the 0=2 contradiction row", () => {
@@ -214,61 +254,75 @@ describe("L4 elimination — corrected remediation items", () => {
     expect(gradeExercise(e, vec([1, 3])).correct).toBe(true); // on span{(1,3)} → infinite
     expect(gradeExercise(e, vec([1, 0])).correct).toBe(false); // off the line → none
   });
+
+  it("elim-degenerate-pivot-transfer: E4 zero-pivot swap, then produce the solution", () => {
+    const e = ex(eliminationLesson, "elim-degenerate-pivot-transfer");
+    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
+    expect(stepsOf(e)).toHaveLength(3);
+    // swap (choice 0), y = 4, x = -1
+    expect(
+      gradeExercise(e, seq([
+        { kind: "multiple-choice", choice: 0 },
+        { kind: "numeric", value: 4 },
+        { kind: "numeric", value: -1 },
+      ])).correct,
+    ).toBe(true);
+    expect(
+      gradeExercise(e, seq([
+        { kind: "multiple-choice", choice: 1 }, // scale by 0 — illegal
+        { kind: "numeric", value: 4 },
+        { kind: "numeric", value: -1 },
+      ])).correct,
+    ).toBe(false);
+  });
 });
 
 describe("L5 solution-sets — corrected remediation items", () => {
-  it("sol-produce-parametric-fresh: learner produces x_p, null direction, and an instantiation", () => {
+  it("sol-produce-parametric-fresh: EVERY component of the parametric set is produced & checked", () => {
     const e = ex(solutionSetsLesson, "sol-produce-parametric-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: 4 }, // x_p x with y=0
-          { kind: "numeric", value: 3 }, // null direction x with y=-1
-          { kind: "numeric", value: 10 }, // x at t=2
-        ]),
-      ).correct,
-    ).toBe(true);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: 4 },
-          { kind: "numeric", value: 3 },
-          { kind: "numeric", value: 7 }, // wrong instantiation
-        ]),
-      ).correct,
-    ).toBe(false);
+    // x_p.x=4, verify(2x+6y)=8, null.x=3, verify=0, point.x=10, point.y=-2
+    expect(stepsOf(e)).toHaveLength(6);
+    expect(gradeExercise(e, nums([4, 8, 3, 0, 10, -2])).correct).toBe(true);
+    // each component must be right on its own
+    expect(gradeExercise(e, nums([5, 8, 3, 0, 10, -2])).correct).toBe(false); // x_p wrong
+    expect(gradeExercise(e, nums([4, 7, 3, 0, 10, -2])).correct).toBe(false); // x_p verify wrong
+    expect(gradeExercise(e, nums([4, 8, 2, 0, 10, -2])).correct).toBe(false); // null dir wrong
+    expect(gradeExercise(e, nums([4, 8, 3, 1, 10, -2])).correct).toBe(false); // null verify wrong
+    expect(gradeExercise(e, nums([4, 8, 3, 0, 7, -2])).correct).toBe(false); // point.x wrong
+    expect(gradeExercise(e, nums([4, 8, 3, 0, 10, 0])).correct).toBe(false); // point.y wrong
   });
 
   it("sol-freevars-dimension-fresh: produces #free variables and dimension", () => {
     const e = ex(solutionSetsLesson, "sol-freevars-dimension-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: 1 },
-          { kind: "numeric", value: 1 },
-        ]),
-      ).correct,
-    ).toBe(true);
-    expect(
-      gradeExercise(
-        e,
-        seq([
-          { kind: "numeric", value: 2 },
-          { kind: "numeric", value: 1 },
-        ]),
-      ).correct,
-    ).toBe(false);
+    expect(gradeExercise(e, nums([1, 1])).correct).toBe(true);
+    expect(gradeExercise(e, nums([2, 1])).correct).toBe(false);
   });
 
-  it("justification self-checks mirror the self-mark", () => {
+  it("sol-refuse-inconsistent-fresh: PRODUCED refusal (contradiction RHS + count 0)", () => {
+    const e = ex(solutionSetsLesson, "sol-refuse-inconsistent-fresh");
+    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
+    expect(stepsOf(e)).toHaveLength(2);
+    expect(gradeExercise(e, nums([5, 0])).correct).toBe(true);
+    expect(gradeExercise(e, nums([4, 0])).correct).toBe(false); // wrong contradiction RHS
+    expect(gradeExercise(e, nums([5, 1])).correct).toBe(false); // wrong count
+  });
+
+  it("sol-construct-second-null-direction: E4 null vector OFF the x-axis passes; on-axis / zero fail", () => {
+    const e = ex(solutionSetsLesson, "sol-construct-second-null-direction");
+    expect(resolveCapabilityId(e)).toBe(CONSTRUCT_IN_EXPLORER_ID);
+    expect(gradeExercise(e, vec([0, 1])).correct).toBe(true); // off span{(1,0)}
+    expect(gradeExercise(e, vec([1, 1])).correct).toBe(true); // off the x-axis
+    expect(gradeExercise(e, vec([2, 0])).correct).toBe(false); // on the x-axis
+    expect(gradeExercise(e, vec([0, 0])).correct).toBe(false); // zero vector
+  });
+
+  it("justification / proof self-checks mirror the self-mark", () => {
     for (const id of [
       "sol-justify-existence-multiplicity",
       "sol-justify-one-direction",
+      "sol-justify-inconsistent-refusal",
       "sol-prove-null-subspace",
       "sol-prove-structure",
     ]) {
@@ -278,15 +332,64 @@ describe("L5 solution-sets — corrected remediation items", () => {
       expect(gradeExercise(e, selfCheck("not-yet")).correct).toBe(false);
     }
   });
+
+  it("the committed-MC inconsistency refusal is gone (replaced by produced forms)", () => {
+    expect((solutionSetsLesson.exercises ?? []).some((e) => e.id === "sol-inconsistent-empty")).toBe(
+      false,
+    );
+  });
 });
 
 describe("fresh inline systems verified against src/math", () => {
-  it("L3 classification system 2x+4y=5, x+2y=3 is inconsistent (none)", () => {
+  it("L3 produced-classification systems classify as one / infinite / none", () => {
+    // A: columns (2,1),(1,-1) — independent → unique
+    expect(classifyLinearSystem2x2([[2, 1], [1, -1]] as Matrix2x2, [5, 1] as Vector2).kind).toBe(
+      "unique",
+    );
+    // B: rows x+y=3, 2x+2y=6 — dependent, on line → infinite
+    expect(classifyLinearSystem2x2([[1, 1], [2, 2]] as Matrix2x2, [3, 6] as Vector2).kind).toBe(
+      "infinite",
+    );
+    // C: rows x+y=2, 2x+2y=5 — dependent, off line → none
+    expect(classifyLinearSystem2x2([[1, 1], [2, 2]] as Matrix2x2, [2, 5] as Vector2).kind).toBe(
+      "none",
+    );
+  });
+
+  it("L3 characterization: columns (1,2),(3,6) dependent, b=(2,4) on line → infinite; (2,0) solves it", () => {
     const A: Matrix2x2 = [
-      [2, 4],
-      [1, 2],
+      [1, 3],
+      [2, 6],
     ];
-    expect(classifyLinearSystem2x2(A, [5, 3] as Vector2).kind).toBe("none");
+    expect(classifyLinearSystem2x2(A, [2, 4] as Vector2).kind).toBe("infinite");
+    expect(matrixVectorMultiply(A, [2, 0] as Vector2)).toEqual([2, 4]);
+  });
+
+  it("L3 classify-fresh recognition system 2x+4y=5, x+2y=3 is inconsistent (none)", () => {
+    expect(classifyLinearSystem2x2([[2, 4], [1, 2]] as Matrix2x2, [5, 3] as Vector2).kind).toBe(
+      "none",
+    );
+  });
+
+  it("L4 diagnose-repair system 1x+4y=9, 2x+3y=8: unique solution (1,2)", () => {
+    const A: Matrix2x2 = [
+      [1, 4],
+      [2, 3],
+    ];
+    expect(classifyLinearSystem2x2(A, [9, 8] as Vector2).kind).toBe("unique");
+    expect(matrixVectorMultiply(A, [1, 2] as Vector2)).toEqual([9, 8]);
+    // classmate's R2 -> R2 + 2 R1 sends the x-coefficient to 4 (not 0); correct is -2 R1
+    expect(2 + 2 * 1).toBe(4);
+    expect([3 - 2 * 4, 8 - 2 * 9]).toEqual([-5, -10]);
+  });
+
+  it("L4 degenerate zero-pivot system 0x+y=4, 2x+3y=10: swap → unique solution (-1,4)", () => {
+    const A: Matrix2x2 = [
+      [0, 1],
+      [2, 3],
+    ];
+    expect(classifyLinearSystem2x2(A, [4, 10] as Vector2).kind).toBe("unique");
+    expect(matrixVectorMultiply(A, [-1, 4] as Vector2)).toEqual([4, 10]);
   });
 
   it("L4 fresh inconsistent system 1x+2y=1, 4x+8y=6 is 'none' and eliminates to (0,0,2)", () => {
@@ -295,14 +398,13 @@ describe("fresh inline systems verified against src/math", () => {
       [4, 8],
     ];
     expect(classifyLinearSystem2x2(A, [1, 6] as Vector2).kind).toBe("none");
-    // R2 -> R2 - 4 R1 on augmented rows
     const r1 = [1, 2, 1];
     const r2 = [4, 8, 6];
     const newR2 = r2.map((v, i) => v - 4 * r1[i]!);
     expect(newR2).toEqual([0, 0, 2]);
   });
 
-  it("L5 fresh parametric system 1x+3y=4, 2x+6y=8: x_p=(4,0), null=(3,-1), t=2 → (10,-2)", () => {
+  it("L5 parametric system 1x+3y=4, 2x+6y=8: x_p=(4,0), null=(3,-1), t=2 → (10,-2)", () => {
     const A: Matrix2x2 = [
       [1, 3],
       [2, 6],
@@ -312,6 +414,18 @@ describe("fresh inline systems verified against src/math", () => {
     expect(matrixVectorMultiply(A, [10, -2] as Vector2)).toEqual([4, 8]); // point at t=2 solves it
   });
 
+  it("L5 refuse-inconsistent system 1x+2y=5, 3x+6y=20 is 'none' and eliminates to (0,0,5)", () => {
+    const A: Matrix2x2 = [
+      [1, 2],
+      [3, 6],
+    ];
+    expect(classifyLinearSystem2x2(A, [5, 20] as Vector2).kind).toBe("none");
+    const r1 = [1, 2, 5];
+    const r2 = [3, 6, 20];
+    const newR2 = r2.map((v, i) => v - 3 * r1[i]!);
+    expect(newR2).toEqual([0, 0, 5]);
+  });
+
   it("L5 free-variable system 3x+y=0, 6x+2y=0 is dependent (nullity 1)", () => {
     const A: Matrix2x2 = [
       [3, 1],
@@ -319,6 +433,6 @@ describe("fresh inline systems verified against src/math", () => {
     ];
     const c = classifyLinearSystem2x2(A, [0, 0] as Vector2);
     expect(c.determinant).toBeCloseTo(0, 9);
-    expect(c.kind).toBe("infinite"); // homogeneous + dependent → a line of solutions
+    expect(c.kind).toBe("infinite");
   });
 });

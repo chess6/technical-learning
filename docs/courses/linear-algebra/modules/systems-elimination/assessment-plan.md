@@ -63,15 +63,18 @@ for a lesson's Gate 8**: each must first be *independently demonstrated in-lesso
 instances, integrates them, provides the **human-scored** surface for proofs, and
 re-fires them after a delay.
 
-> **Status after the corrected lesson-owned remediation.** The specific **P1/P2 fluency**
-> outcomes below now have genuine *in-lesson E3 evidence* (fresh graded production), so
-> reassessing them here would no longer be inflation. **However, none of L3/L4/L5 has
-> passed Gate 8** — Gate 8 is a single gate and each lesson still has lesson-owned
-> outcomes below their required level (classification E1, inconsistency-refusal E1, E4
-> unfamiliar-transfer not built) or unscored (all proof/reasoning `self-check`s). So this
-> Class-B reassessment is blocked **twice over**: by the missing module runner /
-> human-scoring surface (**Package F**) *and* by the owning lessons not yet clearing
-> Gate 8. Class B stays **not-yet-runnable**; the plan remains **PLANNED**.
+> **Status after the completed lesson-owned remediation.** The **P1/P2 fluency**,
+> classification, characterization, diagnosis, and solution-set outcomes below now have
+> genuine *in-lesson evidence*: fresh graded **production** (classification, column
+> confirmation across both coordinates, complete parametric set, produced ∅-refusal) and
+> in-lesson **E4 unfamiliar transfer** (L3 symbolic-parameter characterization, L4
+> produced diagnosis + degenerate zero-pivot swap, L5 scored null-direction construction).
+> All non-scoring lesson-owned interaction gaps are closed. **However, none of L3/L4/L5 has
+> passed Gate 8** — Gate 8 is a single gate and each lesson still has produced
+> reasoning/proof `self-check`s that are **unscored**. So this Class-B reassessment is
+> blocked by the missing module runner / **human-scoring surface (Package F)**, which is
+> also what clears the last lesson-owned obligation. Class B stays **not-yet-runnable**;
+> the plan remains **PLANNED**.
 
 | Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
 | --- | --- | --- | --- | --- | --- |
@@ -153,18 +156,23 @@ Covers the seven areas the module must assess under the declared profile:
 ## Results & readiness
 - **Class A (module-owned) discharged:** `0 / 5` core with real evidence (**planned** —
   no assessment surface built yet); enrichment `mod-enrich-ode` separate, off the bar.
-- **Class B (lesson-owned reassessment):** `not yet runnable` — several owning-lesson
-  outcomes now have **real in-lesson E3 evidence** (fresh production), but **no lesson has
-  passed Gate 8** (single gate; classification/inconsistency-refusal still E1, E4
-  transfer not built, proofs/reasoning unscored). Reassessment is blocked both by the
-  missing **Package F** (module runner + human-scoring surface + scheduler) **and** by the
-  lessons not yet clearing Gate 8.
+- **Class B (lesson-owned reassessment):** `not yet runnable` — the owning-lesson outcomes
+  now have **real in-lesson evidence**: fresh **produced** classification, both-coordinate
+  column confirmation, complete parametric set, produced ∅-refusal (E3), and in-lesson
+  **E4 unfamiliar transfer** (symbolic-parameter characterization, degenerate zero-pivot
+  swap, scored null-direction construction). All non-scoring lesson-owned interaction gaps
+  are closed, but **no lesson has passed Gate 8** (single gate; the produced
+  reasoning/proof `self-check`s are still unscored). Reassessment is blocked by the missing
+  **Package F** (module runner + human-scoring surface + scheduler), which is also what
+  scores the last lesson-owned surfaces and lets the lessons clear Gate 8.
 - **Delayed-retention verified:** no (not yet administered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
   **none at the module level.** The built lessons now evidence **independent performance
-  (E3)** in-lesson for a set of computational/procedural outcomes and provide
-  proof/reasoning *surfaces*, but **Gate 8 is NOT PASSED** for L3/L4/L5 and there is still
-  **no module-level** cumulative, timed (S3), delayed-retention (D12), applied
+  (E3)** and **in-lesson unfamiliar transfer (E4)** for the computational/procedural and
+  characterization/diagnosis/solution-set outcomes, and provide produced proof/reasoning
+  *surfaces*, but **Gate 8 is NOT PASSED** for L3/L4/L5 (those surfaces are unscored) and
+  there is still **no module-level** cumulative, timed (S3), delayed-retention (D12),
+  applied
   multi-variable (P2 module slice), or human-scored-proof (E6) evidence
   ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)). No "module
   mastered / exam ready / proof-ready" claim may be made until the lessons clear Gate 8

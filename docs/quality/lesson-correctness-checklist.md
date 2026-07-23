@@ -572,3 +572,86 @@ renderer changed — lesson content, contracts, and the implementation package o
   (learner writes the argument + model answer + rubric); **E6 credit requires human
   scoring** (module Package F), never the in-app self-mark
 - [x] KaTeX / column vectors throughout; no raw `[[...]]` in learner-facing prose
+
+---
+
+## Systems–Elimination module — lesson-owned interaction gaps closed (2026-07-23, completion pass)
+
+Completes the *non-scoring* lesson-owned interactions the 2026-07-23 evidence-integrity
+pass had documented as still missing (it had honestly marked them incomplete rather than
+built). This pass **builds** them so the only remaining lesson-owned obligation is human
+**scoring** (Package F). No math/visualization renderer changed — lesson content,
+contracts, the implementation package, the assessment plan, and tests only. **Gate 8 stays
+NOT PASSED** for L3/L4/L5 (unscored reasoning/proof surfaces).
+
+### Interaction evidence built (honest levels)
+
+- [x] **L3 produced classification** — `sys-classify-produce-fresh` (exercise-sequence):
+  the learner *produces* the none/one/∞ witness (forced solution / a second distinct
+  solution / the contradiction value) across three fresh systems rather than picking from
+  a 3-way choice → **E3** (the MC `sys-classify-fresh` remains an E1 backup)
+- [x] **L3 full two-coordinate column confirmation** — `sys-solve-confirm-fresh` now checks
+  **both** coordinates of \(x\mathbf a_1+y\mathbf a_2=\mathbf b\) (was first coordinate
+  only) → complete-vector **E3**
+- [x] **L3 in-lesson E4 transfer** — `sys-characterize-parameter-fresh` (exercise-sequence):
+  characterize the dependency/consistency boundary on a **symbolic parameter** → **E4**
+  unfamiliar transfer (not deferred to a module set)
+- [x] **L4 produced diagnosis + repair on an unfamiliar system** — `elim-diagnose-repair-fresh`
+  rewritten to *produce* the erroneous coefficient (diagnosis) and the corrected
+  coefficients (repair) with **no MC identify step** → **E4**; paired self-check
+  `elim-diagnose-explain-fresh` captures the written explanation (E6 surface, unscored)
+- [x] **L4 in-lesson E4 degenerate-case transfer** — `elim-degenerate-pivot-transfer`
+  (exercise-sequence): a **zero pivot** forces a row swap before elimination, then produce
+  the solution → **E4**
+- [x] **L5 produced inconsistency refusal** — committed-MC `sol-inconsistent-empty`
+  **replaced** by `sol-refuse-inconsistent-fresh` (produce the \(0=c\) contradiction + the
+  count 0, **E3**) + `sol-justify-inconsistent-refusal` (produced reasoning why ∅, not
+  \(\operatorname{Null}(A)\); E6 surface, unscored)
+- [x] **L5 complete parametric set, nothing revealed before commitment** —
+  `sol-produce-parametric-fresh` rewritten as a 6-step sequence that produces **both**
+  coordinates of \(\mathbf x_p\), the **complete** null direction, and a **complete**
+  instantiated point, verified against the equations, with **no formula shown before
+  commitment** → complete-set **E3**
+- [x] **L5 in-lesson E4 distinction** — `sol-construct-second-null-direction`
+  (construct-in-explorer): on \(A=\mathbf 0\), build a null vector **off** the
+  single-difference line, distinguishing one direction from the whole null space →
+  **scored E4**
+
+### Mathematical / progression review
+
+- [x] **L3 sequencing fully corrected** — every learner-facing "determinant is next" claim
+  removed from `systems.ts`; the next lesson is stated as **elimination (Lesson 4)** and
+  the determinant as **Lesson 7** (the "Why the determinant is next" heading and "the next
+  lesson introduces a single number" prose are gone; developer comments updated too)
+- [x] **`sys-reason-dependent-count` generalized** — model answer now uses a nonzero
+  relation \(\alpha\mathbf a_1+\beta\mathbf a_2=\mathbf 0\) and states the span correctly
+  for a **zero first column** (\(L=\operatorname{span}\{\mathbf a_2\}\)) and the **zero
+  matrix** (\(L=\{\mathbf 0\}\), not a line) — matching the already-generalized proof item
+- [x] All new/changed fresh systems hand- and test-checked against `src/math`
+  (`classifyLinearSystem2x2`, `matrixVectorMultiply`, `particularSolution2x2`,
+  `solutionSet2x2`)
+
+### Testing review
+
+- [x] `remediationExercises.test.ts` strengthened: asserts the **full** claimed objects —
+  both coordinates of the column confirmation, every component of the produced parametric
+  set (both \(\mathbf x_p\) coordinates, the null direction, the instantiated point), the
+  produced classification witnesses, both E4 sequences, the produced ∅-refusal, and the
+  generalized `sys-reason-dependent-count` model text; correct **and** incorrect paths
+- [x] A regex guard asserts **no** learner-facing "determinant is next" claim survives in
+  L3 prose
+- [x] Full `vitest` suite green; `npm run lint` (oxlint) clean; `tsc -b` 0 errors
+- [x] `e2e` for the three touched lessons green (`lesson-systems`, `lesson-elimination`,
+  `lesson-solution-sets`); browser verification that each new interaction is reachable and
+  grades as described
+
+### Ownership / status review
+
+- [x] Contracts (L3/L4/L5), `implementation-package.md`, and `assessment-plan.md` updated:
+  Packages **C/D built** (produced classification + refusal, both-coordinate confirmation,
+  in-lesson E4 transfers); Package **E surfaces built but unscored → F**; **Package F is
+  now the next package** (it resolves only the human-scoring obligation)
+- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 kept — a single verdict per lesson; the only
+  remaining lesson-owned obligation is scoring the produced reasoning/proof surfaces
+- [x] Lesson-owned **E4 outcomes are in-lesson**, not deferred to module Package G; Class A
+  vs Class B ownership in the assessment plan preserved

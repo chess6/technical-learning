@@ -54,9 +54,10 @@ module [implementation package](../../modules/systems-elimination/implementation
   a null vector; write the complete solution set parametrically
   \(\{\mathbf{x}_p+\sum t_i\mathbf{v}_i\}\); count free variables → dimension.
   *(Built: `sol-generate-third[-fresh]`; `sol-produce-parametric-fresh` — the learner
-  **produces** \(\mathbf{x}_p\), a null direction, and an instantiation, replacing the
-  reveal/choice `sol-whole-set`; `sol-free-variables-dimension` (MC) +
-  `sol-freevars-dimension-fresh` (produced counts).)*
+  **produces every component** of \(\mathbf{x}_p\) (verified against the 2nd equation), a
+  null direction (verified as a null vector), and the instantiated point, with no formula
+  shown before commitment, replacing the reveal/choice `sol-whole-set`;
+  `sol-free-variables-dimension` (MC) + `sol-freevars-dimension-fresh` (produced counts).)*
 - **Theorems / propositions / corollaries (D5):** null space is a subspace;
   solution-set structure \(\operatorname{Sol}=\mathbf{x}_p+\operatorname{Null}(A)\)
   (∅ if inconsistent); uniqueness ⇔ trivial null space (≠ reachability). *(Built:
@@ -77,7 +78,9 @@ module [implementation package](../../modules/systems-elimination/implementation
 - **Examples, nonexamples, edge cases (D7):** dependent \((1,2),(2,4)\), \(\mathbf{b}=(3,6)\)
   (affine line); the **nullity-2** case \(A=\mathbf{0}\) in the plane (one difference
   undercounts); inconsistent \(\mathbf{b}=(3,5)\) (∅, cannot write \(\mathbf{x}_p+\operatorname{Null}\)).
-  *(Built: `sol-nullity-caveat`, `sol-inconsistent-empty`, callouts.)*
+  *(Built: `sol-nullity-caveat` (MC) + `sol-construct-second-null-direction` (E4 construct
+  on \(A=\mathbf{0}\)); `sol-refuse-inconsistent-fresh` (produced ∅-witness) +
+  `sol-justify-inconsistent-refusal`; callouts.)*
 - **Misconceptions (D13 seed):** "∞ is shapeless"; "one difference gives the whole
   set"; "trivial null space ⇒ every \(\mathbf{b}\) solvable"; "solution set is a
   subspace." *(Built: three callouts + traps.)*
@@ -98,10 +101,10 @@ below its required level; ⬜ module-owned.
 | --- | --- | --- | --- | --- | --- |
 | Show the difference of two solutions lies in \(\operatorname{Null}(A)\) | D5/D6 | lesson | 🔴 `sol-difference-homogeneous` (multiple-choice) | **E1** — recognition | E3 |
 | Generate a third solution without re-solving | D3 | lesson | ✅ `sol-generate-third-fresh` (vector, **fresh**) + `sol-generate-third` | **E3** — fresh, unaided production graded against `src/math` | E3 |
-| **Produce** the complete parametric solution set (\(\mathbf{x}_p\), direction, instantiation) | D3/D4 | lesson | ✅ `sol-produce-parametric-fresh` (**exercise-sequence**, fresh: learner produces \(\mathbf{x}_p\), a null direction, and a point at \(t=2\)) | **E3** — fresh production of the whole set (not a chosen formula) | E3 |
-| Distinguish one-difference (≥ a line) from the whole null space | D5/D7 | lesson | 🟡 `sol-justify-one-direction` (**self-check**, produced reasoning + nullity-2 counterexample); `sol-nullity-caveat` (MC, E1) | **E6 surface, unscored** for the produced justification; recognition backup E1 | E4 |
+| **Produce** the complete parametric solution set (\(\mathbf{x}_p\), direction, instantiation) | D3/D4 | lesson | ✅ `sol-produce-parametric-fresh` (**exercise-sequence**, fresh: learner produces **both coordinates** of \(\mathbf{x}_p\) — verified against the 2nd equation — **both coordinates** of a null direction — verified as a null vector — and **both coordinates** of the point at \(t=2\), with **no formula shown before commitment**) | **E3** — fresh production of every component of the whole set | E3 |
+| Distinguish one-difference (≥ a line) from the whole null space | D5/D7 | lesson | ✅ `sol-construct-second-null-direction` (**construct-in-explorer**, E4: on the unfamiliar nullity-2 operator \(A=\mathbf{0}\), construct a null vector **off** the line the single difference gave — machine-graded); `sol-justify-one-direction` (self-check reasoning); `sol-nullity-caveat` (MC, E1) | **E4** — scored unfamiliar-transfer construction proving one difference undercounts | E4 |
 | Separate existence (reachability) from multiplicity (trivial null space) | D5 | lesson | 🟡 `sol-justify-existence-multiplicity` (**self-check**, produced reasoning); `sol-existence-vs-multiplicity` (MC, E1) | **E6 surface, unscored** for the produced justification; recognition backup E1 | E3 (scored) |
-| Refuse the decomposition for an inconsistent system (∅) | D7 | lesson | 🔴 `sol-inconsistent-empty` (**committed-prediction** = committed-MC, fresh target) | **E1** — committed choice is recognition, not construction | E4 |
+| Refuse the decomposition for an inconsistent system (∅) | D7 | lesson | 🟡 `sol-refuse-inconsistent-fresh` (**exercise-sequence**, fresh: produce the \(0=c\) contradiction RHS + the count 0) + `sol-justify-inconsistent-refusal` (self-check: why ∅, not \(\operatorname{Null}(A)\)) | **E3 produced** witness of ∅ + a produced-but-unscored refusal justification (was committed-MC E1) | E4 |
 | Read dimension off the free-variable count | D3/D4 | lesson | ✅ `sol-freevars-dimension-fresh` (**exercise-sequence**, fresh: produce #free variables + dimension) + `sol-free-variables-dimension` (MC, E1) | **E3** — fresh production of the counts (shallow but unaided) | E3 |
 | Prove the structure theorem (both inclusions) + null-space closure | D6 | lesson | 🟡 `sol-prove-structure`, `sol-prove-null-subspace` (**self-check** + model answer + rubric) | **E6 surface, unscored** — learner writes both proofs; self-mark is not scoring | E6 (human-scored) |
 | Operate on a **general \(\mathbb{R}^n\)** null space / rank–nullity | D4/D9 | ⬜ **module** | deferred → structure module L8/L9 (see §1g) | not built | E4/E5 (structure module) |
@@ -110,38 +113,49 @@ below its required level; ⬜ module-owned.
 
 #### Evidence audit (runtime-checked)
 
-Applied strictly: **committed `multiple-choice` (`committed-prediction`) is E1
-recognition** — so `sol-inconsistent-empty` is **E1**, not E3, and the old `sol-whole-set`
-(a choice among displayed formulas) was recognition, now **replaced** by a produced
-sequence. `self-check` self-marks and is never scored in-app ⇒ every proof/justification
-self-check is an **unscored E6 surface**. **Result for L5:** generativity
-(`sol-generate-third-fresh`), the **produced** parametric set
-(`sol-produce-parametric-fresh`), and the **produced** free-variable/dimension counts
-(`sol-freevars-dimension-fresh`) reach **E3**. The one-difference and existence-vs-
-multiplicity outcomes now have *produced* reasoning surfaces (`sol-justify-one-direction`,
-`sol-justify-existence-multiplicity`) but they are **unscored**, and their recognition
-backups are E1; the inconsistency-refusal outcome is **E1** (committed-MC); the two D6
-proofs are unscored E6 surfaces. Several lesson-owned outcomes remain below required, so
-**Gate 8 is NOT PASSED**. Fresh numbers and each new item's grading paths are verified in
+Applied strictly: **committed `multiple-choice` is E1 recognition**, and a choice among
+displayed formulas is recognition — so the old `sol-whole-set` and `sol-inconsistent-empty`
+(committed-MC) are both **replaced** by produced forms. `construct-in-explorer` is
+machine-graded against an `src/math` predicate → a **scored** construction; `self-check`
+self-marks and is never scored in-app ⇒ every proof/justification self-check is an
+**unscored E6 surface**. **Result for L5 after the second remediation pass:** generativity
+(`sol-generate-third-fresh`), the **produced** parametric set — now capturing **every
+component** of \(\mathbf{x}_p\), the null direction, and the instantiated point, with no
+formula shown before commitment (`sol-produce-parametric-fresh`) — and the **produced**
+free-variable/dimension counts (`sol-freevars-dimension-fresh`) reach **E3**. The
+**one-difference-vs-whole-null-space** distinction now reaches **scored E4** via
+`sol-construct-second-null-direction` (construct a null vector off the line on the
+unfamiliar nullity-2 operator \(A=\mathbf{0}\)). The **inconsistency refusal** is now
+**produced** (an \(0=c\) witness sequence + a produced refusal justification), replacing
+the committed-MC. The only lesson-owned outcomes still below required need **human
+scoring**: the existence-vs-multiplicity reasoning, the refusal justification, and the two
+D6 proofs are unscored E6 surfaces. So **Gate 8 is NOT PASSED** solely because those
+surfaces are unscored (Package F). Fresh numbers and each new item's grading paths are
+verified in
 [`freshExample.test.ts`](../../../../../src/lessons/__tests__/freshExample.test.ts) and
 [`remediationExercises.test.ts`](../../../../../src/lessons/__tests__/remediationExercises.test.ts).
 
 ### 1e. Coverage-status classification (required vs reached)
-Honest ceiling: generativity, the produced parametric set, and the produced
-free-variable/dimension counts reach **E3**; the one-difference / existence-multiplicity
-justifications and both proofs are **produced but unscored surfaces**; the
-inconsistency-refusal outcome is **E1 recognition**. (Genuine **E4 transfer** — ℝⁿ /
-unfamiliar-operator — remains **module-owned**, Gate 9 / structure module.)
+Honest ceiling: generativity, the produced (complete) parametric set, and the produced
+free-variable/dimension counts reach **E3**; the one-difference distinction reaches
+**scored E4** (a machine-graded construction); the inconsistency refusal is now
+**produced** (E3 witness + reasoning surface); the existence-multiplicity /
+refusal justifications and both proofs are **produced but unscored surfaces**. (The
+general **ℝⁿ / unfamiliar-operator** transfer remains a legitimate **module-owned**
+abstraction return, Gate 9 / structure module — not a lesson-owned gap.)
 - **Independently demonstrated (E3) — reached:** fresh generate-a-third
-  (`sol-generate-third-fresh`); **produced** parametric set
-  (`sol-produce-parametric-fresh`); **produced** free-variable/dimension counts
-  (`sol-freevars-dimension-fresh`).
-- **Produced but unscored surface (🟡):** `sol-justify-one-direction`,
-  `sol-justify-existence-multiplicity` (reasoning); `sol-prove-structure`,
+  (`sol-generate-third-fresh`); **produced** complete parametric set
+  (`sol-produce-parametric-fresh`, every component); **produced** free-variable/dimension
+  counts (`sol-freevars-dimension-fresh`); **produced** ∅-witness for the inconsistent
+  system (`sol-refuse-inconsistent-fresh`).
+- **Unfamiliar transfer (E4) — reached, scored:** `sol-construct-second-null-direction`
+  (construct a null vector off the single-difference line on \(A=\mathbf{0}\)).
+- **Produced but unscored surface (🟡 — the only remaining lesson-owned blockers):**
+  `sol-justify-existence-multiplicity`, `sol-justify-inconsistent-refusal`,
+  `sol-justify-one-direction` (reasoning); `sol-prove-structure`,
   `sol-prove-null-subspace` (proofs) — captured against a model answer + rubric; the
   in-app self-mark is not scoring (Package F).
-- **Recognition only (E1 — below required):** `sol-difference-homogeneous`,
-  `sol-inconsistent-empty`, and the MC backups.
+- **Recognition only (E1 — support):** `sol-difference-homogeneous` and the MC backups.
 - **Module-owned (planned):** general \(\mathbb{R}^n\) null space / rank–nullity
   (abstraction return, owner structure module); cumulative L4+L5; ODE/recurrence
   transfer (D14 enrichment).
@@ -151,14 +165,16 @@ unfamiliar-operator — remains **module-owned**, Gate 9 / structure module.)
   \(\mathbf{x}_p+\operatorname{Null}(A)\)); uses L4 elimination for the free-variable
   basis; uses L1 subspace closure.
 - **Assessment evidence (summary):** 1 Check (recognition, E1); Explore (sliders =
-  null directions); Practice includes a **fresh** generate-a-third (E3), a **produced**
-  parametric-set sequence (E3), a **produced** free-variable/dimension sequence (E3),
-  recognition MC backups (E1), a committed-MC inconsistency-refusal (E1), two **produced
-  reasoning surfaces** (existence-vs-multiplicity, one-direction; unscored), and two
+  null directions); Practice includes a **fresh** generate-a-third (E3), a **produced
+  complete** parametric-set sequence — every component, no formula shown before commitment
+  (E3) — a **produced** free-variable/dimension sequence (E3), a **produced ∅-witness**
+  for an inconsistent system (E3) with a produced refusal justification (unscored), a
+  **scored E4 construction** (`sol-construct-second-null-direction`), recognition MC
+  backups (E1), a produced existence-vs-multiplicity reasoning surface (unscored), and two
   **learner-written proof surfaces** (unscored). Honest ceiling **E3** for generativity,
-  the produced parametric set, and the produced counts; the justifications/proofs are
-  produced but unscored; inconsistency-refusal is E1 (see the
-  [evidence audit](#evidence-audit-runtime-checked)).
+  the complete produced parametric set, the produced counts, and the ∅-witness; **E4** for
+  the one-difference construction; the remaining justifications/proofs are produced but
+  unscored (see the [evidence audit](#evidence-audit-runtime-checked)).
 - **Delayed-retention requirement (D12):** \(\mathbf{x}_p+\operatorname{Null}(A)\),
   affine-vs-subspace, and uniqueness-≠-reachability must resurface in the module
   spaced set and again in L8 (column vs null space) and L9 (rank–nullity).
@@ -197,16 +213,19 @@ under the **P3 override**, against the runtime audit
 - [x] Insight Contract linked and `PASS`; primary insight preserved in meaning.
 - [x] Every field in §1 filled; upstream artifacts linked, not restated.
 - [x] Every outcome operational, marked lesson/module-owned, paired with evidence.
-- [x] **Generativity, the produced parametric set, and the produced
+- [x] **Generativity, the complete produced parametric set, and the produced
       free-variable/dimension counts reach E3** — fresh graded production
-      (`sol-generate-third-fresh`, `sol-produce-parametric-fresh`,
-      `sol-freevars-dimension-fresh`).
-- [ ] **Inconsistency-refusal (D7) reaches its required E4 — NOT YET.**
-      `sol-inconsistent-empty` is committed-MC → **E1 recognition**, not construction.
-- [ ] **One-difference-vs-whole-null-space (D5/D7) reaches E4 — NOT YET.** Now a
-      *produced* justification (`sol-justify-one-direction`) plus an E1 MC, but the
-      justification is unscored.
-- [ ] **Existence-vs-multiplicity (D5) reaches scored E3 — NOT YET.** Now *produced*
+      (`sol-generate-third-fresh`, `sol-produce-parametric-fresh` capturing every
+      component with no pre-commitment reveal, `sol-freevars-dimension-fresh`).
+- [x] **One-difference-vs-whole-null-space (D5/D7) reaches its required E4.**
+      `sol-construct-second-null-direction` is a **scored** construction: build a null
+      vector off the single-difference line on the unfamiliar nullity-2 operator
+      \(A=\mathbf{0}\).
+- [x] **Inconsistency-refusal (D7) is now produced (not committed-MC).**
+      `sol-refuse-inconsistent-fresh` produces the \(0=c\) witness and the count 0 (E3);
+      `sol-justify-inconsistent-refusal` produces the "why ∅, not \(\operatorname{Null}(A)\)"
+      reasoning. Its **scored E4** credit still awaits human scoring of that justification.
+- [ ] **Existence-vs-multiplicity (D5) reaches scored E3 — NOT YET.** *Produced*
       (`sol-justify-existence-multiplicity`) rather than chosen, but unscored.
 - [ ] **Lesson-owned P3 (proof) reaches independently demonstrated — NOT YET.**
       `sol-prove-structure` / `sol-prove-null-subspace` are genuine E6 *surfaces*;
@@ -218,16 +237,19 @@ under the **P3 override**, against the runtime audit
 - [x] Correctness gate passed (lint + unit tests green, incl. nullity-2, fresh-example,
       and new-item grading tests).
 - [x] Abstraction return **accountably deferred** (owner/destination/evidence logged) — #4 not tripped.
-- [ ] No rejection condition holds — **still open**: inconsistency-refusal /
-      one-difference below E4, existence-multiplicity reasoning unscored, proofs unscored.
+- [ ] No rejection condition holds — **still open only on scoring**: the
+      existence-multiplicity / refusal justifications and the two proofs are unscored
+      (human scoring → Package F).
 
-**Verdict: Gate 8 NOT PASSED.** The remediation replaced the choose-a-formula item with a
-learner-**produced** parametric set, added produced free-variable/dimension counts, and
-turned the two conceptual distinctions into *produced* (not chosen) reasoning surfaces —
-genuine progress. But Gate 8 is a single gate and cannot pass while the
-inconsistency-refusal outcome is only E1 (committed-MC), the one-difference outcome is
-below its required E4, and the reasoning/proof surfaces are unscored. Remaining
-lesson-owned gaps are enumerated in the module
+**Verdict: Gate 8 NOT PASSED.** The second remediation pass closed every non-scoring
+lesson-owned gap: the parametric-set item now captures **every component** (with no
+formula shown before commitment), the inconsistency refusal is **produced** (∅-witness +
+reasoning) rather than committed-MC, and the one-difference distinction reaches **scored
+E4** via a construction on the unfamiliar nullity-2 operator. The **only** remaining
+lesson-owned blockers are the unscored reasoning/proof `self-check` surfaces
+(existence-vs-multiplicity, the refusal justification, and the two D6 proofs) — Gate 8
+cannot pass until they are **human-scored** (module Package F). The general ℝⁿ /
+unfamiliar-operator transfer remains a legitimate module-owned abstraction return (Gate 9
+/ structure module). Remaining obligations are enumerated in the module
 [implementation package](../../modules/systems-elimination/implementation-package.md);
-genuine E4 transfer (ℝⁿ / unfamiliar operator) and proof/reasoning *scoring* remain
-module-owned (Gate 9 / structure module / Package F).
+the lesson-owned ones are now **scoring-only** — no missing lesson interactions remain.
