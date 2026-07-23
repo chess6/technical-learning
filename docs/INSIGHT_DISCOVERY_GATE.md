@@ -65,7 +65,8 @@ flowchart LR
 ```
 
 1. **Insight Discovery Brief** — diagnose the cognitive obstacle, generate 8–12
-   candidate insights across the mechanisms above, and rank them.
+   raw leads across the mechanisms above, consolidate them into 3–6 distinct
+   candidate packages, and rank the packages.
    Output lives at `docs/insight-brief-<topic>.md`.
 2. **Approved Insight Contract** — select one primary breakthrough and verify its
    complete mathematical and pedagogical chain, plus the mathematical audit and
@@ -83,6 +84,29 @@ A lesson plan started without a `PASS` contract is out of process.
 Purpose: breadth then triage. Keep it lean — Stage 1 should cost less than the
 insight quality justifies. Every element below is **required** except where marked
 **(conditional)**.
+
+### Anti-anchoring and search-order rules
+
+Stage 1 separates discovery from selection.
+
+- Treat any insight supplied by a course spine, prompt, prior artifact, existing
+  lesson, or worked example as an **inherited hypothesis**, not a preferred answer.
+  It must compete under the same criteria as every other candidate.
+- Treat the initial cognitive-obstacle diagnosis as **provisional**. Candidate
+  generation may reveal that the actual obstacle is different or layered; revise
+  the diagnosis when warranted.
+- Generate the complete candidate set before naming a likely primary candidate,
+  ranking the top three, or designing the winning discovery sequence.
+- A planning artifact for Stage 1 may describe the search and audit procedure but
+  must not preselect the winner, ranking, example, or discovery sequence.
+- Merge candidates that imply the same learner model change and differ only in
+  wording, visualization, theorem direction, or implementation.
+- Include genuine rival explanations, not merely components or consequences of
+  the inherited hypothesis.
+- Existing examples and platform capabilities affect interactive teachability,
+  but convenience of implementation must not determine the winning insight.
+- For the eventual top candidate, state what evidence or comparison could have
+  caused it to lose. A candidate that cannot be challenged has not been compared.
 
 ### 1a. Diagnose the cognitive obstacle (required, brief)
 
@@ -104,10 +128,13 @@ rather than structural, note that here so Stage 1c is triggered.
 
 ### 1b. Generate candidates across mechanisms
 
-Produce **8–12 candidates**. Deliberately search beyond surprising mathematical
-facts — cover, as applicable, model-changing: mathematical reorganizations, visual
-representations, operational models, semantic framings, counterexamples,
-contrasts, interactive manipulations, and changes of perspective.
+Generate **8–12 raw insight leads**, then consolidate them into **3–6 genuinely
+distinct candidate packages** for ranking (see
+[candidate clustering](#candidate-clustering--required-before-ranking)).
+Deliberately search beyond surprising mathematical facts — cover, as applicable,
+model-changing: mathematical reorganizations, visual representations, operational
+models, semantic framings, counterexamples, contrasts, interactive manipulations,
+and changes of perspective.
 
 The central generation heuristic:
 
@@ -147,6 +174,26 @@ The brief must state: what relations stay **mathematically unchanged**; what
 becomes **easier to infer**; what **meaningful goal or background knowledge** was
 introduced; and whether the improvement is **likely to transfer**. Do **not**
 manufacture a real-world analogy for concepts where it adds nothing.
+
+### Candidate clustering — required before ranking
+
+The initial 8–12 leads are discovery material, not necessarily 8–12 independent
+insights. Before ranking:
+
+- Cluster leads that produce the same central learner model change.
+- Distinguish the candidate's core model change from its:
+  - formal theorem or synthesis;
+  - proof or discovery engine;
+  - visual representation;
+  - consequences and predictions;
+  - prerequisite connections;
+  - mathematical guardrails.
+- Rank the resulting candidate packages, not individual fragments.
+- Do not count a theorem, its proof direction, its visualization, and its
+  correctness caveat as separate competing insights.
+- Each ranked package must state one distinct before/after learner model.
+- There should normally be at least three genuine rival packages. When the topic
+  does not support three, state that honestly rather than manufacturing variants.
 
 ### 1d. Rank the strongest three
 
@@ -485,3 +532,7 @@ Worked reference: [insight-brief-karatsuba.md](./insight-brief-karatsuba.md)
 (Stage 1) and [insights/karatsuba.md](./insights/karatsuba.md) (Stage 2, PASS).
 The propositional-implication case above is an **inline calibration example only** —
 the gate does not ship a brief or contract for it.
+
+The primary-insight summaries at the top of completed reference briefs are
+retrospective summaries written after ranking and audit. They are not a model for
+Stage 1 planning order and must not be used to preselect a winner.
