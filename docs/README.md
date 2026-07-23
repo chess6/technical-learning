@@ -68,6 +68,9 @@ id), e.g. `courses/linear-algebra/modules/systems-elimination/`:
   module-owned outcomes); template [authoring/templates/module-assessment-plan.md](authoring/templates/module-assessment-plan.md)
 - `validation.md` — Gate 10 covered/missing/deferred vs the benchmark + declared
   target; template [authoring/templates/module-validation.md](authoring/templates/module-validation.md)
+- `implementation-package.md` *(optional)* — when the workflow is applied
+  **retrospectively** to a built module, the audit of build-vs-required gaps and the
+  smallest ordered work to satisfy the mastery contracts
 
 **Never create a new loose `docs/insight-*.md`.** New briefs, contracts, plans go
 under `courses/<course>/lessons/<lesson>/`; module assessment/validation go under
