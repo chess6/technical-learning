@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Circle, Line, Polygon, Text, Vector } from "mafs";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
-import { VectorTeX } from "../components/lesson/ProseWithMath";
+import { ProseWithMath, VectorTeX } from "../components/lesson/ProseWithMath";
 import { MafsSceneShell } from "./MafsSceneShell";
 import { ParameterControls } from "./ParameterControls";
 import { ResetButton } from "./ResetButton";
@@ -229,26 +229,35 @@ export function SolutionSetExplorer() {
 
   const summary = (() => {
     if (set.kind === "empty") {
-      return `b is off the column space, so no particular solution exists. The decomposition x_p + Null(A) needs a particular solution to anchor it, so the solution set is empty — even though Null(A) itself (left) is unchanged. Existence failed; multiplicity never got a chance.`;
+      return `b is off the column space, so no particular solution exists. The decomposition $\\mathbf{x}_p + \\operatorname{Null}(A)$ needs a particular solution to anchor it, so the solution set is empty — even though $\\operatorname{Null}(A)$ itself (left) is unchanged. Existence failed; multiplicity never got a chance.`;
     }
     if (set.kind === "point") {
-      return `Independent columns, so Null(A) = {0}: there is nothing to add to the one solution x_p = (${fmt(set.particular[0])}, ${fmt(set.particular[1])}). The solution set is a single point. Every b is reachable exactly once — uniqueness comes from the trivial null space.`;
+      return `Independent columns, so $\\operatorname{Null}(A) = \\{\\mathbf{0}\\}$: there is nothing to add to the one solution $\\mathbf{x}_p = (${fmt(set.particular[0])}, ${fmt(set.particular[1])})$. The solution set is a single point. Every $\\mathbf{b}$ is reachable exactly once — uniqueness comes from the trivial null space.`;
     }
     if (set.kind === "plane") {
-      return `A sends every vector to 0, so Null(A) is the whole plane — and with b = 0 the solution set is the whole plane too. Slide the two free variables t₁ and t₂: every point is x = t₁ e₁ + t₂ e₂. A single difference vector still gives only one direction; you need both independent null directions to fill the plane.`;
+      return `$A$ sends every vector to $\\mathbf{0}$, so $\\operatorname{Null}(A)$ is the whole plane — and with $\\mathbf{b} = \\mathbf{0}$ the solution set is the whole plane too. Slide the two free variables $t_1$ and $t_2$: every point is $\\mathbf{x} = t_1\\mathbf{e}_1 + t_2\\mathbf{e}_2$. A single difference vector still gives only one direction; you need both independent null directions to fill the plane.`;
     }
     // line
     const anchor = isHomogeneous
-      ? `Here b = 0, so x_p = (0, 0) and the solution set passes through the origin — it coincides with Null(A) itself.`
-      : `Every other solution is x_p = (${fmt(set.particular[0])}, ${fmt(set.particular[1])}) plus a multiple of the null direction v = (${fmt(set.direction[0])}, ${fmt(set.direction[1])}): the solution set is the null line slid to pass through x_p.`;
-    return `Dependent columns and b is reachable. ${anchor} Slide t to walk along the set; the difference of any two solutions is a null vector (drawn from the origin, it lands on the null line). Two solutions establish at least this line — pinning the full shape needs all of Null(A).`;
+      ? `Here $\\mathbf{b} = \\mathbf{0}$, so $\\mathbf{x}_p = (0, 0)$ and the solution set passes through the origin — it coincides with $\\operatorname{Null}(A)$ itself.`
+      : `Every other solution is $\\mathbf{x}_p = (${fmt(set.particular[0])}, ${fmt(set.particular[1])})$ plus a multiple of the null direction $\\mathbf{v} = (${fmt(set.direction[0])}, ${fmt(set.direction[1])})$: the solution set is the null line slid to pass through $\\mathbf{x}_p$.`;
+    return `Dependent columns and $\\mathbf{b}$ is reachable. ${anchor} Slide $t$ to walk along the set; the difference of any two solutions is a null vector (drawn from the origin, it lands on the null line). Two solutions establish at least this line — pinning the full shape needs all of $\\operatorname{Null}(A)$.`;
   })();
+
+  // Template literals (not JSX attributes): JSX attribute escapes were double-applying
+  // backslashes and leaving raw "mathbf" / "operatorname" glyphs in the KaTeX HTML.
+  const panelDescription =
+    `Left: the homogeneous system $A\\mathbf{x} = \\mathbf{0}$, whose solutions form $\\operatorname{Null}(A)$ — a subspace through the origin. Right: $A\\mathbf{x} = \\mathbf{b}$, whose solutions are $\\mathbf{x}_p + \\operatorname{Null}(A)$ — the same shape slid to pass through one particular solution (or empty when $\\mathbf{b}$ is unreachable). Slide free-variable coordinates to generate more solutions; on a line, the difference of any two is a null vector.`;
+  const captionHomogeneous =
+    `**Homogeneous system** $A\\mathbf{x} = \\mathbf{0}$ — the null space, a subspace through the origin`;
+  const captionGeneral =
+    `$A\\mathbf{x} = \\mathbf{b}$ — the solution set is $\\operatorname{Null}(A)$ translated by $\\mathbf{x}_p$ (or empty)`;
 
   return (
     <ExplorationPanel
       explorationId="solution-sets"
       title="Solution set = null space, carried off the origin"
-      description="Left: the homogeneous system A x = 0, whose solutions form Null(A) — a subspace through the origin. Right: A x = b, whose solutions are x_p + Null(A) — the same shape slid to pass through one particular solution (or empty when b is unreachable). Slide free-variable coordinates to generate more solutions; on a line, the difference of any two is a null vector."
+      description={panelDescription}
       toolbar={
         <>
           <PresetPicker
@@ -403,7 +412,7 @@ export function SolutionSetExplorer() {
       <div className="solution-set-explorer__panels">
         <figure className="solution-set-explorer__panel">
           <figcaption className="solution-set-explorer__caption">
-            <strong>Homogeneous system A x = 0</strong> — the null space, a subspace through the origin
+            <ProseWithMath text={captionHomogeneous} />
           </figcaption>
           <MafsSceneShell
             ariaLabel="Solution space of the homogeneous system A x = 0: the null space drawn through the origin as a point, a line, or the whole plane"
@@ -425,7 +434,7 @@ export function SolutionSetExplorer() {
 
         <figure className="solution-set-explorer__panel">
           <figcaption className="solution-set-explorer__caption">
-            <strong>A x = b</strong> — the solution set is Null(A) translated by xₚ (or empty)
+            <ProseWithMath text={captionGeneral} />
           </figcaption>
           <MafsSceneShell
             ariaLabel="Solution space of A x = b: the solution set drawn as the null space translated to pass through a particular solution, with a free-variable slider and the difference of two solutions"

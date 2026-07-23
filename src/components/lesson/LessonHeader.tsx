@@ -1,3 +1,4 @@
+import { ProseWithMath } from "./ProseWithMath";
 import "./LessonHeader.css";
 
 type LessonHeaderProps = {
@@ -35,7 +36,9 @@ export function LessonHeader({
         ) : null}
         <h1 className="lesson-header__title">{title}</h1>
       </div>
-      <p className="lesson-header__subtitle">{subtitle}</p>
+      <p className="lesson-header__subtitle">
+        <ProseWithMath text={subtitle} />
+      </p>
     </header>
   );
 }

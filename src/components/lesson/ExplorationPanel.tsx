@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ProseWithMath } from "./ProseWithMath";
 import "./ExplorationPanel.css";
 
 export type ExplorationPanelProps = {
@@ -39,7 +40,9 @@ export function ExplorationPanel({
         <div className="exploration-panel__intro">
           <h3 className="exploration-panel__title">{title}</h3>
           {description && (
-            <p className="exploration-panel__description">{description}</p>
+            <p className="exploration-panel__description">
+              <ProseWithMath text={description} />
+            </p>
           )}
         </div>
         {toolbar && (
@@ -49,7 +52,7 @@ export function ExplorationPanel({
 
       {summary && (
         <p className="exploration-panel__summary" aria-live="polite">
-          {summary}
+          {typeof summary === "string" ? <ProseWithMath text={summary} /> : summary}
         </p>
       )}
 
