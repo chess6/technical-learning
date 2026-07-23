@@ -161,7 +161,8 @@ The named beats below are a **palette of pedagogical jobs**, not a fixed pipelin
 LESSON_DESIGN.md lists the same blocks (Motivate, Watch, Check, Explore, Practice,
 Summarize, plus formal statements and worked examples) and is explicit that each
 lesson **composes its own order** — blocks repeat, reorder, or drop out per
-lesson, with only *guided Watch before learner Explore* fixed. Here each beat is
+lesson, with *guided Watch before learner Explore* as the strong default (see the
+contract-justified exception in SEMANTIC_PAGE_GRAMMAR.md §2). Here each beat is
 described by its *pedagogical job* — what it is responsible for in the learner's
 head — independent of where it lands in any given lesson. (For the UI mechanics
 and the `route` mechanism, see LESSON_DESIGN.md.)
@@ -177,9 +178,12 @@ and the `route` mechanism, see LESSON_DESIGN.md.)
 
 Two durable ordering commitments underlie this flow:
 
-- **Watch before Explore.** The learner sees a guided formation of the idea
-  before manipulating it. Unguided manipulation of a concept the learner does not
-  yet have is the "playground" failure mode (§5, principle 10).
+- **Watch before Explore (default).** The learner normally sees a guided
+  formation of the idea before manipulating it. Unguided manipulation of a concept
+  the learner does not yet have is the "playground" failure mode (§5, principle
+  10). The one sanctioned reversal is a *contract-justified* exploration that
+  itself raises the motivating question, with guided Watch following to explain it
+  (SEMANTIC_PAGE_GRAMMAR.md §2) — that is discovery, not an unguided playground.
 - **Question before procedure.** Every computational method is preceded by the
   question that makes it necessary (§5, principle 3).
 - **Prediction is a tool, not a ritual.** Open a genuine question the learner can

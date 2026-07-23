@@ -170,8 +170,13 @@ from the [block palette](#the-block-palette). Concretely, lessons routinely:
 - **Add supporting/auxiliary beats** where they aid understanding — e.g. defining
   *linear dependence*, *span*, or *unit vector* inside the vectors lesson.
 
-The only ordering rule is **guided Watch before learner Explore**. Everything else
-is an authoring decision.
+The default ordering rule is **guided Watch before learner Explore**; everything
+else is an authoring decision. This is a strong default, not an absolute
+invariant: a lesson may put learner Explore *before* guided Watch when the
+exploration is what raises the motivating question **and** the Lesson Mastery
+Contract justifies it (see
+[SEMANTIC_PAGE_GRAMMAR.md §2](./SEMANTIC_PAGE_GRAMMAR.md#2-lesson-openings-orient-before-you-visualize)).
+Absent that justification, keep the default.
 
 ### Authoring freedom (pedagogy and presentation)
 
@@ -199,7 +204,9 @@ continuity, or reduced-motion behavior, which are non-negotiable.
 
 Constraints on deviation:
 
-- Guided **Watch before** learner **Explore** is preserved.
+- Guided **Watch before** learner **Explore** is the default; the only sanctioned
+  reversal is a Lesson-Mastery-Contract-justified exploration-first opening
+  (SEMANTIC_PAGE_GRAMMAR §2).
 - Guided-to-interactive continuity is preserved (same example/notation/roles).
 - Any intentional structural deviation is noted in the lesson definition and, if
   it changes the standard, in this document (see the Cursor rule).
@@ -558,7 +565,7 @@ outside the POC’s product scope — but do **not** strip the basics above.
 
 ## Lesson design acceptance checklist
 
-- [ ] Lesson composes an intentional `route` from the block palette (blocks may repeat/omit/reorder; guided Watch precedes learner Explore)
+- [ ] Lesson composes an intentional `route` from the block palette (blocks may repeat/omit/reorder; guided Watch precedes learner Explore by default, or the contract justifies an exploration-first opening — SEMANTIC_PAGE_GRAMMAR §2)
 - [ ] Animation teaches one idea at a time
 - [ ] Exploration continues from the guided example
 - [ ] Shared math model reused (no duplicated arithmetic)

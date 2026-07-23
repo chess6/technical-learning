@@ -15,8 +15,10 @@ Before modifying **mathematical visualizations**, also read
   Summarize (plus Section, Formal statement, Worked example, Handoff) are a
   *palette* of reusable blocks. Compose each lesson's `route` deliberately: blocks
   may repeat with different content, be reordered, or be omitted — interleave
-  sections/formal statements/worked examples where they belong. The only ordering
-  rule is **guided Watch before learner Explore** (plus continuity). Do **not**
+  sections/formal statements/worked examples where they belong. The default
+  ordering rule is **guided Watch before learner Explore** (plus continuity); the
+  only sanctioned reversal is a Lesson-Mastery-Contract-justified
+  exploration-first opening (see `docs/SEMANTIC_PAGE_GRAMMAR.md` §2). Do **not**
   number the blocks in the UI; give each lesson a per-lesson table of contents.
 - **Equation-first worked computations.** Author a worked computation as a plain
   ordered list of KaTeX expressions (`WorkedExample.equations`). There is **no**
