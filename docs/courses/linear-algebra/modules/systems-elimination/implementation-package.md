@@ -292,12 +292,24 @@ classification and inconsistency-refusal outcomes (2nd pass).
 
 ### Package F — Module assessment surface (infrastructure)
 *Closes:* prerequisite for **all** Class-A module-owned outcomes and Class-B module
-reassessment (D8/D9/D10/D11/D12/D13).
+reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obligation
+(human-scoring the Package E proof/reasoning surfaces).
 - A **cumulative / interleaved set runner** across L3–L5.
 - An **exam-mode / deferred-feedback** attempt flow (no per-item reveal until submit)
   — new support per [mastery-standard §6.1](../../../../authoring/mastery-standard.md#61-the-assessment-layers).
 - **Human-scoring capture** for proofs (shared with E) and a **spacing/scheduler** hook.
+- Introduces the **first real persistence** (local, single-user) — supersedes the
+  `platform-contracts.md` "no persistence layer" non-goal for the assessment surface.
 *Size:* large (new platform capability + UI + state). The keystone.
+
+> **Implementation-ready plan:** the full F1–F4 slice plan (files, data flow / state
+> transitions, migration & backward-compat, acceptance criteria, tests, and failure /
+> recovery for each slice) lives in **[package-f-plan.md](package-f-plan.md)**. Slices:
+> **F1** attempt/set domain model + persistence · **F2** module runner +
+> deferred-feedback flow · **F3** human-review & scoring workflow + Gate-8 selector ·
+> **F4** scheduler extension point + integration + full verification. Packages **G–I
+> and all assessment content stay out of scope**; building any slice is Mode C and
+> needs explicit approval.
 
 ### Package G — Class-A module item sets (on F) · module-owned
 *Closes:* D8, D9, D10, D13, **and the executable P2 applied slice**.
@@ -358,7 +370,10 @@ made (COURSE §6.2).
 
 **Approval boundary.** The lesson-owned remediation is complete: Packages B, C, D are
 built and Package E's surfaces are built (scoring only). All non-scoring lesson-owned
-interaction gaps are closed. Proceeding to build **F onward** (module-assessment
-infrastructure, including the human-scored proof/reasoning capture that is the sole
-remaining lesson-owned obligation) is Mode C and requires explicit approval before writing
-that code.
+interaction gaps are closed. **Package F is now the authorized next planning target**, and
+its implementation-ready plan is recorded in
+[package-f-plan.md](package-f-plan.md) (F1–F4). That plan is **documentation only** —
+proceeding to build **F onward** (module-assessment infrastructure, including the
+human-scored proof/reasoning capture that is the sole remaining lesson-owned obligation)
+is **Mode C** and requires explicit approval before writing that code. Gate 8 stays
+**NOT PASSED** until the human-scored obligations are actually scored (F3).
