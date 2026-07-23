@@ -40,6 +40,19 @@
   gap: var(--space-2);
 }
 
+/*
+ * Base swatch geometry, scoped to this legend. The shared `.swatch` base rule
+ * lives in another explorer's stylesheet that is only loaded on that lesson, so
+ * defining it here keeps the color key visible when this lesson is opened alone.
+ */
+.solution-set-explorer__legend .swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0;
+  border-top-width: 3px;
+  border-top-style: solid;
+}
+
 .swatch--null {
   border-top-color: var(--role-basis-1);
 }

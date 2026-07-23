@@ -148,6 +148,12 @@ export function SolutionSetExplorer() {
         return Math.abs(img[0] - b[0]) < 1e-6 && Math.abs(img[1] - b[1]) < 1e-6;
       })()
     : false;
+  // The "carry the difference to the origin" overlay only reads when the set is a
+  // line AND is off the origin (x_p ≠ 0). In the homogeneous case (x_p = 0) the
+  // solution set already coincides with the null line, so the translated arrow
+  // lands on the natural difference arrow — a redundant, overlapping duplicate.
+  const translatedDifferenceMeaningful =
+    direction !== null && particular !== null && !approxVec(particular, [0, 0]);
 
   const activePreset: Preset = approxEntries(entries, EX.aDependent)
     ? approxVec(b, EX.bInfinite)
@@ -253,16 +259,18 @@ export function SolutionSetExplorer() {
       summary={summary}
       controls={
         <>
-          <ExplorationToggles
-            toggles={[
-              {
-                id: "toggle-difference",
-                label: "Show the difference of two solutions is a null vector",
-                checked: showDifference,
-                onChange: setShowDifference,
-              },
-            ]}
-          />
+          {translatedDifferenceMeaningful && (
+            <ExplorationToggles
+              toggles={[
+                {
+                  id: "toggle-difference",
+                  label: "Show the difference of two solutions is a null vector",
+                  checked: showDifference,
+                  onChange: setShowDifference,
+                },
+              ]}
+            />
+          )}
           {direction && (
             <ParameterControls
               title="Free variable t — slide the second solution along the set"
@@ -419,8 +427,13 @@ export function SolutionSetExplorer() {
                 <Text x={second[0]} y={second[1]} attach="se" attachDistance={14} color={ROLE_SECOND} size={14}>
                   xₚ + t·v
                 </Text>
-                {/* The SAME difference translated to the origin: it lands on the null line. */}
-                {showDifference && difference && !approxVec(difference, [0, 0]) && (
+                {/* The SAME difference translated to the origin: it lands on the null line.
+                    Only when the set is off the origin (x_p ≠ 0); otherwise it duplicates
+                    the natural difference arrow drawn above. */}
+                {showDifference &&
+                  difference &&
+                  translatedDifferenceMeaningful &&
+                  !approxVec(difference, [0, 0]) && (
                   <>
                     <Vector tail={[0, 0]} tip={difference as [number, number]} color={ROLE_DIFFERENCE} weight={2} style="dashed" opacity={0.8} />
                     <Text x={difference[0]} y={difference[1]} attach="nw" attachDistance={12} color={ROLE_DIFFERENCE} size={13}>

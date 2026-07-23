@@ -101,6 +101,13 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
   const reach = explore.getByTestId("solset-reach-readout");
   const nul = explore.getByTestId("solset-null-readout");
 
+  // The legend color key must actually render (each swatch has a real drawn
+  // border, not a 0×0 box) so the diagram colors are decodable.
+  const firstSwatch = explore.locator(".solution-set-explorer__legend .swatch").first();
+  await expect(firstSwatch).toBeVisible();
+  const swatchBox = await firstSwatch.boundingBox();
+  expect(swatchBox?.width ?? 0).toBeGreaterThan(8);
+
   // Default preset — "Infinitely many (line)": a reachable b over a dependent A
   // gives an affine line; Null(A) is a line through the origin.
   await expect(kind).toHaveText("an affine line (dimension 1)");
@@ -138,6 +145,9 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
   await expect(kind).toHaveText("a single point");
   await expect(nul).toHaveText("only the zero vector, {0} (trivial)");
   await expect(reach).toHaveText("yes — b is in the column space");
+  // No solution line here, so the difference-overlay toggle has nothing to act on
+  // and must not be shown (it only appears for an off-origin line).
+  await expect(diffToggle).toHaveCount(0);
 
   // Inconsistent (empty): b off the column space → empty set, existence fails,
   // even though Null(A) is unchanged.

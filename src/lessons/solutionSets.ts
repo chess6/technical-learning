@@ -96,7 +96,7 @@ export const solutionSetsLesson: LessonDefinition = {
       kind: "theorem",
       label: "Solution-set structure",
       statement:
-        "If $A\\mathbf{x} = \\mathbf{b}$ is **consistent** with any particular solution $\\mathbf{x}_p$, then its solution set is $\\operatorname{Sol}(A, \\mathbf{b}) = \\mathbf{x}_p + \\operatorname{Null}(A) = \\{\\mathbf{x}_p + \\mathbf{x}_h : \\mathbf{x}_h \\in \\operatorname{Null}(A)\\}$. If it is **inconsistent**, the solution set is empty, $\\varnothing$.",
+        "If $A\\mathbf{x} = \\mathbf{b}$ is **consistent** with any particular solution $\\mathbf{x}_p$, then its solution set is $\\operatorname{Sol}(A, \\mathbf{b}) = \\mathbf{x}_p + \\operatorname{Null}(A)$ — that is, $\\{\\mathbf{x}_p + \\mathbf{x}_h : \\mathbf{x}_h \\in \\operatorname{Null}(A)\\}$. If it is **inconsistent**, the solution set is empty, $\\varnothing$.",
       interpretation:
         "One solution fixes an anchor; the null space supplies every other solution as a shift away from it. The picture: take $\\operatorname{Null}(A)$ and slide it so it passes through $\\mathbf{x}_p$ instead of the origin.",
       visibility: "visible",
@@ -304,11 +304,11 @@ export const solutionSetsLesson: LessonDefinition = {
       type: "vector",
       tier: "drill",
       prompt:
-        "For $x + 2y = 3,\\ 2x + 4y = 6$ you know $(3, 0)$ is a solution and $(2, -1) \\in \\operatorname{Null}(A)$. Enter another solution.",
+        "For $x + 2y = 3,\\ 2x + 4y = 6$ you know $(3, 0)$ is a solution and $(2, -1) \\in \\operatorname{Null}(A)$. Add that null vector to $(3, 0)$ and enter the resulting solution.",
       expected: [5, -1],
       tolerance: 0.01,
       explanation:
-        "Add a null vector to a solution: $(3, 0) + (2, -1) = (5, -1)$, and $A(5,-1) = (3,6) = \\mathbf{b}$. Any $(3 + 2t,\\ -t)$ works; $t = 1$ gives $(5, -1)$ (and $t = -1$ gives $(1, 1)$).",
+        "Add the null vector to the known solution: $(3, 0) + (2, -1) = (5, -1)$, and $A(5,-1) = (3,6) = \\mathbf{b}$. Every $(3 + 2t,\\ -t)$ is a solution too — e.g. $t = -1$ gives $(1, 1)$ — but this step asks for the $t = 1$ result, $(5, -1)$.",
     },
     {
       id: "sol-whole-set",
