@@ -260,24 +260,31 @@ bridge, so those grounding notes are light and never import an outside property.
 - Transfer: why null space is the clean object to define first (L8).
 - Mechanism: structural (clarifies why C4/C7 split cleanly).
 
-### C9. The recipe-freedom in the column picture *is* a column dependency (Lesson 3 continuity)
+### C9. The recipe-freedom in the column picture is an *affine translate* of the null space (Lesson 3 continuity)
 
 - Initial model: the `SystemsExplorer` \(t\)-sweep ("many recipes, one target") is a display trick.
 - Tension: what is the sweep *made of*?
-- Structural reveal: the coefficient vectors that all reach \(\mathbf{b}\) differ by
-  exactly the null combinations of the columns — i.e. the dependency
-  \(x\mathbf{a}_1+y\mathbf{a}_2=\mathbf{0}\). The "many recipes" sweep is literally a
-  sweep through \(\operatorname{Null}(A)\).
+- Structural reveal: the coefficient vectors that all reach \(\mathbf{b}\) form an
+  **affine translate** of \(\operatorname{Null}(A)\) — one particular recipe
+  \(\mathbf{x}_p\) plus every null combination \(\{(x,y):x\mathbf{a}_1+y\mathbf{a}_2=\mathbf{0}\}\).
+  The sweep moves **along** \(\operatorname{Null}(A)\) — its *direction* (the
+  difference of any two recipes) is a null vector — while the recipes themselves ride
+  the shifted line \(\mathbf{x}_p+\operatorname{Null}(A)\) and are **not** in
+  \(\operatorname{Null}(A)\) unless \(\mathbf{b}=\mathbf{0}\).
 - Minimal derivation: two recipes reaching \(\mathbf{b}\) differ by a coefficient
-  vector mixing the columns to \(\mathbf{0}\) (C2 read in the column picture).
-- Visual/interactive: reuse the existing sweep, now labeled as the null direction.
+  vector mixing the columns to \(\mathbf{0}\) (C2 read in the column picture); adding
+  any such null combination to one recipe gives another (C1 in coefficient space).
+- Visual/interactive: reuse the existing sweep, now labeled — the recipe line is a
+  shifted copy of \(\operatorname{Null}(A)\); the *step* between recipes is the null direction.
 - New prediction: the freedom exists iff the columns are dependent; independent
-  columns ⇒ a single recipe.
-- Transfer: column space / null space duality (L8).
+  columns ⇒ a single recipe (the translate collapses to a point).
+- Transfer: column space / null space duality (L8); the coefficient-space instance of C1/C3.
 - Mechanism: representational (recasts an existing interaction) + structural.
 - Grounding (representational): **preserved** — the endpoint stays at \(\mathbf{b}\)
-  while coefficients vary. **Not over-claimed:** the sweep is of *coefficients*
-  (input space), not of outputs; keep the two spaces distinct as Lesson 3 does.
+  while coefficients vary. **Not over-claimed:** the *set of recipes* is an affine
+  translate, not \(\operatorname{Null}(A)\) itself; only the sweep's **direction** lies
+  in \(\operatorname{Null}(A)\). The sweep is of *coefficients* (input space), not of
+  outputs; keep the two spaces distinct as Lesson 3 does.
 
 ### C10. Row-picture reading: the solution set is the intersection of constraints, shifted off the origin
 
@@ -326,84 +333,87 @@ bridge, so those grounding notes are light and never import an outside property.
 
 ---
 
-## 1d. Ranking of the strongest three
+## 1d. Ranking — three candidate packages
 
-Ranked against the gate's criteria — (1) surprise before / inevitability after;
-(2) explanatory compression; (3) transfer; (4) mathematical correctness (a gate);
-(5) interactive teachability; (6) prerequisite fit; (7) semantic/cognitive leverage;
-(8) abstraction return. Here (7) is low for all candidates and (8) is N/A — the
-topic is structural/representational with no real-world grounding, so the contest is
-decided on (1)–(6), and no order was assumed in advance. I evaluated the spine
-sentence (C1) as a genuine contender for #1 and it did not win; the reasoning is
-recorded so the outcome is auditable.
+The eleven sketches in §1b are **not** eleven independent insights; they cluster
+into **three coherent packages**, each a driver plus the structure, picture,
+consequence, and guardrail that travel with it. I therefore rank *packages*, not
+fragments. Ranked against the gate's criteria — (1) surprise before / inevitability
+after; (2) explanatory compression; (3) transfer; (4) mathematical correctness (a
+gate); (5) interactive teachability; (6) prerequisite fit; (7) semantic/cognitive
+leverage; (8) abstraction return. Here (7) is low for every package and (8) is N/A
+(structural/representational topic, no real-world grounding), so the contest is
+decided on (1)–(6), and no order was assumed in advance. The spine sentence (C1) was
+tested on equal footing: it lands **inside** Package 1 as the formal synthesis, not
+as the driver — the reasoning is recorded below so the outcome is auditable.
 
-**Why C1 (spine) is not the top breakthrough, though it is essential.** Stated on
-its own, "solution \(=\) particular \(+\) homogeneous" is the *formal structure* —
-correct, compressive, but delivered as a fact to accept. It scores high on
-compression and transfer but **low on surprise/inevitability**, because nothing in
-it makes the learner *predict* before being told; it is the target the breakthrough
-should make inevitable, analogous to how the gate's calibration treats the
-"forbidden corner" of implication as formal structure rather than the motivating
-model. So C1 is retained as the synthesis the winner produces — not discarded, not
-crowned.
+The three packages partition all eleven candidates: Package 1 = {C1, C2, C3, C5,
+C11}; Package 2 = {C4, C7, C8}; Package 3 = {C6, C9, C10}.
 
-### #1 — C2: any two solutions differ by a homogeneous solution
+### Package 1 (primary) — "The null space carried off the origin," discovered by differencing solutions
 
-- Surprise/inevitability: subtracting two answers and finding \(A\) annihilates the
-  difference is a small, checkable surprise that immediately **forces** C1 — fix one
-  solution and every other is it plus a null vector. Highest inevitability of the set.
-- Compression: generates C1 (decomposition), C4 (uniqueness detector), C5 (2 ⇒ ∞)
-  from one identity.
-- Transfer: injectivity ⇔ trivial null space; least-squares residuals; cosets of
-  linear maps.
-- Correctness: exact and elementary — one subtraction and linearity.
+Members: **C2** (driver) → **C1** (synthesis) → **C3** (representation), with **C5**
+(consequence) and **C11** (guardrail).
+
+- Driver: C2 — subtracting two solutions and finding \(A\) annihilates the difference
+  is a small, checkable surprise that **forces** the decomposition (fix one solution,
+  every other is it plus a null vector) rather than announcing it.
+- Surprise/inevitability: highest of the three. C1 *alone* — "solution \(=\)
+  particular \(+\) homogeneous" — is correct and compressive but **low on
+  inevitability** (nothing makes the learner predict before being told), analogous to
+  how the gate's calibration treats the "forbidden corner" of implication as formal
+  structure rather than the motivating model. So the package is *driven* by C2, *seen*
+  as C3, and merely *stated* as C1.
+- Compression: one identity (C2) generates C1 (decomposition), C5 (2 ⇒ ∞), and feeds
+  Package 2's uniqueness detector; C3 delivers the affine-vs-linear goal.
+- Correctness: exact and elementary — one subtraction and linearity; C11 keeps the
+  consistency precondition built in (empty set when no \(\mathbf{x}_p\) exists).
 - Teachability: excellent — two concrete solutions on Lesson 3's existing infinite
-  system; verify the difference is null by hand.
-- Prerequisites: only \(A\mathbf{x}=\mathbf{b}\) and linearity (Lessons 2–3).
-- Chosen primary — but its most persuasive delivery **pairs it with C3** (below), so
-  the learner both *derives* the structure and *sees* it. The gate explicitly allows
-  a candidate that is strongest in combination.
+  system, verify the difference is null by hand, then two parallel lines (one through
+  the origin).
+- Prerequisites: only \(A\mathbf{x}=\mathbf{b}\) and linearity (Lessons 2–3), plus the
+  subspace-closure of \(\operatorname{Null}(A)\) that Package 2's C8 supplies.
+- Chosen primary: it delivers the lesson's core goals — particular + homogeneous,
+  affine vs linear, and the consistency precondition — in a single discovery arc.
 
-### #2 — C3: the solution set is the null space carried off the origin (affine vs linear)
+### Package 2 — "\(A\mathbf{x}=\mathbf{0}\) governs multiplicity for the whole family" (purpose + the existence/multiplicity split)
 
-- Surprise/inevitability: "the two pictures are the same shape, only shifted" makes
-  affine-vs-linear self-evident; strong inevitability once C2 supplies the *why*.
-- Compression: unifies homogeneous and inhomogeneous into one object plus an offset;
-  delivers the "linear vs affine" learning goal directly.
-- Transfer: affine subspaces, cosets, later change-of-variables geometry.
-- Correctness: exact, provided the representation does **not** imply the solution
-  line is a subspace (it is not, unless \(\mathbf{b}=\mathbf{0}\)) — flagged in its
-  grounding note.
-- Teachability: excellent — two parallel lines, one through the origin.
-- Prerequisites: subspace-closure of \(\operatorname{Null}(A)\), which C8 supplies.
+Members: **C4** (uniqueness detector), **C8** (homogeneous always consistent),
+**C7** (existence vs multiplicity as independent axes).
 
-### #3 — C6: free variables are coordinates on the null space (dimension of the set)
+- Reveal: gives the homogeneous system a *purpose* and cleanly separates the two
+  questions Lesson 3 blurred — existence (is \(\mathbf{b}\) reachable?) vs
+  multiplicity (what is \(\operatorname{Null}(A)\)?).
+- Transfer: deepest onward reach — injectivity → invertibility (L6/L7), column/null
+  space (L8). Predictive: test uniqueness once via \(A\mathbf{x}=\mathbf{0}\),
+  independent of \(\mathbf{b}\).
+- Correctness: exact.
+- Why not primary: it is more a *uniqueness* story than the solution-set breakthrough,
+  and reads best as Package 1's **payoff** ("now that the set is
+  \(\mathbf{x}_p+\operatorname{Null}(A)\), \(\operatorname{Null}(A)\) alone decides
+  uniqueness for every reachable \(\mathbf{b}\)"). C7's consistency axis is a mandatory
+  guardrail downstream regardless of packaging.
 
-- Surprise/inevitability: reframes a bookkeeping artifact ("leftover columns") as
-  *directions of freedom*; the count predicting the shape is a genuine reorganization.
-- Compression: ties the Lesson 4 procedure to the structure and previews rank–nullity
-  with one idea.
-- Transfer: maximal toward L8 (null space) and L9 (rank–nullity) — the deepest
-  onward reach of the three.
-- Correctness: exact; each free variable yields one independent null basis vector.
-- Teachability: strong — one slider per free variable, each a null direction.
-- Prerequisites: needs Lesson 4's reduced/triangular form to *see* the free
-  variables; hence ranked third (heaviest prerequisite load), the "deeper connection"
-  rather than the opening breakthrough.
+### Package 3 — "Free variables are coordinates on the null space" (procedure → structure, reading the set)
 
-**Strong supporting insights (beyond the top three).** **C4** (uniqueness detector)
-supplies the homogeneous system's *purpose* and its onward link to invertibility —
-a strong candidate that ranks just below the top three because it is more a
-uniqueness story than the solution-set breakthrough itself; keep it as the payoff
-that answers "why study \(A\mathbf{x}=\mathbf{0}\)." **C7** and **C11** carry the
-consistency/existence guardrail and must appear in the lesson regardless of the
-winner. **C5** is the most vivid *consequence* to exhibit. **C9/C10** are continuity
-recastings (column and row pictures) to be used only where they genuinely sharpen
-C2/C3, not for their own sake.
+Members: **C6** (free variables as null-space coordinates; dimension), **C9**
+(column-picture recipe-freedom as an affine translate of \(\operatorname{Null}(A)\)),
+**C10** (row-picture: constraints shifted to the origin).
+
+- Reveal: connects the Lesson 4 elimination procedure and **both** Lesson 3 pictures
+  (column and row) to the structure; the count of free variables predicts the
+  shape/dimension, previewing rank–nullity (L9).
+- Transfer: maximal toward L8/L9. Teachability: strong — one slider per free variable,
+  each a null direction.
+- Correctness: exact (each free variable yields one independent null basis vector;
+  C9 corrected so the recipe set is an affine translate, only its direction null).
+- Why not primary: heaviest prerequisite load — it needs Lesson 4's reduced form to
+  *see* free variables — so it is the deeper **reading/continuity** package, best
+  sequenced *after* the Package 1 breakthrough rather than as the opening move.
 
 ---
 
-## Discovery sequence for the primary insight (C2, delivered with C3)
+## Discovery sequence for the primary package (Package 1: C2 → C1, delivered with C3)
 
 Discover, don't tell. The learner should reconstruct
 \(\operatorname{Sol}(A,\mathbf{b})=\mathbf{x}_p+\operatorname{Null}(A)\) — and see it
@@ -462,15 +472,15 @@ consistency guardrail, a question a memorized formula answers wrongly.
 
 ## Stage 1 verdict
 
-At least one candidate (**C2**, delivered with **C3**) is a genuine model-changing
-insight: mathematically exact, teachable from the learner's existing knowledge,
-ranked #1 with a discover-don't-tell sequence and a predict-not-recall exit test,
-and it makes the decomposition **inevitable** rather than appended. The spine
-sentence (C1) was tested on equal footing and placed as the **formal synthesis the
-breakthrough produces**, not the breakthrough itself; the consistency precondition
-(C11) and the existence-vs-multiplicity split (C7) are mandatory in any downstream
-lesson. No candidate relies on real-world grounding, so the abstraction-return
-requirement is N/A.
+The top-ranked package (**Package 1**), driven by **C2** and delivered with **C3**,
+is a genuine model-changing insight: mathematically exact, teachable from the
+learner's existing knowledge, ranked #1 with a discover-don't-tell sequence and a
+predict-not-recall exit test, and it makes the decomposition **inevitable** rather
+than appended. The spine sentence (C1) was tested on equal footing and sits **inside
+Package 1 as the formal synthesis the breakthrough produces**, not as the driver; the
+consistency precondition (C11) is built into Package 1, and the
+existence-vs-multiplicity split (C7, Package 2) is mandatory in any downstream lesson.
+No package relies on real-world grounding, so the abstraction-return requirement is N/A.
 
 **Gate result (Stage 1): PASS.**
 
