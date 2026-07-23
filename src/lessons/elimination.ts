@@ -496,26 +496,34 @@ export const eliminationLesson: LessonDefinition = {
     {
       // In-lesson E4 unfamiliar transfer: a DEGENERATE zero-pivot configuration. The
       // worked example and every drill had a nonzero pivot in place; here $a_{11}=0$,
-      // so $R_1$ cannot clear $x$ and the learner must transfer the (so-far unused)
-      // swap operation. The assessed E4 evidence is PRODUCING the swapped augmented
-      // matrix (all six entries) — recognizing the swap is the method selection. The
-      // routine back-substitution that follows is deliberately NOT graded here (it
-      // would be ordinary E3, not the E4 transfer); the reveal notes it only.
+      // so $R_1$ cannot clear $x$ and the learner must SELECT an operation that
+      // repairs the pivot. The prompt deliberately does NOT name the operation
+      // (no "row swap", no $R_1\leftrightarrow R_2$): choosing it is the E4 method
+      // selection, so it must stay undisclosed until commitment. Grading is a
+      // predicate (`row-equivalent-usable-pivot`) that accepts ANY legal
+      // (reversible) operation producing a nonzero $a_{11}$ — a swap, or e.g.
+      // $R_1\to R_1+R_2$ — so a single fixed answer is never leaked and every valid
+      // choice passes. Entering the matrix is the execution of the chosen move; the
+      // routine back-substitution that follows is not graded as the transfer.
       id: "elim-degenerate-pivot-transfer",
       type: "custom",
       capabilityId: MATRIX_ENTRY_ID,
       tier: "transfer",
       prompt:
-        "A degenerate case you have not seen: $\\left[\\begin{array}{cc|c} 0 & 1 & 4 \\\\ 2 & 3 & 10 \\end{array}\\right]$. The pivot position $a_{11}$ is $0$, so $R_1$ cannot clear $x$ from $R_2$. Apply the one elementary operation that brings a nonzero entry into the pivot — the row swap $R_1 \\leftrightarrow R_2$ — and enter the resulting augmented matrix.",
+        "A degenerate case you have not seen: $\\left[\\begin{array}{cc|c} 0 & 1 & 4 \\\\ 2 & 3 & 10 \\end{array}\\right]$. The pivot position $a_{11}$ is $0$, so $R_1$ cannot clear $x$ from $R_2$. Choose and apply one legal elementary row operation that puts a nonzero entry in the $a_{11}$ pivot position, and enter the resulting augmented matrix.",
       config: {
         rows: 2,
         cols: 3,
-        expected: [
-          [2, 3, 10],
-          [0, 1, 4],
-        ],
+        check: {
+          kind: "row-equivalent-usable-pivot",
+          original: [
+            [0, 1, 4],
+            [2, 3, 10],
+          ],
+          pivot: [0, 0],
+        },
         explanation:
-          "Swapping $R_1 \\leftrightarrow R_2$ lifts the nonzero pivot $2$ into the top-left, giving $\\left[\\begin{array}{cc|c} 2 & 3 & 10 \\\\ 0 & 1 & 4 \\end{array}\\right]$ — already triangular. (Scaling by $0$ is illegal, and $R_2 \\to R_2 + R_1$ would leave $a_{11} = 0$.) The transfer skill is recognizing and producing the swap in a case the drills never forced; the routine back-substitution that reads off $y = 4$ then $x = -1$ is ordinary work, not the new move.",
+          "Any single legal (reversible) operation that lifts a nonzero entry into $a_{11}$ works. The simplest is the swap $R_1 \\leftrightarrow R_2$, giving $\\left[\\begin{array}{cc|c} 2 & 3 & 10 \\\\ 0 & 1 & 4 \\end{array}\\right]$ — already triangular; the replacement $R_1 \\to R_1 + R_2$ also creates a nonzero top-left. (Scaling by $0$ is illegal, and $R_2 \\to R_2 + R_1$ would leave $a_{11} = 0$.) The transfer skill is CHOOSING an operation that creates a usable pivot in a case the drills never forced; the routine back-substitution that reads off $y = 4$ then $x = -1$ is ordinary work, not the new move.",
         matrixName: "[A\\,|\\,b]",
       },
     },

@@ -96,6 +96,7 @@ type SequenceStepDraft = {
   choice: number | null;
   x: string;
   y: string;
+  text: string;
   result: GradeResult | null;
 };
 type SequenceDraft = { steps: SequenceStepDraft[] };
@@ -1017,6 +1018,7 @@ function ExerciseSequenceBody({
     choice: null,
     x: "",
     y: "",
+    text: "",
     result: null,
   });
 
@@ -1045,6 +1047,8 @@ function ExerciseSequenceBody({
           return { kind: "vector", value: [Number(s.x), Number(s.y)] };
         case "construct":
           return { kind: "construct", value: [Number(s.x), Number(s.y)] };
+        case "text":
+          return { kind: "text", value: s.text };
       }
     });
     setResult(
@@ -1108,6 +1112,24 @@ function ExerciseSequenceBody({
         ? { kind: "vector", value: [px, py] }
         : { kind: "construct", value: [px, py] };
     const stepResult = gradeSequenceStep(step, response);
+    const steps = writeStep(index, { ...current, result: stepResult });
+    setDraft({ steps });
+    commitAggregate(steps);
+  };
+
+  const checkTextStep = (index: number) => {
+    const current = stepDraft(index);
+    if (current.text.trim() === "") {
+      const steps = writeStep(index, {
+        ...current,
+        result: { correct: false, feedback: "Type an answer to check." },
+      });
+      setDraft({ steps });
+      commitAggregate(steps);
+      return;
+    }
+    const step = config.steps[index]!;
+    const stepResult = gradeSequenceStep(step, { kind: "text", value: current.text });
     const steps = writeStep(index, { ...current, result: stepResult });
     setDraft({ steps });
     commitAggregate(steps);
@@ -1183,6 +1205,30 @@ function ExerciseSequenceBody({
                     value={current.y}
                     onChange={(event) => {
                       const steps = writeStep(index, { ...current, y: event.target.value });
+                      setDraft({ steps });
+                    }}
+                  />
+                </label>
+                <button type="submit" className="btn">
+                  Check step
+                </button>
+              </form>
+            ) : step.kind === "text" ? (
+              <form
+                className="exercise-panel__answer"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  checkTextStep(index);
+                }}
+              >
+                <label className="exercise-panel__field">
+                  <span className="sr-only">Answer for step {index + 1}</span>
+                  <input
+                    type="text"
+                    aria-label={`Step ${index + 1} answer`}
+                    value={current.text}
+                    onChange={(event) => {
+                      const steps = writeStep(index, { ...current, text: event.target.value });
                       setDraft({ steps });
                     }}
                   />

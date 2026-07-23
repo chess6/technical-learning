@@ -69,7 +69,8 @@ type SeqResponse =
   | { kind: "numeric"; value: number }
   | { kind: "multiple-choice"; choice: number }
   | { kind: "vector"; value: [number, number] }
-  | { kind: "construct"; value: [number, number] };
+  | { kind: "construct"; value: [number, number] }
+  | { kind: "text"; value: string };
 const seq = (responses: SeqResponse[]): ExerciseAnswer => ({
   kind: "custom",
   capabilityId: EXERCISE_SEQUENCE_ID,
@@ -78,9 +79,9 @@ const seq = (responses: SeqResponse[]): ExerciseAnswer => ({
 const nums = (values: number[]): ExerciseAnswer =>
   seq(values.map((value) => ({ kind: "numeric", value })));
 const num = (value: number): SeqResponse => ({ kind: "numeric", value });
-const choice = (c: number): SeqResponse => ({ kind: "multiple-choice", choice: c });
 const svec = (x: number, y: number): SeqResponse => ({ kind: "vector", value: [x, y] });
 const scons = (x: number, y: number): SeqResponse => ({ kind: "construct", value: [x, y] });
+const stext = (value: string): SeqResponse => ({ kind: "text", value });
 
 describe("L3 systems — corrected remediation items", () => {
   it("sys-classify-fresh: committed-MC (E1) recognition backup, correct vs incorrect", () => {
@@ -90,21 +91,24 @@ describe("L3 systems — corrected remediation items", () => {
     expect(gradeExercise(e, mc(0)).correct).toBe(false);
   });
 
-  it("sys-classify-produce-fresh: PRODUCE witness + COMMIT count per system (E3); no early class reveal", () => {
+  it("sys-classify-produce-fresh: PRODUCE witness + TYPE count per system (E3); no MC, no early class reveal", () => {
     const e = ex(systemsLesson, "sys-classify-produce-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
     const steps = stepsOf(e);
-    // 6 steps: [construct A sol, MC count=one, construct B other sol, MC count=∞,
-    //           numeric C contradiction, MC count=none]
+    // 6 steps: [construct A sol, TEXT count=one, construct B other sol, TEXT count=∞,
+    //           numeric C contradiction, TEXT count=none]. The count steps are TYPED
+    // (`text`), NOT multiple-choice — classification is produced, not recognized.
     expect(steps).toHaveLength(6);
     expect(steps.map((s) => s.kind)).toEqual([
       "construct",
-      "multiple-choice",
+      "text",
       "construct",
-      "multiple-choice",
+      "text",
       "numeric",
-      "multiple-choice",
+      "text",
     ]);
+    // No count step is a multiple choice (no classifications displayed as choices).
+    expect(steps.some((s) => s.kind === "multiple-choice")).toBe(false);
     // The witness (construct/numeric) steps must NOT name the classification.
     for (const i of [0, 2, 4]) {
       const explanation = (steps[i] as { explanation: string }).explanation.toLowerCase();
@@ -112,42 +116,88 @@ describe("L3 systems — corrected remediation items", () => {
       expect(explanation).not.toContain("exactly one");
       expect(explanation).not.toContain("infinitely many");
     }
-    // Fully correct: A=(2,1) → one; B second sol (3,0)≠(0,3) → ∞; C contradiction 4 → none.
+    // Fully correct: A=(2,1) → "one"; B second sol (3,0)≠(0,3) → "infinitely many";
+    // C contradiction 4 → "none".
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(4), choice(0)]))
-        .correct,
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(3, 0), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
+    ).toBe(true);
+    // Accepted spellings normalize: numeric "1"/"0" and "infinity"/"∞", plus case
+    // and trailing punctuation.
+    expect(
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("1"), scons(3, 0), stext("infinity"), num(4), stext("0")]),
+      ).correct,
+    ).toBe(true);
+    expect(
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("Exactly one."), scons(3, 0), stext("∞"), num(4), stext("No solution")]),
+      ).correct,
     ).toBe(true);
     // A different valid A-solution still passes (predicate-graded), so does a
     // different valid distinct B-solution.
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(1, 2), choice(2), num(4), choice(0)]))
-        .correct,
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(1, 2), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
     ).toBe(true);
     // Each field independently mutated must fail:
     expect(
-      gradeExercise(e, seq([scons(3, 3), choice(1), scons(3, 0), choice(2), num(4), choice(0)]))
-        .correct,
+      gradeExercise(
+        e,
+        seq([scons(3, 3), stext("one"), scons(3, 0), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
     ).toBe(false); // A witness not a solution
+    // A CORRECT witness with a WRONG typed classification still fails (the count
+    // is genuinely graded, not a rubber stamp on the witness).
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(0), scons(3, 0), choice(2), num(4), choice(0)]))
-        .correct,
-    ).toBe(false); // A count wrong (none)
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("none"), scons(3, 0), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
+    ).toBe(false); // A count wrong (typed "none")
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(0, 3), choice(2), num(4), choice(0)]))
-        .correct,
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(0, 3), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
     ).toBe(false); // B "different" solution is the excluded given one
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(1), num(4), choice(0)]))
-        .correct,
-    ).toBe(false); // B count wrong (one)
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(3, 0), stext("one"), num(4), stext("none")]),
+      ).correct,
+    ).toBe(false); // B count wrong (typed "one")
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(5), choice(0)]))
-        .correct,
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(3, 0), stext("infinitely many"), num(5), stext("none")]),
+      ).correct,
     ).toBe(false); // C contradiction value wrong
     expect(
-      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(4), choice(2)]))
-        .correct,
-    ).toBe(false); // C count wrong (∞)
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("one"), scons(3, 0), stext("infinitely many"), num(4), stext("infinitely many")]),
+      ).correct,
+    ).toBe(false); // C count wrong (typed "infinitely many")
+    // Empty / unrecognized text fails.
+    expect(
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("  "), scons(3, 0), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
+    ).toBe(false);
+    expect(
+      gradeExercise(
+        e,
+        seq([scons(2, 1), stext("two"), scons(3, 0), stext("infinitely many"), num(4), stext("none")]),
+      ).correct,
+    ).toBe(false);
   });
 
   it("sys-solve-confirm-fresh: FULL two-coordinate column confirmation (both entries checked)", () => {
@@ -320,29 +370,45 @@ describe("L4 elimination — corrected remediation items", () => {
     expect(gradeExercise(e, vec([1, 0])).correct).toBe(false); // off the line → none
   });
 
-  it("elim-degenerate-pivot-transfer: E4 zero-pivot swap PRODUCED as the swapped augmented matrix", () => {
-    const e = ex(eliminationLesson, "elim-degenerate-pivot-transfer");
-    // Now a produced matrix entry (not a multiple-choice row-swap decision).
+  it("elim-degenerate-pivot-transfer: E4 zero-pivot repair PRODUCED as a matrix; operation not disclosed pre-commit", () => {
+    const e = ex(eliminationLesson, "elim-degenerate-pivot-transfer") as Extract<
+      ExerciseDefinition,
+      { type: "custom" }
+    >;
+    // Produced matrix entry (not a multiple-choice row-swap decision).
     expect(resolveCapabilityId(e)).toBe(MATRIX_ENTRY_ID);
-    // Correct swapped matrix.
+    // The PROMPT must NOT disclose the operation before commitment.
+    expect(e.prompt.toLowerCase()).not.toContain("row swap");
+    expect(e.prompt.toLowerCase()).not.toContain("swap");
+    expect(e.prompt).not.toContain("\\leftrightarrow");
+    // Predicate-graded: ANY legal (reversible) op giving a nonzero a11 passes —
+    // the swap...
     expect(
       gradeExercise(e, matrix([
         [2, 3, 10],
         [0, 1, 4],
       ])).correct,
     ).toBe(true);
-    // Not swapped (original) fails.
+    // ...and a different legal choice, R1 -> R1 + R2, also passes (same solutions,
+    // nonzero a11). This is why a single fixed answer must NOT be leaked.
+    expect(
+      gradeExercise(e, matrix([
+        [2, 4, 14],
+        [2, 3, 10],
+      ])).correct,
+    ).toBe(true);
+    // The unchanged original (a11 = 0) fails — the pivot is still unusable.
     expect(
       gradeExercise(e, matrix([
         [0, 1, 4],
         [2, 3, 10],
       ])).correct,
     ).toBe(false);
-    // Any single wrong entry fails.
+    // A matrix that changes the solution set fails even with a nonzero a11.
     expect(
       gradeExercise(e, matrix([
-        [2, 3, 10],
-        [0, 1, 5],
+        [2, 3, 11],
+        [0, 1, 4],
       ])).correct,
     ).toBe(false);
   });

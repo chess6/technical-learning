@@ -681,10 +681,11 @@ interaction descriptions above where they differ.
   now pins the parameter for dependence, produces the general consistency condition
   \(v = 2u\) for an arbitrary \(\mathbf b=(u,v)\) (not the \((2,k)\) slice), and **constructs**
   a target on each side of the boundary (predicate-graded off/on the column line) → **E4**
-- [x] **L4 zero-pivot transfer is produced, not chosen** — `elim-degenerate-pivot-transfer`
-  is a **matrix-entry**: the learner **produces the swapped augmented matrix** before
-  feedback; the subsequent routine back-substitution is explicitly **not** counted as the
-  E4 method selection → **E4**
+- [x] **L4 zero-pivot transfer is produced** — `elim-degenerate-pivot-transfer` is a
+  **matrix-entry**: the learner produces the repaired augmented matrix before feedback; the
+  subsequent routine back-substitution is explicitly **not** counted → **E4**. *(Refined in
+  the final pass below: the operation is left unnamed and predicate-graded so the method
+  **selection** is the E4 evidence.)*
 - [x] **L5 parametric set predicate-grades learner-chosen vectors** —
   `sol-produce-parametric-fresh` captures a **complete** particular vector (any valid
   \(\mathbf x_p\), both coords), a **complete nonzero** null direction (any valid multiple,
@@ -719,3 +720,49 @@ interaction descriptions above where they differ.
   reachable and grades as described
 - [x] Stale **"All 3 steps correct"** browser record corrected to the current four-step,
   predicate-graded `sol-produce-parametric-fresh` interaction
+
+---
+
+## Systems–Elimination module — produced classification + unnamed pivot repair (2026-07-23, pre-Package-F, final pass)
+
+Two final evidence-integrity corrections so the L3 count and the L4 zero-pivot repair are
+**produced, not recognized**, and the L4 operation is **not disclosed before commitment**.
+Lesson content, capabilities/UI plumbing, contracts, implementation package, and tests only
+— **no math/visualization renderer changed**. **Gate 8 stays NOT PASSED** for L3/L4/L5
+(unscored reasoning/proof surfaces). Supersedes the interaction descriptions above where they
+differ.
+
+### Corrections built
+
+- [x] **L3 classification is TYPED, not multiple-choice** — the three solution-count steps in
+  `sys-classify-produce-fresh` are now free-text **`text`** sequence steps. No classifications
+  are displayed as choices before commitment; the learner **types** the count and it is
+  graded against normalized spellings (`none`/`0`, `one`/`1`, `infinite`/`infinity`, plus
+  case/whitespace/trailing-punctuation tolerance). The produced witness **and** the typed
+  count are both required per system
+- [x] **L4 zero-pivot operation is unnamed until commitment** — `elim-degenerate-pivot-transfer`
+  removes "row swap" and \(R_1\leftrightarrow R_2\) from the prompt; it asks the learner to
+  **choose and apply one legal elementary operation** that puts a nonzero entry in the
+  \(a_{11}\) pivot and enter the resulting matrix. Grading is the new **`row-equivalent-usable-pivot`**
+  `matrix-entry` predicate (via the shared `haveSameSolutionSet`): **any** reversible op giving
+  a nonzero \(a_{11}\) passes, so no single answer is leaked and the method **selection** is
+  the E4 evidence. The row-swap explanation is revealed only in post-commit feedback
+
+### Capability / infrastructure (lesson-interaction only)
+
+- [x] `exercise-sequence` gained a **`text`** step kind (normalized-accept grading via the
+  exported `normalizeAnswerText`); `matrix-entry` gained an optional **`check`** predicate
+  (`row-equivalent-usable-pivot`) that grades an open-ended matrix by shared `src/math`
+  (`haveSameSolutionSet`) rather than a fixed `expected`. Pure logic in `capabilities.ts`;
+  a text input rendered in `ExercisePanel.tsx`. Not the Package F module runner
+
+### Testing review
+
+- [x] New tests prove **classification is no longer multiple-choice** (step kinds are
+  `text`, none `multiple-choice`), **accepted spellings normalize** (`1`/`one`, `0`/`none`,
+  `∞`/`infinity`, case + punctuation), **a wrong typed classification fails even with a
+  correct witness**, and the **L4 prompt does not disclose the swap** before commitment
+  (no "swap"/`\leftrightarrow`); the L4 predicate accepts a swap *and* \(R_1\to R_1+R_2\) but
+  rejects the unchanged original and any solution-changing matrix
+- [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean; targeted `vitest` green; e2e +
+  browser verification of the new interactions

@@ -167,6 +167,41 @@ describe("matrix-entry capability (custom escape hatch)", () => {
     });
     expect(result.correct).toBe(true);
   });
+
+  it("predicate-grades an open-ended matrix (row-equivalent-usable-pivot): any legal op passes", () => {
+    // Zero first pivot: any reversible op that lifts a nonzero entry into a11 and
+    // keeps the same solution set is accepted; the answer is NOT a single matrix.
+    const openEnded: ExerciseDefinition = {
+      id: "me-check",
+      type: "custom",
+      capabilityId: MATRIX_ENTRY_ID,
+      prompt: "Repair the pivot.",
+      config: {
+        rows: 2,
+        cols: 3,
+        check: {
+          kind: "row-equivalent-usable-pivot",
+          original: [
+            [0, 1, 4],
+            [2, 3, 10],
+          ],
+          pivot: [0, 0],
+        },
+        explanation: "Any reversible op giving a nonzero a11 works.",
+        matrixName: "[A\\,|\\,b]",
+      },
+    };
+    const grade = (entries: number[][]) =>
+      gradeExercise(openEnded, { kind: "custom", capabilityId: MATRIX_ENTRY_ID, value: { entries } })
+        .correct;
+    // The swap and the replacement R1 -> R1 + R2 both pass (same solution, a11 != 0).
+    expect(grade([[2, 3, 10], [0, 1, 4]])).toBe(true);
+    expect(grade([[2, 4, 14], [2, 3, 10]])).toBe(true);
+    // Unchanged original (a11 = 0) fails.
+    expect(grade([[0, 1, 4], [2, 3, 10]])).toBe(false);
+    // Nonzero a11 but a changed solution set fails.
+    expect(grade([[2, 3, 11], [0, 1, 4]])).toBe(false);
+  });
 });
 
 describe("construct-in-explorer capability (pure predicate over a committed vector)", () => {
@@ -354,6 +389,25 @@ describe("exercise-sequence capability (scaffolded sub-steps)", () => {
     );
   });
 
+  it("grades a text step by normalized match against accept (case/space/punctuation-insensitive)", () => {
+    const textStep = {
+      kind: "text" as const,
+      prompt: "",
+      accept: ["none", "0", "no solution"],
+      explanation: "",
+    };
+    // Exact and normalized spellings pass.
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "none" }).correct).toBe(true);
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "None." }).correct).toBe(true);
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "  NO   SOLUTION " }).correct).toBe(
+      true,
+    );
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "0" }).correct).toBe(true);
+    // Unlisted spellings and empty input fail.
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "one" }).correct).toBe(false);
+    expect(gradeSequenceStep(textStep, { kind: "text", value: "" }).correct).toBe(false);
+  });
+
   it("is correct only when every step is correct", () => {
     const all = gradeExercise(exercise, {
       kind: "custom",
@@ -499,6 +553,7 @@ describe("JSON-safe answer serialization round-trips", () => {
           responses: [
             { kind: "construct", value: [4, 0] },
             { kind: "vector", value: [10, -2] },
+            { kind: "text", value: "infinitely many" },
           ],
         },
       },

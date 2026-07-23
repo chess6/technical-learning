@@ -69,7 +69,8 @@ boxes feed the module
   zero pivot** (forces a swap); the contradiction row \(0=c\) on dependent columns; the
   \(0=0\) collapse. *(Built: `elim-diagnose-illegal` (MC), `elim-diagnose-repair-fresh`
   (produced diagnosis + repair, unfamiliar system) + `elim-diagnose-explain-fresh`
-  (explanation surface), `elim-degenerate-pivot-transfer` (E4 zero-pivot swap),
+  (explanation surface), `elim-degenerate-pivot-transfer` (E4 zero-pivot repair,
+  unnamed-operation method selection),
   `elim-contradiction-row-fresh` (elimination → contradiction row),
   `elim-construct-infinite` (construction, ∞ case). The former
   `elim-construct-inconsistent` **duplicated L3's columns \((1,2),(3,6)\) and is
@@ -95,7 +96,7 @@ below its required level; ⬜ module-owned (Gate 9).
 | Run forward elimination + back-substitute, correct multiplier | D3 | lesson | ✅ `elim-sequence-forward-fresh` (exercise-sequence, **fresh**) + `elim-matrix-after-step-fresh` (matrix-entry, **fresh**) + taught-number twins | **E3** — intermediates (multiplier, triangular row, back-sub) graded on a fresh system | E3 |
 | Diagnose an illegal/erroneous row op **and repair it** | D13 | lesson | ✅ `elim-diagnose-repair-fresh` (exercise-sequence on an **unfamiliar** system: **produce** the erroneous coefficient + **produce** the repaired row) + 🟡 `elim-diagnose-explain-fresh` (self-check, produced explanation); `elim-diagnose-illegal` (MC, E1) | **E4** for the produced diagnosis + repair on the unfamiliar erroneous elimination; the written *explanation* is a produced-but-unscored surface | E4 |
 | Certify "no solution" via an elimination contradiction row | D3/D7 | lesson | ✅ `elim-contradiction-row-fresh` (matrix-entry, **run elimination** on a fresh inconsistent system → \(0=c\) row) | **E3** — fresh production of the contradiction row | E3 |
-| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (**matrix-entry**, **E4**: a zero-pivot system that forces a **row swap** — never walked through — **produce the swapped augmented matrix**; routine back-substitution is *not* graded as the transfer); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — the produced swapped matrix *is* the method-selection evidence; the ∞-construction is an E3 beneath it | E4 |
+| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (**matrix-entry**, **E4**: a zero-pivot system never walked through; the prompt asks the learner to **CHOOSE and apply one legal elementary operation** that creates a usable pivot — **the operation is not named** — and enter the resulting matrix, **predicate-graded** (`row-equivalent-usable-pivot`) so *any* reversible op giving a nonzero \(a_{11}\) passes; routine back-substitution is *not* graded); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — the method **selection** (choosing a repair for an unfamiliar zero pivot, undisclosed until commitment) is the transfer; entering the matrix executes it; the ∞-construction is an E3 beneath it | E4 |
 | Prove invariance in both directions (reversibility) | D6 | lesson | 🟡 `elim-explain-invariance` (self-check + model answer + rubric) | **E6 surface, unscored** — learner writes the proof; `self-check` self-marks, so credit awaits human scoring | E6 (human-scored) |
 | Select elimination vs another method unprompted | D8 | ⬜ **module** | module set (not built) | not built | E3 (Gate 9) |
 | Use elimination in an unfamiliar/cumulative item (compute \(\mathbf{x}_p\), combine with L5) | D9/D10 | ⬜ **module** | module set (not built) | not built | E4/E5 (Gate 9) |
@@ -113,9 +114,11 @@ reaches **E3** via a fresh elimination-to-contradiction-row production
 `elim-diagnose-repair-fresh` **produces** the erroneous coefficient and the repaired row
 on an *unfamiliar* system (no MC identify step), with a produced written explanation
 surface (`elim-diagnose-explain-fresh`); the **degenerate** outcome reaches **E4** via
-`elim-degenerate-pivot-transfer`, now a **matrix-entry** where the learner **produces the
-swapped augmented matrix** for a zero-pivot configuration never walked through (the routine
-back-substitution is deliberately not graded as the E4 method selection), with
+`elim-degenerate-pivot-transfer`, a **predicate-graded matrix-entry** where the learner
+must **choose an unnamed legal operation** that repairs a zero pivot never walked through
+and enter the resulting equivalent matrix — the E4 evidence is the **method selection**
+(the prompt does not name the operation and *any* reversible op giving a nonzero \(a_{11}\)
+is accepted), while the routine back-substitution is deliberately not graded — with
 `elim-construct-infinite` an E3 construction beneath it. The only lesson-owned outcomes
 still below required are the ones needing **human scoring**: the **fixed-point
 justification / invariance proof** and the diagnosis **explanation** are unscored E6
@@ -135,8 +138,9 @@ surfaces**.
   elimination-to-contradiction-row (`elim-contradiction-row-fresh`);
   `elim-construct-infinite` (∞-case construction).
 - **Unfamiliar transfer (E4) — reached:** produced diagnosis + repair on an unfamiliar
-  erroneous elimination (`elim-diagnose-repair-fresh`); the degenerate zero-pivot swap
-  produced as the swapped augmented matrix (`elim-degenerate-pivot-transfer`).
+  erroneous elimination (`elim-diagnose-repair-fresh`); a chosen (unnamed) legal repair
+  of a degenerate zero pivot, predicate-graded on the resulting equivalent matrix
+  (`elim-degenerate-pivot-transfer`).
 - **Learning event, by design:** `elim-predict-fixed-point` (pre-Watch) — E1; its
   justification is owned by the invariance proof surface below.
 - **Recognition (support):** `elim-diagnose-illegal` (E1).
@@ -153,7 +157,8 @@ surfaces**.
   instance → E1, by design); Explore; Practice includes **fresh** elimination sequence +
   matrix entry (E3), a **produced diagnosis + repair** sequence on an unfamiliar system
   (E4) plus a produced explanation surface (unscored), an **E4 degenerate zero-pivot
-  swap** transfer (`elim-degenerate-pivot-transfer`), a **fresh
+  repair** transfer where the learner chooses an unnamed legal operation
+  (`elim-degenerate-pivot-transfer`), a **fresh
   elimination-to-contradiction-row** matrix entry (E3), a fresh construction of the ∞ case
   (E3), a recognition diagnosis MC (E1, support), and a `self-check` invariance **proof
   surface** (unscored). Honest ceiling **E3** for the procedural/contradiction outcomes,
@@ -195,10 +200,14 @@ remediation, under the **P3 override**, against the runtime audit
       **produces** the erroneous coefficient and the repaired row on an *unfamiliar*
       system (no MC identify step), with a produced written explanation surface
       (`elim-diagnose-explain-fresh`).
-- [x] **Degenerate case reaches E4.** `elim-degenerate-pivot-transfer` now has the learner
-      **produce the swapped augmented matrix** for a zero-pivot configuration (never walked
-      through); routine back-substitution is not counted as the transfer;
-      `elim-construct-infinite` remains an E3 construction beneath it.
+- [x] **Degenerate case reaches E4.** `elim-degenerate-pivot-transfer` presents a zero-pivot
+      configuration (never walked through) and asks the learner to **choose and apply one
+      legal elementary operation** that creates a usable pivot — **the operation is not named
+      in the prompt**, so selecting it is the E4 method selection. Grading is the
+      predicate `row-equivalent-usable-pivot` (any reversible op giving a nonzero \(a_{11}\)
+      passes), so no single answer is leaked; entering the matrix executes the chosen op and
+      routine back-substitution is not counted as the transfer; `elim-construct-infinite`
+      remains an E3 construction beneath it.
 - [ ] **Lesson-owned P3 (proof) reaches independently demonstrated — NOT YET.**
       `elim-explain-invariance` (which is *also* the fixed-point justification) and the
       diagnosis explanation surface are genuine E6 *surfaces*; `self-check` is self-marked,

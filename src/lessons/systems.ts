@@ -257,7 +257,9 @@ export const systemsLesson: LessonDefinition = {
   //    (commit-before-reveal makes an item valid evidence, it does NOT make it E3);
   //  - **E3** requires fresh, unaided production of the COMPLETE outcome
   //    (`sys-classify-produce-fresh` = produce a full solution / a distinct second
-  //    solution / the contradiction value, THEN commit the count, per system;
+  //    solution / the contradiction value, THEN TYPE the count, per system —
+  //    the count is a produced typed classification, not a multiple-choice pick,
+  //    and no class label is displayed before the learner responds;
   //    `sys-solve-confirm-fresh` = solve by rows + confirm BOTH column coordinates;
   //    `sys-translate-augmented-fresh` = the whole [A|b]);
   //  - **E4** is unfamiliar transfer/construction (`sys-construct-inconsistent`
@@ -323,21 +325,23 @@ export const systemsLesson: LessonDefinition = {
       },
     },
     {
-      // Fresh PRODUCED classification with a committed COUNT (E3). For each of
-      // three fresh systems the learner (1) PRODUCES the decisive witness — a
-      // full solution, a second distinct solution, or the contradiction value —
-      // and only THEN (2) commits the solution count. The witness steps name no
-      // class, so the classification is never revealed before the learner's
-      // complete response; the count step is where the learner states the class,
-      // resting on the evidence they just produced. This is honestly a
-      // "produce-then-classify" task, not "classify before solving": the
-      // production is the E3 evidence, the count is the committed conclusion.
+      // Fresh PRODUCED classification with a TYPED COUNT (E3). For each of three
+      // fresh systems the learner (1) PRODUCES the decisive witness — a full
+      // solution, a second distinct solution, or the contradiction value — and
+      // only THEN (2) TYPES the solution count (a `text` step: no choices are
+      // shown, so the three classifications are neither displayed nor selectable
+      // before commitment). The witness steps name no class, so the
+      // classification is never revealed before the learner's complete response;
+      // the typed count is where the learner states the class, resting on the
+      // evidence they just produced. This is honestly a "produce-then-classify"
+      // task, not "classify before solving": the production is the E3 evidence,
+      // the typed count is the produced conclusion.
       id: "sys-classify-produce-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
       prompt:
-        "Classify by producing the evidence, then committing the count. Three fresh systems — work each, then say how many solutions it has.",
+        "Classify by producing the evidence, then TYPING the count. Three fresh systems — work each, then type how many solutions it has (a number, or in words).",
       config: {
         steps: [
           {
@@ -358,11 +362,13 @@ export const systemsLesson: LessonDefinition = {
               "That $(x, y)$ satisfies both equations of System A (the forced point is $(2, 1)$).",
           },
           {
-            kind: "multiple-choice",
+            // PRODUCED classification: the learner TYPES the count (no choices are
+            // shown, so the class is neither displayed nor selectable before
+            // commitment). Accepts numeric and word spellings of "one".
+            kind: "text",
             prompt:
-              "System A's columns $(2, 1)$ and $(1, -1)$ are not proportional (independent). Commit the count: how many solutions does System A have?",
-            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
-            correctChoice: 1,
+              "System A's columns $(2, 1)$ and $(1, -1)$ are not proportional (independent). Type how many solutions System A has.",
+            accept: ["one", "1", "exactly one", "one solution", "exactly one solution", "unique"],
             explanation:
               "Independent columns force a single point, so **exactly one** solution — the $(2, 1)$ you produced is the only one.",
           },
@@ -385,11 +391,18 @@ export const systemsLesson: LessonDefinition = {
               "That point also satisfies both equations — a second, distinct solution (row 2 is just twice row 1, so both reduce to $x + y = 3$).",
           },
           {
-            kind: "multiple-choice",
+            kind: "text",
             prompt:
-              "You produced two distinct solutions of System B, whose columns are dependent. Commit the count: how many solutions does System B have?",
-            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
-            correctChoice: 2,
+              "You produced two distinct solutions of System B, whose columns are dependent. Type how many solutions System B has.",
+            accept: [
+              "infinite",
+              "infinitely many",
+              "infinity",
+              "infinitely many solutions",
+              "infinite solutions",
+              "∞",
+              "inf",
+            ],
             explanation:
               "Two distinct solutions of a linear system force **infinitely many** — every point on the line $x + y = 3$ works.",
           },
@@ -404,11 +417,10 @@ export const systemsLesson: LessonDefinition = {
               "Doubling $x + y = 2$ gives $2x + 2y = 4$.",
           },
           {
-            kind: "multiple-choice",
+            kind: "text",
             prompt:
-              "Equation 2 of System C says $2x + 2y = 5$, but doubling equation 1 forces $2x + 2y = 4$. Commit the count: how many solutions does System C have?",
-            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
-            correctChoice: 0,
+              "Equation 2 of System C says $2x + 2y = 5$, but doubling equation 1 forces $2x + 2y = 4$. Type how many solutions System C has.",
+            accept: ["none", "0", "no solution", "no solutions", "zero"],
             explanation:
               "$4 \\ne 5$ is an impossible demand, so **no solution** — $\\mathbf{b}$ lies off the dependent columns' line.",
           },

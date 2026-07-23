@@ -93,7 +93,7 @@ scoring; 🔴 lesson-owned outcome still **below** its required level; ⬜ modul
 
 | Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Classify none/one/∞ (produce a witness, then commit the count) | D1/D5 | lesson | ✅ `sys-classify-produce-fresh` (**exercise-sequence**, fresh: for each of three systems PRODUCE the decisive witness — a full solution, a distinct second solution, or the contradiction value — **then commit the solution count**; no class named before the learner's count) `sys-count-*`, `sys-classify-fresh` (MC/committed-MC, E1 backups) | **E3** — the witness is the learner's own computation; the count is a committed conclusion resting on it (honestly *produce-then-classify*, not "classify before solving") | E3 |
+| Classify none/one/∞ (produce a witness, then type the count) | D1/D5 | lesson | ✅ `sys-classify-produce-fresh` (**exercise-sequence**, fresh: for each of three systems PRODUCE the decisive witness — a full solution, a distinct second solution, or the contradiction value — **then TYPE the solution count** in a free-text step, accepting normalized spellings such as `none`/`0`, `one`/`1`, `infinite`/`infinity`; **no multiple-choice** and no class named before the learner's response) `sys-count-*`, `sys-classify-fresh` (MC/committed-MC, E1 backups) | **E3** — the witness is the learner's own computation; the count is a *produced typed* conclusion resting on it (honestly *produce-then-classify*, not "classify before solving") | E3 |
 | Solve a 2×2 by rows + confirm by columns | D3 | lesson | ✅ `sys-solve-confirm-fresh` (**exercise-sequence**, fresh: produce \(x\), \(y\), **and both coordinates** of \(x\mathbf{a}_1+y\mathbf{a}_2=\mathbf{b}\)) + `sys-solve-unique` (E2) | **E3** — fresh unaided production of the *complete* outcome (rows **and** the full two-coordinate column confirmation) | E3 |
 | Translate a system to \(A,\mathbf{b}\) (complete \([A\mid\mathbf{b}]\)) | D4 | lesson | ✅ `sys-translate-augmented-fresh` (**matrix-entry**, all six entries, fresh) + `sys-column-reading` (MC, E1) | **E3** — fresh production of the whole augmented matrix | E3 |
 | Characterize which \(\mathbf{b}\) are inconsistent (dependent cols) | D5/D7 | lesson | ✅ `sys-characterize-parameter-fresh` (**exercise-sequence**, E4: pin the dependency parameter \(h\), **produce the general boundary slope** \(v = 2u\) for an arbitrary target \(\mathbf{b}=(u,v)\), then **construct a target on each side** — inconsistent off the line, consistent on it — a *symbolic-parameter* task never walked through); `sys-construct-inconsistent` (construct-in-explorer, E3 within pattern); `sys-generalize-inconsistent` (MC, E1) | **E4** — unfamiliar-transfer characterization of the *general* solvable/unsolvable boundary (not one \(\mathbf{b}=(2,k)\) slice) | E4 |
@@ -115,8 +115,9 @@ near-copy graded production (worked numbers) is **E2 reproduction**;
 **E4 requires unfamiliar transfer/construction**, not a renamed recognition;
 `self-check` is self-marked → an **unscored E6 surface**, not E6 (or E3-reasoning)
 evidence. Result for L3 after the second remediation pass: **classification** now
-reaches **E3** (produced witness **plus committed count** per system in
-`sys-classify-produce-fresh`, not a three-way pick, and no class named before the
+reaches **E3** (produced witness **plus a produced typed count** per system in
+`sys-classify-produce-fresh` — the count is a free-text `text` step, **not** a
+three-way multiple-choice pick, and no class is displayed or named before the
 learner's response); the **row-solve + full two-coordinate column-confirmation** (D3) and the
 **complete translation** (D4) reach **E3**; the inconsistency **characterization**
 (D5/D7) now reaches **E4** via `sys-characterize-parameter-fresh` (produce the *general*
@@ -140,7 +141,7 @@ reasoning and both proofs are **produced but unscored surfaces**.
 
 - **Taught (level 1):** all listed content is presented.
 - **Independently demonstrated (E3) — reached:** produced none/one/∞ classification
-  with a committed count per system (`sys-classify-produce-fresh`); fresh row-solve
+  with a produced *typed* count per system (`sys-classify-produce-fresh`); fresh row-solve
   **and** full two-coordinate column confirmation (`sys-solve-confirm-fresh`); complete
   augmented-matrix translation (`sys-translate-augmented-fresh`); fresh graded
   construction of an inconsistent \(\mathbf{b}\) (`sys-construct-inconsistent`).
@@ -209,8 +210,9 @@ remediation, under the **P3 override**, against the runtime audit
       full outcome.
 - [x] **Classification (D1/D5) reaches its required E3.** `sys-classify-produce-fresh`
       makes the learner PRODUCE the witness of each class (a full solution / a distinct
-      second solution / the contradiction value) **and commit the count**, with no class
-      named before the response; the MC items are E1 backups.
+      second solution / the contradiction value) **and TYPE the count** in a free-text
+      step (accepting normalized spellings), with **no multiple-choice** and no class
+      displayed or named before the response; the separate MC items are E1 backups.
 - [x] **Characterization (D5/D7) reaches its required E4.** `sys-characterize-parameter-fresh`
       is an unfamiliar-transfer characterization: pin \(h\), produce the **general** boundary
       \(v = 2u\) for an arbitrary \(\mathbf{b}=(u,v)\), and construct a target on each side;

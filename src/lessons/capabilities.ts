@@ -19,9 +19,11 @@ import {
   approximatelyEqualVector,
   areParallel,
   classifyLinearSystem2x2,
+  haveSameSolutionSet,
   magnitude,
   matrixVectorMultiply,
   verifiesEigenpair,
+  type AugmentedSystem,
   type LinearSystemKind,
   type Matrix2x2,
   type Vector2,
@@ -122,13 +124,41 @@ function committedPredictionConfig(
  * entry-wise against `expected` with a numeric tolerance. Reached via `custom`.
  * ------------------------------------------------------------------------ */
 
+/**
+ * A declarative, JSON-safe predicate over the learner's entered augmented matrix
+ * — used when the correct answer is NOT a single fixed matrix. `row-equivalent-
+ * usable-pivot` accepts *any* augmented `[A|b]` the learner reaches by a legal
+ * (reversible) elementary row operation on `original` **that also** places a
+ * nonzero entry in the `pivot` position. This lets a prompt ask the learner to
+ * *choose and apply* an operation (method selection) without naming it: every
+ * valid choice passes, and the operation stays undisclosed until commitment.
+ * Row-equivalence is decided by the shared `haveSameSolutionSet` (src/math), so
+ * no linear algebra is reimplemented here.
+ */
+export type MatrixCheck = {
+  kind: "row-equivalent-usable-pivot";
+  /** The augmented `[A|b]` (2×3) the learner starts from. */
+  original: readonly (readonly number[])[];
+  /** Pivot position `[row, col]` (0-indexed) that must be nonzero afterwards. */
+  pivot: readonly [number, number];
+};
+
 export type MatrixEntryConfig = {
   /** Row count of the matrix to enter. */
   rows: number;
   /** Column count of the matrix to enter. */
   cols: number;
-  /** Expected entries as a rows×cols array of numbers. */
-  expected: readonly (readonly number[])[];
+  /**
+   * Expected entries as a rows×cols array of numbers, graded entry-wise. Omit
+   * only when a `check` predicate grades the matrix instead (open-ended answer).
+   */
+  expected?: readonly (readonly number[])[];
+  /**
+   * A declarative predicate that grades the entered matrix when the correct
+   * answer is not a single fixed matrix (e.g. "apply *some* legal operation").
+   * Exactly one of `expected` / `check` must be present.
+   */
+  check?: MatrixCheck;
   /** Per-entry absolute tolerance (defaults to the numeric tolerance). */
   tolerance?: number;
   /** Shown after grading (always explains *why*). */
@@ -150,13 +180,51 @@ function matrixEntryConfig(exercise: ExerciseDefinition): MatrixEntryConfig {
     !config ||
     typeof config.rows !== "number" ||
     typeof config.cols !== "number" ||
-    !Array.isArray(config.expected)
+    (!Array.isArray(config.expected) && !config.check)
   ) {
     throw new Error(
-      `matrix-entry exercise "${exercise.id}" needs { rows, cols, expected, explanation } config`,
+      `matrix-entry exercise "${exercise.id}" needs { rows, cols, explanation } and one of { expected, check }`,
     );
   }
   return config;
+}
+
+/** Build a 2×3 augmented system `{ rows: [[a,b,c],[d,e,f]] }` from a number grid. */
+function toAugmented2x3(entries: readonly (readonly number[])[]): AugmentedSystem {
+  return {
+    rows: [
+      [entries[0]![0]!, entries[0]![1]!, entries[0]![2]!],
+      [entries[1]![0]!, entries[1]![1]!, entries[1]![2]!],
+    ],
+  };
+}
+
+/** Pure evaluation of a matrix-entry predicate against the learner's entered grid. */
+function evaluateMatrixCheck(
+  check: MatrixCheck,
+  entries: readonly (readonly number[])[],
+  tolerance: number,
+): { correct: boolean; because: string } {
+  switch (check.kind) {
+    case "row-equivalent-usable-pivot": {
+      const [pr, pc] = check.pivot;
+      const pivotValue = entries[pr]?.[pc] ?? 0;
+      const pivotOk = Math.abs(pivotValue) > tolerance;
+      const sameSolutions = haveSameSolutionSet(
+        toAugmented2x3(entries),
+        toAugmented2x3(check.original),
+      );
+      const correct = pivotOk && sameSolutions;
+      return {
+        correct,
+        because: !sameSolutions
+          ? "that changes the solution set — only a reversible row operation is allowed"
+          : !pivotOk
+            ? "the pivot position is still 0 — choose an operation that brings a nonzero entry there"
+            : "you produced an equivalent system with a usable pivot",
+      };
+    }
+  }
 }
 
 /** Render an r×c number grid as a KaTeX bmatrix body (for learner-facing feedback). */
@@ -386,13 +454,40 @@ export type SequenceStep =
       check: ConstructCheck;
       tolerance?: number;
       explanation: string;
+    }
+  | {
+      // The learner TYPES a short answer (no choices shown), graded by matching
+      // the normalized text against `accept` (case/whitespace/trailing-punctuation
+      // insensitive). Use to elicit a *produced* categorical answer — e.g. a
+      // solution-count classification — without a multiple-choice picker that
+      // would turn recall into recognition. List every acceptable spelling in
+      // `accept` (e.g. ["none", "0", "no solution"]).
+      kind: "text";
+      prompt: string;
+      accept: readonly string[];
+      explanation: string;
     };
 
 export type SequenceResponse =
   | { kind: "numeric"; value: number }
   | { kind: "multiple-choice"; choice: number }
   | { kind: "vector"; value: readonly [number, number] }
-  | { kind: "construct"; value: readonly [number, number] };
+  | { kind: "construct"; value: readonly [number, number] }
+  | { kind: "text"; value: string };
+
+/**
+ * Normalize a typed free-text answer for tolerant comparison: trim, lowercase,
+ * collapse internal whitespace, and drop trailing sentence punctuation. So
+ * "None.", " none ", and "NONE" all normalize to "none".
+ */
+export function normalizeAnswerText(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[.!]+$/, "")
+    .trim();
+}
 
 export type ExerciseSequenceConfig = { steps: readonly SequenceStep[] };
 
@@ -470,6 +565,18 @@ export function gradeSequenceStep(
       return {
         correct: pass,
         feedback: pass ? `Correct. ${step.explanation}` : `Not quite — ${because}. ${step.explanation}`,
+      };
+    }
+    case "text": {
+      if (response.kind !== "text") {
+        throw new Error("Expected a text response for a text step");
+      }
+      const got = normalizeAnswerText(response.value);
+      const correct =
+        got.length > 0 && step.accept.some((a) => normalizeAnswerText(a) === got);
+      return {
+        correct,
+        feedback: correct ? `Correct. ${step.explanation}` : `Not quite. ${step.explanation}`,
       };
     }
   }
@@ -614,6 +721,9 @@ function decodeSequenceAnswer(raw: JsonValue | undefined): ExerciseSequenceAnswe
       }
       if (kind === "construct") {
         return { kind: "construct", value: decodeVector2(r.value, EXERCISE_SEQUENCE_ID) };
+      }
+      if (kind === "text") {
+        return { kind: "text", value: decodeString(r.value, EXERCISE_SEQUENCE_ID, "value") };
       }
       throw new AnswerDecodeError(EXERCISE_SEQUENCE_ID, `unknown response kind "${kind}"`);
     },
@@ -801,12 +911,26 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       const dimsMatch =
         value.entries.length === config.rows &&
         value.entries.every((row) => row.length === config.cols);
+      // Predicate-graded: any equivalent matrix satisfying the check passes.
+      if (config.check) {
+        if (!dimsMatch) {
+          return { correct: false, feedback: `Fill in every entry to check. ${config.explanation}` };
+        }
+        const { correct, because } = evaluateMatrixCheck(config.check, value.entries, tolerance);
+        return {
+          correct,
+          feedback: correct
+            ? `Correct. ${config.explanation}`
+            : `Not quite — ${because}. ${config.explanation}`,
+        };
+      }
+      const expected = config.expected!;
       const correct =
         dimsMatch &&
-        config.expected.every((row, r) =>
+        expected.every((row, r) =>
           row.every((want, c) => Math.abs(value.entries[r]![c]! - want) <= tolerance),
         );
-      const expectedTex = `$${bmatrixTex(config.expected)}$`;
+      const expectedTex = `$${bmatrixTex(expected)}$`;
       return {
         correct,
         feedback: correct
@@ -919,6 +1043,8 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
               return { kind: "vector", value: [response.value[0], response.value[1]] };
             case "construct":
               return { kind: "construct", value: [response.value[0], response.value[1]] };
+            case "text":
+              return { kind: "text", value: response.value };
           }
         }),
       };

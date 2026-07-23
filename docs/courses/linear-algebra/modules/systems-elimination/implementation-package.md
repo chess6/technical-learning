@@ -13,18 +13,23 @@ every named item against its actual capability in
 > E3; E3 = fresh production of the *complete* outcome; E4 = unfamiliar transfer;
 > `self-check` = unscored E6 surface), and then **hardened** across two follow-up passes
 > that closed every *non-scoring* lesson-owned interaction gap. Now built: L3 **produced
-> classification with a committed count** per system (no class named before the response)
+> classification with a *typed* count** per system — a free-text `text` step (no
+> multiple-choice), accepting normalized spellings such as `none`/`0`, `one`/`1`,
+> `infinite`/`infinity`, with no class displayed or named before the response —
 > and an **E4 characterization of the *general* boundary** \(v = 2u\) (construct a target
 > on each side); a **full two-coordinate** column confirmation (L3); a **produced**
 > diagnosis + repair on an **unfamiliar** system and an **E4 degenerate zero-pivot** transfer
-> now **produced as the swapped augmented matrix** (L4); a **complete parametric set that
+> where the learner **chooses an unnamed legal operation** and enters the resulting
+> equivalent matrix, **predicate-graded** so any reversible op giving a nonzero \(a_{11}\)
+> passes (L4); a **complete parametric set that
 > predicate-grades a learner-chosen** \(\mathbf{x}_p\) and null direction (both coords each),
 > a **produced difference-of-solutions** verification, a **produced** ∅-refusal, and a
 > **scored E4** null-direction construction (L5). To support the learner-chosen complete
-> vectors, the `exercise-sequence` capability gained **`vector` and predicate-graded
-> `construct` step kinds** and a **`solves-system`** construct predicate (pure, in
-> `capabilities.ts`; UI in `ExercisePanel.tsx`) — lesson-interaction infrastructure, not the
-> module runner. The **only** remaining lesson-owned obligations are **scoring** the
+> vectors and the produced classification/pivot-repair, the `exercise-sequence` capability
+> gained **`vector`, predicate-graded `construct`, and `text` step kinds** and a
+> **`solves-system`** construct predicate, and `matrix-entry` gained a **`row-equivalent-
+> usable-pivot`** predicate (pure, in `capabilities.ts`; UI in `ExercisePanel.tsx`) —
+> lesson-interaction infrastructure, not the module runner. The **only** remaining lesson-owned obligations are **scoring** the
 > reasoning/proof `self-check` surfaces — which is exactly what **Package F** (human-scoring
 > capture) provides. So **Gate 8 stays NOT PASSED for all three lessons** solely on that
 > scoring, and **Package F is now the next package**. The **Mode C boundary still sits
@@ -116,7 +121,7 @@ New/changed items and their **honest** level under the strict rules
 
 | Item | Change | Honest level |
 | --- | --- | --- |
-| `sys-classify-produce-fresh` | exercise-sequence: for each fresh system, PRODUCE a witness (a solution / a *second* solution / the \(0=c\) contradiction value) **then commit the solution count** — the classification is never named before the response | **E3** ✅ (produce-then-classify) |
+| `sys-classify-produce-fresh` | exercise-sequence: for each fresh system, PRODUCE a witness (a solution / a *second* solution / the \(0=c\) contradiction value) **then TYPE the solution count** in a free-text `text` step (no multiple-choice; normalized spellings `none`/`0`, `one`/`1`, `infinite`/`infinity`) — no class displayed or named before the response | **E3** ✅ (produce-then-classify, typed) |
 | `sys-solve-confirm-fresh` | fresh sequence: solve by rows **+** confirm **both column coordinates** (2nd-pass fix: was one coordinate) | **E3** ✅ |
 | `sys-translate-augmented-fresh` | fresh matrix-entry: the whole \([A\mid\mathbf{b}]\) | **E3** ✅ |
 | `sys-characterize-parameter-fresh` | exercise-sequence: find the parameter for column dependence, produce the **general** consistency condition for \(\mathbf{b}=(u,v)\), then **construct** an inconsistent target and a consistent nonzero target (each predicate-graded off/on the line) | **E4** ✅ (unfamiliar transfer, general boundary) |
@@ -129,7 +134,7 @@ New/changed items and their **honest** level under the strict rules
 | `elim-sequence-forward-fresh`, `elim-matrix-after-step-fresh` | fresh elimination run | **E3** ✅ |
 | `elim-diagnose-repair-fresh` | **rewritten (2nd pass)**: **produced** diagnosis (erroneous coefficient) + **produced** repair on an **unfamiliar** system (no MC identify step) | **E4** ✅ |
 | `elim-diagnose-explain-fresh` | **new (2nd pass)** self-check: produced written explanation of the error | **E6 surface, unscored** → F |
-| `elim-degenerate-pivot-transfer` | **matrix-entry**: degenerate zero-pivot forcing a row swap — **produce the swapped augmented matrix** before feedback; routine back-substitution is *not* graded as the transfer | **E4** ✅ (unfamiliar transfer) |
+| `elim-degenerate-pivot-transfer` | **predicate-graded matrix-entry**: degenerate zero pivot; prompt asks the learner to **choose and apply one legal elementary operation** that creates a usable pivot (**operation not named**) and enter the resulting matrix — graded by `row-equivalent-usable-pivot` (any reversible op giving a nonzero \(a_{11}\) passes), so the method **selection** is the transfer; routine back-substitution is *not* graded | **E4** ✅ (unfamiliar transfer, method selection) |
 | `elim-contradiction-row-fresh` | matrix-entry: run elimination → contradiction row | **E3** ✅ |
 | `elim-construct-infinite` | construct-in-explorer, distinct cols + ∞ case | **E3 construction** (beneath the E4 degenerate transfer) |
 | `elim-construct-inconsistent` | **removed** — duplicated L3's columns \((1,2),(3,6)\) | — |
@@ -147,10 +152,12 @@ New/changed items and their **honest** level under the strict rules
 
 **Net Gate 8 effect: NOT PASSED for L3, L4, and L5 — now solely on scoring.** The
 follow-up passes closed every *non-scoring* lesson-owned interaction gap: classification is
-now **produced with a committed count** per system (E3, no class named before the response),
+now **produced with a *typed* count** per system (E3, a free-text step — no multiple-choice —
+with no class displayed or named before the response),
 the column confirmation checks **both coordinates**, the L3 characterization assesses the
 **general** boundary and both L4 diagnosis/degenerate outcomes reach **E4** (the degenerate
-one **produced as the swapped matrix**), the L5 difference-of-solutions is **produced** (E3),
+one a **learner-chosen unnamed operation, predicate-graded on the resulting matrix**), the
+L5 difference-of-solutions is **produced** (E3),
 the parametric set is **complete and predicate-grades learner-chosen vectors**, the
 inconsistency refusal is **produced**, and the L5 one-difference distinction reaches
 **scored E4**. Gate 8 is a **single gate** and still cannot PASS because the reasoning/proof
@@ -220,9 +227,10 @@ corrected **Gate 8 = NOT PASSED** verdicts, the two-ownership-class Gate 9
 *Closes:* the reveal-only defect (rejection #7) **and** the recognition ceiling for the
 classification and inconsistency-refusal outcomes (2nd pass).
 - **Built:** the reveal-only `prediction` items became graded commit-before-reveal or
-  were replaced by production; **classification is now produced** at E3
-  (`sys-classify-produce-fresh`; the MC `sys-classify-fresh`/`sys-count-*` remain E1
-  backups); the **inconsistency refusal is now produced** (`sol-refuse-inconsistent-fresh`
+  were replaced by production; **classification is now produced with a *typed* count** at E3
+  (`sys-classify-produce-fresh`: free-text count steps, no multiple-choice; the MC
+  `sys-classify-fresh`/`sys-count-*` remain E1 backups); the **inconsistency refusal is now
+  produced** (`sol-refuse-inconsistent-fresh`
   ∅-witness + `sol-justify-inconsistent-refusal`), replacing the committed-MC
   `sol-inconsistent-empty`; the **difference-of-solutions** outcome is now **produced** at
   E3 (`sol-difference-produce-fresh`: compute the difference, verify both homogeneous rows
@@ -238,8 +246,10 @@ classification and inconsistency-refusal outcomes (2nd pass).
 - **Built (E4 unfamiliar transfer):** L3 `sys-characterize-parameter-fresh` (characterize
   the dependency/consistency boundary on a **symbolic parameter**); L4
   `elim-diagnose-repair-fresh` (**produced** diagnosis + repair on an **unfamiliar**
-  system) and `elim-degenerate-pivot-transfer` (**degenerate zero-pivot** forcing a row
-  swap); L5 `sol-construct-second-null-direction` (**scored** construction of a null
+  system) and `elim-degenerate-pivot-transfer` (**degenerate zero pivot**: the learner
+  **chooses an unnamed legal operation** that creates a usable pivot and enters the
+  resulting matrix, predicate-graded — the method **selection** is the transfer); L5
+  `sol-construct-second-null-direction` (**scored** construction of a null
   vector off the single-difference line on \(A=\mathbf{0}\)).
 - **Built (E3 beneath, kept):** `sys-construct-inconsistent`; `elim-contradiction-row-fresh`
   (replacing the removed duplicate `elim-construct-inconsistent`); `elim-construct-infinite`.
