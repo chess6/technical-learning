@@ -78,11 +78,12 @@ Naming the obstacles from the gate's list:
 obstacle. The difficulty is **structural and representational**, not semantic:
 these are abstract objects with no natural real-world goal to import, so I do
 **not** manufacture a themed analogy. The representational lever that *does* fit is
-a picture of the actual mathematics (below), and the honest "isomorphic
-presentation" comparison for 1c is not abstract-vs-story but **procedure-first vs
-structure-first ordering of the same mathematics**.
+a picture of the actual mathematics (below), and the honest 1c comparison here is
+not abstract-vs-story but **procedure-first vs structure-first ordering of the same
+mathematics** — an alternative presentation that preserves every mathematical
+relation, not a formal isomorphism.
 
-## 1c. Isomorphic presentations — same mathematics, two discovery orders
+## 1c. Conventional vs alternative presentation — same mathematics, two discovery orders
 
 | | Procedure-first (conventional) | Structure-first (candidate order) |
 | --- | --- | --- |
@@ -341,14 +342,23 @@ consequence, and guardrail that travel with it. I therefore rank *packages*, not
 fragments. Ranked against the gate's criteria — (1) surprise before / inevitability
 after; (2) explanatory compression; (3) transfer; (4) mathematical correctness (a
 gate); (5) interactive teachability; (6) prerequisite fit; (7) semantic/cognitive
-leverage; (8) abstraction return. Here (7) is low for every package and (8) is N/A
-(structural/representational topic, no real-world grounding), so the contest is
-decided on (1)–(6), and no order was assumed in advance. The spine sentence (C1) was
+leverage; (8) abstraction return. Here (7) is low for every package. Criterion (8)
+**applies** to Package 1, which uses a **representational bridge** (C3's
+translated-line picture): its abstraction return is rated **strong** (the return
+path is stated with Package 1 below). Packages 2–3 are purely structural, so (8) is
+N/A for them; no package uses real-world grounding. The contest is therefore decided
+mainly on (1)–(6), and no order was assumed in advance. The spine sentence (C1) was
 tested on equal footing: it lands **inside** Package 1 as the formal synthesis, not
 as the driver — the reasoning is recorded below so the outcome is auditable.
 
-The three packages partition all eleven candidates: Package 1 = {C1, C2, C3, C5,
-C11}; Package 2 = {C4, C7, C8}; Package 3 = {C6, C9, C10}.
+The packages draw on the eleven leads **without a strict partition** — a lead may
+support more than one package. Primary anchors: Package 1 = {C1, C2, C3, C5, C11};
+Package 2 = {C4, C7, C8}; Package 3 = {C6, C9, C10}. But the assignment is not
+disjoint: **C10** (original constraints as a shifted copy of the homogeneous
+intersection) is mainly a *representation of Package 1's* translated-null-space
+model, and **C9** (a solution/recipe set as an affine translate) instantiates
+Package 1's model in the column picture as much as it serves Package 3; **C7** and
+**C11** are shared existence/consistency guardrails.
 
 ### Package 1 (primary) — "The null space carried off the origin," discovered by differencing solutions
 
@@ -372,9 +382,18 @@ Members: **C2** (driver) → **C1** (synthesis) → **C3** (representation), wit
   system, verify the difference is null by hand, then two parallel lines (one through
   the origin).
 - Prerequisites: only \(A\mathbf{x}=\mathbf{b}\) and linearity (Lessons 2–3), plus the
-  subspace-closure of \(\operatorname{Null}(A)\) that Package 2's C8 supplies.
+  elementary closure of \(\operatorname{Null}(A)\) under addition and scaling, which
+  is **derived from linearity during the package** (C3) — not a prerequisite borrowed
+  from Package 2. (Package 2's C8 establishes only that \(A\mathbf{0}=\mathbf{0}\), so
+  \(A\mathbf{x}=\mathbf{0}\) is always consistent; it does **not** supply closure.)
 - Chosen primary: it delivers the lesson's core goals — particular + homogeneous,
   affine vs linear, and the consistency precondition — in a single discovery arc.
+- What could make Package 1 lose (the falsifiable comparison): it would fall to
+  **Package 3** if learner testing showed that differencing two solutions is
+  experienced as an **isolated algebra trick** that does not generalize, while
+  manipulating **free-variable coordinates** reliably caused learners to predict the
+  translated-null-space structure and transfer it to unfamiliar systems. Absent that
+  evidence, C2's differencing move is the more direct route to the model change.
 
 ### Package 2 — "\(A\mathbf{x}=\mathbf{0}\) governs multiplicity for the whole family" (purpose + the existence/multiplicity split)
 
@@ -398,7 +417,10 @@ Members: **C4** (uniqueness detector), **C8** (homogeneous always consistent),
 
 Members: **C6** (free variables as null-space coordinates; dimension), **C9**
 (column-picture recipe-freedom as an affine translate of \(\operatorname{Null}(A)\)),
-**C10** (row-picture: constraints shifted to the origin).
+**C10** (row-picture: constraints shifted to the origin). C9 and C10 are **shared**
+with Package 1 — they are the column- and row-picture instances of its
+translated-null-space model; here they earn their place by tying that model to the
+free-variable *reading* of the set.
 
 - Reveal: connects the Lesson 4 elimination procedure and **both** Lesson 3 pictures
   (column and row) to the structure; the count of free variables predicts the
@@ -480,7 +502,11 @@ than appended. The spine sentence (C1) was tested on equal footing and sits **in
 Package 1 as the formal synthesis the breakthrough produces**, not as the driver; the
 consistency precondition (C11) is built into Package 1, and the
 existence-vs-multiplicity split (C7, Package 2) is mandatory in any downstream lesson.
-No package relies on real-world grounding, so the abstraction-return requirement is N/A.
+Package 1 uses a **representational bridge** (C3), and its abstraction return is
+rated **strong**: from the two parallel translated sets the learner reads off the
+offset \(\mathbf{x}_p\) and the null directions to recover
+\(\operatorname{Sol}(A,\mathbf{b})=\mathbf{x}_p+\operatorname{Null}(A)\). No package
+relies on real-world grounding, so no themed-scenario abstraction return is required.
 
 **Gate result (Stage 1): PASS.**
 

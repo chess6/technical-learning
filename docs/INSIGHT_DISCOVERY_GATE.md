@@ -141,7 +141,16 @@ The central generation heuristic:
 > **What is the smallest change that causes learners to make the correct
 > prediction *before* the formal rule is simply stated?**
 
-Each candidate records these **core fields** (always):
+Each **raw lead** records only a compact triple — keep it to a few lines:
+
+- **before → after model change** (one line);
+- **new predicted capability** the learner gains;
+- **insight mechanism(s)** from the taxonomy (one or more).
+
+The full **core fields** below are required **only for the consolidated candidate
+packages** (see [candidate clustering](#candidate-clustering--required-before-ranking)),
+not for every raw lead — this keeps breadth cheap and reserves detailed analysis
+for the ranked packages:
 
 - initial mental model;
 - tension / redundancy / obstacle it resolves;
@@ -152,8 +161,8 @@ Each candidate records these **core fields** (always):
 - adjacent transfer;
 - **insight mechanism(s)** from the taxonomy (one or more).
 
-And these **grounding fields (conditional — required only when the candidate uses
-a semantic/operational/representational bridge or analogy)**:
+And these **grounding fields (conditional — required only when the candidate
+package uses a semantic/operational/representational bridge or analogy)**:
 
 - **the bridge** — the familiar goal, process, or representation introduced;
 - **preserved correspondences** — which formal relations map exactly;
@@ -162,18 +171,23 @@ a semantic/operational/representational bridge or analogy)**:
   which intuitions must be **discarded**;
 - **abstraction-return sketch** — how the learner gets back to the symbolic form.
 
-### 1c. Compare isomorphic presentations (conditional)
+### 1c. Compare conventional and alternative presentations (conditional)
 
 When 1a flags the difficulty as **semantic or representational**, include a
 side-by-side comparison of:
 
-- a conventional **abstract** presentation, and
-- a mathematically **isomorphic** grounded / alternative presentation.
+- a conventional presentation, and
+- an **alternative** grounded, reordered, or re-represented presentation of the
+  **same mathematics**.
 
-The brief must state: what relations stay **mathematically unchanged**; what
-becomes **easier to infer**; what **meaningful goal or background knowledge** was
-introduced; and whether the improvement is **likely to transfer**. Do **not**
-manufacture a real-world analogy for concepts where it adds nothing.
+The brief must state: which **mathematical relations are preserved** (stay
+unchanged) across the two presentations; what becomes **easier to infer**; what
+**meaningful goal or background knowledge** was introduced; and whether the
+improvement is **likely to transfer**. The two presentations need **not** be a
+formal isomorphism — an alternative discovery order or representation of the same
+content qualifies; the requirement is that the underlying mathematical relations be
+preserved. Do **not** manufacture a real-world analogy for concepts where it adds
+nothing.
 
 ### Candidate clustering — required before ranking
 
@@ -191,6 +205,11 @@ insights. Before ranking:
 - Rank the resulting candidate packages, not individual fragments.
 - Do not count a theorem, its proof direction, its visualization, and its
   correctness caveat as separate competing insights.
+- The packages are the competing **central learner models**. Supporting
+  representations, proof/discovery engines, consequences, continuity connections,
+  and guardrails **may support more than one package**. Do **not** force all raw
+  leads into a disjoint partition, and a lead need not be assigned to exactly one
+  package.
 - Each ranked package must state one distinct before/after learner model.
 - There should normally be at least three genuine rival packages. When the topic
   does not support three, state that honestly rather than manufacturing variants.
