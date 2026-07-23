@@ -561,8 +561,9 @@ renderer changed — lesson content, contracts, and the implementation package o
   behaving as described — L3 full \([A\mid\mathbf b]\) matrix-entry grades **correct**;
   L4 all 9 main-practice items reachable and the contradiction-row matrix-entry grades
   **correct** (with the taught/fresh elimination matrices correctly rejecting wrong
-  values); L5 all 13 items reachable and `sol-produce-parametric-fresh` driven step-by-step
-  to **"All 3 steps correct"** via real user gestures
+  values); L5 items reachable and `sol-produce-parametric-fresh` driven through **all four
+  steps** (predicate-graded particular solution, predicate-graded null direction, dimension,
+  and the complete instantiated point) to full completion via real user gestures
 
 ### Teaching review
 
@@ -601,17 +602,19 @@ NOT PASSED** for L3/L4/L5 (unscored reasoning/proof surfaces).
   coefficients (repair) with **no MC identify step** → **E4**; paired self-check
   `elim-diagnose-explain-fresh` captures the written explanation (E6 surface, unscored)
 - [x] **L4 in-lesson E4 degenerate-case transfer** — `elim-degenerate-pivot-transfer`
-  (exercise-sequence): a **zero pivot** forces a row swap before elimination, then produce
-  the solution → **E4**
+  (**matrix-entry**): a **zero pivot** forces a row swap; the learner **produces the swapped
+  augmented matrix** before feedback → **E4** (routine back-substitution is deliberately not
+  graded as the transfer)
 - [x] **L5 produced inconsistency refusal** — committed-MC `sol-inconsistent-empty`
   **replaced** by `sol-refuse-inconsistent-fresh` (produce the \(0=c\) contradiction + the
   count 0, **E3**) + `sol-justify-inconsistent-refusal` (produced reasoning why ∅, not
   \(\operatorname{Null}(A)\); E6 surface, unscored)
 - [x] **L5 complete parametric set, nothing revealed before commitment** —
-  `sol-produce-parametric-fresh` rewritten as a 6-step sequence that produces **both**
-  coordinates of \(\mathbf x_p\), the **complete** null direction, and a **complete**
-  instantiated point, verified against the equations, with **no formula shown before
-  commitment** → complete-set **E3**
+  `sol-produce-parametric-fresh` rewritten as a 4-step sequence that **predicate-grades a
+  learner-chosen** particular solution \(\mathbf x_p\) (any valid vector, both coordinates)
+  and a **nonzero** null direction (any valid multiple, both coordinates), plus the
+  dimension and a **complete** instantiated point (both coordinates) — no coordinate handed
+  over, **no formula shown before commitment** → complete-set **E3**
 - [x] **L5 in-lesson E4 distinction** — `sol-construct-second-null-direction`
   (construct-in-explorer): on \(A=\mathbf 0\), build a null vector **off** the
   single-difference line, distinguishing one direction from the whole null space →
@@ -655,3 +658,64 @@ NOT PASSED** for L3/L4/L5 (unscored reasoning/proof surfaces).
   remaining lesson-owned obligation is scoring the produced reasoning/proof surfaces
 - [x] Lesson-owned **E4 outcomes are in-lesson**, not deferred to module Package G; Class A
   vs Class B ownership in the assessment plan preserved
+
+---
+
+## Systems–Elimination module — evidence-integrity hardening (2026-07-23, pre-Package-F pass)
+
+Tightens the produced-evidence claims flagged in review, so no outcome overstates what the
+learner independently produces. Lesson content, contracts, implementation package,
+assessment plan, and tests only — **no math/visualization renderer changed**. **Gate 8 stays
+NOT PASSED** for L3/L4/L5 (unscored reasoning/proof surfaces). Supersedes the specific
+interaction descriptions above where they differ.
+
+### Evidence-integrity corrections built
+
+- [x] **L3 classification submits a count with no early reveal** — `sys-classify-produce-fresh`
+  is now a 6-step sequence: for each of three fresh systems the learner **produces the
+  witness** (a solution / a distinct second solution / the \(0=c\) contradiction value) and
+  **then commits the solution count**; the witness steps name no class, so the classification
+  is never revealed before the complete response. Honest framing: **produce-then-classify**
+  (the production is the E3 evidence; the count is the committed conclusion)
+- [x] **L3 characterization assesses the *general* boundary** — `sys-characterize-parameter-fresh`
+  now pins the parameter for dependence, produces the general consistency condition
+  \(v = 2u\) for an arbitrary \(\mathbf b=(u,v)\) (not the \((2,k)\) slice), and **constructs**
+  a target on each side of the boundary (predicate-graded off/on the column line) → **E4**
+- [x] **L4 zero-pivot transfer is produced, not chosen** — `elim-degenerate-pivot-transfer`
+  is a **matrix-entry**: the learner **produces the swapped augmented matrix** before
+  feedback; the subsequent routine back-substitution is explicitly **not** counted as the
+  E4 method selection → **E4**
+- [x] **L5 parametric set predicate-grades learner-chosen vectors** —
+  `sol-produce-parametric-fresh` captures a **complete** particular vector (any valid
+  \(\mathbf x_p\), both coords), a **complete nonzero** null direction (any valid multiple,
+  both coords), the dimension, and a **complete** instantiated point — no coordinate handed
+  over, no formula shown before commitment → complete-set **E3**
+- [x] **L5 difference-of-solutions is produced** — new `sol-difference-produce-fresh`
+  (exercise-sequence): the learner produces **both** coordinates of the difference of two
+  solutions and verifies **both** homogeneous rows vanish, mapping the difference outcome to
+  produced **E3** (the MC `sol-difference-homogeneous` remains an E1 backup)
+- [x] **L4 fixed-point outcome mapped to the invariance proof** — `elim-predict-fixed-point`
+  is recorded as an E1 learning event whose "say why" is owned by the (unscored E6)
+  `elim-explain-invariance` proof surface, not counted as independent evidence
+
+### Capability / infrastructure (lesson-interaction only, not the module runner)
+
+- [x] `exercise-sequence` extended with **`vector`** and predicate-graded **`construct`**
+  step kinds, and a new **`solves-system`** `ConstructCheck` (with optional `exclude`) — all
+  pure logic in `src/lessons/capabilities.ts`; rendering + per-coordinate submission in
+  `src/components/lesson/ExercisePanel.tsx`. This is the lesson-interaction plumbing the
+  learner-chosen complete vectors require; it is **not** the Package F module runner or
+  scoring surface
+
+### Testing review
+
+- [x] `remediationExercises.test.ts` and `capabilities.test.ts` strengthened so **every
+  genuinely entered field is independently mutated**: each coordinate of every `vector` /
+  `construct` step, the `solves-system` predicate (valid / non-solution / excluded), the
+  count-commit steps, and the general-boundary numeric + construction steps have correct
+  **and** incorrect paths
+- [x] Full `vitest` suite green; `npm run lint` (oxlint) clean; `tsc -b` 0 errors; targeted
+  e2e for the three lessons green; browser verification that each new/changed interaction is
+  reachable and grades as described
+- [x] Stale **"All 3 steps correct"** browser record corrected to the current four-step,
+  predicate-graded `sol-produce-parametric-fresh` interaction

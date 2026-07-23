@@ -91,7 +91,13 @@ type CommittedPredictionDraft = { committedIndex: number | null; submitted: bool
 type MatrixEntryDraft = { entries: string[][] };
 type ConstructDraft = { x: string; y: string; submitted: boolean };
 type SelfCheckDraft = { text: string; revealed: boolean; selfMark: SelfMark | null };
-type SequenceStepDraft = { value: string; choice: number | null; result: GradeResult | null };
+type SequenceStepDraft = {
+  value: string;
+  choice: number | null;
+  x: string;
+  y: string;
+  result: GradeResult | null;
+};
 type SequenceDraft = { steps: SequenceStepDraft[] };
 
 const renderCapabilities: Record<string, RenderCapability<unknown>> = {
@@ -1006,11 +1012,18 @@ function ExerciseSequenceBody({
   const config = exercise.config as ExerciseSequenceConfig | undefined;
   if (!config) return null;
 
-  const stepDraft = (index: number): SequenceStepDraft =>
-    draft.steps[index] ?? { value: "", choice: null, result: null };
+  const emptyStep = (): SequenceStepDraft => ({
+    value: "",
+    choice: null,
+    x: "",
+    y: "",
+    result: null,
+  });
+
+  const stepDraft = (index: number): SequenceStepDraft => draft.steps[index] ?? emptyStep();
 
   const writeStep = (index: number, next: SequenceStepDraft): SequenceStepDraft[] => {
-    const steps = config.steps.map((_, i) => draft.steps[i] ?? { value: "", choice: null, result: null });
+    const steps = config.steps.map((_, i) => draft.steps[i] ?? emptyStep());
     steps[index] = next;
     return steps;
   };
@@ -1021,11 +1034,19 @@ function ExerciseSequenceBody({
       setResult(null);
       return;
     }
-    const responses: SequenceResponse[] = config.steps.map((step, i) =>
-      step.kind === "numeric"
-        ? { kind: "numeric", value: Number(steps[i]!.value) }
-        : { kind: "multiple-choice", choice: steps[i]!.choice ?? -1 },
-    );
+    const responses: SequenceResponse[] = config.steps.map((step, i) => {
+      const s = steps[i]!;
+      switch (step.kind) {
+        case "numeric":
+          return { kind: "numeric", value: Number(s.value) };
+        case "multiple-choice":
+          return { kind: "multiple-choice", choice: s.choice ?? -1 };
+        case "vector":
+          return { kind: "vector", value: [Number(s.x), Number(s.y)] };
+        case "construct":
+          return { kind: "construct", value: [Number(s.x), Number(s.y)] };
+      }
+    });
     setResult(
       gradeExercise(exercise, {
         kind: "custom",
@@ -1058,7 +1079,36 @@ function ExerciseSequenceBody({
   const chooseMc = (index: number, choice: number) => {
     const step = config.steps[index]!;
     const stepResult = gradeSequenceStep(step, { kind: "multiple-choice", choice });
-    const steps = writeStep(index, { value: "", choice, result: stepResult });
+    const steps = writeStep(index, { ...stepDraft(index), choice, result: stepResult });
+    setDraft({ steps });
+    commitAggregate(steps);
+  };
+
+  const checkVectorStep = (index: number, kind: "vector" | "construct") => {
+    const current = stepDraft(index);
+    const px = Number(current.x);
+    const py = Number(current.y);
+    if (
+      current.x.trim() === "" ||
+      current.y.trim() === "" ||
+      Number.isNaN(px) ||
+      Number.isNaN(py)
+    ) {
+      const steps = writeStep(index, {
+        ...current,
+        result: { correct: false, feedback: "Enter both coordinates to check." },
+      });
+      setDraft({ steps });
+      commitAggregate(steps);
+      return;
+    }
+    const step = config.steps[index]!;
+    const response: SequenceResponse =
+      kind === "vector"
+        ? { kind: "vector", value: [px, py] }
+        : { kind: "construct", value: [px, py] };
+    const stepResult = gradeSequenceStep(step, response);
+    const steps = writeStep(index, { ...current, result: stepResult });
     setDraft({ steps });
     commitAggregate(steps);
   };
@@ -1095,6 +1145,44 @@ function ExerciseSequenceBody({
                         ...current,
                         value: event.target.value,
                       });
+                      setDraft({ steps });
+                    }}
+                  />
+                </label>
+                <button type="submit" className="btn">
+                  Check step
+                </button>
+              </form>
+            ) : step.kind === "vector" || step.kind === "construct" ? (
+              <form
+                className="exercise-panel__answer"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  checkVectorStep(index, step.kind);
+                }}
+              >
+                <label className="exercise-panel__field">
+                  <span className="exercise-panel__field-label">x</span>
+                  <input
+                    type="number"
+                    step="any"
+                    aria-label={`Step ${index + 1} x coordinate`}
+                    value={current.x}
+                    onChange={(event) => {
+                      const steps = writeStep(index, { ...current, x: event.target.value });
+                      setDraft({ steps });
+                    }}
+                  />
+                </label>
+                <label className="exercise-panel__field">
+                  <span className="exercise-panel__field-label">y</span>
+                  <input
+                    type="number"
+                    step="any"
+                    aria-label={`Step ${index + 1} y coordinate`}
+                    value={current.y}
+                    onChange={(event) => {
+                      const steps = writeStep(index, { ...current, y: event.target.value });
                       setDraft({ steps });
                     }}
                   />

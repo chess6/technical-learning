@@ -213,8 +213,9 @@ export const eliminationLesson: LessonDefinition = {
   // `systems-fresh`, so the answer cannot be recalled) → diagnose an illegal move
   // → PRODUCE the diagnosis + repair on an UNFAMILIAR erroneous elimination and
   // explain it → run elimination to a contradiction row → construct the infinite
-  // case → transfer to a DEGENERATE zero-pivot system that forces a swap (E4) →
-  // explain the invariance in your own words. These use the platform capabilities
+  // case → transfer to a DEGENERATE zero-pivot system by PRODUCING the swapped
+  // augmented matrix (E4 method selection; routine back-substitution is not graded
+  // as the transfer) → explain the invariance in your own words. These use the platform capabilities
   // (committed prediction, sequence, matrix entry, construction, self-check)
   // reached through the `custom` escape hatch. The committed prediction
   // (`elim-predict-fixed-point`) is placed FIRST in the route, before the Watch
@@ -496,44 +497,26 @@ export const eliminationLesson: LessonDefinition = {
       // In-lesson E4 unfamiliar transfer: a DEGENERATE zero-pivot configuration. The
       // worked example and every drill had a nonzero pivot in place; here $a_{11}=0$,
       // so $R_1$ cannot clear $x$ and the learner must transfer the (so-far unused)
-      // swap operation, then produce the solution by the non-standard route.
+      // swap operation. The assessed E4 evidence is PRODUCING the swapped augmented
+      // matrix (all six entries) — recognizing the swap is the method selection. The
+      // routine back-substitution that follows is deliberately NOT graded here (it
+      // would be ordinary E3, not the E4 transfer); the reveal notes it only.
       id: "elim-degenerate-pivot-transfer",
       type: "custom",
-      capabilityId: EXERCISE_SEQUENCE_ID,
+      capabilityId: MATRIX_ENTRY_ID,
       tier: "transfer",
       prompt:
-        "A degenerate case you have not seen: $\\left[\\begin{array}{cc|c} 0 & 1 & 4 \\\\ 2 & 3 & 10 \\end{array}\\right]$. The pivot position $a_{11}$ is $0$.",
+        "A degenerate case you have not seen: $\\left[\\begin{array}{cc|c} 0 & 1 & 4 \\\\ 2 & 3 & 10 \\end{array}\\right]$. The pivot position $a_{11}$ is $0$, so $R_1$ cannot clear $x$ from $R_2$. Apply the one elementary operation that brings a nonzero entry into the pivot — the row swap $R_1 \\leftrightarrow R_2$ — and enter the resulting augmented matrix.",
       config: {
-        steps: [
-          {
-            kind: "multiple-choice",
-            prompt:
-              "Since $a_{11} = 0$, $R_1$ cannot be used to clear $x$ from $R_2$. Which legal operation lets elimination proceed?",
-            choices: [
-              "Swap $R_1 \\leftrightarrow R_2$",
-              "Scale $R_1$ by $0$",
-              "$R_2 \\to R_2 + R_1$",
-              "Multiply $R_2$ by $0$",
-            ],
-            correctChoice: 0,
-            explanation:
-              "Swapping brings the nonzero pivot ($2$) into the top-left. Scaling by $0$ is illegal (irreversible), and adding $R_1$ leaves $a_{11} = 0$ untouched.",
-          },
-          {
-            kind: "numeric",
-            prompt:
-              "After $R_1 \\leftrightarrow R_2$ the system is $\\left[\\begin{array}{cc|c} 2 & 3 & 10 \\\\ 0 & 1 & 4 \\end{array}\\right]$ — already triangular. Read off $y$ from the new $R_2$.",
-            expected: 4,
-            explanation: "The new $R_2$ is $y = 4$.",
-          },
-          {
-            kind: "numeric",
-            prompt: "Back-substitute into $2x + 3y = 10$. Enter $x$.",
-            expected: -1,
-            explanation:
-              "$2x + 3(4) = 10 \\Rightarrow 2x = -2 \\Rightarrow x = -1$, so $(x, y) = (-1, 4)$. A row swap is one of the three legal operations, so it preserves the solution set — you just needed to transfer it to a case the drills never forced.",
-          },
+        rows: 2,
+        cols: 3,
+        expected: [
+          [2, 3, 10],
+          [0, 1, 4],
         ],
+        explanation:
+          "Swapping $R_1 \\leftrightarrow R_2$ lifts the nonzero pivot $2$ into the top-left, giving $\\left[\\begin{array}{cc|c} 2 & 3 & 10 \\\\ 0 & 1 & 4 \\end{array}\\right]$ — already triangular. (Scaling by $0$ is illegal, and $R_2 \\to R_2 + R_1$ would leave $a_{11} = 0$.) The transfer skill is recognizing and producing the swap in a case the drills never forced; the routine back-substitution that reads off $y = 4$ then $x = -1$ is ordinary work, not the new move.",
+        matrixName: "[A\\,|\\,b]",
       },
     },
     {

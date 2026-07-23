@@ -232,6 +232,24 @@ describe("construct-in-explorer capability (pure predicate over a committed vect
     expect(evaluateConstructCheck({ kind: "vector-on-line", spanning }, [3, 3]).pass).toBe(true);
     expect(evaluateConstructCheck({ kind: "vector-on-line", spanning }, [0, 0]).pass).toBe(false);
   });
+
+  it("evaluates the solves-system predicate (any valid solution passes; exclude rejects one)", () => {
+    const matrix = [
+      [1, 3],
+      [2, 6],
+    ];
+    const check = { kind: "solves-system" as const, matrix, rhs: [4, 8] as const };
+    // (4,0), (1,1) and (7,-1) all solve x+3y=4, 2x+6y=8.
+    expect(evaluateConstructCheck(check, [4, 0]).pass).toBe(true);
+    expect(evaluateConstructCheck(check, [1, 1]).pass).toBe(true);
+    expect(evaluateConstructCheck(check, [7, -1]).pass).toBe(true);
+    // A non-solution fails.
+    expect(evaluateConstructCheck(check, [5, 0]).pass).toBe(false);
+    // `exclude` rejects the specific solution the learner must differ from.
+    const excluded = { ...check, exclude: [4, 0] as const };
+    expect(evaluateConstructCheck(excluded, [4, 0]).pass).toBe(false);
+    expect(evaluateConstructCheck(excluded, [1, 1]).pass).toBe(true);
+  });
 });
 
 describe("self-check capability (free-text + self-mark)", () => {
@@ -302,6 +320,38 @@ describe("exercise-sequence capability (scaffolded sub-steps)", () => {
       { kind: "numeric", value: 5 },
     );
     expect(wrong.correct).toBe(false);
+  });
+
+  it("grades a vector step exactly and a construct step by predicate", () => {
+    const vectorStep = {
+      kind: "vector" as const,
+      prompt: "",
+      expected: [10, -2] as const,
+      explanation: "",
+    };
+    expect(gradeSequenceStep(vectorStep, { kind: "vector", value: [10, -2] }).correct).toBe(true);
+    expect(gradeSequenceStep(vectorStep, { kind: "vector", value: [10, 0] }).correct).toBe(false);
+
+    const constructStep = {
+      kind: "construct" as const,
+      prompt: "",
+      check: {
+        kind: "solves-system" as const,
+        matrix: [
+          [1, 3],
+          [2, 6],
+        ],
+        rhs: [4, 8] as const,
+      },
+      explanation: "",
+    };
+    // Any valid solution passes; a non-solution fails.
+    expect(gradeSequenceStep(constructStep, { kind: "construct", value: [1, 1] }).correct).toBe(
+      true,
+    );
+    expect(gradeSequenceStep(constructStep, { kind: "construct", value: [5, 0] }).correct).toBe(
+      false,
+    );
   });
 
   it("is correct only when every step is correct", () => {
@@ -436,6 +486,19 @@ describe("JSON-safe answer serialization round-trips", () => {
           responses: [
             { kind: "numeric", value: 4 },
             { kind: "multiple-choice", choice: 0 },
+          ],
+        },
+      },
+    },
+    {
+      id: EXERCISE_SEQUENCE_ID,
+      answer: {
+        kind: "custom",
+        capabilityId: EXERCISE_SEQUENCE_ID,
+        value: {
+          responses: [
+            { kind: "construct", value: [4, 0] },
+            { kind: "vector", value: [10, -2] },
           ],
         },
       },

@@ -7,22 +7,28 @@ research-bridge overlay). Rebuilt from the **corrected evidence-integrity audit*
 every named item against its actual capability in
 [`src/lessons/capabilities.ts`](../../../../../src/lessons/capabilities.ts).
 
-> **Status update (lesson-owned remediation completed — second pass).** With explicit user
-> approval, the lesson-owned Packages B–E were built, **re-audited under the strict
-> canonical evidence rules** (committed-MC = E1 recognition; commit-before-reveal ≠ E3;
-> E3 = fresh production of the *complete* outcome; E4 = unfamiliar transfer; `self-check`
-> = unscored E6 surface), and then **completed** in a second pass that closed every
-> *non-scoring* lesson-owned interaction gap. Now built: **produced** none/one/∞
-> classification (L3), a **full two-coordinate** column confirmation (L3), an **E4
-> symbolic-parameter characterization** (L3); a **produced** diagnosis + repair on an
-> **unfamiliar** system and an **E4 degenerate zero-pivot** transfer (L4); a **complete**
-> produced parametric set (every component, no pre-commitment reveal), a **produced**
-> ∅-refusal, and a **scored E4** null-direction construction (L5). The **only** remaining
-> lesson-owned obligations are **scoring** the reasoning/proof `self-check` surfaces —
-> which is exactly what **Package F** (human-scoring capture) provides. So **Gate 8 stays
-> NOT PASSED for all three lessons** solely on that scoring, and **Package F is now the
-> next package**. The **Mode C boundary still sits before Package F**: building F onward
-> requires explicit approval per
+> **Status update (lesson-owned remediation completed — evidence-integrity pass).** With
+> explicit user approval, the lesson-owned Packages B–E were built, **re-audited under the
+> strict canonical evidence rules** (committed-MC = E1 recognition; commit-before-reveal ≠
+> E3; E3 = fresh production of the *complete* outcome; E4 = unfamiliar transfer;
+> `self-check` = unscored E6 surface), and then **hardened** across two follow-up passes
+> that closed every *non-scoring* lesson-owned interaction gap. Now built: L3 **produced
+> classification with a committed count** per system (no class named before the response)
+> and an **E4 characterization of the *general* boundary** \(v = 2u\) (construct a target
+> on each side); a **full two-coordinate** column confirmation (L3); a **produced**
+> diagnosis + repair on an **unfamiliar** system and an **E4 degenerate zero-pivot** transfer
+> now **produced as the swapped augmented matrix** (L4); a **complete parametric set that
+> predicate-grades a learner-chosen** \(\mathbf{x}_p\) and null direction (both coords each),
+> a **produced difference-of-solutions** verification, a **produced** ∅-refusal, and a
+> **scored E4** null-direction construction (L5). To support the learner-chosen complete
+> vectors, the `exercise-sequence` capability gained **`vector` and predicate-graded
+> `construct` step kinds** and a **`solves-system`** construct predicate (pure, in
+> `capabilities.ts`; UI in `ExercisePanel.tsx`) — lesson-interaction infrastructure, not the
+> module runner. The **only** remaining lesson-owned obligations are **scoring** the
+> reasoning/proof `self-check` surfaces — which is exactly what **Package F** (human-scoring
+> capture) provides. So **Gate 8 stays NOT PASSED for all three lessons** solely on that
+> scoring, and **Package F is now the next package**. The **Mode C boundary still sits
+> before Package F**: building F onward requires explicit approval per
 > [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) /
 > `.cursor/rules/course-authoring.mdc`. The audit below is preserved as the
 > **as-found baseline**; the post-remediation section records the new state and the
@@ -110,10 +116,10 @@ New/changed items and their **honest** level under the strict rules
 
 | Item | Change | Honest level |
 | --- | --- | --- |
-| `sys-classify-produce-fresh` | **new (2nd pass)** exercise-sequence: PRODUCE the none/one/∞ witnesses (forced solution / second solution / contradiction) | **E3** ✅ |
+| `sys-classify-produce-fresh` | exercise-sequence: for each fresh system, PRODUCE a witness (a solution / a *second* solution / the \(0=c\) contradiction value) **then commit the solution count** — the classification is never named before the response | **E3** ✅ (produce-then-classify) |
 | `sys-solve-confirm-fresh` | fresh sequence: solve by rows **+** confirm **both column coordinates** (2nd-pass fix: was one coordinate) | **E3** ✅ |
 | `sys-translate-augmented-fresh` | fresh matrix-entry: the whole \([A\mid\mathbf{b}]\) | **E3** ✅ |
-| `sys-characterize-parameter-fresh` | **new (2nd pass)** exercise-sequence: characterize dependency/consistency on a **symbolic parameter** | **E4** ✅ (unfamiliar transfer) |
+| `sys-characterize-parameter-fresh` | exercise-sequence: find the parameter for column dependence, produce the **general** consistency condition for \(\mathbf{b}=(u,v)\), then **construct** an inconsistent target and a consistent nonzero target (each predicate-graded off/on the line) | **E4** ✅ (unfamiliar transfer, general boundary) |
 | `sys-classify-fresh` | fresh committed classification (E1 recognition backup) | **E1** (support) |
 | `sys-construct-inconsistent` | prediction → **construct-in-explorer**, fresh cols | **E3 construction** (beneath the E4 characterization) |
 | `sys-reason-dependent-count` | **self-check**; model now uses a **general nonzero relation** (zero column, zero matrix) | **E6 surface, unscored** → F |
@@ -123,13 +129,14 @@ New/changed items and their **honest** level under the strict rules
 | `elim-sequence-forward-fresh`, `elim-matrix-after-step-fresh` | fresh elimination run | **E3** ✅ |
 | `elim-diagnose-repair-fresh` | **rewritten (2nd pass)**: **produced** diagnosis (erroneous coefficient) + **produced** repair on an **unfamiliar** system (no MC identify step) | **E4** ✅ |
 | `elim-diagnose-explain-fresh` | **new (2nd pass)** self-check: produced written explanation of the error | **E6 surface, unscored** → F |
-| `elim-degenerate-pivot-transfer` | **new (2nd pass)** exercise-sequence: degenerate zero-pivot forcing a row swap, then produce the solution | **E4** ✅ (unfamiliar transfer) |
+| `elim-degenerate-pivot-transfer` | **matrix-entry**: degenerate zero-pivot forcing a row swap — **produce the swapped augmented matrix** before feedback; routine back-substitution is *not* graded as the transfer | **E4** ✅ (unfamiliar transfer) |
 | `elim-contradiction-row-fresh` | matrix-entry: run elimination → contradiction row | **E3** ✅ |
 | `elim-construct-infinite` | construct-in-explorer, distinct cols + ∞ case | **E3 construction** (beneath the E4 degenerate transfer) |
 | `elim-construct-inconsistent` | **removed** — duplicated L3's columns \((1,2),(3,6)\) | — |
 | `elim` illegal-moves prose | self-addition legality **corrected** (\(R_i+R_i=2R_i\), legal) | — |
 | `sol-generate-third-fresh` | fresh vector production | **E3** ✅ |
-| `sol-produce-parametric-fresh` | **rewritten (2nd pass)** exercise-sequence: PRODUCE **every component** of \(\mathbf{x}_p\), the null direction, and the instantiated point, **no formula shown before commitment** | **E3** ✅ (complete set) |
+| `sol-difference-produce-fresh` | exercise-sequence: produce **both coordinates** of the difference of two solutions, then verify **both** homogeneous rows vanish (maps the difference-of-solutions outcome to produced E3 evidence) | **E3** ✅ |
+| `sol-produce-parametric-fresh` | exercise-sequence: **predicate-grades a learner-CHOSEN** particular solution (any valid \(\mathbf{x}_p\), both coords) and **nonzero null direction** (both coords), plus the dimension and a **complete instantiated point** — no coordinate handed over, **no formula shown before commitment** | **E3** ✅ (complete set, learner-chosen) |
 | `sol-freevars-dimension-fresh` | fresh sequence: produce #free variables + dimension | **E3** ✅ |
 | `sol-construct-second-null-direction` | **new (2nd pass)** construct-in-explorer: build a null vector off the single-difference line on \(A=\mathbf{0}\) | **E4** ✅ (scored construction) |
 | `sol-refuse-inconsistent-fresh` | **new (2nd pass)** exercise-sequence: produce the \(0=c\) witness + the count 0 (replaces committed-MC `sol-inconsistent-empty`) | **E3 produced** |
@@ -138,19 +145,22 @@ New/changed items and their **honest** level under the strict rules
 | `sol-inconsistent-empty` | **removed** — committed-MC replaced by the produced forms above | — |
 | `sol-prove-null-subspace`, `sol-prove-structure` | proof `self-check`s | **E6 surface, unscored** → F |
 
-**Net Gate 8 effect: NOT PASSED for L3, L4, and L5 — now solely on scoring.** The second
-remediation pass closed every *non-scoring* lesson-owned interaction gap: classification is
-now **produced** (E3), the column confirmation checks **both coordinates**, the L3
-characterization and both L4 diagnosis/degenerate outcomes reach **E4**, the L5 parametric
-set is **complete** and the inconsistency refusal is **produced**, and the L5
-one-difference distinction reaches **scored E4**. Gate 8 is a **single gate** and still
-cannot PASS because the reasoning/proof `self-check` surfaces (dependent-count reasoning;
-diagnosis explanation; existence-vs-multiplicity; refusal justification; and the four
-theorem proofs) are **unscored** — the self-mark is not credit. That scoring is exactly
-what **Package F** provides. `elim-predict-fixed-point` intentionally stays a
-taught-instance pre-Watch prediction (a learning event, not evidence). Verified:
-`tsc --noEmit` clean; `npm run lint` clean; unit tests green (519, incl. the strengthened
-grading tests).
+**Net Gate 8 effect: NOT PASSED for L3, L4, and L5 — now solely on scoring.** The
+follow-up passes closed every *non-scoring* lesson-owned interaction gap: classification is
+now **produced with a committed count** per system (E3, no class named before the response),
+the column confirmation checks **both coordinates**, the L3 characterization assesses the
+**general** boundary and both L4 diagnosis/degenerate outcomes reach **E4** (the degenerate
+one **produced as the swapped matrix**), the L5 difference-of-solutions is **produced** (E3),
+the parametric set is **complete and predicate-grades learner-chosen vectors**, the
+inconsistency refusal is **produced**, and the L5 one-difference distinction reaches
+**scored E4**. Gate 8 is a **single gate** and still cannot PASS because the reasoning/proof
+`self-check` surfaces (dependent-count reasoning; diagnosis explanation;
+existence-vs-multiplicity; refusal justification; and the four theorem proofs) are
+**unscored** — the self-mark is not credit. That scoring is exactly what **Package F**
+provides. `elim-predict-fixed-point` intentionally stays a taught-instance pre-Watch
+prediction (a learning event whose justification is owned by the invariance proof, not
+evidence). Verified: `tsc --noEmit` clean; `npm run lint` clean; unit tests green (incl. the
+strengthened per-field mutation grading tests).
 
 <a id="remaining-lesson-owned-gaps-precise"></a>
 ### Remaining lesson-owned gaps (precise)
@@ -214,8 +224,11 @@ classification and inconsistency-refusal outcomes (2nd pass).
   (`sys-classify-produce-fresh`; the MC `sys-classify-fresh`/`sys-count-*` remain E1
   backups); the **inconsistency refusal is now produced** (`sol-refuse-inconsistent-fresh`
   ∅-witness + `sol-justify-inconsistent-refusal`), replacing the committed-MC
-  `sol-inconsistent-empty`; the column confirmation now checks **both coordinates**; the
-  dependent-count and both L5 distinctions are **produced** reasoning surfaces.
+  `sol-inconsistent-empty`; the **difference-of-solutions** outcome is now **produced** at
+  E3 (`sol-difference-produce-fresh`: compute the difference, verify both homogeneous rows
+  vanish), replacing the recognition-only `sol-difference-homogeneous` (kept as an E1
+  backup); the column confirmation now checks **both coordinates**; the dependent-count and
+  both L5 distinctions are **produced** reasoning surfaces.
 - **Scoring only (→ F):** the produced reasoning surfaces (dependent-count,
   existence-multiplicity, refusal justification) remain unscored `self-check`s.
 *Size:* small (content; existing capabilities).

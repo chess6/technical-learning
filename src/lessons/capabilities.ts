@@ -20,6 +20,7 @@ import {
   areParallel,
   classifyLinearSystem2x2,
   magnitude,
+  matrixVectorMultiply,
   verifiesEigenpair,
   type LinearSystemKind,
   type Matrix2x2,
@@ -177,12 +178,23 @@ function bmatrixTex(entries: readonly (readonly number[])[]): string {
  * kind names a shared `src/math` check:
  *  - `system-classification`: `A x = b` (learner supplies `b`) classifies to
  *    `expect` (`"none"` ⇒ off the columns' line ⇒ inconsistent);
+ *  - `solves-system`: the learner supplies `x` and it must satisfy `A x = rhs`
+ *    (any valid solution passes — used to predicate-grade a learner-chosen
+ *    particular solution / point on the solution set). An optional `exclude`
+ *    vector rejects a specific solution the learner was asked to differ from
+ *    (e.g. "produce a *second*, distinct solution");
  *  - `vector-off-line` / `vector-on-line`: the (nonzero) vector must be
  *    non-parallel / parallel to `spanning`;
  *  - `eigenvector`: the (nonzero) vector must satisfy `A v = λ v`.
  */
 export type ConstructCheck =
   | { kind: "system-classification"; matrix: readonly (readonly number[])[]; expect: LinearSystemKind }
+  | {
+      kind: "solves-system";
+      matrix: readonly (readonly number[])[];
+      rhs: readonly [number, number];
+      exclude?: readonly [number, number];
+    }
   | { kind: "vector-off-line"; spanning: readonly [number, number] }
   | { kind: "vector-on-line"; spanning: readonly [number, number] }
   | { kind: "eigenvector"; matrix: readonly (readonly number[])[]; eigenvalue: number };
@@ -248,6 +260,23 @@ export function evaluateConstructCheck(
         because: pass
           ? `that vector gives ${label[check.expect]}`
           : `that vector gives ${label[classification.kind]}, not ${label[check.expect]}`,
+      };
+    }
+    case "solves-system": {
+      const product = matrixVectorMultiply(toMatrix2x2(check.matrix), vector);
+      const rhs: Vector2 = [check.rhs[0], check.rhs[1]];
+      const solves = approximatelyEqualVector(product, rhs, tolerance);
+      const excluded = check.exclude
+        ? approximatelyEqualVector(vector, [check.exclude[0], check.exclude[1]], tolerance)
+        : false;
+      const pass = solves && !excluded;
+      return {
+        pass,
+        because: !solves
+          ? `that gives $A\\mathbf{x} = ${fmtVec(product)}$, not $${fmtVec(rhs)}$`
+          : excluded
+            ? "that is the solution you were asked to differ from — find a different one"
+            : "it solves the system",
       };
     }
     case "vector-off-line": {
@@ -336,11 +365,34 @@ export type SequenceStep =
       choices: readonly string[];
       correctChoice: number;
       explanation: string;
+    }
+  | {
+      // The learner enters BOTH coordinates of a 2D vector, graded exactly
+      // against `expected` with a tolerance. Use when a specific vector must be
+      // produced in full (no coordinate handed over).
+      kind: "vector";
+      prompt: string;
+      expected: readonly [number, number];
+      tolerance?: number;
+      explanation: string;
+    }
+  | {
+      // The learner enters BOTH coordinates of a 2D vector graded by a
+      // declarative predicate (`ConstructCheck`), so ANY valid vector passes —
+      // predicate-grading a learner-chosen construction rather than one canonical
+      // answer.
+      kind: "construct";
+      prompt: string;
+      check: ConstructCheck;
+      tolerance?: number;
+      explanation: string;
     };
 
 export type SequenceResponse =
   | { kind: "numeric"; value: number }
-  | { kind: "multiple-choice"; choice: number };
+  | { kind: "multiple-choice"; choice: number }
+  | { kind: "vector"; value: readonly [number, number] }
+  | { kind: "construct"; value: readonly [number, number] };
 
 export type ExerciseSequenceConfig = { steps: readonly SequenceStep[] };
 
@@ -366,27 +418,61 @@ export function gradeSequenceStep(
   step: SequenceStep,
   response: SequenceResponse,
 ): GradeResult {
-  if (step.kind === "numeric") {
-    if (response.kind !== "numeric") {
-      throw new Error("Expected a numeric response for a numeric step");
+  switch (step.kind) {
+    case "numeric": {
+      if (response.kind !== "numeric") {
+        throw new Error("Expected a numeric response for a numeric step");
+      }
+      const tolerance = step.tolerance ?? DEFAULT_NUMERIC_TOLERANCE;
+      const correct = Math.abs(response.value - step.expected) <= tolerance;
+      return {
+        correct,
+        feedback: correct
+          ? `Correct. ${step.explanation}`
+          : `Not quite — expected ${step.expected}. ${step.explanation}`,
+      };
     }
-    const tolerance = step.tolerance ?? DEFAULT_NUMERIC_TOLERANCE;
-    const correct = Math.abs(response.value - step.expected) <= tolerance;
-    return {
-      correct,
-      feedback: correct
-        ? `Correct. ${step.explanation}`
-        : `Not quite — expected ${step.expected}. ${step.explanation}`,
-    };
+    case "multiple-choice": {
+      if (response.kind !== "multiple-choice") {
+        throw new Error("Expected a multiple-choice response for a multiple-choice step");
+      }
+      const correct = response.choice === step.correctChoice;
+      return {
+        correct,
+        feedback: correct ? `Correct. ${step.explanation}` : `Not quite. ${step.explanation}`,
+      };
+    }
+    case "vector": {
+      if (response.kind !== "vector") {
+        throw new Error("Expected a vector response for a vector step");
+      }
+      const tolerance = step.tolerance ?? DEFAULT_NUMERIC_TOLERANCE;
+      const value: Vector2 = [response.value[0], response.value[1]];
+      const expected: Vector2 = [step.expected[0], step.expected[1]];
+      const correct = approximatelyEqualVector(value, expected, tolerance);
+      return {
+        correct,
+        feedback: correct
+          ? `Correct. ${step.explanation}`
+          : `Not quite — the vector is $${fmtVec(expected)}$. ${step.explanation}`,
+      };
+    }
+    case "construct": {
+      if (response.kind !== "construct") {
+        throw new Error("Expected a construct response for a construct step");
+      }
+      const value: Vector2 = [response.value[0], response.value[1]];
+      const { pass, because } = evaluateConstructCheck(
+        step.check,
+        value,
+        step.tolerance ?? CONSTRUCT_TOLERANCE,
+      );
+      return {
+        correct: pass,
+        feedback: pass ? `Correct. ${step.explanation}` : `Not quite — ${because}. ${step.explanation}`,
+      };
+    }
   }
-  if (response.kind !== "multiple-choice") {
-    throw new Error("Expected a multiple-choice response for a multiple-choice step");
-  }
-  const correct = response.choice === step.correctChoice;
-  return {
-    correct,
-    feedback: correct ? `Correct. ${step.explanation}` : `Not quite. ${step.explanation}`,
-  };
 }
 
 /* --------------------------------------------------------------------------
@@ -522,6 +608,12 @@ function decodeSequenceAnswer(raw: JsonValue | undefined): ExerciseSequenceAnswe
           kind: "multiple-choice",
           choice: decodeFiniteNumber(r.choice, EXERCISE_SEQUENCE_ID, "choice"),
         };
+      }
+      if (kind === "vector") {
+        return { kind: "vector", value: decodeVector2(r.value, EXERCISE_SEQUENCE_ID) };
+      }
+      if (kind === "construct") {
+        return { kind: "construct", value: decodeVector2(r.value, EXERCISE_SEQUENCE_ID) };
       }
       throw new AnswerDecodeError(EXERCISE_SEQUENCE_ID, `unknown response kind "${kind}"`);
     },
@@ -817,11 +909,18 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     serializeAnswer(answer) {
       const value = decodeSequenceAnswer(customValue(answer, EXERCISE_SEQUENCE_ID));
       return {
-        responses: value.responses.map((response): JsonValue =>
-          response.kind === "numeric"
-            ? { kind: "numeric", value: response.value }
-            : { kind: "multiple-choice", choice: response.choice },
-        ),
+        responses: value.responses.map((response): JsonValue => {
+          switch (response.kind) {
+            case "numeric":
+              return { kind: "numeric", value: response.value };
+            case "multiple-choice":
+              return { kind: "multiple-choice", choice: response.choice };
+            case "vector":
+              return { kind: "vector", value: [response.value[0], response.value[1]] };
+            case "construct":
+              return { kind: "construct", value: [response.value[0], response.value[1]] };
+          }
+        }),
       };
     },
     parseAnswer(raw) {

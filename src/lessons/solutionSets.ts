@@ -330,66 +330,109 @@ export const solutionSetsLesson: LessonDefinition = {
         "Add the null vector to the known solution: $(4, 0) + (3, -1) = (7, -1)$, and $A(7, -1) = (4, 8) = \\mathbf{b}$. Every $(4 + 3t,\\ -t)$ is a solution; this is the $t = 1$ result.",
     },
     {
+      // PRODUCED evidence (E3) for the difference-of-solutions outcome: the learner
+      // subtracts two solutions IN FULL (both coordinates) and verifies the
+      // difference solves BOTH homogeneous equations. This is the forward half of
+      // the structure theorem — "two solutions differ by a null vector" — produced,
+      // not recognized (the `sol-difference-homogeneous` MC is the E1 backup).
+      id: "sol-difference-produce-fresh",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "drill",
+      prompt:
+        "Two solutions of the consistent system $x + 3y = 4,\\ 2x + 6y = 8$ are $(7, -1)$ and $(4, 0)$. Subtract them and show the difference is homogeneous.",
+      config: {
+        steps: [
+          {
+            kind: "vector",
+            prompt: "Enter the difference $(7, -1) - (4, 0)$ — both coordinates.",
+            expected: [3, -1],
+            explanation: "$(7, -1) - (4, 0) = (3, -1)$.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Verify it is a null vector: compute the first homogeneous row $1\\cdot x + 3\\cdot y$ for $(3, -1)$.",
+            expected: 0,
+            explanation: "$1(3) + 3(-1) = 0$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "…and the second row $2\\cdot x + 6\\cdot y$ for $(3, -1)$.",
+            expected: 0,
+            explanation:
+              "$2(3) + 6(-1) = 0$. Both rows vanish, so the difference solves $A\\mathbf{x} = \\mathbf{0}$ — the difference of two solutions is always a null vector, which is exactly why the solution set is $\\mathbf{x}_p + \\operatorname{Null}(A)$.",
+          },
+        ],
+      },
+    },
+    {
       // Learner-PRODUCED complete parametric solution set (E3) on a fresh system.
-      // The reviewer flagged the earlier version for (a) handing over one coordinate
-      // of each object and (b) DISPLAYING the parametric formula before the point was
-      // committed. This version captures every component the learner produces — the
-      // complete particular vector (both coords, verified against the second
-      // equation), the complete null direction (both coords, verified as a null
-      // vector), and the complete instantiated point (both coords) — WITHOUT showing
-      // the answer formula before commitment.
+      // The reviewer flagged earlier versions for (a) handing over one coordinate of
+      // each object and (b) grading only one canonical answer. This version
+      // PREDICATE-grades learner-CHOSEN vectors, both coordinates each:
+      //  - the particular solution is any $\mathbf{x}$ with $A\mathbf{x} = \mathbf{b}$;
+      //  - the null direction is any NONZERO vector on the null line;
+      //  - the dimension (free-variable count) is produced;
+      //  - a specific instantiated point is produced in full (both coordinates).
+      // No canonical formula or coordinate is handed over before commitment.
       id: "sol-produce-parametric-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "Build the entire solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ yourself (its columns are dependent). You will produce the particular solution, the null direction, and a point on the set — every coordinate, no formula handed to you.",
+        "Build the entire solution set of the fresh system $x + 3y = 4,\\ 2x + 6y = 8$ yourself (its columns are dependent). Produce a particular solution, a null direction, the dimension, and a concrete point — every coordinate, nothing handed to you.",
       config: {
         steps: [
           {
-            kind: "numeric",
+            // Predicate-graded: ANY particular solution (both coordinates) passes.
+            kind: "construct",
             prompt:
-              "Particular solution: take $y = 0$ in $x + 3y = 4$ and enter $x$.",
-            expected: EX2.particular[0],
+              "Particular solution: enter ANY $\\mathbf{x}_p = (x, y)$ that solves $x + 3y = 4,\\ 2x + 6y = 8$ — both coordinates.",
+            check: {
+              kind: "solves-system",
+              matrix: [
+                [1, 3],
+                [2, 6],
+              ],
+              rhs: [EX2.bInfinite[0], EX2.bInfinite[1]],
+            },
             explanation:
-              "With $y = 0$, $x = 4$: the $x$-coordinate of $\\mathbf{x}_p$.",
+              "Any point on the line $x + 3y = 4$ works — e.g. $(4, 0)$, $(1, 1)$, or $(7, -1)$. You chose one and it checks against BOTH equations; call it $\\mathbf{x}_p$.",
           },
           {
-            kind: "numeric",
+            // Predicate-graded: ANY nonzero multiple of the null direction passes.
+            kind: "construct",
             prompt:
-              "Verify your complete $\\mathbf{x}_p = (4, 0)$ against the OTHER equation: compute $2x + 6y$ for it.",
-            expected: EX2.bInfinite[1],
+              "Null direction: enter ANY nonzero $\\mathbf{v} = (x, y)$ solving the homogeneous system $x + 3y = 0,\\ 2x + 6y = 0$ — both coordinates.",
+            check: {
+              kind: "vector-on-line",
+              spanning: [EX2.nullDirection[0], EX2.nullDirection[1]],
+            },
             explanation:
-              "$2(4) + 6(0) = 8 = \\mathbf{b}_2$, so $\\mathbf{x}_p = (4, 0)$ really solves both equations.",
+              "The null solutions are all multiples of $(3, -1)$ — e.g. $(3, -1)$, $(-3, 1)$, or $(6, -2)$. Any nonzero one is a valid direction $\\mathbf{v}$ for the solution set.",
           },
           {
             kind: "numeric",
             prompt:
-              "Null direction: solve the homogeneous $x + 3y = 0$ with $y = -1$ and enter $x$.",
-            expected: EX2.nullDirection[0],
-            explanation: "$x = -3y = 3$: the $x$-coordinate of the null direction.",
-          },
-          {
-            kind: "numeric",
-            prompt:
-              "Verify your complete $\\mathbf{v} = (3, -1)$ is a null vector: compute $2x + 6y$ for it.",
-            expected: 0,
+              "How many free parameters does this solution set have (its dimension)?",
+            expected: 1,
             explanation:
-              "$2(3) + 6(-1) = 0$, so $\\mathbf{v} = (3, -1) \\in \\operatorname{Null}(A)$ (and $x + 3y = 0$ too).",
+              "One free variable, so $\\dim \\operatorname{Null}(A) = 1$: the solution set is a one-parameter family $\\mathbf{x}_p + t\\,\\mathbf{v}$.",
           },
           {
-            kind: "numeric",
+            // Complete instantiated point (both coordinates), using the canonical
+            // $\mathbf{x}_p$ and $\mathbf{v}$ so the target is well-defined. The
+            // learner enters BOTH coordinates — none supplied.
+            kind: "vector",
             prompt:
-              "Instantiate at $t = 2$ using YOUR $\\mathbf{x}_p = (4, 0)$ and $\\mathbf{v} = (3, -1)$: enter the $x$-coordinate of $\\mathbf{x}_p + 2\\mathbf{v}$.",
-            expected: EX2.particular[0] + 2 * EX2.nullDirection[0],
-            explanation: "$(4, 0) + 2(3, -1)$ has $x = 4 + 6 = 10$.",
-          },
-          {
-            kind: "numeric",
-            prompt: "…and its $y$-coordinate.",
-            expected: EX2.particular[1] + 2 * EX2.nullDirection[1],
+              "Instantiate the parameterization. Using the standard $\\mathbf{x}_p = (4, 0)$ and $\\mathbf{v} = (3, -1)$, enter the point at $t = 2$, i.e. $\\mathbf{x}_p + 2\\,\\mathbf{v}$ — both coordinates.",
+            expected: [
+              EX2.particular[0] + 2 * EX2.nullDirection[0],
+              EX2.particular[1] + 2 * EX2.nullDirection[1],
+            ],
             explanation:
-              "$y = 0 + 2(-1) = -2$, so the point is $(10, -2)$. You have produced the whole set $\\{\\mathbf{x}_p + t\\,\\mathbf{v}\\} = \\{(4 + 3t,\\ -t) : t \\in \\mathbb{R}\\}$ — the null line $\\{t(3,-1)\\}$ slid to pass through $(4, 0)$. It is affine (it misses the origin), and a whole line, not two points.",
+              "$(4, 0) + 2(3, -1) = (10, -2)$. So the whole set is $\\{\\mathbf{x}_p + t\\,\\mathbf{v}\\} = \\{(4 + 3t,\\ -t) : t \\in \\mathbb{R}\\}$ — the null line $\\{t(3, -1)\\}$ slid to pass through $(4, 0)$. It is affine (it misses the origin), and a whole line, not two points.",
           },
         ],
       },

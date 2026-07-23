@@ -65,15 +65,22 @@ const selfCheck = (selfMark: "understood" | "not-yet"): ExerciseAnswer => ({
   capabilityId: SELF_CHECK_ID,
   value: { text: "learner reasoning", selfMark },
 });
-const seq = (
-  responses: ({ kind: "numeric"; value: number } | { kind: "multiple-choice"; choice: number })[],
-): ExerciseAnswer => ({
+type SeqResponse =
+  | { kind: "numeric"; value: number }
+  | { kind: "multiple-choice"; choice: number }
+  | { kind: "vector"; value: [number, number] }
+  | { kind: "construct"; value: [number, number] };
+const seq = (responses: SeqResponse[]): ExerciseAnswer => ({
   kind: "custom",
   capabilityId: EXERCISE_SEQUENCE_ID,
   value: { responses },
 });
 const nums = (values: number[]): ExerciseAnswer =>
   seq(values.map((value) => ({ kind: "numeric", value })));
+const num = (value: number): SeqResponse => ({ kind: "numeric", value });
+const choice = (c: number): SeqResponse => ({ kind: "multiple-choice", choice: c });
+const svec = (x: number, y: number): SeqResponse => ({ kind: "vector", value: [x, y] });
+const scons = (x: number, y: number): SeqResponse => ({ kind: "construct", value: [x, y] });
 
 describe("L3 systems — corrected remediation items", () => {
   it("sys-classify-fresh: committed-MC (E1) recognition backup, correct vs incorrect", () => {
@@ -83,16 +90,64 @@ describe("L3 systems — corrected remediation items", () => {
     expect(gradeExercise(e, mc(0)).correct).toBe(false);
   });
 
-  it("sys-classify-produce-fresh: PRODUCES the none/one/∞ witnesses (E3), all four steps checked", () => {
+  it("sys-classify-produce-fresh: PRODUCE witness + COMMIT count per system (E3); no early class reveal", () => {
     const e = ex(systemsLesson, "sys-classify-produce-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(stepsOf(e)).toHaveLength(4);
-    // unique (x=2,y=1) → second solution of the ∞ system (y=2) → contradiction (4)
-    expect(gradeExercise(e, nums([2, 1, 2, 4])).correct).toBe(true);
-    // each witness must be right: wrong uniqueness, wrong ∞ witness, wrong contradiction
-    expect(gradeExercise(e, nums([3, 1, 2, 4])).correct).toBe(false);
-    expect(gradeExercise(e, nums([2, 1, 5, 4])).correct).toBe(false);
-    expect(gradeExercise(e, nums([2, 1, 2, 5])).correct).toBe(false);
+    const steps = stepsOf(e);
+    // 6 steps: [construct A sol, MC count=one, construct B other sol, MC count=∞,
+    //           numeric C contradiction, MC count=none]
+    expect(steps).toHaveLength(6);
+    expect(steps.map((s) => s.kind)).toEqual([
+      "construct",
+      "multiple-choice",
+      "construct",
+      "multiple-choice",
+      "numeric",
+      "multiple-choice",
+    ]);
+    // The witness (construct/numeric) steps must NOT name the classification.
+    for (const i of [0, 2, 4]) {
+      const explanation = (steps[i] as { explanation: string }).explanation.toLowerCase();
+      expect(explanation).not.toContain("no solution");
+      expect(explanation).not.toContain("exactly one");
+      expect(explanation).not.toContain("infinitely many");
+    }
+    // Fully correct: A=(2,1) → one; B second sol (3,0)≠(0,3) → ∞; C contradiction 4 → none.
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(4), choice(0)]))
+        .correct,
+    ).toBe(true);
+    // A different valid A-solution still passes (predicate-graded), so does a
+    // different valid distinct B-solution.
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(1, 2), choice(2), num(4), choice(0)]))
+        .correct,
+    ).toBe(true);
+    // Each field independently mutated must fail:
+    expect(
+      gradeExercise(e, seq([scons(3, 3), choice(1), scons(3, 0), choice(2), num(4), choice(0)]))
+        .correct,
+    ).toBe(false); // A witness not a solution
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(0), scons(3, 0), choice(2), num(4), choice(0)]))
+        .correct,
+    ).toBe(false); // A count wrong (none)
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(0, 3), choice(2), num(4), choice(0)]))
+        .correct,
+    ).toBe(false); // B "different" solution is the excluded given one
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(1), num(4), choice(0)]))
+        .correct,
+    ).toBe(false); // B count wrong (one)
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(5), choice(0)]))
+        .correct,
+    ).toBe(false); // C contradiction value wrong
+    expect(
+      gradeExercise(e, seq([scons(2, 1), choice(1), scons(3, 0), choice(2), num(4), choice(2)]))
+        .correct,
+    ).toBe(false); // C count wrong (∞)
   });
 
   it("sys-solve-confirm-fresh: FULL two-coordinate column confirmation (both entries checked)", () => {
@@ -131,13 +186,23 @@ describe("L3 systems — corrected remediation items", () => {
     expect(gradeExercise(e, vec([2, 4])).correct).toBe(false); // on the line → infinite
   });
 
-  it("sys-characterize-parameter-fresh: E4 symbolic-parameter characterization (find h, on-line k, witness)", () => {
+  it("sys-characterize-parameter-fresh: E4 GENERAL boundary v=2u (find h, slope c, construct both sides)", () => {
     const e = ex(systemsLesson, "sys-characterize-parameter-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(stepsOf(e)).toHaveLength(3);
-    expect(gradeExercise(e, nums([6, 4, 2])).correct).toBe(true);
-    expect(gradeExercise(e, nums([4, 4, 2])).correct).toBe(false); // wrong dependency h
-    expect(gradeExercise(e, nums([6, 3, 2])).correct).toBe(false); // wrong on-line k
+    const steps = stepsOf(e);
+    // 4 steps: numeric h, numeric slope c, construct inconsistent b, construct consistent b
+    expect(steps).toHaveLength(4);
+    expect(steps.map((s) => s.kind)).toEqual(["numeric", "numeric", "construct", "construct"]);
+    // h=6, c=2, an off-line (inconsistent) target, an on-line (consistent) target.
+    expect(gradeExercise(e, seq([num(6), num(2), scons(1, 0), scons(1, 2)])).correct).toBe(true);
+    // A DIFFERENT valid consistent/inconsistent pair still passes (predicate-graded).
+    expect(gradeExercise(e, seq([num(6), num(2), scons(0, 3), scons(2, 4)])).correct).toBe(true);
+    // Each field independently mutated fails:
+    expect(gradeExercise(e, seq([num(4), num(2), scons(1, 0), scons(1, 2)])).correct).toBe(false); // wrong h
+    expect(gradeExercise(e, seq([num(6), num(3), scons(1, 0), scons(1, 2)])).correct).toBe(false); // wrong slope c
+    expect(gradeExercise(e, seq([num(6), num(2), scons(1, 2), scons(1, 2)])).correct).toBe(false); // "inconsistent" is on the line
+    expect(gradeExercise(e, seq([num(6), num(2), scons(1, 0), scons(1, 0)])).correct).toBe(false); // "consistent" is off the line
+    expect(gradeExercise(e, seq([num(6), num(2), scons(1, 0), scons(0, 0)])).correct).toBe(false); // zero vector rejected (vector-on-line requires nonzero)
   });
 
   it("sys-reason-dependent-count / proofs: self-check surfaces mirror the self-mark", () => {
@@ -255,42 +320,87 @@ describe("L4 elimination — corrected remediation items", () => {
     expect(gradeExercise(e, vec([1, 0])).correct).toBe(false); // off the line → none
   });
 
-  it("elim-degenerate-pivot-transfer: E4 zero-pivot swap, then produce the solution", () => {
+  it("elim-degenerate-pivot-transfer: E4 zero-pivot swap PRODUCED as the swapped augmented matrix", () => {
     const e = ex(eliminationLesson, "elim-degenerate-pivot-transfer");
-    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    expect(stepsOf(e)).toHaveLength(3);
-    // swap (choice 0), y = 4, x = -1
+    // Now a produced matrix entry (not a multiple-choice row-swap decision).
+    expect(resolveCapabilityId(e)).toBe(MATRIX_ENTRY_ID);
+    // Correct swapped matrix.
     expect(
-      gradeExercise(e, seq([
-        { kind: "multiple-choice", choice: 0 },
-        { kind: "numeric", value: 4 },
-        { kind: "numeric", value: -1 },
+      gradeExercise(e, matrix([
+        [2, 3, 10],
+        [0, 1, 4],
       ])).correct,
     ).toBe(true);
+    // Not swapped (original) fails.
     expect(
-      gradeExercise(e, seq([
-        { kind: "multiple-choice", choice: 1 }, // scale by 0 — illegal
-        { kind: "numeric", value: 4 },
-        { kind: "numeric", value: -1 },
+      gradeExercise(e, matrix([
+        [0, 1, 4],
+        [2, 3, 10],
+      ])).correct,
+    ).toBe(false);
+    // Any single wrong entry fails.
+    expect(
+      gradeExercise(e, matrix([
+        [2, 3, 10],
+        [0, 1, 5],
       ])).correct,
     ).toBe(false);
   });
 });
 
 describe("L5 solution-sets — corrected remediation items", () => {
-  it("sol-produce-parametric-fresh: EVERY component of the parametric set is produced & checked", () => {
+  it("sol-produce-parametric-fresh: COMPLETE, predicate-graded, learner-chosen parametric set", () => {
     const e = ex(solutionSetsLesson, "sol-produce-parametric-fresh");
     expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
-    // x_p.x=4, verify(2x+6y)=8, null.x=3, verify=0, point.x=10, point.y=-2
-    expect(stepsOf(e)).toHaveLength(6);
-    expect(gradeExercise(e, nums([4, 8, 3, 0, 10, -2])).correct).toBe(true);
-    // each component must be right on its own
-    expect(gradeExercise(e, nums([5, 8, 3, 0, 10, -2])).correct).toBe(false); // x_p wrong
-    expect(gradeExercise(e, nums([4, 7, 3, 0, 10, -2])).correct).toBe(false); // x_p verify wrong
-    expect(gradeExercise(e, nums([4, 8, 2, 0, 10, -2])).correct).toBe(false); // null dir wrong
-    expect(gradeExercise(e, nums([4, 8, 3, 1, 10, -2])).correct).toBe(false); // null verify wrong
-    expect(gradeExercise(e, nums([4, 8, 3, 0, 7, -2])).correct).toBe(false); // point.x wrong
-    expect(gradeExercise(e, nums([4, 8, 3, 0, 10, 0])).correct).toBe(false); // point.y wrong
+    const steps = stepsOf(e);
+    // 4 steps: construct x_p, construct null dir, numeric dimension, vector point.
+    expect(steps).toHaveLength(4);
+    expect(steps.map((s) => s.kind)).toEqual(["construct", "construct", "numeric", "vector"]);
+    // Canonical choices.
+    expect(gradeExercise(e, seq([scons(4, 0), scons(3, -1), num(1), svec(10, -2)])).correct).toBe(
+      true,
+    );
+    // DIFFERENT valid learner choices pass too: another particular solution and a
+    // different nonzero null multiple.
+    expect(gradeExercise(e, seq([scons(1, 1), scons(-3, 1), num(1), svec(10, -2)])).correct).toBe(
+      true,
+    );
+    expect(gradeExercise(e, seq([scons(7, -1), scons(6, -2), num(1), svec(10, -2)])).correct).toBe(
+      true,
+    );
+    // Each entered field independently mutated must fail:
+    expect(gradeExercise(e, seq([scons(5, 0), scons(3, -1), num(1), svec(10, -2)])).correct).toBe(
+      false,
+    ); // x_p not a solution
+    expect(gradeExercise(e, seq([scons(4, 0), scons(1, 1), num(1), svec(10, -2)])).correct).toBe(
+      false,
+    ); // null dir off the null line
+    expect(gradeExercise(e, seq([scons(4, 0), scons(0, 0), num(1), svec(10, -2)])).correct).toBe(
+      false,
+    ); // zero "null direction" rejected
+    expect(gradeExercise(e, seq([scons(4, 0), scons(3, -1), num(2), svec(10, -2)])).correct).toBe(
+      false,
+    ); // wrong dimension
+    expect(gradeExercise(e, seq([scons(4, 0), scons(3, -1), num(1), svec(7, -2)])).correct).toBe(
+      false,
+    ); // point.x wrong
+    expect(gradeExercise(e, seq([scons(4, 0), scons(3, -1), num(1), svec(10, 0)])).correct).toBe(
+      false,
+    ); // point.y wrong
+  });
+
+  it("sol-difference-produce-fresh: PRODUCED difference of two solutions is a null vector (both rows)", () => {
+    const e = ex(solutionSetsLesson, "sol-difference-produce-fresh");
+    expect(resolveCapabilityId(e)).toBe(EXERCISE_SEQUENCE_ID);
+    const steps = stepsOf(e);
+    expect(steps).toHaveLength(3);
+    expect(steps.map((s) => s.kind)).toEqual(["vector", "numeric", "numeric"]);
+    expect(gradeExercise(e, seq([svec(3, -1), num(0), num(0)])).correct).toBe(true);
+    // each field mutated fails
+    expect(gradeExercise(e, seq([svec(3, 1), num(0), num(0)])).correct).toBe(false); // wrong difference y
+    expect(gradeExercise(e, seq([svec(4, -1), num(0), num(0)])).correct).toBe(false); // wrong difference x
+    expect(gradeExercise(e, seq([svec(3, -1), num(1), num(0)])).correct).toBe(false); // row 1 not 0
+    expect(gradeExercise(e, seq([svec(3, -1), num(0), num(1)])).correct).toBe(false); // row 2 not 0
   });
 
   it("sol-freevars-dimension-fresh: produces #free variables and dimension", () => {

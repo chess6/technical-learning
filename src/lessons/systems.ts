@@ -256,12 +256,14 @@ export const systemsLesson: LessonDefinition = {
   //  - multiple-choice AND committed multiple-choice are **E1 recognition**
   //    (commit-before-reveal makes an item valid evidence, it does NOT make it E3);
   //  - **E3** requires fresh, unaided production of the COMPLETE outcome
-  //    (`sys-classify-produce-fresh` = produce the none/one/∞ witness by working it;
+  //    (`sys-classify-produce-fresh` = produce a full solution / a distinct second
+  //    solution / the contradiction value, THEN commit the count, per system;
   //    `sys-solve-confirm-fresh` = solve by rows + confirm BOTH column coordinates;
   //    `sys-translate-augmented-fresh` = the whole [A|b]);
   //  - **E4** is unfamiliar transfer/construction (`sys-construct-inconsistent`
   //    graded construction; `sys-characterize-parameter-fresh` = characterize the
-  //    dependency/consistency boundary on a symbolic parameter — a novel task);
+  //    GENERAL consistency boundary $v = 2u$ on a symbolic parameter and construct a
+  //    target on each side — a novel task);
   //  - `self-check` is an **unscored E6 surface** (reasoning + proofs).
   // The reasoning/proof surfaces stay UNSCORED (self-mark ≠ credit), so Gate 8 stays
   // NOT PASSED until human scoring (module Package F) — see the mastery contract.
@@ -321,49 +323,94 @@ export const systemsLesson: LessonDefinition = {
       },
     },
     {
-      // Fresh PRODUCED classification (E3): instead of picking none/one/∞ from a
-      // list, the learner works three fresh systems and PRODUCES the witness that
-      // certifies each class — the forced solution (one), a second distinct solution
-      // (infinitely many), and the elimination contradiction value (none). The class
-      // is the output of computation the learner performed, not a guess.
+      // Fresh PRODUCED classification with a committed COUNT (E3). For each of
+      // three fresh systems the learner (1) PRODUCES the decisive witness — a
+      // full solution, a second distinct solution, or the contradiction value —
+      // and only THEN (2) commits the solution count. The witness steps name no
+      // class, so the classification is never revealed before the learner's
+      // complete response; the count step is where the learner states the class,
+      // resting on the evidence they just produced. This is honestly a
+      // "produce-then-classify" task, not "classify before solving": the
+      // production is the E3 evidence, the count is the committed conclusion.
       id: "sys-classify-produce-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
       prompt:
-        "Classify by producing the evidence, not by guessing. Three fresh systems — work each and let the numbers decide the count.",
+        "Classify by producing the evidence, then committing the count. Three fresh systems — work each, then say how many solutions it has.",
       config: {
         steps: [
           {
-            kind: "numeric",
+            // Witness (neutral — no class named). Predicate-graded: ANY correct
+            // solution the learner produces passes.
+            kind: "construct",
             prompt:
-              "System A: $\\begin{cases} 2x + y = 5 \\\\ x - y = 1 \\end{cases}$. Solve it — enter $x$.",
-            expected: 2,
+              "System A: $\\begin{cases} 2x + y = 5 \\\\ x - y = 1 \\end{cases}$. Produce a solution — enter both coordinates $(x, y)$.",
+            check: {
+              kind: "solves-system",
+              matrix: [
+                [2, 1],
+                [1, -1],
+              ],
+              rhs: [5, 1],
+            },
             explanation:
-              "Adding the equations gives $3x = 6$, so $x = 2$. The columns $(2,1)$ and $(1,-1)$ are independent.",
+              "That $(x, y)$ satisfies both equations of System A (the forced point is $(2, 1)$).",
           },
           {
-            kind: "numeric",
-            prompt: "…and $y$ for System A.",
-            expected: 1,
+            kind: "multiple-choice",
+            prompt:
+              "System A's columns $(2, 1)$ and $(1, -1)$ are not proportional (independent). Commit the count: how many solutions does System A have?",
+            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
+            correctChoice: 1,
             explanation:
-              "$x - y = 1$ with $x = 2$ gives $y = 1$. A single forced $(x, y) = (2, 1)$ — independent columns, so **exactly one** solution. You produced uniqueness by finding the one point.",
+              "Independent columns force a single point, so **exactly one** solution — the $(2, 1)$ you produced is the only one.",
           },
           {
-            kind: "numeric",
+            // Witness (neutral). Predicate-graded and EXCLUDES the given solution,
+            // so the learner must produce a genuinely different second solution.
+            kind: "construct",
             prompt:
-              "System B: $\\begin{cases} x + y = 3 \\\\ 2x + 2y = 6 \\end{cases}$. One solution is $(0, 3)$. Find a DIFFERENT one: set $x = 1$ and enter $y$.",
-            expected: 2,
+              "System B: $\\begin{cases} x + y = 3 \\\\ 2x + 2y = 6 \\end{cases}$. One solution is $(0, 3)$. Produce a DIFFERENT solution — enter both coordinates.",
+            check: {
+              kind: "solves-system",
+              matrix: [
+                [1, 1],
+                [2, 2],
+              ],
+              rhs: [3, 6],
+              exclude: [0, 3],
+            },
             explanation:
-              "Row 2 is twice row 1, so both reduce to $x + y = 3$; with $x = 1$, $y = 2$. Now $(0,3)$ and $(1,2)$ both solve it — two distinct solutions force **infinitely many** (dependent columns). You produced non-uniqueness by exhibiting a second solution.",
+              "That point also satisfies both equations — a second, distinct solution (row 2 is just twice row 1, so both reduce to $x + y = 3$).",
           },
           {
+            kind: "multiple-choice",
+            prompt:
+              "You produced two distinct solutions of System B, whose columns are dependent. Commit the count: how many solutions does System B have?",
+            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
+            correctChoice: 2,
+            explanation:
+              "Two distinct solutions of a linear system force **infinitely many** — every point on the line $x + y = 3$ works.",
+          },
+          {
+            // Witness for the empty case: no solution vector exists to construct,
+            // so the learner produces the contradiction value instead (neutral).
             kind: "numeric",
             prompt:
-              "System C: $\\begin{cases} x + y = 2 \\\\ 2x + 2y = 5 \\end{cases}$. Double equation 1: what value does that force the left side $2x + 2y$ of equation 2 to equal?",
+              "System C: $\\begin{cases} x + y = 2 \\\\ 2x + 2y = 5 \\end{cases}$. Double equation 1: what value does that force the left side $2x + 2y$ to take?",
             expected: 4,
             explanation:
-              "Doubling $x + y = 2$ gives $2x + 2y = 4$, but equation 2 says $2x + 2y = 5$. Since $4 \\ne 5$, no $(x, y)$ can satisfy both — **no solution**. You produced the contradiction that certifies inconsistency.",
+              "Doubling $x + y = 2$ gives $2x + 2y = 4$.",
+          },
+          {
+            kind: "multiple-choice",
+            prompt:
+              "Equation 2 of System C says $2x + 2y = 5$, but doubling equation 1 forces $2x + 2y = 4$. Commit the count: how many solutions does System C have?",
+            choices: ["No solution", "Exactly one solution", "Infinitely many solutions"],
+            correctChoice: 0,
+            explanation:
+              "$4 \\ne 5$ is an impossible demand, so **no solution** — $\\mathbf{b}$ lies off the dependent columns' line.",
           },
         ],
       },
@@ -514,18 +561,21 @@ export const systemsLesson: LessonDefinition = {
         "The reachable set (column space) is the whole line $\\{s\\,(1,2)\\}$. A target on that line is reachable (infinitely many recipes); a target off it is unreachable — no solution. So the inconsistent targets are precisely the points off the line.",
     },
     {
-      // Package D (in-lesson E4) — unfamiliar-transfer CHARACTERIZATION. Every
-      // earlier item used concrete numbers; here the learner transfers "dependent ⇔
-      // columns proportional" and "consistent ⇔ b on the column line" to a SYMBOLIC
-      // parameter h and then characterizes the solvable/unsolvable boundary — a task
-      // never walked through. Produced numerically (find h, find the on-line target
-      // coordinate, produce a witnessing solution), graded step-by-step.
+      // Package D (in-lesson E4) — unfamiliar-transfer CHARACTERIZATION of the
+      // GENERAL consistency boundary. Every earlier item used concrete numbers;
+      // here the learner transfers "dependent ⇔ columns proportional" and
+      // "consistent ⇔ b on the column line" to a SYMBOLIC parameter h, then
+      // produces the general condition on an ARBITRARY target $\mathbf{b} = (u, v)$
+      // (not a single slice like $(2, k)$), and finally exhibits both an
+      // inconsistent and a consistent target by construction — a task never walked
+      // through. Produced (find h, produce the boundary slope, construct a target
+      // on each side), graded step-by-step.
       id: "sys-characterize-parameter-fresh",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
       prompt:
-        "Characterize the boundary. Let $A$ have columns $\\mathbf{a}_1 = (1, 2)$ and $\\mathbf{a}_2 = (3, h)$, with $h$ a parameter you get to pin down.",
+        "Characterize the whole boundary. Let $A$ have columns $\\mathbf{a}_1 = (1, 2)$ and $\\mathbf{a}_2 = (3, h)$, with $h$ a parameter you get to pin down.",
       config: {
         steps: [
           {
@@ -539,18 +589,36 @@ export const systemsLesson: LessonDefinition = {
           {
             kind: "numeric",
             prompt:
-              "Fix $h = 6$. The columns now span the line $\\{s\\,(1,2)\\}$. For a target $\\mathbf{b} = (2, k)$, which $k$ makes the system **consistent** (i.e. $\\mathbf{b}$ on that line)?",
-            expected: 4,
-            explanation:
-              "On the line, $\\mathbf{b} = s\\,(1,2)$; first entry $2$ forces $s = 2$, so $k = 2\\cdot 2 = 4$. Consistent exactly when $k = 4$; **every other $k$ gives no solution** — that is the full characterization.",
-          },
-          {
-            kind: "numeric",
-            prompt:
-              "At $h = 6$, $\\mathbf{b} = (2, 4)$: produce a solution with $y = 0$ — enter $x$.",
+              "Fix $h = 6$. Now take a GENERAL target $\\mathbf{b} = (u, v)$. The system is consistent exactly when $v = c\\,u$ for one constant $c$. Produce $c$.",
             expected: 2,
             explanation:
-              "$x\\,(1,2) + 0\\,(3,6) = (2,4)$ needs $x = 2$. And since the columns are dependent there are **infinitely many** solutions on this consistent target (e.g. $(-1, 1)$ also works). So for $h = 6$: consistent $\\Rightarrow$ infinitely many, off the line $\\Rightarrow$ none — never exactly one.",
+              "The columns span the line $\\{s\\,(1,2)\\}$, i.e. the points $(u, 2u)$. So $\\mathbf{b} = (u, v)$ is reachable exactly when $v = 2u$: $c = 2$. This is the **whole** boundary — every $\\mathbf{b}$ with $v \\ne 2u$ is inconsistent, not just the $(2, k)$ slice.",
+          },
+          {
+            // Construct an INCONSISTENT target: any b off the reachable column line
+            // {s(1,2)} (v ≠ 2u). `vector-off-line` also rejects the zero vector.
+            kind: "construct",
+            prompt:
+              "Use your condition ($v = 2u$). At $h = 6$, construct any target $\\mathbf{b} = (u, v)$ for which the system has **no solution** — enter both coordinates.",
+            check: {
+              kind: "vector-off-line",
+              spanning: [1, 2],
+            },
+            explanation:
+              "Any $\\mathbf{b}$ with $v \\ne 2u$ lies off the column line $\\{s\\,(1,2)\\}$ and is unreachable — no solution. (E.g. $(1, 0)$: here $v = 0 \\ne 2 = 2u$.)",
+          },
+          {
+            // Construct a CONSISTENT target: any nonzero b on the reachable column
+            // line. `vector-on-line` requires nonzero, so the zero vector is rejected.
+            kind: "construct",
+            prompt:
+              "Now construct a target $\\mathbf{b} = (u, v)$, not the zero vector, for which the system **does** have solutions — enter both coordinates.",
+            check: {
+              kind: "vector-on-line",
+              spanning: [1, 2],
+            },
+            explanation:
+              "Any $\\mathbf{b}$ with $v = 2u$ (and $\\mathbf{b} \\ne \\mathbf{0}$) lies on the column line $\\{s\\,(1,2)\\}$ — reachable, and since the columns are dependent, in **infinitely many** ways. So at $h = 6$: on the line $\\Rightarrow$ infinitely many, off it $\\Rightarrow$ none — never exactly one.",
           },
         ],
       },

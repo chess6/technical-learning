@@ -91,11 +91,11 @@ below its required level; ⬜ module-owned (Gate 9).
 
 | Outcome (operational) | Dimension | Owner | Built item (type) | Current honest level | Required |
 | --- | --- | --- | --- | --- | --- |
-| Predict a legal row op leaves the solution fixed, and say why | D1/D13 | lesson | `elim-predict-fixed-point` (committed-prediction, **pre-Watch**) | **E1** — commit-before-reveal on the taught instance; kept **by design** as the pre-Watch prediction (a learning event, not the evidence) | E3 |
+| Predict a legal row op leaves the solution fixed, and say why | D1/D13 | lesson | `elim-predict-fixed-point` (committed-prediction, **pre-Watch**, E1 learning event); the *"say why"* is owned by 🟡 `elim-explain-invariance` (self-check invariance proof) | **E1 prediction + E6 proof surface (unscored)** — the fixed-point *fact* is a pre-Watch commit; its **justification is the invariance proof**, produced but awaiting human scoring | E6 proof (human-scored) |
 | Run forward elimination + back-substitute, correct multiplier | D3 | lesson | ✅ `elim-sequence-forward-fresh` (exercise-sequence, **fresh**) + `elim-matrix-after-step-fresh` (matrix-entry, **fresh**) + taught-number twins | **E3** — intermediates (multiplier, triangular row, back-sub) graded on a fresh system | E3 |
 | Diagnose an illegal/erroneous row op **and repair it** | D13 | lesson | ✅ `elim-diagnose-repair-fresh` (exercise-sequence on an **unfamiliar** system: **produce** the erroneous coefficient + **produce** the repaired row) + 🟡 `elim-diagnose-explain-fresh` (self-check, produced explanation); `elim-diagnose-illegal` (MC, E1) | **E4** for the produced diagnosis + repair on the unfamiliar erroneous elimination; the written *explanation* is a produced-but-unscored surface | E4 |
 | Certify "no solution" via an elimination contradiction row | D3/D7 | lesson | ✅ `elim-contradiction-row-fresh` (matrix-entry, **run elimination** on a fresh inconsistent system → \(0=c\) row) | **E3** — fresh production of the contradiction row | E3 |
-| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (exercise-sequence, **E4**: a zero-pivot system that forces a **row swap** — never walked through — then produce the solution); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — unfamiliar-transfer to the degenerate zero-pivot case; the ∞-construction is an E3 beneath it | E4 |
+| Handle a degenerate configuration (zero pivot) / construct a degenerate \(\mathbf{b}\) | D3/D7 | lesson | ✅ `elim-degenerate-pivot-transfer` (**matrix-entry**, **E4**: a zero-pivot system that forces a **row swap** — never walked through — **produce the swapped augmented matrix**; routine back-substitution is *not* graded as the transfer); `elim-construct-infinite` (construct-in-explorer, distinct cols, ∞ case, E3) | **E4** — the produced swapped matrix *is* the method-selection evidence; the ∞-construction is an E3 beneath it | E4 |
 | Prove invariance in both directions (reversibility) | D6 | lesson | 🟡 `elim-explain-invariance` (self-check + model answer + rubric) | **E6 surface, unscored** — learner writes the proof; `self-check` self-marks, so credit awaits human scoring | E6 (human-scored) |
 | Select elimination vs another method unprompted | D8 | ⬜ **module** | module set (not built) | not built | E3 (Gate 9) |
 | Use elimination in an unfamiliar/cumulative item (compute \(\mathbf{x}_p\), combine with L5) | D9/D10 | ⬜ **module** | module set (not built) | not built | E4/E5 (Gate 9) |
@@ -113,10 +113,13 @@ reaches **E3** via a fresh elimination-to-contradiction-row production
 `elim-diagnose-repair-fresh` **produces** the erroneous coefficient and the repaired row
 on an *unfamiliar* system (no MC identify step), with a produced written explanation
 surface (`elim-diagnose-explain-fresh`); the **degenerate** outcome reaches **E4** via
-`elim-degenerate-pivot-transfer` (a zero-pivot configuration forcing a row swap, never
-walked through), with `elim-construct-infinite` an E3 construction beneath it. The only
-lesson-owned outcomes still below required are the ones needing **human scoring**: the
-invariance **proof** and the diagnosis **explanation** are unscored E6 surfaces. So
+`elim-degenerate-pivot-transfer`, now a **matrix-entry** where the learner **produces the
+swapped augmented matrix** for a zero-pivot configuration never walked through (the routine
+back-substitution is deliberately not graded as the E4 method selection), with
+`elim-construct-infinite` an E3 construction beneath it. The only lesson-owned outcomes
+still below required are the ones needing **human scoring**: the **fixed-point
+justification / invariance proof** and the diagnosis **explanation** are unscored E6
+surfaces. So
 **Gate 8 is NOT PASSED** solely because those surfaces are unscored (Package F). Fresh
 numbers and each new item's grading paths are verified in
 [`freshExample.test.ts`](../../../../../src/lessons/__tests__/freshExample.test.ts) and
@@ -133,13 +136,14 @@ surfaces**.
   `elim-construct-infinite` (∞-case construction).
 - **Unfamiliar transfer (E4) — reached:** produced diagnosis + repair on an unfamiliar
   erroneous elimination (`elim-diagnose-repair-fresh`); the degenerate zero-pivot swap
-  (`elim-degenerate-pivot-transfer`).
-- **Learning event, by design:** `elim-predict-fixed-point` (pre-Watch) — E1.
+  produced as the swapped augmented matrix (`elim-degenerate-pivot-transfer`).
+- **Learning event, by design:** `elim-predict-fixed-point` (pre-Watch) — E1; its
+  justification is owned by the invariance proof surface below.
 - **Recognition (support):** `elim-diagnose-illegal` (E1).
 - **Produced but unscored surface (🟡 — the only remaining lesson-owned blockers):**
-  `elim-explain-invariance` (invariance proof) and `elim-diagnose-explain-fresh` (the
-  diagnosis explanation) — model answer + rubric captured; the in-app self-mark is not
-  scoring (Package F).
+  `elim-explain-invariance` (invariance proof — *also* the fixed-point justification) and
+  `elim-diagnose-explain-fresh` (the diagnosis explanation) — model answer + rubric
+  captured; the in-app self-mark is not scoring (Package F).
 - **Module-owned (planned Gate 9):** method selection (D8); cumulative use with L5.
 
 ### 1f. Connections, assessment, retention
@@ -191,13 +195,14 @@ remediation, under the **P3 override**, against the runtime audit
       **produces** the erroneous coefficient and the repaired row on an *unfamiliar*
       system (no MC identify step), with a produced written explanation surface
       (`elim-diagnose-explain-fresh`).
-- [x] **Degenerate case reaches E4.** `elim-degenerate-pivot-transfer` transfers to a
-      zero-pivot configuration that forces a row swap (never walked through);
+- [x] **Degenerate case reaches E4.** `elim-degenerate-pivot-transfer` now has the learner
+      **produce the swapped augmented matrix** for a zero-pivot configuration (never walked
+      through); routine back-substitution is not counted as the transfer;
       `elim-construct-infinite` remains an E3 construction beneath it.
 - [ ] **Lesson-owned P3 (proof) reaches independently demonstrated — NOT YET.**
-      `elim-explain-invariance` (and the diagnosis explanation surface) are genuine E6
-      *surfaces*; `self-check` is self-marked, so credit is **blocked on human scoring**
-      (Package F).
+      `elim-explain-invariance` (which is *also* the fixed-point justification) and the
+      diagnosis explanation surface are genuine E6 *surfaces*; `self-check` is self-marked,
+      so credit is **blocked on human scoring** (Package F).
 - [x] Every **module-owned** core outcome recorded as a Gate-9 obligation (D8; D10).
 - [x] Backward bridge + forward edge present; ≥1 cumulative connection (D10).
 - [x] Delayed-retention hook (D12) recorded.
