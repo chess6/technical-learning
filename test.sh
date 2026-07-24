@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Run tests.
 #   ./test.sh           unit tests (Vitest)
 #   ./test.sh e2e       Playwright browser tests

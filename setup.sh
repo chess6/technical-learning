@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # One-time (or occasional) environment setup.
 set -euo pipefail
 # shellcheck source=scripts/_common.sh

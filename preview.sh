@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Preview the production build locally.
 set -euo pipefail
 # shellcheck source=scripts/_common.sh

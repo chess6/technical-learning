@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Quality gate: lint + typecheck + unit tests. Optionally include e2e.
 #   ./check.sh        lint, tsc, unit
 #   ./check.sh e2e    also Playwright

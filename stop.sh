@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Stop the background Vite dev server started by ./start.sh.
 set -euo pipefail
 # shellcheck source=scripts/_common.sh

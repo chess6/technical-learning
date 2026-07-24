@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Start the Vite dev server in the background.
 set -euo pipefail
 # shellcheck source=scripts/_common.sh

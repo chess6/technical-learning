@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+[ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
 # Show whether the dev server is running.
 set -euo pipefail
 # shellcheck source=scripts/_common.sh
