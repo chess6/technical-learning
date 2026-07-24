@@ -29,6 +29,30 @@ export function pendingReviews(state: Pick<LearnerState, "reviews">): ReviewReco
   return Object.values(state.reviews).filter((r) => r.state === "pending");
 }
 
+/** A string that parses as a real timestamp (non-empty, `Date.parse`-able). */
+function isValidTimestamp(value: unknown): boolean {
+  return typeof value === "string" && value.trim() !== "" && !Number.isNaN(Date.parse(value));
+}
+
+/**
+ * A review that may count toward `REVIEW_COMPLETE`: it must be a fully-formed,
+ * PASSING human score. An omitted, incomplete, or malformed/imported record —
+ * missing a boolean `passed`, a finite `score`, or a valid `scoredAt` timestamp —
+ * is never completable, so a hand-edited or partially-imported blob can never
+ * masquerade as a clean pass.
+ */
+export function isValidScoredPass(review: ReviewRecord): boolean {
+  return (
+    review.state === "scored" &&
+    review.omitted !== true &&
+    typeof review.passed === "boolean" &&
+    review.passed === true &&
+    typeof review.score === "number" &&
+    Number.isFinite(review.score) &&
+    isValidTimestamp(review.scoredAt)
+  );
+}
+
 export function reviewStatus(
   state: Pick<LearnerState, "reviews">,
   set: AttemptSet,
@@ -49,10 +73,11 @@ export function reviewStatus(
   let anyFailed = false;
   for (const exerciseId of requiredExerciseIds) {
     const review = byExercise.get(exerciseId);
+    // Not yet acted on → conservatively pending.
     if (!review || review.state !== "scored") return "REVIEW_PENDING";
-    // A system-recorded omission (blank required response) can never pass, even
-    // if some field claims `passed` — it is not human evidence.
-    if (review.omitted || review.passed !== true) anyFailed = true;
+    // Scored but not a valid PASSING record (omitted, failed, or malformed/
+    // imported) → this attempt can never be REVIEW_COMPLETE.
+    if (!isValidScoredPass(review)) anyFailed = true;
   }
   return anyFailed ? "REVIEW_FAILED" : "REVIEW_COMPLETE";
 }

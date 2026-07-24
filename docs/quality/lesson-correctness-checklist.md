@@ -867,11 +867,24 @@ responses remain unscored by an author).
   `saveHealthy=false` durable warning (`useLearnerState.test.tsx`, `persistence.test.ts`,
   `e2e/assessment-runner.spec.ts`)
 
+### Final persistence-integrity correction (2026-07-23, before Package G)
+
+- [x] **`REVIEW_COMPLETE` requires a fully-formed passing record** — `isValidScoredPass`
+  enforces `state==="scored"`, boolean `passed===true`, finite `score`, and a `Date.parse`-able
+  `scoredAt`; omitted/incomplete/malformed/imported records → `REVIEW_FAILED`, never complete;
+  `REVIEW_PENDING`/`REVIEW_FAILED` distinctions preserved (`reviewStatus.test.ts`)
+- [x] **Export reflects the live state after a save failure** — in `ready` phase Export
+  serializes the in-memory state (with the unsaved critical transition); untouched raw bytes
+  are exported only in read-only (corrupt/incompatible) recovery; regression proves a failed
+  save exports the newer transition, not the stale stored bytes (`useLearnerState.test.tsx`)
+- [x] **Durable save-failure warning in the reviewer queue** too (not only the runner /
+  recovery surface) — a failed reviewer save never appears safely persisted (`ReviewQueue.tsx`)
+
 ### Testing review
 
 - [x] Unit + integration: `learnerState`, `persistence`, `useLearnerState`,
   `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `captureRenderers`,
-  `ModuleRunner`, `ReviewQueue` — full `vitest` suite **574 passing / 62 files**
+  `ModuleRunner`, `ReviewQueue` — full `vitest` suite **580 passing / 62 files**
 - [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts` (2 tests): (1) submit →
   `REVIEW_PENDING` → score every pending proof (finite score) → `REVIEW_COMPLETE`,
   **persisted across reload**; (2) blank proofs stay `REVIEW_FAILED` + export/reset/import

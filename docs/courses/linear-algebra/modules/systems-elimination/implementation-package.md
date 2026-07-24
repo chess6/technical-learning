@@ -382,7 +382,10 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
 **F3 — human review & conservative status.**
 - `src/lessons/reviewStatus.ts` (new) — `reviewStatus` returns only
   `REVIEW_PENDING`/`REVIEW_COMPLETE`/`REVIEW_FAILED` (no `PASSED`, no Gate 8), plus
-  `pendingReviews`/`reviewsForAttempt`.
+  `pendingReviews`/`reviewsForAttempt`. `REVIEW_COMPLETE` requires **every** required
+  review to be a fully-formed passing record (`isValidScoredPass`: `state==="scored"`,
+  boolean `passed===true`, finite `score`, and a `Date.parse`-able `scoredAt`); any
+  omitted, incomplete, or malformed/imported record → `REVIEW_FAILED`, never complete.
 - `src/components/assessment/ReviewQueue.tsx` (new) — scores against the **snapshotted**
   rubric; writes a `ReviewRecord` (state → scored); auto vs human results stay separate.
   A **finite reviewer score is required** before Save (malformed/blank scores are
@@ -404,9 +407,13 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
   newer-schema, unmigratable, read-only, and save-failed states.
 
 **Save-failure surfacing.** `useLearnerState` exposes a sticky `saveHealthy`; a failed
-synchronous critical save (quota/disabled storage) flips it to `false` and the runner +
-recovery surface show a **durable warning** ("export a copy before reloading") instead of
-silently claiming persistence. It is cleared only by a successful import or reset.
+synchronous critical save (quota/disabled storage) flips it to `false` and the runner,
+**reviewer queue**, and recovery surface show a **durable warning** ("export a copy
+before reloading") instead of silently claiming persistence. It is cleared only by a
+successful import or reset. **Export after a save failure serializes the live in-memory
+state** (including the unsaved critical transition) — the stale stored bytes are never
+exported; untouched raw bytes are used only for corrupt/newer-schema **read-only**
+recovery.
 
 **Migration & recovery.** A pre-v2 blob upgrades in-place (adds empty `attemptSets`/
 `reviews`); a **newer** schema or an unmigratable/corrupt blob → the provider goes
@@ -419,7 +426,7 @@ recovery page); `resetState` is the only sanctioned overwrite.
 - `npm run lint` — clean (non-blocking `react-refresh` `only-export-components`
   warnings on the provider+hook file and the shared `captureRenderers` module — they
   mix a component with pure helpers; consistent with the existing provider warning).
-- `npx vitest run` — **574 tests / 62 files pass**, including new/updated suites:
+- `npx vitest run` — **580 tests / 62 files pass**, including new/updated suites:
   `learnerState` (v2 model + migration + normalization incl. `omitted`), `persistence`
   (all four load outcomes + save/export/import + **save-returns-false on quota**),
   `useLearnerState` (hydration, read-only no-overwrite, synchronous critical transitions

@@ -71,6 +71,10 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
 - **Blank required responses are omissions, not evidence:** a blank written proof is
   recorded as an `omitted` `ReviewRecord` (auto `passed:false`) that `reviewStatus`
   can never count toward `REVIEW_COMPLETE`; human scoring requires a **finite score**.
+- **`REVIEW_COMPLETE` demands fully-formed passing records:** each required review must
+  be `state==="scored"` with boolean `passed===true`, a finite `score`, and a
+  `Date.parse`-able `scoredAt`. Omitted, incomplete, or malformed/imported records
+  yield `REVIEW_FAILED`, never complete — a hand-edited blob cannot fake a clean pass.
 
 ### 5. Assessment persistence — `src/platform/persistence.ts` + `useLearnerState.tsx`
 
@@ -86,9 +90,12 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   debounced. The scheduler hook is dispatched **at-most-once** per set (persisted
   `schedulerEmittedAt` idempotency marker claimed before invoke).
 - **Save failure is surfaced, not swallowed:** a failed synchronous save flips a
-  sticky `saveHealthy=false`, driving a durable warning. `dev/recovery` exposes
-  **Export / Import / Reset** with messaging distinguishing corrupt, newer-schema,
-  unmigratable, read-only, and save-failed states.
+  sticky `saveHealthy=false`, driving a durable warning in the runner, reviewer queue,
+  and recovery surface. `dev/recovery` exposes **Export / Import / Reset** with
+  messaging distinguishing corrupt, newer-schema, unmigratable, read-only, and
+  save-failed states. **Export after a save failure serializes the live in-memory
+  state** (with the unsaved transition), never the stale stored bytes; untouched raw
+  bytes are exported only in read-only (corrupt/incompatible) recovery.
 - Both assessment surfaces (`dev/module/:setId` runner, `dev/review` reviewer) are
   **dev-gated on the same origin** so they share this state. Package F reports a
   conservative `reviewStatus` (`REVIEW_PENDING`/`COMPLETE`/`FAILED`) and **never

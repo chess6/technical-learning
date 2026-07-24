@@ -293,10 +293,17 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
-  const exportState = useCallback(
-    () => exportRaw() ?? serializeState(stateRef.current),
-    [],
-  );
+  const exportState = useCallback(() => {
+    // In read-only recovery (corrupt / newer-schema) the in-memory session is a
+    // throwaway; the untouched RAW bytes are the thing worth preserving.
+    if (phaseRef.current === "read-only") {
+      return exportRaw() ?? serializeState(stateRef.current);
+    }
+    // Otherwise the in-memory state is the source of truth. After a save failure
+    // storage holds STALE bytes, so Export must serialize the live state so the
+    // unsaved critical transition is captured — never the stale raw bytes.
+    return serializeState(stateRef.current);
+  }, []);
 
   const importState = useCallback(
     (raw: string): LoadOutcome => {

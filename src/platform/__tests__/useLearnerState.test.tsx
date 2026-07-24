@@ -110,6 +110,34 @@ describe("save failure surfaces a durable warning", () => {
   });
 });
 
+describe("export captures the unsaved transition after a save failure", () => {
+  it("serializes newer in-memory state, not the stale stored bytes", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+
+    // A first transition persists (storage now holds the OLD state).
+    act(() => result.current.startAttemptSet(newAttempt("attempt-old")));
+    const storedOld = localStorage.getItem(STORAGE_KEY)!;
+    expect(storedOld).toContain("attempt-old");
+    expect(storedOld).not.toContain("attempt-new");
+
+    // Now storage rejects writes; a critical transition fails to persist.
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    act(() => result.current.startAttemptSet(newAttempt("attempt-new")));
+    await waitFor(() => expect(result.current.saveHealthy).toBe(false));
+
+    // Stored bytes are still the STALE ones; Export must carry the newer state.
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(storedOld);
+    const exported = result.current.exportState();
+    expect(exported).toContain("attempt-new");
+    expect(exported).toContain("attempt-old");
+
+    spy.mockRestore();
+  });
+});
+
 describe("export / import recovery flow", () => {
   it("exports current state, resets, then imports it back", async () => {
     const { result } = renderHook(() => useLearnerState(), { wrapper });

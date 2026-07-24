@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { LearnerStateProvider } from "../../../platform/useLearnerState";
 import { STORAGE_KEY } from "../../../platform/persistence";
@@ -168,6 +168,40 @@ describe("ReviewQueue human scoring", () => {
     const scored = Object.values(storedReviews()).find((r) => r.state === "scored")!;
     expect(scored.passed).toBe(false);
     expect(scored.score).toBe(2);
+  });
+});
+
+describe("a failed reviewer save is not silently persisted", () => {
+  it("surfaces the durable save-failure warning in the queue", async () => {
+    const { container } = render(
+      <LearnerStateProvider>
+        <ModuleRunner setId={SET} />
+        <ReviewQueue />
+      </LearnerStateProvider>,
+    );
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    fillProof(container, "sys-prove-trichotomy", "A proof to score.");
+    fireEvent.click(container.querySelector('[data-testid="module-submit"]')!);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="review-save"]')).toBeTruthy(),
+    );
+
+    // Storage now rejects writes; the reviewer's save must not claim persistence.
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    fireEvent.click(container.querySelector<HTMLButtonElement>('[data-testid="review-pass"]')!);
+    fireEvent.change(container.querySelector<HTMLInputElement>('[data-testid="review-score"]')!, {
+      target: { value: "5" },
+    });
+    fireEvent.click(container.querySelector<HTMLButtonElement>('[data-testid="review-save"]')!);
+
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="save-warning"]')).toBeTruthy(),
+    );
+    spy.mockRestore();
   });
 });
 

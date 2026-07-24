@@ -27,13 +27,22 @@ function learnerText(set: AttemptSet | undefined, exerciseId: string): string {
 }
 
 export function ReviewQueue() {
-  const { state, upsertReview } = useLearnerState();
+  const { state, readOnly, saveHealthy, upsertReview } = useLearnerState();
   const pending = pendingReviews(state);
+
+  const saveWarning = !readOnly && !saveHealthy && (
+    <p className="module-runner__notice" role="alert" data-testid="save-warning">
+      A save just failed (storage may be full or disabled). Scores are kept in
+      memory only and are NOT safely persisted — export a copy from the recovery
+      page before reloading.
+    </p>
+  );
 
   if (pending.length === 0) {
     return (
       <section className="module-runner" aria-label="Review queue">
         <h1 className="module-runner__title">Review queue</h1>
+        {saveWarning}
         <p className="module-runner__status" data-testid="review-queue-empty">
           No responses awaiting review.
         </p>
@@ -44,6 +53,7 @@ export function ReviewQueue() {
   return (
     <section className="module-runner" aria-label="Review queue">
       <h1 className="module-runner__title">Review queue</h1>
+      {saveWarning}
       <p className="module-runner__mode">
         {pending.length} response{pending.length === 1 ? "" : "s"} awaiting a score.
       </p>
