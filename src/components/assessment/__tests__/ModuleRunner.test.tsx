@@ -93,21 +93,41 @@ function fillCoord(scope: HTMLElement, testid: string, value: string) {
   });
 }
 
-function fillConsistentSolset(
-  scope: HTMLElement,
-  freeCount: string,
-  particular: string[],
-  direction: string[],
-) {
-  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="solset-consistent"]')!);
-  fillCoord(scope, "solset-freecount", freeCount);
-  particular.forEach((v, i) => fillCoord(scope, `solset-particular-${i}`, v));
-  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="solset-add-direction"]')!);
-  direction.forEach((v, i) => fillCoord(scope, `solset-direction-0-${i}`, v));
+function fillElimGrid(scope: HTMLElement, grid: number[][]) {
+  grid.forEach((row, r) =>
+    row.forEach((v, c) => fillCoord(scope, `elim-cell-${r}-${c}`, String(v))),
+  );
 }
 
-describe("ModuleRunner — Package G solution-set set", () => {
-  it("captures produced solution sets without leaking, grades on submit, replays on reload", async () => {
+function fillConsistentElim(
+  scope: HTMLElement,
+  grid: number[][],
+  pivots: number[],
+  freeCount: string,
+  particular: string[],
+  directions: string[][],
+) {
+  fillElimGrid(scope, grid);
+  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="elim-consistent"]')!);
+  pivots.forEach((p) =>
+    fireEvent.click(scope.querySelector<HTMLButtonElement>(`[data-testid="elim-pivot-${p}"]`)!),
+  );
+  fillCoord(scope, "elim-freecount", freeCount);
+  particular.forEach((v, i) => fillCoord(scope, `elim-particular-${i}`, v));
+  directions.forEach((dir, di) => {
+    fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="elim-add-direction"]')!);
+    dir.forEach((v, i) => fillCoord(scope, `elim-direction-${di}-${i}`, v));
+  });
+}
+
+function fillInconsistentElim(scope: HTMLElement, grid: number[][], classification: string) {
+  fillElimGrid(scope, grid);
+  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="elim-inconsistent"]')!);
+  fillCoord(scope, "elim-classification", classification);
+}
+
+describe("ModuleRunner — Package G elimination set", () => {
+  it("captures produced elimination evidence without leaking, grades on submit, replays on reload", async () => {
     const first = renderRunner(<ModuleRunner setId={APPLIED} />);
     const container = first.container;
     await waitFor(() =>
@@ -120,10 +140,40 @@ describe("ModuleRunner — Package G solution-set set", () => {
     )!;
     const itRect = container.querySelector<HTMLElement>('[data-exercise="mod-p2-applied-rect"]')!;
 
-    fillConsistentSolset(it3, "1", ["2", "-3", "0"], ["-1", "3", "1"]);
-    fillConsistentSolset(itCum, "1", ["-2", "8", "0"], ["1", "-2", "1"]);
-    // The rectangular system is inconsistent → produce the ∅ verdict.
-    fireEvent.click(itRect.querySelector<HTMLButtonElement>('[data-testid="solset-inconsistent"]')!);
+    fillConsistentElim(
+      it3,
+      [
+        [1, 0, 1, 2],
+        [0, 1, -3, -3],
+        [0, 0, 0, 0],
+      ],
+      [0, 1],
+      "1",
+      ["2", "-3", "0"],
+      [["-1", "3", "1"]],
+    );
+    fillConsistentElim(
+      itCum,
+      [
+        [1, 0, -1, -2],
+        [0, 1, 2, 8],
+        [0, 0, 0, 0],
+      ],
+      [0, 1],
+      "1",
+      ["-2", "8", "0"],
+      [["1", "-2", "1"]],
+    );
+    // The rectangular system is inconsistent → produce the contradiction row + typed verdict.
+    fillInconsistentElim(
+      itRect,
+      [
+        [1, 0, 2],
+        [0, 1, 1],
+        [0, 0, 2],
+      ],
+      "inconsistent",
+    );
 
     // Nothing is graded/revealed before submit.
     expect(container.querySelector(".module-runner__feedback[data-state]")).toBeNull();
@@ -156,7 +206,7 @@ describe("ModuleRunner — Package G solution-set set", () => {
     const rectReloaded = second.container.querySelector<HTMLElement>(
       '[data-exercise="mod-p2-applied-rect"]',
     )!;
-    expect(rectReloaded.textContent).toMatch(/No solution|∅/);
+    expect(rectReloaded.textContent).toMatch(/inconsistent|No solution|∅/);
     expect(rectReloaded.querySelector(".module-runner__feedback")!.getAttribute("data-state")).toBe(
       "correct",
     );

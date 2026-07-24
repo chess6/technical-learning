@@ -16,7 +16,11 @@ References the lesson mastery contracts; does not restate them.
 > unfamiliar classification, fresh solution-set transfer, cumulative L4+L5, error
 > diagnosis, proof-hypothesis, and the concrete 3×3 / rectangular P2 slice) are authored,
 > registered in two dev-gated sets, and verified as *machinery* (pure-math + capability +
-> registration + integration + e2e). **"Built" ≠ "administered":** those tests exercise the
+> registration + integration + e2e). It has since had an **evidence-integrity correction**:
+> the three concrete applied/cumulative items capture produced *elimination* evidence
+> (`elimination-solution`: row-equivalent echelon matrix + pivots + parametric set, or a
+> produced contradiction-row + typed verdict), numeric capture never coerces a blank to 0,
+> and `mod-select-method` no longer cues its methods. **"Built" ≠ "administered":** those tests exercise the
 > capture/grade/review path with **synthetic** answers — they are **not** real learner
 > evidence. The plan has **not been administered**, so every "Result" below stays
 > `planned` / built-not-administered. Per the mastery standard, **built-but-unadministered
@@ -80,10 +84,10 @@ re-fires them after a delay.
 > produced diagnosis + degenerate zero-pivot swap, L5 scored null-direction construction).
 > All non-scoring lesson-owned interaction gaps are closed. **However, none of L3/L4/L5 has
 > passed Gate 8** — Gate 8 is a single gate and each lesson still has produced
-> reasoning/proof `self-check`s that are **unscored**. So this Class-B reassessment is
-> blocked by the missing module runner / **human-scoring surface (Package F)**, which is
-> also what clears the last lesson-owned obligation. Class B stays **not-yet-runnable**;
-> the plan remains **PLANNED**.
+> reasoning/proof `self-check`s that are **unscored**. **Package F (the module runner +
+> human-scoring surface) is now SHIPPED**, so the mechanism to run this reassessment and
+> score the proof/reasoning responses exists; what remains is **genuine administration +
+> author scoring of real learner evidence**. Class B stays **PLANNED** until that happens.
 
 | Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
 | --- | --- | --- | --- | --- | --- |
@@ -176,9 +180,9 @@ Covers the seven areas the module must assess under the declared profile:
   **E4 unfamiliar transfer** (symbolic-parameter characterization, degenerate zero-pivot
   swap, scored null-direction construction). All non-scoring lesson-owned interaction gaps
   are closed, but **no lesson has passed Gate 8** (single gate; the produced
-  reasoning/proof `self-check`s are still unscored). Reassessment is blocked by the missing
-  **Package F** (module runner + human-scoring surface + scheduler), which is also what
-  scores the last lesson-owned surfaces and lets the lessons clear Gate 8.
+  reasoning/proof `self-check`s are still unscored). **Package F (runner + human-scoring
+  surface + scheduler) is SHIPPED**; reassessment now awaits only **real administration +
+  author scoring** of the produced lesson-owned surfaces to let the lessons clear Gate 8.
 - **Delayed-retention verified:** no (not yet administered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
   **none at the module level.** The built lessons now evidence **independent performance
@@ -190,7 +194,7 @@ Covers the seven areas the module must assess under the declared profile:
   multi-variable (P2 module slice), or human-scored-proof (E6) evidence
   ([gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary)). No "module
   mastered / exam ready / proof-ready" claim may be made until the lessons clear Gate 8
-  and this plan is built (Package F onward) and run.
+  and this plan (Package F **shipped**, Package G **built**) is genuinely administered and run.
 
 Feeds the course-level benchmark validation (`validation.md` in this directory) /
 Gate 10, to be created once real results exist.

@@ -141,6 +141,83 @@ export function solveLinearSystem(
   };
 }
 
+/** The augmented matrix `[A | b]` (m×(n+1)). */
+export function augmentedMatrix(matrix: Matrix, rhs: Vec): number[][] {
+  return matrix.map((row, i) => [...row, rhs[i] ?? 0]);
+}
+
+/**
+ * Two matrices of the same shape are row-equivalent iff they share the same RREF.
+ * Used to accept ANY mathematically valid row reduction a learner produces (not
+ * one canonical form).
+ */
+export function areRowEquivalent(a: Matrix, b: Matrix, tol = DEFAULT_TOLERANCE): boolean {
+  if (a.length !== b.length) return false;
+  if (a.length === 0) return true;
+  const aCols = a[0]!.length;
+  const bCols = b[0]!.length;
+  if (aCols !== bCols) return false;
+  const ra = rref(a, tol).matrix;
+  const rb = rref(b, tol).matrix;
+  const eps = 1e-6;
+  for (let i = 0; i < ra.length; i += 1) {
+    for (let j = 0; j < aCols; j += 1) {
+      if (Math.abs(ra[i]![j]! - rb[i]![j]!) > eps) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Row-echelon form (REF or RREF): every all-zero row sits below every nonzero
+ * row, and each row's leading (leftmost nonzero) entry is strictly to the right
+ * of the row above it. Echelon form is NOT unique — this accepts any valid one.
+ */
+export function isRowEchelonForm(matrix: Matrix, tol = DEFAULT_TOLERANCE): boolean {
+  let lastLead = -1;
+  let sawZeroRow = false;
+  for (const row of matrix) {
+    let lead = -1;
+    for (let j = 0; j < row.length; j += 1) {
+      if (Math.abs(row[j]!) > tol) {
+        lead = j;
+        break;
+      }
+    }
+    if (lead === -1) {
+      sawZeroRow = true;
+      continue;
+    }
+    if (sawZeroRow) return false; // a nonzero row appears below a zero row
+    if (lead <= lastLead) return false; // leading entry not strictly to the right
+    lastLead = lead;
+  }
+  return true;
+}
+
+/**
+ * Whether an augmented matrix (with `coeffCols` coefficient columns, so the last
+ * column is the RHS) contains a contradiction row `[0 … 0 | c]` with `c ≠ 0`,
+ * i.e. the row-reduced witness of inconsistency (⇒ ∅).
+ */
+export function hasContradictionRow(
+  augmented: Matrix,
+  coeffCols: number,
+  tol = DEFAULT_TOLERANCE,
+): boolean {
+  return augmented.some((row) => {
+    let coeffsAllZero = true;
+    for (let j = 0; j < coeffCols; j += 1) {
+      if (Math.abs(row[j] ?? 0) > tol) {
+        coeffsAllZero = false;
+        break;
+      }
+    }
+    const rhsNonzero = Math.abs(row[coeffCols] ?? 0) > tol;
+    return coeffsAllZero && rhsNonzero;
+  });
+}
+
 /** Rank of a set of vectors (rows), via RREF pivot count. */
 export function vectorSetRank(vectors: readonly Vec[], tol = DEFAULT_TOLERANCE): number {
   if (vectors.length === 0) return 0;

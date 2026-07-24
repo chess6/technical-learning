@@ -19,8 +19,12 @@ import {
   approximatelyEqualVector,
   areLinearlyIndependent,
   areParallel,
+  areRowEquivalent,
+  augmentedMatrix,
   classifyLinearSystem2x2,
+  hasContradictionRow,
   inNullSpace,
+  isRowEchelonForm,
   magnitude,
   magnitudeN,
   matrixVectorMultiply,
@@ -466,12 +470,12 @@ export type SolutionSetConfig = {
 export type SolutionSetAnswer = {
   /** The learner's consistency verdict (false ⇒ ∅). */
   consistent: boolean;
-  /** Declared number of free variables (consistent case). */
-  freeCount?: number;
-  /** A particular solution (length n) (consistent case). */
-  particular?: readonly number[];
-  /** One nonzero null direction per free variable (consistent case). */
-  nullDirections?: readonly (readonly number[])[];
+  /** Declared number of free variables (consistent case); `null` = blank draft. */
+  freeCount?: number | null;
+  /** A particular solution (length n) (consistent case); `null` cells = blank. */
+  particular?: readonly (number | null)[];
+  /** One nonzero null direction per free variable; `null` cells = blank draft. */
+  nullDirections?: readonly (readonly (number | null)[])[];
 };
 
 export const SOLUTION_SET_ID = "solution-set";
@@ -502,17 +506,117 @@ function decodeSolutionSetAnswer(raw: JsonValue | undefined): SolutionSetAnswer 
     throw new AnswerDecodeError(SOLUTION_SET_ID, `"consistent" must be a boolean`);
   }
   if (!o.consistent) return { consistent: false };
-  const particular = decodeNumberArray(o.particular, SOLUTION_SET_ID, "particular");
+  const particular = decodeNullableNumberArray(o.particular ?? [], SOLUTION_SET_ID, "particular");
   const dirsRaw = decodeArray(o.nullDirections ?? [], SOLUTION_SET_ID, "nullDirections");
   const nullDirections = dirsRaw.map((d, i) =>
-    decodeNumberArray(d, SOLUTION_SET_ID, `nullDirections[${i}]`),
+    decodeNullableNumberArray(d, SOLUTION_SET_ID, `nullDirections[${i}]`),
   );
   return {
     consistent: true,
-    freeCount: decodeFiniteNumber(o.freeCount, SOLUTION_SET_ID, "freeCount"),
+    freeCount: decodeNullableNumber(o.freeCount, SOLUTION_SET_ID, "freeCount"),
     particular,
     nullDirections,
   };
+}
+
+/* --------------------------------------------------------------------------
+ * elimination-solution — the learner PRODUCES concrete elimination evidence for
+ * a system: a row-equivalent echelon augmented matrix, the pivot / free-variable
+ * identification, the free-variable count, and (consistent) a particular solution
+ * + null directions, or (inconsistent) a contradiction row plus a TYPED
+ * none/inconsistent classification. A bare "no solution" button is NOT accepted —
+ * the learner must produce the contradiction-row witness and type the verdict.
+ *
+ * Predicate-graded against the general `src/math` solver: ANY valid reduction is
+ * accepted (row-equivalent + echelon), pivot columns are the RREF-invariant true
+ * pivots, and the particular/null objects are checked structurally. Blank cells
+ * are `null` (a preserved draft), never coerced to 0.
+ * ------------------------------------------------------------------------ */
+
+export type EliminationConfig = SolutionSetConfig;
+
+export type EliminationAnswer = {
+  /** The learner's row-reduced augmented matrix `[R | d]` (m×(n+1)); `null` = blank. */
+  reduced: (number | null)[][];
+  /** Consistency verdict; `null` = not yet chosen. */
+  consistent: boolean | null;
+  /** Typed classification (inconsistent case) — a bare toggle does not suffice. */
+  classification?: string;
+  /** Identified pivot coefficient-columns (consistent case). */
+  pivotColumns?: number[];
+  /** Free-variable count (consistent case); `null` = blank draft. */
+  freeCount?: number | null;
+  /** A particular solution (consistent case); `null` cells = blank draft. */
+  particular?: (number | null)[];
+  /** One nonzero null direction per free variable; `null` cells = blank draft. */
+  nullDirections?: (number | null)[][];
+};
+
+export const ELIMINATION_ID = "elimination-solution";
+
+function eliminationConfig(exercise: ExerciseDefinition): EliminationConfig {
+  if (exercise.type !== "custom") {
+    throw new Error("elimination-solution requires a custom exercise");
+  }
+  const config = exercise.config as EliminationConfig | undefined;
+  if (
+    !config ||
+    !Array.isArray(config.matrix) ||
+    !Array.isArray(config.rhs) ||
+    typeof config.explanation !== "string"
+  ) {
+    throw new Error(
+      `elimination-solution exercise "${exercise.id}" needs { matrix, rhs, explanation } config`,
+    );
+  }
+  return config;
+}
+
+function isInconsistentClassification(text: string | undefined): boolean {
+  if (!text) return false;
+  const t = text.trim().toLowerCase();
+  if (t === "") return false;
+  return (
+    t.includes("none") ||
+    t.includes("inconsist") ||
+    t.includes("no solution") ||
+    t.includes("no solutions") ||
+    t.includes("empty") ||
+    t.includes("∅")
+  );
+}
+
+function sameIntSet(a: readonly number[], b: readonly number[]): boolean {
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort((x, y) => x - y);
+  const sb = [...b].sort((x, y) => x - y);
+  return sa.every((v, i) => v === sb[i]);
+}
+
+function decodeEliminationAnswer(raw: JsonValue | undefined): EliminationAnswer {
+  const o = decodeObject(raw, ELIMINATION_ID);
+  const reducedRows = decodeArray(o.reduced ?? [], ELIMINATION_ID, "reduced");
+  const reduced = reducedRows.map((row, i) =>
+    decodeNullableNumberArray(row, ELIMINATION_ID, `reduced[${i}]`),
+  );
+  const consistent = typeof o.consistent === "boolean" ? o.consistent : null;
+  const result: EliminationAnswer = { reduced, consistent };
+  if (typeof o.classification === "string") result.classification = o.classification;
+  if (o.pivotColumns !== undefined) {
+    result.pivotColumns = decodeNumberArray(o.pivotColumns, ELIMINATION_ID, "pivotColumns");
+  }
+  if (o.freeCount !== undefined) {
+    result.freeCount = decodeNullableNumber(o.freeCount, ELIMINATION_ID, "freeCount");
+  }
+  if (o.particular !== undefined) {
+    result.particular = decodeNullableNumberArray(o.particular, ELIMINATION_ID, "particular");
+  }
+  if (o.nullDirections !== undefined) {
+    result.nullDirections = decodeArray(o.nullDirections, ELIMINATION_ID, "nullDirections").map(
+      (d, i) => decodeNullableNumberArray(d, ELIMINATION_ID, `nullDirections[${i}]`),
+    );
+  }
+  return result;
 }
 
 /* --------------------------------------------------------------------------
@@ -771,6 +875,35 @@ function decodeNumberArray(raw: JsonValue | undefined, cap: string, field: strin
   return decodeArray(raw, cap, field).map((n, i) =>
     decodeFiniteNumber(n, cap, `${field}[${i}]`),
   );
+}
+
+/**
+ * Decode an array whose entries may each be a finite number OR JSON `null` — a
+ * blank cell in a partially-completed draft. `null` is preserved (never coerced
+ * to 0) so incomplete drafts round-trip and grade as incomplete.
+ */
+function decodeNullableNumberArray(
+  raw: JsonValue | undefined,
+  cap: string,
+  field: string,
+): (number | null)[] {
+  return decodeArray(raw, cap, field).map((n, i) => {
+    if (n === null) return null;
+    if (typeof n === "number" && Number.isFinite(n)) return n;
+    throw new AnswerDecodeError(cap, `"${field}[${i}]" must be a number or null`);
+  });
+}
+
+/** A blank-aware finite number: a finite number, or `null` for a blank draft field. */
+function decodeNullableNumber(raw: JsonValue | undefined, cap: string, field: string): number | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  throw new AnswerDecodeError(cap, `"${field}" must be a number or null`);
+}
+
+/** Whether a nullable vector is fully entered with the expected length. */
+function isCompleteVector(arr: readonly (number | null)[], length: number): arr is number[] {
+  return arr.length === length && arr.every((x) => typeof x === "number");
 }
 
 function decodeCommittedPredictionAnswer(raw: JsonValue | undefined): CommittedPredictionAnswer {
@@ -1136,9 +1269,20 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
         return { correct: true, feedback: `Correct — the system is inconsistent (∅). ${config.explanation}` };
       }
 
-      const particular = value.particular ?? [];
-      const dirs = value.nullDirections ?? [];
+      const rawParticular = value.particular ?? [];
+      const rawDirs = value.nullDirections ?? [];
       const freeCount = expected.freeCount;
+
+      // Completeness gate FIRST — a blank cell is incomplete, never treated as 0,
+      // so every expected component (including expected zeros) must be entered.
+      const incomplete = `Not quite — fill in every field before submitting (blanks are not treated as zero). ${config.explanation}`;
+      if (typeof value.freeCount !== "number") return { correct: false, feedback: incomplete };
+      if (!isCompleteVector(rawParticular, n)) return { correct: false, feedback: incomplete };
+      for (const dir of rawDirs) {
+        if (!isCompleteVector(dir, n)) return { correct: false, feedback: incomplete };
+      }
+      const particular = rawParticular as number[];
+      const dirs = rawDirs as number[][];
 
       if (value.freeCount !== freeCount) {
         return {
@@ -1146,7 +1290,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
           feedback: `Not quite — count the free variables again (columns without a pivot). ${config.explanation}`,
         };
       }
-      if (particular.length !== n || !solves(A, b, particular, tol)) {
+      if (!solves(A, b, particular, tol)) {
         return {
           correct: false,
           feedback: `Not quite — your particular solution must satisfy $A\\mathbf{x}=\\mathbf{b}$ in every equation. ${config.explanation}`,
@@ -1159,7 +1303,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
         };
       }
       for (const dir of dirs) {
-        if (dir.length !== n || magnitudeN(dir) <= tol) {
+        if (magnitudeN(dir) <= tol) {
           return {
             correct: false,
             feedback: `Not quite — each null direction must be a nonzero vector with ${n} components. ${config.explanation}`,
@@ -1185,7 +1329,7 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
       if (!value.consistent) return { consistent: false };
       return {
         consistent: true,
-        freeCount: value.freeCount ?? 0,
+        freeCount: value.freeCount ?? null,
         particular: [...(value.particular ?? [])],
         nullDirections: (value.nullDirections ?? []).map((d) => [...d]),
       };
@@ -1195,6 +1339,162 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
         kind: "custom",
         capabilityId: SOLUTION_SET_ID,
         value: decodeSolutionSetAnswer(raw),
+      };
+    },
+  },
+
+  [ELIMINATION_ID]: {
+    id: ELIMINATION_ID,
+    answerSchemaVersion: 1,
+    grade(exercise, answer) {
+      const config = eliminationConfig(exercise);
+      const value = decodeEliminationAnswer(customValue(answer, ELIMINATION_ID));
+      const tol = config.tolerance ?? SOLUTION_SET_TOLERANCE;
+      const A = config.matrix;
+      const b = config.rhs;
+      const n = config.variables ?? (A[0]?.length ?? 0);
+      const m = A.length;
+      const expected = solveLinearSystem(A, b, tol);
+      const aug = augmentedMatrix(A, b);
+      const incomplete = (msg: string) => ({ correct: false, feedback: `${msg} ${config.explanation}` });
+
+      // Reduced augmented matrix must be fully entered (m rows × n+1 cols, no blanks).
+      if (value.reduced.length !== m) {
+        return incomplete("Enter your row-reduced augmented matrix — one row per equation.");
+      }
+      const reduced: number[][] = [];
+      for (const row of value.reduced) {
+        if (!isCompleteVector(row, n + 1)) {
+          return incomplete("Fill in every entry of your reduced matrix (blanks are not zero).");
+        }
+        reduced.push(row);
+      }
+      if (value.consistent === null) {
+        return incomplete("State whether the system has solutions.");
+      }
+      // Any mathematically valid reduction is accepted (row-equivalent + echelon).
+      if (!areRowEquivalent(reduced, aug, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — your matrix must be row-equivalent to the original system (only legal row operations). ${config.explanation}`,
+        };
+      }
+      if (!isRowEchelonForm(reduced, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — reduce to echelon form: each leading entry strictly right of the one above, zero rows at the bottom. ${config.explanation}`,
+        };
+      }
+
+      if (!expected.consistent) {
+        if (value.consistent !== false) {
+          return {
+            correct: false,
+            feedback: `Not quite — elimination reaches a contradiction row, so this system has NO solution. ${config.explanation}`,
+          };
+        }
+        if (!isInconsistentClassification(value.classification)) {
+          return incomplete('Type the classification (e.g. "none" or "inconsistent").');
+        }
+        if (!hasContradictionRow(reduced, n, tol)) {
+          return {
+            correct: false,
+            feedback: `Not quite — your reduced matrix must contain the contradiction row $[0\\ \\cdots\\ 0 \\mid c]$ with $c \\neq 0$. ${config.explanation}`,
+          };
+        }
+        return {
+          correct: true,
+          feedback: `Correct — the contradiction row proves the system is inconsistent (∅). ${config.explanation}`,
+        };
+      }
+
+      // Consistent path.
+      if (value.consistent !== true) {
+        return { correct: false, feedback: `Not quite — this system IS consistent. ${config.explanation}` };
+      }
+      if (value.pivotColumns === undefined) {
+        return incomplete("Mark which columns are pivot columns.");
+      }
+      if (!sameIntSet(value.pivotColumns, expected.pivotColumns)) {
+        return {
+          correct: false,
+          feedback: `Not quite — check which columns actually contain a pivot. ${config.explanation}`,
+        };
+      }
+      if (typeof value.freeCount !== "number") {
+        return incomplete("Enter the number of free variables.");
+      }
+      if (value.freeCount !== expected.freeCount) {
+        return {
+          correct: false,
+          feedback: `Not quite — the free-variable count is (variables) − (pivots). ${config.explanation}`,
+        };
+      }
+      const particular = value.particular ?? [];
+      if (!isCompleteVector(particular, n)) {
+        return incomplete("Enter every component of a particular solution.");
+      }
+      if (!solves(A, b, particular, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — your particular solution must satisfy every equation. ${config.explanation}`,
+        };
+      }
+      const rawDirs = value.nullDirections ?? [];
+      for (const dir of rawDirs) {
+        if (!isCompleteVector(dir, n)) {
+          return incomplete("Enter every component of each null direction.");
+        }
+      }
+      const dirs = rawDirs as number[][];
+      if (dirs.length !== expected.freeCount) {
+        return {
+          correct: false,
+          feedback: `Not quite — a complete parameterization needs exactly ${expected.freeCount} independent null direction(s). ${config.explanation}`,
+        };
+      }
+      for (const dir of dirs) {
+        if (magnitudeN(dir) <= tol) {
+          return {
+            correct: false,
+            feedback: `Not quite — each null direction must be a nonzero vector. ${config.explanation}`,
+          };
+        }
+        if (!inNullSpace(A, dir, tol)) {
+          return {
+            correct: false,
+            feedback: `Not quite — each null direction must satisfy $A\\mathbf{v}=\\mathbf{0}$. ${config.explanation}`,
+          };
+        }
+      }
+      if (expected.freeCount > 0 && !areLinearlyIndependent(dirs, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — your null directions must be independent. ${config.explanation}`,
+        };
+      }
+      return { correct: true, feedback: `Correct. ${config.explanation}` };
+    },
+    serializeAnswer(answer): JsonValue {
+      const v = decodeEliminationAnswer(customValue(answer, ELIMINATION_ID));
+      const out: Record<string, JsonValue> = {
+        reduced: v.reduced.map((row) => [...row]),
+        consistent: v.consistent,
+      };
+      if (v.classification !== undefined) out.classification = v.classification;
+      if (v.pivotColumns !== undefined) out.pivotColumns = [...v.pivotColumns];
+      if (v.freeCount !== undefined) out.freeCount = v.freeCount;
+      if (v.particular !== undefined) out.particular = [...v.particular];
+      if (v.nullDirections !== undefined) {
+        out.nullDirections = v.nullDirections.map((d) => [...d]);
+      }
+      return out;
+    },
+    parseAnswer(raw) {
+      return {
+        kind: "custom",
+        capabilityId: ELIMINATION_ID,
+        value: decodeEliminationAnswer(raw),
       };
     },
   },

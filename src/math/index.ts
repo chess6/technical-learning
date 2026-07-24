@@ -104,6 +104,10 @@ export {
   solveLinearSystem,
   vectorSetRank,
   areLinearlyIndependent,
+  augmentedMatrix,
+  areRowEquivalent,
+  isRowEchelonForm,
+  hasContradictionRow,
 } from "./linearSystemsGeneral";
 export type { GeneralLinearSolution, Matrix, Vec } from "./linearSystemsGeneral";
 

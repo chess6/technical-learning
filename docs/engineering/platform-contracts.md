@@ -61,6 +61,17 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   passes and the expected shape is never revealed by config. Its capture renderer lets the
   learner add/remove null directions (the free count is never hinted). Scope is concrete
   finite systems — **not** a general ℝⁿ rank–nullity surface.
+- **`elimination-solution`** (Package G) captures produced *elimination* evidence: a
+  learner-entered **row-equivalent echelon** augmented matrix, pivot/free-variable
+  identification, the free count, and a particular solution + null directions (consistent);
+  or a **contradiction row + a TYPED classification** (inconsistent — a bare toggle cannot
+  pass). It is predicate-graded against `linearSystemsGeneral.ts` — `areRowEquivalent`
+  (same-RREF test, so **any** valid reduction is accepted), `isRowEchelonForm`, and
+  `hasContradictionRow` — with RREF-invariant pivot columns. Same concrete-system scope.
+- **Blank-safe numeric capture:** both `solution-set` and `elimination-solution` serialize
+  blank cells as JSON `null`, **never `0`**. Grading gates on completeness first (any `null`
+  is incomplete → fail), so every expected component (including expected zeros) must be
+  typed, and clearing a field updates the stored answer rather than leaving a stale valid one.
 
 ### 4. Learner-state envelope — `src/platform/learnerState.ts`
 

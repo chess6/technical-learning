@@ -42,8 +42,14 @@ every named item against its actual capability in
 > NOT PASSED for all three lessons**: F provides the *capture* mechanism, but no
 > real learner proof/reasoning response has been author-scored yet, and F **never
 > emits a Gate 8 verdict** (it reports only `REVIEW_PENDING`/`COMPLETE`/`FAILED`).
-> The **Mode C boundary now sits before Package G**: building G onward requires
-> explicit approval per
+> **Package F is SHIPPED and Package G is BUILT** (eight module-owned Class-A items in
+> two sets, on the Package F runner) and has since had an **evidence-integrity
+> correction** (blank ≠ 0 in numeric capture; the concrete applied/cumulative items now
+> capture produced *elimination* evidence via the `elimination-solution` capability; the
+> rectangular item requires a produced contradiction row + typed verdict; `mod-select-method`
+> no longer cues its methods). Package G is machinery-verified but **not administered** —
+> no real learner evidence exists yet. The **Mode C boundary now sits before Package H**:
+> building H/I requires explicit approval per
 > [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) /
 > `.cursor/rules/course-authoring.mdc`. The audit below is preserved as the
 > **as-found baseline**; the post-remediation section records the new state and the
@@ -426,8 +432,8 @@ recovery page); `resetState` is the only sanctioned overwrite.
 - `npm run lint` — clean (non-blocking `react-refresh` `only-export-components`
   warnings on the provider+hook file and the shared `captureRenderers` module — they
   mix a component with pure helpers; consistent with the existing provider warning).
-- `npx vitest run` — **620 tests / 65 files pass** (Package F + Package G), including
-  new/updated suites:
+- `npx vitest run` — **661 tests / 66 files pass** (Package F + Package G, incl. the
+  evidence-integrity correction), including new/updated suites:
   `learnerState` (v2 model + migration + normalization incl. `omitted`), `persistence`
   (all four load outcomes + save/export/import + **save-returns-false on quota**),
   `useLearnerState` (hydration, read-only no-overwrite, synchronous critical transitions
@@ -442,24 +448,30 @@ recovery page); `resetState` is the only sanctioned overwrite.
   `REVIEW_COMPLETE`, persisted across reload; and (2) blank proofs stay `REVIEW_FAILED`
   plus the export → reset → import recovery loop, no console errors.
 - `npx playwright test e2e/assessment-package-g.spec.ts` — **Package G** end-to-end:
-  (1) the applied set — produced solution sets + a produced ∅ verdict are captured with no
-  pre-submit leak, graded correct from the snapshot, and replay on reload; (2) the transfer
-  set — the four written items enter the human-review queue while the produced solution-set
-  item auto-grades; both sets reachable from the dev index; no console errors.
+  (1) the applied set — produced **elimination evidence** (echelon matrix + pivots + free
+  count + particular + null direction) and a produced **contradiction-row + typed ∅** verdict
+  are captured with no pre-submit leak, graded correct from the snapshot, and replay on
+  reload; (2) the transfer set — the four written items enter the human-review queue while the
+  produced solution-set item auto-grades; both sets reachable from the dev index; no console
+  errors.
 - Package G unit suites: `math/linearSystemsGeneral` (every fresh system re-verified
-  independently — solves / null-space / rank / consistency), `solutionSetCapability`
-  (correct + incorrect paths, field-mutation regressions, independence path, ∅), `moduleItems`
-  (eight items, human/auto split, versioned rubric snapshots, no raw array notation),
-  `moduleSets` (registration, deterministic order, versions, duplicate-id guard).
+  independently — solves / null-space / rank / consistency, plus row-equivalence, echelon,
+  and contradiction-row predicates), `solutionSetCapability` (correct + incorrect paths,
+  **blank/cleared-field regressions**, field-mutation regressions, independence path, ∅),
+  `eliminationCapability` (valid/invalid echelon, row-equivalence, pivot identification,
+  contradiction-row production, bare-toggle rejection, field-mutation + blank regressions),
+  `moduleItems` (eight items, human/auto split, versioned rubric snapshots, no raw array
+  notation, no method cueing in `mod-select-method`), `moduleSets` (registration,
+  deterministic order, versions, duplicate-id guard).
 
-**Remaining obligations before Package G.** F ships the *capture + review* mechanism
-but **does not by itself clear Gate 8**: an author must actually **run the review set
-and score real learner proof/reasoning responses**, then make the Gate 8 decision
-manually. Gate 8 for L3/L4/L5 therefore **stays NOT PASSED**. The shared runner renderer
-already supports the atomic capability kinds Package G needs (`multiple-choice`,
-`numeric`, `vector`, `matrix-entry`, `construct-in-explorer`, `self-check`); the Class-A
-**content** itself (`mod-*`, fresh 3×3 / rectangular, timed mock) is **Package G+** and
-out of scope here.
+**Remaining obligations (Gate 8/9).** F ships the *capture + review* mechanism and
+G authors the Class-A content on it, but neither **clears Gate 8 by itself**: an author
+must actually **administer the review set and score real learner proof/reasoning
+responses**, then make the Gate 8 decision manually. Gate 8 for L3/L4/L5 therefore
+**stays NOT PASSED**, and Gate 9 stays **NOT PASSED** until the assessment is genuinely
+administered. The shared runner renderer supports every atomic capability kind the
+Package G items use (`multiple-choice`, `numeric`, `vector`, `matrix-entry`,
+`construct-in-explorer`, `self-check`, `solution-set`, `elimination-solution`).
 
 ### Package G — Class-A module item sets (on F) · module-owned · ✅ BUILT
 *Closes (evidence CAPTURED, pending real administration + Gate 9):* D8, D9, D10, D13,
@@ -472,14 +484,14 @@ it is **not** real learner evidence until administered and (for written items) s
 
 | Item | Capability | Honest evidence target |
 | --- | --- | --- |
-| `mod-select-method` | self-check (human) | E3 method selection — produced choice + justification for a reachability-efficient vs. an elimination-needed system; MC recognition explicitly *not* accepted |
+| `mod-select-method` | self-check (human) | E3 method selection — the prompt **does not name the two methods**; the learner chooses, names, justifies, and executes the efficient approach; MC recognition explicitly *not* accepted. Expected methods live only in the post-commit rubric/model answer |
 | `mod-transfer-classify` | self-check (human) | E4 unfamiliar classification — none/one/infinite + reachability/independence justification (human-scored, versioned rubric) |
-| `mod-transfer-solset-fresh` | solution-set (auto) | E4 produced complete solution set (free count + particular + null direction), predicate-graded |
-| `mod-cumulative-elim-solset` | solution-set (auto) | E5 cumulative L4+L5 — elimination → pivots/free var → particular → parametric set |
+| `mod-transfer-solset-fresh` | solution-set (auto) | E4 produced complete solution set (free count + particular + null direction), predicate-graded; blank cells are `null` (never 0) |
+| `mod-cumulative-elim-solset` | **elimination-solution** (auto) | E5 cumulative L4+L5 — produced **row-equivalent echelon matrix** + pivot/free identification + free count + particular + null direction |
 | `mod-error-diagnose` | self-check (human) | E4 diagnosis — exact wrong step + why + repair (human-scored) |
 | `mod-proof-hyp` | self-check (human) | consistency-hypothesis reasoning for `Sol = xₚ + Null(A)` (human-scored) |
-| `mod-p2-applied-3x3` | solution-set (auto) | E4/E5 fresh 3-variable consistent, complete parametric description |
-| `mod-p2-applied-rect` | solution-set (auto) | E4 fresh rectangular **inconsistent** — contradiction row ⇒ produced ∅ |
+| `mod-p2-applied-3x3` | **elimination-solution** (auto) | E4/E5 fresh 3-variable consistent — produced echelon matrix + pivots + complete parametric description |
+| `mod-p2-applied-rect` | **elimination-solution** (auto) | E4 fresh rectangular **inconsistent** — learner-produced **contradiction row** + TYPED none/inconsistent classification (a bare button does **not** pass) |
 
 **Sets** (deterministic order, explicit `version`, dev-gated on the same origin):
 - `systems-elimination-transfer` (v1) — `mod-select-method`, `mod-transfer-classify`,
@@ -493,19 +505,38 @@ it is **not** real learner evidence until administered and (for written items) s
 **Smallest reusable extensions (no outcome weakened to fit the renderer):**
 - `src/math/linearSystemsGeneral.ts` — general (m×n) source of truth: `rref`,
   `solveLinearSystem` (consistency, pivot/free columns, particular, null basis), `solves`,
-  `inNullSpace`, `vectorSetRank`, `areLinearlyIndependent`. Concrete finite systems only —
+  `inNullSpace`, `vectorSetRank`, `areLinearlyIndependent`, plus the elimination predicates
+  `augmentedMatrix`, `areRowEquivalent` (same-RREF test — accepts ANY valid reduction),
+  `isRowEchelonForm`, and `hasContradictionRow`. Concrete finite systems only —
   **no** general ℝⁿ rank–nullity surface (that stays L8/L9).
 - `solution-set` grading capability (`capabilities.ts`) — predicate-grades ANY valid
   parameterization against the solver; nothing about the expected shape is revealed by the
   config.
-- `SolutionSetCapture` / review branch (`captureRenderers.tsx`) — learner-chosen number of
-  null directions (so the free count is never hinted), consistency toggle for ∅, phase-correct
-  (no leak on capture).
+- `elimination-solution` grading capability (`capabilities.ts`) — predicate-grades produced
+  elimination evidence: a **row-equivalent echelon** augmented matrix (any valid reduction),
+  pivot columns (RREF-invariant), free count, particular + null directions (consistent), or a
+  **contradiction row + typed classification** (inconsistent). A bare toggle cannot pass.
+- `SolutionSetCapture` / `EliminationCapture` + review branches (`captureRenderers.tsx`) —
+  learner-chosen number of null directions (free count never hinted), consistency toggle,
+  phase-correct (no leak on capture). **Blank cells serialize as `null`, never 0**, so every
+  expected component (including expected zeros) must actually be typed, and clearing a field
+  updates the stored answer instead of leaving a stale valid one.
+
+**Package G evidence-integrity correction (post-build):**
+- Blank/cleared numeric capture no longer coerces to 0 (both `solution-set` and
+  `elimination-solution`): grading gates on completeness (any `null` = incomplete → fail).
+- The three concrete applied/cumulative items were retargeted from `solution-set` to
+  `elimination-solution` so they capture the produced echelon matrix + pivot/free
+  identification, and the rectangular item requires a produced contradiction row + typed
+  verdict rather than a bare "No solution" button.
+- `mod-select-method`'s prompt no longer names the two methods; the learner chooses/names/
+  justifies/executes and the expected methods live only in the post-commit rubric.
 
 **What Package G does NOT do:** no spacing/scheduling UX, no timed mock, no enrichment,
 no general ℝⁿ theory, no production routing/auth/backend/multi-user review.
 
-*Size:* medium (content on F). **Built.**
+*Size:* medium (content on F). **Built (evidence-integrity corrected); pending real
+administration + human scoring.**
 
 ### Package H — Delayed / spaced retrieval (D12) · module-owned
 *Closes:* D12. `mod-spaced-trichotomy`, `mod-spaced-uniqueness`, `mod-spaced-rowops`
@@ -539,13 +570,15 @@ scheduled at ~1 week / ~1 month; also wired as L7/L8/L9 prerequisite checks.
    P3 theorem + the L4 prose fix + the L3 determinant-sequencing fix + the general
    trichotomy/dependent-count relations. **Scoring** (the E6 / scored-E3 credit) is the
    only piece left, deferred into **F**.
-4. **F** (assessment surface, incl. the human-scoring capture) — the keystone
-   infrastructure; **now the next package**; **required before any lesson-owned
-   proof/reasoning outcome can be scored** and before Class-B reassessment.
+4. ✅ **F** (assessment surface, incl. the human-scoring capture) — the keystone
+   infrastructure; **SHIPPED**; **required before any lesson-owned proof/reasoning
+   outcome can be scored** and before Class-B reassessment.
 5. ✅ **G** (Class-A module-owned sets — method selection, cumulative/transfer, the
-   concrete 3×3/rectangular P2 slice) on F — **BUILT** (eight items, two sets). **H, I**
-   (spacing, timed) remain PLANNED. These discharge module-owned outcomes and enable
-   Class-B reassessment at Gate 9 once genuinely administered.
+   concrete 3×3/rectangular P2 slice) on F — **BUILT** (eight items, two sets;
+   evidence-integrity corrected: elimination-evidence capture, blank ≠ 0, contradiction-row
+   verdict, de-cued method selection). **H, I** (spacing, timed) remain **PLANNED**. These
+   discharge module-owned outcomes and enable Class-B reassessment at Gate 9 once genuinely
+   administered.
 6. Run [assessment-plan.md](assessment-plan.md); record real results; create
    `validation.md` (Gate 10); update the
    [benchmark gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary).
@@ -559,11 +592,13 @@ made (COURSE §6.2).
 
 **Approval boundary.** Packages B, C, D are built, Package E's surfaces are built,
 **Package F1–F4 is SHIPPED** (per [Package F — shipped](#package-f--shipped)), and
-**Package G is now BUILT** (authorized Mode C pass) — eight module-owned Class-A items in
-two dev-gated sets, verified by pure-math + capability + registration + integration unit
-tests and the mandatory Package G e2e flows. The **Mode C boundary now sits before
-Package H**: building H (spacing) or I (timed mock) or any further assessment content is
-Mode C and requires explicit approval.
+**Package G is BUILT and evidence-integrity corrected** — eight module-owned Class-A items
+in two dev-gated sets (with produced elimination-evidence capture, blank-≠-0 numeric
+capture, a produced contradiction-row verdict, and a de-cued method-selection item),
+verified by pure-math + capability + registration + integration unit tests and the
+mandatory Package G e2e flows. The **Mode C boundary now sits before Package H**: building
+H (spacing) or I (timed mock) or any further assessment content is Mode C and requires
+explicit approval.
 
 **Gate posture is unchanged by Package G.** Gate 8 for L3/L4/L5 stays **NOT PASSED**: the
 Package G tests exercise the *machinery* with synthetic answers — they are **not** real

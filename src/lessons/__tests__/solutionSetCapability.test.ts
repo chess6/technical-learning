@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SOLUTION_SET_ID, getGradingCapability, type ExerciseAnswer } from "../capabilities";
 import { gradeExercise } from "../grading";
-import { MODULE_ITEMS } from "../moduleItems";
+import { MODULE_ITEMS, SYS_APPLIED_RECT, SYS_CUMULATIVE } from "../moduleItems";
 import type { ExerciseDefinition } from "../types";
 
 function item(id: string): ExerciseDefinition {
@@ -14,9 +14,29 @@ function answer(value: unknown): ExerciseAnswer {
   return { kind: "custom", capabilityId: SOLUTION_SET_ID, value: value as never };
 }
 
-const solsetFresh = item("mod-transfer-solset-fresh");
-const cumulative = item("mod-cumulative-elim-solset");
-const rect = item("mod-p2-applied-rect");
+/** Build a stand-alone solution-set exercise from a raw system (independent of
+ * which capability a given module item happens to use). */
+function solsetExercise(
+  id: string,
+  system: { matrix: readonly (readonly number[])[]; rhs: readonly number[] },
+): ExerciseDefinition {
+  return {
+    id,
+    type: "custom",
+    capabilityId: SOLUTION_SET_ID,
+    prompt: "?",
+    config: {
+      matrix: system.matrix.map((row) => [...row]),
+      rhs: [...system.rhs],
+      variables: system.matrix[0]!.length,
+      explanation: "",
+    },
+  };
+}
+
+const solsetFresh = item("mod-transfer-solset-fresh"); // solution-set (consistent)
+const cumulative = solsetExercise("test-cumulative-solset", SYS_CUMULATIVE);
+const rect = solsetExercise("test-rect-solset", SYS_APPLIED_RECT);
 
 describe("solution-set grading — consistent transfer item", () => {
   it("accepts the canonical parameterization", () => {
@@ -77,6 +97,57 @@ describe("solution-set grading — consistent transfer item", () => {
       answer({ consistent: true, freeCount: 1, particular: [3, 0, -1], nullDirections: [] }),
     );
     expect(result.correct).toBe(false);
+  });
+});
+
+describe("solution-set grading — blank/cleared-field handling (no zero coercion)", () => {
+  it("a blank EXPECTED-ZERO particular component must be entered (blank ≠ 0)", () => {
+    // The canonical particular is (3, 0, -1): the middle component is 0. A learner
+    // who leaves it blank must NOT pass — the null cell is incomplete, not 0.
+    const result = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: 1, particular: [3, null, -1], nullDirections: [[-2, 1, 0]] }),
+    );
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toMatch(/every field|blank/i);
+  });
+
+  it("entering the expected zero explicitly passes", () => {
+    const result = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: 1, particular: [3, 0, -1], nullDirections: [[-2, 1, 0]] }),
+    );
+    expect(result.correct).toBe(true);
+  });
+
+  it("a blank free-variable count is incomplete (not treated as 0)", () => {
+    const result = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: null, particular: [3, 0, -1], nullDirections: [[-2, 1, 0]] }),
+    );
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toMatch(/every field|blank/i);
+  });
+
+  it("a blank null-direction component is incomplete", () => {
+    const result = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: 1, particular: [3, 0, -1], nullDirections: [[-2, null, 0]] }),
+    );
+    expect(result.correct).toBe(false);
+  });
+
+  it("clearing a previously valid field (→ null) fails rather than staying valid", () => {
+    const valid = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: 1, particular: [3, 0, -1], nullDirections: [[-2, 1, 0]] }),
+    );
+    expect(valid.correct).toBe(true);
+    const cleared = gradeExercise(
+      solsetFresh,
+      answer({ consistent: true, freeCount: 1, particular: [3, 0, null], nullDirections: [[-2, 1, 0]] }),
+    );
+    expect(cleared.correct).toBe(false);
   });
 });
 
@@ -194,8 +265,25 @@ describe("solution-set capability plumbing", () => {
     });
   });
 
+  it("preserves blank cells as null through serialize (never coerced to 0)", () => {
+    const cap = getGradingCapability(solsetFresh);
+    const parsed = cap.parseAnswer({
+      consistent: true,
+      freeCount: null,
+      particular: [3, null, -1],
+      nullDirections: [[-2, 1, null]],
+    });
+    const serialized = cap.serializeAnswer(parsed);
+    expect(serialized).toEqual({
+      consistent: true,
+      freeCount: null,
+      particular: [3, null, -1],
+      nullDirections: [[-2, 1, null]],
+    });
+  });
+
   it("is auto-graded (does not require human scoring)", () => {
-    const cap = getGradingCapability(rect);
+    const cap = getGradingCapability(solsetFresh);
     expect(cap.id).toBe(SOLUTION_SET_ID);
   });
 });

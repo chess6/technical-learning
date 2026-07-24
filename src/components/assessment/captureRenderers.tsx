@@ -19,10 +19,15 @@
 import { useState } from "react";
 import type { AttemptItemResponse, AttemptItemSnapshot } from "../../platform/learnerState";
 import type { JsonValue } from "../../platform/json";
-import type { MatrixEntryConfig, SolutionSetConfig } from "../../lessons/capabilities";
+import type {
+  EliminationConfig,
+  MatrixEntryConfig,
+  SolutionSetConfig,
+} from "../../lessons/capabilities";
 import {
   MATRIX_ENTRY_ID,
   CONSTRUCT_IN_EXPLORER_ID,
+  ELIMINATION_ID,
   SELF_CHECK_ID,
   SOLUTION_SET_ID,
 } from "../../lessons/capabilities";
@@ -39,6 +44,7 @@ export const SUPPORTED_CAPTURE_KINDS: readonly string[] = [
   CONSTRUCT_IN_EXPLORER_ID,
   SELF_CHECK_ID,
   SOLUTION_SET_ID,
+  ELIMINATION_ID,
 ];
 
 export function isCaptureSupported(item: AttemptItemSnapshot): boolean {
@@ -87,6 +93,8 @@ export function CaptureField({
       return <SelfCheckCapture answer={answer} onAnswer={onAnswer} />;
     case SOLUTION_SET_ID:
       return <SolutionSetCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />;
+    case ELIMINATION_ID:
+      return <EliminationCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />;
     default:
       return (
         <p className="module-runner__unsupported">
@@ -392,11 +400,6 @@ function SolutionSetCapture({
     return [];
   });
 
-  const num = (s: string): number => {
-    const p = parseNum(s);
-    return p === null ? 0 : p;
-  };
-
   const emit = (
     c: boolean | null,
     fc: string,
@@ -411,11 +414,14 @@ function SolutionSetCapture({
       onAnswer({ consistent: false });
       return;
     }
+    // Blank cells serialize as `null` (a preserved draft), NEVER 0 — so every
+    // expected component (including expected zeros) must actually be typed, and
+    // clearing a field updates the stored answer instead of leaving a stale one.
     onAnswer({
       consistent: true,
-      freeCount: parseNum(fc) ?? 0,
-      particular: part.map(num),
-      nullDirections: ds.map((d) => d.map(num)),
+      freeCount: parseNum(fc),
+      particular: part.map((s) => parseNum(s)),
+      nullDirections: ds.map((d) => d.map((s) => parseNum(s))),
     });
   };
 
@@ -549,6 +555,324 @@ function SolutionSetCapture({
   );
 }
 
+function eliminationDims(exercise: ExerciseDefinition): { m: number; n: number } {
+  if (exercise.type !== "custom") return { m: 0, n: 0 };
+  const config = exercise.config as EliminationConfig | undefined;
+  const matrix = config?.matrix ?? [];
+  const m = matrix.length;
+  const n = config?.variables ?? matrix[0]?.length ?? 0;
+  return { m, n };
+}
+
+function seedGrid(raw: JsonValue | undefined, rows: number, cols: number): string[][] {
+  return Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) => {
+      if (Array.isArray(raw)) {
+        const row = raw[r];
+        if (Array.isArray(row) && typeof row[c] === "number") return String(row[c]);
+      }
+      return "";
+    }),
+  );
+}
+
+function seedVec(raw: JsonValue | undefined, length: number): string[] {
+  return Array.from({ length }, (_, i) =>
+    Array.isArray(raw) && typeof raw[i] === "number" ? String(raw[i]) : "",
+  );
+}
+
+/**
+ * Produce concrete elimination evidence: a row-equivalent echelon augmented
+ * matrix, pivot / free-variable identification, the free-variable count, and a
+ * particular solution + null directions (consistent) — or a contradiction row
+ * plus a TYPED classification (inconsistent). Blank cells serialize as `null`
+ * (a preserved draft), never 0. Nothing about the expected reduction, pivots, or
+ * free count is revealed before commitment.
+ */
+function EliminationCapture({
+  exercise,
+  answer,
+  onAnswer,
+}: {
+  exercise: ExerciseDefinition;
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const { m, n } = eliminationDims(exercise);
+  const augCols = n + 1;
+
+  const [reduced, setReduced] = useState<string[][]>(() =>
+    seedGrid(readField(answer, "reduced"), m, augCols),
+  );
+  const seedConsistent = (() => {
+    const c = readField(answer, "consistent");
+    return typeof c === "boolean" ? c : null;
+  })();
+  const [consistent, setConsistent] = useState<boolean | null>(seedConsistent);
+  const [classification, setClassification] = useState<string>(() => {
+    const c = readField(answer, "classification");
+    return typeof c === "string" ? c : "";
+  });
+  const [pivots, setPivots] = useState<boolean[]>(() => {
+    const stored = readField(answer, "pivotColumns");
+    const set = new Set(Array.isArray(stored) ? stored.filter((x) => typeof x === "number") : []);
+    return Array.from({ length: n }, (_, i) => set.has(i));
+  });
+  const [freeCount, setFreeCount] = useState<string>(() => {
+    const fc = readField(answer, "freeCount");
+    return typeof fc === "number" ? String(fc) : "";
+  });
+  const [particular, setParticular] = useState<string[]>(() =>
+    seedVec(readField(answer, "particular"), n),
+  );
+  const [dirs, setDirs] = useState<string[][]>(() => {
+    const stored = readField(answer, "nullDirections");
+    if (Array.isArray(stored) && stored.length > 0) return stored.map((d) => seedVec(d, n));
+    return [];
+  });
+
+  const emit = (next: {
+    reduced?: string[][];
+    consistent?: boolean | null;
+    classification?: string;
+    pivots?: boolean[];
+    freeCount?: string;
+    particular?: string[];
+    dirs?: string[][];
+  }) => {
+    const R = next.reduced ?? reduced;
+    const c = next.consistent ?? consistent;
+    const cls = next.classification ?? classification;
+    const pv = next.pivots ?? pivots;
+    const fc = next.freeCount ?? freeCount;
+    const part = next.particular ?? particular;
+    const ds = next.dirs ?? dirs;
+
+    const hasInput =
+      c !== null ||
+      R.some((row) => row.some((cell) => cell.trim() !== "")) ||
+      cls.trim() !== "";
+    if (!hasInput) {
+      onAnswer(null);
+      return;
+    }
+    const out: Record<string, JsonValue> = {
+      reduced: R.map((row) => row.map((s) => parseNum(s))),
+      consistent: c,
+    };
+    if (cls.trim() !== "") out.classification = cls;
+    if (c === true) {
+      out.pivotColumns = pv.flatMap((on, i) => (on ? [i] : []));
+      out.freeCount = parseNum(fc);
+      out.particular = part.map((s) => parseNum(s));
+      out.nullDirections = ds.map((d) => d.map((s) => parseNum(s)));
+    }
+    onAnswer(out);
+  };
+
+  const coordRow = (
+    values: string[],
+    label: string,
+    onCoord: (index: number, value: string) => void,
+    testid: string,
+  ) => (
+    <div className="module-runner__coords" role="group" aria-label={label}>
+      {values.map((value, i) => (
+        <label key={i} className="module-runner__field">
+          <span className="module-runner__coord-label">{`x${i + 1}`}</span>
+          <input
+            type="number"
+            step="any"
+            inputMode="decimal"
+            aria-label={`${label} component ${i + 1}`}
+            data-testid={`${testid}-${i}`}
+            value={value}
+            onChange={(event) => onCoord(i, event.target.value)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="module-runner__solution-set">
+      <p className="module-runner__answer-label">Row-reduce the augmented matrix</p>
+      <div
+        className="module-runner__matrix"
+        role="group"
+        aria-label="Row-reduced augmented matrix"
+      >
+        {reduced.map((row, r) => (
+          <div key={r} className="module-runner__matrix-row">
+            {row.map((cell, c) => (
+              <input
+                key={c}
+                type="number"
+                step="any"
+                inputMode="decimal"
+                aria-label={`Reduced row ${r + 1}, column ${c + 1}`}
+                className="module-runner__matrix-cell"
+                data-testid={`elim-cell-${r}-${c}`}
+                value={cell}
+                onChange={(event) => {
+                  const nextGrid = reduced.map((gr, gri) =>
+                    gr.map((gc, gci) => (gri === r && gci === c ? event.target.value : gc)),
+                  );
+                  setReduced(nextGrid);
+                  emit({ reduced: nextGrid });
+                }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div
+        className="module-runner__choices"
+        role="group"
+        aria-label="Does the system have solutions?"
+      >
+        <button
+          type="button"
+          className="module-runner__choice"
+          aria-pressed={consistent === true}
+          data-testid="elim-consistent"
+          onClick={() => {
+            setConsistent(true);
+            emit({ consistent: true });
+          }}
+        >
+          Has solution(s)
+        </button>
+        <button
+          type="button"
+          className="module-runner__choice"
+          aria-pressed={consistent === false}
+          data-testid="elim-inconsistent"
+          onClick={() => {
+            setConsistent(false);
+            emit({ consistent: false });
+          }}
+        >
+          No solution (∅)
+        </button>
+      </div>
+
+      {consistent === false && (
+        <label className="module-runner__field">
+          <span className="module-runner__coord-label">Classification</span>
+          <input
+            type="text"
+            aria-label="Type the classification"
+            placeholder='e.g. "none" / "inconsistent"'
+            data-testid="elim-classification"
+            value={classification}
+            onChange={(event) => {
+              setClassification(event.target.value);
+              emit({ classification: event.target.value });
+            }}
+          />
+        </label>
+      )}
+
+      {consistent === true && (
+        <div className="module-runner__solution-fields">
+          <p className="module-runner__answer-label">Mark the pivot columns</p>
+          <div className="module-runner__choices" role="group" aria-label="Pivot columns">
+            {pivots.map((on, i) => (
+              <button
+                key={i}
+                type="button"
+                className="module-runner__choice"
+                aria-pressed={on}
+                data-testid={`elim-pivot-${i}`}
+                onClick={() => {
+                  const next = pivots.map((p, pi) => (pi === i ? !p : p));
+                  setPivots(next);
+                  emit({ pivots: next });
+                }}
+              >
+                {`x${i + 1}`}
+              </button>
+            ))}
+          </div>
+
+          <label className="module-runner__field module-runner__field--inline">
+            <span className="module-runner__coord-label">Free variables</span>
+            <input
+              type="number"
+              step="1"
+              inputMode="numeric"
+              aria-label="Number of free variables"
+              data-testid="elim-freecount"
+              value={freeCount}
+              onChange={(event) => {
+                setFreeCount(event.target.value);
+                emit({ freeCount: event.target.value });
+              }}
+            />
+          </label>
+
+          <p className="module-runner__answer-label">Particular solution</p>
+          {coordRow(
+            particular,
+            "Particular solution",
+            (index, value) => {
+              const next = particular.map((v, i) => (i === index ? value : v));
+              setParticular(next);
+              emit({ particular: next });
+            },
+            "elim-particular",
+          )}
+
+          <p className="module-runner__answer-label">Null-space directions</p>
+          {dirs.map((dir, di) => (
+            <div key={di} className="module-runner__direction">
+              {coordRow(
+                dir,
+                `Null direction ${di + 1}`,
+                (index, value) => {
+                  const next = dirs.map((d, i) =>
+                    i === di ? d.map((v, j) => (j === index ? value : v)) : d,
+                  );
+                  setDirs(next);
+                  emit({ dirs: next });
+                },
+                `elim-direction-${di}`,
+              )}
+              <button
+                type="button"
+                className="module-runner__mini-button"
+                data-testid={`elim-remove-${di}`}
+                onClick={() => {
+                  const next = dirs.filter((_, i) => i !== di);
+                  setDirs(next);
+                  emit({ dirs: next });
+                }}
+              >
+                Remove direction
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="module-runner__mini-button"
+            data-testid="elim-add-direction"
+            onClick={() => {
+              const next = [...dirs, Array.from({ length: n }, () => "")];
+              setDirs(next);
+              emit({ dirs: next });
+            }}
+          >
+            + Add null direction
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Review (after release) — read-only stored answer + AutoResult + reveal.      */
 /* -------------------------------------------------------------------------- */
@@ -612,6 +936,45 @@ function StoredAnswer({
       Array.isArray(v) ? `(${v.join(", ")})` : "—";
     return (
       <span className="module-runner__answer-text">
+        {typeof fc === "number" ? `${fc} free var(s); ` : ""}
+        particular {fmt(particular)}
+        {Array.isArray(dirs) && dirs.length > 0
+          ? `; directions ${dirs.map((d) => fmt(d)).join(", ")}`
+          : ""}
+      </span>
+    );
+  }
+  if (item.capabilityId === ELIMINATION_ID) {
+    const reduced = readField(answer, "reduced");
+    const consistent = readField(answer, "consistent");
+    const matrixText = Array.isArray(reduced)
+      ? reduced
+          .map((row) =>
+            Array.isArray(row) ? `[${row.map((v) => (v === null ? "·" : v)).join(", ")}]` : "",
+          )
+          .join(" ")
+      : "";
+    if (consistent === false) {
+      const cls = readField(answer, "classification");
+      return (
+        <span className="module-runner__answer-text">
+          {matrixText}
+          {matrixText ? " · " : ""}
+          {typeof cls === "string" && cls.trim() !== "" ? cls : "No solution (∅)"}
+        </span>
+      );
+    }
+    const pivots = readField(answer, "pivotColumns");
+    const particular = readField(answer, "particular");
+    const dirs = readField(answer, "nullDirections");
+    const fc = readField(answer, "freeCount");
+    const fmt = (v: JsonValue | undefined): string =>
+      Array.isArray(v) ? `(${v.map((x) => (x === null ? "·" : x)).join(", ")})` : "—";
+    return (
+      <span className="module-runner__answer-text">
+        {matrixText}
+        {matrixText ? " · " : ""}
+        {Array.isArray(pivots) ? `pivots {${pivots.join(", ")}}; ` : ""}
         {typeof fc === "number" ? `${fc} free var(s); ` : ""}
         particular {fmt(particular)}
         {Array.isArray(dirs) && dirs.length > 0

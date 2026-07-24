@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   areLinearlyIndependent,
+  areRowEquivalent,
+  augmentedMatrix,
+  hasContradictionRow,
   inNullSpace,
+  isRowEchelonForm,
   matVec,
   rref,
   solveLinearSystem,
@@ -102,6 +106,79 @@ describe("Package G systems — independently verified", () => {
     const sol = solveLinearSystem(SYS_CLASSIFY_FRESH.matrix, SYS_CLASSIFY_FRESH.rhs);
     expect(sol.consistent).toBe(false);
     expect(sol.rank).toBe(1); // dependent columns
+  });
+
+  it("recognizes any valid row reduction as row-equivalent, but rejects a changed system", () => {
+    const A = SYS_CUMULATIVE.matrix;
+    const b = SYS_CUMULATIVE.rhs;
+    const aug = augmentedMatrix(A, b);
+    // The RREF is one valid reduction; a different REF is another.
+    const asRref = rref(aug).matrix;
+    expect(areRowEquivalent(aug, asRref)).toBe(true);
+    // A hand echelon form (R2-R1, R3-2R1 then combine) of the same system.
+    const validRef = [
+      [1, 1, 1, 6],
+      [0, 1, 2, 8],
+      [0, 0, 0, 0],
+    ];
+    expect(areRowEquivalent(aug, validRef)).toBe(true);
+    // Changing a right-hand side breaks row-equivalence.
+    const changed = [
+      [1, 1, 1, 6],
+      [0, 1, 2, 9],
+      [0, 0, 0, 0],
+    ];
+    expect(areRowEquivalent(aug, changed)).toBe(false);
+  });
+
+  it("validates echelon form and detects contradiction rows", () => {
+    expect(
+      isRowEchelonForm([
+        [1, 2, 3],
+        [0, 1, 4],
+        [0, 0, 0],
+      ]),
+    ).toBe(true);
+    // A nonzero row below a zero row is not echelon.
+    expect(
+      isRowEchelonForm([
+        [1, 2, 3],
+        [0, 0, 0],
+        [0, 1, 4],
+      ]),
+    ).toBe(false);
+    // Leading entry not strictly to the right.
+    expect(
+      isRowEchelonForm([
+        [1, 2, 3],
+        [1, 0, 4],
+      ]),
+    ).toBe(false);
+    // Contradiction row [0 0 | 5] over 2 coefficient columns.
+    expect(
+      hasContradictionRow(
+        [
+          [1, 1, 3],
+          [0, 0, 5],
+        ],
+        2,
+      ),
+    ).toBe(true);
+    expect(
+      hasContradictionRow(
+        [
+          [1, 1, 3],
+          [0, 1, 5],
+        ],
+        2,
+      ),
+    ).toBe(false);
+  });
+
+  it("mod-p2-applied-rect reduces to a contradiction row", () => {
+    const aug = augmentedMatrix(SYS_APPLIED_RECT.matrix, SYS_APPLIED_RECT.rhs);
+    const reduced = rref(aug).matrix;
+    expect(hasContradictionRow(reduced, SYS_APPLIED_RECT.matrix[0]!.length)).toBe(true);
   });
 
   it("mod-select-method fixtures: P is infinite (dependent), Q is unique", () => {

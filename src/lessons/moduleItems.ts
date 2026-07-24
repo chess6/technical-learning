@@ -20,7 +20,7 @@
  */
 
 import type { SolutionSetConfig } from "./capabilities";
-import { SELF_CHECK_ID, SOLUTION_SET_ID } from "./capabilities";
+import { ELIMINATION_ID, SELF_CHECK_ID, SOLUTION_SET_ID } from "./capabilities";
 import type { ExerciseDefinition } from "./types";
 
 /* -------------------------------------------------------------------------- */
@@ -112,6 +112,9 @@ function solutionSetConfigOf(
   };
 }
 
+/** Elimination config shares the SolutionSetConfig shape (matrix, rhs, explanation). */
+const eliminationConfigOf = solutionSetConfigOf;
+
 /* -------------------------------------------------------------------------- */
 /* The eight Package G items.                                                   */
 /* -------------------------------------------------------------------------- */
@@ -131,9 +134,10 @@ const modSelectMethod: ExerciseDefinition = {
   prompt:
     "Two systems. **System P:** $\\begin{cases} x_1 + 2x_2 = 3 \\\\ 2x_1 + 4x_2 = 6 \\end{cases}$  " +
     "**System Q:** $\\begin{cases} 2x_1 + x_2 = 5 \\\\ x_1 + 3x_2 = 10 \\end{cases}$  " +
-    "For EACH system, decide whether column/reachability reasoning or elimination is the more " +
-    "efficient approach, say why in one sentence, and carry out the decisive step to state the " +
-    "number of solutions. Do not just name a method — show the work that justifies your choice.",
+    "For EACH system, choose the most efficient way to settle how many solutions it has. Name the " +
+    "method you chose, justify in one sentence why it is the efficient choice here, and carry out " +
+    "the decisive work to state the number of solutions. Do not just name a method — show the work " +
+    "that justifies your choice.",
   config: {
     modelAnswer:
       "System P: the second equation is exactly twice the first, so both describe the same line — " +
@@ -218,14 +222,14 @@ const modTransferSolsetFresh: ExerciseDefinition = {
 const modCumulativeElimSolset: ExerciseDefinition = {
   id: "mod-cumulative-elim-solset",
   type: "custom",
-  capabilityId: SOLUTION_SET_ID,
+  capabilityId: ELIMINATION_ID,
   tier: "transfer",
   prompt:
     "Solve completely: $\\begin{cases} x_1 + x_2 + x_3 = 6 \\\\ x_1 + 2x_2 + 3x_3 = 14 \\\\ 2x_1 + 3x_2 + 4x_3 = 20 \\end{cases}$  " +
-    "Eliminate to find the pivots and free variable, then give the number of free variables, a " +
-    "particular solution, and the complete parametric solution set.",
+    "Row-reduce the augmented matrix to echelon form, mark the pivot columns, and give the number " +
+    "of free variables, a particular solution, and every null direction of the complete solution set.",
   config: {
-    ...solutionSetConfigOf(
+    ...eliminationConfigOf(
       SYS_CUMULATIVE,
       "Elimination collapses the last two equations to $x_2 + 2x_3 = 8$, so there are two pivots " +
         "($x_1, x_2$) and one free variable ($x_3$). A particular solution is " +
@@ -304,14 +308,14 @@ const modProofHyp: ExerciseDefinition = {
 const modP2Applied3x3: ExerciseDefinition = {
   id: "mod-p2-applied-3x3",
   type: "custom",
-  capabilityId: SOLUTION_SET_ID,
+  capabilityId: ELIMINATION_ID,
   tier: "transfer",
   prompt:
     "A three-variable system: $\\begin{cases} 2x_1 + x_2 - x_3 = 1 \\\\ 4x_1 + x_2 + x_3 = 5 \\\\ 2x_1 + 2x_3 = 4 \\end{cases}$  " +
-    "Eliminate through the pivots and free variable, then give the number of free variables, a " +
-    "particular solution, and the complete solution set.",
+    "Row-reduce the augmented matrix to echelon form, mark the pivot columns, and give the number " +
+    "of free variables, a particular solution, and every null direction of the complete solution set.",
   config: {
-    ...solutionSetConfigOf(
+    ...eliminationConfigOf(
       SYS_APPLIED_3X3,
       "Elimination leaves two pivots and one free variable ($x_3$). A particular solution is " +
         "$\\mathbf{x}_p = (2, -3, 0)$ and the null direction is $(-1, 3, 1)$: all solutions are " +
@@ -329,14 +333,16 @@ const modP2Applied3x3: ExerciseDefinition = {
 const modP2AppliedRect: ExerciseDefinition = {
   id: "mod-p2-applied-rect",
   type: "custom",
-  capabilityId: SOLUTION_SET_ID,
+  capabilityId: ELIMINATION_ID,
   tier: "transfer",
   prompt:
     "A rectangular system: $\\begin{cases} x_1 + x_2 = 3 \\\\ x_1 - x_2 = 1 \\\\ 2x_1 + x_2 = 7 \\end{cases}$  " +
-    "Eliminate and give the complete solution description: if it is consistent, give the free-variable " +
-    "count, a particular solution, and every null direction; if not, record that the solution set is ∅.",
+    "Row-reduce the augmented matrix to echelon form. If it is consistent, mark the pivots and give " +
+    "the free-variable count, a particular solution, and every null direction. If not, your reduced " +
+    "matrix must contain the contradiction row and you must TYPE the classification (e.g. \"none\" / " +
+    "\"inconsistent\") — a bare button does not count.",
   config: {
-    ...solutionSetConfigOf(
+    ...eliminationConfigOf(
       SYS_APPLIED_RECT,
       "The first two equations force $x_1 = 2, x_2 = 1$, but the third then demands " +
         "$2\\cdot 2 + 1 = 5 \\neq 7$. Elimination produces a contradiction row $0 = 2$, so the " +

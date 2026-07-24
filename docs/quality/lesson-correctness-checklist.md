@@ -880,22 +880,33 @@ responses remain unscored by an author).
 - [x] **Durable save-failure warning in the reviewer queue** too (not only the runner /
   recovery surface) — a failed reviewer save never appears safely persisted (`ReviewQueue.tsx`)
 
-### Package G — Class-A module item sets (2026-07-23, on the completed Package F runner)
+### Package G — Class-A module item sets (2026-07-23, on the completed Package F runner; evidence-integrity corrected 2026-07-24)
 
 - [x] **General (m×n) math is the source of truth** — `src/math/linearSystemsGeneral.ts`
   (`rref`, `solveLinearSystem`, `solves`, `inNullSpace`, `vectorSetRank`,
-  `areLinearlyIndependent`); every fresh system re-verified independently
+  `areLinearlyIndependent`, plus `augmentedMatrix`, `areRowEquivalent`, `isRowEchelonForm`,
+  `hasContradictionRow`); every fresh system + predicate re-verified independently
   (`linearSystemsGeneral.test.ts`). Concrete finite systems only — no general ℝⁿ rank–nullity.
 - [x] **`solution-set` capability predicate-grades any valid parameterization** (particular
   solves; each null direction nonzero + in Null(A); independent; correct free count; ∅ for
   inconsistent), never revealing the expected shape (`solutionSetCapability.test.ts` — correct,
   incorrect, field-mutation, independence, ∅)
-- [x] **Phase-correct capture for produced solution sets** — learner-chosen number of null
-  directions (free count never hinted), ∅ toggle, no pre-submit leak; review replays stored
-  answer + snapshot feedback (`captureRenderers.test.tsx`, `ModuleRunner.test.tsx`)
+- [x] **`elimination-solution` capability** captures produced elimination evidence for the
+  three concrete applied/cumulative items — a row-equivalent echelon matrix (ANY valid
+  reduction via `areRowEquivalent`), pivot/free identification (RREF-invariant), free count,
+  particular + null directions (consistent), or a produced **contradiction row + typed
+  classification** (inconsistent; a bare toggle cannot pass) (`eliminationCapability.test.ts`)
+- [x] **Blank ≠ 0 in numeric capture** — `solution-set` and `elimination-solution` serialize
+  blanks as `null` and grade incomplete; every expected zero must be typed; clearing a field
+  clears the stored answer (blank/cleared-field regressions in `solutionSetCapability.test.ts`,
+  `eliminationCapability.test.ts`, `captureRenderers.test.tsx`)
+- [x] **Phase-correct capture** — learner-chosen number of null directions (free count never
+  hinted), ∅/consistency toggle, no pre-submit leak; review replays stored answer + snapshot
+  feedback (`captureRenderers.test.tsx`, `ModuleRunner.test.tsx`)
 - [x] **Eight items authored + registered** with human/auto split honored, versioned rubric
-  snapshots for written items, no raw array notation in prompts; two deterministic, versioned,
-  duplicate-id-guarded sets (`moduleItems.test.ts`, `moduleSets.test.ts`)
+  snapshots for written items, no raw array notation in prompts, and **no method cueing in
+  `mod-select-method`** (methods live only in the post-commit rubric); two deterministic,
+  versioned, duplicate-id-guarded sets (`moduleItems.test.ts`, `moduleSets.test.ts`)
 - [x] **MC never used as the decisive object**; written reasoning/proofs route to Package F
   human scoring; E4 items use fresh unfamiliar systems; E5 spans L4+L5; inconsistent
   contradiction-row ∅ case included in the applied/cumulative set
@@ -905,21 +916,23 @@ responses remain unscored by an author).
 - [x] Unit + integration: `learnerState`, `persistence`, `useLearnerState`,
   `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `captureRenderers`,
   `ModuleRunner`, `ReviewQueue`, `linearSystemsGeneral`, `solutionSetCapability`,
-  `moduleItems` — full `vitest` suite **620 passing / 65 files**
+  `eliminationCapability`, `moduleItems` — full `vitest` suite **661 passing / 66 files**
 - [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts` (2 tests) + `e2e/assessment-package-g.spec.ts`
   (2 tests): (1) submit → `REVIEW_PENDING` → score every pending proof (finite score) →
   `REVIEW_COMPLETE`, **persisted across reload**; (2) blank proofs stay `REVIEW_FAILED` +
-  export/reset/import recovery loop; (3) Package G applied set — produced solution sets + ∅
-  graded from snapshot, replay on reload; (4) Package G transfer set — written items enter
-  human-review queue; zero console errors.
+  export/reset/import recovery loop; (3) Package G applied set — produced **elimination
+  evidence** (echelon matrix + pivots + parametric set) + a produced contradiction-row ∅
+  verdict graded from snapshot, replay on reload; (4) Package G transfer set — written items
+  enter human-review queue; zero console errors.
 - [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from non-blocking
   `react-refresh` warnings on the provider+hook and shared `captureRenderers` modules
 
 ### Status review
 
-- [x] `implementation-package.md` (Package F → shipped), `assessment-plan.md` (Gate 9 still
-  PLANNED; no Class-A content authored), and `engineering/platform-contracts.md`
-  (persistence §5; "no persistence layer" non-goal superseded for the assessment surface)
-  updated to shipped status
-- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 preserved — F is capture + review only and emits
-  no verdict; **Package G is the next Mode C target** (requires explicit approval)
+- [x] `implementation-package.md` (Package F **SHIPPED**, Package G **BUILT** + evidence-
+  integrity corrected), `assessment-plan.md` (Gate 9 still PLANNED; Class-A content built but
+  **not administered**), and `engineering/platform-contracts.md` (persistence §5;
+  `solution-set` + `elimination-solution` capabilities; blank-≠-0 capture) reconciled
+- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 and **Gate 9 = NOT PASSED** preserved — G exercises
+  the *machinery* with synthetic answers, not real learner evidence; **Package H is the next
+  Mode C target** (requires explicit approval); H, I remain PLANNED

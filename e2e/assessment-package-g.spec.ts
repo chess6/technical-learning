@@ -26,12 +26,50 @@ async function fillConsistentSolset(
   }
 }
 
+async function fillElimGrid(item: Locator, grid: number[][]) {
+  for (let r = 0; r < grid.length; r += 1) {
+    for (let c = 0; c < grid[r]!.length; c += 1) {
+      await item.getByTestId(`elim-cell-${r}-${c}`).fill(String(grid[r]![c]));
+    }
+  }
+}
+
+async function fillConsistentElim(
+  item: Locator,
+  grid: number[][],
+  pivots: number[],
+  freeCount: string,
+  particular: string[],
+  directions: string[][],
+) {
+  await fillElimGrid(item, grid);
+  await item.getByTestId("elim-consistent").click();
+  for (const p of pivots) await item.getByTestId(`elim-pivot-${p}`).click();
+  await item.getByTestId("elim-freecount").fill(freeCount);
+  for (let i = 0; i < particular.length; i += 1) {
+    await item.getByTestId(`elim-particular-${i}`).fill(particular[i]!);
+  }
+  for (let di = 0; di < directions.length; di += 1) {
+    await item.getByTestId("elim-add-direction").click();
+    for (let i = 0; i < directions[di]!.length; i += 1) {
+      await item.getByTestId(`elim-direction-${di}-${i}`).fill(directions[di]![i]!);
+    }
+  }
+}
+
+async function fillInconsistentElim(item: Locator, grid: number[][], classification: string) {
+  await fillElimGrid(item, grid);
+  await item.getByTestId("elim-inconsistent").click();
+  await item.getByTestId("elim-classification").fill(classification);
+}
+
 /**
- * Package G applied/cumulative set: produced solution sets and a produced ∅
- * verdict, captured with deferred feedback, graded from the snapshot, and
- * replayed on reload. Dev-gated on the same origin.
+ * Package G applied/cumulative set: produced elimination evidence (a
+ * row-equivalent echelon matrix, pivots, free count, particular + null
+ * directions) and a produced contradiction-row ∅ verdict, captured with deferred
+ * feedback, graded from the snapshot, and replayed on reload. Same-origin dev route.
  */
-test("package G applied set: produced solution sets grade and replay on reload", async ({
+test("package G applied set: produced elimination evidence grades and replays on reload", async ({
   page,
 }) => {
   const errors = collectConsoleErrors(page);
@@ -50,9 +88,39 @@ test("package G applied set: produced solution sets grade and replay on reload",
   const itCum = page.locator('[data-exercise="mod-cumulative-elim-solset"]');
   const itRect = page.locator('[data-exercise="mod-p2-applied-rect"]');
 
-  await fillConsistentSolset(it3, "1", ["2", "-3", "0"], ["-1", "3", "1"]);
-  await fillConsistentSolset(itCum, "1", ["-2", "8", "0"], ["1", "-2", "1"]);
-  await itRect.getByTestId("solset-inconsistent").click();
+  await fillConsistentElim(
+    it3,
+    [
+      [1, 0, 1, 2],
+      [0, 1, -3, -3],
+      [0, 0, 0, 0],
+    ],
+    [0, 1],
+    "1",
+    ["2", "-3", "0"],
+    [["-1", "3", "1"]],
+  );
+  await fillConsistentElim(
+    itCum,
+    [
+      [1, 0, -1, -2],
+      [0, 1, 2, 8],
+      [0, 0, 0, 0],
+    ],
+    [0, 1],
+    "1",
+    ["-2", "8", "0"],
+    [["1", "-2", "1"]],
+  );
+  await fillInconsistentElim(
+    itRect,
+    [
+      [1, 0, 2],
+      [0, 1, 1],
+      [0, 0, 2],
+    ],
+    "inconsistent",
+  );
 
   // Nothing is graded/revealed before submit.
   await expect(page.locator(".module-runner__feedback")).toHaveCount(0);
@@ -71,7 +139,7 @@ test("package G applied set: produced solution sets grade and replay on reload",
   // Released feedback comes from the snapshot and survives reload.
   await page.reload();
   await expect(page.getByTestId("review-status")).toHaveAttribute("data-status", "REVIEW_COMPLETE");
-  await expect(itRect).toContainText("No solution");
+  await expect(itRect).toContainText("inconsistent");
 
   expect(errors).toEqual([]);
 });

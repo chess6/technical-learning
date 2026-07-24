@@ -40,16 +40,25 @@ describe("Package G module items", () => {
     }
   });
 
-  it("solution-set items are the produced auto items", () => {
-    const auto = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "solution-set");
-    expect(auto.map((e) => e.id).sort()).toEqual(
-      [
-        "mod-cumulative-elim-solset",
-        "mod-p2-applied-3x3",
-        "mod-p2-applied-rect",
-        "mod-transfer-solset-fresh",
-      ].sort(),
+  it("the fresh transfer item uses the produced solution-set capability", () => {
+    const solset = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "solution-set");
+    expect(solset.map((e) => e.id).sort()).toEqual(["mod-transfer-solset-fresh"]);
+  });
+
+  it("the concrete elimination items capture produced elimination evidence", () => {
+    const elim = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "elimination-solution");
+    expect(elim.map((e) => e.id).sort()).toEqual(
+      ["mod-cumulative-elim-solset", "mod-p2-applied-3x3", "mod-p2-applied-rect"].sort(),
     );
+  });
+
+  it("mod-select-method does not name the two methods in the learner-facing prompt", () => {
+    const select = MODULE_ITEMS.find((e) => e.id === "mod-select-method")!;
+    expect(select.prompt.toLowerCase()).not.toMatch(/reachability|elimination/);
+    // The expected methods live only in the post-commit rubric / model answer.
+    if (select.type !== "custom") throw new Error("expected a custom exercise");
+    const config = select.config as { rubricText: string; modelAnswer: string };
+    expect((config.rubricText + config.modelAnswer).toLowerCase()).toMatch(/elimination/);
   });
 
   it("snapshots human-scored items with a versioned rubric", () => {
