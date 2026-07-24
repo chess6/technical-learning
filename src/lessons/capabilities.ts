@@ -572,18 +572,22 @@ function eliminationConfig(exercise: ExerciseDefinition): EliminationConfig {
   return config;
 }
 
+const ACCEPTED_INCONSISTENT_CLASSIFICATIONS = new Set([
+  "none",
+  "no solution",
+  "no solutions",
+  "inconsistent",
+  "empty",
+  "empty set",
+  "∅",
+  "∅ (empty)",
+]);
+
 function isInconsistentClassification(text: string | undefined): boolean {
   if (!text) return false;
   const t = text.trim().toLowerCase();
   if (t === "") return false;
-  return (
-    t.includes("none") ||
-    t.includes("inconsist") ||
-    t.includes("no solution") ||
-    t.includes("no solutions") ||
-    t.includes("empty") ||
-    t.includes("∅")
-  );
+  return ACCEPTED_INCONSISTENT_CLASSIFICATIONS.has(t);
 }
 
 function sameIntSet(a: readonly number[], b: readonly number[]): boolean {

@@ -207,6 +207,16 @@ describe("elimination capability — inconsistent rectangular system", () => {
     }
   });
 
+  it("rejects near-miss classifications that merely contain an accepted keyword", () => {
+    for (const cls of ["not inconsistent", "not empty", "one, not none", "infinitely many solutions"]) {
+      const result = gradeExercise(
+        rect,
+        answer({ reduced: rectReduced, consistent: false, classification: cls }),
+      );
+      expect(result.correct).toBe(false);
+    }
+  });
+
   it("a bare 'no solution' toggle WITHOUT a typed classification does not pass", () => {
     const result = gradeExercise(
       rect,

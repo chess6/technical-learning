@@ -362,8 +362,8 @@ function solutionSetVars(exercise: ExerciseDefinition): number {
  * particular solution, and one nonzero null direction per free variable. The
  * number of directions is learner-chosen (Add / Remove) so the input NEVER
  * reveals the expected free count, and the completed formula is never shown
- * before commitment. Blank coordinates serialize as 0 (an explicit, gradeable
- * value) so a reloaded draft round-trips.
+ * before commitment. Blank coordinates serialize as `null` (never 0) so an
+ * unfilled field is never mistaken for an intentional zero.
  */
 function SolutionSetCapture({
   exercise,
