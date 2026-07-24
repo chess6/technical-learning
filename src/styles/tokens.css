@@ -1,89 +1,48 @@
 /* ============================================================================
- * Visual identity — "Observatory" (2026-07-24 redesign)
+ * Visual identity — the live interactive notebook, in two presentations
  * ============================================================================
  *
- * Every visualization in this product is drawn on a dark canvas with the
- * `--role-*` palette (aurora blue / green / violet / gold) tuned for it. The
- * page used to be warm ivory, so each figure read as a bright rectangle punched
- * into a different world. The identity inverts that relationship: the READING
- * SURFACE is the same ink the mathematics lives on, so a figure is continuous
- * with its page and the role palette becomes the product's own palette instead
- * of being quarantined inside canvases.
+ * The identity is "a beautifully illustrated live notebook" (docs/product/vision.md
+ * §1). It ships in two *presentations* of that same identity — not two products:
  *
- * Consequences that the rest of the CSS relies on:
- *   - ink recedes, light carries meaning — luminance marks what matters
- *     (a lit surface, a glowing rule) rather than boxes and borders;
- *   - the `--role-*` colors are IDENTITY colors now, but they keep their
- *     mathematical meanings — never recolor a role to decorate a surface;
- *   - warmth survives as INK, not as paper: body text is a warm ivory.
+ *   - **Notebook** (default): a warm-ivory reading surface with deep-navy ink,
+ *     restrained warm dividers, raised white cards, and DARK mathematical
+ *     canvases that read as illustrations placed on a textbook page. The strong
+ *     page↔canvas contrast is deliberate: a figure is a lit instrument set into
+ *     paper.
+ *   - **Observatory** (optional): an ink reading surface continuous with the
+ *     canvas, so the page becomes the same sky the mathematics is drawn on.
  *
- * Token NAMES are unchanged from the light system, so component CSS that reads
- * semantic tokens inherits the identity without edits. This file owns the
- * values (per docs/product/vision.md — "the code owns the values").
+ * WHAT IS SHARED vs WHAT A THEME OWNS
+ *   - Shared (`:root`, below): the semantic **math roles**, typography scale,
+ *     spacing, layout, and motion. A role's *meaning* is identity-independent —
+ *     `--role-basis-1` is the first basis vector in both themes, with the same
+ *     value, tuned for the dark canvas both themes draw on.
+ *   - Theme-owned: surfaces, ink, accents, tints, canvas ground, atmosphere,
+ *     elevation. Component CSS never branches on the theme; it reads the same
+ *     semantic token names and inherits whichever presentation is active.
+ *
+ * Themes are selected by a `data-theme` attribute on the document root, applied
+ * before first paint (see index.html) and persisted locally. **Notebook is the
+ * default, including when the operating system prefers dark** — Observatory is
+ * an explicit choice, not an OS-derived one.
+ *
+ * This file owns the VALUES (per vision.md, "the code owns the values");
+ * `src/styles/__tests__/designSystem.test.ts` holds both themes to the same
+ * completeness and contrast contracts.
  * ========================================================================= */
 
+/* ============================================================================
+ * Shared — identical in every theme
+ * ========================================================================= */
 :root {
-  color-scheme: dark;
-
-  /* ============================================================
-   * Semantic surface tokens — ink ground, lit panels
-   * ============================================================ */
-  --color-page-bg: #080d15; /* deep ink page ground */
-  --color-sidebar-bg: #0a1019; /* course spine, a shade deeper than panels */
-  --color-surface-subtle: #101a27; /* quiet inset panels */
-  --color-surface-muted: #0d1621; /* recessed / de-emphasized inset */
-  --color-surface-raised: #16202f; /* elevated cards / inputs */
-  --color-surface-lifted: #1c283a; /* hover / active elevation */
-  --color-divider: #1f2c3e; /* hairline */
-  --color-divider-strong: #30415a;
-
-  /* Back-compat aliases (existing component CSS references these) */
-  --color-bg: var(--color-page-bg);
-  --color-surface: var(--color-surface-subtle);
-  --color-surface-inset: var(--color-surface-muted);
-  --color-border: var(--color-divider-strong);
-  --color-border-subtle: var(--color-divider);
-
-  /* ============================================================
-   * Text — warm ivory ink on ink
-   * ============================================================ */
-  --color-text: #eaeef5; /* body ink */
-  --color-text-muted: #a9b6c8; /* secondary */
-  --color-text-faint: #7d8a9e; /* metadata */
-  --color-text-primary: var(--color-text);
-  --color-text-secondary: var(--color-text-muted);
-  /* Ink for text sitting ON a luminous fill (primary button, badge). */
-  --color-on-accent: #06101c;
-
-  /* ============================================================
-   * Accents & actions — drawn from the math role palette
-   * ============================================================ */
-  --color-primary: #7ec5e6; /* role-original blue, lit */
-  --color-primary-hover: #a3d8f2;
-  --color-accent: #8fd0ee; /* link / accent */
-  --color-accent-strong: #b6e2f8;
-  --color-focus: #7ec5e6;
-
-  --accent-blue: #7ec5e6;
-  --accent-teal: #7fd0a0;
-  --accent-coral: #f0879f;
-  --accent-gold: #e6b566;
-  --accent-lavender: #b9a3ef;
-
-  --color-success: #7fd0a0;
-  --color-warning: #e6b566;
-  --color-error: #f0879f;
-
-  /* Tint fills: luminance at low alpha, never a lighter opaque box. */
-  --tint-blue: rgb(126 197 230 / 0.12);
-  --tint-gold: rgb(230 181 102 / 0.12);
-  --tint-teal: rgb(127 208 160 / 0.12);
-  --tint-violet: rgb(185 163 239 / 0.12);
-  --tint-coral: rgb(240 135 159 / 0.12);
-
-  /* ============================================================
-   * Semantic math roles — unchanged meanings, now also the identity palette.
-   * ============================================================ */
+  /* ------------------------------------------------------------
+   * Semantic math roles — meanings, not decoration.
+   * Rendered on the DARK visualization canvas in BOTH themes, so the guided
+   * animation and the Mafs explorer stay consistent whichever page surrounds
+   * them. Never recolor a role to suit a surface; never reuse one to decorate.
+   * (Meaning dictionary: docs/product/vision.md §9b.)
+   * ------------------------------------------------------------ */
   --role-original: #7ec5e6; /* original vector / span region */
   --role-transformed: #e6b566; /* transformed / result vector */
   --role-result: var(--role-transformed);
@@ -95,40 +54,13 @@
   --role-intermediate: #9aa6b5; /* helper / component lines */
   --role-reachable: #7ec5e6; /* reachable region (span) */
 
-  /* ============================================================
-   * Visualization canvas — now continuous with the page, not a cut-out
-   * ============================================================ */
-  --color-canvas: #0b1120;
-  --color-canvas-elevated: #121b2b;
-  --color-canvas-text: #e8edf4; /* labels on the canvas */
-  --color-canvas-muted: #9aa6b5;
-  --color-canvas-text-muted: var(--color-canvas-muted); /* alias: muted label on canvas */
-  --color-grid: #1b2739;
-  --color-axis: #38465c;
+  /* Ink for text sitting ON a luminous `--role-*` fill. The roles are the same
+     light hues in both themes, so this is dark ink in both. */
+  --color-on-role: #06101c;
 
-  /* ============================================================
-   * Atmosphere — the aurora field that carries the identity.
-   * Used behind the hero and along section rules; never behind body prose.
-   * ============================================================ */
-  --aurora-1: rgb(126 197 230 / 0.22);
-  --aurora-2: rgb(185 163 239 / 0.18);
-  --aurora-3: rgb(127 208 160 / 0.14);
-  --gradient-rule: linear-gradient(
-    90deg,
-    var(--role-original),
-    var(--role-basis-2) 45%,
-    var(--role-transformed) 78%,
-    transparent
-  );
-  --gradient-lit: linear-gradient(
-    160deg,
-    rgb(255 255 255 / 0.06),
-    rgb(255 255 255 / 0) 60%
-  );
-
-  /* ============================================================
+  /* ------------------------------------------------------------
    * Typography — humanist sans body, expressive serif display
-   * ============================================================ */
+   * ------------------------------------------------------------ */
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Consolas", monospace;
   --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
@@ -142,9 +74,9 @@
   --text-3xl: 2.5rem;
   --text-4xl: 3rem;
   /* Display sizes for the identity surfaces (hero, lesson title). Fluid so the
-     drama survives a narrow viewport instead of overflowing it. */
-  --text-display: clamp(2.75rem, 6vw, 4.5rem);
-  --text-display-sm: clamp(2.25rem, 4.2vw, 3.25rem);
+     scale survives a narrow viewport instead of overflowing it. */
+  --text-display: clamp(2.5rem, 5.4vw, 4rem);
+  --text-display-sm: clamp(2rem, 4.2vw, 3.25rem);
 
   --leading-tight: 1.2;
   --leading-snug: 1.4;
@@ -155,9 +87,9 @@
   --tracking-display: -0.028em;
   --tracking-eyebrow: 0.16em;
 
-  /* ============================================================
+  /* ------------------------------------------------------------
    * Spacing
-   * ============================================================ */
+   * ------------------------------------------------------------ */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -170,9 +102,9 @@
   --space-16: 4rem;
   --space-20: 5rem;
 
-  /* ============================================================
+  /* ------------------------------------------------------------
    * Layout
-   * ============================================================ */
+   * ------------------------------------------------------------ */
   --sidebar-width: 17.5rem;
   --header-height: 3.75rem;
   --content-max: 64rem;
@@ -192,21 +124,212 @@
   --radius-xl: 22px;
   --control-height: 2.5rem;
 
-  /* Elevation on ink: depth reads as LIGHT (a lit top edge + a cast shadow),
-     not as a lighter grey box. */
+  /* ------------------------------------------------------------
+   * Motion
+   * ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 520ms;
+}
+
+/* ============================================================================
+ * Notebook (default) — warm ivory page, deep navy ink, dark canvases
+ *
+ * The bare `:root` selector is intentional: with no `data-theme` attribute at
+ * all (no JS, a stale cache, a test harness) the product still renders as the
+ * notebook. `[data-theme="observatory"]` below is more specific and wins when
+ * the attribute is present.
+ * ========================================================================= */
+:root,
+:root[data-theme="notebook"] {
+  color-scheme: light;
+
+  /* ---- Surfaces — the warm textbook page ---- */
+  --color-page-bg: #f8f5ef; /* warm ivory lesson page */
+  --color-sidebar-bg: #f1ece1; /* course spine, a shade deeper */
+  --color-surface-subtle: #f2ede3; /* quiet inset panels */
+  --color-surface-muted: #f5f1e7; /* recessed / de-emphasized inset */
+  --color-surface-raised: #ffffff; /* elevated cards / inputs */
+  --color-surface-lifted: #fbf8f2; /* hover / active elevation */
+  --color-divider: #e7dfcf; /* warm-gray hairline */
+  --color-divider-strong: #dbd0bd;
+
+  /* Back-compat aliases (existing component CSS references these) */
+  --color-bg: var(--color-page-bg);
+  --color-surface: var(--color-surface-subtle);
+  --color-surface-inset: var(--color-surface-muted);
+  --color-border: var(--color-divider-strong);
+  --color-border-subtle: var(--color-divider);
+
+  /* ---- Ink ---- */
+  --color-text: #202b38; /* deep navy / charcoal body */
+  --color-text-muted: #545f6c; /* secondary */
+  --color-text-faint: #5e6875; /* metadata */
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
+  /* Text sitting ON a `--color-primary` / status fill. The notebook's action
+     colors are dark, so this is white; Observatory inverts it. */
+  --color-on-accent: #ffffff;
+
+  /* ---- Accents & actions ---- */
+  --color-primary: #2c6f8c; /* soft-deep blue primary action */
+  --color-primary-hover: #21596f;
+  --color-accent: #2c6f8c; /* link / accent */
+  --color-accent-strong: #21596f;
+  --color-focus: #3f86ad;
+  /* The chapter-node color: the spine thread, chapter numerals, and the lesson
+     eyebrow. Observatory draws these in the role-blue it lights the sky with;
+     the notebook uses its own action blue so the type stays legible on ivory. */
+  --color-node: #2c6f8c;
+
+  --accent-blue: #3f86ad;
+  --accent-teal: #2f9c8d;
+  --accent-coral: #d9694c;
+  --accent-gold: #c28f2c;
+  --accent-lavender: #7a70c4;
+
+  --color-success: #2a7d5d;
+  --color-warning: #8f5f14;
+  --color-error: #b0483f;
+
+  /* Restrained on-light tints backing the block treatments. */
+  --tint-blue: #eef4f7;
+  --tint-gold: #f6f0e2;
+  --tint-teal: #ecf5f2;
+
+  /* ---- Visualization canvas — a dark illustration on a warm page ---- */
+  --color-canvas: #0e1420;
+  --color-canvas-elevated: #131b29;
+  --color-canvas-text: #e8edf4; /* labels on the dark canvas */
+  --color-canvas-muted: #9aa6b5;
+  --color-canvas-text-muted: var(--color-canvas-muted);
+  --color-grid: #202b3d;
+  --color-axis: #3a4658;
+
+  /* ---- Atmosphere ---- */
+  /* Barely-there warm wash at the top of the page: paper is lit, not printed. */
+  --aurora-1: rgb(63 134 173 / 0.07);
+  --aurora-2: rgb(122 112 196 / 0.06);
+  --aurora-3: rgb(194 143 44 / 0.05);
+  /* The rule that closes the app header and the lesson header. */
+  --gradient-rule: linear-gradient(
+    90deg,
+    rgb(63 134 173 / 0.55),
+    rgb(122 112 196 / 0.4) 45%,
+    rgb(194 143 44 / 0.35) 78%,
+    transparent
+  );
+  /* Elevation sheen on a raised panel. */
+  --gradient-lit: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.7),
+    rgb(255 255 255 / 0) 62%
+  );
+
+  /* ---- Elevation — restrained, warm-neutral ---- */
+  --shadow-sm: 0 1px 2px rgb(31 43 56 / 0.06);
+  --shadow-card: 0 2px 10px rgb(31 43 56 / 0.06);
+  --shadow-raised: 0 8px 28px rgb(31 43 56 / 0.1);
+  --shadow-canvas: 0 14px 38px rgb(14 20 32 / 0.28);
+  --glow-accent: 0 0 0 1px rgb(44 111 140 / 0.25), 0 6px 18px rgb(31 43 56 / 0.12);
+  /* Halo around a chapter numeral: a soft ring on paper, a glow on ink. */
+  --glow-node: 0 0 0 4px rgb(44 111 140 / 0.12);
+  --glow-node-soft: 0 0 0 3px rgb(44 111 140 / 0.08);
+}
+
+/* ============================================================================
+ * Observatory (optional) — ink page continuous with the canvas
+ *
+ * The reading surface is the same ink the mathematics is drawn on, so a figure
+ * is continuous with its page rather than a bright cut-out, and the role
+ * palette becomes the presentation's accent palette (without changing what any
+ * role MEANS). Warmth survives as ink, not as paper.
+ * ========================================================================= */
+:root[data-theme="observatory"] {
+  color-scheme: dark;
+
+  /* ---- Surfaces — ink ground, lit panels ---- */
+  --color-page-bg: #080d15;
+  --color-sidebar-bg: #0a1019;
+  --color-surface-subtle: #101a27;
+  --color-surface-muted: #0d1621;
+  --color-surface-raised: #16202f;
+  --color-surface-lifted: #1c283a;
+  --color-divider: #1f2c3e;
+  --color-divider-strong: #30415a;
+
+  --color-bg: var(--color-page-bg);
+  --color-surface: var(--color-surface-subtle);
+  --color-surface-inset: var(--color-surface-muted);
+  --color-border: var(--color-divider-strong);
+  --color-border-subtle: var(--color-divider);
+
+  /* ---- Ink ---- */
+  --color-text: #eaeef5;
+  --color-text-muted: #a9b6c8;
+  --color-text-faint: #8593a7;
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
+  --color-on-accent: #06101c;
+
+  /* ---- Accents & actions — drawn from the math role palette ---- */
+  --color-primary: #7ec5e6;
+  --color-primary-hover: #a3d8f2;
+  --color-accent: #8fd0ee;
+  --color-accent-strong: #b6e2f8;
+  --color-focus: #7ec5e6;
+  --color-node: #7ec5e6;
+
+  --accent-blue: #7ec5e6;
+  --accent-teal: #7fd0a0;
+  --accent-coral: #f0879f;
+  --accent-gold: #e6b566;
+  --accent-lavender: #b9a3ef;
+
+  --color-success: #7fd0a0;
+  --color-warning: #e6b566;
+  --color-error: #f0879f;
+
+  /* Tint fills: luminance at low alpha, never a lighter opaque box. */
+  --tint-blue: rgb(126 197 230 / 0.12);
+  --tint-gold: rgb(230 181 102 / 0.12);
+  --tint-teal: rgb(127 208 160 / 0.12);
+
+  /* ---- Visualization canvas — continuous with the page ---- */
+  --color-canvas: #0b1120;
+  --color-canvas-elevated: #121b2b;
+  --color-canvas-text: #e8edf4;
+  --color-canvas-muted: #9aa6b5;
+  --color-canvas-text-muted: var(--color-canvas-muted);
+  --color-grid: #1b2739;
+  --color-axis: #38465c;
+
+  /* ---- Atmosphere — the aurora field that carries this presentation ---- */
+  --aurora-1: rgb(126 197 230 / 0.22);
+  --aurora-2: rgb(185 163 239 / 0.18);
+  --aurora-3: rgb(127 208 160 / 0.14);
+  --gradient-rule: linear-gradient(
+    90deg,
+    var(--role-original),
+    var(--role-basis-2) 45%,
+    var(--role-transformed) 78%,
+    transparent
+  );
+  --gradient-lit: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.06),
+    rgb(255 255 255 / 0) 60%
+  );
+
+  /* ---- Elevation — depth reads as LIGHT, not as a lighter grey box ---- */
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-card: 0 2px 12px rgb(0 0 0 / 0.45);
   --shadow-raised: 0 12px 34px rgb(0 0 0 / 0.5);
   --shadow-canvas: 0 18px 46px rgb(0 0 0 / 0.55);
   --glow-accent: 0 0 0 1px rgb(126 197 230 / 0.35), 0 8px 30px rgb(126 197 230 / 0.14);
-
-  /* ============================================================
-   * Motion
-   * ============================================================ */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --duration-fast: 120ms;
-  --duration-normal: 220ms;
-  --duration-slow: 520ms;
+  --glow-node: 0 0 18px rgb(126 197 230 / 0.45);
+  --glow-node-soft: 0 0 22px rgb(126 197 230 / 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {

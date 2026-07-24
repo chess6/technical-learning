@@ -11,6 +11,26 @@
       rel="stylesheet"
     />
     <title>Linear Algebra — Visual Learning</title>
+    <!--
+      Apply the saved presentation before the first paint, so a reload never
+      flashes the wrong theme. Deliberately does NOT read prefers-color-scheme:
+      Observatory is an explicit choice, not an OS dark mode. Keep the key and
+      the default in sync with src/platform/theme.ts.
+    -->
+    <script>
+      (function () {
+        var fallback = "notebook";
+        var saved = null;
+        try {
+          saved = localStorage.getItem("technical-learning/theme/v1");
+        } catch (error) {
+          saved = null;
+        }
+        var theme =
+          saved === "notebook" || saved === "observatory" ? saved : fallback;
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

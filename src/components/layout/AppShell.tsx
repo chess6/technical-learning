@@ -1,7 +1,9 @@
 import { Link, Outlet } from "react-router-dom";
 import { useCallback } from "react";
 import { CourseSidebar } from "./CourseSidebar";
+import { ThemeToggle } from "./ThemeToggle";
 import { useSidebarOpen } from "../../hooks/useSidebarOpen";
+import { useTheme } from "../../hooks/useTheme";
 import { LearnerStateProvider } from "../../platform/useLearnerState";
 import { registerSpacedScheduler } from "../../lessons/spacedSchedule";
 import "./AppShell.css";
@@ -13,6 +15,7 @@ registerSpacedScheduler();
 
 export function AppShell() {
   const { open, closeSidebar, toggleSidebar } = useSidebarOpen();
+  const { theme, setTheme } = useTheme();
 
   const handleClose = useCallback(() => {
     closeSidebar();
@@ -35,6 +38,9 @@ export function AppShell() {
           <span className="app-shell__brand-main">Linear Algebra</span>
           <span className="app-shell__brand-sub">Visual Learning</span>
         </Link>
+        <div className="app-shell__tools">
+          <ThemeToggle theme={theme} onChange={setTheme} />
+        </div>
       </header>
 
       <div className="app-shell__body">

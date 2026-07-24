@@ -103,7 +103,7 @@ function Panel({
             <Line.Segment
               point1={[0, 0]}
               point2={originImage as [number, number]}
-              color="var(--role-result, #e87a9a)"
+              color="var(--role-result)"
               weight={1.5}
               style="dashed"
             />

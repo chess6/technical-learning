@@ -74,17 +74,33 @@ Key entry points:
 - **Build a lesson:** [docs/authoring/lesson-design.md](docs/authoring/lesson-design.md)
   (orchestrator); route any course/lesson request through
   [docs/authoring/course-authoring-workflow.md](docs/authoring/course-authoring-workflow.md).
-- **Visual system:** the identity is **"Observatory"** — the reading surface is
-  the same ink the mathematics is drawn on, so a figure is continuous with its
-  page instead of a bright cut-out. Code owns the values:
+- **Visual system:** the identity is the **live interactive notebook**, shipped in
+  two *presentations* of that one identity, chosen from the app header and
+  remembered locally:
+  - **Notebook** (default) — a warm-ivory reading surface with deep-navy ink,
+    restrained warm dividers, and **dark mathematical canvases** that read as
+    illustrations set into a textbook page. The strong page↔canvas contrast is
+    deliberate.
+  - **Observatory** (optional) — an ink reading surface *continuous* with the
+    canvas, so the page becomes the same sky the mathematics is drawn on.
+
+  Both share one set of semantic **math roles** (`--role-*`), spacing,
+  typography, and component contracts; only surfaces, ink, accents, and
+  atmosphere are theme-scoped, via a `data-theme` attribute on the document root
+  (applied before first paint by a small inline script in `index.html`). The OS
+  dark-mode preference is deliberately **not** consulted — Observatory is an
+  explicit choice. Code owns the values:
   [src/styles/tokens.css](src/styles/tokens.css) (its header states the
-  direction), enforced by
+  direction) and [src/platform/theme.ts](src/platform/theme.ts), enforced by
   [src/styles/\_\_tests\_\_/designSystem.test.ts](src/styles/__tests__/designSystem.test.ts)
-  (no undefined tokens, no raw hex outside the token file, WCAG contrast floor)
-  and [e2e/visual-identity.spec.ts](e2e/visual-identity.spec.ts) (the same claims
-  measured in a browser). Per-primitive visual direction for algorithm lessons:
-  [docs/product/visual-language.md](docs/product/visual-language.md). The earlier
-  light-first page refinement is kept as historical reference in
+  (both themes complete and symmetric, no undefined tokens, no raw hex outside
+  the token file, the same WCAG floors, role meanings identical) and
+  [e2e/visual-identity.spec.ts](e2e/visual-identity.spec.ts) (the same claims
+  measured in a browser, plus switching, persistence, keyboard access, and no
+  horizontal overflow). Per-primitive visual direction for algorithm lessons:
+  [docs/product/visual-language.md](docs/product/visual-language.md). The
+  original light-first page refinement that Notebook descends from is kept as
+  historical reference in
   [docs/archive/milestones/visual-design-refinement.md](docs/archive/milestones/visual-design-refinement.md).
 - **Math & visualization correctness:**
   [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md) +

@@ -43,7 +43,7 @@
   font-weight: 700;
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--role-original);
+  color: var(--color-node);
 }
 
 .home-page__title {
@@ -51,13 +51,23 @@
   font-size: var(--text-display);
   line-height: 0.98;
   letter-spacing: var(--tracking-display);
-  /* Solid ink first; the gradient is an enhancement, so an engine without
-     background-clip still gets full-contrast text. */
+  /* Solid ink first; the ink-to-accent wash is an enhancement, gated on
+     background-clip support so no engine can end up with invisible type. */
   color: var(--color-text);
-  background: linear-gradient(168deg, #ffffff 12%, #cfe4f4 58%, #9fc6e2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .home-page__title {
+    background: linear-gradient(
+      168deg,
+      var(--color-text) 12%,
+      color-mix(in srgb, var(--color-text) 45%, var(--color-node)) 62%,
+      var(--color-node) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 .home-page__lede {
@@ -90,7 +100,7 @@
 
 .home-page__cta-secondary:hover {
   color: var(--color-text);
-  border-color: var(--role-original);
+  border-color: var(--color-node);
   text-decoration: none;
 }
 
@@ -119,26 +129,28 @@
   overflow: hidden;
 }
 
-/* Each step is tagged with a role color, in the course's own reading order. */
+/* Each step is tagged with an accent, in the course's own reading order. The
+   `--accent-*` family is theme-owned so the tag stays legible on either page;
+   `--role-*` is reserved for mathematical meaning on the canvas. */
 .home-page__flow-step::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
-  background: var(--step-color, var(--role-original));
+  background: var(--step-color, var(--accent-blue));
   opacity: 0.85;
 }
 
 .home-page__flow-step:nth-child(1) {
-  --step-color: var(--role-original);
+  --step-color: var(--accent-blue);
 }
 
 .home-page__flow-step:nth-child(2) {
-  --step-color: var(--role-basis-1);
+  --step-color: var(--accent-teal);
 }
 
 .home-page__flow-step:nth-child(3) {
-  --step-color: var(--role-transformed);
+  --step-color: var(--accent-gold);
 }
 
 .home-page__flow-index {
@@ -146,8 +158,7 @@
   font-size: var(--text-2xl);
   font-weight: 700;
   line-height: 1;
-  color: var(--step-color, var(--role-original));
-  opacity: 0.9;
+  color: var(--step-color, var(--accent-blue));
 }
 
 .home-page__flow-title {
@@ -202,7 +213,7 @@
   width: 1px;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--role-original) 60%, transparent),
+    color-mix(in srgb, var(--color-node) 60%, transparent),
     var(--color-divider) 55%,
     transparent
   );
@@ -236,7 +247,7 @@
 .home-page__link:hover,
 .home-page__link:focus-visible {
   text-decoration: none;
-  border-color: color-mix(in srgb, var(--role-original) 45%, var(--color-divider));
+  border-color: color-mix(in srgb, var(--color-node) 45%, var(--color-divider));
   box-shadow: var(--shadow-raised);
   transform: translateY(-2px);
 }
@@ -246,10 +257,10 @@
 }
 
 .home-page__link:hover .home-page__index {
-  border-color: var(--role-original);
+  border-color: var(--color-node);
   color: var(--color-on-accent);
-  background: var(--role-original);
-  box-shadow: 0 0 20px rgb(126 197 230 / 0.45);
+  background: var(--color-node);
+  box-shadow: var(--glow-node);
 }
 
 /* The numeral is the lit node on the thread — opaque so the line runs behind it. */

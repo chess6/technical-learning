@@ -7,7 +7,7 @@
 }
 
 html {
-  color-scheme: dark;
+  /* `color-scheme` is theme-owned (tokens.css sets it per `data-theme`). */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -21,8 +21,9 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--color-text);
-  /* Ink ground with a single, very low aurora wash at the top of the page —
-     the page is lit from where the mathematics is, not evenly flat. */
+  /* A single, very low aurora wash at the top of the page — the page is lit
+     from where the mathematics is, not evenly flat. The wash is theme-owned:
+     barely-there warmth on paper, a real aurora on ink. */
   background:
     radial-gradient(80rem 40rem at 12% -10%, var(--aurora-1), transparent 62%),
     radial-gradient(60rem 34rem at 88% -6%, var(--aurora-2), transparent 58%),
@@ -130,8 +131,9 @@ button {
   box-shadow: none;
 }
 
-/* The primary action is the brightest thing on the page — light IS the emphasis
-   on an ink ground, so it needs no extra chrome. */
+/* The primary action carries the page's strongest colour, with `--color-on-accent`
+   as its label — white ink on the notebook's deep blue, dark ink on Observatory's
+   luminous blue. */
 .btn--primary {
   background: var(--color-primary);
   border-color: var(--color-primary);

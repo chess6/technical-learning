@@ -1190,74 +1190,87 @@ supersedes are corrected here rather than edited in place.
 
 ---
 
-## Visual identity — "Observatory" inversion (2026-07-24, product-wide vertical slice)
+## Visual identity — the two-theme live notebook (2026-07-24, product-wide vertical slice)
 
-A **dramatic visual redesign**, built (not specified): the reading surface is inverted to
-the same ink the mathematics is already drawn on. Every visualization in this product
-renders on `--color-canvas` with the `--role-*` palette tuned for dark; the page was warm
-ivory, so each figure read as a bright rectangle punched into a different world. The
-identity makes the figure **continuous with its page**, and promotes the role palette from
-"colors quarantined inside canvases" to the product's own palette.
+The identity is the **live interactive notebook** (`vision.md` §1). It now ships as **two
+presentations of that one identity**, not two products:
+
+- **Notebook** (default) — warm-ivory reading surface, deep-navy ink, restrained warm
+  dividers and raised surfaces, and **dark mathematical canvases**. The strong page↔canvas
+  contrast is a deliberate choice: a figure is an instrument set into paper.
+- **Observatory** (optional) — an ink reading surface *continuous* with the canvas, so the
+  page becomes the same sky the mathematics is drawn on.
+
+> **Correction to the entry this supersedes.** An earlier pass shipped the Observatory
+> inversion as *the* permanent identity, made the whole product dark by default, and locked
+> that choice into tests ("the page must be dark", "page and canvas must be near-identical
+> in luminance", "Observatory is the product identity"). Those were **subjective
+> product-direction choices asserted as universal contracts**. The warm notebook is restored
+> as the default; Observatory is retained as a selectable theme; and the tests now assert
+> what is genuinely contractual (completeness, contrast, role meanings, switching,
+> persistence, no overflow) instead of one presentation's taste.
 
 **This pass changed no lesson content, no math, and no visualization geometry** — only how
-surfaces are lit. Role→meaning bindings are untouched.
+surfaces are lit. Role→meaning bindings are untouched, and are now *proved* identical across
+both themes.
 
-### Slice (entry path, end to end)
+### The theme layer
 
-- [x] **Token layer** (`src/styles/tokens.css`) — ink surfaces, warm-ivory ink, role-derived
-  accents, `--color-on-accent` (ink for text on a luminous fill), atmosphere tokens
-  (`--aurora-*`, `--gradient-rule`, `--gradient-lit`), fluid display sizes
-  (`--text-display`, `--text-display-sm`) and optical tracking. **Token NAMES are unchanged**,
-  so component CSS inherited the identity without edits; the file header states the direction
-  (per `vision.md`, the code owns the values).
-- [x] **App shell** (`AppShell.css`) — translucent ink header over a lit horizon hairline
-  (`--gradient-rule`); the shell itself is transparent so the page's aurora reads through;
-  `overflow-x: clip` so atmospheric bleed can never push the document sideways.
-- [x] **Course spine** (`CourseSidebar.css`) — the chapter list is drawn as one continuous
-  thread with opaque numerals sitting **on** it; the current chapter is *lit* (inner role-tinted
-  ring + elevation), not merely filled.
-- [x] **Home** (`HomePage.tsx/.css`) — aurora-lit hero with an eyebrow and oversized display
-  wordmark, the three-verb promise as role-tagged panels, and the chapter spine (lit node per
-  chapter, motif in a fixed slot so titles align). New DOM is additive; the `h1`, the
-  `Start with Chapter 0` link, and `.home-page__list` are unchanged for existing e2e.
-- [x] **Lesson entry** (`LessonHeader.css`) — display-scale title, lit chapter node echoing the
-  spine, and a header that ends in a lit rule rather than a border.
+- [x] **Token layer** (`src/styles/tokens.css`) — one shared `:root` block (semantic math
+  roles, typography scale, spacing, layout, motion, `--color-on-role`) plus one colour /
+  surface block per presentation. Component CSS reads the same semantic names in both and
+  **never branches on the theme**. The bare `:root` selector carries the Notebook values, so
+  the product still renders as the notebook with no `data-theme` attribute at all.
+- [x] **Selection** (`src/platform/theme.ts`, `src/hooks/useTheme.ts`,
+  `src/components/layout/ThemeToggle.tsx`) — a two-button group in the app header, each
+  option named and carrying `aria-pressed`; the choice persists to one `localStorage` key.
+- [x] **No flash on reload** — a small inline script in `index.html` stamps `data-theme`
+  before the first paint. It deliberately does **not** read `prefers-color-scheme`: a
+  dark operating system is not a request for the Observatory identity.
+- [x] **Reduced motion preserved** — the `prefers-reduced-motion` duration overrides live on
+  the shared `:root`, so they apply under either presentation.
+- [x] **Theme-dependent chrome tokenized** — the chapter-node colour (`--color-node`), node
+  halos (`--glow-node`, `--glow-node-soft`), and the ink that sits on a luminous role fill
+  (`--color-on-role`) replaced hardcoded role-blue and raw `rgb()` glows, which had assumed
+  an ink page.
 
-### Identity hygiene found and fixed by the new contracts
+### Identity hygiene kept from the Observatory pass
 
-- [x] **`--color-surface-muted` was never defined** — five components read
-  `var(--color-surface-muted, #f8f6f1)`, so a cream panel would have shipped on the ink page.
-  Now defined; the same check found `--guided-scene-standalone-max` and
-  `--color-canvas-text-muted` undefined.
-- [x] **The dev assessment runner had a whole undefined namespace** (`--role-surface`,
-  `--role-border`, `--role-accent`, `--role-danger`, …) whose light fallbacks (`#fff`, `#ccc`)
-  were what actually rendered; `ModuleRunner.css` now reads the real semantic tokens.
-- [x] **Dead light-mode fallbacks stripped** across 18 stylesheets (`var(--token, #hex)` →
+- [x] **`--color-surface-muted` is defined** — five components read
+  `var(--color-surface-muted, #f8f6f1)`, so a fallback colour was what actually shipped. The
+  same check covers `--guided-scene-standalone-max` and `--color-canvas-text-muted`.
+- [x] **The dev assessment runner's undefined namespace** (`--role-surface`, `--role-border`,
+  `--role-accent`, `--role-danger`, …) still reads real semantic tokens.
+- [x] **Dead fallbacks stay stripped** across 18 stylesheets (`var(--token, #hex)` →
   `var(--token)`), so the token file is genuinely authoritative.
-- [x] **White-on-luminous-fill corrected** — the primary button, correct/incorrect choice
-  letters, the active derivation step, and the handoff CTA now use `--color-on-accent` (dark
-  ink on light), which is what the contrast floor requires on this palette.
+- [x] **Text on a luminous fill** uses `--color-on-accent` (action / status fills) or
+  `--color-on-role` (role fills) rather than a hardcoded `#fff`, so the polarity is correct
+  in whichever presentation is active.
+- [x] **The hero wordmark's gradient** now derives from `--color-text` → `--color-node` and
+  is gated on `background-clip: text` support, so it can no longer ship invisible type — one
+  fewer documented raw-hex exception.
 
 ### Testing review
 
-- [x] `src/styles/__tests__/designSystem.test.ts` (new, 8 tests) — a stylesheet-level contract:
-  every custom property read by a component is defined somewhere (the failure mode above is
-  now impossible to reintroduce silently), no raw hex outside `tokens.css` (two documented
-  exceptions), and a **computed WCAG floor**: body ink ≥ AAA (7:1) on page/raised/subtle,
-  muted + faint ink ≥ AA, `--color-on-accent` ≥ AA on every luminous fill, role colors ≥ AA as
-  text on the page, and the canvas within 1.35:1 of the page ground (the continuity claim).
-  Mutation-checked: restoring the old dark body ink fails it.
-- [x] `e2e/visual-identity.spec.ts` (new, 3 specs) — the same claims measured from **computed
-  styles in a browser**, not pixels (a screenshot test would fail on any copy edit and pass on
-  a light-fallback regression): the page ground is ink and the lede clears AAA against it; the
-  primary action is the brightest thing on the page with dark ink on it; **the guided-scene
-  canvas and the page ground are within 1.6:1** (before the inversion this was ~15:1); and at a
-  390 px viewport nothing overflows horizontally. Saves `identity-home.png`,
-  `identity-lesson.png`, `identity-home-narrow.png` to `screenshots/`.
-- [x] Verified at package tier: `./check.sh --e2e` — oxlint clean (pre-existing non-blocking
-  `react-refresh` warnings only), `tsc -b` clean, **815 unit tests / 75 files**, **57
-  Playwright specs**. Every pre-existing lesson, assessment, semantics, and reduced-motion spec
-  passes **unchanged** — the inversion is carried by tokens, not by rewriting components.
-- [x] Visually reviewed at 1440 px and 390 px across home, L1/L3/L4 lessons, the Karatsuba
-  worked example, the eigen surfaces, and the dev module runner: no light-mode remnants, no
-  unreadable text, KaTeX inherits the ink.
+- [x] `src/styles/__tests__/designSystem.test.ts` (25 tests) — parses the token file into its
+  three blocks and asserts: every theme defines every theme-owned token; **the two themes
+  define exactly the same token set** (so a switch can never leave a property unresolved);
+  every custom property read by a component is defined; no raw hex outside `tokens.css` (two
+  documented exceptions — the 3-D canvas text halo, and the theme control, which previews
+  *both* presentations at once); the `--role-*` set is declared once in the shared block,
+  never redefined by a theme, and resolves to the same values under both; and the **same
+  WCAG floors in both themes** (body ink ≥ AAA on all six reading surfaces, muted/faint ≥ AA,
+  link/action/node type ≥ AA, status colours ≥ AA, focus ring ≥ 3:1, on-accent and on-role
+  ink ≥ AA over their fills, canvas labels ≥ AAA).
+- [x] The two page↔canvas relationships are asserted **as each theme's own intent**, not as
+  law: Notebook's canvas is ≥ 8:1 against its paper page; Observatory's is < 1.35:1.
+- [x] `e2e/visual-identity.spec.ts` (6 specs) — measured from computed styles in a browser:
+  Notebook is the default **even with `prefers-color-scheme: dark` emulated**; both
+  presentations clear the contrast floors on the real page; each page↔canvas relationship
+  holds on `/lesson/systems`; the `--role-*` values are byte-identical across a switch; the
+  control is `role="group"`-labelled, Tab-reachable with a visible focus ring, operable by
+  Enter, persisted, and re-applied after `reload()`; and **no horizontal overflow** on `/`
+  and `/lesson/vectors` at 1440 px and 390 px in *both* themes.
+- [x] Screenshots saved to `screenshots/`: `identity-home-notebook.png`,
+  `identity-home-observatory.png`, `identity-lesson-notebook.png`,
+  `identity-lesson-observatory.png`, `identity-home-notebook-390.png`.

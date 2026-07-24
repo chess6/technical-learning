@@ -1,17 +1,24 @@
 /**
- * Design-system contract for the "Observatory" identity (2026-07-24).
+ * Design-system contract for the two-theme live-notebook identity.
  *
- * The identity is carried entirely by `tokens.css` — component CSS reads
- * semantic tokens and inherits. Two failure modes make that quietly untrue, and
- * both actually happened before this suite existed:
+ * The identity is carried entirely by `tokens.css`: shared structure at `:root`
+ * plus one colour/surface block per presentation (`notebook`, the default, and
+ * `observatory`). Component CSS reads semantic token names and never branches on
+ * the theme — which is only true if the token layer holds up. Three failure
+ * modes make it quietly untrue, and the first two actually happened:
  *
  *   1. a component reads a token that was never defined (`var(--color-surface-muted,
- *      #f8f6f1)`), so the LIGHT fallback ships — a cream panel on an ink page;
- *   2. a component hardcodes a color, so it ignores the identity altogether.
+ *      #f8f6f1)`), so the FALLBACK ships instead of the identity;
+ *   2. a component hardcodes a colour, so it ignores the identity altogether;
+ *   3. a token exists in one theme but not the other, so switching themes leaves
+ *      a component reading an undefined property.
  *
- * These are text-level contracts on the stylesheets, deliberately cheap: they
- * cannot regress silently the way a screenshot can. The third contract is the
- * accessibility floor the inversion has to clear — computed, not eyeballed.
+ * What is deliberately NOT asserted here: that the page is dark, or that page
+ * and canvas are close in luminance. Those are per-theme *choices*, and the two
+ * themes make them differently on purpose — Notebook sets a dark canvas against
+ * a warm page (a figure is an instrument set into paper), Observatory makes the
+ * two continuous (the page is the sky the figure is drawn on). Both intents are
+ * pinned below, as intents, not as universal law.
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -38,32 +45,128 @@ const COMPONENT_CSS: Array<[string, string]> = cssFiles(SRC)
   .filter((file) => file !== TOKENS_PATH)
   .map((file) => [relative(ROOT, file), readFileSync(file, "utf8")]);
 
-/** Custom properties defined in the global token file. */
-const definedTokens = new Set(
-  [...tokensCss.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)].map((m) => m[1]!),
-);
+/* -------------------------------------------------------------------------- */
+/* Reading the token file as three declaration blocks                          */
+/* -------------------------------------------------------------------------- */
+
+/** Body of the first rule whose selector text contains `marker`. */
+function ruleBody(css: string, marker: string): string {
+  const at = css.indexOf(marker);
+  if (at < 0) throw new Error(`no rule matching "${marker}" in tokens.css`);
+  const open = css.indexOf("{", at);
+  if (open < 0) throw new Error(`rule "${marker}" has no body`);
+  let depth = 0;
+  for (let i = open; i < css.length; i += 1) {
+    if (css[i] === "{") depth += 1;
+    else if (css[i] === "}") {
+      depth -= 1;
+      if (depth === 0) return css.slice(open + 1, i);
+    }
+  }
+  throw new Error(`rule "${marker}" is unterminated`);
+}
+
+function declarations(body: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const match of body.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
+    out.set(match[1]!, match[2]!.trim());
+  }
+  return out;
+}
+
+// Comments are stripped first: the file documents its own selectors in prose,
+// and a marker found inside a comment would land on the wrong block.
+const tokensRules = tokensCss.replace(/\/\*[\s\S]*?\*\//g, "");
+
+// `:root {` is the shared block; the theme blocks carry a `data-theme` selector.
+const SHARED = declarations(ruleBody(tokensRules, ":root {"));
+const THEME_BLOCKS = {
+  notebook: declarations(ruleBody(tokensRules, '[data-theme="notebook"]')),
+  observatory: declarations(ruleBody(tokensRules, '[data-theme="observatory"]')),
+} as const;
+
+type ThemeName = keyof typeof THEME_BLOCKS;
+const THEME_NAMES = Object.keys(THEME_BLOCKS) as ThemeName[];
+
+/** Every property the browser would resolve on the root for a given theme. */
+function resolvedTokens(theme: ThemeName): Map<string, string> {
+  return new Map([...SHARED, ...THEME_BLOCKS[theme]]);
+}
+
+/** Follow `var(--alias)` chains to the literal value a component would paint. */
+function tokenValue(theme: ThemeName, name: string): string {
+  const table = resolvedTokens(theme);
+  let value = table.get(name);
+  for (let hops = 0; value !== undefined && hops < 8; hops += 1) {
+    const alias = value.match(/^var\(\s*(--[a-z0-9-]+)\s*\)$/i);
+    if (!alias) return value;
+    value = table.get(alias[1]!);
+  }
+  if (value === undefined) throw new Error(`token ${name} undefined in ${theme}`);
+  return value;
+}
+
+/** Custom properties defined anywhere in the global token file. */
+const definedTokens = new Set([
+  ...SHARED.keys(),
+  ...THEME_BLOCKS.notebook.keys(),
+  ...THEME_BLOCKS.observatory.keys(),
+]);
 
 /** Custom properties a stylesheet defines for itself (component-local knobs). */
 function localTokens(css: string): Set<string> {
-  return new Set([...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)].map((m) => m[1]!));
+  return new Set(
+    [...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gim)].map((m) => m[1]!),
+  );
 }
 
-describe("design system — token definitions", () => {
-  it("defines the identity tokens the rest of the CSS depends on", () => {
-    for (const token of [
-      "--color-page-bg",
-      "--color-surface-subtle",
-      "--color-surface-muted",
-      "--color-surface-raised",
-      "--color-text",
-      "--color-text-muted",
-      "--color-on-accent",
-      "--color-canvas",
-      "--gradient-rule",
-      "--aurora-1",
-    ]) {
-      expect(definedTokens.has(token), `${token} must be defined in tokens.css`).toBe(true);
-    }
+/* -------------------------------------------------------------------------- */
+/* Completeness                                                                */
+/* -------------------------------------------------------------------------- */
+
+/** Colour/surface tokens a theme owns. Every theme must define all of them. */
+const THEME_OWNED = [
+  "--color-page-bg",
+  "--color-sidebar-bg",
+  "--color-surface-subtle",
+  "--color-surface-muted",
+  "--color-surface-raised",
+  "--color-surface-lifted",
+  "--color-divider",
+  "--color-divider-strong",
+  "--color-text",
+  "--color-text-muted",
+  "--color-text-faint",
+  "--color-on-accent",
+  "--color-primary",
+  "--color-primary-hover",
+  "--color-accent",
+  "--color-accent-strong",
+  "--color-focus",
+  "--color-node",
+  "--color-success",
+  "--color-warning",
+  "--color-error",
+  "--color-canvas",
+  "--color-canvas-text",
+  "--aurora-1",
+  "--gradient-rule",
+  "--gradient-lit",
+  "--glow-accent",
+  "--glow-node",
+] as const;
+
+describe("design system — every theme is complete", () => {
+  it.each(THEME_NAMES)("%s defines every theme-owned token", (theme) => {
+    const missing = THEME_OWNED.filter((token) => !THEME_BLOCKS[theme].has(token));
+    expect(missing, `${theme} is missing: ${missing.join(", ")}`).toEqual([]);
+  });
+
+  it("the two themes define exactly the same token set", () => {
+    // A token present in one theme only would resolve to nothing after a switch.
+    const notebook = [...THEME_BLOCKS.notebook.keys()].sort();
+    const observatory = [...THEME_BLOCKS.observatory.keys()].sort();
+    expect(notebook).toEqual(observatory);
   });
 
   it("every custom property read by a component is actually defined", () => {
@@ -77,7 +180,7 @@ describe("design system — token definitions", () => {
         }
       }
     }
-    // A `var(--undefined, #fff)` silently ships its light-mode fallback.
+    // A `var(--undefined, #fff)` silently ships its fallback instead.
     expect(missing, `undefined custom properties:\n${missing.join("\n")}`).toEqual([]);
   });
 });
@@ -85,14 +188,14 @@ describe("design system — token definitions", () => {
 describe("design system — no hardcoded colors outside the token file", () => {
   /**
    * Colors that legitimately live in a component, each for a stated reason.
-   * Anything else belongs in `tokens.css` so the identity can move it.
+   * Anything else belongs in `tokens.css` so a theme can move it.
    */
   const ALLOWED = new Map<string, string>([
-    // The hero wordmark's metallic gradient: a one-off type treatment, not a
-    // surface color, and it degrades to `--color-text` where unsupported.
-    ["src/pages/HomePage.css", "hero wordmark gradient"],
     // Text halo drawn ON the 3-D canvas, matched to the canvas ink itself.
     ["src/components/lesson/threeD/Eigen3DExtension.css", "canvas text halo"],
+    // The theme control previews BOTH presentations at once, so by definition it
+    // cannot express the inactive one through the active theme's tokens.
+    ["src/components/layout/ThemeToggle.css", "theme preview swatches"],
   ]);
 
   it("component CSS uses tokens, not raw hex", () => {
@@ -108,14 +211,51 @@ describe("design system — no hardcoded colors outside the token file", () => {
 });
 
 /* -------------------------------------------------------------------------- */
-/* Contrast floor — the inversion has to be MORE readable, not just darker.    */
+/* Semantic math roles — identity-independent meanings                         */
 /* -------------------------------------------------------------------------- */
 
-function tokenValue(name: string): string {
-  const match = tokensCss.match(new RegExp(`${name}\\s*:\\s*([^;]+);`));
-  if (!match) throw new Error(`token ${name} not found`);
-  return match[1]!.trim();
-}
+describe("design system — math roles mean the same thing in every theme", () => {
+  /** The meaning dictionary (docs/product/vision.md §9b), pinned to values. */
+  const ROLE_VALUES: Record<string, string> = {
+    "--role-original": "#7ec5e6",
+    "--role-transformed": "#e6b566",
+    "--role-basis-1": "#7fd0a0",
+    "--role-basis-2": "#b9a3ef",
+    "--role-selected": "#ecd484",
+    "--role-invariant": "#f0879f",
+    "--role-intermediate": "#9aa6b5",
+    "--role-reachable": "#7ec5e6",
+  };
+
+  it("declares every role once, in the shared block", () => {
+    for (const role of Object.keys(ROLE_VALUES)) {
+      expect(SHARED.has(role), `${role} is shared`).toBe(true);
+      for (const theme of THEME_NAMES) {
+        expect(
+          THEME_BLOCKS[theme].has(role),
+          `${role} must not be redefined by ${theme}`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("resolves to the same value under either theme", () => {
+    for (const [role, value] of Object.entries(ROLE_VALUES)) {
+      for (const theme of THEME_NAMES) {
+        expect(tokenValue(theme, role), `${role} in ${theme}`).toBe(value);
+      }
+    }
+    // The aliases keep pointing at the same meanings, too.
+    for (const theme of THEME_NAMES) {
+      expect(tokenValue(theme, "--role-result")).toBe(ROLE_VALUES["--role-transformed"]);
+      expect(tokenValue(theme, "--role-highlight")).toBe(ROLE_VALUES["--role-selected"]);
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Contrast floors — both themes, same bar                                     */
+/* -------------------------------------------------------------------------- */
 
 function srgbToLinear(channel: number): number {
   const c = channel / 255;
@@ -136,73 +276,115 @@ function contrast(a: string, b: string): number {
   return (hi! + 0.05) / (lo! + 0.05);
 }
 
-describe("design system — contrast floor (WCAG 2.1)", () => {
-  const PAGE = tokenValue("--color-page-bg");
-  const RAISED = tokenValue("--color-surface-raised");
-  const SUBTLE = tokenValue("--color-surface-subtle");
+/** Opaque surfaces a learner reads body copy on. */
+const READING_SURFACES = [
+  "--color-page-bg",
+  "--color-sidebar-bg",
+  "--color-surface-subtle",
+  "--color-surface-muted",
+  "--color-surface-raised",
+  "--color-surface-lifted",
+] as const;
+
+describe.each(THEME_NAMES)("design system — %s contrast floor (WCAG 2.1)", (theme) => {
+  const value = (name: string) => tokenValue(theme, name);
 
   it("body ink clears AAA on every reading surface", () => {
-    const text = tokenValue("--color-text");
-    for (const [name, bg] of [
-      ["page", PAGE],
-      ["raised", RAISED],
-      ["subtle", SUBTLE],
-    ] as const) {
-      expect(contrast(text, bg), `body text on ${name}`).toBeGreaterThanOrEqual(7);
+    for (const surface of READING_SURFACES) {
+      expect(
+        contrast(value("--color-text"), value(surface)),
+        `body text on ${surface}`,
+      ).toBeGreaterThanOrEqual(7);
     }
   });
 
   it("secondary and faint ink clear AA body text on every reading surface", () => {
     for (const token of ["--color-text-muted", "--color-text-faint"]) {
-      for (const [name, bg] of [
-        ["page", PAGE],
-        ["raised", RAISED],
-        ["subtle", SUBTLE],
-      ] as const) {
-        expect(contrast(tokenValue(token), bg), `${token} on ${name}`).toBeGreaterThanOrEqual(
-          4.5,
-        );
+      for (const surface of READING_SURFACES) {
+        expect(
+          contrast(value(token), value(surface)),
+          `${token} on ${surface}`,
+        ).toBeGreaterThanOrEqual(4.5);
       }
     }
   });
 
-  it("ink on a luminous fill clears AA — the primary action is dark-on-light", () => {
-    const onAccent = tokenValue("--color-on-accent");
+  it("link, action, and chapter-node type clear AA on the page and on cards", () => {
+    for (const token of ["--color-accent", "--color-primary", "--color-node"]) {
+      for (const surface of ["--color-page-bg", "--color-surface-raised"] as const) {
+        expect(
+          contrast(value(token), value(surface)),
+          `${token} on ${surface}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it("status colors stay legible as text on the page", () => {
+    for (const token of ["--color-success", "--color-warning", "--color-error"]) {
+      expect(
+        contrast(value(token), value("--color-page-bg")),
+        `${token} on the page`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("the focus ring clears the non-text control floor against the page", () => {
+    expect(contrast(value("--color-focus"), value("--color-page-bg"))).toBeGreaterThanOrEqual(3);
+  });
+
+  it("text on an action fill clears AA — whichever way round the theme runs it", () => {
+    const onAccent = value("--color-on-accent");
     for (const fill of [
       "--color-primary",
       "--color-primary-hover",
+      "--color-node",
       "--color-success",
       "--color-error",
-      "--role-original",
-      "--role-basis-1",
     ]) {
-      expect(contrast(onAccent, tokenValue(fill)), `on-accent ink over ${fill}`).toBeGreaterThanOrEqual(
-        4.5,
-      );
+      expect(
+        contrast(onAccent, value(fill)),
+        `on-accent ink over ${fill}`,
+      ).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("accent text and role colors stay legible as text on the page ground", () => {
-    for (const token of [
-      "--color-accent",
-      "--color-primary",
-      "--role-original",
-      "--role-basis-1",
-      "--role-transformed",
-      "--role-basis-2",
-      "--role-invariant",
-    ]) {
-      expect(contrast(tokenValue(token), PAGE), `${token} on the page`).toBeGreaterThanOrEqual(
-        4.5,
-      );
+  it("text on a luminous role fill clears AA", () => {
+    // `--color-on-role` is shared: the roles are the same hues in both themes,
+    // so the ink that sits on them is the same ink.
+    const onRole = value("--color-on-role");
+    for (const fill of ["--role-basis-1", "--role-original", "--role-transformed"]) {
+      expect(
+        contrast(onRole, value(fill)),
+        `on-role ink over ${fill}`,
+      ).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("the canvas is continuous with the page — the figure is no longer a cut-out", () => {
-    // The redesign's central claim, made checkable: page ground and
-    // visualization canvas sit within a hair of each other in luminance, so a
-    // figure reads as part of the page rather than a bright inset panel.
-    expect(contrast(tokenValue("--color-canvas"), PAGE)).toBeLessThan(1.35);
-    expect(contrast(tokenValue("--color-canvas-text"), tokenValue("--color-canvas"))).toBeGreaterThanOrEqual(7);
+  it("canvas labels clear AAA on the canvas", () => {
+    expect(
+      contrast(value("--color-canvas-text"), value("--color-canvas")),
+    ).toBeGreaterThanOrEqual(7);
+  });
+});
+
+describe("design system — each theme's page/canvas relationship is its own", () => {
+  it("Notebook sets a dark canvas against its warm page, on purpose", () => {
+    // The figure is an instrument set into paper: the separation is the point,
+    // and the role palette stays tuned for the dark ground it is drawn on.
+    const page = tokenValue("notebook", "--color-page-bg");
+    const canvas = tokenValue("notebook", "--color-canvas");
+    expect(luminance(page), "the notebook page is paper").toBeGreaterThan(0.5);
+    expect(luminance(canvas), "the notebook canvas is ink").toBeLessThan(0.05);
+    expect(contrast(canvas, page)).toBeGreaterThanOrEqual(8);
+  });
+
+  it("Observatory makes page and canvas continuous, on purpose", () => {
+    // The page is the same sky the figure is drawn on, so the figure stops
+    // reading as a bright cut-out.
+    const page = tokenValue("observatory", "--color-page-bg");
+    const canvas = tokenValue("observatory", "--color-canvas");
+    expect(luminance(page), "the observatory page is ink").toBeLessThan(0.05);
+    expect(contrast(canvas, page)).toBeLessThan(1.35);
   });
 });
