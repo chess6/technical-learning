@@ -102,6 +102,41 @@
   resize: vertical;
 }
 
+.module-runner__field input,
+.module-runner__field textarea {
+  font: inherit;
+}
+
+.module-runner__coords {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.module-runner__coord-label {
+  display: inline-block;
+  margin-right: 0.35rem;
+  font-weight: 600;
+}
+
+.module-runner__matrix {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--role-border, #ddd);
+  border-radius: 0.5rem;
+}
+
+.module-runner__matrix-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.module-runner__matrix-cell {
+  width: 4rem;
+}
+
 .module-runner__actions {
   display: flex;
   justify-content: flex-end;

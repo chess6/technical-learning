@@ -52,6 +52,12 @@ export interface LearnerStateContextValue {
   readOnly: boolean;
   /** The classified load outcome (for read-only recovery UI). */
   loadOutcome: LoadOutcome | null;
+  /**
+   * `false` once ANY save has failed (quota exceeded / storage disabled). Sticky
+   * — a durable warning, not a transient blip; cleared only by a successful
+   * import or an explicit reset. The provider never silently claims persistence.
+   */
+  saveHealthy: boolean;
 
   /** Create/replace an attempt set (immediate save — a real transition). */
   startAttemptSet(set: AttemptSet): void;
@@ -89,6 +95,8 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<LearnerState>(() => createEmptyLearnerState());
   const [phase, setPhase] = useState<HydrationPhase>("loading");
   const [loadOutcome, setLoadOutcome] = useState<LoadOutcome | null>(null);
+  // Sticky: set on the first failed save, surfaced as a durable warning.
+  const [saveFailed, setSaveFailed] = useState(false);
 
   // A synchronous mirror of the latest state so atomic claims (scheduler
   // emission) can read-modify-write without waiting for a React re-render.
@@ -126,22 +134,29 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const persist = useCallback((next: LearnerState, immediate: boolean) => {
-    if (phaseRef.current !== "ready") return; // read-only / loading → never write
-    if (immediate) {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
-      saveLearnerState(next);
-      return;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      saveLearnerState(stateRef.current);
-    }, SAVE_DEBOUNCE_MS);
+  const noteSave = useCallback((ok: boolean) => {
+    if (!ok) setSaveFailed(true);
   }, []);
+
+  const persist = useCallback(
+    (next: LearnerState, immediate: boolean) => {
+      if (phaseRef.current !== "ready") return; // read-only / loading → never write
+      if (immediate) {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+          debounceRef.current = null;
+        }
+        noteSave(saveLearnerState(next));
+        return;
+      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        debounceRef.current = null;
+        noteSave(saveLearnerState(stateRef.current));
+      }, SAVE_DEBOUNCE_MS);
+    },
+    [noteSave],
+  );
 
   const commit = useCallback(
     (updater: (prev: LearnerState) => LearnerState, immediate: boolean): LearnerState => {
@@ -291,7 +306,8 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
         setState(outcome.state);
         setPhase("ready");
         setLoadOutcome(outcome);
-        saveLearnerState(outcome.state);
+        const ok = saveLearnerState(outcome.state);
+        setSaveFailed(!ok);
       }
       return outcome;
     },
@@ -305,7 +321,8 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
     setPhase("ready");
     setLoadOutcome({ kind: "empty" });
     clearLearnerState();
-    saveLearnerState(fresh);
+    const ok = saveLearnerState(fresh);
+    setSaveFailed(!ok);
   }, []);
 
   const value = useMemo<LearnerStateContextValue>(
@@ -314,6 +331,7 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
       phase,
       readOnly: phase === "read-only",
       loadOutcome,
+      saveHealthy: !saveFailed,
       startAttemptSet,
       putItemResponse,
       submitAttemptSet,
@@ -329,6 +347,7 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
       state,
       phase,
       loadOutcome,
+      saveFailed,
       startAttemptSet,
       putItemResponse,
       submitAttemptSet,

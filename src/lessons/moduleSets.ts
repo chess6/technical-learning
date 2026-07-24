@@ -20,7 +20,8 @@ export interface ModuleSet {
   /** Owning module/section id (matches curriculum.ts). */
   moduleId: string;
   title: string;
-  mode: "practice" | "exam";
+  /** Deferred-feedback exam mode is the only supported mode (see AttemptSet.mode). */
+  mode: "exam";
   /** Ordered exercise ids drawn from the module's lessons. */
   itemIds: readonly string[];
 }

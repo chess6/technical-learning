@@ -62,12 +62,15 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
 - Attempts are **JSON-safe, capability-aware serialized answer envelopes**
   carrying `capabilityId` + `answerSchemaVersion`, so a future migration can
   reinterpret a stored answer when a capability's answer shape evolves.
-- **Module-assessment model (v2, Package F):** `AttemptSet` (with `setVersion` +
-  an ordered `AttemptItemSnapshot[]` freezing each item's serialized definition +
-  rubric so a released attempt is reproducible), `AutoResult` (tagged
-  `graded`/`error`/`omitted`, kept **separate** from human review), and
-  `ReviewRecord` (pending/scored, rubric id + version). Each migration step stamps
-  exactly its version.
+- **Module-assessment model (v2, Package F):** `AttemptSet` (exam-only `mode`,
+  with `setVersion` + an ordered `AttemptItemSnapshot[]` freezing each item's
+  serialized definition + rubric so a released attempt is reproducible), `AutoResult`
+  (tagged `graded`/`error`/`omitted`, kept **separate** from human review), and
+  `ReviewRecord` (pending/scored, rubric id + version, plus an `omitted` flag). Each
+  migration step stamps exactly its version.
+- **Blank required responses are omissions, not evidence:** a blank written proof is
+  recorded as an `omitted` `ReviewRecord` (auto `passed:false`) that `reviewStatus`
+  can never count toward `REVIEW_COMPLETE`; human scoring requires a **finite score**.
 
 ### 5. Assessment persistence — `src/platform/persistence.ts` + `useLearnerState.tsx`
 
@@ -82,6 +85,10 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   scheduler-emission claim) persist **synchronously**; ordinary draft answers are
   debounced. The scheduler hook is dispatched **at-most-once** per set (persisted
   `schedulerEmittedAt` idempotency marker claimed before invoke).
+- **Save failure is surfaced, not swallowed:** a failed synchronous save flips a
+  sticky `saveHealthy=false`, driving a durable warning. `dev/recovery` exposes
+  **Export / Import / Reset** with messaging distinguishing corrupt, newer-schema,
+  unmigratable, read-only, and save-failed states.
 - Both assessment surfaces (`dev/module/:setId` runner, `dev/review` reviewer) are
   **dev-gated on the same origin** so they share this state. Package F reports a
   conservative `reviewStatus` (`REVIEW_PENDING`/`COMPLETE`/`FAILED`) and **never

@@ -57,6 +57,13 @@ const devRoutes = import.meta.env.DEV
           return { Component: DevReviewPage };
         },
       },
+      {
+        path: "dev/recovery",
+        lazy: async () => {
+          const { DevRecoveryPage } = await import("../pages/DevRecoveryPage");
+          return { Component: DevRecoveryPage };
+        },
+      },
     ]
   : [];
 

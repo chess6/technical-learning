@@ -1,0 +1,426 @@
+/**
+ * Shared phase-correct capability renderers for the module runner (Package F).
+ *
+ * This is the approved dedicated renderer (kept separate from the lesson
+ * `ExercisePanel` bodies) so exam CAPTURE cannot leak correctness by
+ * construction: capture inputs paint no `data-state` and reveal nothing until
+ * submit. Grading/serialization still reuse the PURE capability layer (the
+ * serialized answer shapes here are exactly what `capability.parseAnswer`
+ * accepts, so `gradeSnapshot` can grade them against the snapshot).
+ *
+ * Supported kinds cover the pilot set AND the atomic kinds the upcoming Package G
+ * sets need: `multiple-choice`, `numeric`, `vector`, `matrix-entry`,
+ * `construct-in-explorer` (auto-graded) and `self-check` (human-scored). The
+ * scaffolded `exercise-sequence` / reveal `prediction` kinds are intentionally
+ * NOT exam-capturable (their model is progressive reveal); Package G authors
+ * atomic items for exam sets instead.
+ */
+
+import { useState } from "react";
+import type { AttemptItemResponse, AttemptItemSnapshot } from "../../platform/learnerState";
+import type { JsonValue } from "../../platform/json";
+import type { MatrixEntryConfig } from "../../lessons/capabilities";
+import { MATRIX_ENTRY_ID, CONSTRUCT_IN_EXPLORER_ID, SELF_CHECK_ID } from "../../lessons/capabilities";
+import { definitionFromSnapshot } from "../../lessons/attemptSnapshot";
+import type { ExerciseDefinition, SolutionReveal as SolutionRevealData } from "../../lessons/types";
+import { ProseWithMath } from "../lesson/ProseWithMath";
+import { SolutionReveal } from "../lesson/SolutionReveal";
+
+export const SUPPORTED_CAPTURE_KINDS: readonly string[] = [
+  "multiple-choice",
+  "numeric",
+  "vector",
+  MATRIX_ENTRY_ID,
+  CONSTRUCT_IN_EXPLORER_ID,
+  SELF_CHECK_ID,
+];
+
+export function isCaptureSupported(item: AttemptItemSnapshot): boolean {
+  return SUPPORTED_CAPTURE_KINDS.includes(item.capabilityId);
+}
+
+export function readField(answer: JsonValue | undefined, field: string): JsonValue | undefined {
+  if (answer && typeof answer === "object" && !Array.isArray(answer)) {
+    return (answer as Record<string, JsonValue>)[field];
+  }
+  return undefined;
+}
+
+function parseNum(raw: string): number | null {
+  if (raw.trim() === "") return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Capture (exam) — NO correctness or reveal shown.                            */
+/* -------------------------------------------------------------------------- */
+
+export function CaptureField({
+  item,
+  answer,
+  onAnswer,
+}: {
+  item: AttemptItemSnapshot;
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const exercise = definitionFromSnapshot(item);
+  switch (item.capabilityId) {
+    case "multiple-choice":
+      return <MultipleChoiceCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />;
+    case "numeric":
+      return <NumericCapture answer={answer} onAnswer={onAnswer} />;
+    case "vector":
+      return <VectorCapture answer={answer} onAnswer={onAnswer} />;
+    case MATRIX_ENTRY_ID:
+      return <MatrixEntryCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />;
+    case CONSTRUCT_IN_EXPLORER_ID:
+      return <ConstructCapture answer={answer} onAnswer={onAnswer} />;
+    case SELF_CHECK_ID:
+      return <SelfCheckCapture answer={answer} onAnswer={onAnswer} />;
+    default:
+      return (
+        <p className="module-runner__unsupported">
+          This item type isn’t available in the review runner yet.
+        </p>
+      );
+  }
+}
+
+function MultipleChoiceCapture({
+  exercise,
+  answer,
+  onAnswer,
+}: {
+  exercise: ExerciseDefinition;
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  if (exercise.type !== "multiple-choice") return null;
+  const selected = readField(answer, "choice");
+  return (
+    <ul className="module-runner__choices">
+      {exercise.choices.map((choice, index) => (
+        <li key={index}>
+          <button
+            type="button"
+            className="module-runner__choice"
+            aria-pressed={selected === index}
+            data-choice-index={index}
+            onClick={() => onAnswer({ choice: index })}
+          >
+            <span className="module-runner__choice-letter" aria-hidden="true">
+              {String.fromCharCode(65 + index)}
+            </span>
+            <span className="module-runner__choice-text">
+              <ProseWithMath text={choice} />
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function NumericCapture({
+  answer,
+  onAnswer,
+}: {
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const initial = readField(answer, "value");
+  const [value, setValue] = useState(typeof initial === "number" ? String(initial) : "");
+  return (
+    <label className="module-runner__field">
+      <span className="sr-only">Numeric answer</span>
+      <input
+        type="number"
+        step="any"
+        inputMode="decimal"
+        value={value}
+        onChange={(event) => {
+          const next = event.target.value;
+          setValue(next);
+          const n = parseNum(next);
+          onAnswer(n === null ? null : { value: n });
+        }}
+      />
+    </label>
+  );
+}
+
+function TwoCoordCapture({
+  answer,
+  field,
+  onAnswer,
+}: {
+  answer: JsonValue | undefined;
+  /** How to shape the serialized answer: bare `[x,y]` (vector) or `{vector:[x,y]}`. */
+  field: "vector" | "construct";
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const source =
+    field === "vector"
+      ? (Array.isArray(answer) ? answer : undefined)
+      : readField(answer, "vector");
+  const seed = (i: number) =>
+    Array.isArray(source) && typeof source[i] === "number" ? String(source[i]) : "";
+  const [x, setX] = useState(seed(0));
+  const [y, setY] = useState(seed(1));
+
+  const emit = (nx: string, ny: string) => {
+    const px = parseNum(nx);
+    const py = parseNum(ny);
+    if (px === null || py === null) {
+      onAnswer(null);
+      return;
+    }
+    onAnswer(field === "vector" ? [px, py] : { vector: [px, py] });
+  };
+
+  return (
+    <div className="module-runner__coords">
+      <label className="module-runner__field">
+        <span className="module-runner__coord-label">x</span>
+        <input
+          type="number"
+          step="any"
+          aria-label="x coordinate"
+          value={x}
+          onChange={(event) => {
+            setX(event.target.value);
+            emit(event.target.value, y);
+          }}
+        />
+      </label>
+      <label className="module-runner__field">
+        <span className="module-runner__coord-label">y</span>
+        <input
+          type="number"
+          step="any"
+          aria-label="y coordinate"
+          value={y}
+          onChange={(event) => {
+            setY(event.target.value);
+            emit(x, event.target.value);
+          }}
+        />
+      </label>
+    </div>
+  );
+}
+
+function VectorCapture(props: {
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  return <TwoCoordCapture {...props} field="vector" />;
+}
+
+function ConstructCapture(props: {
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  return <TwoCoordCapture {...props} field="construct" />;
+}
+
+function matrixConfig(exercise: ExerciseDefinition): MatrixEntryConfig | null {
+  if (exercise.type !== "custom") return null;
+  return (exercise.config as MatrixEntryConfig | undefined) ?? null;
+}
+
+function MatrixEntryCapture({
+  exercise,
+  answer,
+  onAnswer,
+}: {
+  exercise: ExerciseDefinition;
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const config = matrixConfig(exercise);
+  const stored = readField(answer, "entries");
+  const seed = (r: number, c: number): string => {
+    if (Array.isArray(stored)) {
+      const row = stored[r];
+      if (Array.isArray(row) && typeof row[c] === "number") return String(row[c]);
+    }
+    return "";
+  };
+  const [grid, setGrid] = useState<string[][]>(() =>
+    config
+      ? Array.from({ length: config.rows }, (_, r) =>
+          Array.from({ length: config.cols }, (_, c) => seed(r, c)),
+        )
+      : [],
+  );
+  if (!config) return null;
+
+  const emit = (next: string[][]) => {
+    const numbers: number[][] = [];
+    for (const row of next) {
+      const parsedRow: number[] = [];
+      for (const cell of row) {
+        const n = parseNum(cell);
+        if (n === null) {
+          onAnswer(null);
+          return;
+        }
+        parsedRow.push(n);
+      }
+      numbers.push(parsedRow);
+    }
+    onAnswer({ entries: numbers });
+  };
+
+  return (
+    <div
+      className="module-runner__matrix"
+      role="group"
+      aria-label={`${config.matrixName ?? "Matrix"} entries`}
+    >
+      {grid.map((row, r) => (
+        <div key={r} className="module-runner__matrix-row">
+          {row.map((cell, c) => (
+            <input
+              key={c}
+              type="number"
+              step="any"
+              inputMode="decimal"
+              aria-label={`Row ${r + 1}, column ${c + 1}`}
+              className="module-runner__matrix-cell"
+              data-cell={`${r}-${c}`}
+              value={cell}
+              onChange={(event) => {
+                const next = grid.map((gr, gri) =>
+                  gr.map((gc, gci) => (gri === r && gci === c ? event.target.value : gc)),
+                );
+                setGrid(next);
+                emit(next);
+              }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SelfCheckCapture({
+  answer,
+  onAnswer,
+}: {
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const initial = readField(answer, "text");
+  const [text, setText] = useState(typeof initial === "string" ? initial : "");
+  return (
+    <label className="module-runner__field">
+      <span className="sr-only">Your written answer</span>
+      <textarea
+        className="module-runner__textarea"
+        rows={5}
+        placeholder="Write your reasoning / proof…"
+        value={text}
+        onChange={(event) => {
+          setText(event.target.value);
+          onAnswer({ text: event.target.value, selfMark: "not-yet" });
+        }}
+      />
+    </label>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Review (after release) — read-only stored answer + AutoResult + reveal.      */
+/* -------------------------------------------------------------------------- */
+
+/** Human-readable render of a stored, auto-gradable answer. */
+function StoredAnswer({
+  item,
+  response,
+}: {
+  item: AttemptItemSnapshot;
+  response: AttemptItemResponse | undefined;
+}) {
+  const answer = response?.answer;
+  if (answer === undefined || answer === null) {
+    return <span className="module-runner__answer-text">(left blank)</span>;
+  }
+  const exercise = definitionFromSnapshot(item);
+  if (item.capabilityId === "multiple-choice" && exercise.type === "multiple-choice") {
+    const choice = readField(answer, "choice");
+    if (typeof choice === "number" && exercise.choices[choice] !== undefined) {
+      return (
+        <span className="module-runner__answer-text">
+          {String.fromCharCode(65 + choice)}. <ProseWithMath text={exercise.choices[choice]!} />
+        </span>
+      );
+    }
+    return <span className="module-runner__answer-text">(left blank)</span>;
+  }
+  if (item.capabilityId === "numeric") {
+    const value = readField(answer, "value");
+    return <span className="module-runner__answer-text">{typeof value === "number" ? value : "(left blank)"}</span>;
+  }
+  if (item.capabilityId === "vector" && Array.isArray(answer)) {
+    return <span className="module-runner__answer-text">({answer[0]}, {answer[1]})</span>;
+  }
+  if (item.capabilityId === CONSTRUCT_IN_EXPLORER_ID) {
+    const v = readField(answer, "vector");
+    if (Array.isArray(v)) return <span className="module-runner__answer-text">({v[0]}, {v[1]})</span>;
+  }
+  if (item.capabilityId === MATRIX_ENTRY_ID) {
+    const entries = readField(answer, "entries");
+    if (Array.isArray(entries)) {
+      return (
+        <span className="module-runner__answer-text">
+          {entries
+            .map((row) => (Array.isArray(row) ? `[${row.join(", ")}]` : ""))
+            .join(" ")}
+        </span>
+      );
+    }
+  }
+  return <span className="module-runner__answer-text">(answer recorded)</span>;
+}
+
+/** Read-only review of an auto-graded item: stored answer + feedback + reveal. */
+export function ReviewAnswer({
+  item,
+  response,
+}: {
+  item: AttemptItemSnapshot;
+  response: AttemptItemResponse | undefined;
+}) {
+  const auto = response?.auto;
+  const reveal =
+    auto?.kind === "graded" && auto.solutionReveal
+      ? (auto.solutionReveal as unknown as SolutionRevealData)
+      : undefined;
+  return (
+    <div className="module-runner__auto">
+      <p className="module-runner__answer-label">Your answer</p>
+      <p>
+        <StoredAnswer item={item} response={response} />
+      </p>
+      {auto?.kind === "graded" ? (
+        <p className="module-runner__feedback" data-state={auto.correct ? "correct" : "incorrect"}>
+          <ProseWithMath text={auto.feedback} />
+        </p>
+      ) : auto?.kind === "error" ? (
+        <p className="module-runner__feedback" data-state="incorrect">
+          Could not grade this answer.
+        </p>
+      ) : (
+        <p className="module-runner__feedback" data-state="incorrect">
+          Left blank.
+        </p>
+      )}
+      {reveal && <SolutionReveal reveal={reveal} compact />}
+    </div>
+  );
+}

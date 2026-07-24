@@ -26,6 +26,10 @@ export function DevAssessmentIndexPage() {
       <p>
         <Link to="/dev/review">Open the human-scoring review queue</Link>
       </p>
+      <h2>Recovery</h2>
+      <p>
+        <Link to="/dev/recovery">Export / import / reset learner state</Link>
+      </p>
     </div>
   );
 }

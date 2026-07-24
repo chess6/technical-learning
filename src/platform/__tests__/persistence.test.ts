@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SCHEMA_VERSION } from "../identity";
 import { createEmptyLearnerState } from "../learnerState";
 import {
@@ -69,6 +69,14 @@ describe("saveLearnerState / clear / export", () => {
     expect(exportRaw()).toBe(JSON.stringify(state));
     clearLearnerState();
     expect(exportRaw()).toBeNull();
+  });
+
+  it("returns false (does not throw) when storage rejects the write", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    expect(saveLearnerState(createEmptyLearnerState())).toBe(false);
+    spy.mockRestore();
   });
 });
 

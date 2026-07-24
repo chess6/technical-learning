@@ -4,15 +4,18 @@
  * Exam mode CAPTURES answers with no correctness or solution reveal, freezes on
  * submit, then RELEASES feedback: auto items are graded against their snapshot
  * and human-scored items become pending reviews. Review mode renders read-only
- * from the snapshots. The scheduler hook is dispatched at-most-once on release
- * (claim persisted before invoke).
+ * from the snapshots (stored answer + AutoResult + persisted solutionReveal).
+ * The scheduler hook is dispatched at-most-once on release (claim persisted
+ * before invoke).
  *
- * A dedicated, phase-correct renderer is used (rather than reusing the lesson
- * ExercisePanel bodies) so that exam capture cannot leak correctness by
+ * The shared, phase-correct renderer (`captureRenderers`) is used rather than the
+ * lesson `ExercisePanel` bodies so exam capture cannot leak correctness by
  * construction; the load-bearing reuse is the PURE capability layer
- * (serialize/parse/grade via the snapshot). Supported capture kinds today are
- * `multiple-choice` and `self-check`, covering the pilot set; more kinds are
- * added by Package G without changing this contract.
+ * (serialize/parse/grade via the snapshot).
+ *
+ * Blank required written responses are recorded conservatively as OMISSIONS: a
+ * blank proof is auto-scored `passed:false` (omitted) and never enters the human
+ * queue, so `reviewStatus` can never reach `REVIEW_COMPLETE` from a blank answer.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -33,17 +36,15 @@ import {
   resolveModuleSet,
 } from "../../lessons/moduleSets";
 import { snapshotItem, definitionFromSnapshot, gradeSnapshot } from "../../lessons/attemptSnapshot";
-import { SELF_CHECK_ID } from "../../lessons/capabilities";
 import { reviewStatus } from "../../lessons/reviewStatus";
-import type { ExerciseDefinition } from "../../lessons/types";
 import { ProseWithMath } from "../lesson/ProseWithMath";
+import { CaptureField, ReviewAnswer, readField } from "./captureRenderers";
 import "./ModuleRunner.css";
 
-function readField(answer: JsonValue | undefined, field: string): JsonValue | undefined {
-  if (answer && typeof answer === "object" && !Array.isArray(answer)) {
-    return (answer as Record<string, JsonValue>)[field];
-  }
-  return undefined;
+/** Whether a captured written answer has substantive (non-blank) text. */
+function hasSubstantiveText(serialized: JsonValue | null): boolean {
+  const text = readField(serialized ?? undefined, "text");
+  return typeof text === "string" && text.trim() !== "";
 }
 
 export function ModuleRunner({ setId }: { setId: string }) {
@@ -51,6 +52,7 @@ export function ModuleRunner({ setId }: { setId: string }) {
     state,
     phase,
     readOnly,
+    saveHealthy,
     startAttemptSet,
     putItemResponse,
     submitAttemptSet,
@@ -122,12 +124,24 @@ export function ModuleRunner({ setId }: { setId: string }) {
       const captured = attempt.responses.find((r) => r.exerciseId === item.exerciseId);
       const serialized: JsonValue | null = captured ? captured.answer : null;
       if (item.requiresReview) {
-        const review = makeReview({
+        const base = makeReview({
           attemptSetId: attempt.id,
           exerciseId: item.exerciseId,
           rubricId: item.rubric?.rubricId ?? item.exerciseId,
           rubricVersion: item.rubric?.rubricVersion ?? 1,
         });
+        // A blank required response is a system-recorded omission — auto-scored
+        // failed, NOT queued for a human. It can never become passable evidence.
+        const review: ReviewRecord = hasSubstantiveText(serialized)
+          ? base
+          : {
+              ...base,
+              state: "scored",
+              passed: false,
+              omitted: true,
+              feedback: "No response submitted.",
+              scoredAt: new Date().toISOString(),
+            };
         reviews.push(review);
         return makeAttemptItemResponse({
           exerciseId: item.exerciseId,
@@ -172,12 +186,19 @@ export function ModuleRunner({ setId }: { setId: string }) {
       <header className="module-runner__head">
         <h1 className="module-runner__title">{resolved.set.title}</h1>
         <p className="module-runner__mode" data-mode={attempt.mode}>
-          {attempt.mode === "exam" ? "Exam mode · feedback after submit" : "Practice"}
+          Exam mode · feedback after submit
         </p>
         {readOnly && (
           <p className="module-runner__notice" role="status">
             Progress can’t be saved in this session (storage is read-only). Your
             work stays for now but won’t persist on reload.
+          </p>
+        )}
+        {!readOnly && !saveHealthy && (
+          <p className="module-runner__notice" role="alert" data-testid="save-warning">
+            A save just failed (storage may be full or disabled). Your work is
+            kept in memory only — export a copy from the recovery page before
+            reloading.
           </p>
         )}
       </header>
@@ -187,21 +208,30 @@ export function ModuleRunner({ setId }: { setId: string }) {
       ) : (
         <>
           <ol className="module-runner__items">
-            {attempt.items.map((item, index) => (
-              <li key={item.exerciseId} className="module-runner__item">
-                <CaptureItem
-                  index={index}
-                  item={item}
-                  answer={attempt.responses.find((r) => r.exerciseId === item.exerciseId)?.answer}
-                  onAnswer={(answer) =>
-                    putItemResponse(
-                      attempt.id,
-                      makeAttemptItemResponse({ exerciseId: item.exerciseId, answer }),
-                    )
-                  }
-                />
-              </li>
-            ))}
+            {attempt.items.map((item, index) => {
+              const exercise = definitionFromSnapshot(item);
+              return (
+                <li key={item.exerciseId} className="module-runner__item">
+                  <div className="module-runner__capture" data-exercise={item.exerciseId}>
+                    <p className="module-runner__prompt">
+                      <span className="module-runner__index">Q{index + 1}.</span>{" "}
+                      <ProseWithMath text={exercise.prompt} />
+                    </p>
+                    <CaptureField
+                      item={item}
+                      answer={attempt.responses.find((r) => r.exerciseId === item.exerciseId)?.answer}
+                      onAnswer={(answer) => {
+                        if (answer === null) return;
+                        putItemResponse(
+                          attempt.id,
+                          makeAttemptItemResponse({ exerciseId: item.exerciseId, answer }),
+                        );
+                      }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ol>
           <div className="module-runner__actions">
             <button
@@ -216,98 +246,6 @@ export function ModuleRunner({ setId }: { setId: string }) {
         </>
       )}
     </section>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Capture (exam) — NO correctness or reveal shown.                            */
-/* -------------------------------------------------------------------------- */
-
-function CaptureItem({
-  index,
-  item,
-  answer,
-  onAnswer,
-}: {
-  index: number;
-  item: AttemptItemSnapshot;
-  answer: JsonValue | undefined;
-  onAnswer: (answer: JsonValue) => void;
-}) {
-  const exercise = definitionFromSnapshot(item);
-  return (
-    <div className="module-runner__capture" data-exercise={item.exerciseId}>
-      <p className="module-runner__prompt">
-        <span className="module-runner__index">Q{index + 1}.</span>{" "}
-        <ProseWithMath text={exercise.prompt} />
-      </p>
-      {item.capabilityId === "multiple-choice" ? (
-        <MultipleChoiceCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />
-      ) : item.capabilityId === SELF_CHECK_ID ? (
-        <SelfCheckCapture answer={answer} onAnswer={onAnswer} />
-      ) : (
-        <p className="module-runner__unsupported">
-          This item type isn’t available in the review runner yet.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function MultipleChoiceCapture({
-  exercise,
-  answer,
-  onAnswer,
-}: {
-  exercise: ExerciseDefinition;
-  answer: JsonValue | undefined;
-  onAnswer: (answer: JsonValue) => void;
-}) {
-  if (exercise.type !== "multiple-choice") return null;
-  const selected = readField(answer, "choice");
-  return (
-    <ul className="module-runner__choices">
-      {exercise.choices.map((choice, index) => (
-        <li key={index}>
-          <button
-            type="button"
-            className="module-runner__choice"
-            aria-pressed={selected === index}
-            data-choice-index={index}
-            onClick={() => onAnswer({ choice: index })}
-          >
-            <span className="module-runner__choice-letter" aria-hidden="true">
-              {String.fromCharCode(65 + index)}
-            </span>
-            <span className="module-runner__choice-text">
-              <ProseWithMath text={choice} />
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function SelfCheckCapture({
-  answer,
-  onAnswer,
-}: {
-  answer: JsonValue | undefined;
-  onAnswer: (answer: JsonValue) => void;
-}) {
-  const text = readField(answer, "text");
-  return (
-    <label className="module-runner__field">
-      <span className="sr-only">Your written answer</span>
-      <textarea
-        className="module-runner__textarea"
-        rows={5}
-        placeholder="Write your reasoning / proof…"
-        value={typeof text === "string" ? text : ""}
-        onChange={(event) => onAnswer({ text: event.target.value, selfMark: "not-yet" })}
-      />
-    </label>
   );
 }
 
@@ -356,7 +294,11 @@ function ReviewView({
                       className="module-runner__feedback"
                       data-state={review.passed ? "correct" : "incorrect"}
                     >
-                      {review.passed ? "Passed" : "Not yet"}
+                      {review.omitted
+                        ? "Not scored — left blank"
+                        : review.passed
+                          ? "Passed"
+                          : "Not yet"}
                       {typeof review.score === "number" ? ` · score ${review.score}` : ""}
                       {review.feedback ? ` — ${review.feedback}` : ""}
                     </p>
@@ -367,24 +309,7 @@ function ReviewView({
                   )}
                 </div>
               ) : (
-                <div className="module-runner__auto">
-                  {response?.auto?.kind === "graded" ? (
-                    <p
-                      className="module-runner__feedback"
-                      data-state={response.auto.correct ? "correct" : "incorrect"}
-                    >
-                      <ProseWithMath text={response.auto.feedback} />
-                    </p>
-                  ) : response?.auto?.kind === "error" ? (
-                    <p className="module-runner__feedback" data-state="incorrect">
-                      Could not grade this answer.
-                    </p>
-                  ) : (
-                    <p className="module-runner__feedback" data-state="incorrect">
-                      Left blank.
-                    </p>
-                  )}
-                </div>
+                <ReviewAnswer item={item} response={response} />
               )}
             </li>
           );

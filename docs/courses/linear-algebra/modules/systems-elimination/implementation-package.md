@@ -362,8 +362,21 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
   `rubricText`; new `requiresHumanScore` + `rubricSnapshotOf` helpers.
 - `src/components/assessment/ModuleRunner.tsx` (+ `.css`) — capture (no correctness /
   reveal) → submit → release (auto items graded, human items → pending reviews) →
-  read-only review from snapshots. Dedicated phase-correct renderer reuses the **pure**
-  capability layer (serialize/parse/grade) so exam capture cannot leak correctness.
+  read-only review from snapshots (stored answer + `AutoResult` feedback + persisted
+  `solutionReveal`). A **blank required written response is recorded as an omission**
+  (auto-scored `passed:false`, `omitted:true`), so it never enters the human queue and
+  `reviewStatus` can never reach `REVIEW_COMPLETE` from a blank proof.
+- `src/components/assessment/captureRenderers.tsx` (new) — the **shared, phase-correct
+  renderer**. Reuses the **pure** capability layer (serialize/parse/grade) so exam
+  capture cannot leak correctness. Supported capture kinds: `multiple-choice`, `numeric`,
+  `vector`, `matrix-entry`, `construct-in-explorer` (auto) and `self-check` (human) —
+  the atomic kinds the Package G sets need. Scaffolded `exercise-sequence` / reveal
+  `prediction` are intentionally **not** exam-capturable (progressive-reveal model);
+  Package G authors atomic items for exam sets.
+- **Practice mode removed** from the F model (types + docs): the module surface is
+  **exam-only** (`AttemptSet.mode`/`ModuleSet.mode` are the literal `"exam"`). Lessons
+  already provide per-item immediate feedback via `ExercisePanel`, so a duplicate
+  immediate-feedback module mode was dropped rather than shipped half-built.
 - Route `dev/module/:setId` (identifies the **concrete set**, not the module).
 
 **F3 — human review & conservative status.**
@@ -372,6 +385,10 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
   `pendingReviews`/`reviewsForAttempt`.
 - `src/components/assessment/ReviewQueue.tsx` (new) — scores against the **snapshotted**
   rubric; writes a `ReviewRecord` (state → scored); auto vs human results stay separate.
+  A **finite reviewer score is required** before Save (malformed/blank scores are
+  rejected with an inline error); feedback, reviewer, and `scoredAt` are captured. A
+  blank learner response can never be passed (defense in depth on top of runner-side
+  omission).
 - Route `dev/review` (same origin as the runner → shared learner state).
 
 **F4 — scheduler seam + integration.**
@@ -380,37 +397,51 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
 - Runner dispatch is **at-most-once**: `claimSchedulerEmission` atomically sets +
   persists `schedulerEmittedAt` (keyed by `attemptSetId`) **before** invoking the hook;
   a throwing hook is isolated and **never auto-retried**.
-- `src/pages/DevAssessmentIndexPage.tsx` + `dev/assessment` route index both surfaces.
+- `src/pages/DevAssessmentIndexPage.tsx` + `dev/assessment` route index all surfaces.
+- `src/pages/DevRecoveryPage.tsx` (new) + `dev/recovery` route — an **executable
+  recovery surface**: Export (raw bytes or in-memory serialization), Import (re-arm a
+  blob as live state), and explicit **Reset**. Messaging **distinguishes** corrupt bytes,
+  newer-schema, unmigratable, read-only, and save-failed states.
+
+**Save-failure surfacing.** `useLearnerState` exposes a sticky `saveHealthy`; a failed
+synchronous critical save (quota/disabled storage) flips it to `false` and the runner +
+recovery surface show a **durable warning** ("export a copy before reloading") instead of
+silently claiming persistence. It is cleared only by a successful import or reset.
 
 **Migration & recovery.** A pre-v2 blob upgrades in-place (adds empty `attemptSets`/
 `reviews`); a **newer** schema or an unmigratable/corrupt blob → the provider goes
 **read-only** and the raw bytes are preserved (never overwritten with empty state);
-`exportRaw`/`importRaw` are the sanctioned cross-origin/recovery path; `resetState` is
-the only sanctioned overwrite.
+`exportRaw`/`importRaw` are the sanctioned cross-origin/recovery path (surfaced by the
+recovery page); `resetState` is the only sanctioned overwrite.
 
-**Verification (actual).**
-- `npx tsc -b --noEmit` — clean.
-- `npm run lint` — clean (one non-blocking `react-refresh` warning on the
-  provider+hook file).
-- `npx vitest run` — **563 tests / 61 files pass**, including new suites:
-  `learnerState` (v2 model + migration + normalization), `persistence` (all four load
-  outcomes + save/export/import), `useLearnerState` (hydration, read-only no-overwrite,
-  synchronous critical transitions survive reload, at-most-once claim),
-  `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, and the `ModuleRunner`
-  / `ReviewQueue` integration tests.
-- `npx playwright test` — full suite green; the **mandatory** end-to-end
-  `e2e/assessment-runner.spec.ts` verifies submit → `REVIEW_PENDING` → score →
-  `REVIEW_COMPLETE`, persisted across reload, no console errors. (One eigenvectors
-  guided-scene Play/Pause assertion is a pre-existing parallel-run flake — green in
-  isolation; unrelated to F.)
+**Verification (actual, post-hardening).**
+- `npx tsc -b` — clean.
+- `npm run lint` — clean (non-blocking `react-refresh` `only-export-components`
+  warnings on the provider+hook file and the shared `captureRenderers` module — they
+  mix a component with pure helpers; consistent with the existing provider warning).
+- `npx vitest run` — **574 tests / 62 files pass**, including new/updated suites:
+  `learnerState` (v2 model + migration + normalization incl. `omitted`), `persistence`
+  (all four load outcomes + save/export/import + **save-returns-false on quota**),
+  `useLearnerState` (hydration, read-only no-overwrite, synchronous critical transitions
+  survive reload, at-most-once claim, **save-failure durable warning**, **export/import
+  recovery**), `attemptSnapshot`, `moduleSets`, `reviewStatus` (incl. the **omission
+  never completes** regression), `scheduler`, `captureRenderers` (a Package G kind
+  captures without leaking + review renders), and the `ModuleRunner` / `ReviewQueue`
+  integration tests (score required, pass/fail/score/feedback/reviewer/timestamp
+  persisted, **blank proofs cannot be passed to completion**).
+- `npx playwright test e2e/assessment-runner.spec.ts` — the **mandatory** end-to-end
+  verifies (1) submit → `REVIEW_PENDING` → score (finite score required) →
+  `REVIEW_COMPLETE`, persisted across reload; and (2) blank proofs stay `REVIEW_FAILED`
+  plus the export → reset → import recovery loop, no console errors.
 
 **Remaining obligations before Package G.** F ships the *capture + review* mechanism
 but **does not by itself clear Gate 8**: an author must actually **run the review set
 and score real learner proof/reasoning responses**, then make the Gate 8 decision
-manually. Gate 8 for L3/L4/L5 therefore **stays NOT PASSED**. The current pilot runner
-renderer supports the pilot capability kinds (`multiple-choice`, `self-check`);
-additional kinds and the Class-A content (`mod-*`, fresh 3×3 / rectangular, timed mock)
-are **Package G+** and out of scope here.
+manually. Gate 8 for L3/L4/L5 therefore **stays NOT PASSED**. The shared runner renderer
+already supports the atomic capability kinds Package G needs (`multiple-choice`,
+`numeric`, `vector`, `matrix-entry`, `construct-in-explorer`, `self-check`); the Class-A
+**content** itself (`mod-*`, fresh 3×3 / rectangular, timed mock) is **Package G+** and
+out of scope here.
 
 ### Package G — Class-A module item sets (on F) · module-owned
 *Closes:* D8, D9, D10, D13, **and the executable P2 applied slice**.

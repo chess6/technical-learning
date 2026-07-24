@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import type { LoadOutcome } from "../persistence";
 import type { ReactNode } from "react";
 import { SCHEMA_VERSION, asExerciseId } from "../identity";
 import { makeAttemptSet, type AttemptItemSnapshot } from "../learnerState";
@@ -83,6 +84,51 @@ describe("critical transitions persist synchronously", () => {
       expect(set?.status).toBe("released");
       expect(set?.responses[0]?.auto?.kind).toBe("graded");
     }
+  });
+});
+
+describe("save failure surfaces a durable warning", () => {
+  it("marks saveHealthy false when a critical save throws (quota/disabled)", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    expect(result.current.saveHealthy).toBe(true);
+
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    act(() => result.current.startAttemptSet(newAttempt("attempt-1")));
+    await waitFor(() => expect(result.current.saveHealthy).toBe(false));
+
+    // Sticky: an ordinary later (successful) save does not silently clear it.
+    spy.mockRestore();
+    act(() => result.current.putItemResponse("attempt-1", {
+      exerciseId: asExerciseId("sys-count-none"),
+      answer: { choice: 1 },
+      at: "2026-07-21T00:00:00.000Z",
+    }));
+    expect(result.current.saveHealthy).toBe(false);
+  });
+});
+
+describe("export / import recovery flow", () => {
+  it("exports current state, resets, then imports it back", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    act(() => result.current.startAttemptSet(newAttempt("attempt-1")));
+
+    const exported = result.current.exportState();
+    expect(exported).toContain("attempt-1");
+
+    act(() => result.current.resetState());
+    expect(result.current.state.attemptSets["attempt-1"]).toBeUndefined();
+
+    let outcome: LoadOutcome | undefined;
+    act(() => {
+      outcome = result.current.importState(exported);
+    });
+    expect(outcome?.kind).toBe("loaded");
+    expect(result.current.state.attemptSets["attempt-1"]).toBeTruthy();
+    expect(result.current.saveHealthy).toBe(true);
   });
 });
 

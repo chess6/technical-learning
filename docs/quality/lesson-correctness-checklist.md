@@ -847,17 +847,37 @@ responses remain unscored by an author).
 - [x] **Both surfaces dev-gated on the same origin** — runner + reviewer share one
   `localStorage` learner state (routes are `import.meta.env.DEV`-gated)
 
+### Hardening pass (2026-07-23, post-ship, before Package G)
+
+- [x] **Blank required responses can never be passed** — a blank written proof is recorded
+  as an `omitted` `ReviewRecord` (auto `passed:false`); it never enters the human queue and
+  `reviewStatus` can never reach `REVIEW_COMPLETE` from it (`reviewStatus.test.ts`,
+  `ReviewQueue.test.tsx`, `e2e/assessment-runner.spec.ts`)
+- [x] **Human scoring matches the contract** — a **finite** reviewer score is required before
+  Save; malformed/blank scores are rejected; pass/fail + score + feedback + reviewer +
+  `scoredAt` persisted (`ReviewQueue.test.tsx`)
+- [x] **Shared phase-correct renderer** (`captureRenderers.tsx`) covers the atomic Package G
+  kinds (`multiple-choice`, `numeric`, `vector`, `matrix-entry`, `construct-in-explorer`,
+  `self-check`) with no capture leak; review renders stored answer + `AutoResult` +
+  persisted `solutionReveal` (`captureRenderers.test.tsx`)
+- [x] **Practice mode removed** (honest narrowing) — the module surface is exam-only; no
+  half-built immediate-feedback mode ships
+- [x] **Executable recovery** — `dev/recovery` exposes Export / Import / Reset with
+  corrupt vs newer-schema vs save-failed messaging; a failed synchronous save flips a sticky
+  `saveHealthy=false` durable warning (`useLearnerState.test.tsx`, `persistence.test.ts`,
+  `e2e/assessment-runner.spec.ts`)
+
 ### Testing review
 
 - [x] Unit + integration: `learnerState`, `persistence`, `useLearnerState`,
-  `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `ModuleRunner`,
-  `ReviewQueue` — full `vitest` suite **563 passing / 61 files**
-- [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts`: submit → `REVIEW_PENDING` →
-  score every pending proof → `REVIEW_COMPLETE`, **persisted across reload**, zero console
-  errors; full `playwright` suite green (one eigenvectors guided-scene Play/Pause assertion
-  is a pre-existing parallel-run flake, green in isolation)
-- [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from one non-blocking
-  `react-refresh` warning on the provider+hook file
+  `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `captureRenderers`,
+  `ModuleRunner`, `ReviewQueue` — full `vitest` suite **574 passing / 62 files**
+- [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts` (2 tests): (1) submit →
+  `REVIEW_PENDING` → score every pending proof (finite score) → `REVIEW_COMPLETE`,
+  **persisted across reload**; (2) blank proofs stay `REVIEW_FAILED` + export/reset/import
+  recovery loop; zero console errors. Full `playwright` suite green (**48 passed**).
+- [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from non-blocking
+  `react-refresh` warnings on the provider+hook and shared `captureRenderers` modules
 
 ### Status review
 

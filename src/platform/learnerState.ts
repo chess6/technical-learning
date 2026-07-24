@@ -127,7 +127,12 @@ export interface AttemptSet {
   setVersion: number;
   /** Owning module/section id (e.g. "systems-elimination"). */
   moduleId: string;
-  mode: "practice" | "exam";
+  /**
+   * Deferred-feedback exam mode is the only supported mode. (Immediate-feedback
+   * "practice" was removed from the F model — lessons already provide per-item
+   * immediate feedback via `ExercisePanel`; the module surface is exam-only.)
+   */
+  mode: "exam";
   status: AttemptSetStatus;
   startedAt: string;
   submittedAt?: string;
@@ -157,6 +162,12 @@ export interface ReviewRecord {
   reviewer?: string;
   feedback?: string;
   scoredAt?: string;
+  /**
+   * System-recorded omission: the required written response was blank at
+   * submission. An omitted review is NOT passable human evidence — it is scored
+   * `passed: false` automatically and can never contribute to `REVIEW_COMPLETE`.
+   */
+  omitted?: boolean;
 }
 
 /** The whole persisted envelope. `schemaVersion` gates migrations. */
@@ -391,7 +402,7 @@ function normalizeAttemptSet(raw: unknown): AttemptSet | null {
   if (typeof a.id !== "string") return null;
   if (typeof a.setId !== "string") return null;
   if (typeof a.moduleId !== "string") return null;
-  if (a.mode !== "practice" && a.mode !== "exam") return null;
+  if (a.mode !== "exam") return null;
   if (a.status !== "in-progress" && a.status !== "submitted" && a.status !== "released") {
     return null;
   }
@@ -452,6 +463,7 @@ function normalizeReview(raw: unknown): ReviewRecord | null {
   if (typeof r.reviewer === "string") review.reviewer = r.reviewer;
   if (typeof r.feedback === "string") review.feedback = r.feedback;
   if (typeof r.scoredAt === "string") review.scoredAt = r.scoredAt;
+  if (r.omitted === true) review.omitted = true;
   return review;
 }
 
@@ -559,7 +571,7 @@ export function makeAttemptSet(params: {
   setId: string;
   setVersion: number;
   moduleId: string;
-  mode: "practice" | "exam";
+  mode: "exam";
   items: AttemptItemSnapshot[];
   id?: string;
   startedAt?: string;

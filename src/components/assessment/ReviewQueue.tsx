@@ -86,16 +86,24 @@ function ReviewItem({
   const prompt = item ? definitionFromSnapshot(item).prompt : review.exerciseId;
   const text = learnerText(set, review.exerciseId);
 
+  // Defense in depth: a blank learner response is never passable (the runner
+  // already records blanks as omissions before they reach this queue).
+  const blank = text.trim() === "";
+  const parsedScore = Number(score);
+  const scoreValid = score.trim() !== "" && Number.isFinite(parsedScore);
+  const scoreMalformed = score.trim() !== "" && !Number.isFinite(parsedScore);
+  const canSave = !blank && passed !== null && scoreValid;
+
   const save = () => {
-    if (passed === null) return;
+    if (!canSave) return;
     const scored: ReviewRecord = {
       ...review,
       state: "scored",
       passed,
+      // A finite score is REQUIRED by the contract — captured on every scoring.
+      score: parsedScore,
       scoredAt: new Date().toISOString(),
     };
-    const parsedScore = Number(score);
-    if (score.trim() !== "" && Number.isFinite(parsedScore)) scored.score = parsedScore;
     if (feedback.trim() !== "") scored.feedback = feedback.trim();
     if (reviewer.trim() !== "") scored.reviewer = reviewer.trim();
     onScore(scored);
@@ -128,6 +136,11 @@ function ReviewItem({
       <p className="module-runner__answer-text" data-testid="review-learner-text">
         {text || "(left blank)"}
       </p>
+      {blank && (
+        <p className="module-runner__feedback" data-state="incorrect" data-testid="review-blank-note">
+          Left blank — this response cannot be passed.
+        </p>
+      )}
 
       <div className="module-runner__field" role="group" aria-label="Verdict">
         <button
@@ -135,6 +148,7 @@ function ReviewItem({
           className="btn"
           aria-pressed={passed === true}
           data-testid="review-pass"
+          disabled={blank}
           onClick={() => setPassed(true)}
         >
           Pass
@@ -144,6 +158,7 @@ function ReviewItem({
           className="btn btn--ghost"
           aria-pressed={passed === false}
           data-testid="review-fail"
+          disabled={blank}
           onClick={() => setPassed(false)}
         >
           Not yet
@@ -153,14 +168,20 @@ function ReviewItem({
       <label className="module-runner__field">
         <span className="sr-only">Score</span>
         <input
-          type="number"
-          step="any"
-          placeholder="Score (optional)"
+          type="text"
+          inputMode="decimal"
+          placeholder="Score (required)"
           aria-label="Score"
+          data-testid="review-score"
           value={score}
           onChange={(event) => setScore(event.target.value)}
         />
       </label>
+      {scoreMalformed && (
+        <p className="module-runner__feedback" data-state="incorrect" data-testid="review-score-error">
+          Enter a finite numeric score.
+        </p>
+      )}
       <label className="module-runner__field">
         <span className="sr-only">Feedback</span>
         <textarea
@@ -187,7 +208,7 @@ function ReviewItem({
         type="button"
         className="btn btn--primary"
         data-testid="review-save"
-        disabled={passed === null}
+        disabled={!canSave}
         onClick={save}
       >
         Save score

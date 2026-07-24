@@ -50,7 +50,9 @@ export function reviewStatus(
   for (const exerciseId of requiredExerciseIds) {
     const review = byExercise.get(exerciseId);
     if (!review || review.state !== "scored") return "REVIEW_PENDING";
-    if (review.passed !== true) anyFailed = true;
+    // A system-recorded omission (blank required response) can never pass, even
+    // if some field claims `passed` — it is not human evidence.
+    if (review.omitted || review.passed !== true) anyFailed = true;
   }
   return anyFailed ? "REVIEW_FAILED" : "REVIEW_COMPLETE";
 }

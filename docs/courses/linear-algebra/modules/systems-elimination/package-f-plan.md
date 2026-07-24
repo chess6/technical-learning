@@ -13,6 +13,22 @@ reasoning/proofs, and a scheduler extension point for Package H. Annex to the
 > `.cursor/rules/course-authoring.mdc`. **Gate 8 stays NOT PASSED** until the
 > human-scored obligations are actually scored (F3).
 
+> **Shipped corrections (2026-07-23 hardening pass, before Package G).** F1–F4 shipped,
+> then a hardening pass **deviated from this plan** in a few deliberate ways — this plan
+> is kept for provenance; the shipped behavior is authoritative (see
+> [implementation-package §Package F](implementation-package.md#package-f--shipped)):
+> - **Practice mode was removed**, not implemented. `AttemptSet.mode`/`ModuleSet.mode` are
+>   the literal `"exam"`; the planned `"practice"`/`"immediate"` phase below was dropped
+>   (lessons already give immediate feedback via `ExercisePanel`).
+> - **Blank required responses are omissions:** a blank proof is recorded as an `omitted`
+>   `ReviewRecord` (auto `passed:false`) and can never reach `REVIEW_COMPLETE`.
+> - **Human scoring requires a finite score** (malformed/blank rejected).
+> - The shared phase-correct renderer (`captureRenderers.tsx`) covers the atomic Package G
+>   kinds (`multiple-choice`, `numeric`, `vector`, `matrix-entry`, `construct-in-explorer`,
+>   `self-check`), not just the two pilot kinds.
+> - A **`dev/recovery`** surface (Export/Import/Reset) + a sticky `saveHealthy` durable
+>   save-failure warning were added.
+
 ## 0. Findings that constrain the design (inspected before choosing it)
 
 Read from the live code so the plan reuses what exists instead of re-inventing it:

@@ -79,4 +79,16 @@ describe("reviewStatus (conservative, never PASSED)", () => {
     });
     expect(reviewStatus(state, releasedSet())).toBe("REVIEW_FAILED");
   });
+
+  it("never completes from an omission — even if `passed` is (adversarially) true", () => {
+    // A blank required response recorded as an omission is not human evidence:
+    // it can never contribute to REVIEW_COMPLETE, regardless of the passed flag.
+    const state = withReview(createEmptyLearnerState(), {
+      ...baseReview,
+      state: "scored",
+      passed: true,
+      omitted: true,
+    });
+    expect(reviewStatus(state, releasedSet())).toBe("REVIEW_FAILED");
+  });
 });
