@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -b",
+    "test:grading": "vitest run src/lessons src/math src/components/assessment",
+    "test:content": "vitest run src/lessons/__tests__/contentValidation.test.ts",
+    "check:quick": "oxlint && tsc -b && npm run test:grading"
   },
   "dependencies": {
     "@motion-canvas/2d": "^3.17.2",

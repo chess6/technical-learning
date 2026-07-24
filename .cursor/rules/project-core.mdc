@@ -47,7 +47,7 @@ Before changing math or visualizations: `docs/engineering/math-correctness.md`, 
 
 ## Verify
 
-After meaningful changes: `npm run lint`, `npm run test`, and e2e when touching player/layout/lesson flow (`npm run test:e2e`).
+Match the check to the change — see the tiered Verify + model-routing table in [AGENTS.md](../../AGENTS.md#verify) (edit-time → `./check.sh --quick` → `./check.sh` → `./check.sh --e2e`). Add `--e2e` when touching player/layout/lesson flow or persistence.
 
 ## Browser review screenshots
 

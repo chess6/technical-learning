@@ -47,5 +47,26 @@ These are defined in the rules and workflow — do not self-authorize:
 
 ## Verify
 
-After meaningful changes: `npm run lint`, `npm run test`, and `npm run test:e2e`
-when touching player/layout/lesson flow.
+Pick the tier that matches the change — do not run a heavier tier out of caution:
+
+| Tier | When | Command |
+| --- | --- | --- |
+| Edit-time | inner loop while coding | `npm run typecheck` + `npx vitest run <touched paths>` |
+| Narrow-correction commit | single-defect fix, no new surface | `./check.sh --quick` |
+| Package commit | new items / capabilities / renderers / persistence | `./check.sh`; add `--e2e` only when touching runner, player, layout, or persistence |
+| Package approval / review handoff | before requesting semantic review | `./check.sh --e2e` |
+
+`./check.sh --quick` always runs the permanent grading/conformance suite and
+additionally runs any paths you pass; targeted paths never replace it. A
+schema-version bump or a new persisted field is always package-commit tier.
+
+## Model routing
+
+- **Opus**: Mode B plan + grading-semantics contract review, the single
+  package-level semantic review, new capability or persistence-schema/migration
+  design, anything that changes what "correct" means.
+- **Faster model**: mechanical implementation of an approved contract, narrow
+  corrections that start from a failing test, doc sync against the module status,
+  and test/manifest registration.
+- Hand a narrow correction to the faster model WITH the failing test. If no test
+  can express the defect, it is a contract amendment — route it to Opus.

@@ -121,8 +121,9 @@ Turning an approved plan into a working lesson. Requires a completed Mode B.
 3. **Lesson acceptance** (Gate 8) — verify against the Lesson Mastery Contract's
    [acceptance record](templates/lesson-mastery-contract.md#6-acceptance-record-gate-8):
    every outcome evidenced, every core outcome independently demonstrated, no
-   rejection condition, no anti-over-reaction tripped. Run `npm run lint`,
-   `npm run test`, and e2e when touching player/layout/lesson flow.
+   rejection condition, no anti-over-reaction tripped. Verify at the tier that
+   matches the change — see [AGENTS.md](../../AGENTS.md#verify) (`./check.sh`,
+   with `--e2e` when touching player/layout/lesson flow).
 
 **Output:** a built, tested, accepted lesson; spine status `future → built`.
 

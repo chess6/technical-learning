@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 [ -z "${BASH_VERSION:-}" ] && exec bash "$0" "$@"
-# Quality gate: lint + typecheck + unit tests. Optionally include e2e.
-#   ./check.sh        lint, tsc, unit
-#   ./check.sh e2e    also Playwright
+# Quality gate: lint + typecheck + unit tests. Tiers:
+#   ./check.sh --quick [paths…]  lint, tsc, the permanent grading/conformance suite
+#                                (+ any given vitest paths — additive, never a swap)
+#   ./check.sh                   lint, tsc, ALL unit tests
+#   ./check.sh --e2e             also Playwright
 set -euo pipefail
 # shellcheck source=scripts/_common.sh
 source "$(cd "$(dirname "$0")" && pwd)/scripts/_common.sh"
@@ -10,18 +12,23 @@ source "$(cd "$(dirname "$0")" && pwd)/scripts/_common.sh"
 ensure_deps
 
 with_e2e=0
+quick=0
+declare -a extra_paths=()
 for arg in "$@"; do
   case "$arg" in
     e2e|--e2e) with_e2e=1 ;;
+    quick|--quick) quick=1 ;;
     -h|--help|help)
       cat <<'EOF'
-Usage: ./check.sh [--e2e]
+Usage: ./check.sh [--quick [paths…]] [--e2e]
 
-  Runs oxlint, TypeScript build, and Vitest.
+  Runs oxlint, TypeScript build, and Vitest (all tests, or with --quick the
+  permanent grading/conformance suite plus any extra vitest path filters).
   Pass --e2e (or e2e) to also run Playwright.
 EOF
       exit 0
       ;;
+    *) extra_paths+=("$arg") ;;
   esac
 done
 
@@ -31,8 +38,19 @@ npm run lint
 log "Typecheck"
 npx tsc -b
 
-log "Unit tests"
-npm run test
+if [[ "$quick" -eq 1 ]]; then
+  # ALWAYS run the permanent grading/conformance suite (never skipped by --quick)…
+  log "Unit tests (quick: grading/conformance suite)"
+  npm run test:grading
+  # …and ADDITIONALLY run any supplied targeted regressions (additive, never a swap).
+  if [[ ${#extra_paths[@]} -gt 0 ]]; then
+    log "Unit tests (targeted regressions)"
+    npx vitest run "${extra_paths[@]}"
+  fi
+else
+  log "Unit tests"
+  npm run test
+fi
 
 if [[ "$with_e2e" -eq 1 ]]; then
   unset PLAYWRIGHT_BROWSERS_PATH || true
