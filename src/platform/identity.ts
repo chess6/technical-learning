@@ -170,7 +170,7 @@ export function assertUniqueIds(kind: EntityKind, ids: readonly string[]): void 
  * idempotent.
  * ------------------------------------------------------------------------ */
 
-export const SCHEMA_VERSION = 1 as const;
+export const SCHEMA_VERSION = 2 as const;
 
 export type VersionedState = { schemaVersion: number } & Record<string, unknown>;
 

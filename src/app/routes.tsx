@@ -30,6 +30,33 @@ const devRoutes = import.meta.env.DEV
           return { Component: DevTransformSpikePage };
         },
       },
+      {
+        path: "dev/assessment",
+        lazy: async () => {
+          const { DevAssessmentIndexPage } = await import(
+            "../pages/DevAssessmentIndexPage"
+          );
+          return { Component: DevAssessmentIndexPage };
+        },
+      },
+      {
+        // Route identifies the concrete SET id, not merely the module, so later
+        // packages can register multiple sets per module without changing this.
+        path: "dev/module/:setId",
+        lazy: async () => {
+          const { DevModuleRunnerPage } = await import(
+            "../pages/DevModuleRunnerPage"
+          );
+          return { Component: DevModuleRunnerPage };
+        },
+      },
+      {
+        path: "dev/review",
+        lazy: async () => {
+          const { DevReviewPage } = await import("../pages/DevReviewPage");
+          return { Component: DevReviewPage };
+        },
+      },
     ]
   : [];
 

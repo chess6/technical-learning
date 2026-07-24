@@ -34,8 +34,16 @@ every named item against its actual capability in
 > lesson-interaction infrastructure, not the module runner. The **only** remaining lesson-owned obligations are **scoring** the
 > reasoning/proof `self-check` surfaces — which is exactly what **Package F** (human-scoring
 > capture) provides. So **Gate 8 stays NOT PASSED for all three lessons** solely on that
-> scoring, and **Package F is now the next package**. The **Mode C boundary still sits
-> before Package F**: building F onward requires explicit approval per
+> scoring. **Package F1–F4 has since been implemented (authorized Mode C pass)** —
+> the module-assessment infrastructure (attempt/set domain model + hydration-safe
+> persistence, snapshotting runner with deferred feedback, human-scoring review
+> queue with a conservative `reviewStatus` blocker, and an idempotent scheduler
+> seam) now ships; see [Package F — shipped](#package-f--shipped). **Gate 8 stays
+> NOT PASSED for all three lessons**: F provides the *capture* mechanism, but no
+> real learner proof/reasoning response has been author-scored yet, and F **never
+> emits a Gate 8 verdict** (it reports only `REVIEW_PENDING`/`COMPLETE`/`FAILED`).
+> The **Mode C boundary now sits before Package G**: building G onward requires
+> explicit approval per
 > [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) /
 > `.cursor/rules/course-authoring.mdc`. The audit below is preserved as the
 > **as-found baseline**; the post-remediation section records the new state and the
@@ -290,7 +298,8 @@ classification and inconsistency-refusal outcomes (2nd pass).
 > ([assessment-plan Class B](assessment-plan.md#class-b--cumulative-reassessment--retention-of-lesson-owned-outcomes-ownership-stays-with-the-lesson)),
 > and **Package F is now the next package.**
 
-### Package F — Module assessment surface (infrastructure)
+<a id="package-f--shipped"></a>
+### Package F — Module assessment surface (infrastructure) · ✅ SHIPPED (F1–F4)
 *Closes:* prerequisite for **all** Class-A module-owned outcomes and Class-B module
 reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obligation
 (human-scoring the Package E proof/reasoning surfaces).
@@ -319,6 +328,89 @@ reassessment (D8/D9/D10/D11/D12/D13), and the sole remaining lesson-owned obliga
 > **mandatory** end-to-end review e2e). Both pilot surfaces (runner + reviewer) are
 > **dev-gated on the same origin**. Packages **G–I and all assessment content stay out
 > of scope**; building any slice is Mode C and needs explicit approval.
+
+#### Shipped (F1–F4) — files, architecture, verification
+
+**F1 — attempt/set domain model + hydration-safe persistence.**
+- `src/platform/identity.ts` — `SCHEMA_VERSION` bumped **1 → 2**.
+- `src/platform/learnerState.ts` — new v2 types `AttemptSet`, `AttemptItemSnapshot`,
+  `AutoResult` (tagged `graded`/`error`/`omitted`), `AttemptItemResponse`,
+  `ReviewRecord`; `attemptSets` + `reviews` collections on `LearnerState`; strict
+  normalizers (drop malformed entries, enforce key === id, alias-resolve ids); the
+  `1 → 2` migration step (each step stamps exactly its version via `buildLearnerState`);
+  builders `makeAttemptSet` / `makeAttemptItemResponse` / `makeReview` / `localId`.
+- `src/platform/persistence.ts` (new) — single `localStorage` key; `loadLearnerState`
+  returns a **classified `LoadOutcome`** (`empty` | `loaded` | `incompatible{newer-schema|unmigratable}` | `corrupt`);
+  synchronous `saveLearnerState` (returns `false` on quota/disabled, never throws);
+  `clearLearnerState`, `exportRaw`/`serializeState`, `importRaw`.
+- `src/platform/useLearnerState.tsx` (new) — `LearnerStateProvider` +
+  `useLearnerState`; explicit hydration phase (`loading` → `ready` | `read-only`);
+  saves **armed only after** load resolves; critical transitions (start / submit /
+  release / reviewer scoring / scheduler-emission claim) persist **synchronously**,
+  ordinary draft answers are **debounced** (400 ms, flushed on unmount).
+- `src/components/layout/AppShell.tsx` — mounts the provider (all routes, one origin).
+
+**F2 — module runner + snapshotting + deferred feedback.**
+- `src/lessons/moduleSets.ts` (new) — `ModuleSet` (id + `version` + ordered `itemIds`),
+  the interleaved `systems-elimination-review` pilot set (L3/L4/L5, auto + human),
+  `resolveModuleSet` (throws on unknown set / missing exercise).
+- `src/lessons/attemptSnapshot.ts` (new) — `snapshotItem` (freezes serialized
+  definition + capability id + answer-schema version + `requiresReview` + rubric),
+  `definitionFromSnapshot`, `gradeSnapshot` (grades against the **snapshot**, tagged
+  `AutoResult`).
+- `src/lessons/capabilities.ts` — `SelfCheckConfig` gains `rubricId`/`rubricVersion`/
+  `rubricText`; new `requiresHumanScore` + `rubricSnapshotOf` helpers.
+- `src/components/assessment/ModuleRunner.tsx` (+ `.css`) — capture (no correctness /
+  reveal) → submit → release (auto items graded, human items → pending reviews) →
+  read-only review from snapshots. Dedicated phase-correct renderer reuses the **pure**
+  capability layer (serialize/parse/grade) so exam capture cannot leak correctness.
+- Route `dev/module/:setId` (identifies the **concrete set**, not the module).
+
+**F3 — human review & conservative status.**
+- `src/lessons/reviewStatus.ts` (new) — `reviewStatus` returns only
+  `REVIEW_PENDING`/`REVIEW_COMPLETE`/`REVIEW_FAILED` (no `PASSED`, no Gate 8), plus
+  `pendingReviews`/`reviewsForAttempt`.
+- `src/components/assessment/ReviewQueue.tsx` (new) — scores against the **snapshotted**
+  rubric; writes a `ReviewRecord` (state → scored); auto vs human results stay separate.
+- Route `dev/review` (same origin as the runner → shared learner state).
+
+**F4 — scheduler seam + integration.**
+- `src/platform/scheduler.ts` (new) — `SchedulerHook` (`onAttemptReleased`/`dueReviews`),
+  **no-op default**, `registerScheduler`/`resetScheduler`/`getScheduler`.
+- Runner dispatch is **at-most-once**: `claimSchedulerEmission` atomically sets +
+  persists `schedulerEmittedAt` (keyed by `attemptSetId`) **before** invoking the hook;
+  a throwing hook is isolated and **never auto-retried**.
+- `src/pages/DevAssessmentIndexPage.tsx` + `dev/assessment` route index both surfaces.
+
+**Migration & recovery.** A pre-v2 blob upgrades in-place (adds empty `attemptSets`/
+`reviews`); a **newer** schema or an unmigratable/corrupt blob → the provider goes
+**read-only** and the raw bytes are preserved (never overwritten with empty state);
+`exportRaw`/`importRaw` are the sanctioned cross-origin/recovery path; `resetState` is
+the only sanctioned overwrite.
+
+**Verification (actual).**
+- `npx tsc -b --noEmit` — clean.
+- `npm run lint` — clean (one non-blocking `react-refresh` warning on the
+  provider+hook file).
+- `npx vitest run` — **563 tests / 61 files pass**, including new suites:
+  `learnerState` (v2 model + migration + normalization), `persistence` (all four load
+  outcomes + save/export/import), `useLearnerState` (hydration, read-only no-overwrite,
+  synchronous critical transitions survive reload, at-most-once claim),
+  `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, and the `ModuleRunner`
+  / `ReviewQueue` integration tests.
+- `npx playwright test` — full suite green; the **mandatory** end-to-end
+  `e2e/assessment-runner.spec.ts` verifies submit → `REVIEW_PENDING` → score →
+  `REVIEW_COMPLETE`, persisted across reload, no console errors. (One eigenvectors
+  guided-scene Play/Pause assertion is a pre-existing parallel-run flake — green in
+  isolation; unrelated to F.)
+
+**Remaining obligations before Package G.** F ships the *capture + review* mechanism
+but **does not by itself clear Gate 8**: an author must actually **run the review set
+and score real learner proof/reasoning responses**, then make the Gate 8 decision
+manually. Gate 8 for L3/L4/L5 therefore **stays NOT PASSED**. The current pilot runner
+renderer supports the pilot capability kinds (`multiple-choice`, `self-check`);
+additional kinds and the Class-A content (`mod-*`, fresh 3×3 / rectangular, timed mock)
+are **Package G+** and out of scope here.
 
 ### Package G — Class-A module item sets (on F) · module-owned
 *Closes:* D8, D9, D10, D13, **and the executable P2 applied slice**.
@@ -377,12 +469,12 @@ made (COURSE §6.2).
 
 ---
 
-**Approval boundary.** The lesson-owned remediation is complete: Packages B, C, D are
-built and Package E's surfaces are built (scoring only). All non-scoring lesson-owned
-interaction gaps are closed. **Package F is now the authorized next planning target**, and
-its implementation-ready plan is recorded in
-[package-f-plan.md](package-f-plan.md) (F1–F4). That plan is **documentation only** —
-proceeding to build **F onward** (module-assessment infrastructure, including the
-human-scored proof/reasoning capture that is the sole remaining lesson-owned obligation)
-is **Mode C** and requires explicit approval before writing that code. Gate 8 stays
-**NOT PASSED** until the human-scored obligations are actually scored (F3).
+**Approval boundary.** Packages B, C, D are built, Package E's surfaces are built, and
+**Package F1–F4 is now SHIPPED** (authorized Mode C pass) — the module-assessment
+infrastructure exists per [Package F — shipped](#package-f--shipped), verified by unit +
+the mandatory e2e flow. The **Mode C boundary now sits before Package G**: building G–I
+(Class-A module item sets, spacing, timed mock) or any new assessment **content** is
+Mode C and requires explicit approval. Gate 8 stays **NOT PASSED** for L3/L4/L5: F is
+the *capture + review* mechanism and **never emits a Gate 8 verdict**; clearing Gate 8
+still requires an author to run the review set, score real learner responses
+(`REVIEW_COMPLETE` is necessary-not-sufficient), and decide manually.

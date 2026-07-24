@@ -1,0 +1,139 @@
+.module-runner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.module-runner__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.module-runner__title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.module-runner__mode {
+  margin: 0;
+  color: var(--role-muted, #667);
+  font-size: 0.9rem;
+}
+
+.module-runner__notice,
+.module-runner__error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  background: var(--role-surface-muted, #f4f4f6);
+}
+
+.module-runner__error {
+  color: var(--role-danger, #b00020);
+}
+
+.module-runner__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.module-runner__item {
+  padding: 1rem;
+  border: 1px solid var(--role-border, #ddd);
+  border-radius: 0.75rem;
+}
+
+.module-runner__index {
+  font-weight: 600;
+}
+
+.module-runner__prompt {
+  margin: 0 0 0.75rem;
+}
+
+.module-runner__choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-runner__choice {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--role-border, #ccc);
+  border-radius: 0.5rem;
+  background: var(--role-surface, #fff);
+  cursor: pointer;
+}
+
+.module-runner__choice[aria-pressed="true"] {
+  border-color: var(--role-accent, #3b5bdb);
+  box-shadow: inset 0 0 0 1px var(--role-accent, #3b5bdb);
+}
+
+.module-runner__choice-letter {
+  font-weight: 600;
+}
+
+.module-runner__field {
+  display: block;
+}
+
+.module-runner__textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.6rem;
+  border: 1px solid var(--role-border, #ccc);
+  border-radius: 0.5rem;
+  resize: vertical;
+}
+
+.module-runner__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.module-runner__review-status {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  background: var(--role-surface-muted, #f4f4f6);
+  font-weight: 600;
+}
+
+.module-runner__feedback[data-state="correct"] {
+  color: var(--role-success, #1b7a43);
+}
+
+.module-runner__feedback[data-state="incorrect"] {
+  color: var(--role-danger, #b00020);
+}
+
+.module-runner__feedback[data-state="pending"] {
+  color: var(--role-muted, #667);
+}
+
+.module-runner__answer-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  color: var(--role-muted, #667);
+}
+
+.module-runner__answer-text {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+}

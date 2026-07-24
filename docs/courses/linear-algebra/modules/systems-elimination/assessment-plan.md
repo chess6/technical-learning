@@ -8,12 +8,16 @@ and draws items from
 [authoring/assessment-patterns.md](../../../../authoring/assessment-patterns.md).
 References the lesson mastery contracts; does not restate them.
 
-> **Status: PLANNED (not yet run).** No cumulative/interleaved/spaced/timed surface
-> exists in the app yet (see the module
-> [implementation package](implementation-package.md)). Every "Result" below is
-> `planned` until the assessment system is built and administered. Per the mastery
-> standard, **planned module evidence licenses no mastery/readiness claim** until it
-> is verified here with real results.
+> **Status: PLANNED (not yet run).** The Package F **infrastructure** now ships — a
+> cumulative/interleaved **runner** with deferred feedback, snapshotting, a
+> human-scoring **review queue**, and an idempotent scheduler seam (see the module
+> [implementation package → Package F shipped](implementation-package.md#package-f--shipped)).
+> But **no Class-A module content** (`mod-*`, fresh 3×3 / rectangular, spaced, timed
+> mock) has been authored (Packages G–I), and the plan has **not been administered**.
+> Every "Result" below is therefore still `planned`. Per the mastery standard,
+> **planned module evidence licenses no mastery/readiness claim** until it is verified
+> here with real results — and Package F **never emits a Gate 8/9 verdict** (it reports
+> only a conservative `REVIEW_PENDING`/`COMPLETE`/`FAILED` blocker).
 
 ## Module metadata
 - **Module / section id:** `systems-elimination` (matches `src/lessons/curriculum.ts`).

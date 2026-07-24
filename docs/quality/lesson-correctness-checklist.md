@@ -799,3 +799,71 @@ NOT PASSED** (human-scored reasoning/proofs).
 **Outcome:** with this correction passing, Packages **B–E are approved**; **Package F**
 (human-scoring capture) is the next authorized planning target. Gate 8 stays **NOT PASSED**
 pending human scoring of the reasoning/proof surfaces.
+
+---
+
+## Systems–Elimination module — Package F shipped (module assessment infrastructure) (2026-07-23)
+
+Implements Package **F1–F4** of the
+[implementation package](../courses/linear-algebra/modules/systems-elimination/implementation-package.md#package-f--shipped)
+(authorized Mode C pass): the first real persistence, a cumulative/interleaved module
+runner with deferred feedback + snapshotting, a human-scoring review queue, and an
+idempotent scheduler seam. **No math/visualization renderer or existing lesson changed** —
+new platform + assessment modules, one provider mounted in `AppShell`, and dev-gated
+routes only. **Gate 8 stays NOT PASSED** (F never emits a Gate 8 verdict; real learner
+responses remain unscored by an author).
+
+### Architecture / correctness review
+
+- [x] **Persistence is hydration-safe** — `loadLearnerState` classifies into
+  `empty` / `loaded` / `incompatible{newer-schema|unmigratable}` / `corrupt`; the provider
+  arms saves **only after** load resolves and goes **read-only** for incompatible/corrupt
+  blobs, **never overwriting** them with empty state (`persistence.test.ts`,
+  `useLearnerState.test.tsx`)
+- [x] **Schema migration** `1 → 2` adds `attemptSets` + `reviews`; each step stamps exactly
+  its version via `buildLearnerState`; normalizers drop malformed entries and enforce
+  key === id (`learnerState.test.ts`)
+- [x] **Released attempts are reproducible** — `AttemptItemSnapshot` freezes the serialized
+  definition + capability id + answer-schema version + rubric; `gradeSnapshot` grades
+  against the **snapshot**, not the live registry, and is stable if the source exercise
+  later changes (`attemptSnapshot.test.ts`)
+- [x] **Auto vs human results stay separate** — `AutoResult` (tagged
+  `graded`/`error`/`omitted`) on the response vs `ReviewRecord` (pending/scored) keyed by
+  rubric id + version; never merged
+- [x] **Deferred feedback: no correctness leak in capture** — the runner's capture
+  renderer paints no `data-state` and shows no reveal before submit
+  (`ModuleRunner.test.tsx`, `e2e/assessment-runner.spec.ts`)
+- [x] **Critical transitions persist synchronously** (submit, release, reviewer scoring,
+  scheduler claim); ordinary drafts debounced — a completed transition survives an
+  immediate reload (`useLearnerState.test.tsx`)
+- [x] **Scheduler dispatch is at-most-once** — `claimSchedulerEmission` sets + persists
+  `schedulerEmittedAt` (idempotency key = `attemptSetId`) **before** invoking the hook; a
+  throwing hook is isolated and never auto-retried; rerender/reload/repeat do not
+  re-invoke (`ModuleRunner.test.tsx`, `useLearnerState.test.tsx`)
+- [x] **Runner route identifies the concrete set** (`dev/module/:setId`), so G–I can
+  register multiple sets per module without a routing change
+- [x] **Conservative blocker, no auto Gate 8** — `reviewStatus` returns only
+  `REVIEW_PENDING` / `REVIEW_COMPLETE` / `REVIEW_FAILED` (`reviewStatus.test.ts`)
+- [x] **Both surfaces dev-gated on the same origin** — runner + reviewer share one
+  `localStorage` learner state (routes are `import.meta.env.DEV`-gated)
+
+### Testing review
+
+- [x] Unit + integration: `learnerState`, `persistence`, `useLearnerState`,
+  `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `ModuleRunner`,
+  `ReviewQueue` — full `vitest` suite **563 passing / 61 files**
+- [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts`: submit → `REVIEW_PENDING` →
+  score every pending proof → `REVIEW_COMPLETE`, **persisted across reload**, zero console
+  errors; full `playwright` suite green (one eigenvectors guided-scene Play/Pause assertion
+  is a pre-existing parallel-run flake, green in isolation)
+- [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from one non-blocking
+  `react-refresh` warning on the provider+hook file
+
+### Status review
+
+- [x] `implementation-package.md` (Package F → shipped), `assessment-plan.md` (Gate 9 still
+  PLANNED; no Class-A content authored), and `engineering/platform-contracts.md`
+  (persistence §5; "no persistence layer" non-goal superseded for the assessment surface)
+  updated to shipped status
+- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 preserved — F is capture + review only and emits
+  no verdict; **Package G is the next Mode C target** (requires explicit approval)

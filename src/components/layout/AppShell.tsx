@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router-dom";
 import { useCallback } from "react";
 import { CourseSidebar } from "./CourseSidebar";
 import { useSidebarOpen } from "../../hooks/useSidebarOpen";
+import { LearnerStateProvider } from "../../platform/useLearnerState";
 import "./AppShell.css";
 
 export function AppShell() {
@@ -12,6 +13,7 @@ export function AppShell() {
   }, [closeSidebar]);
 
   return (
+    <LearnerStateProvider>
     <div className="app-shell">
       <header className="app-shell__header">
         <button
@@ -46,5 +48,6 @@ export function AppShell() {
         </main>
       </div>
     </div>
+    </LearnerStateProvider>
   );
 }

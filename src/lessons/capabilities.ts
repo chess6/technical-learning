@@ -404,6 +404,16 @@ export type SelfCheckConfig = {
   modelAnswer: string;
   /** Optional note on what a strong answer contains. */
   rubric?: string;
+  /**
+   * Human-scoring rubric identity (Package F). Defaults to the exercise id /
+   * version 1 when unset. `rubricText` is the scoring guidance shown to the
+   * reviewer; it falls back to `rubric` when omitted. These are SNAPSHOTTED into
+   * a released attempt so an old attempt is scored against the version it was
+   * administered with.
+   */
+  rubricId?: string;
+  rubricVersion?: number;
+  rubricText?: string;
 };
 
 export type SelfMark = "understood" | "not-yet";
@@ -1071,6 +1081,34 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
 /** The single capability id an exercise resolves to (its type, or its custom id). */
 export function resolveCapabilityId(exercise: ExerciseDefinition): string {
   return exercise.type === "custom" ? exercise.capabilityId : exercise.type;
+}
+
+/**
+ * Whether an exercise's evidence needs HUMAN scoring rather than auto-grading.
+ * Today that is exactly the `self-check` surface (written reasoning / proofs):
+ * its "grade" only mirrors the learner's self-mark, so a module attempt must
+ * route it to a reviewer instead of trusting an auto result (Package F3).
+ */
+export function requiresHumanScore(exercise: ExerciseDefinition): boolean {
+  return resolveCapabilityId(exercise) === SELF_CHECK_ID;
+}
+
+/** Rubric snapshot for a human-scored exercise, or `undefined` if none applies. */
+export function rubricSnapshotOf(exercise: ExerciseDefinition):
+  | { rubricId: string; rubricVersion: number; rubricText: string; modelAnswer?: string }
+  | undefined {
+  if (exercise.type !== "custom" || resolveCapabilityId(exercise) !== SELF_CHECK_ID) {
+    return undefined;
+  }
+  const config = exercise.config as SelfCheckConfig | undefined;
+  if (!config) return undefined;
+  const snapshot: { rubricId: string; rubricVersion: number; rubricText: string; modelAnswer?: string } = {
+    rubricId: config.rubricId ?? exercise.id,
+    rubricVersion: config.rubricVersion ?? 1,
+    rubricText: config.rubricText ?? config.rubric ?? "",
+  };
+  if (config.modelAnswer) snapshot.modelAnswer = config.modelAnswer;
+  return snapshot;
 }
 
 export function getGradingCapability(

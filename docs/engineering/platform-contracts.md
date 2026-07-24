@@ -56,12 +56,37 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
 
 ### 4. Learner-state envelope — `src/platform/learnerState.ts`
 
-- A versioned `{ schemaVersion, lessonProgress, exerciseAttempts, bookmarks }`
-  keyed by canonical (alias-resolved) ids.
+- A versioned `{ schemaVersion, lessonProgress, exerciseAttempts, bookmarks,
+  attemptSets, reviews }` keyed by canonical (alias-resolved) ids. `schemaVersion`
+  is **2** (Package F added `attemptSets` + `reviews`).
 - Attempts are **JSON-safe, capability-aware serialized answer envelopes**
   carrying `capabilityId` + `answerSchemaVersion`, so a future migration can
   reinterpret a stored answer when a capability's answer shape evolves.
-- Types + migration only. **No persistence wiring.**
+- **Module-assessment model (v2, Package F):** `AttemptSet` (with `setVersion` +
+  an ordered `AttemptItemSnapshot[]` freezing each item's serialized definition +
+  rubric so a released attempt is reproducible), `AutoResult` (tagged
+  `graded`/`error`/`omitted`, kept **separate** from human review), and
+  `ReviewRecord` (pending/scored, rubric id + version). Each migration step stamps
+  exactly its version.
+
+### 5. Assessment persistence — `src/platform/persistence.ts` + `useLearnerState.tsx`
+
+- **Package F wires the first real persistence** — local, single-user, one
+  `localStorage` key; no network, no auth, no multi-user sync.
+- Load is **classified** (`LoadOutcome`: `empty` | `loaded` |
+  `incompatible{newer-schema|unmigratable}` | `corrupt`). The provider hydrates
+  **before** arming saves and goes **read-only** for incompatible/corrupt blobs,
+  **never overwriting** them with empty state; `exportRaw`/`importRaw` are the
+  recovery path.
+- **Critical transitions** (attempt submit, feedback release, reviewer scoring,
+  scheduler-emission claim) persist **synchronously**; ordinary draft answers are
+  debounced. The scheduler hook is dispatched **at-most-once** per set (persisted
+  `schedulerEmittedAt` idempotency marker claimed before invoke).
+- Both assessment surfaces (`dev/module/:setId` runner, `dev/review` reviewer) are
+  **dev-gated on the same origin** so they share this state. Package F reports a
+  conservative `reviewStatus` (`REVIEW_PENDING`/`COMPLETE`/`FAILED`) and **never
+  decides Gate 8**. This **supersedes the "No persistence layer" non-goal for the
+  assessment surface**; lesson progress/bookmarks still have no auto-save wiring.
 
 A related contract, the **mathematical-space conventions**, is documented
 separately in [`engineering/math-space-conventions.md`](math-space-conventions.md): space
@@ -77,9 +102,10 @@ speculative machinery ahead of the lessons that would prove it out.
 - **No pedagogy standardization.** No mandatory lesson phases, exercise quotas,
   universal templates, per-step worked-example schema, or closed instructional
   DSL. The lesson `route` block palette is untouched.
-- **No persistence layer.** No localStorage / IndexedDB / network sync, no
-  storage keys, no auto-save. The learner-state contract is types + migration
-  only.
+- **Persistence is scoped to the assessment surface (Package F).** The
+  module-assessment runner/reviewer persist attempt sets + reviews to a single
+  local `localStorage` key (see §5). Beyond that surface there is still **no**
+  auto-save of lesson progress/bookmarks, no IndexedDB, and no network sync.
 - **No mastery / inference / scheduling.** No mastery estimation, misconception
   inference, spaced-review scheduling, or recommendations.
 - **No curriculum cutover.** The new course model does not drive navigation yet;
