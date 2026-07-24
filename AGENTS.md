@@ -45,6 +45,28 @@ These are defined in the rules and workflow — do not self-authorize:
 - Writing lesson code before an approved Mode B plan.
 - Deviating from a standard, or shipping unverified math/visualization results.
 
+## Claim a package before implementing it (no duplicate builds)
+
+Two agents once implemented the same package in parallel off the same plan,
+producing a hard-to-merge collision. Before starting **Mode C implementation** of
+a package/slice:
+
+1. **Check it isn't already built or in progress.** Look at the default branch
+   (`git log master --oneline | grep -i "<package>"`), every branch and worktree
+   (`git branch -a`, `git worktree list`), and the module **package status
+   ledger** in the relevant `implementation-package.md`. If a package is already
+   `BUILT`/`SHIPPED` or a branch/worktree is implementing it, **do not
+   reimplement it** — build on it or coordinate.
+2. **One package, one branch/worktree.** Do the work on a single, named branch;
+   don't fan the same package out across sessions. Announce the branch you're
+   using so a parallel session can see it.
+3. **Mark it in-progress in the ledger** as your first implementation commit, so
+   the next agent's step 1 finds it.
+
+If step 1 turns up an existing implementation that differs from what you were
+about to build, **stop and surface the conflict** rather than merging or
+overwriting — which one wins is the user's call.
+
 ## Verify
 
 Pick the tier that matches the change — do not run a heavier tier out of caution:
