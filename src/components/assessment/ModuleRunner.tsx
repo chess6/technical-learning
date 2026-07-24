@@ -18,7 +18,7 @@
  * queue, so `reviewStatus` can never reach `REVIEW_COMPLETE` from a blank answer.
  */
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   makeAttemptItemResponse,
   makeAttemptSet,
@@ -37,6 +37,7 @@ import {
   resolveModuleSet,
 } from "../../lessons/moduleSets";
 import { snapshotItem, definitionFromSnapshot, gradeSnapshot } from "../../lessons/attemptSnapshot";
+import { formatRemaining, isExpired, remainingSec } from "../../lessons/timeBox";
 import { reviewStatus } from "../../lessons/reviewStatus";
 import { ProseWithMath } from "../lesson/ProseWithMath";
 import { CaptureField, ReviewAnswer, readField } from "./captureRenderers";
@@ -110,6 +111,34 @@ export function ModuleRunner({
     );
   }, [phase, resolved, attempt, setId, scheduledReviewId, startAttemptSet]);
 
+  // ── Timed mock (Package I) ────────────────────────────────────────────────
+  // A 1 Hz clock drives the countdown and auto-submit. The deadline is derived
+  // from the attempt's persisted `startedAt` + the set's `timeLimitSec`, so a
+  // reload past the deadline auto-submits immediately (elapsed time is honest).
+  const timeLimitSec = resolved.ok ? resolved.set.timeLimitSec : undefined;
+  const timedActive =
+    timeLimitSec !== undefined && attempt !== undefined && attempt.status !== "released";
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (!timedActive) return;
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [timedActive]);
+
+  // Auto-submit once when the deadline passes (or immediately on a past-deadline
+  // reload). `submitRef` holds the latest `submit`, which is defined after the
+  // early returns below.
+  const submitRef = useRef<(auto: boolean) => void>(() => {});
+  const autoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (!timedActive || attempt === undefined || timeLimitSec === undefined) return;
+    if (autoSubmittedRef.current) return;
+    if (isExpired(attempt.startedAt, timeLimitSec, new Date(nowMs))) {
+      autoSubmittedRef.current = true;
+      submitRef.current(true);
+    }
+  }, [timedActive, attempt, timeLimitSec, nowMs]);
+
   if (!resolved.ok) {
     return (
       <section className="module-runner" aria-label="Module assessment">
@@ -142,7 +171,7 @@ export function ModuleRunner({
     !!attempt.scheduledReviewId &&
     state.spacedReviews[attempt.scheduledReviewId]?.completedInAttemptSetId !== attempt.id;
 
-  const submit = () => {
+  const submit = (autoSubmitted = false) => {
     // ONE canonical release timestamp for the attempt, the cohort anchor, the
     // scheduler summary, and every computed dueAt (reviewer-mandated alignment).
     const releasedAt = new Date().toISOString();
@@ -215,8 +244,20 @@ export function ModuleRunner({
         outcome = { kind: "failed", error: err instanceof Error ? err.message : "scheduler error" };
       }
     }
-    releasePrimaryAttempt(attempt.id, attempt.moduleId, releasedAt, { responses, reviews }, outcome);
+    releasePrimaryAttempt(
+      attempt.id,
+      attempt.moduleId,
+      releasedAt,
+      { responses, reviews },
+      outcome,
+      autoSubmitted ? releasedAt : undefined,
+    );
   };
+  submitRef.current = submit;
+
+  // Countdown value for a live timed set (null when untimed).
+  const remaining =
+    timeLimitSec !== undefined ? remainingSec(attempt.startedAt, timeLimitSec, new Date(nowMs)) : null;
 
   return (
     <section className="module-runner" aria-label="Module assessment" data-status={attempt.status}>
@@ -225,6 +266,16 @@ export function ModuleRunner({
         <p className="module-runner__mode" data-mode={attempt.mode}>
           Exam mode · feedback after submit
         </p>
+        {timeLimitSec !== undefined && !released && remaining !== null && (
+          <p
+            className="module-runner__timer"
+            role="timer"
+            data-testid="mock-countdown"
+            data-expired={remaining === 0}
+          >
+            {remaining === 0 ? "Time's up — submitting…" : `Time remaining: ${formatRemaining(remaining)}`}
+          </p>
+        )}
         {readOnly && (
           <p className="module-runner__notice" role="status">
             Progress can’t be saved in this session (storage is read-only). Your
@@ -288,7 +339,7 @@ export function ModuleRunner({
               type="button"
               className="btn btn--primary"
               data-testid="module-submit"
-              onClick={submit}
+              onClick={() => submit(false)}
             >
               Submit attempt
             </button>
@@ -313,6 +364,11 @@ function ReviewView({
   const status = reviewStatus(state, attempt);
   return (
     <div className="module-runner__review">
+      {attempt.autoSubmittedAt && (
+        <p className="module-runner__notice" role="status" data-testid="mock-auto-submitted">
+          Submitted automatically at the time limit.
+        </p>
+      )}
       <p className="module-runner__review-status" data-testid="review-status" data-status={status}>
         {status === "REVIEW_COMPLETE"
           ? "All written responses have been scored."

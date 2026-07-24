@@ -434,7 +434,106 @@ const modSpacedRowops: ExerciseDefinition = {
     "$R_3 \\to R_3 - R_3$ turns $R_3$ into $0 = 0$ — it scales by $0$, is irreversible, and can enlarge the solution set. Swapping and subtracting a multiple of *another* row are reversible; $R_1 \\to R_1 + R_1 = 2R_1$ is a legal nonzero scaling (adding a row to *itself* is fine — only the $i \\neq j$ restriction on the *replacement* type forbids using the same row twice there).",
 };
 
-/** All module items (Package G + Package H spaced), in a stable authored order. */
+/* -------------------------------------------------------------------------- */
+/* Package I — timed mock (D11).                                                */
+/*                                                                              */
+/* A short mock exam under a time limit (see the `systems-elimination-mock`     */
+/* set): a fresh computation, a fresh inconsistent classification, and one      */
+/* proof. Fresh instances distinct from every lesson / Package-G / Package-H    */
+/* fixture — a mock must measure timed transfer, not recall of the practice     */
+/* set. Systems re-verified independently in `moduleItems.test.ts`.             */
+/* -------------------------------------------------------------------------- */
+
+/** Fresh 3×3, consistent, one free variable — R3 = R1 + R2 (rank 2). */
+export const SYS_MOCK_COMPUTE = {
+  matrix: [
+    [1, 1, 0],
+    [0, 1, 1],
+    [1, 2, 1],
+  ],
+  rhs: [2, 1, 3],
+} as const;
+
+/** Fresh 3×2 rectangular, INCONSISTENT — R3 = R1 + R2 on the left, but not the constant. */
+export const SYS_MOCK_CLASSIFY = {
+  matrix: [
+    [1, 1],
+    [2, 3],
+    [3, 4],
+  ],
+  rhs: [2, 5, 8],
+} as const;
+
+/** I·1. Timed computation (E4, auto) — produce the full solution set of a fresh 3×3. */
+const modMockCompute: ExerciseDefinition = {
+  id: "mod-mock-compute",
+  type: "custom",
+  capabilityId: ELIMINATION_ID,
+  tier: "transfer",
+  prompt:
+    "Timed mock — solve completely: $\\begin{cases} x_1 + x_2 = 2 \\\\ x_2 + x_3 = 1 \\\\ x_1 + 2x_2 + x_3 = 3 \\end{cases}$  " +
+    "Row-reduce the augmented matrix to echelon form, mark the pivot columns, and give the number of " +
+    "free variables, a particular solution, and every null direction of the complete solution set.",
+  config: {
+    ...eliminationConfigOf(
+      SYS_MOCK_COMPUTE,
+      "The third equation is the sum of the first two, so it adds nothing: two pivots ($x_1, x_2$) and " +
+        "one free variable ($x_3$). A particular solution is $\\mathbf{x}_p = (1, 1, 0)$ and the null " +
+        "direction is $(1, -1, 1)$: all solutions are $(1,1,0) + t(1,-1,1)$.",
+    ),
+  },
+};
+
+/** I·2. Timed classification (E4, auto) — a fresh inconsistent rectangular system. */
+const modMockClassify: ExerciseDefinition = {
+  id: "mod-mock-classify",
+  type: "custom",
+  capabilityId: ELIMINATION_ID,
+  tier: "transfer",
+  prompt:
+    "Timed mock — classify: $\\begin{cases} x_1 + x_2 = 2 \\\\ 2x_1 + 3x_2 = 5 \\\\ 3x_1 + 4x_2 = 8 \\end{cases}$  " +
+    "Row-reduce the augmented matrix to echelon form. If consistent, give the full solution description; " +
+    "if not, your reduced matrix must contain the contradiction row and you must TYPE the classification " +
+    "(e.g. \"none\" / \"inconsistent\") — a bare button does not count.",
+  config: {
+    ...eliminationConfigOf(
+      SYS_MOCK_CLASSIFY,
+      "The third row's coefficients are the sum of the first two ($3x_1+4x_2$), but its constant is " +
+        "$8 \\neq 2+5 = 7$. Elimination produces a contradiction row $0 = 1$, so the system is " +
+        "inconsistent — the solution set is empty (∅).",
+    ),
+  },
+};
+
+/** I·3. Timed proof (E5, human-scored) — existence + a nonzero null vector ⇒ infinitely many. */
+const modMockProof: ExerciseDefinition = {
+  id: "mod-mock-proof",
+  type: "custom",
+  capabilityId: SELF_CHECK_ID,
+  tier: "transfer",
+  prompt:
+    "Timed mock — prove: suppose $A\\mathbf{x}=\\mathbf{b}$ is consistent and the homogeneous system " +
+    "$A\\mathbf{x}=\\mathbf{0}$ has a nonzero solution $\\mathbf{v}$. Prove that $A\\mathbf{x}=\\mathbf{b}$ has " +
+    "infinitely many solutions. State what you use at each step and why it holds.",
+  config: {
+    modelAnswer:
+      "Consistency gives a particular solution $\\mathbf{x}_p$ with $A\\mathbf{x}_p=\\mathbf{b}$. For every " +
+      "scalar $t$, $A(\\mathbf{x}_p + t\\mathbf{v}) = A\\mathbf{x}_p + tA\\mathbf{v} = \\mathbf{b} + t\\mathbf{0} = " +
+      "\\mathbf{b}$ by linearity, so each $\\mathbf{x}_p + t\\mathbf{v}$ solves the system. These are distinct " +
+      "because $\\mathbf{v}\\neq\\mathbf{0}$: if $\\mathbf{x}_p+t_1\\mathbf{v}=\\mathbf{x}_p+t_2\\mathbf{v}$ then " +
+      "$(t_1-t_2)\\mathbf{v}=\\mathbf{0}$, forcing $t_1=t_2$. Hence $\\{\\mathbf{x}_p+t\\mathbf{v}:t\\in\\mathbb{R}\\}$ " +
+      "is an infinite family of solutions.",
+    rubricId: "mod-mock-proof",
+    rubricVersion: 1,
+    rubricText:
+      "PASS requires: (a) using CONSISTENCY to obtain a particular $\\mathbf{x}_p$; (b) showing " +
+      "$A(\\mathbf{x}_p+t\\mathbf{v})=\\mathbf{b}$ via linearity and $A\\mathbf{v}=\\mathbf{0}$; and (c) arguing the " +
+      "$\\mathbf{x}_p+t\\mathbf{v}$ are DISTINCT because $\\mathbf{v}\\neq\\mathbf{0}$. Merely asserting 'a free " +
+      "variable means infinitely many' without the produced construction is NOT a pass.",
+  },
+};
+
+/** All module items (Package G + H spaced + I mock), in a stable authored order. */
 export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   modSelectMethod,
   modTransferClassify,
@@ -447,4 +546,8 @@ export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   modSpacedTrichotomy,
   modSpacedUniqueness,
   modSpacedRowops,
+  // Package I — timed mock.
+  modMockCompute,
+  modMockClassify,
+  modMockProof,
 ];

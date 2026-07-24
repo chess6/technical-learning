@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { LearnerStateProvider } from "../../../platform/useLearnerState";
 import {
@@ -274,5 +274,86 @@ describe("ModuleRunner — Package G elimination set", () => {
       "correct",
     );
     second.unmount();
+  });
+});
+
+const MOCK_SET = "systems-elimination-mock";
+
+describe("ModuleRunner — Package I timed mock", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders no countdown for an untimed set", async () => {
+    const { container } = renderRunner(<ModuleRunner setId={SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-exercise="sys-count-none"]')).toBeTruthy(),
+    );
+    expect(container.querySelector('[data-testid="mock-countdown"]')).toBeNull();
+  });
+
+  it("renders the countdown for a timed set", async () => {
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-exercise="mod-mock-compute"]')).toBeTruthy(),
+    );
+    const countdown = container.querySelector('[data-testid="mock-countdown"]');
+    expect(countdown).toBeTruthy();
+    expect(countdown!.textContent).toMatch(/Time remaining:/);
+  });
+
+  it("auto-submits once the deadline passes and marks the attempt auto-submitted", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    // Flush the mount effect that creates the attempt (its `startedAt` is pinned
+    // to the fake "now" set above) without advancing the fake clock itself.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(container.querySelector('[data-exercise="mod-mock-compute"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="mock-countdown"]')).toBeTruthy();
+
+    // Past the 1200s (20 min) time limit — the 1 Hz clock ticks forward and the
+    // runner auto-submits exactly once.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_201_000);
+    });
+
+    expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeTruthy();
+  });
+
+  it("a manual submit before the deadline leaves no auto-submitted marker", async () => {
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    expect(container.querySelector('[data-testid="mock-countdown"]')).toBeTruthy();
+
+    fireEvent.click(container.querySelector('[data-testid="module-submit"]')!);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeNull();
+  });
+
+  it("keeps a blank required proof a recorded omission (never REVIEW_COMPLETE) after an auto-submitted timeout", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    // The proof (`mod-mock-proof`) is left blank throughout — never answered.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_201_000);
+    });
+
+    const status = container.querySelector('[data-testid="review-status"]');
+    expect(status).toBeTruthy();
+    expect(status!.getAttribute("data-status")).toBe("REVIEW_FAILED");
   });
 });

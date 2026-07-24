@@ -24,8 +24,10 @@ References the lesson mastery contracts; does not restate them.
 > capture/grade/review path with **synthetic** answers — they are **not** real learner
 > evidence. The plan has **not been administered**, so every "Result" below stays
 > `planned` / built-not-administered. Per the mastery standard, **built-but-unadministered
-> module evidence licenses no mastery/readiness claim**; Packages H (spacing) and I (timed
-> mock) remain PLANNED, and Package F/G **never emit a Gate 8/9 verdict** (only a
+> module evidence licenses no mastery/readiness claim**; **Package H (spacing) is
+> partially shipped and Package I (timed mock — `systems-elimination-mock`, historically
+> tracked as `mod-timed-mock`) is now BUILT**, both machinery-verified and **not
+> administered**, and Package F/G/H/I **never emit a Gate 8/9 verdict** (only a
 > conservative `REVIEW_PENDING`/`COMPLETE`/`FAILED` blocker). **Gate 9 stays NOT PASSED.**
 
 ## Module metadata
@@ -61,7 +63,7 @@ Outcomes a single lesson cannot own. The lessons correctly defer them, and Gate 
 | Classify an **unfamiliar** system none/one/∞ and justify (reachability × independence) | L3 | D9 | E4 | `mod-transfer-classify` | **built** (G) · not administered |
 | Describe a **fresh** solution set via free-variable count (concrete dims) | L5 | D9 | E4 | `mod-transfer-solset-fresh` | **built** (G) · not administered |
 | Combine elimination + solution-set structure across lessons | L4, L5 | D10 | E5 | `mod-cumulative-elim-solset` | **built** (G) · not administered |
-| Complete the module under time pressure with deferred feedback | all | D11 | E3–E5 | `mod-timed-mock` | planned (Package I) |
+| Complete the module under time pressure with deferred feedback | all | D11 | E3–E5 | `mod-timed-mock` → built as `systems-elimination-mock` (`mod-mock-compute`/`-classify`/`-proof`) | **built** (I) · not administered |
 | *(enrichment, off the exam bar)* transfer "general = particular + homogeneous" to a new operator | — | D14 | E7 | `mod-enrich-ode` | planned (out of scope) |
 
 Cross-reference (**not** dischargeable here): general \(\mathbb{R}^n\) null space &
@@ -170,19 +172,22 @@ Covers the seven areas the module must assess under the declared profile:
   Package H and **not** removed from D12, so D12 is only **partially** discharged.
 - **Timed / exam-mode set (D11, S3).** A short mock under time limit with **deferred
   feedback** (no per-item reveal), mixing computation + one proof + one classification.
-  `mod-timed-mock`.
+  `mod-timed-mock` — **built** as the `systems-elimination-mock` set (20 min /
+  `timeLimitSec: 1200`; deadline-derived countdown + honest auto-submit) with items
+  `mod-mock-compute` / `mod-mock-classify` / `mod-mock-proof` (Package I).
 - **Error diagnosis (D13).** ≥1 "which step + why": a botched elimination (illegal
   \(0\)-scale or wrong-sign multiplier) or a decomposition written for an inconsistent
   system. `mod-error-diagnose`.
 
 ## Results & readiness
-- **Class A (module-owned) discharged:** `0 / 5` core with **real** evidence — the items
+- **Class A (module-owned) discharged:** `0 / 6` core with **real** evidence — the items
   are now **BUILT** (Package G: `mod-select-method`, `mod-transfer-classify`,
   `mod-transfer-solset-fresh`, `mod-cumulative-elim-solset`, plus the concrete applied
-  `mod-p2-applied-3x3` / `mod-p2-applied-rect` and `mod-error-diagnose` / `mod-proof-hyp`)
-  and machinery-verified, but the plan has **not been administered**, so no real learner
-  evidence exists. `mod-timed-mock` (Package I) and enrichment `mod-enrich-ode` stay
-  planned / off the bar.
+  `mod-p2-applied-3x3` / `mod-p2-applied-rect` and `mod-error-diagnose` / `mod-proof-hyp`;
+  Package I: the timed mock `systems-elimination-mock` — `mod-mock-compute` /
+  `-classify` / `-proof`) and machinery-verified, but the plan has **not been
+  administered**, so no real learner evidence exists for any of them. Enrichment
+  `mod-enrich-ode` stays planned / off the bar.
 - **Class B (lesson-owned reassessment):** `runnable — not administered`. The owning-lesson
   outcomes have **real in-lesson evidence**: fresh **produced** classification, both-coordinate
   column confirmation, complete parametric set, produced ∅-refusal (E3), and in-lesson

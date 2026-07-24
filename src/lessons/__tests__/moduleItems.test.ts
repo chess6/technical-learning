@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { getGradingCapability, requiresHumanScore, resolveCapabilityId } from "../capabilities";
-import { MODULE_ITEMS, SYS_SPACED_TRICHOTOMY } from "../moduleItems";
+import {
+  MODULE_ITEMS,
+  SYS_SPACED_TRICHOTOMY,
+  SYS_MOCK_COMPUTE,
+  SYS_MOCK_CLASSIFY,
+} from "../moduleItems";
+import { getModuleSet } from "../moduleSets";
 import { snapshotItem } from "../attemptSnapshot";
 import { solveLinearSystem } from "../../math/linearSystemsGeneral";
 
@@ -17,17 +23,21 @@ const PACKAGE_G_IDS = [
 
 const SPACED_IDS = ["mod-spaced-trichotomy", "mod-spaced-uniqueness", "mod-spaced-rowops"];
 
-const EXPECTED_IDS = [...PACKAGE_G_IDS, ...SPACED_IDS];
+// Package I — timed mock.
+const MOCK_IDS = ["mod-mock-compute", "mod-mock-classify", "mod-mock-proof"];
+
+const EXPECTED_IDS = [...PACKAGE_G_IDS, ...SPACED_IDS, ...MOCK_IDS];
 
 const HUMAN_SCORED = new Set([
   "mod-select-method",
   "mod-transfer-classify",
   "mod-error-diagnose",
   "mod-proof-hyp",
+  "mod-mock-proof",
 ]);
 
 describe("Package G module items", () => {
-  it("authors exactly the required items (8 Package G + 3 spaced) with unique ids", () => {
+  it("authors exactly the required items (8 Package G + 3 spaced + 3 mock) with unique ids", () => {
     const ids = MODULE_ITEMS.map((e) => e.id);
     expect(ids.sort()).toEqual([...EXPECTED_IDS].sort());
     expect(new Set(ids).size).toBe(ids.length);
@@ -53,7 +63,13 @@ describe("Package G module items", () => {
   it("the concrete elimination items capture produced elimination evidence", () => {
     const elim = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "elimination-solution");
     expect(elim.map((e) => e.id).sort()).toEqual(
-      ["mod-cumulative-elim-solset", "mod-p2-applied-3x3", "mod-p2-applied-rect"].sort(),
+      [
+        "mod-cumulative-elim-solset",
+        "mod-p2-applied-3x3",
+        "mod-p2-applied-rect",
+        "mod-mock-compute",
+        "mod-mock-classify",
+      ].sort(),
     );
   });
 
@@ -133,5 +149,43 @@ describe("Package H spaced-retrieval items", () => {
       "[[1,2],[3,4]]",
     ];
     expect(g).not.toContain(JSON.stringify(SYS_SPACED_TRICHOTOMY.matrix));
+  });
+});
+
+describe("Package I timed mock items", () => {
+  it("the timed mock set exists, is time-boxed, and lists the three mock items", () => {
+    const set = getModuleSet("systems-elimination-mock")!;
+    expect(set, "systems-elimination-mock set").toBeDefined();
+    expect(set.mode).toBe("exam");
+    expect(set.timeLimitSec).toBe(1200);
+    expect(set.itemIds).toEqual(["mod-mock-compute", "mod-mock-classify", "mod-mock-proof"]);
+  });
+
+  it("the compute item's fresh system is consistent with a free variable", () => {
+    const sol = solveLinearSystem(SYS_MOCK_COMPUTE.matrix, SYS_MOCK_COMPUTE.rhs);
+    expect(sol.consistent).toBe(true);
+    expect(sol.freeCount).toBeGreaterThan(0);
+  });
+
+  it("the classify item's fresh system is INCONSISTENT", () => {
+    const sol = solveLinearSystem(SYS_MOCK_CLASSIFY.matrix, SYS_MOCK_CLASSIFY.rhs);
+    expect(sol.consistent).toBe(false);
+  });
+
+  it("mock systems are numerically distinct from every prior fixture", () => {
+    const prior = [
+      "[[1,2,-1],[2,4,1]]",
+      "[[1,1,1],[1,2,3],[2,3,4]]",
+      "[[2,1,-1],[4,1,1],[2,0,2]]",
+      "[[1,1],[1,-1],[2,1]]",
+      "[[1,3],[2,6]]",
+      "[[1,2],[2,4]]",
+      "[[2,1],[1,3]]",
+      "[[1,2],[3,4]]",
+      "[[2,4],[3,6]]",
+    ];
+    expect(prior).not.toContain(JSON.stringify(SYS_MOCK_COMPUTE.matrix));
+    expect(prior).not.toContain(JSON.stringify(SYS_MOCK_CLASSIFY.matrix));
+    expect(JSON.stringify(SYS_MOCK_COMPUTE.matrix)).not.toBe(JSON.stringify(SYS_MOCK_CLASSIFY.matrix));
   });
 });

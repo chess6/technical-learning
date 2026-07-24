@@ -580,12 +580,54 @@ plan §"Slice sequencing" for why).
 > any future surface with no new engineering) is recorded in the plan so the obligation has
 > an owner instead of disappearing.
 
-### Package I — Timed mock / exam-mode set (D11 · S3) · module-owned · 🟡 PLANNED (Mode C not started)
-*Closes:* D11 timed performance; enables the S3 readiness claim. `mod-timed-mock`
-(computation + one proof + one classification, time-boxed, deferred feedback).
+### Package I — Timed mock / exam-mode set (D11 · S3) · module-owned · 🟢 BUILT (machinery-verified; not administered)
+*Closes (evidence CAPTURED, pending real administration + Gate 9):* D11 timed
+performance; enables the S3 readiness claim **once genuinely administered**.
+`systems-elimination-mock` (historically referenced as `mod-timed-mock` in this
+package and the assessment plan — same item, the built id is
+`systems-elimination-mock` with items `mod-mock-compute` / `mod-mock-classify` /
+`mod-mock-proof`) administers three fresh items under a **time limit** with
+deferred feedback, on the Package F runner.
+
+- **Three fresh items, on fresh instances** (`src/lessons/moduleItems.ts`,
+  distinct from every lesson/Package-G/Package-H fixture, re-verified against
+  `src/math/linearSystemsGeneral.ts`): `mod-mock-compute` (fresh consistent 3×3,
+  `elimination-solution`, E4), `mod-mock-classify` (fresh inconsistent
+  rectangular, `elimination-solution`, E4), `mod-mock-proof` (fresh proof,
+  `self-check`, human-scored, E5). Each carries an `ITEM_ASSESSMENT_META`
+  evidence-manifest entry; the two auto items carry a `describeGradingContract`
+  spec with an adversarial mustReject battery.
+- **The time-box is the only new engineering; grading is ZERO new capability
+  code.** `ModuleSet` gained an optional `timeLimitSec` (`src/lessons/moduleSets.ts`,
+  `systems-elimination-mock` sets it to `1200` = 20 min); `AttemptSet` gained an
+  optional `autoSubmittedAt` (`src/platform/learnerState.ts`) — both purely
+  additive, no schema-version bump. `src/lessons/timeBox.ts` is pure deadline
+  math (`deadlineFor`/`remainingSec`/`isExpired`), derived from the attempt's
+  existing `startedAt`, never a separately stored absolute time. `ModuleRunner`
+  renders a live countdown, **auto-submits exactly once** at the deadline (and
+  immediately on a past-deadline reload), and stamps `autoSubmittedAt` atomically
+  with release (`releasePrimaryAttempt` gained the parameter; no separate submit
+  path). Computation and classification reuse `elimination-solution`; the proof
+  reuses `self-check` — the same capabilities Package G already proved out.
+- **Deferred feedback is preserved and the timeout is honest.** No per-item
+  reveal before submit, timed or not; a learner-submitted attempt leaves
+  `autoSubmittedAt` unset, while a deadline/reload-triggered one shows "submitted
+  automatically at the time limit" in review — an honesty signal, not a grade
+  change. Blank required items stay recorded omissions (the F rule), so
+  `reviewStatus` can never reach `REVIEW_COMPLETE` off a timed-out blank.
+- **Untimed sets (F/G/H) are unaffected** — the countdown/auto-submit path is
+  gated on `timeLimitSec` being present; absent ⇒ existing untimed behavior.
+
 *Depends on:* F (deferred feedback). *Size:* small (content) once F exists.
 *Plan:* [package-i-plan.md](package-i-plan.md) — contract-table-first Mode B plan
-(ADR-002 workflow). Mode C (implementation) requires approval and has **not** started.
+(ADR-002 workflow), built on branch `package-i`.
+*Status:* like Package G/H, the machinery is verified (fresh-instance +
+distinctness tests, grading-contract adversarial batteries, pure deadline-math
+tests) but **not administered** — no real learner has yet run the mock under
+time. **D11 is discharged only now that Package I is built**; it does not by
+itself pass Gate 9 or license the S3 readiness claim — that requires genuine
+administration (see [Gate posture](package-i-plan.md#gate-posture) and the
+[status entry](../../../../quality/lesson-correctness-checklist.md)).
 
 ### Out of scope for this module (cross-referenced, not built here)
 - **General \(\mathbb{R}^n\) null-space / rank–nullity** — owned by the future
@@ -619,9 +661,14 @@ plan §"Slice sequencing" for why).
 6. ✅ **H** (spaced retrieval, D12) on F — **PARTIALLY SHIPPED, not administered**: the three
    spaced items + real scheduler + occurrence-keyed schema-v3 model + dev due-review surface
    are built and verified; the L7/L8/L9 prerequisite-check wiring stays a tracked, deferred
-   D12 obligation. **I** (timed mock) remains **PLANNED**. These discharge module-owned
-   outcomes and enable Class-B reassessment at Gate 9 once genuinely administered.
-6. Run [assessment-plan.md](assessment-plan.md); record real results; create
+   D12 obligation. These discharge module-owned outcomes and enable Class-B reassessment at
+   Gate 9 once genuinely administered.
+7. ✅ **I** (timed mock, D11 · S3) on F — **BUILT, not administered**: three fresh items
+   (`mod-mock-compute`/`-classify`/`-proof`) in the time-boxed `systems-elimination-mock`
+   set (`timeLimitSec: 1200`), with a deadline-derived countdown, honest auto-submit
+   (`autoSubmittedAt`), and deferred feedback — zero new grading capability. Discharges D11
+   and enables the S3 readiness claim once genuinely administered.
+8. Run [assessment-plan.md](assessment-plan.md); record real results; create
    `validation.md` (Gate 10); update the
    [benchmark gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary).
 
@@ -635,18 +682,29 @@ made (COURSE §6.2).
 **Approval boundary.** Packages B, C, D are built, Package E's surfaces are built,
 **Package F1–F4 is SHIPPED** (per [Package F — shipped](#package-f--shipped)),
 **Package G is BUILT and evidence-integrity corrected** — eight module-owned Class-A items
-in two dev-gated sets — and **Package H is PARTIALLY SHIPPED** (three spaced items + real
+in two dev-gated sets — **Package H is PARTIALLY SHIPPED** (three spaced items + real
 narrowed scheduler + occurrence-keyed schema-v3 model + dev due-review surface; L7/L8/L9
-prerequisite wiring stays a tracked, deferred D12 obligation), verified by pure-math +
-capability + registration + integration unit tests and the mandatory G/H e2e flows. The
-**Mode C boundary now sits before Package I**: building I (timed mock) or any further
-assessment content is Mode C and requires explicit approval.
+prerequisite wiring stays a tracked, deferred D12 obligation), and **Package I is BUILT**
+(three fresh mock items + the `timeLimitSec` time-box + honest `autoSubmittedAt`, on
+branch `package-i`) — G and H verified by pure-math + capability + registration +
+integration unit tests **and** the mandatory G/H e2e flows; I is verified by
+domain-model/content/grading-contract unit tests (deadline math, fresh-instance
+distinctness, adversarial grading batteries), the runner-level timed-path tests
+(countdown rendering, auto-submit-at-expiry with `autoSubmittedAt`, reload-past-deadline
+auto-submits once, blank-proof-under-timeout stays an omission, untimed sets unaffected),
+and the `e2e/assessment-mock.spec.ts` flow (see the
+[status entry](../../../../quality/lesson-correctness-checklist.md)). With B–I now built,
+**no further Package-level Mode C engineering is scoped for this module**: the remaining
+work is genuine administration (running G/H/I with real learners, human-scoring real
+responses) and the out-of-scope items below, not new machinery.
 
-**Gate posture is unchanged by Packages G and H.** Gate 8 for L3/L4/L5 stays **NOT PASSED**:
-the G/H tests exercise the *machinery* with synthetic answers — they are **not** real
-learner evidence. Clearing Gate 8 still requires an author to run the review sets, score
-real learner reasoning/proof responses (`REVIEW_COMPLETE` is necessary-not-sufficient),
-and decide manually. **Gate 9 stays NOT PASSED** until the assessment is genuinely
-administered and its evidence reviewed. Package **H is partially shipped** (its L7/L8/L9
-prerequisite wiring remains a tracked, deferred D12 obligation) and Package **I remains
-PLANNED**; `mod-enrich-ode` and general ℝⁿ rank–nullity remain out of scope.
+**Gate posture is unchanged by Packages G, H, and I.** Gate 8 for L3/L4/L5 stays **NOT
+PASSED**: the G/H/I tests exercise the *machinery* with synthetic answers — they are
+**not** real learner evidence. Clearing Gate 8 still requires an author to run the review
+sets, score real learner reasoning/proof responses (`REVIEW_COMPLETE` is
+necessary-not-sufficient), and decide manually. **Gate 9 stays NOT PASSED** until the
+assessment is genuinely administered and its evidence reviewed. Package **H is partially
+shipped** (its L7/L8/L9 prerequisite wiring remains a tracked, deferred D12 obligation) and
+Package **I is built but not administered** (D11 is discharged by the build; the S3
+readiness claim still needs real administration); `mod-enrich-ode` and general ℝⁿ
+rank–nullity remain out of scope.

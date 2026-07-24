@@ -115,6 +115,8 @@ export interface LearnerStateContextValue {
     releasedAt: string,
     payload: { responses: AttemptItemResponse[]; reviews: ReviewRecord[] },
     outcome: SpacedReleaseOutcome,
+    /** (Package I) Present iff a timed set was submitted by the deadline, not the learner. */
+    autoSubmittedAt?: string,
   ): void;
   /**
    * (v3) Release a one-item SPACED attempt AND complete its exact occurrence in
@@ -340,7 +342,7 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
   );
 
   const releasePrimaryAttempt = useCallback<LearnerStateContextValue["releasePrimaryAttempt"]>(
-    (attemptSetId, moduleId, releasedAt, payload, outcome) => {
+    (attemptSetId, moduleId, releasedAt, payload, outcome, autoSubmittedAt) => {
       commit((prev) => {
         const set = prev.attemptSets[attemptSetId];
         if (!set || set.status === "released") return prev; // idempotent
@@ -354,6 +356,7 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
           releasedAt,
           responses: payload.responses,
         };
+        if (autoSubmittedAt) released.autoSubmittedAt = autoSubmittedAt;
 
         let spacedReviews = prev.spacedReviews;
         let spacedCohorts = prev.spacedCohorts;

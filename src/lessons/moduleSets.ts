@@ -26,6 +26,11 @@ export interface ModuleSet {
   mode: "exam";
   /** Ordered exercise ids drawn from the module's lessons. */
   itemIds: readonly string[];
+  /**
+   * (Package I) When present, this set is TIME-BOXED: the runner shows a countdown
+   * and auto-submits at `startedAt + timeLimitSec`. Absent ⇒ untimed (F/G/H behavior).
+   */
+  timeLimitSec?: number;
 }
 
 /**
@@ -121,6 +126,22 @@ const SYSTEMS_ELIMINATION_SPACED_ROWOPS: ModuleSet = {
   itemIds: ["mod-spaced-rowops"],
 };
 
+/**
+ * Package I — the timed mock: a short exam-mode set under a time limit. Fresh
+ * computation + fresh inconsistent classification + one proof, deferred feedback.
+ * NOT a primary spacing set and NOT a spaced set, so it neither seeds nor answers
+ * a spaced cohort; it is administered from the assessment index like any set.
+ */
+const SYSTEMS_ELIMINATION_MOCK: ModuleSet = {
+  id: "systems-elimination-mock",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — timed mock",
+  mode: "exam",
+  timeLimitSec: 1200, // 20 minutes for three items
+  itemIds: ["mod-mock-compute", "mod-mock-classify", "mod-mock-proof"],
+};
+
 export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_REVIEW,
   SYSTEMS_ELIMINATION_TRANSFER,
@@ -128,6 +149,7 @@ export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_SPACED_TRICHOTOMY,
   SYSTEMS_ELIMINATION_SPACED_UNIQUENESS,
   SYSTEMS_ELIMINATION_SPACED_ROWOPS,
+  SYSTEMS_ELIMINATION_MOCK,
 ];
 
 /* -------------------------------------------------------------------------- */

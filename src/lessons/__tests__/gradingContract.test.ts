@@ -276,6 +276,116 @@ const CONTRACTS: { id: string; spec: GradingContractSpec }[] = [
       ],
     },
   },
+  {
+    // I·1 elimination · SYS_MOCK_COMPUTE: pivots {0,1}, 1 free var, x_p=(1,1,0), dir (1,-1,1).
+    id: "mod-mock-compute",
+    spec: {
+      mustAccept: [
+        {
+          name: "canonical echelon + parameterization",
+          answer: {
+            reduced: [[1, 0, -1, 1], [0, 1, 1, 1], [0, 0, 0, 0]],
+            consistent: true,
+            pivotColumns: [0, 1],
+            freeCount: 1,
+            particular: [1, 1, 0],
+            nullDirections: [[1, -1, 1]],
+          },
+        },
+      ],
+      mustReject: [
+        {
+          name: "all-blank",
+          answer: {
+            reduced: [[null, null, null, null], [null, null, null, null], [null, null, null, null]],
+            consistent: null,
+          },
+        },
+        ...particularCellBlanks(
+          (particular) => ({
+            reduced: [[1, 0, -1, 1], [0, 1, 1, 1], [0, 0, 0, 0]],
+            consistent: true,
+            pivotColumns: [0, 1],
+            freeCount: 1,
+            particular,
+            nullDirections: [[1, -1, 1]],
+          }),
+          [1, 1, 0],
+        ),
+        {
+          name: "pivot columns claim the free column",
+          answer: {
+            reduced: [[1, 0, -1, 1], [0, 1, 1, 1], [0, 0, 0, 0]],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 1,
+            particular: [1, 1, 0],
+            nullDirections: [[1, -1, 1]],
+          },
+        },
+        {
+          name: "direction not in the null space",
+          answer: {
+            reduced: [[1, 0, -1, 1], [0, 1, 1, 1], [0, 0, 0, 0]],
+            consistent: true,
+            pivotColumns: [0, 1],
+            freeCount: 1,
+            particular: [1, 1, 0],
+            nullDirections: [[1, 0, 0]],
+          },
+        },
+      ],
+    },
+  },
+  {
+    // I·2 elimination · SYS_MOCK_CLASSIFY: INCONSISTENT ⇒ contradiction row + typed verdict.
+    id: "mod-mock-classify",
+    spec: {
+      mustAccept: [
+        {
+          name: "echelon with contradiction row + typed 'inconsistent'",
+          answer: {
+            reduced: [[1, 1, 2], [0, 1, 1], [0, 0, 1]],
+            consistent: false,
+            classification: "inconsistent",
+          },
+        },
+      ],
+      mustReject: [
+        {
+          name: "bare toggle, no typed classification",
+          answer: { reduced: [[1, 1, 2], [0, 1, 1], [0, 0, 1]], consistent: false },
+        },
+        {
+          name: "typed verdict but reduction lacks the contradiction row",
+          answer: {
+            reduced: [[1, 1, 2], [0, 1, 1], [0, 0, 0]],
+            consistent: false,
+            classification: "none",
+          },
+        },
+        {
+          name: "superset text ('the answer is none')",
+          answer: {
+            reduced: [[1, 1, 2], [0, 1, 1], [0, 0, 1]],
+            consistent: false,
+            classification: "the answer is none",
+          },
+        },
+        {
+          name: "wrong verdict: claims consistent on an inconsistent system",
+          answer: {
+            reduced: [[1, 1, 2], [0, 1, 1], [0, 0, 1]],
+            consistent: true,
+            pivotColumns: [0, 1],
+            freeCount: 0,
+            particular: [1, 1],
+            nullDirections: [],
+          },
+        },
+      ],
+    },
+  },
   // multiple-choice spaced items: exact-index recognition; out-of-range rejects.
   {
     id: "mod-spaced-trichotomy",

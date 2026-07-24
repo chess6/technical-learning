@@ -1006,3 +1006,124 @@ responses remain unscored by an author).
   the *machinery* with synthetic answers, not real learner evidence; the **L7/L8/L9
   prerequisite-check wiring stays a tracked, deferred D12 obligation** (D12 partially
   discharged), and **Package I remains PLANNED**
+
+---
+
+## Systems–Elimination module — Package I timed mock (D11 · S3) (2026-07-24, on the Package F runner)
+
+Implements slices **I1–I3** of the
+[implementation-ready plan](../courses/linear-algebra/modules/systems-elimination/package-i-plan.md)
+(authorized Mode C pass, branch `package-i`, authored contract-table-first per ADR-002): a
+short **timed mock** (`systems-elimination-mock` — historically tracked as `mod-timed-mock`)
+on three fresh items, with a deadline-derived countdown, honest auto-submit, and deferred
+feedback. **No new grading capability** — computation/classification reuse
+`elimination-solution`, the proof reuses `self-check`, exactly as Package G proved out. **No
+math/visualization renderer changed.** **Gate 8 stays NOT PASSED** for L3/L4/L5 (unrelated);
+**Gate 9 stays NOT PASSED** — I ships machinery, not real learner evidence.
+
+### Domain model (schema stays additive, no version bump)
+
+- [x] **`ModuleSet.timeLimitSec?: number`** (`src/lessons/moduleSets.ts`) — when present the
+  set is time-boxed; absent ⇒ untimed (F/G/H behavior unchanged). `systems-elimination-mock`
+  sets it to `1200` (20 min) for its three items.
+- [x] **`AttemptSet.autoSubmittedAt?: string`** (`src/platform/learnerState.ts`, +
+  `normalizeAttemptSet` copy) — present iff the deadline, not the learner, triggered submit;
+  purely additive optional field, no migration.
+- [x] **The deadline is derived, never stored** — `src/lessons/timeBox.ts` (new, pure):
+  `deadlineFor`/`remainingSec`/`isExpired` compute off the attempt's existing `startedAt` +
+  the set's `timeLimitSec` + "now", so a reload past the deadline reads as expired without a
+  separately-tamperable absolute time.
+
+### Content + grading contracts (zero new capability code)
+
+- [x] **Three fresh items** (`src/lessons/moduleItems.ts`), each on a system re-verified
+  independently against `src/math/linearSystemsGeneral.ts` and numerically distinct from
+  every lesson / Package-G / Package-H fixture: `mod-mock-compute` (fresh consistent 3×3, one
+  free variable, `elimination-solution`, target **E4**), `mod-mock-classify` (fresh
+  inconsistent 3×2 rectangular, `elimination-solution`, target **E4**), `mod-mock-proof`
+  (fresh existence-of-infinitely-many-solutions proof, `self-check`/human-scored, target
+  **E5**).
+- [x] **Evidence-manifest entries** for all three in `ITEM_ASSESSMENT_META`
+  (`src/lessons/assessmentManifest.ts`) — evidence target + full `evidenceBasis`
+  (freshness/unfamiliarity/integration/scaffolding/scoring authority); the two auto items are
+  `scoringAuthority: "auto"`, the proof `"human-scored"`.
+- [x] **Grading-contract specs for the two auto items** (`gradingContract.test.ts`) reusing
+  the same `elimination-solution` contract pattern already proven on Package G: mustAccept
+  (canonical echelon + pivots + free count + particular + null direction for the compute item;
+  contradiction row + typed verdict for the classify item) plus an adversarial mustReject
+  battery (all-blank, blank-≠-0, zero-fill, pivot off-by-one, non-echelon, wrong null
+  direction, superset extra direction / superset text, flipped consistency, bare toggle,
+  wrong verdict) — matching the contract table in the plan's §2.
+- [x] **Fresh-instance distinctness is tested, not asserted** — `moduleItems.test.ts` verifies
+  `SYS_MOCK_COMPUTE`/`SYS_MOCK_CLASSIFY` solve/classify as intended via `solveLinearSystem`
+  and are byte-distinct from every prior fixture; also asserts `systems-elimination-mock`
+  registers the three items in the documented order.
+
+### Runner: countdown, auto-submit, honest recording
+
+- [x] **Live countdown** — `ModuleRunner` renders `Time remaining: mm:ss` (`role="timer"`,
+  `data-testid="mock-countdown"`) whenever the resolved set has `timeLimitSec` and the attempt
+  is not yet released; untimed sets render nothing new.
+- [x] **Auto-submit exactly once at the deadline** — a 1 Hz clock drives `isExpired`; on
+  expiry the runner calls the existing `submit` path (via a ref, since `submit` is defined
+  after the early-return branches) with an `autoSubmitted` flag, tagging the released attempt
+  `autoSubmittedAt` — no per-item correctness was revealed before that submit.
+- [x] **Reload past the deadline auto-submits immediately** — because the deadline is derived
+  from the persisted `startedAt`, a fresh mount whose `isExpired` check is already true fires
+  the same auto-submit effect on the next tick; the existing release-idempotency guard
+  (`set.status === "released"` early-return in `releasePrimaryAttempt`) prevents a double
+  release.
+- [x] **`autoSubmittedAt` is stamped atomically with release** — `releasePrimaryAttempt`
+  (`src/platform/useLearnerState.tsx`) gained an optional trailing parameter set only when the
+  submit was deadline-triggered; a manual pre-deadline submit passes nothing, leaving the field
+  unset (honest signal, matches the plan's mandatory regression #3).
+- [x] **Honest review notice, no grade change** — `ReviewView` shows "Submitted automatically
+  at the time limit." (`data-testid="mock-auto-submitted"`) when `autoSubmittedAt` is set;
+  purely informational.
+- [x] **Blank required items stay recorded omissions under time-out** — the runner's existing
+  omission path (unchanged) still governs the proof capture, so `reviewStatus` cannot reach
+  `REVIEW_COMPLETE` off a timed-out blank; no new bypass was introduced for the timed path.
+- [x] **Untimed sets (F/G/H) are unaffected** — the new countdown/auto-submit branches are
+  gated on `resolved.set.timeLimitSec !== undefined`; the pre-existing untimed `ModuleRunner`
+  tests pass unchanged (see Testing review).
+
+### Testing review
+
+- [x] `timeBox.test.ts` (new): deadline = `startedAt + timeLimitSec`, an unparseable
+  `startedAt` returns `null`, remaining counts down and clamps at 0, `isExpired` flips exactly
+  at the boundary, a reload well past the deadline reads as expired, and `mm:ss` formatting.
+- [x] `moduleItems.test.ts` (extended): the three mock items exist with the documented
+  capability/tier, `systems-elimination-mock` registers them in order, both fresh systems
+  independently solve/classify as claimed via `solveLinearSystem`, and both are distinct from
+  every prior fixture and from each other.
+- [x] `gradingContract.test.ts` (extended): `mod-mock-compute` and `mod-mock-classify` each
+  pass their mustAccept case and reject the full adversarial mustReject battery listed above;
+  the coverage meta-test sees a contract for both (the proof is human-scored and exempt).
+- [x] Full `vitest` suite green — **795 tests / 74 files** (up from Package H's 704/70,
+  +91 for the domain-model, content, and contract additions above); `npx tsc -b` 0 errors;
+  `npm run lint` (oxlint) clean apart from the pre-existing non-blocking `react-refresh`
+  warnings on `useLearnerState`/`captureRenderers`.
+- [x] Existing untimed `ModuleRunner.test.tsx` suite (10 tests, F/G/H flows) passes unchanged
+  against the modified runner — confirms the timed-path additions are additive, not a
+  regression.
+- [x] **Runner-level timed path:** a dedicated `ModuleRunner` regression block (5 tests) — no
+  countdown for untimed sets, countdown renders for the timed set, auto-submit-at-expiry
+  (fake timers) grading + `autoSubmittedAt`, manual submit leaves no marker, and
+  blank-proof-under-timeout stays an omission (verified `REVIEW_FAILED`, never
+  `REVIEW_COMPLETE`).
+- [x] **Mandatory** `e2e/assessment-mock.spec.ts` — `/dev/module/systems-elimination-mock`:
+  countdown ticks, no pre-submit reveal, manual submit reaches `review-status`, persistence
+  survives reload, zero console errors.
+
+### Status review
+
+- [x] `implementation-package.md` (Package I **BUILT, machinery-verified, not administered**;
+  D11 discharged by the build; S3 readiness claim still requires real administration),
+  `assessment-plan.md` (D11 row → built as `systems-elimination-mock`; Class A now `0/6` core
+  items built, still zero with real evidence) reconciled
+- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 (unaffected by this package) and **Gate 9 = NOT
+  PASSED** preserved — I exercises the *machinery* (deadline math + grading contracts) with
+  synthetic/adversarial inputs, not real learner evidence under actual time pressure
+- [x] Runner-level timed-path regression tests and the mandatory
+  `e2e/assessment-mock.spec.ts` authored and passing — Package I is now verified end-to-end
+  in the same sense as Package G/H (machinery only; still not administered)

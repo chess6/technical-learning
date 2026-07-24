@@ -163,6 +163,12 @@ export interface AttemptSet {
    * occurrence (never "the oldest for this exercise").
    */
   scheduledReviewId?: string;
+  /**
+   * (Package I) Present iff the set was submitted by the TIME LIMIT rather than
+   * by the learner — an honesty marker on a timed mock. Purely additive optional
+   * field (no schema bump); does not change the grade, only how it is reported.
+   */
+  autoSubmittedAt?: string;
 }
 
 export type ReviewState = "pending" | "scored";
@@ -502,6 +508,7 @@ function normalizeAttemptSet(raw: unknown): AttemptSet | null {
   if (typeof a.schedulerEmittedAt === "string") set.schedulerEmittedAt = a.schedulerEmittedAt;
   if (isJsonValue(a.schedulerHint)) set.schedulerHint = a.schedulerHint;
   if (typeof a.scheduledReviewId === "string") set.scheduledReviewId = a.scheduledReviewId;
+  if (typeof a.autoSubmittedAt === "string") set.autoSubmittedAt = a.autoSubmittedAt;
   return set;
 }
 

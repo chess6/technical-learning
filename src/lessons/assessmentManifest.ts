@@ -169,4 +169,38 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "auto",
     },
   },
+  // Package I — timed mock (fresh instances under a time limit).
+  "mod-mock-compute": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-mock-classify": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-mock-proof": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
 };
