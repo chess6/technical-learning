@@ -8,16 +8,21 @@ and draws items from
 [authoring/assessment-patterns.md](../../../../authoring/assessment-patterns.md).
 References the lesson mastery contracts; does not restate them.
 
-> **Status: PLANNED (not yet run).** The Package F **infrastructure** now ships — a
+> **Status: PLANNED (not yet run).** The Package F **infrastructure** ships — a
 > cumulative/interleaved **runner** with deferred feedback, snapshotting, a
 > human-scoring **review queue**, and an idempotent scheduler seam (see the module
 > [implementation package → Package F shipped](implementation-package.md#package-f--shipped)).
-> But **no Class-A module content** (`mod-*`, fresh 3×3 / rectangular, spaced, timed
-> mock) has been authored (Packages G–I), and the plan has **not been administered**.
-> Every "Result" below is therefore still `planned`. Per the mastery standard,
-> **planned module evidence licenses no mastery/readiness claim** until it is verified
-> here with real results — and Package F **never emits a Gate 8/9 verdict** (it reports
-> only a conservative `REVIEW_PENDING`/`COMPLETE`/`FAILED` blocker).
+> **Package G Class-A content is now BUILT**: the eight `mod-*` items (method selection,
+> unfamiliar classification, fresh solution-set transfer, cumulative L4+L5, error
+> diagnosis, proof-hypothesis, and the concrete 3×3 / rectangular P2 slice) are authored,
+> registered in two dev-gated sets, and verified as *machinery* (pure-math + capability +
+> registration + integration + e2e). **"Built" ≠ "administered":** those tests exercise the
+> capture/grade/review path with **synthetic** answers — they are **not** real learner
+> evidence. The plan has **not been administered**, so every "Result" below stays
+> `planned` / built-not-administered. Per the mastery standard, **built-but-unadministered
+> module evidence licenses no mastery/readiness claim**; Packages H (spacing) and I (timed
+> mock) remain PLANNED, and Package F/G **never emit a Gate 8/9 verdict** (only a
+> conservative `REVIEW_PENDING`/`COMPLETE`/`FAILED` blocker). **Gate 9 stays NOT PASSED.**
 
 ## Module metadata
 - **Module / section id:** `systems-elimination` (matches `src/lessons/curriculum.ts`).
@@ -48,12 +53,12 @@ Outcomes a single lesson cannot own. The lessons correctly defer them, and Gate 
 
 | Outcome (operational) | From lesson | Dimension | Target | Item | Result |
 | --- | --- | --- | --- | --- | --- |
-| Select rows / columns / elimination unprompted for a given system | L3, L4 | D8 | E3 | `mod-select-method` | planned |
-| Classify an **unfamiliar** system none/one/∞ and justify (reachability × independence) | L3 | D9 | E4 | `mod-transfer-classify` | planned |
-| Describe a **fresh** solution set via free-variable count (concrete dims) | L5 | D9 | E4 | `mod-transfer-solset-fresh` | planned |
-| Combine elimination + solution-set structure across lessons | L4, L5 | D10 | E5 | `mod-cumulative-elim-solset` | planned |
-| Complete the module under time pressure with deferred feedback | all | D11 | E3–E5 | `mod-timed-mock` | planned |
-| *(enrichment, off the exam bar)* transfer "general = particular + homogeneous" to a new operator | — | D14 | E7 | `mod-enrich-ode` | planned |
+| Select rows / columns / elimination unprompted for a given system | L3, L4 | D8 | E3 | `mod-select-method` | **built** (G) · not administered |
+| Classify an **unfamiliar** system none/one/∞ and justify (reachability × independence) | L3 | D9 | E4 | `mod-transfer-classify` | **built** (G) · not administered |
+| Describe a **fresh** solution set via free-variable count (concrete dims) | L5 | D9 | E4 | `mod-transfer-solset-fresh` | **built** (G) · not administered |
+| Combine elimination + solution-set structure across lessons | L4, L5 | D10 | E5 | `mod-cumulative-elim-solset` | **built** (G) · not administered |
+| Complete the module under time pressure with deferred feedback | all | D11 | E3–E5 | `mod-timed-mock` | planned (Package I) |
+| *(enrichment, off the exam bar)* transfer "general = particular + homogeneous" to a new operator | — | D14 | E7 | `mod-enrich-ode` | planned (out of scope) |
 
 Cross-reference (**not** dischargeable here): general \(\mathbb{R}^n\) null space &
 rank–nullity is owned by the **structure module (L8/L9)** — see the L5 contract's
@@ -96,7 +101,7 @@ Any accountable abstraction-return whose **owner is this module**
 
 | Deferred from | Destination (general case) | Item | Result |
 | --- | --- | --- | --- |
-| L5 solution-sets | operate on a null space via free-variable count in a **fresh** system (2D/3D-by-count) | `mod-transfer-solset-fresh` | planned |
+| L5 solution-sets | operate on a null space via free-variable count in a **fresh** system (2D/3D-by-count) | `mod-transfer-solset-fresh` | **built** (G) · not administered |
 | L5 solution-sets → **structure module** | full \(\mathbb{R}^n\) null space & rank–nullity | *(owned by the structure module L8/L9; not dischargeable here — cross-referenced only)* | out of module scope |
 
 > The **full \(\mathbb{R}^n\)** null-space/rank–nullity return is owned by the future
@@ -158,8 +163,13 @@ Covers the seven areas the module must assess under the declared profile:
   system. `mod-error-diagnose`.
 
 ## Results & readiness
-- **Class A (module-owned) discharged:** `0 / 5` core with real evidence (**planned** —
-  no assessment surface built yet); enrichment `mod-enrich-ode` separate, off the bar.
+- **Class A (module-owned) discharged:** `0 / 5` core with **real** evidence — the items
+  are now **BUILT** (Package G: `mod-select-method`, `mod-transfer-classify`,
+  `mod-transfer-solset-fresh`, `mod-cumulative-elim-solset`, plus the concrete applied
+  `mod-p2-applied-3x3` / `mod-p2-applied-rect` and `mod-error-diagnose` / `mod-proof-hyp`)
+  and machinery-verified, but the plan has **not been administered**, so no real learner
+  evidence exists. `mod-timed-mock` (Package I) and enrichment `mod-enrich-ode` stay
+  planned / off the bar.
 - **Class B (lesson-owned reassessment):** `not yet runnable` — the owning-lesson outcomes
   now have **real in-lesson evidence**: fresh **produced** classification, both-coordinate
   column confirmation, complete parametric set, produced ∅-refusal (E3), and in-lesson

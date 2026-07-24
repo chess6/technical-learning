@@ -53,6 +53,14 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   interactions register a capability reached this way — no new union member, no
   central switch edit. The **committed-prediction** pilot (commit before reveal)
   ships entirely through this path.
+- **`solution-set`** (Package G) is such a capability: the learner PRODUCES a complete
+  solution set (consistency/∅, free-variable count, a particular solution, and one
+  nonzero null direction per free variable). It is **predicate-graded** against the
+  general (m×n) source of truth `src/math/linearSystemsGeneral.ts` (`solveLinearSystem`,
+  `solves`, `inNullSpace`, `areLinearlyIndependent`), so **any** valid parameterization
+  passes and the expected shape is never revealed by config. Its capture renderer lets the
+  learner add/remove null directions (the free count is never hinted). Scope is concrete
+  finite systems — **not** a general ℝⁿ rank–nullity surface.
 
 ### 4. Learner-state envelope — `src/platform/learnerState.ts`
 

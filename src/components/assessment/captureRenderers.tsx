@@ -19,8 +19,13 @@
 import { useState } from "react";
 import type { AttemptItemResponse, AttemptItemSnapshot } from "../../platform/learnerState";
 import type { JsonValue } from "../../platform/json";
-import type { MatrixEntryConfig } from "../../lessons/capabilities";
-import { MATRIX_ENTRY_ID, CONSTRUCT_IN_EXPLORER_ID, SELF_CHECK_ID } from "../../lessons/capabilities";
+import type { MatrixEntryConfig, SolutionSetConfig } from "../../lessons/capabilities";
+import {
+  MATRIX_ENTRY_ID,
+  CONSTRUCT_IN_EXPLORER_ID,
+  SELF_CHECK_ID,
+  SOLUTION_SET_ID,
+} from "../../lessons/capabilities";
 import { definitionFromSnapshot } from "../../lessons/attemptSnapshot";
 import type { ExerciseDefinition, SolutionReveal as SolutionRevealData } from "../../lessons/types";
 import { ProseWithMath } from "../lesson/ProseWithMath";
@@ -33,6 +38,7 @@ export const SUPPORTED_CAPTURE_KINDS: readonly string[] = [
   MATRIX_ENTRY_ID,
   CONSTRUCT_IN_EXPLORER_ID,
   SELF_CHECK_ID,
+  SOLUTION_SET_ID,
 ];
 
 export function isCaptureSupported(item: AttemptItemSnapshot): boolean {
@@ -79,6 +85,8 @@ export function CaptureField({
       return <ConstructCapture answer={answer} onAnswer={onAnswer} />;
     case SELF_CHECK_ID:
       return <SelfCheckCapture answer={answer} onAnswer={onAnswer} />;
+    case SOLUTION_SET_ID:
+      return <SolutionSetCapture exercise={exercise} answer={answer} onAnswer={onAnswer} />;
     default:
       return (
         <p className="module-runner__unsupported">
@@ -334,6 +342,213 @@ function SelfCheckCapture({
   );
 }
 
+function solutionSetVars(exercise: ExerciseDefinition): number {
+  if (exercise.type !== "custom") return 0;
+  const config = exercise.config as SolutionSetConfig | undefined;
+  if (!config) return 0;
+  return config.variables ?? config.matrix?.[0]?.length ?? 0;
+}
+
+/**
+ * Produce a complete solution set: consistency, free-variable count, a
+ * particular solution, and one nonzero null direction per free variable. The
+ * number of directions is learner-chosen (Add / Remove) so the input NEVER
+ * reveals the expected free count, and the completed formula is never shown
+ * before commitment. Blank coordinates serialize as 0 (an explicit, gradeable
+ * value) so a reloaded draft round-trips.
+ */
+function SolutionSetCapture({
+  exercise,
+  answer,
+  onAnswer,
+}: {
+  exercise: ExerciseDefinition;
+  answer: JsonValue | undefined;
+  onAnswer: (answer: JsonValue | null) => void;
+}) {
+  const n = solutionSetVars(exercise);
+  const seedConsistent = (() => {
+    const c = readField(answer, "consistent");
+    return typeof c === "boolean" ? c : null;
+  })();
+  const seedVec = (raw: JsonValue | undefined): string[] =>
+    Array.from({ length: n }, (_, i) =>
+      Array.isArray(raw) && typeof raw[i] === "number" ? String(raw[i]) : "",
+    );
+
+  const [consistent, setConsistent] = useState<boolean | null>(seedConsistent);
+  const [freeCount, setFreeCount] = useState<string>(() => {
+    const fc = readField(answer, "freeCount");
+    return typeof fc === "number" ? String(fc) : "";
+  });
+  const [particular, setParticular] = useState<string[]>(() =>
+    seedVec(readField(answer, "particular")),
+  );
+  const [dirs, setDirs] = useState<string[][]>(() => {
+    const stored = readField(answer, "nullDirections");
+    if (Array.isArray(stored) && stored.length > 0) {
+      return stored.map((d) => seedVec(d));
+    }
+    return [];
+  });
+
+  const num = (s: string): number => {
+    const p = parseNum(s);
+    return p === null ? 0 : p;
+  };
+
+  const emit = (
+    c: boolean | null,
+    fc: string,
+    part: string[],
+    ds: string[][],
+  ) => {
+    if (c === null) {
+      onAnswer(null);
+      return;
+    }
+    if (c === false) {
+      onAnswer({ consistent: false });
+      return;
+    }
+    onAnswer({
+      consistent: true,
+      freeCount: parseNum(fc) ?? 0,
+      particular: part.map(num),
+      nullDirections: ds.map((d) => d.map(num)),
+    });
+  };
+
+  const coordRow = (
+    values: string[],
+    label: string,
+    onCoord: (index: number, value: string) => void,
+    testid: string,
+  ) => (
+    <div className="module-runner__coords" role="group" aria-label={label}>
+      {values.map((value, i) => (
+        <label key={i} className="module-runner__field">
+          <span className="module-runner__coord-label">{`x${i + 1}`}</span>
+          <input
+            type="number"
+            step="any"
+            inputMode="decimal"
+            aria-label={`${label} component ${i + 1}`}
+            data-testid={`${testid}-${i}`}
+            value={value}
+            onChange={(event) => onCoord(i, event.target.value)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="module-runner__solution-set">
+      <div className="module-runner__choices" role="group" aria-label="Does the system have solutions?">
+        <button
+          type="button"
+          className="module-runner__choice"
+          aria-pressed={consistent === true}
+          data-testid="solset-consistent"
+          onClick={() => {
+            setConsistent(true);
+            emit(true, freeCount, particular, dirs);
+          }}
+        >
+          Has solution(s)
+        </button>
+        <button
+          type="button"
+          className="module-runner__choice"
+          aria-pressed={consistent === false}
+          data-testid="solset-inconsistent"
+          onClick={() => {
+            setConsistent(false);
+            emit(false, freeCount, particular, dirs);
+          }}
+        >
+          No solution (∅)
+        </button>
+      </div>
+
+      {consistent === true && (
+        <div className="module-runner__solution-fields">
+          <label className="module-runner__field module-runner__field--inline">
+            <span className="module-runner__coord-label">Free variables</span>
+            <input
+              type="number"
+              step="1"
+              inputMode="numeric"
+              aria-label="Number of free variables"
+              data-testid="solset-freecount"
+              value={freeCount}
+              onChange={(event) => {
+                setFreeCount(event.target.value);
+                emit(true, event.target.value, particular, dirs);
+              }}
+            />
+          </label>
+
+          <p className="module-runner__answer-label">Particular solution</p>
+          {coordRow(
+            particular,
+            "Particular solution",
+            (index, value) => {
+              const next = particular.map((v, i) => (i === index ? value : v));
+              setParticular(next);
+              emit(true, freeCount, next, dirs);
+            },
+            "solset-particular",
+          )}
+
+          <p className="module-runner__answer-label">Null-space directions</p>
+          {dirs.map((dir, di) => (
+            <div key={di} className="module-runner__direction">
+              {coordRow(
+                dir,
+                `Null direction ${di + 1}`,
+                (index, value) => {
+                  const next = dirs.map((d, i) =>
+                    i === di ? d.map((v, j) => (j === index ? value : v)) : d,
+                  );
+                  setDirs(next);
+                  emit(true, freeCount, particular, next);
+                },
+                `solset-direction-${di}`,
+              )}
+              <button
+                type="button"
+                className="module-runner__mini-button"
+                data-testid={`solset-remove-${di}`}
+                onClick={() => {
+                  const next = dirs.filter((_, i) => i !== di);
+                  setDirs(next);
+                  emit(true, freeCount, particular, next);
+                }}
+              >
+                Remove direction
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="module-runner__mini-button"
+            data-testid="solset-add-direction"
+            onClick={() => {
+              const next = [...dirs, Array.from({ length: n }, () => "")];
+              setDirs(next);
+              emit(true, freeCount, particular, next);
+            }}
+          >
+            + Add null direction
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Review (after release) — read-only stored answer + AutoResult + reveal.      */
 /* -------------------------------------------------------------------------- */
@@ -384,6 +599,26 @@ function StoredAnswer({
         </span>
       );
     }
+  }
+  if (item.capabilityId === SOLUTION_SET_ID) {
+    const consistent = readField(answer, "consistent");
+    if (consistent === false) {
+      return <span className="module-runner__answer-text">No solution (∅)</span>;
+    }
+    const particular = readField(answer, "particular");
+    const dirs = readField(answer, "nullDirections");
+    const fc = readField(answer, "freeCount");
+    const fmt = (v: JsonValue | undefined): string =>
+      Array.isArray(v) ? `(${v.join(", ")})` : "—";
+    return (
+      <span className="module-runner__answer-text">
+        {typeof fc === "number" ? `${fc} free var(s); ` : ""}
+        particular {fmt(particular)}
+        {Array.isArray(dirs) && dirs.length > 0
+          ? `; directions ${dirs.map((d) => fmt(d)).join(", ")}`
+          : ""}
+      </span>
+    );
   }
   return <span className="module-runner__answer-text">(answer recorded)</span>;
 }

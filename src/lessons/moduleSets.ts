@@ -4,12 +4,14 @@
  * lesson-exercise ids plus a content `version` (bumped when the list/order
  * changes, so a released attempt records which form it administered).
  *
- * Package F wires the RUNNER; it references existing L3–L5 exercises only. The
- * real Class-A module items (fresh 3×3, timed mock, etc.) are Package G and are
- * out of scope here. Later packages register additional sets WITHOUT changing
- * the routing contract (routes identify a set id, not merely a module).
+ * Package F wired the RUNNER against existing L3–L5 exercises. Package G adds the
+ * real Class-A MODULE-OWNED items (`src/lessons/moduleItems.ts`: fresh 3×3,
+ * rectangular, transfer, diagnosis, proof) and cumulative/interleaved sets over
+ * them. Later packages register additional sets WITHOUT changing the routing
+ * contract (routes identify a set id, not merely a module).
  */
 
+import { MODULE_ITEMS } from "./moduleItems";
 import { lessons } from "./registry";
 import type { ExerciseDefinition } from "./types";
 
@@ -47,7 +49,51 @@ const SYSTEMS_ELIMINATION_REVIEW: ModuleSet = {
   ],
 };
 
-export const MODULE_SETS: readonly ModuleSet[] = [SYSTEMS_ELIMINATION_REVIEW];
+/**
+ * Package G transfer/selection/diagnosis set — interleaves method selection,
+ * unfamiliar classification, a fresh produced solution set, error diagnosis, and
+ * the proof-hypothesis item. Deterministic order; auto and human-scored items
+ * alternate so no run of one kind cues the other.
+ */
+const SYSTEMS_ELIMINATION_TRANSFER: ModuleSet = {
+  id: "systems-elimination-transfer",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — transfer & selection",
+  mode: "exam",
+  itemIds: [
+    "mod-select-method", // method selection (human)
+    "mod-transfer-classify", // unfamiliar classification (human)
+    "mod-transfer-solset-fresh", // fresh produced solution set (auto)
+    "mod-error-diagnose", // error diagnosis (human)
+    "mod-proof-hyp", // proof hypothesis (human)
+  ],
+};
+
+/**
+ * Package G cumulative / concrete P2 applied set — a fresh 3×3 with a free
+ * variable, the cumulative L4+L5 problem, and the inconsistent rectangular case
+ * (contradiction row ⇒ ∅). Together these interleave consistent parametric
+ * solutions with an inconsistent ∅ outcome.
+ */
+const SYSTEMS_ELIMINATION_APPLIED: ModuleSet = {
+  id: "systems-elimination-applied",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — cumulative & applied",
+  mode: "exam",
+  itemIds: [
+    "mod-p2-applied-3x3", // fresh 3-variable, consistent (auto)
+    "mod-cumulative-elim-solset", // cumulative L4+L5, consistent (auto)
+    "mod-p2-applied-rect", // rectangular, inconsistent ∅ (auto)
+  ],
+};
+
+export const MODULE_SETS: readonly ModuleSet[] = [
+  SYSTEMS_ELIMINATION_REVIEW,
+  SYSTEMS_ELIMINATION_TRANSFER,
+  SYSTEMS_ELIMINATION_APPLIED,
+];
 
 const moduleSetById = new Map(MODULE_SETS.map((set) => [set.id, set]));
 
@@ -59,12 +105,25 @@ export function listModuleSets(): readonly ModuleSet[] {
   return MODULE_SETS;
 }
 
-/** Index of every lesson exercise by id (across all lessons). */
+/**
+ * Index every resolvable item by id: lesson exercises (Package F sets reference
+ * these) PLUS module-owned Package G items. A duplicate id across the two sources
+ * is a content bug and fails loudly at module load.
+ */
 const exerciseById = new Map<string, ExerciseDefinition>();
+function registerExercise(exercise: ExerciseDefinition) {
+  if (exerciseById.has(exercise.id)) {
+    throw new Error(`Duplicate exercise id "${exercise.id}" across lessons/module items`);
+  }
+  exerciseById.set(exercise.id, exercise);
+}
 for (const lesson of lessons) {
   for (const exercise of lesson.exercises ?? []) {
-    exerciseById.set(exercise.id, exercise);
+    registerExercise(exercise);
   }
+}
+for (const item of MODULE_ITEMS) {
+  registerExercise(item);
 }
 
 export class ModuleSetResolutionError extends Error {}

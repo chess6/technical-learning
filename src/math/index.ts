@@ -96,6 +96,18 @@ export {
 export type { SolutionSet2x2 } from "./solutionSets";
 
 export {
+  matVec,
+  solves,
+  inNullSpace,
+  magnitudeN,
+  rref,
+  solveLinearSystem,
+  vectorSetRank,
+  areLinearlyIndependent,
+} from "./linearSystemsGeneral";
+export type { GeneralLinearSolution, Matrix, Vec } from "./linearSystemsGeneral";
+
+export {
   augmentedFromSystem,
   systemMatrix,
   systemRhs,

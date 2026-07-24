@@ -172,3 +172,40 @@
   margin: 0 0 0.5rem;
   white-space: pre-wrap;
 }
+
+.module-runner__solution-set {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.module-runner__solution-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-runner__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-runner__direction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-top: 1px dashed var(--role-border, #ddd);
+}
+
+.module-runner__mini-button {
+  align-self: flex-start;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--role-border, #ccc);
+  border-radius: 0.4rem;
+  background: var(--role-surface, #fff);
+  cursor: pointer;
+  font-size: 0.85rem;
+}

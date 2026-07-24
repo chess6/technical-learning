@@ -880,15 +880,38 @@ responses remain unscored by an author).
 - [x] **Durable save-failure warning in the reviewer queue** too (not only the runner /
   recovery surface) — a failed reviewer save never appears safely persisted (`ReviewQueue.tsx`)
 
+### Package G — Class-A module item sets (2026-07-23, on the completed Package F runner)
+
+- [x] **General (m×n) math is the source of truth** — `src/math/linearSystemsGeneral.ts`
+  (`rref`, `solveLinearSystem`, `solves`, `inNullSpace`, `vectorSetRank`,
+  `areLinearlyIndependent`); every fresh system re-verified independently
+  (`linearSystemsGeneral.test.ts`). Concrete finite systems only — no general ℝⁿ rank–nullity.
+- [x] **`solution-set` capability predicate-grades any valid parameterization** (particular
+  solves; each null direction nonzero + in Null(A); independent; correct free count; ∅ for
+  inconsistent), never revealing the expected shape (`solutionSetCapability.test.ts` — correct,
+  incorrect, field-mutation, independence, ∅)
+- [x] **Phase-correct capture for produced solution sets** — learner-chosen number of null
+  directions (free count never hinted), ∅ toggle, no pre-submit leak; review replays stored
+  answer + snapshot feedback (`captureRenderers.test.tsx`, `ModuleRunner.test.tsx`)
+- [x] **Eight items authored + registered** with human/auto split honored, versioned rubric
+  snapshots for written items, no raw array notation in prompts; two deterministic, versioned,
+  duplicate-id-guarded sets (`moduleItems.test.ts`, `moduleSets.test.ts`)
+- [x] **MC never used as the decisive object**; written reasoning/proofs route to Package F
+  human scoring; E4 items use fresh unfamiliar systems; E5 spans L4+L5; inconsistent
+  contradiction-row ∅ case included in the applied/cumulative set
+
 ### Testing review
 
 - [x] Unit + integration: `learnerState`, `persistence`, `useLearnerState`,
   `attemptSnapshot`, `moduleSets`, `reviewStatus`, `scheduler`, `captureRenderers`,
-  `ModuleRunner`, `ReviewQueue` — full `vitest` suite **580 passing / 62 files**
-- [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts` (2 tests): (1) submit →
-  `REVIEW_PENDING` → score every pending proof (finite score) → `REVIEW_COMPLETE`,
-  **persisted across reload**; (2) blank proofs stay `REVIEW_FAILED` + export/reset/import
-  recovery loop; zero console errors. Full `playwright` suite green (**48 passed**).
+  `ModuleRunner`, `ReviewQueue`, `linearSystemsGeneral`, `solutionSetCapability`,
+  `moduleItems` — full `vitest` suite **620 passing / 65 files**
+- [x] **Mandatory** e2e `e2e/assessment-runner.spec.ts` (2 tests) + `e2e/assessment-package-g.spec.ts`
+  (2 tests): (1) submit → `REVIEW_PENDING` → score every pending proof (finite score) →
+  `REVIEW_COMPLETE`, **persisted across reload**; (2) blank proofs stay `REVIEW_FAILED` +
+  export/reset/import recovery loop; (3) Package G applied set — produced solution sets + ∅
+  graded from snapshot, replay on reload; (4) Package G transfer set — written items enter
+  human-review queue; zero console errors.
 - [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from non-blocking
   `react-refresh` warnings on the provider+hook and shared `captureRenderers` modules
 

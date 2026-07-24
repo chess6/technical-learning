@@ -17,11 +17,16 @@
 
 import {
   approximatelyEqualVector,
+  areLinearlyIndependent,
   areParallel,
   classifyLinearSystem2x2,
+  inNullSpace,
   magnitude,
+  magnitudeN,
   matrixVectorMultiply,
   singleRowOperationBetween,
+  solveLinearSystem,
+  solves,
   verifiesEigenpair,
   type AugmentedSystem,
   type LinearSystemKind,
@@ -430,6 +435,84 @@ function selfCheckConfig(exercise: ExerciseDefinition): SelfCheckConfig {
     throw new Error(`self-check exercise "${exercise.id}" needs { modelAnswer } config`);
   }
   return config;
+}
+
+/* --------------------------------------------------------------------------
+ * solution-set — the learner PRODUCES a complete solution set for a concrete
+ * (m×n) system: consistency (∅ or not), the free-variable count, a particular
+ * solution, and one nonzero null direction per free variable. Predicate-graded
+ * against the general `src/math` solver so ANY valid parameterization passes
+ * (particular solves; each direction is nonzero and in Null(A); the directions
+ * are independent and number the free variables). No fixed "the" answer is
+ * required, and nothing about the expected shape is revealed by the config.
+ *
+ * Reached via `custom`. Reused for R², R³, and rectangular systems (Package G's
+ * concrete P2 slice) — deliberately NOT a general ℝⁿ rank–nullity surface.
+ * ------------------------------------------------------------------------ */
+
+export type SolutionSetConfig = {
+  /** Coefficient matrix A (m×n). */
+  matrix: readonly (readonly number[])[];
+  /** Right-hand side b (length m). */
+  rhs: readonly number[];
+  /** Variable count n (defaults to the matrix column count). */
+  variables?: number;
+  /** Absolute tolerance for solving/verification (defaults to 1e-6). */
+  tolerance?: number;
+  /** Shown after grading (always explains *why*). */
+  explanation: string;
+};
+
+export type SolutionSetAnswer = {
+  /** The learner's consistency verdict (false ⇒ ∅). */
+  consistent: boolean;
+  /** Declared number of free variables (consistent case). */
+  freeCount?: number;
+  /** A particular solution (length n) (consistent case). */
+  particular?: readonly number[];
+  /** One nonzero null direction per free variable (consistent case). */
+  nullDirections?: readonly (readonly number[])[];
+};
+
+export const SOLUTION_SET_ID = "solution-set";
+
+const SOLUTION_SET_TOLERANCE = 1e-6;
+
+function solutionSetConfig(exercise: ExerciseDefinition): SolutionSetConfig {
+  if (exercise.type !== "custom") {
+    throw new Error("solution-set requires a custom exercise");
+  }
+  const config = exercise.config as SolutionSetConfig | undefined;
+  if (
+    !config ||
+    !Array.isArray(config.matrix) ||
+    !Array.isArray(config.rhs) ||
+    typeof config.explanation !== "string"
+  ) {
+    throw new Error(
+      `solution-set exercise "${exercise.id}" needs { matrix, rhs, explanation } config`,
+    );
+  }
+  return config;
+}
+
+function decodeSolutionSetAnswer(raw: JsonValue | undefined): SolutionSetAnswer {
+  const o = decodeObject(raw, SOLUTION_SET_ID);
+  if (typeof o.consistent !== "boolean") {
+    throw new AnswerDecodeError(SOLUTION_SET_ID, `"consistent" must be a boolean`);
+  }
+  if (!o.consistent) return { consistent: false };
+  const particular = decodeNumberArray(o.particular, SOLUTION_SET_ID, "particular");
+  const dirsRaw = decodeArray(o.nullDirections ?? [], SOLUTION_SET_ID, "nullDirections");
+  const nullDirections = dirsRaw.map((d, i) =>
+    decodeNumberArray(d, SOLUTION_SET_ID, `nullDirections[${i}]`),
+  );
+  return {
+    consistent: true,
+    freeCount: decodeFiniteNumber(o.freeCount, SOLUTION_SET_ID, "freeCount"),
+    particular,
+    nullDirections,
+  };
 }
 
 /* --------------------------------------------------------------------------
@@ -1024,6 +1107,94 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
         kind: "custom",
         capabilityId: SELF_CHECK_ID,
         value: decodeSelfCheckAnswer(raw),
+      };
+    },
+  },
+
+  [SOLUTION_SET_ID]: {
+    id: SOLUTION_SET_ID,
+    answerSchemaVersion: 1,
+    grade(exercise, answer) {
+      const config = solutionSetConfig(exercise);
+      const value = decodeSolutionSetAnswer(customValue(answer, SOLUTION_SET_ID));
+      const tol = config.tolerance ?? SOLUTION_SET_TOLERANCE;
+      const A = config.matrix;
+      const b = config.rhs;
+      const n = config.variables ?? (A[0]?.length ?? 0);
+      const expected = solveLinearSystem(A, b, tol);
+
+      if (value.consistent !== expected.consistent) {
+        return {
+          correct: false,
+          feedback: expected.consistent
+            ? `Not quite — this system IS consistent (it has solutions). ${config.explanation}`
+            : `Not quite — this system is inconsistent: elimination reaches a contradiction row, so the solution set is ∅. ${config.explanation}`,
+        };
+      }
+      // Both agree it is inconsistent → a produced ∅ is the complete answer.
+      if (!expected.consistent) {
+        return { correct: true, feedback: `Correct — the system is inconsistent (∅). ${config.explanation}` };
+      }
+
+      const particular = value.particular ?? [];
+      const dirs = value.nullDirections ?? [];
+      const freeCount = expected.freeCount;
+
+      if (value.freeCount !== freeCount) {
+        return {
+          correct: false,
+          feedback: `Not quite — count the free variables again (columns without a pivot). ${config.explanation}`,
+        };
+      }
+      if (particular.length !== n || !solves(A, b, particular, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — your particular solution must satisfy $A\\mathbf{x}=\\mathbf{b}$ in every equation. ${config.explanation}`,
+        };
+      }
+      if (dirs.length !== freeCount) {
+        return {
+          correct: false,
+          feedback: `Not quite — a complete parameterization needs exactly ${freeCount} independent null direction(s). ${config.explanation}`,
+        };
+      }
+      for (const dir of dirs) {
+        if (dir.length !== n || magnitudeN(dir) <= tol) {
+          return {
+            correct: false,
+            feedback: `Not quite — each null direction must be a nonzero vector with ${n} components. ${config.explanation}`,
+          };
+        }
+        if (!inNullSpace(A, dir, tol)) {
+          return {
+            correct: false,
+            feedback: `Not quite — each null direction must satisfy $A\\mathbf{v}=\\mathbf{0}$. ${config.explanation}`,
+          };
+        }
+      }
+      if (freeCount > 0 && !areLinearlyIndependent(dirs, tol)) {
+        return {
+          correct: false,
+          feedback: `Not quite — your null directions are dependent; they must be independent to span the null space. ${config.explanation}`,
+        };
+      }
+      return { correct: true, feedback: `Correct. ${config.explanation}` };
+    },
+    serializeAnswer(answer): JsonValue {
+      const value = decodeSolutionSetAnswer(customValue(answer, SOLUTION_SET_ID));
+      if (!value.consistent) return { consistent: false };
+      return {
+        consistent: true,
+        freeCount: value.freeCount ?? 0,
+        particular: [...(value.particular ?? [])],
+        nullDirections: (value.nullDirections ?? []).map((d) => [...d]),
+      };
+    },
+    parseAnswer(raw) {
+      return {
+        kind: "custom",
+        capabilityId: SOLUTION_SET_ID,
+        value: decodeSolutionSetAnswer(raw),
       };
     },
   },

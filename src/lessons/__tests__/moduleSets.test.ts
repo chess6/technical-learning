@@ -34,3 +34,50 @@ describe("module sets", () => {
     expect(() => resolveModuleSet("nope")).toThrow(ModuleSetResolutionError);
   });
 });
+
+describe("Package G module sets", () => {
+  it("registers the transfer and applied sets with explicit versions", () => {
+    for (const id of ["systems-elimination-transfer", "systems-elimination-applied"]) {
+      const set = getModuleSet(id);
+      expect(set, id).toBeDefined();
+      expect(set?.moduleId).toBe("systems-elimination");
+      expect(set?.mode).toBe("exam");
+      expect(typeof set?.version).toBe("number");
+      expect(set?.version).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("resolves every Package G item id, in deterministic authored order", () => {
+    const transfer = resolveModuleSet("systems-elimination-transfer");
+    expect(transfer.items.map((e) => e.id)).toEqual([
+      "mod-select-method",
+      "mod-transfer-classify",
+      "mod-transfer-solset-fresh",
+      "mod-error-diagnose",
+      "mod-proof-hyp",
+    ]);
+    const applied = resolveModuleSet("systems-elimination-applied");
+    expect(applied.items.map((e) => e.id)).toEqual([
+      "mod-p2-applied-3x3",
+      "mod-cumulative-elim-solset",
+      "mod-p2-applied-rect",
+    ]);
+  });
+
+  it("has unique set ids across all registered sets", () => {
+    const ids = listModuleSets().map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("mixes auto-graded solution-set items with human-scored writing", () => {
+    const transfer = resolveModuleSet("systems-elimination-transfer");
+    const human = transfer.items.filter(
+      (e) => e.type === "custom" && e.capabilityId === "self-check",
+    );
+    const auto = transfer.items.filter(
+      (e) => e.type === "custom" && e.capabilityId === "solution-set",
+    );
+    expect(human.length).toBeGreaterThan(0);
+    expect(auto.length).toBeGreaterThan(0);
+  });
+});

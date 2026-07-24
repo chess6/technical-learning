@@ -84,3 +84,82 @@ describe("ModuleRunner deferred feedback", () => {
     expect(onAttemptReleased).toHaveBeenCalledTimes(1);
   });
 });
+
+const APPLIED = "systems-elimination-applied";
+
+function fillCoord(scope: HTMLElement, testid: string, value: string) {
+  fireEvent.change(scope.querySelector<HTMLInputElement>(`[data-testid="${testid}"]`)!, {
+    target: { value },
+  });
+}
+
+function fillConsistentSolset(
+  scope: HTMLElement,
+  freeCount: string,
+  particular: string[],
+  direction: string[],
+) {
+  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="solset-consistent"]')!);
+  fillCoord(scope, "solset-freecount", freeCount);
+  particular.forEach((v, i) => fillCoord(scope, `solset-particular-${i}`, v));
+  fireEvent.click(scope.querySelector<HTMLButtonElement>('[data-testid="solset-add-direction"]')!);
+  direction.forEach((v, i) => fillCoord(scope, `solset-direction-0-${i}`, v));
+}
+
+describe("ModuleRunner — Package G solution-set set", () => {
+  it("captures produced solution sets without leaking, grades on submit, replays on reload", async () => {
+    const first = renderRunner(<ModuleRunner setId={APPLIED} />);
+    const container = first.container;
+    await waitFor(() =>
+      expect(container.querySelector('[data-exercise="mod-p2-applied-3x3"]')).toBeTruthy(),
+    );
+
+    const it3 = container.querySelector<HTMLElement>('[data-exercise="mod-p2-applied-3x3"]')!;
+    const itCum = container.querySelector<HTMLElement>(
+      '[data-exercise="mod-cumulative-elim-solset"]',
+    )!;
+    const itRect = container.querySelector<HTMLElement>('[data-exercise="mod-p2-applied-rect"]')!;
+
+    fillConsistentSolset(it3, "1", ["2", "-3", "0"], ["-1", "3", "1"]);
+    fillConsistentSolset(itCum, "1", ["-2", "8", "0"], ["1", "-2", "1"]);
+    // The rectangular system is inconsistent → produce the ∅ verdict.
+    fireEvent.click(itRect.querySelector<HTMLButtonElement>('[data-testid="solset-inconsistent"]')!);
+
+    // Nothing is graded/revealed before submit.
+    expect(container.querySelector(".module-runner__feedback[data-state]")).toBeNull();
+    expect(container.querySelector('[data-testid="review-status"]')).toBeNull();
+
+    fireEvent.click(container.querySelector('[data-testid="module-submit"]')!);
+
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    // All three auto items graded correct.
+    for (const id of [
+      "mod-p2-applied-3x3",
+      "mod-cumulative-elim-solset",
+      "mod-p2-applied-rect",
+    ]) {
+      const el = container.querySelector<HTMLElement>(`[data-exercise="${id}"]`)!;
+      expect(
+        el.querySelector(".module-runner__feedback")!.getAttribute("data-state"),
+        id,
+      ).toBe("correct");
+    }
+    first.unmount();
+
+    // Reload: a fresh provider replays the released attempt from the snapshot.
+    const second = renderRunner(<ModuleRunner setId={APPLIED} />);
+    await waitFor(() =>
+      expect(second.container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    const rectReloaded = second.container.querySelector<HTMLElement>(
+      '[data-exercise="mod-p2-applied-rect"]',
+    )!;
+    expect(rectReloaded.textContent).toMatch(/No solution|∅/);
+    expect(rectReloaded.querySelector(".module-runner__feedback")!.getAttribute("data-state")).toBe(
+      "correct",
+    );
+    second.unmount();
+  });
+});
