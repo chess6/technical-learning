@@ -14,15 +14,15 @@
 .linearity-comparison__panel {
   margin: 0;
   padding: var(--space-3);
-  border: 1px solid var(--color-border, #e3ded3);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
-  background: var(--color-surface, #fffdf8);
+  background: var(--color-surface);
 }
 
 .linearity-comparison__title {
   font-weight: 650;
   font-size: var(--text-sm);
-  color: var(--color-text, #26221b);
+  color: var(--color-text);
   margin-bottom: var(--space-2);
 }
 
@@ -47,11 +47,11 @@
 }
 
 .linearity-comparison__facts li[data-ok="true"] span {
-  color: var(--role-basis-1, #3b8f52);
+  color: var(--role-basis-1);
   font-weight: 700;
 }
 
 .linearity-comparison__facts li[data-ok="false"] span {
-  color: var(--role-result, #e87a9a);
+  color: var(--role-result);
   font-weight: 700;
 }

@@ -74,9 +74,17 @@ Key entry points:
 - **Build a lesson:** [docs/authoring/lesson-design.md](docs/authoring/lesson-design.md)
   (orchestrator); route any course/lesson request through
   [docs/authoring/course-authoring-workflow.md](docs/authoring/course-authoring-workflow.md).
-- **Visual system:** [docs/product/visual-language.md](docs/product/visual-language.md)
-  (visual direction; code owns token values). The light-first page refinement is
-  kept as historical reference in
+- **Visual system:** the identity is **"Observatory"** — the reading surface is
+  the same ink the mathematics is drawn on, so a figure is continuous with its
+  page instead of a bright cut-out. Code owns the values:
+  [src/styles/tokens.css](src/styles/tokens.css) (its header states the
+  direction), enforced by
+  [src/styles/\_\_tests\_\_/designSystem.test.ts](src/styles/__tests__/designSystem.test.ts)
+  (no undefined tokens, no raw hex outside the token file, WCAG contrast floor)
+  and [e2e/visual-identity.spec.ts](e2e/visual-identity.spec.ts) (the same claims
+  measured in a browser). Per-primitive visual direction for algorithm lessons:
+  [docs/product/visual-language.md](docs/product/visual-language.md). The earlier
+  light-first page refinement is kept as historical reference in
   [docs/archive/milestones/visual-design-refinement.md](docs/archive/milestones/visual-design-refinement.md).
 - **Math & visualization correctness:**
   [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md) +

@@ -2,7 +2,13 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-page-bg);
+  /* The shell is transparent: the page's aurora ground shows through, so the
+     chrome floats on the same sky the figures are drawn on. */
+  background: transparent;
+  /* Atmospheric decoration is allowed to bleed past the content column, but it
+     must never push the document sideways. `clip` (not `hidden`) keeps the
+     vertical scroll and the sticky header/sidebar behaving normally. */
+  overflow-x: clip;
 }
 
 .app-shell__header {
@@ -12,11 +18,24 @@
   min-height: var(--header-height);
   padding: var(--space-3) var(--space-6);
   border-bottom: 1px solid var(--color-divider);
-  background: color-mix(in srgb, var(--color-page-bg) 88%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--color-page-bg) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
   position: sticky;
   top: 0;
   z-index: 30;
+}
+
+/* A single lit hairline under the header — the horizon line of the page. */
+.app-shell__header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--gradient-rule);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .app-shell__menu {
@@ -30,13 +49,14 @@
   color: var(--color-text);
   font-size: var(--text-sm);
   font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
 }
 
 .app-shell__brand {
   display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
+  align-items: baseline;
+  gap: var(--space-3);
   line-height: 1.05;
   color: var(--color-text);
   text-decoration: none;
@@ -58,8 +78,9 @@
 .app-shell__brand-sub {
   font-family: var(--font-sans);
   font-size: var(--text-xs);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
   color: var(--color-text-faint);
 }
 
@@ -87,6 +108,12 @@
     display: inline-flex;
   }
 
+  /* The wordmark keeps the row; its descriptor is the first thing to go so the
+     header never overflows a phone viewport. */
+  .app-shell__brand-sub {
+    display: none;
+  }
+
   .app-shell__body {
     grid-template-columns: 1fr;
   }
@@ -97,7 +124,8 @@
     inset: 0;
     z-index: 35;
     border: 0;
-    background: rgb(31 43 56 / 0.32);
+    background: rgb(4 8 14 / 0.62);
+    backdrop-filter: blur(2px);
     cursor: pointer;
   }
 

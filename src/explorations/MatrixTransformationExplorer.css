@@ -28,7 +28,7 @@
   margin: 0;
   padding: var(--space-3) var(--space-4);
   border-left: 3px solid var(--role-selected);
-  background: var(--color-surface-muted, #f8f6f1);
+  background: var(--color-surface-muted);
   border-radius: 0 0.4rem 0.4rem 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);

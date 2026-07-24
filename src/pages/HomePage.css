@@ -1,32 +1,100 @@
+/* Home / course landing — the identity surface ("Observatory", 2026-07-24).
+ *
+ * Three movements: an aurora-lit hero, the three-verb promise as a filmstrip,
+ * and the chapter SPINE — one continuous thread with a lit node per chapter,
+ * the same figure the course sidebar draws. */
+
 .home-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-10);
-  padding-top: var(--space-4);
+  gap: var(--space-12);
+  padding-top: var(--space-2);
 }
 
+/* ---- Hero ---------------------------------------------------------------- */
+
 .home-page__hero {
-  max-width: 42rem;
+  position: relative;
+  max-width: 46rem;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  padding: var(--space-8) 0 var(--space-10);
+}
+
+/* The light source. Sits behind the hero text, never behind body prose. */
+.home-page__aurora {
+  position: absolute;
+  z-index: -1;
+  top: -14rem;
+  left: -22rem;
+  right: -14rem;
+  height: 42rem;
+  background:
+    radial-gradient(38rem 22rem at 30% 55%, var(--aurora-1), transparent 68%),
+    radial-gradient(32rem 20rem at 68% 40%, var(--aurora-2), transparent 66%),
+    radial-gradient(26rem 16rem at 52% 78%, var(--aurora-3), transparent 70%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.home-page__eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--role-original);
 }
 
 .home-page__title {
   font-family: var(--font-display);
-  font-size: var(--text-4xl);
-  letter-spacing: -0.02em;
+  font-size: var(--text-display);
+  line-height: 0.98;
+  letter-spacing: var(--tracking-display);
+  /* Solid ink first; the gradient is an enhancement, so an engine without
+     background-clip still gets full-contrast text. */
+  color: var(--color-text);
+  background: linear-gradient(168deg, #ffffff 12%, #cfe4f4 58%, #9fc6e2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .home-page__lede {
+  max-width: 38rem;
   color: var(--color-text-muted);
   font-size: var(--text-lg);
   line-height: var(--leading-relaxed);
+  text-wrap: pretty;
 }
 
 .home-page__cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
   margin: var(--space-2) 0 0;
+  flex-wrap: wrap;
 }
+
+.home-page__cta-secondary {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-divider-strong);
+  padding-bottom: 2px;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.home-page__cta-secondary:hover {
+  color: var(--color-text);
+  border-color: var(--role-original);
+  text-decoration: none;
+}
+
+/* ---- The three-verb promise ---------------------------------------------- */
 
 .home-page__flow {
   margin: 0;
@@ -38,29 +106,61 @@
 }
 
 .home-page__flow-step {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-6);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background:
+    var(--gradient-lit),
+    var(--color-surface-subtle);
   border: 1px solid var(--color-divider);
+  overflow: hidden;
+}
+
+/* Each step is tagged with a role color, in the course's own reading order. */
+.home-page__flow-step::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--step-color, var(--role-original));
+  opacity: 0.85;
+}
+
+.home-page__flow-step:nth-child(1) {
+  --step-color: var(--role-original);
+}
+
+.home-page__flow-step:nth-child(2) {
+  --step-color: var(--role-basis-1);
+}
+
+.home-page__flow-step:nth-child(3) {
+  --step-color: var(--role-transformed);
 }
 
 .home-page__flow-index {
   font-family: var(--font-display);
-  font-size: var(--text-sm);
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--color-text-faint);
+  line-height: 1;
+  color: var(--step-color, var(--role-original));
+  opacity: 0.9;
 }
 
 .home-page__flow-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
   font-weight: 600;
+  color: var(--color-text);
 }
 
 .home-page__flow-body {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+  line-height: var(--leading-snug);
 }
 
 @media (max-width: 640px) {
@@ -69,13 +169,44 @@
   }
 }
 
+/* ---- The chapter spine ---------------------------------------------------- */
+
+.home-page__list-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin-bottom: calc(var(--space-6) * -1 + var(--space-2));
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
+}
+
 .home-page__list {
+  position: relative;
   margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
+}
+
+/* One thread through every chapter, fading out past the built surface. */
+.home-page__list::before {
+  content: "";
+  position: absolute;
+  top: 1.6rem;
+  bottom: 1.6rem;
+  left: calc(var(--space-5) + 1.25rem);
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--role-original) 60%, transparent),
+    var(--color-divider) 55%,
+    transparent
+  );
+  pointer-events: none;
 }
 
 .home-page__item {
@@ -83,13 +214,16 @@
 }
 
 .home-page__link {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-5);
+  gap: var(--space-5);
+  padding: var(--space-5);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-divider);
-  background: var(--color-surface-raised);
+  background:
+    var(--gradient-lit),
+    var(--color-surface-raised);
   box-shadow: var(--shadow-sm);
   color: inherit;
   text-decoration: none;
@@ -99,35 +233,61 @@
     transform var(--duration-fast) var(--ease-out);
 }
 
-.home-page__link:hover {
+.home-page__link:hover,
+.home-page__link:focus-visible {
   text-decoration: none;
-  border-color: var(--color-divider-strong);
-  box-shadow: var(--shadow-card);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--role-original) 45%, var(--color-divider));
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-2px);
 }
 
 .home-page__link:hover .home-page__lesson-title {
-  color: var(--color-primary);
+  color: var(--color-accent-strong);
 }
 
+.home-page__link:hover .home-page__index {
+  border-color: var(--role-original);
+  color: var(--color-on-accent);
+  background: var(--role-original);
+  box-shadow: 0 0 20px rgb(126 197 230 / 0.45);
+}
+
+/* The numeral is the lit node on the thread — opaque so the line runs behind it. */
 .home-page__index {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
-  background: var(--tint-blue);
-  color: var(--color-primary);
+  border: 1px solid var(--color-divider-strong);
+  background: var(--color-surface-subtle);
+  color: var(--color-accent);
+  font-family: var(--font-display);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.home-page__motif {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .home-page__link-text {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 0;
 }
 
@@ -135,16 +295,29 @@
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 600;
+  letter-spacing: -0.012em;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
 .home-page__lesson-sub {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+  line-height: var(--leading-snug);
 }
 
 .home-page__dev-link {
   margin-top: var(--space-4);
   font-size: var(--text-sm);
   color: var(--color-text-faint);
+}
+
+@media (max-width: 640px) {
+  .home-page__list::before {
+    display: none;
+  }
+
+  .home-page__link {
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
 }

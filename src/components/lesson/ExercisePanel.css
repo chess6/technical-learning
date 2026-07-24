@@ -22,7 +22,7 @@
 
 .exercise-panel__tier {
   font-weight: 500;
-  color: var(--color-text-faint, #9aa6b5);
+  color: var(--color-text-faint);
 }
 
 .exercise-panel__hints {
@@ -164,7 +164,7 @@
 .exercise-panel__choice[data-state="correct"] .exercise-panel__choice-letter {
   border-color: var(--color-success);
   background: var(--color-success);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 
 .exercise-panel__choice[data-state="incorrect"] {
@@ -175,7 +175,7 @@
 .exercise-panel__choice[data-state="incorrect"] .exercise-panel__choice-letter {
   border-color: var(--color-error);
   background: var(--color-error);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 
 /* ---- Numeric / vector inputs ---- */

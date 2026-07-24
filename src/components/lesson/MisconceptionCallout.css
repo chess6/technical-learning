@@ -1,8 +1,8 @@
 .misconception-callout {
   margin: 1rem 0;
   padding: 0.9rem 1rem;
-  border-left: 3px solid var(--role-invariant, #f0879f);
-  background: var(--color-surface-muted, #f8f6f1);
+  border-left: 3px solid var(--role-invariant);
+  background: var(--color-surface-muted);
   border-radius: 0 0.5rem 0.5rem 0;
 }
 
@@ -31,7 +31,7 @@
 
 .misconception-callout__label {
   font-weight: 650;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .misconception-callout__visual {

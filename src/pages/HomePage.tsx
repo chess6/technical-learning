@@ -23,6 +23,9 @@ export function HomePage() {
   return (
     <div className="home-page">
       <header className="home-page__hero">
+        {/* Decorative aurora field — the page is lit from where the mathematics is. */}
+        <div className="home-page__aurora" aria-hidden="true" />
+        <p className="home-page__eyebrow">Visual course · {lessons.length} chapters built</p>
         <h1 className="home-page__title">Linear Algebra</h1>
         <p className="home-page__lede">
           A visual proof of concept: geometric intuition first, symbols second.
@@ -35,6 +38,9 @@ export function HomePage() {
           <Link to={`/lesson/${lessons[0]!.id}`} className="btn btn--primary">
             Start with Chapter 0
           </Link>
+          <a className="home-page__cta-secondary" href="#chapters">
+            Browse the chapters
+          </a>
         </p>
       </header>
 
@@ -50,6 +56,9 @@ export function HomePage() {
         ))}
       </ol>
 
+      <h2 className="home-page__list-heading" id="chapters">
+        Chapters
+      </h2>
       <ol className="home-page__list" aria-label="Lessons, in recommended order">
         {lessons.map((lesson) => (
           <li key={lesson.id} className="home-page__item">
@@ -57,7 +66,11 @@ export function HomePage() {
               <span className="home-page__index" aria-hidden="true">
                 {getLessonNumber(lesson.id)}
               </span>
-              <LessonPreviewIcon lessonId={lesson.id} />
+              {/* Fixed slot: lessons without a motif keep the titles aligned
+                  down the spine instead of sliding left. */}
+              <span className="home-page__motif" aria-hidden="true">
+                <LessonPreviewIcon lessonId={lesson.id} />
+              </span>
               <span className="home-page__link-text">
                 <span className="home-page__lesson-title">{lesson.title}</span>
                 <span className="home-page__lesson-sub">{lesson.subtitle}</span>

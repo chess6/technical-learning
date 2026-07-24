@@ -1187,3 +1187,77 @@ supersedes are corrected here rather than edited in place.
   **54 Playwright specs** green including both `assessment-mock` specs.
 - [x] Gate posture **unchanged**: Package I remains BUILT, machinery-verified, **not
   administered**; **Gate 9 stays NOT PASSED**; S3 still requires real administration.
+
+---
+
+## Visual identity — "Observatory" inversion (2026-07-24, product-wide vertical slice)
+
+A **dramatic visual redesign**, built (not specified): the reading surface is inverted to
+the same ink the mathematics is already drawn on. Every visualization in this product
+renders on `--color-canvas` with the `--role-*` palette tuned for dark; the page was warm
+ivory, so each figure read as a bright rectangle punched into a different world. The
+identity makes the figure **continuous with its page**, and promotes the role palette from
+"colors quarantined inside canvases" to the product's own palette.
+
+**This pass changed no lesson content, no math, and no visualization geometry** — only how
+surfaces are lit. Role→meaning bindings are untouched.
+
+### Slice (entry path, end to end)
+
+- [x] **Token layer** (`src/styles/tokens.css`) — ink surfaces, warm-ivory ink, role-derived
+  accents, `--color-on-accent` (ink for text on a luminous fill), atmosphere tokens
+  (`--aurora-*`, `--gradient-rule`, `--gradient-lit`), fluid display sizes
+  (`--text-display`, `--text-display-sm`) and optical tracking. **Token NAMES are unchanged**,
+  so component CSS inherited the identity without edits; the file header states the direction
+  (per `vision.md`, the code owns the values).
+- [x] **App shell** (`AppShell.css`) — translucent ink header over a lit horizon hairline
+  (`--gradient-rule`); the shell itself is transparent so the page's aurora reads through;
+  `overflow-x: clip` so atmospheric bleed can never push the document sideways.
+- [x] **Course spine** (`CourseSidebar.css`) — the chapter list is drawn as one continuous
+  thread with opaque numerals sitting **on** it; the current chapter is *lit* (inner role-tinted
+  ring + elevation), not merely filled.
+- [x] **Home** (`HomePage.tsx/.css`) — aurora-lit hero with an eyebrow and oversized display
+  wordmark, the three-verb promise as role-tagged panels, and the chapter spine (lit node per
+  chapter, motif in a fixed slot so titles align). New DOM is additive; the `h1`, the
+  `Start with Chapter 0` link, and `.home-page__list` are unchanged for existing e2e.
+- [x] **Lesson entry** (`LessonHeader.css`) — display-scale title, lit chapter node echoing the
+  spine, and a header that ends in a lit rule rather than a border.
+
+### Identity hygiene found and fixed by the new contracts
+
+- [x] **`--color-surface-muted` was never defined** — five components read
+  `var(--color-surface-muted, #f8f6f1)`, so a cream panel would have shipped on the ink page.
+  Now defined; the same check found `--guided-scene-standalone-max` and
+  `--color-canvas-text-muted` undefined.
+- [x] **The dev assessment runner had a whole undefined namespace** (`--role-surface`,
+  `--role-border`, `--role-accent`, `--role-danger`, …) whose light fallbacks (`#fff`, `#ccc`)
+  were what actually rendered; `ModuleRunner.css` now reads the real semantic tokens.
+- [x] **Dead light-mode fallbacks stripped** across 18 stylesheets (`var(--token, #hex)` →
+  `var(--token)`), so the token file is genuinely authoritative.
+- [x] **White-on-luminous-fill corrected** — the primary button, correct/incorrect choice
+  letters, the active derivation step, and the handoff CTA now use `--color-on-accent` (dark
+  ink on light), which is what the contrast floor requires on this palette.
+
+### Testing review
+
+- [x] `src/styles/__tests__/designSystem.test.ts` (new, 8 tests) — a stylesheet-level contract:
+  every custom property read by a component is defined somewhere (the failure mode above is
+  now impossible to reintroduce silently), no raw hex outside `tokens.css` (two documented
+  exceptions), and a **computed WCAG floor**: body ink ≥ AAA (7:1) on page/raised/subtle,
+  muted + faint ink ≥ AA, `--color-on-accent` ≥ AA on every luminous fill, role colors ≥ AA as
+  text on the page, and the canvas within 1.35:1 of the page ground (the continuity claim).
+  Mutation-checked: restoring the old dark body ink fails it.
+- [x] `e2e/visual-identity.spec.ts` (new, 3 specs) — the same claims measured from **computed
+  styles in a browser**, not pixels (a screenshot test would fail on any copy edit and pass on
+  a light-fallback regression): the page ground is ink and the lede clears AAA against it; the
+  primary action is the brightest thing on the page with dark ink on it; **the guided-scene
+  canvas and the page ground are within 1.6:1** (before the inversion this was ~15:1); and at a
+  390 px viewport nothing overflows horizontally. Saves `identity-home.png`,
+  `identity-lesson.png`, `identity-home-narrow.png` to `screenshots/`.
+- [x] Verified at package tier: `./check.sh --e2e` — oxlint clean (pre-existing non-blocking
+  `react-refresh` warnings only), `tsc -b` clean, **815 unit tests / 75 files**, **57
+  Playwright specs**. Every pre-existing lesson, assessment, semantics, and reduced-motion spec
+  passes **unchanged** — the inversion is carried by tokens, not by rewriting components.
+- [x] Visually reviewed at 1440 px and 390 px across home, L1/L3/L4 lessons, the Karatsuba
+  worked example, the eigen surfaces, and the dev module runner: no light-mode remnants, no
+  unreadable text, KaTeX inherits the ink.

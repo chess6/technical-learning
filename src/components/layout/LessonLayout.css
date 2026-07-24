@@ -17,8 +17,8 @@
   gap: var(--space-2);
   padding: 0.75rem 1.5rem;
   border-radius: 0.6rem;
-  background: var(--role-basis-1, #3b8f52);
-  color: #fff;
+  background: var(--role-basis-1);
+  color: var(--color-on-accent);
   font-weight: 650;
   font-size: 1.02rem;
   text-decoration: none;
@@ -41,12 +41,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
 }
 
 /* Formal statement wrapper (anchor target for the table of contents). */
 .lesson-layout__formal {
-  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
 }
 
 /* ============================================================
@@ -58,7 +58,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  scroll-margin-top: calc(var(--header-height, 0px) + var(--space-4));
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
 }
 
 /* Programmatic focus after a TOC jump should not draw a persistent ring. */
@@ -180,7 +180,7 @@
 .lesson-layout__viz--standalone {
   flex: 1 1 100%;
   width: 100%;
-  max-width: var(--guided-scene-standalone-max, 60rem);
+  max-width: var(--guided-scene-standalone-max);
   margin-inline: auto;
 }
 

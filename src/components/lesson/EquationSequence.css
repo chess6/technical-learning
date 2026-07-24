@@ -7,7 +7,7 @@
   gap: 0.35rem;
   /* A single restrained rule groups the lines as one derivation without
      card-per-equation heaviness. */
-  border-left: 2px solid var(--color-divider, #e5e7eb);
+  border-left: 2px solid var(--color-divider);
   padding-left: 1rem;
 }
 

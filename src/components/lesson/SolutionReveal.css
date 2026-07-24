@@ -4,8 +4,8 @@
   margin-top: 0.75rem;
   padding: 0.85rem 1rem;
   border-radius: 0.55rem;
-  background: var(--color-surface-muted, #f8f6f1);
-  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
 }
 
 @media (min-width: 900px) {
@@ -28,7 +28,7 @@
 
 .solution-reveal__label {
   font-weight: 650;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .solution-reveal__visual {
@@ -37,7 +37,7 @@
 
 .solution-reveal__loading {
   margin: 0;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 

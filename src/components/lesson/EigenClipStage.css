@@ -43,6 +43,6 @@
   min-height: 12rem;
   padding: var(--space-4);
   background: var(--color-surface-subtle);
-  border-radius: var(--radius-md, 0.5rem);
+  border-radius: var(--radius-md);
   color: var(--color-text);
 }

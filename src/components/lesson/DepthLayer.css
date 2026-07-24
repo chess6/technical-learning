@@ -6,9 +6,9 @@
 }
 
 .depth-layer {
-  border: 1px solid var(--color-border, #e5e7eb);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
-  background: var(--color-surface-muted, #f8f6f1);
+  background: var(--color-surface-muted);
   padding: 0.35rem 0.75rem;
 }
 
@@ -31,17 +31,17 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
 }
 
 .depth-layer__title {
   font-size: 0.95rem;
-  color: var(--color-text, #1a1f2e);
+  color: var(--color-text);
 }
 
 .depth-layer__body {
   padding: 0.25rem 0 0.55rem;
   font-size: 0.95rem;
   line-height: 1.55;
-  color: var(--color-text, #1a1f2e);
+  color: var(--color-text);
 }

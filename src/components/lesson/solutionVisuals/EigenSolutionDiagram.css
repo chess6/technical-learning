@@ -21,7 +21,7 @@
 
 .eigen-solution-diagram__readout dt {
   margin: 0;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -30,5 +30,5 @@
 .eigen-solution-diagram__readout dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text, #1a1f2e);
+  color: var(--color-text);
 }
