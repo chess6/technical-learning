@@ -37,7 +37,12 @@ import {
   resolveModuleSet,
 } from "../../lessons/moduleSets";
 import { snapshotItem, definitionFromSnapshot, gradeSnapshot } from "../../lessons/attemptSnapshot";
-import { formatRemaining, isExpired, remainingSec } from "../../lessons/timeBox";
+import {
+  formatRemaining,
+  governingTimeLimitSec,
+  isExpired,
+  remainingSec,
+} from "../../lessons/timeBox";
 import { reviewStatus } from "../../lessons/reviewStatus";
 import { ProseWithMath } from "../lesson/ProseWithMath";
 import { CaptureField, ReviewAnswer, readField } from "./captureRenderers";
@@ -106,6 +111,11 @@ export function ModuleRunner({
         moduleId: resolved.set.moduleId,
         mode: resolved.set.mode,
         items: snapshots,
+        // The time limit is SNAPSHOTTED with the form, exactly like `setVersion`:
+        // a later registry edit must not change a limit already being served.
+        ...(resolved.set.timeLimitSec !== undefined
+          ? { timeLimitSec: resolved.set.timeLimitSec }
+          : {}),
         ...(scheduledReviewId ? { scheduledReviewId } : {}),
       }),
     );
@@ -113,9 +123,13 @@ export function ModuleRunner({
 
   // ── Timed mock (Package I) ────────────────────────────────────────────────
   // A 1 Hz clock drives the countdown and auto-submit. The deadline is derived
-  // from the attempt's persisted `startedAt` + the set's `timeLimitSec`, so a
-  // reload past the deadline auto-submits immediately (elapsed time is honest).
-  const timeLimitSec = resolved.ok ? resolved.set.timeLimitSec : undefined;
+  // from the attempt's persisted `startedAt` + the limit SNAPSHOTTED on the
+  // attempt, so a reload past the deadline auto-submits immediately (elapsed time
+  // is honest) and a registry edit never moves a running attempt's deadline.
+  const timeLimitSec = governingTimeLimitSec(
+    attempt?.timeLimitSec,
+    resolved.ok ? resolved.set.timeLimitSec : undefined,
+  );
   const timedActive =
     timeLimitSec !== undefined && attempt !== undefined && attempt.status !== "released";
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -127,15 +141,16 @@ export function ModuleRunner({
 
   // Auto-submit once when the deadline passes (or immediately on a past-deadline
   // reload). `submitRef` holds the latest `submit`, which is defined after the
-  // early returns below.
-  const submitRef = useRef<(auto: boolean) => void>(() => {});
+  // early returns below. `submit` re-derives auto-vs-manual from the clock, so the
+  // tick only decides WHEN to submit — never whether it counts as automatic.
+  const submitRef = useRef<() => void>(() => {});
   const autoSubmittedRef = useRef(false);
   useEffect(() => {
     if (!timedActive || attempt === undefined || timeLimitSec === undefined) return;
     if (autoSubmittedRef.current) return;
     if (isExpired(attempt.startedAt, timeLimitSec, new Date(nowMs))) {
       autoSubmittedRef.current = true;
-      submitRef.current(true);
+      submitRef.current();
     }
   }, [timedActive, attempt, timeLimitSec, nowMs]);
 
@@ -171,10 +186,16 @@ export function ModuleRunner({
     !!attempt.scheduledReviewId &&
     state.spacedReviews[attempt.scheduledReviewId]?.completedInAttemptSetId !== attempt.id;
 
-  const submit = (autoSubmitted = false) => {
+  const submit = () => {
     // ONE canonical release timestamp for the attempt, the cohort anchor, the
     // scheduler summary, and every computed dueAt (reviewer-mandated alignment).
-    const releasedAt = new Date().toISOString();
+    const now = new Date();
+    const releasedAt = now.toISOString();
+    // The DEADLINE decides automatic-vs-manual, not which control fired: a click
+    // that lands at or after the deadline (a stale/throttled tick, a click racing
+    // the 1 Hz clock) is an automatic submission and is recorded as one.
+    const autoSubmitted =
+      timeLimitSec !== undefined && isExpired(attempt.startedAt, timeLimitSec, now);
     submitAttemptSet(attempt.id);
     const reviews: ReviewRecord[] = [];
     const responses: AttemptItemResponse[] = attempt.items.map((item) => {
@@ -258,6 +279,11 @@ export function ModuleRunner({
   // Countdown value for a live timed set (null when untimed).
   const remaining =
     timeLimitSec !== undefined ? remainingSec(attempt.startedAt, timeLimitSec, new Date(nowMs)) : null;
+  // Once expiration has been OBSERVED, manual submission is closed: the only
+  // submission left is the automatic one. (`submit` independently re-checks the
+  // clock, so a click in the sub-tick window before this flips is still recorded
+  // as automatic — this disables the control, it does not decide the semantics.)
+  const expirationObserved = remaining === 0;
 
   return (
     <section className="module-runner" aria-label="Module assessment" data-status={attempt.status}>
@@ -339,9 +365,10 @@ export function ModuleRunner({
               type="button"
               className="btn btn--primary"
               data-testid="module-submit"
-              onClick={() => submit(false)}
+              disabled={expirationObserved}
+              onClick={() => submit()}
             >
-              Submit attempt
+              {expirationObserved ? "Time's up — submitting…" : "Submit attempt"}
             </button>
           </div>
         </>

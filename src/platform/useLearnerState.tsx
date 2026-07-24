@@ -152,9 +152,19 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
   const phaseRef = useRef(phase);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
+  /**
+   * Phase transitions are mirrored into `phaseRef` SYNCHRONOUSLY, not in an
+   * effect. React commits child effects before parent effects, so a consumer
+   * effect that fires in the very commit where hydration flips `phase` to
+   * "ready" (the runner creating an attempt, or auto-submitting an already-
+   * expired timed attempt on reload) would otherwise read a stale "loading" and
+   * have its write silently dropped by `persist` — the transition would live in
+   * memory only and be lost on the next reload.
+   */
+  const applyPhase = useCallback((next: HydrationPhase) => {
+    phaseRef.current = next;
+    setPhase(next);
+  }, []);
 
   // Hydrate once, before any save is armed.
   useEffect(() => {
@@ -163,14 +173,15 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
     if (outcome.kind === "loaded") {
       stateRef.current = outcome.state;
       setState(outcome.state);
-      setPhase("ready");
+      applyPhase("ready");
     } else if (outcome.kind === "empty") {
-      setPhase("ready");
+      applyPhase("ready");
     } else {
       // incompatible | corrupt → in-memory session, but never persist over it.
-      setPhase("read-only");
+      applyPhase("read-only");
     }
-  }, []);
+    // `applyPhase` is stable (useCallback []) — hydration still runs exactly once.
+  }, [applyPhase]);
 
   // Flush any pending debounced save on unmount.
   useEffect(() => {
@@ -491,26 +502,26 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
       if (outcome.kind === "loaded") {
         stateRef.current = outcome.state;
         setState(outcome.state);
-        setPhase("ready");
+        applyPhase("ready");
         setLoadOutcome(outcome);
         const ok = saveLearnerState(outcome.state);
         setSaveFailed(!ok);
       }
       return outcome;
     },
-    [],
+    [applyPhase],
   );
 
   const resetState = useCallback(() => {
     const fresh = createEmptyLearnerState();
     stateRef.current = fresh;
     setState(fresh);
-    setPhase("ready");
+    applyPhase("ready");
     setLoadOutcome({ kind: "empty" });
     clearLearnerState();
     const ok = saveLearnerState(fresh);
     setSaveFailed(!ok);
-  }, []);
+  }, [applyPhase]);
 
   const value = useMemo<LearnerStateContextValue>(
     () => ({

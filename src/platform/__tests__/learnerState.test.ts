@@ -419,3 +419,82 @@ describe("module-assessment collections (v2)", () => {
     expect(Object.keys(state.reviews)).toEqual(["review-1"]);
   });
 });
+
+/* Package I — timer integrity on the persisted attempt (review findings 1 + 3). */
+describe("timed attempts (Package I)", () => {
+  const snapshot: AttemptItemSnapshot = {
+    exerciseId: asExerciseId("sys-count-none"),
+    capabilityId: "multiple-choice",
+    answerSchemaVersion: 1,
+    definition: { id: "sys-count-none", type: "multiple-choice" },
+    requiresReview: false,
+  };
+
+  const storedAttempt = (overrides: Record<string, unknown>) => ({
+    id: "attempt-timed",
+    setId: "systems-elimination-mock",
+    setVersion: 1,
+    moduleId: "systems-elimination",
+    mode: "exam",
+    status: "in-progress",
+    startedAt: "2026-07-21T00:00:00.000Z",
+    items: [snapshot],
+    responses: [],
+    ...overrides,
+  });
+
+  const migrated = (attempt: Record<string, unknown>) =>
+    migrateLearnerState({
+      schemaVersion: SCHEMA_VERSION,
+      attemptSets: { "attempt-timed": attempt },
+    });
+
+  it("snapshots the time limit onto a new attempt (finding 1)", () => {
+    const set = makeAttemptSet({
+      setId: "systems-elimination-mock",
+      setVersion: 1,
+      moduleId: "systems-elimination",
+      mode: "exam",
+      items: [snapshot],
+      timeLimitSec: 1200,
+    });
+    expect(set.timeLimitSec).toBe(1200);
+    // Untimed sets stay untimed — the field is absent, not 0.
+    const untimed = makeAttemptSet({
+      setId: "systems-elimination-review",
+      setVersion: 1,
+      moduleId: "systems-elimination",
+      mode: "exam",
+      items: [snapshot],
+    });
+    expect(untimed.timeLimitSec).toBeUndefined();
+    expect("timeLimitSec" in untimed).toBe(false);
+  });
+
+  it("round-trips a snapshotted limit through normalization", () => {
+    const state = migrated(storedAttempt({ timeLimitSec: 1200 }));
+    expect(state.attemptSets["attempt-timed"]!.timeLimitSec).toBe(1200);
+  });
+
+  it("REJECTS an attempt whose startedAt is unparseable (finding 3)", () => {
+    // No parseable anchor ⇒ no derivable deadline. The record is dropped rather
+    // than admitted as an attempt that could never expire.
+    for (const startedAt of ["not-a-date", "", "2026-13-45T99:99:99Z"]) {
+      const state = migrated(storedAttempt({ startedAt, timeLimitSec: 1200 }));
+      expect(Object.keys(state.attemptSets), startedAt).toEqual([]);
+    }
+    // The same rule holds for an untimed attempt (one normalizer, one rule).
+    expect(Object.keys(migrated(storedAttempt({ startedAt: "nope" })).attemptSets)).toEqual([]);
+  });
+
+  it("FAILS CLOSED on a malformed time limit rather than admitting it untimed (finding 3)", () => {
+    for (const timeLimitSec of ["1200", 0, -60, Number.NaN, Number.POSITIVE_INFINITY, {}, null]) {
+      const state = migrated(storedAttempt({ timeLimitSec }));
+      expect(Object.keys(state.attemptSets), String(timeLimitSec)).toEqual([]);
+    }
+    // Absent (not malformed) is the legitimate untimed case — still admitted.
+    const untimed = migrated(storedAttempt({}));
+    expect(Object.keys(untimed.attemptSets)).toEqual(["attempt-timed"]);
+    expect(untimed.attemptSets["attempt-timed"]!.timeLimitSec).toBeUndefined();
+  });
+});

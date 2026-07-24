@@ -169,6 +169,15 @@ export interface AttemptSet {
    * field (no schema bump); does not change the grade, only how it is reported.
    */
   autoSubmittedAt?: string;
+  /**
+   * (Package I) The set's `timeLimitSec` SNAPSHOTTED when the attempt started —
+   * the administered time limit, alongside `setVersion` (the administered form).
+   * An attempt is governed by this value, never by the current registry, so
+   * editing `ModuleSet.timeLimitSec` cannot retroactively lengthen or shorten a
+   * running attempt. Absent ⇒ untimed (or, narrowly, an attempt persisted before
+   * this field existed — see `governingTimeLimitSec`).
+   */
+  timeLimitSec?: number;
 }
 
 export type ReviewState = "pending" | "scored";
@@ -485,7 +494,21 @@ function normalizeAttemptSet(raw: unknown): AttemptSet | null {
   if (a.status !== "in-progress" && a.status !== "submitted" && a.status !== "released") {
     return null;
   }
+  // `startedAt` is load-bearing, not decorative: it is the ONLY anchor a timed
+  // attempt's deadline is derived from. An unparseable value is rejected outright
+  // (the record is dropped) so it can never surface as an attempt whose deadline
+  // cannot be computed.
   if (typeof a.startedAt !== "string") return null;
+  if (!Number.isFinite(Date.parse(a.startedAt))) return null;
+  // Fail closed on a malformed limit: a record that CLAIMS to be timed but carries
+  // an unusable limit is dropped rather than silently normalized into an untimed
+  // attempt (which would hand it unlimited time).
+  const hasTimeLimit = a.timeLimitSec !== undefined;
+  const timeLimitSec =
+    typeof a.timeLimitSec === "number" && Number.isFinite(a.timeLimitSec) && a.timeLimitSec > 0
+      ? a.timeLimitSec
+      : null;
+  if (hasTimeLimit && timeLimitSec === null) return null;
   const items = Array.isArray(a.items)
     ? a.items.map(normalizeItemSnapshot).filter((x): x is AttemptItemSnapshot => x !== null)
     : [];
@@ -509,6 +532,7 @@ function normalizeAttemptSet(raw: unknown): AttemptSet | null {
   if (isJsonValue(a.schedulerHint)) set.schedulerHint = a.schedulerHint;
   if (typeof a.scheduledReviewId === "string") set.scheduledReviewId = a.scheduledReviewId;
   if (typeof a.autoSubmittedAt === "string") set.autoSubmittedAt = a.autoSubmittedAt;
+  if (timeLimitSec !== null) set.timeLimitSec = timeLimitSec;
   return set;
 }
 
@@ -895,6 +919,11 @@ export function makeAttemptSet(params: {
   startedAt?: string;
   /** For a one-item spaced attempt: the exact occurrence it answers. */
   scheduledReviewId?: string;
+  /**
+   * (Package I) The set's time limit at start. Snapshotted onto the attempt so the
+   * administered limit is fixed for its whole life; ignored unless positive/finite.
+   */
+  timeLimitSec?: number;
 }): AttemptSet {
   const set: AttemptSet = {
     id: params.id ?? localId("attempt"),
@@ -908,6 +937,13 @@ export function makeAttemptSet(params: {
     responses: [],
   };
   if (params.scheduledReviewId) set.scheduledReviewId = params.scheduledReviewId;
+  if (
+    typeof params.timeLimitSec === "number" &&
+    Number.isFinite(params.timeLimitSec) &&
+    params.timeLimitSec > 0
+  ) {
+    set.timeLimitSec = params.timeLimitSec;
+  }
   return set;
 }
 

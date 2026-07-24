@@ -1127,3 +1127,63 @@ math/visualization renderer changed.** **Gate 8 stays NOT PASSED** for L3/L4/L5 
 - [x] Runner-level timed-path regression tests and the mandatory
   `e2e/assessment-mock.spec.ts` authored and passing — Package I is now verified end-to-end
   in the same sense as Package G/H (machinery only; still not administered)
+
+#### Timer-integrity correction pass (2026-07-24)
+
+Four review findings on the Package I time-box, closed as a bounded correction (no new
+capability, no schema-version bump — `AttemptSet.timeLimitSec` is one more additive
+optional field). Each finding has a focused regression; the claims above that this
+supersedes are corrected here rather than edited in place.
+
+- [x] **1 · The administered time limit is SNAPSHOTTED onto the attempt.**
+  `AttemptSet.timeLimitSec` (`src/platform/learnerState.ts`, `makeAttemptSet` +
+  `normalizeAttemptSet`) is written when the attempt is created, exactly like `setVersion`
+  records the administered form. `ModuleRunner` resolves the governing limit through
+  `governingTimeLimitSec(attempt.timeLimitSec, set.timeLimitSec)` (`src/lessons/timeBox.ts`),
+  so **editing `ModuleSet.timeLimitSec` can no longer move a running attempt's deadline**.
+  The registry is a **narrow, documented compatibility fallback** with exactly one legitimate
+  reader — an attempt persisted before this field existed, which recorded no limit at all and
+  would otherwise read as untimed. Every attempt created from now on carries its own snapshot.
+- [x] **2 · The deadline, not the control, decides automatic vs manual.** `submit()` compares
+  `new Date()` against the derived deadline at submission time: a click landing **at or after**
+  the deadline is recorded with automatic-submission semantics and persists `autoSubmittedAt`
+  (`= releasedAt`, the single canonical release timestamp). This closes the race where a stale
+  or throttled 1 Hz tick left the manual button live past the deadline. Manual submission is
+  additionally **disabled once expiration is observed** (`expirationObserved` → `disabled`,
+  "Time's up — submitting…"), so the control is closed *and* fails safe if clicked.
+- [x] **3 · A malformed timed attempt can never become indefinitely untimed.** Two layers:
+  `normalizeAttemptSet` now **rejects** a stored attempt whose `startedAt` is unparseable
+  (no parseable anchor ⇒ no derivable deadline) and **fails closed** on a `timeLimitSec` that
+  is present but not a positive finite number (the record is dropped, never normalized into an
+  untimed attempt); and `timeBox` itself fails closed — an unparseable `startedAt` reads as
+  `isExpired: true` / `remainingSec: 0`, **superseding** the earlier "returns `null` / treated
+  as NOT expired" behavior recorded in the Testing review above.
+- [x] **4 · Mandatory browser regression through the recovery/import path.**
+  `e2e/assessment-mock.spec.ts` (second spec): start a real attempt (proof left blank),
+  **export** it from `/dev/recovery`, move `startedAt` to 4 s before the deadline, **import**
+  it back as live state, then verify on the real product path — countdown in its last seconds,
+  **no** correctness/reveal before submit, expiration observed, **exactly one** automatic
+  submission (single attempt, `status: released`, `autoSubmittedAt === releasedAt`), the
+  manual control gone, the "submitted automatically" notice, `REVIEW_FAILED` from the blank
+  required proof (omission — never `REVIEW_COMPLETE`), durability across a reload, and zero
+  console errors. The exported bytes also confirm the snapshotted `timeLimitSec` survives
+  export/import.
+- [x] **Persist-gating hazard found by finding 3's reload regression.** React commits child
+  effects before parent effects, so a write issued in the very commit where hydration flips
+  `phase` to `"ready"` (the runner creating an attempt, or auto-submitting an already-expired
+  attempt on reload) read a stale `phaseRef` and was silently dropped by `persist` — the
+  transition lived in memory only. `LearnerStateProvider` now mirrors phase into `phaseRef`
+  **synchronously** (`applyPhase`) instead of in an effect.
+- [x] Regressions: `timeBox.test.ts` (fail-closed on an unparseable `startedAt`; snapshot beats
+  registry; fallback only when the attempt recorded no limit), `learnerState.test.ts`
+  (snapshot written by `makeAttemptSet`; round-trip; rejection of unparseable `startedAt`;
+  fail-closed on a malformed limit; absent-is-untimed still admitted), `ModuleRunner.test.tsx`
+  (+6: new attempt snapshots 1200; a seeded 120 s attempt is governed by 120 s while the
+  registry says 1200; click at the deadline ⇒ automatic + persisted marker; click at
+  deadline−1 s ⇒ manual, no marker; once observed, no manual control and exactly one release;
+  already-expired reload auto-submits once and the release is **persisted**).
+- [x] Verified at package-commit tier (new persisted field + runner + persistence):
+  `./check.sh --e2e` — oxlint + `tsc -b` clean, **807 unit tests / 74 files** (up from 795),
+  **54 Playwright specs** green including both `assessment-mock` specs.
+- [x] Gate posture **unchanged**: Package I remains BUILT, machinery-verified, **not
+  administered**; **Gate 9 stays NOT PASSED**; S3 still requires real administration.

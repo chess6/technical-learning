@@ -617,6 +617,21 @@ deferred feedback, on the Package F runner.
   `reviewStatus` can never reach `REVIEW_COMPLETE` off a timed-out blank.
 - **Untimed sets (F/G/H) are unaffected** — the countdown/auto-submit path is
   gated on `timeLimitSec` being present; absent ⇒ existing untimed behavior.
+- **Timer-integrity correction (2026-07-24, four review findings).** The
+  administered limit is now **snapshotted onto the attempt**
+  (`AttemptSet.timeLimitSec`, one more additive optional field — still no schema
+  bump), so a registry edit cannot move a running attempt's deadline; the
+  registry survives only as a narrow, documented fallback for attempts persisted
+  before the field existed. `submit()` compares the clock against the deadline,
+  so a click **at or after** it is recorded with automatic-submission semantics
+  (and manual submission is disabled once expiration is observed). Persistence
+  **fails closed**: an unparseable `startedAt` or a malformed `timeLimitSec` is
+  rejected by `normalizeAttemptSet`, and `timeBox` treats an underivable deadline
+  as expired — a malformed timed attempt can never become indefinitely untimed.
+  The mandatory browser regression drives all of this through the
+  **recovery/import** path (near-deadline attempt → expiry → exactly-once
+  auto-submit → notice → omission → reload). Details:
+  [correctness checklist](../../../../quality/lesson-correctness-checklist.md).
 
 *Depends on:* F (deferred feedback). *Size:* small (content) once F exists.
 *Plan:* [package-i-plan.md](package-i-plan.md) — contract-table-first Mode B plan

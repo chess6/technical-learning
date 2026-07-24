@@ -8,7 +8,14 @@ import {
   type SchedulerHook,
 } from "../../../platform/scheduler";
 import { ModuleRunner } from "../ModuleRunner";
-import { loadLearnerState } from "../../../platform/persistence";
+import { loadLearnerState, saveLearnerState } from "../../../platform/persistence";
+import {
+  createEmptyLearnerState,
+  makeAttemptSet,
+  type AttemptSet,
+} from "../../../platform/learnerState";
+import { resolveModuleSet } from "../../../lessons/moduleSets";
+import { snapshotItem } from "../../../lessons/attemptSnapshot";
 import { computeSpacedSchedule } from "../../../lessons/spacedSchedule";
 import { SPACED_COHORT_SIZE, SPACED_MODULE_ID } from "../../../platform/spacedConfig";
 
@@ -337,6 +344,151 @@ describe("ModuleRunner — Package I timed mock", () => {
       expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
     );
     expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeNull();
+  });
+
+  /* ── Timer integrity (review findings 1 + 2) ───────────────────────────── */
+
+  /** Seed a live timed attempt straight into storage, as a reload/import would. */
+  function seedTimedAttempt(overrides: Partial<AttemptSet> = {}): AttemptSet {
+    const { set, items } = resolveModuleSet(MOCK_SET);
+    const attempt: AttemptSet = {
+      ...makeAttemptSet({
+        setId: set.id,
+        setVersion: set.version,
+        moduleId: set.moduleId,
+        mode: set.mode,
+        items: items.map(snapshotItem),
+        id: "attempt-seeded",
+        timeLimitSec: set.timeLimitSec,
+      }),
+      ...overrides,
+    };
+    saveLearnerState({
+      ...createEmptyLearnerState(),
+      attemptSets: { [attempt.id]: attempt },
+    });
+    return attempt;
+  }
+
+  /** Every persisted attempt (a real reload reads exactly these bytes). */
+  function allAttempts(): AttemptSet[] {
+    const outcome = loadLearnerState();
+    return outcome.kind === "loaded" ? Object.values(outcome.state.attemptSets) : [];
+  }
+
+  /** The single persisted attempt — asserts there is exactly one. */
+  function onlyAttempt(): AttemptSet | undefined {
+    const all = allAttempts();
+    expect(all).toHaveLength(1);
+    return all[0];
+  }
+
+  it("snapshots the set's time limit onto a NEW attempt (finding 1)", async () => {
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    // Persisted at creation, so a reload re-reads the ADMINISTERED limit.
+    expect(onlyAttempt()!.timeLimitSec).toBe(1200);
+  });
+
+  it("is governed by the attempt's snapshotted limit, not the registry's (finding 1)", async () => {
+    // The registry says 1200s; this running attempt was started under 120s. The
+    // countdown must reflect the ADMINISTERED limit — a registry edit can never
+    // hand a running attempt more (or less) time.
+    seedTimedAttempt({ timeLimitSec: 120 });
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="mock-countdown"]')).toBeTruthy(),
+    );
+    const text = container.querySelector('[data-testid="mock-countdown"]')!.textContent ?? "";
+    expect(text).toMatch(/Time remaining: (2:00|1:5\d)/);
+  });
+
+  it("treats a click AT/AFTER the deadline as an automatic submission (finding 2)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    // Jump the wall clock past the deadline WITHOUT letting the 1 Hz tick run:
+    // the countdown is stale and the button is still enabled — exactly the race a
+    // throttled/background tab produces. The click must still count as automatic.
+    vi.setSystemTime(new Date(Date.parse("2026-01-01T00:00:00.000Z") + 1200 * 1000));
+    const button = container.querySelector<HTMLButtonElement>('[data-testid="module-submit"]')!;
+    expect(button.disabled).toBe(false);
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeTruthy();
+    const persisted = onlyAttempt()!;
+    expect(persisted.autoSubmittedAt).toBeTruthy();
+    expect(persisted.autoSubmittedAt).toBe(persisted.releasedAt);
+  });
+
+  it("keeps a manual submit one second BEFORE the deadline manual (finding 2)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    vi.setSystemTime(new Date(Date.parse("2026-01-01T00:00:00.000Z") + 1199 * 1000));
+    await act(async () => {
+      fireEvent.click(container.querySelector('[data-testid="module-submit"]')!);
+    });
+
+    expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeNull();
+    expect(onlyAttempt()!.autoSubmittedAt).toBeUndefined();
+  });
+
+  it("closes manual submission once expiration is observed (finding 2)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy();
+
+    // Once the tick observes the deadline, the manual control is gone entirely
+    // (the attempt auto-submitted). No second submission is possible.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_201_000);
+    });
+    expect(container.querySelector('[data-testid="module-submit"]')).toBeNull();
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeTruthy();
+
+    // Exactly one submission, one release.
+    expect(onlyAttempt()!.status).toBe("released");
+  });
+
+  it("auto-submits an ALREADY-expired attempt on reload, exactly once (findings 2 + 3)", async () => {
+    // A reload long after the deadline: elapsed time is honest from `startedAt`,
+    // so the attempt releases immediately as an automatic submission.
+    const started = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    const seeded = seedTimedAttempt({ startedAt: started });
+
+    const { container } = renderRunner(<ModuleRunner setId={MOCK_SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    expect(container.querySelector('[data-testid="mock-auto-submitted"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="module-submit"]')).toBeNull();
+
+    // No fresh attempt was started alongside the recovered one, and the release
+    // is PERSISTED (not memory-only) — the next reload sees a finished attempt.
+    const persisted = onlyAttempt()!;
+    expect(persisted.id).toBe(seeded.id);
+    expect(persisted.status).toBe("released");
+    expect(persisted.autoSubmittedAt).toBeTruthy();
   });
 
   it("keeps a blank required proof a recorded omission (never REVIEW_COMPLETE) after an auto-submitted timeout", async () => {
