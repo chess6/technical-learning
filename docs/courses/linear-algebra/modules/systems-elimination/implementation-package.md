@@ -538,10 +538,45 @@ no general ℝⁿ theory, no production routing/auth/backend/multi-user review.
 *Size:* medium (content on F). **Built (evidence-integrity corrected); pending real
 administration + human scoring.**
 
-### Package H — Delayed / spaced retrieval (D12) · module-owned
-*Closes:* D12. `mod-spaced-trichotomy`, `mod-spaced-uniqueness`, `mod-spaced-rowops`
-scheduled at ~1 week / ~1 month; also wired as L7/L8/L9 prerequisite checks.
-*Depends on:* F (scheduler). *Size:* small–medium.
+### Package H — Delayed / spaced retrieval (D12) · module-owned · 🟡 PLANNED (will be **partially shipped**)
+*Partially closes:* D12. `mod-spaced-trichotomy`, `mod-spaced-uniqueness`,
+`mod-spaced-rowops` scheduled at ~1 week / ~1 month, on the real `SchedulerHook`
+implementation. **The L7/L8/L9 prerequisite-check wiring stays a tracked, deferred D12
+obligation** (not built here), so D12 is only **partially discharged**.
+*Depends on:* F (scheduler seam). *Size:* **medium** (revised from small–medium; see
+plan §"Slice sequencing" for why).
+
+> **Implementation-ready plan:** the full slice plan (findings, occurrence-keyed domain
+> model, files, data flow, migration, acceptance criteria, tests, and the deferred-obligation
+> recording) lives in **[package-h-plan.md](package-h-plan.md)**. Slices: **H1** three
+> fresh spaced items + one-item sets · **H2** occurrence-keyed `spacedReviews` +
+> module-scoped `spacedCohorts` model (schema v2→v3) with hardened + cross-record
+> normalization · **H3** the narrowed scheduler hook + occurrence route (`dev/spaced/:id`)
+> + due-review surface + `ModuleRunner` integration · **H4** docs (partially-shipped +
+> tracked deferral) + full verification. **Planning only — no code changed.** Building any
+> slice is Mode C and needs explicit approval.
+>
+> **Design corrections folded in (found while planning, not in the original one-line
+> spec):** occurrences are **occurrence-keyed** with stable ids so the same item can be
+> answered at ~7d and again at ~30d; the whole **primary release + cohort creation is one
+> atomic transition** (never a released first-eligible primary without a
+> seeded-or-failed cohort); the cohort terminal state is **module-wide**, so once the first
+> eligible release seeds **or** fails, later releases don't invoke the scheduler; scheduler
+> failure is a **visible terminal state**; the first release is framed as the **operational
+> spacing anchor** (not proof the module was completed); the generic `dev/module/:setId`
+> route **rejects spaced set ids** so a learner can't preview a spaced item early; the
+> not-yet-due occurrence URL is rejected; the `SchedulerHook` is **narrowed** (its bypassed
+> `dueReviews` no-op removed; `dueSpacedReviews(state, now)` is the canonical query); and
+> imported state gets **cross-record integrity** checks.
+>
+> **Scope correction:** "wired as L7/L8/L9 prerequisite checks" is **not** built here and is
+> kept as a **tracked, deferred D12 obligation** (not silently removed from D12). L8/L9 are
+> still `future` spine nodes (no lesson to wire into), and every existing assessment surface
+> is deliberately dev-gated — wiring into L7 (a shipped production lesson) would be the
+> project's first production-facing assessment surface, a bigger decision than this package
+> implies. The reactivation path (a pure `dueSpacedReviews(state, now)` query, callable by
+> any future surface with no new engineering) is recorded in the plan so the obligation has
+> an owner instead of disappearing.
 
 ### Package I — Timed mock / exam-mode set (D11 · S3) · module-owned
 *Closes:* D11 timed performance; enables the S3 readiness claim. `mod-timed-mock`

@@ -154,11 +154,18 @@ Covers the seven areas the module must assess under the declared profile:
   find \(\mathbf{x}_p\), identify the free variable, and write
   \(\mathbf{x}_p+\operatorname{Null}(A)\); plus an inconsistent variant surfaced as a
   contradiction row (L4) ⇒ ∅ (L5). `mod-cumulative-elim-solset`.
-- **Delayed / spaced retrieval (D12).** After the module, re-fire the highest-value
-  outcomes at spacing ~1 week and ~1 month: the trichotomy (L3),
-  uniqueness-≠-reachability (L5), and legal-vs-illegal row ops (L4). `mod-spaced-trichotomy`,
-  `mod-spaced-uniqueness`, `mod-spaced-rowops`. These also seed L7/L8/L9 prerequisite
-  checks.
+- **Delayed / spaced retrieval (D12) — partially discharged by Package H.** After the
+  module, re-fire the highest-value outcomes at spacing ~1 week and ~1 month: the trichotomy
+  (L3), uniqueness-≠-reachability (L5), and legal-vs-illegal row ops (L4).
+  `mod-spaced-trichotomy`, `mod-spaced-uniqueness`, `mod-spaced-rowops`. The first eligible
+  primary-set release is the **operational spacing anchor** that starts the 7/30-day clock
+  (not a claim the module was completed). These are **E1–E2 recognition retention signals**
+  on outcomes that already carry E3/E4 evidence elsewhere — not new transfer evidence.
+  **L7/L8/L9 prerequisite-check wiring is a tracked, deferred D12 obligation** (owner +
+  reactivation path — the pure `dueSpacedReviews(state, now)` query, callable by any future
+  surface / by L8/L9 when authored — recorded in
+  [package-h-plan.md](package-h-plan.md) §"Deferred D12 obligation"); it is **not** built by
+  Package H and **not** removed from D12, so D12 is only **partially** discharged.
 - **Timed / exam-mode set (D11, S3).** A short mock under time limit with **deferred
   feedback** (no per-item reveal), mixing computation + one proof + one classification.
   `mod-timed-mock`.
