@@ -57,14 +57,8 @@ describe("Package G module items", () => {
     );
   });
 
-  it("mod-select-method does not name the two methods in the learner-facing prompt", () => {
-    const select = MODULE_ITEMS.find((e) => e.id === "mod-select-method")!;
-    expect(select.prompt.toLowerCase()).not.toMatch(/reachability|elimination/);
-    // The expected methods live only in the post-commit rubric / model answer.
-    if (select.type !== "custom") throw new Error("expected a custom exercise");
-    const config = select.config as { rubricText: string; modelAnswer: string };
-    expect((config.rubricText + config.modelAnswer).toLowerCase()).toMatch(/elimination/);
-  });
+  // Method-selection cue protection now lives in cueLint.test.ts (generalized
+  // across all method-selection items), superseding the former ad-hoc check here.
 
   it("snapshots human-scored items with a versioned rubric", () => {
     for (const id of HUMAN_SCORED) {

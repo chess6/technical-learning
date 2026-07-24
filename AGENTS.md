@@ -60,6 +60,15 @@ Pick the tier that matches the change — do not run a heavier tier out of cauti
 additionally runs any paths you pass; targeted paths never replace it. A
 schema-version bump or a new persisted field is always package-commit tier.
 
+Every new **auto-graded** module item must, in the same commit, register a
+`describeGradingContract` spec (`src/lessons/__tests__/gradingContract.test.ts`,
+with an accepted answer + the adversarial reject battery) and an
+`ITEM_ASSESSMENT_META` entry (`src/lessons/assessmentManifest.ts` — evidence
+target, `evidenceBasis`, method-selection flag). The conformance kit,
+evidence-ceiling, and cue-lint suites then hold the recurring defect classes
+(blank-as-zero, incomplete-object credit, related-but-wrong, prompt cueing,
+evidence overclaims) so reviews never re-litigate them.
+
 ## Model routing
 
 - **Opus**: Mode B plan + grading-semantics contract review, the single
