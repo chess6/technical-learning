@@ -580,10 +580,12 @@ plan §"Slice sequencing" for why).
 > any future surface with no new engineering) is recorded in the plan so the obligation has
 > an owner instead of disappearing.
 
-### Package I — Timed mock / exam-mode set (D11 · S3) · module-owned
+### Package I — Timed mock / exam-mode set (D11 · S3) · module-owned · 🟡 PLANNED (Mode C not started)
 *Closes:* D11 timed performance; enables the S3 readiness claim. `mod-timed-mock`
 (computation + one proof + one classification, time-boxed, deferred feedback).
 *Depends on:* F (deferred feedback). *Size:* small (content) once F exists.
+*Plan:* [package-i-plan.md](package-i-plan.md) — contract-table-first Mode B plan
+(ADR-002 workflow). Mode C (implementation) requires approval and has **not** started.
 
 ### Out of scope for this module (cross-referenced, not built here)
 - **General \(\mathbb{R}^n\) null-space / rank–nullity** — owned by the future
