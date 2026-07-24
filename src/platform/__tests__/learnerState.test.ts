@@ -52,19 +52,39 @@ describe("migration to the current envelope", () => {
     expect(state.bookmarks).toHaveLength(1);
   });
 
-  it("upgrades a v1 blob to v2 by adding the module-assessment collections", () => {
+  it("upgrades a v1 blob to current by adding the module-assessment + spaced collections", () => {
     const v1 = {
       schemaVersion: 1,
       lessonProgress: { systems: { lessonId: "systems", visited: true, completed: false } },
       exerciseAttempts: {},
       bookmarks: [],
-      // no attemptSets / reviews yet
+      // no attemptSets / reviews / spacedReviews / spacedCohorts yet
     };
     const state = migrateLearnerState(v1);
-    expect(state.schemaVersion).toBe(2);
+    expect(state.schemaVersion).toBe(SCHEMA_VERSION);
     expect(state.lessonProgress.systems!.visited).toBe(true);
     expect(state.attemptSets).toEqual({});
     expect(state.reviews).toEqual({});
+    expect(state.spacedReviews).toEqual({});
+    expect(state.spacedCohorts).toEqual({});
+  });
+
+  it("upgrades a v2 blob to v3 by adding the spaced-retrieval collections, preserving v2 data", () => {
+    const v2 = {
+      schemaVersion: 2,
+      lessonProgress: { systems: { lessonId: "systems", visited: true, completed: false } },
+      exerciseAttempts: {},
+      bookmarks: [{ lessonId: "systems", createdAt: "2026-01-01T00:00:00.000Z" }],
+      attemptSets: {},
+      reviews: {},
+      // no spacedReviews / spacedCohorts yet
+    };
+    const state = migrateLearnerState(v2);
+    expect(state.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(state.lessonProgress.systems!.visited).toBe(true);
+    expect(state.bookmarks).toHaveLength(1);
+    expect(state.spacedReviews).toEqual({});
+    expect(state.spacedCohorts).toEqual({});
   });
 
   it("passes an already-current envelope through unchanged", () => {
@@ -82,13 +102,15 @@ describe("migration to the current envelope", () => {
 describe("migration normalizes and repairs every version (not just v0)", () => {
   it("repairs an already-current but malformed envelope (missing collections)", () => {
     // Previously bypassed normalization and returned a malformed LearnerState.
-    const state = migrateLearnerState({ schemaVersion: 2 });
-    expect(state.schemaVersion).toBe(2);
+    const state = migrateLearnerState({ schemaVersion: SCHEMA_VERSION });
+    expect(state.schemaVersion).toBe(SCHEMA_VERSION);
     expect(state.lessonProgress).toEqual({});
     expect(state.exerciseAttempts).toEqual({});
     expect(state.bookmarks).toEqual([]);
     expect(state.attemptSets).toEqual({});
     expect(state.reviews).toEqual({});
+    expect(state.spacedReviews).toEqual({});
+    expect(state.spacedCohorts).toEqual({});
   });
 
   it("drops malformed nested entries instead of trusting their shape", () => {

@@ -351,7 +351,90 @@ const modP2AppliedRect: ExerciseDefinition = {
   },
 };
 
-/** All Package G module items, in a stable authored order. */
+/* -------------------------------------------------------------------------- */
+/* Package H — delayed / spaced-retrieval items (D12).                          */
+/*                                                                              */
+/* Low-stakes recognition (multiple-choice) retention signals re-fired at ~1    */
+/* week / ~1 month on outcomes that ALREADY carry E3/E4 evidence elsewhere      */
+/* (in-lesson production + Package G). They are E1–E2 by design — a delayed      */
+/* retention check, NOT new transfer evidence — so multiple-choice is the right  */
+/* form here (unlike the produced Package G items). Fresh instances, distinct    */
+/* from every lesson/Package-G fixture; correctness is re-verified independently */
+/* in `moduleItems.test.ts`.                                                     */
+/* -------------------------------------------------------------------------- */
+
+/** 2×2 dependent + consistent — the trichotomy's "infinitely many" branch. */
+export const SYS_SPACED_TRICHOTOMY = {
+  matrix: [
+    [2, 4],
+    [3, 6],
+  ],
+  rhs: [6, 9],
+} as const;
+
+/**
+ * H·1. Trichotomy retrieval (L3). Classify a fresh dependent, consistent 2×2
+ * system: dependent columns + a reachable b ⇒ infinitely many. Recognition
+ * retention of the none/one/infinite trichotomy.
+ */
+const modSpacedTrichotomy: ExerciseDefinition = {
+  id: "mod-spaced-trichotomy",
+  type: "multiple-choice",
+  tier: "check",
+  prompt:
+    "Retrieval: how many solutions does $\\begin{cases} 2x + 4y = 6 \\\\ 3x + 6y = 9 \\end{cases}$ have?",
+  choices: ["No solutions", "Exactly one solution", "Infinitely many solutions"],
+  correctChoice: 2,
+  explanation:
+    "Both equations reduce to $x + 2y = 3$ — the columns are dependent (the second is twice the first) and $\\mathbf{b}$ lies on their line, so the system is consistent with a free variable: **infinitely many** solutions.",
+};
+
+/**
+ * H·2. Uniqueness-≠-existence retrieval (L5). A consistent system whose
+ * homogeneous version has a nonzero solution has infinitely many solutions —
+ * existence (reachability) and uniqueness (trivial null space) are separate.
+ */
+const modSpacedUniqueness: ExerciseDefinition = {
+  id: "mod-spaced-uniqueness",
+  type: "multiple-choice",
+  tier: "check",
+  prompt:
+    "Retrieval: a system $A\\mathbf{x}=\\mathbf{b}$ is known to be **consistent**, and the homogeneous system $A\\mathbf{x}=\\mathbf{0}$ has a **nonzero** solution $\\mathbf{v}$. How many solutions does $A\\mathbf{x}=\\mathbf{b}$ have?",
+  choices: [
+    "Exactly one solution",
+    "Infinitely many solutions",
+    "No solutions",
+    "Impossible to determine",
+  ],
+  correctChoice: 1,
+  explanation:
+    "Consistency guarantees a particular solution $\\mathbf{x}_p$; a nonzero $\\mathbf{v}$ with $A\\mathbf{v}=\\mathbf{0}$ makes every $\\mathbf{x}_p + t\\mathbf{v}$ a solution too. Existence (reachability of $\\mathbf{b}$) and uniqueness (trivial null space) are separate questions — here existence holds but uniqueness fails: **infinitely many**.",
+};
+
+/**
+ * H·3. Legal-vs-illegal row ops retrieval (L4). The illegal move is the one
+ * that is irreversible / changes the solution set — subtracting a row from
+ * itself (scaling by 0). Adding a row to itself ($R_i+R_i=2R_i$) is a legal
+ * nonzero scaling (reinforces the L4 self-addition-legality correction).
+ */
+const modSpacedRowops: ExerciseDefinition = {
+  id: "mod-spaced-rowops",
+  type: "multiple-choice",
+  tier: "check",
+  prompt:
+    "Retrieval: which of these is **not** a legal elementary row operation — i.e. it can change the solution set?",
+  choices: [
+    "$R_1 \\leftrightarrow R_3$ (swap two rows)",
+    "$R_1 \\to R_1 + R_1$ (add $R_1$ to itself)",
+    "$R_2 \\to R_2 - 4\\,R_3$ (subtract a multiple of another row)",
+    "$R_3 \\to R_3 - R_3$ (subtract $R_3$ from itself)",
+  ],
+  correctChoice: 3,
+  explanation:
+    "$R_3 \\to R_3 - R_3$ turns $R_3$ into $0 = 0$ — it scales by $0$, is irreversible, and can enlarge the solution set. Swapping and subtracting a multiple of *another* row are reversible; $R_1 \\to R_1 + R_1 = 2R_1$ is a legal nonzero scaling (adding a row to *itself* is fine — only the $i \\neq j$ restriction on the *replacement* type forbids using the same row twice there).",
+};
+
+/** All module items (Package G + Package H spaced), in a stable authored order. */
 export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   modSelectMethod,
   modTransferClassify,
@@ -361,4 +444,7 @@ export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   modProofHyp,
   modP2Applied3x3,
   modP2AppliedRect,
+  modSpacedTrichotomy,
+  modSpacedUniqueness,
+  modSpacedRowops,
 ];

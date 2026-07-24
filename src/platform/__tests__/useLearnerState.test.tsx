@@ -3,9 +3,20 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { LoadOutcome } from "../persistence";
 import type { ReactNode } from "react";
 import { SCHEMA_VERSION, asExerciseId } from "../identity";
-import { makeAttemptSet, type AttemptItemSnapshot } from "../learnerState";
+import {
+  makeAttemptSet,
+  makeScheduledSpacedReview,
+  type AttemptItemSnapshot,
+  type ScheduledSpacedReview,
+} from "../learnerState";
+import {
+  dueAtFrom,
+  SPACED_DELAY_DAYS,
+  SPACED_ITEMS,
+  SPACED_MODULE_ID,
+} from "../spacedConfig";
 import { STORAGE_KEY, loadLearnerState } from "../persistence";
-import { LearnerStateProvider, useLearnerState } from "../useLearnerState";
+import { LearnerStateProvider, useLearnerState, type SpacedReleaseOutcome } from "../useLearnerState";
 
 afterEach(() => {
   localStorage.clear();
@@ -157,6 +168,181 @@ describe("export / import recovery flow", () => {
     expect(outcome?.kind).toBe("loaded");
     expect(result.current.state.attemptSets["attempt-1"]).toBeTruthy();
     expect(result.current.saveHealthy).toBe(true);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Package H — atomic primary release + spaced completion.                      */
+/* -------------------------------------------------------------------------- */
+
+const R = "2026-01-01T00:00:00.000Z";
+
+function seededOutcome(attemptId: string, releasedAt = R): SpacedReleaseOutcome {
+  const occurrences: ScheduledSpacedReview[] = [];
+  for (const { setId, exerciseId } of SPACED_ITEMS) {
+    for (const delayDays of SPACED_DELAY_DAYS) {
+      occurrences.push(
+        makeScheduledSpacedReview({
+          moduleId: SPACED_MODULE_ID,
+          exerciseId: asExerciseId(exerciseId),
+          delayDays,
+          setId,
+          originAttemptSetId: attemptId,
+          anchorReleasedAt: releasedAt,
+        }),
+      );
+    }
+  }
+  return { kind: "seeded", occurrences };
+}
+
+function primaryAttempt(id: string, setId = "systems-elimination-review") {
+  return makeAttemptSet({
+    id,
+    setId,
+    setVersion: 1,
+    moduleId: SPACED_MODULE_ID,
+    mode: "exam",
+    items: [snapshot],
+  });
+}
+
+const emptyPayload = { responses: [], reviews: [] };
+
+describe("releasePrimaryAttempt — atomic release + cohort", () => {
+  it("releases the primary AND seeds the cohort + six occurrences in one transition", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    act(() => result.current.startAttemptSet(primaryAttempt("p1")));
+    act(() => result.current.submitAttemptSet("p1"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p1", SPACED_MODULE_ID, R, emptyPayload, seededOutcome("p1")),
+    );
+
+    // Invariant: released primary + a seeded cohort + six occurrences, persisted.
+    const outcome = loadLearnerState();
+    expect(outcome.kind).toBe("loaded");
+    if (outcome.kind !== "loaded") return;
+    const s = outcome.state;
+    expect(s.attemptSets["p1"]?.status).toBe("released");
+    expect(s.attemptSets["p1"]?.releasedAt).toBe(R);
+    expect(s.spacedCohorts[SPACED_MODULE_ID]?.status).toBe("seeded");
+    expect(s.spacedCohorts[SPACED_MODULE_ID]?.anchorReleasedAt).toBe(R);
+    expect(Object.keys(s.spacedReviews)).toHaveLength(6);
+    // Canonical timestamp alignment: every dueAt = R + delay.
+    for (const occ of Object.values(s.spacedReviews)) {
+      expect(occ.dueAt).toBe(dueAtFrom(R, occ.delayDays));
+    }
+  });
+
+  it("a later primary release does NOT re-cohort (module-wide gate)", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    act(() => result.current.startAttemptSet(primaryAttempt("p1")));
+    act(() => result.current.submitAttemptSet("p1"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p1", SPACED_MODULE_ID, R, emptyPayload, seededOutcome("p1")),
+    );
+    const anchorBefore = result.current.state.spacedCohorts[SPACED_MODULE_ID]?.anchorAttemptSetId;
+
+    // A second primary set releases LATER — must not seed a second cohort.
+    const R2 = "2026-02-01T00:00:00.000Z";
+    act(() => result.current.startAttemptSet(primaryAttempt("p2", "systems-elimination-transfer")));
+    act(() => result.current.submitAttemptSet("p2"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p2", SPACED_MODULE_ID, R2, emptyPayload, seededOutcome("p2", R2)),
+    );
+
+    const s = result.current.state;
+    expect(s.spacedCohorts[SPACED_MODULE_ID]?.anchorAttemptSetId).toBe(anchorBefore); // unchanged
+    expect(s.spacedCohorts[SPACED_MODULE_ID]?.anchorReleasedAt).toBe(R); // dueAt anchored to FIRST
+    expect(Object.keys(s.spacedReviews)).toHaveLength(6); // still six
+    expect(s.attemptSets["p2"]?.status).toBe("released"); // but p2 still released
+  });
+
+  it("records a visible terminal FAILED cohort when the outcome is failed, never auto-retried", async () => {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    act(() => result.current.startAttemptSet(primaryAttempt("p1")));
+    act(() => result.current.submitAttemptSet("p1"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p1", SPACED_MODULE_ID, R, emptyPayload, {
+        kind: "failed",
+        error: "compute threw",
+      }),
+    );
+    expect(result.current.state.spacedCohorts[SPACED_MODULE_ID]?.status).toBe("failed");
+    expect(result.current.state.spacedReviews).toEqual({});
+
+    // A later release sees the terminal record and does not overwrite it.
+    act(() => result.current.startAttemptSet(primaryAttempt("p2", "systems-elimination-transfer")));
+    act(() => result.current.submitAttemptSet("p2"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p2", SPACED_MODULE_ID, "2026-03-01T00:00:00.000Z", emptyPayload, seededOutcome("p2", "2026-03-01T00:00:00.000Z")),
+    );
+    expect(result.current.state.spacedCohorts[SPACED_MODULE_ID]?.status).toBe("failed"); // still failed
+    expect(result.current.state.spacedReviews).toEqual({}); // no retry seeded
+  });
+});
+
+describe("releaseSpacedAttempt — exact-occurrence completion", () => {
+  const trichotomy = SPACED_ITEMS[0]!;
+  const target = makeScheduledSpacedReview({
+    moduleId: SPACED_MODULE_ID,
+    exerciseId: asExerciseId(trichotomy.exerciseId),
+    delayDays: 7,
+    setId: trichotomy.setId,
+    originAttemptSetId: "p1",
+    anchorReleasedAt: R,
+  }).id;
+
+  async function seededHook() {
+    const { result } = renderHook(() => useLearnerState(), { wrapper });
+    await waitFor(() => expect(result.current.phase).toBe("ready"));
+    act(() => result.current.startAttemptSet(primaryAttempt("p1")));
+    act(() => result.current.submitAttemptSet("p1"));
+    act(() =>
+      result.current.releasePrimaryAttempt("p1", SPACED_MODULE_ID, R, emptyPayload, seededOutcome("p1")),
+    );
+    return result;
+  }
+
+  function spacedAttempt(id: string) {
+    return makeAttemptSet({
+      id,
+      setId: trichotomy.setId,
+      setVersion: 1,
+      moduleId: SPACED_MODULE_ID,
+      mode: "exam",
+      items: [snapshot],
+      scheduledReviewId: target,
+    });
+  }
+
+  it("completes the EXACT occurrence when released on/after its due date", async () => {
+    const result = await seededHook();
+    const doneAt = dueAtFrom(R, 7); // exactly due
+    act(() => result.current.startAttemptSet(spacedAttempt("s1")));
+    act(() => result.current.submitAttemptSet("s1"));
+    act(() => result.current.releaseSpacedAttempt("s1", doneAt, emptyPayload));
+
+    expect(result.current.state.spacedReviews[target]?.status).toBe("completed");
+    expect(result.current.state.spacedReviews[target]?.completedInAttemptSetId).toBe("s1");
+    // The 30-day occurrence of the same item is untouched — independent.
+    const thirty = target.replace(":7", ":30");
+    expect(result.current.state.spacedReviews[thirty]?.status).toBe("scheduled");
+  });
+
+  it("completes NOTHING (surfaces a mismatch) when released before the due date", async () => {
+    const result = await seededHook();
+    const early = "2026-01-02T00:00:00.000Z"; // before day-7 due
+    act(() => result.current.startAttemptSet(spacedAttempt("s1")));
+    act(() => result.current.submitAttemptSet("s1"));
+    act(() => result.current.releaseSpacedAttempt("s1", early, emptyPayload));
+
+    expect(result.current.state.attemptSets["s1"]?.status).toBe("released"); // attempt released
+    expect(result.current.state.spacedReviews[target]?.status).toBe("scheduled"); // occurrence untouched
+    expect(result.current.state.spacedReviews[target]?.completedInAttemptSetId).toBeUndefined();
   });
 });
 

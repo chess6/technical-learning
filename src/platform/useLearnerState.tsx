@@ -35,12 +35,27 @@ import {
 } from "./persistence";
 import {
   createEmptyLearnerState,
+  makeSpacedCohort,
+  reconcileSpacedState,
   type AttemptItemResponse,
   type AttemptSet,
   type LearnerState,
   type ReviewRecord,
+  type ScheduledSpacedReview,
 } from "./learnerState";
+import { isPrimarySetId } from "./spacedConfig";
 import type { JsonValue } from "./json";
+
+/**
+ * The purely-computed spacing outcome the runner hands to `releasePrimaryAttempt`,
+ * so release + cohort creation land in ONE atomic transition (never a released
+ * first-eligible primary without a seeded-or-failed cohort). Computed off the
+ * SINGLE canonical release timestamp.
+ */
+export type SpacedReleaseOutcome =
+  | { kind: "none" }
+  | { kind: "seeded"; hint?: JsonValue; occurrences: ScheduledSpacedReview[] }
+  | { kind: "failed"; error: string };
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -79,9 +94,40 @@ export interface LearnerStateContextValue {
    * Atomically claim the scheduler emission for a set: sets `schedulerEmittedAt`
    * iff unset and persists synchronously BEFORE returning. Returns `true` only
    * for the caller that won the claim (at-most-once across rerender/reload).
+   * (Retained from F4; the Package H primary-release path uses the module-wide
+   * cohort gate in `releasePrimaryAttempt` instead.)
    */
   claimSchedulerEmission(attemptSetId: string): boolean;
   setSchedulerHint(attemptSetId: string, hint: JsonValue): void;
+
+  /**
+   * (v3) Release a PRIMARY module attempt AND establish the spacing cohort in ONE
+   * atomic transition. `releasedAt` is the single canonical release timestamp
+   * (used for the attempt, the cohort anchor, and every occurrence's `dueAt`).
+   * The scheduler outcome is computed purely BEFORE the commit. Revalidates the
+   * attempt's module + primary-set eligibility + status; writes the cohort only
+   * when it is module-wide absent (later releases never re-cohort). Invariant:
+   * never a released first-eligible primary without a `seeded`-or-`failed` cohort.
+   */
+  releasePrimaryAttempt(
+    attemptSetId: string,
+    moduleId: string,
+    releasedAt: string,
+    payload: { responses: AttemptItemResponse[]; reviews: ReviewRecord[] },
+    outcome: SpacedReleaseOutcome,
+  ): void;
+  /**
+   * (v3) Release a one-item SPACED attempt AND complete its exact occurrence in
+   * ONE atomic transition. The occurrence id is DERIVED from the persisted
+   * attempt (`scheduledReviewId`), then validated (mapped set, scheduled, due,
+   * not already completed); a failed check completes nothing (surfaces a mismatch)
+   * rather than writing an inconsistent record.
+   */
+  releaseSpacedAttempt(
+    attemptSetId: string,
+    releasedAt: string,
+    payload: { responses: AttemptItemResponse[]; reviews: ReviewRecord[] },
+  ): void;
 
   /** Recovery affordances. */
   exportState(): string;
@@ -293,6 +339,137 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
     [commit],
   );
 
+  const releasePrimaryAttempt = useCallback<LearnerStateContextValue["releasePrimaryAttempt"]>(
+    (attemptSetId, moduleId, releasedAt, payload, outcome) => {
+      commit((prev) => {
+        const set = prev.attemptSets[attemptSetId];
+        if (!set || set.status === "released") return prev; // idempotent
+        if (set.status !== "submitted") return prev; // revalidate status
+        // Always release the attempt with the canonical timestamp.
+        const reviews = { ...prev.reviews };
+        for (const review of payload.reviews) reviews[review.id] = review;
+        const released: AttemptSet = {
+          ...set,
+          status: "released",
+          releasedAt,
+          responses: payload.responses,
+        };
+
+        let spacedReviews = prev.spacedReviews;
+        let spacedCohorts = prev.spacedCohorts;
+
+        // Module-wide gate: only the FIRST eligible primary release seeds/fails.
+        const eligible = set.moduleId === moduleId && isPrimarySetId(set.setId);
+        const cohortAbsent = !prev.spacedCohorts[moduleId];
+        if (eligible && cohortAbsent && outcome.kind !== "none") {
+          released.schedulerEmittedAt = releasedAt; // rerender guard
+          if (outcome.kind === "seeded") {
+            // Validate the computed schedule through the SAME integrity pass the
+            // normalizer uses: build a trial and require the cohort stays seeded.
+            const trialReviews: Record<string, ScheduledSpacedReview> = {};
+            for (const occ of outcome.occurrences) trialReviews[occ.id] = occ;
+            const trial = reconcileSpacedState({
+              attemptSets: { ...prev.attemptSets, [attemptSetId]: released },
+              spacedReviews: trialReviews,
+              spacedCohorts: {
+                [moduleId]: makeSpacedCohort({
+                  moduleId,
+                  status: "seeded",
+                  anchorAttemptSetId: attemptSetId,
+                  anchorReleasedAt: releasedAt,
+                }),
+              },
+            });
+            if (trial.spacedCohorts[moduleId]?.status === "seeded") {
+              spacedCohorts = { ...prev.spacedCohorts, ...trial.spacedCohorts };
+              spacedReviews = { ...prev.spacedReviews, ...trial.spacedReviews };
+              if (outcome.hint !== undefined) released.schedulerHint = outcome.hint;
+            } else {
+              spacedCohorts = {
+                ...prev.spacedCohorts,
+                [moduleId]: makeSpacedCohort({
+                  moduleId,
+                  status: "failed",
+                  anchorAttemptSetId: attemptSetId,
+                  anchorReleasedAt: releasedAt,
+                  failedAt: releasedAt,
+                  error: "invalid computed schedule",
+                }),
+              };
+            }
+          } else {
+            spacedCohorts = {
+              ...prev.spacedCohorts,
+              [moduleId]: makeSpacedCohort({
+                moduleId,
+                status: "failed",
+                anchorAttemptSetId: attemptSetId,
+                anchorReleasedAt: releasedAt,
+                failedAt: releasedAt,
+                error: outcome.error,
+              }),
+            };
+          }
+        }
+
+        return {
+          ...prev,
+          reviews,
+          attemptSets: { ...prev.attemptSets, [attemptSetId]: released },
+          spacedReviews,
+          spacedCohorts,
+        };
+      }, true);
+    },
+    [commit],
+  );
+
+  const releaseSpacedAttempt = useCallback<LearnerStateContextValue["releaseSpacedAttempt"]>(
+    (attemptSetId, releasedAt, payload) => {
+      commit((prev) => {
+        const set = prev.attemptSets[attemptSetId];
+        if (!set || set.status === "released") return prev; // idempotent
+        if (set.status !== "submitted") return prev; // revalidate status
+        const reviews = { ...prev.reviews };
+        for (const review of payload.reviews) reviews[review.id] = review;
+        const released: AttemptSet = {
+          ...set,
+          status: "released",
+          releasedAt,
+          responses: payload.responses,
+        };
+        // Derive the occurrence from the persisted attempt; complete it only when
+        // fully valid (mapped set, scheduled, due, not already completed).
+        let spacedReviews = prev.spacedReviews;
+        const reviewId = set.scheduledReviewId;
+        const occ = reviewId ? prev.spacedReviews[reviewId] : undefined;
+        const due = occ && Number.isFinite(Date.parse(occ.dueAt))
+          ? Date.parse(releasedAt) >= Date.parse(occ.dueAt)
+          : false;
+        if (
+          reviewId &&
+          occ &&
+          occ.setId === set.setId &&
+          occ.status === "scheduled" &&
+          !occ.completedInAttemptSetId &&
+          due
+        ) {
+          spacedReviews = {
+            ...prev.spacedReviews,
+            [reviewId]: { ...occ, status: "completed", completedInAttemptSetId: attemptSetId },
+          };
+        }
+        return {
+          ...prev,
+          reviews,
+          attemptSets: { ...prev.attemptSets, [attemptSetId]: released },
+          spacedReviews,
+        };
+      }, true);
+    },
+    [commit],
+  );
+
   const exportState = useCallback(() => {
     // In read-only recovery (corrupt / newer-schema) the in-memory session is a
     // throwaway; the untouched RAW bytes are the thing worth preserving.
@@ -346,6 +523,8 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
       upsertReview,
       claimSchedulerEmission,
       setSchedulerHint,
+      releasePrimaryAttempt,
+      releaseSpacedAttempt,
       exportState,
       importState,
       resetState,
@@ -362,6 +541,8 @@ export function LearnerStateProvider({ children }: { children: ReactNode }) {
       upsertReview,
       claimSchedulerEmission,
       setSchedulerHint,
+      releasePrimaryAttempt,
+      releaseSpacedAttempt,
       exportState,
       importState,
       resetState,

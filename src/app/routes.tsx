@@ -58,6 +58,22 @@ const devRoutes = import.meta.env.DEV
         },
       },
       {
+        // Spaced-review due list (Package H).
+        path: "dev/spaced",
+        lazy: async () => {
+          const { DevSpacedReviewPage } = await import("../pages/DevSpacedReviewPage");
+          return { Component: DevSpacedReviewPage };
+        },
+      },
+      {
+        // A single spaced OCCURRENCE (Package H) — the only path that can complete it.
+        path: "dev/spaced/:scheduledReviewId",
+        lazy: async () => {
+          const { DevSpacedRunnerPage } = await import("../pages/DevSpacedRunnerPage");
+          return { Component: DevSpacedRunnerPage };
+        },
+      },
+      {
         path: "dev/recovery",
         lazy: async () => {
           const { DevRecoveryPage } = await import("../pages/DevRecoveryPage");

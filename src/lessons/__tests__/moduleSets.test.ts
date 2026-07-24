@@ -4,6 +4,13 @@ import {
   listModuleSets,
   resolveModuleSet,
   ModuleSetResolutionError,
+  PRIMARY_SET_IDS,
+  SPACED_SET_IDS,
+  SPACED_EXERCISE_IDS,
+  isPrimarySetId,
+  isSpacedSetId,
+  spacedSetForExercise,
+  spacedExerciseForSet,
 } from "../moduleSets";
 
 describe("module sets", () => {
@@ -67,6 +74,38 @@ describe("Package G module sets", () => {
   it("has unique set ids across all registered sets", () => {
     const ids = listModuleSets().map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("Package H spaced sets & groupings", () => {
+  it("registers three one-item spaced sets in deterministic order", () => {
+    for (const id of SPACED_SET_IDS) {
+      const set = getModuleSet(id);
+      expect(set, id).toBeDefined();
+      expect(set?.mode).toBe("exam");
+      expect(set?.itemIds).toHaveLength(1);
+    }
+    const { items } = resolveModuleSet("systems-elimination-spaced-trichotomy");
+    expect(items.map((e) => e.id)).toEqual(["mod-spaced-trichotomy"]);
+  });
+
+  it("keeps primary and spaced set ids disjoint", () => {
+    for (const id of SPACED_SET_IDS) expect(PRIMARY_SET_IDS).not.toContain(id);
+    for (const id of PRIMARY_SET_IDS) expect(SPACED_SET_IDS).not.toContain(id);
+    expect(PRIMARY_SET_IDS.every(isPrimarySetId)).toBe(true);
+    expect(SPACED_SET_IDS.every(isSpacedSetId)).toBe(true);
+    expect(SPACED_SET_IDS.some(isPrimarySetId)).toBe(false);
+  });
+
+  it("round-trips the fixed spaced set ↔ exercise mapping", () => {
+    expect(SPACED_EXERCISE_IDS).toHaveLength(SPACED_SET_IDS.length);
+    for (const setId of SPACED_SET_IDS) {
+      const ex = spacedExerciseForSet(setId)!;
+      expect(SPACED_EXERCISE_IDS).toContain(ex);
+      expect(spacedSetForExercise(ex)).toBe(setId);
+    }
+    expect(spacedSetForExercise("not-a-spaced-item")).toBeUndefined();
+    expect(spacedExerciseForSet("systems-elimination-review")).toBeUndefined();
   });
 
   it("mixes auto-graded solution-set items with human-scored writing", () => {

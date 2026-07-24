@@ -538,23 +538,25 @@ no general ℝⁿ theory, no production routing/auth/backend/multi-user review.
 *Size:* medium (content on F). **Built (evidence-integrity corrected); pending real
 administration + human scoring.**
 
-### Package H — Delayed / spaced retrieval (D12) · module-owned · 🟡 PLANNED (will be **partially shipped**)
+### Package H — Delayed / spaced retrieval (D12) · module-owned · ✅ PARTIALLY SHIPPED (built + verified; not administered)
 *Partially closes:* D12. `mod-spaced-trichotomy`, `mod-spaced-uniqueness`,
-`mod-spaced-rowops` scheduled at ~1 week / ~1 month, on the real `SchedulerHook`
-implementation. **The L7/L8/L9 prerequisite-check wiring stays a tracked, deferred D12
-obligation** (not built here), so D12 is only **partially discharged**.
+`mod-spaced-rowops` scheduled at ~1 week / ~1 month, on the real (narrowed) `SchedulerHook`
+implementation, with an occurrence-keyed schema-v3 model + a dev-gated due-review surface.
+**The L7/L8/L9 prerequisite-check wiring stays a tracked, deferred D12 obligation** (not built
+here), so D12 is only **partially discharged**. Like Package G, the machinery is verified but
+**not administered** — no real learner has yet reached a due date and answered.
 *Depends on:* F (scheduler seam). *Size:* **medium** (revised from small–medium; see
 plan §"Slice sequencing" for why).
 
 > **Implementation-ready plan:** the full slice plan (findings, occurrence-keyed domain
 > model, files, data flow, migration, acceptance criteria, tests, and the deferred-obligation
-> recording) lives in **[package-h-plan.md](package-h-plan.md)**. Slices: **H1** three
-> fresh spaced items + one-item sets · **H2** occurrence-keyed `spacedReviews` +
-> module-scoped `spacedCohorts` model (schema v2→v3) with hardened + cross-record
+> recording) lives in **[package-h-plan.md](package-h-plan.md)**. Slices, all **built**:
+> **H1** three fresh spaced items + one-item sets · **H2** occurrence-keyed `spacedReviews` +
+> module-scoped `spacedCohorts` model (schema **v2→v3**) with hardened + cross-record
 > normalization · **H3** the narrowed scheduler hook + occurrence route (`dev/spaced/:id`)
 > + due-review surface + `ModuleRunner` integration · **H4** docs (partially-shipped +
-> tracked deferral) + full verification. **Planning only — no code changed.** Building any
-> slice is Mode C and needs explicit approval.
+> tracked deferral) + full verification. **Built and verified** (`tsc -b`, `oxlint`, 704
+> unit tests, and the F/G/H assessment e2e suites all green); **not administered**.
 >
 > **Design corrections folded in (found while planning, not in the original one-line
 > spec):** occurrences are **occurrence-keyed** with stable ids so the same item can be
@@ -609,11 +611,14 @@ plan §"Slice sequencing" for why).
    infrastructure; **SHIPPED**; **required before any lesson-owned proof/reasoning
    outcome can be scored** and before Class-B reassessment.
 5. ✅ **G** (Class-A module-owned sets — method selection, cumulative/transfer, the
-   concrete 3×3/rectangular P2 slice) on F — **BUILT** (eight items, two sets;
-   evidence-integrity corrected: elimination-evidence capture, blank ≠ 0, contradiction-row
-   verdict, de-cued method selection). **H, I** (spacing, timed) remain **PLANNED**. These
-   discharge module-owned outcomes and enable Class-B reassessment at Gate 9 once genuinely
-   administered.
+   concrete 3×3/rectangular P2 slice) on F — **BUILT, not administered** (eight items, two
+   sets; evidence-integrity corrected: elimination-evidence capture, blank ≠ 0,
+   contradiction-row verdict, de-cued method selection).
+6. ✅ **H** (spaced retrieval, D12) on F — **PARTIALLY SHIPPED, not administered**: the three
+   spaced items + real scheduler + occurrence-keyed schema-v3 model + dev due-review surface
+   are built and verified; the L7/L8/L9 prerequisite-check wiring stays a tracked, deferred
+   D12 obligation. **I** (timed mock) remains **PLANNED**. These discharge module-owned
+   outcomes and enable Class-B reassessment at Gate 9 once genuinely administered.
 6. Run [assessment-plan.md](assessment-plan.md); record real results; create
    `validation.md` (Gate 10); update the
    [benchmark gap summary](../../benchmark-matrix.md#3-course-level-gaps-summary).
@@ -626,19 +631,20 @@ made (COURSE §6.2).
 ---
 
 **Approval boundary.** Packages B, C, D are built, Package E's surfaces are built,
-**Package F1–F4 is SHIPPED** (per [Package F — shipped](#package-f--shipped)), and
+**Package F1–F4 is SHIPPED** (per [Package F — shipped](#package-f--shipped)),
 **Package G is BUILT and evidence-integrity corrected** — eight module-owned Class-A items
-in two dev-gated sets (with produced elimination-evidence capture, blank-≠-0 numeric
-capture, a produced contradiction-row verdict, and a de-cued method-selection item),
-verified by pure-math + capability + registration + integration unit tests and the
-mandatory Package G e2e flows. The **Mode C boundary now sits before Package H**: building
-H (spacing) or I (timed mock) or any further assessment content is Mode C and requires
-explicit approval.
+in two dev-gated sets — and **Package H is PARTIALLY SHIPPED** (three spaced items + real
+narrowed scheduler + occurrence-keyed schema-v3 model + dev due-review surface; L7/L8/L9
+prerequisite wiring stays a tracked, deferred D12 obligation), verified by pure-math +
+capability + registration + integration unit tests and the mandatory G/H e2e flows. The
+**Mode C boundary now sits before Package I**: building I (timed mock) or any further
+assessment content is Mode C and requires explicit approval.
 
-**Gate posture is unchanged by Package G.** Gate 8 for L3/L4/L5 stays **NOT PASSED**: the
-Package G tests exercise the *machinery* with synthetic answers — they are **not** real
+**Gate posture is unchanged by Packages G and H.** Gate 8 for L3/L4/L5 stays **NOT PASSED**:
+the G/H tests exercise the *machinery* with synthetic answers — they are **not** real
 learner evidence. Clearing Gate 8 still requires an author to run the review sets, score
 real learner reasoning/proof responses (`REVIEW_COMPLETE` is necessary-not-sufficient),
 and decide manually. **Gate 9 stays NOT PASSED** until the assessment is genuinely
-administered and its evidence reviewed. Packages **H and I remain PLANNED**;
-`mod-enrich-ode` and general ℝⁿ rank–nullity remain out of scope.
+administered and its evidence reviewed. Package **H is partially shipped** (its L7/L8/L9
+prerequisite wiring remains a tracked, deferred D12 obligation) and Package **I remains
+PLANNED**; `mod-enrich-ode` and general ℝⁿ rank–nullity remain out of scope.

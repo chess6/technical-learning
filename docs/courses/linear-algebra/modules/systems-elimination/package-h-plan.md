@@ -9,11 +9,19 @@ the [assessment plan (Gate 9)](assessment-plan.md#the-assessment-set-cumulative-
 (the spaced items + scheduler; the L7/L8/L9 prerequisite-check wiring stays a tracked,
 deferred D12 obligation — see §"Deferred D12 obligation").
 
-> **Planning only.** No application code is modified by this document. Building any
-> slice below is **Mode C** and requires explicit approval per
-> [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) and
-> `.cursor/rules/course-authoring.mdc`, per the same **Mode C boundary** recorded in
-> [implementation-package.md](implementation-package.md#package-h--delayed--spaced-retrieval-d12).
+> **✅ Built (2026-07-24) — PARTIALLY SHIPPED, not administered.** This plan was approved and
+> implemented (Mode C): H1 spaced items + one-item sets, H2 the occurrence-keyed schema-v3
+> model + atomic provider actions + cross-record integrity, H3 the narrowed scheduler +
+> occurrence route + due-review surface + runner wiring, H4 docs + verification (`tsc -b`,
+> `oxlint`, 704 unit tests, and the F/G/H assessment e2e suites all green). **Not
+> administered** — no real learner has reached a due date and answered. The **L7/L8/L9
+> prerequisite-check wiring remains a tracked, deferred D12 obligation** (§"Deferred D12
+> obligation"), so D12 is only **partially discharged**. Gate 8 and Gate 9 stay **NOT
+> PASSED**. The sections below are the as-built design (the shipped behavior is authoritative
+> where it deviates in small ways — e.g. the spacing referential-integrity config lives in
+> `src/platform/spacedConfig.ts` so the platform normalizer can validate without an upward
+> import, and `computeSpacedSchedule` + the registered hook live in
+> `src/lessons/spacedSchedule.ts`).
 
 ## 0. Findings that constrain the design (inspected before choosing it)
 

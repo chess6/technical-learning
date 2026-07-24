@@ -936,3 +936,73 @@ responses remain unscored by an author).
 - [x] **Gate 8 = NOT PASSED** for L3/L4/L5 and **Gate 9 = NOT PASSED** preserved — G exercises
   the *machinery* with synthetic answers, not real learner evidence; **Package H is the next
   Mode C target** (requires explicit approval); H, I remain PLANNED
+
+## Systems–Elimination module — Package H spaced retrieval (D12) (2026-07-24, on the Package F/G runner)
+
+### Domain model & integrity (schema v2 → v3)
+
+- [x] **Occurrence-keyed model** — each scheduled retrieval is a `ScheduledSpacedReview`
+  keyed by a STABLE deterministic id (`spaced:moduleId:exerciseId:delayDays`), so the same
+  item is answered once at ~7d and again at ~30d via distinct occurrences/attempts (fixes the
+  ambiguous "oldest review for this exercise"). `AttemptSet.scheduledReviewId` links a
+  one-item attempt to its exact occurrence.
+- [x] **Module-scoped terminal state** — a `SpacedCohort` record (keyed by moduleId, status
+  `seeded`/`failed`) is the authoritative gate: once the first eligible primary release seeds
+  or fails, later releases never invoke the scheduler. Failure is persisted as a **visible,
+  module-wide, terminal** `failed` cohort (never auto-retried).
+- [x] **Atomic primary release + cohort** (`releasePrimaryAttempt`) — the attempt release,
+  the cohort record, and all six occurrences land in ONE provider transition; invariant:
+  never a released first-eligible primary without a seeded-or-failed cohort. Revalidates the
+  attempt's module + primary eligibility + submitted status; validates the computed six
+  occurrences through the SAME integrity pass the normalizer uses.
+- [x] **Exact-occurrence completion** (`releaseSpacedAttempt`) — derives the occurrence from
+  the persisted attempt's `scheduledReviewId` (not a parameter); completes only when mapped,
+  scheduled, due (`releasedAt ≥ dueAt`), and not already completed — otherwise a no-op that
+  surfaces a mismatch.
+- [x] **Single canonical release timestamp** — created once in the runner and used for the
+  attempt's `releasedAt`, the cohort anchor, the scheduler summary, and every occurrence's
+  `dueAt`; alignment survives reload + normalization (regression in `useLearnerState.test`).
+- [x] **Hardened + cross-record normalization** — per-entry checks (parseable `dueAt`,
+  allowlisted set/exercise/delay, mapping, `id === deriveStableKey`, status/completion
+  consistency) plus a total cross-record pass (origin references an eligible released primary;
+  `dueAt = anchor + delay` at exact ms; completed occurrences fully back-referenced &
+  released-no-earlier-than-due; a `seeded` cohort must hold exactly its six occurrences or it
+  is demoted to `failed`). Timestamps compared via parsed ms, never lexical order.
+
+### Content, scheduler & surfaces
+
+- [x] **Three fresh multiple-choice retention items** (`mod-spaced-trichotomy` /
+  `-uniqueness` / `-rowops`), E1–E2 by design (retention signals on already-evidenced
+  outcomes, not new transfer evidence); fresh systems re-verified vs `solveLinearSystem` and
+  distinct from every lesson/Package-G fixture.
+- [x] **Narrowed `SchedulerHook`** — the bypassed `dueReviews()` no-op was **removed** (a
+  deliberate F-seam contract change); `dueSpacedReviews(state, now)` is the canonical
+  pure due-query. `computeSpacedSchedule` is pure, gated to eligible primary releases.
+- [x] **Dev-gated surfaces** — `dev/spaced` due list + `dev/spaced/:scheduledReviewId`
+  occurrence route (the only path that can complete an occurrence). The occurrence route
+  rejects not-yet-due / unknown occurrences; the generic `dev/module/:setId` route rejects
+  spaced set ids so a learner cannot preview a spaced item early; spaced sets are omitted from
+  the dev assessment index.
+
+### Testing review
+
+- [x] `tsc -b` 0 errors; `npm run lint` (oxlint) clean apart from the pre-existing non-blocking
+  `react-refresh` warnings on `useLearnerState` + `captureRenderers`
+- [x] `npx vitest run` — **704 tests / 70 files** pass, incl. new `spacedReviews` (normalizer
+  + cross-record integrity + reconcile), `spacedSchedule`, `dueReviews`, `devSpacedPages`
+  (not-due / not-found / spaced-rejected guards), and `useLearnerState` (atomic seed,
+  module-wide gate, failed cohort, exact-occurrence completion, canonical-timestamp alignment)
+- [x] `npx playwright test` assessment suites — F runner (×2), Package G (×2), and the
+  **mandatory Package H** (×2: due occurrence answered from the list → completes & persists
+  across reload; not-yet-due URL blocked + generic route rejects spaced sets) all green, zero
+  console errors
+
+### Status review
+
+- [x] `implementation-package.md` (Package H **PARTIALLY SHIPPED**; Mode C boundary now before
+  Package I), `assessment-plan.md` (Class B **runnable, not administered**; D12 row built +
+  verified) reconciled
+- [x] **Gate 8 = NOT PASSED** for L3/L4/L5 and **Gate 9 = NOT PASSED** preserved — H exercises
+  the *machinery* with synthetic answers, not real learner evidence; the **L7/L8/L9
+  prerequisite-check wiring stays a tracked, deferred D12 obligation** (D12 partially
+  discharged), and **Package I remains PLANNED**

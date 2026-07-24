@@ -8,6 +8,9 @@ import {
   type SchedulerHook,
 } from "../../../platform/scheduler";
 import { ModuleRunner } from "../ModuleRunner";
+import { loadLearnerState } from "../../../platform/persistence";
+import { computeSpacedSchedule } from "../../../lessons/spacedSchedule";
+import { SPACED_COHORT_SIZE, SPACED_MODULE_ID } from "../../../platform/spacedConfig";
 
 afterEach(() => {
   localStorage.clear();
@@ -61,7 +64,7 @@ describe("ModuleRunner deferred feedback", () => {
 
   it("dispatches the scheduler hook at most once on release", async () => {
     const onAttemptReleased = vi.fn(() => ({}));
-    const hook: SchedulerHook = { onAttemptReleased, dueReviews: () => [] };
+    const hook: SchedulerHook = { onAttemptReleased };
     registerScheduler(hook);
 
     const { container, rerender } = renderRunner(<ModuleRunner setId={SET} />);
@@ -82,6 +85,66 @@ describe("ModuleRunner deferred feedback", () => {
       </LearnerStateProvider>,
     );
     expect(onAttemptReleased).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ModuleRunner — Package H spacing (primary release seeds a cohort atomically)", () => {
+  it("seeds one cohort + six occurrences on the first eligible primary release", async () => {
+    const onAttemptReleased = vi.fn((s: Parameters<SchedulerHook["onAttemptReleased"]>[0]) => ({
+      scheduled: computeSpacedSchedule(s),
+    }));
+    registerScheduler({ onAttemptReleased });
+
+    const { container } = renderRunner(<ModuleRunner setId={SET} />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    fireEvent.click(container.querySelector('[data-testid="module-submit"]')!);
+    await waitFor(() =>
+      expect(container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+
+    expect(onAttemptReleased).toHaveBeenCalledTimes(1);
+    const outcome = loadLearnerState();
+    expect(outcome.kind).toBe("loaded");
+    if (outcome.kind !== "loaded") return;
+    expect(outcome.state.spacedCohorts[SPACED_MODULE_ID]?.status).toBe("seeded");
+    expect(Object.keys(outcome.state.spacedReviews)).toHaveLength(SPACED_COHORT_SIZE);
+  });
+
+  it("does NOT invoke the scheduler on a LATER primary release once a cohort exists", async () => {
+    const onAttemptReleased = vi.fn((s: Parameters<SchedulerHook["onAttemptReleased"]>[0]) => ({
+      scheduled: computeSpacedSchedule(s),
+    }));
+    registerScheduler({ onAttemptReleased });
+
+    // First primary release seeds the cohort.
+    const first = renderRunner(<ModuleRunner setId={SET} />);
+    await waitFor(() =>
+      expect(first.container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    fireEvent.click(first.container.querySelector('[data-testid="module-submit"]')!);
+    await waitFor(() =>
+      expect(first.container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    expect(onAttemptReleased).toHaveBeenCalledTimes(1);
+    first.unmount();
+
+    // A DIFFERENT primary set releases later — the module-wide gate must skip the hook.
+    const second = renderRunner(<ModuleRunner setId="systems-elimination-transfer" />);
+    await waitFor(() =>
+      expect(second.container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
+    );
+    fireEvent.click(second.container.querySelector('[data-testid="module-submit"]')!);
+    await waitFor(() =>
+      expect(second.container.querySelector('[data-testid="review-status"]')).toBeTruthy(),
+    );
+    expect(onAttemptReleased).toHaveBeenCalledTimes(1); // still once — never re-invoked
+    const outcome = loadLearnerState();
+    if (outcome.kind === "loaded") {
+      expect(Object.keys(outcome.state.spacedReviews)).toHaveLength(SPACED_COHORT_SIZE);
+    }
+    second.unmount();
   });
 });
 

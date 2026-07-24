@@ -3,7 +3,13 @@ import { useCallback } from "react";
 import { CourseSidebar } from "./CourseSidebar";
 import { useSidebarOpen } from "../../hooks/useSidebarOpen";
 import { LearnerStateProvider } from "../../platform/useLearnerState";
+import { registerSpacedScheduler } from "../../lessons/spacedSchedule";
 import "./AppShell.css";
+
+// Install the real spaced-retrieval scheduler once, at app boot (Package H).
+// Occurrence RECONCILIATION happens inside learner-state normalization on hydrate,
+// so no separate hydrate step is needed here.
+registerSpacedScheduler();
 
 export function AppShell() {
   const { open, closeSidebar, toggleSidebar } = useSidebarOpen();

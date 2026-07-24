@@ -76,8 +76,9 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
 ### 4. Learner-state envelope — `src/platform/learnerState.ts`
 
 - A versioned `{ schemaVersion, lessonProgress, exerciseAttempts, bookmarks,
-  attemptSets, reviews }` keyed by canonical (alias-resolved) ids. `schemaVersion`
-  is **2** (Package F added `attemptSets` + `reviews`).
+  attemptSets, reviews, spacedReviews, spacedCohorts }` keyed by canonical
+  (alias-resolved) ids. `schemaVersion` is **3** (Package F added `attemptSets` +
+  `reviews` at v2; Package H added `spacedReviews` + `spacedCohorts` at v3).
 - Attempts are **JSON-safe, capability-aware serialized answer envelopes**
   carrying `capabilityId` + `answerSchemaVersion`, so a future migration can
   reinterpret a stored answer when a capability's answer shape evolves.
@@ -87,6 +88,15 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   (tagged `graded`/`error`/`omitted`, kept **separate** from human review), and
   `ReviewRecord` (pending/scored, rubric id + version, plus an `omitted` flag). Each
   migration step stamps exactly its version.
+- **Spaced-retrieval model (v3, Package H):** `ScheduledSpacedReview` (an occurrence
+  keyed by a deterministic `spaced:moduleId:exerciseId:delayDays` id, with an exact
+  `dueAt = anchor + delay`) and `SpacedCohort` (module-wide `seeded`/`failed` terminal
+  state). Normalization runs a **cross-record integrity pass** (origin references an
+  eligible released primary; `dueAt` matches its anchor at exact ms; a `seeded` cohort
+  holds exactly its full occurrence set or is demoted to `failed`; completed occurrences
+  are fully back-referenced). The spacing referential-integrity contract (set/exercise
+  ids, delays, mapping, `deriveStableKey`) lives in `platform/spacedConfig.ts` so the
+  normalizer validates without an upward `platform → lessons` import.
 - **Blank required responses are omissions, not evidence:** a blank written proof is
   recorded as an `omitted` `ReviewRecord` (auto `passed:false`) that `reviewStatus`
   can never count toward `REVIEW_COMPLETE`; human scoring requires a **finite score**.

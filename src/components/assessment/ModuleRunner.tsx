@@ -28,9 +28,10 @@ import {
   type AttemptSet,
   type ReviewRecord,
 } from "../../platform/learnerState";
-import { useLearnerState } from "../../platform/useLearnerState";
+import { useLearnerState, type SpacedReleaseOutcome } from "../../platform/useLearnerState";
 import type { JsonValue } from "../../platform/json";
 import { getScheduler, type AttemptReleaseSummary } from "../../platform/scheduler";
+import { isPrimarySetId } from "../../platform/spacedConfig";
 import {
   ModuleSetResolutionError,
   resolveModuleSet,
@@ -47,7 +48,14 @@ function hasSubstantiveText(serialized: JsonValue | null): boolean {
   return typeof text === "string" && text.trim() !== "";
 }
 
-export function ModuleRunner({ setId }: { setId: string }) {
+export function ModuleRunner({
+  setId,
+  scheduledReviewId,
+}: {
+  setId: string;
+  /** Present for a one-item SPACED attempt: keys the attempt to its exact occurrence. */
+  scheduledReviewId?: string;
+}) {
   const {
     state,
     phase,
@@ -56,9 +64,8 @@ export function ModuleRunner({ setId }: { setId: string }) {
     startAttemptSet,
     putItemResponse,
     submitAttemptSet,
-    releaseAttemptSet,
-    claimSchedulerEmission,
-    setSchedulerHint,
+    releasePrimaryAttempt,
+    releaseSpacedAttempt,
   } = useLearnerState();
 
   const resolved = useMemo(() => {
@@ -75,16 +82,21 @@ export function ModuleRunner({ setId }: { setId: string }) {
     }
   }, [setId]);
 
+  // A spaced attempt is keyed to its OCCURRENCE (scheduledReviewId), so a 7-day and
+  // a 30-day attempt on the same one-item set never resume each other.
   const attempt = useMemo<AttemptSet | undefined>(() => {
-    const all = Object.values(state.attemptSets).filter((a) => a.setId === setId);
+    const all = Object.values(state.attemptSets).filter((a) =>
+      scheduledReviewId ? a.scheduledReviewId === scheduledReviewId : a.setId === setId && !a.scheduledReviewId,
+    );
     return all.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1))[0];
-  }, [state.attemptSets, setId]);
+  }, [state.attemptSets, setId, scheduledReviewId]);
 
   const createdRef = useRef<string | null>(null);
   useEffect(() => {
     if (phase === "loading" || !resolved.ok || attempt) return;
-    if (createdRef.current === setId) return;
-    createdRef.current = setId;
+    const key = scheduledReviewId ?? setId;
+    if (createdRef.current === key) return;
+    createdRef.current = key;
     const snapshots: AttemptItemSnapshot[] = resolved.items.map(snapshotItem);
     startAttemptSet(
       makeAttemptSet({
@@ -93,9 +105,10 @@ export function ModuleRunner({ setId }: { setId: string }) {
         moduleId: resolved.set.moduleId,
         mode: resolved.set.mode,
         items: snapshots,
+        ...(scheduledReviewId ? { scheduledReviewId } : {}),
       }),
     );
-  }, [phase, resolved, attempt, setId, startAttemptSet]);
+  }, [phase, resolved, attempt, setId, scheduledReviewId, startAttemptSet]);
 
   if (!resolved.ok) {
     return (
@@ -116,8 +129,23 @@ export function ModuleRunner({ setId }: { setId: string }) {
   }
 
   const released = attempt.status === "released";
+  const isSpaced = attempt.scheduledReviewId !== undefined;
+  const cohort = state.spacedCohorts[attempt.moduleId];
+  // Failed-cohort notice (primary sets only) after release.
+  const cohortFailed =
+    released && !isSpaced && isPrimarySetId(attempt.setId) && cohort?.status === "failed";
+  // Mismatch notice (spaced sets only): released but the occurrence was NOT completed
+  // by this attempt (e.g. not yet due / already consumed / mapping mismatch).
+  const spacedMismatch =
+    released &&
+    isSpaced &&
+    !!attempt.scheduledReviewId &&
+    state.spacedReviews[attempt.scheduledReviewId]?.completedInAttemptSetId !== attempt.id;
 
   const submit = () => {
+    // ONE canonical release timestamp for the attempt, the cohort anchor, the
+    // scheduler summary, and every computed dueAt (reviewer-mandated alignment).
+    const releasedAt = new Date().toISOString();
     submitAttemptSet(attempt.id);
     const reviews: ReviewRecord[] = [];
     const responses: AttemptItemResponse[] = attempt.items.map((item) => {
@@ -140,7 +168,7 @@ export function ModuleRunner({ setId }: { setId: string }) {
               passed: false,
               omitted: true,
               feedback: "No response submitted.",
-              scoredAt: new Date().toISOString(),
+              scoredAt: releasedAt,
             };
         reviews.push(review);
         return makeAttemptItemResponse({
@@ -155,30 +183,39 @@ export function ModuleRunner({ setId }: { setId: string }) {
         auto: gradeSnapshot(item, serialized),
       });
     });
-    releaseAttemptSet(attempt.id, { responses, reviews });
 
-    // At-most-once scheduler dispatch: claim (persisted) BEFORE invoking; never
-    // auto-retry a throwing hook.
-    if (claimSchedulerEmission(attempt.id)) {
+    if (isSpaced) {
+      // Release + complete the exact occurrence atomically (derive-and-validate).
+      releaseSpacedAttempt(attempt.id, releasedAt, { responses, reviews });
+      return;
+    }
+
+    // Primary (or other non-spaced) set: compute the spacing schedule PURELY off
+    // the canonical timestamp, then release + establish the cohort atomically. The
+    // module-wide gate means the scheduler is invoked ONLY when no cohort exists.
+    let outcome: SpacedReleaseOutcome = { kind: "none" };
+    if (isPrimarySetId(attempt.setId) && !state.spacedCohorts[attempt.moduleId]) {
+      const summary: AttemptReleaseSummary = {
+        attemptSetId: attempt.id,
+        setId: attempt.setId,
+        moduleId: attempt.moduleId,
+        releasedAt,
+        outcomes: responses.map((r) => ({
+          exerciseId: r.exerciseId,
+          kind: r.reviewId ? "review" : "auto",
+          ...(r.auto?.kind === "graded" ? { correct: r.auto.correct } : {}),
+        })),
+      };
       try {
-        const summary: AttemptReleaseSummary = {
-          attemptSetId: attempt.id,
-          setId: attempt.setId,
-          moduleId: attempt.moduleId,
-          releasedAt: new Date().toISOString(),
-          outcomes: responses.map((r) => ({
-            exerciseId: r.exerciseId,
-            kind: r.reviewId ? "review" : "auto",
-            ...(r.auto?.kind === "graded" ? { correct: r.auto.correct } : {}),
-          })),
-        };
-        const { hint } = getScheduler().onAttemptReleased(summary);
-        if (hint !== undefined) setSchedulerHint(attempt.id, hint);
-      } catch {
-        // Isolated: release already persisted; the emission marker is claimed so
-        // a rerender/reload will not dispatch again.
+        const { scheduled, hint } = getScheduler().onAttemptReleased(summary);
+        if (scheduled && scheduled.length > 0) outcome = { kind: "seeded", occurrences: scheduled, hint };
+      } catch (err) {
+        // Isolated: recorded as a visible, module-wide, terminal FAILED cohort
+        // (never an auto-retry) inside the atomic release.
+        outcome = { kind: "failed", error: err instanceof Error ? err.message : "scheduler error" };
       }
     }
+    releasePrimaryAttempt(attempt.id, attempt.moduleId, releasedAt, { responses, reviews }, outcome);
   };
 
   return (
@@ -199,6 +236,19 @@ export function ModuleRunner({ setId }: { setId: string }) {
             A save just failed (storage may be full or disabled). Your work is
             kept in memory only — export a copy from the recovery page before
             reloading.
+          </p>
+        )}
+        {cohortFailed && (
+          <p className="module-runner__notice" role="alert" data-testid="cohort-failed-warning">
+            Spaced-review scheduling could not be set up for this module
+            {cohort?.error ? ` (${cohort.error})` : ""}. It will not retry
+            automatically — reset or re-import learner state from the recovery page.
+          </p>
+        )}
+        {spacedMismatch && (
+          <p className="module-runner__notice" role="status" data-testid="spaced-mismatch-warning">
+            This spaced review was not marked complete — it may not be due yet or
+            may already have been answered.
           </p>
         )}
       </header>

@@ -89,11 +89,67 @@ const SYSTEMS_ELIMINATION_APPLIED: ModuleSet = {
   ],
 };
 
+/**
+ * Package H — three one-item spaced-retrieval sets (D12). Each renders a single
+ * `mod-spaced-*` item through the existing runner, reached ONLY when its scheduled
+ * occurrence is due (via the `dev/spaced/:scheduledReviewId` route). They are
+ * deliberately NOT listed on the dev assessment index and are rejected on the
+ * generic `dev/module/:setId` route so a learner cannot preview them early.
+ */
+const SYSTEMS_ELIMINATION_SPACED_TRICHOTOMY: ModuleSet = {
+  id: "systems-elimination-spaced-trichotomy",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — spaced retrieval: trichotomy",
+  mode: "exam",
+  itemIds: ["mod-spaced-trichotomy"],
+};
+const SYSTEMS_ELIMINATION_SPACED_UNIQUENESS: ModuleSet = {
+  id: "systems-elimination-spaced-uniqueness",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — spaced retrieval: uniqueness",
+  mode: "exam",
+  itemIds: ["mod-spaced-uniqueness"],
+};
+const SYSTEMS_ELIMINATION_SPACED_ROWOPS: ModuleSet = {
+  id: "systems-elimination-spaced-rowops",
+  version: 1,
+  moduleId: "systems-elimination",
+  title: "Systems & Elimination — spaced retrieval: row operations",
+  mode: "exam",
+  itemIds: ["mod-spaced-rowops"],
+};
+
 export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_REVIEW,
   SYSTEMS_ELIMINATION_TRANSFER,
   SYSTEMS_ELIMINATION_APPLIED,
+  SYSTEMS_ELIMINATION_SPACED_TRICHOTOMY,
+  SYSTEMS_ELIMINATION_SPACED_UNIQUENESS,
+  SYSTEMS_ELIMINATION_SPACED_ROWOPS,
 ];
+
+/* -------------------------------------------------------------------------- */
+/* Package H — spacing set-id groupings.                                        */
+/*                                                                              */
+/* The referential-integrity constants live in `platform/spacedConfig.ts` (the  */
+/* single source of truth, so the persistence-layer normalizer can validate     */
+/* without an upward platform→lessons import). Re-exported here for the lessons/ */
+/* component consumers (scheduler, dev routes) that already import moduleSets.   */
+/* -------------------------------------------------------------------------- */
+
+export {
+  SPACED_MODULE_ID,
+  PRIMARY_SET_IDS,
+  SPACED_ITEMS,
+  SPACED_SET_IDS,
+  SPACED_EXERCISE_IDS,
+  isPrimarySetId,
+  isSpacedSetId,
+  spacedSetForExercise,
+  spacedExerciseForSet,
+} from "../platform/spacedConfig";
 
 const moduleSetById = new Map(MODULE_SETS.map((set) => [set.id, set]));
 

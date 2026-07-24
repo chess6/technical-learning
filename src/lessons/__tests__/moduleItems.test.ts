@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getGradingCapability, requiresHumanScore, resolveCapabilityId } from "../capabilities";
-import { MODULE_ITEMS } from "../moduleItems";
+import { MODULE_ITEMS, SYS_SPACED_TRICHOTOMY } from "../moduleItems";
 import { snapshotItem } from "../attemptSnapshot";
+import { solveLinearSystem } from "../../math/linearSystemsGeneral";
 
-const EXPECTED_IDS = [
+const PACKAGE_G_IDS = [
   "mod-select-method",
   "mod-transfer-classify",
   "mod-transfer-solset-fresh",
@@ -14,6 +15,10 @@ const EXPECTED_IDS = [
   "mod-p2-applied-rect",
 ];
 
+const SPACED_IDS = ["mod-spaced-trichotomy", "mod-spaced-uniqueness", "mod-spaced-rowops"];
+
+const EXPECTED_IDS = [...PACKAGE_G_IDS, ...SPACED_IDS];
+
 const HUMAN_SCORED = new Set([
   "mod-select-method",
   "mod-transfer-classify",
@@ -22,7 +27,7 @@ const HUMAN_SCORED = new Set([
 ]);
 
 describe("Package G module items", () => {
-  it("authors exactly the eight required items with unique ids", () => {
+  it("authors exactly the required items (8 Package G + 3 spaced) with unique ids", () => {
     const ids = MODULE_ITEMS.map((e) => e.id);
     expect(ids.sort()).toEqual([...EXPECTED_IDS].sort());
     expect(new Set(ids).size).toBe(ids.length);
@@ -84,5 +89,55 @@ describe("Package G module items", () => {
     for (const item of MODULE_ITEMS) {
       expect(item.prompt, item.id).not.toMatch(/\[\[/);
     }
+  });
+});
+
+describe("Package H spaced-retrieval items", () => {
+  it("authors the three spaced items as auto-graded multiple-choice (E1–E2 retention)", () => {
+    for (const id of SPACED_IDS) {
+      const item = MODULE_ITEMS.find((e) => e.id === id)!;
+      expect(item, id).toBeDefined();
+      expect(item.type, id).toBe("multiple-choice");
+      expect(requiresHumanScore(item), id).toBe(false);
+    }
+  });
+
+  it("the trichotomy item's correct choice matches the independently solved system", () => {
+    // Fresh dependent + consistent 2×2 ⇒ infinitely many (the trichotomy branch).
+    const sol = solveLinearSystem(SYS_SPACED_TRICHOTOMY.matrix, SYS_SPACED_TRICHOTOMY.rhs);
+    expect(sol.consistent).toBe(true);
+    expect(sol.freeCount).toBeGreaterThan(0);
+    const item = MODULE_ITEMS.find((e) => e.id === "mod-spaced-trichotomy")!;
+    if (item.type !== "multiple-choice") throw new Error("expected multiple-choice");
+    expect(item.choices[item.correctChoice]).toMatch(/infinitely many/i);
+  });
+
+  it("the uniqueness item retrieves existence-≠-uniqueness (consistent + nonzero null ⇒ infinite)", () => {
+    const item = MODULE_ITEMS.find((e) => e.id === "mod-spaced-uniqueness")!;
+    if (item.type !== "multiple-choice") throw new Error("expected multiple-choice");
+    expect(item.choices[item.correctChoice]).toMatch(/infinitely many/i);
+  });
+
+  it("the row-ops item marks the scale-by-zero (subtract-from-itself) move as illegal", () => {
+    const item = MODULE_ITEMS.find((e) => e.id === "mod-spaced-rowops")!;
+    if (item.type !== "multiple-choice") throw new Error("expected multiple-choice");
+    // The illegal move is R3 -> R3 - R3 (scale by 0); adding a row to itself is legal.
+    expect(item.choices[item.correctChoice]).toMatch(/R_3 - R_3/);
+    expect(item.choices[item.correctChoice]).not.toMatch(/R_1 \+ R_1/);
+  });
+
+  it("spaced systems are numerically distinct from every Package G fixture", () => {
+    // Guard against accidentally reusing a lesson/Package-G system as a 'fresh' one.
+    const g = [
+      "[[1,2,-1],[2,4,1]]",
+      "[[1,1,1],[1,2,3],[2,3,4]]",
+      "[[2,1,-1],[4,1,1],[2,0,2]]",
+      "[[1,1],[1,-1],[2,1]]",
+      "[[1,3],[2,6]]",
+      "[[1,2],[2,4]]",
+      "[[2,1],[1,3]]",
+      "[[1,2],[3,4]]",
+    ];
+    expect(g).not.toContain(JSON.stringify(SYS_SPACED_TRICHOTOMY.matrix));
   });
 });

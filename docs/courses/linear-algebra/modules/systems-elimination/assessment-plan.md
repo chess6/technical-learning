@@ -85,9 +85,11 @@ re-fires them after a delay.
 > All non-scoring lesson-owned interaction gaps are closed. **However, none of L3/L4/L5 has
 > passed Gate 8** — Gate 8 is a single gate and each lesson still has produced
 > reasoning/proof `self-check`s that are **unscored**. **Package F (the module runner +
-> human-scoring surface) is now SHIPPED**, so the mechanism to run this reassessment and
-> score the proof/reasoning responses exists; what remains is **genuine administration +
-> author scoring of real learner evidence**. Class B stays **PLANNED** until that happens.
+> human-scoring surface) is SHIPPED and Package H (the real spacing scheduler + spaced
+> items) is PARTIALLY SHIPPED**, so the full reassessment set — including its D12 spaced
+> retention items — is now **runnable**; what remains is **genuine administration + author
+> scoring of real learner evidence**. Class B is therefore **runnable, not administered**
+> (no longer blocked on missing machinery).
 
 | Lesson-owned outcome (reassessed here) | Owner | Dimension | Purpose at module | Item | Result |
 | --- | --- | --- | --- | --- | --- |
@@ -97,7 +99,7 @@ re-fires them after a delay.
 | Prove row-op invariance (both directions) | L4 | D6 | human-scored proof surface | `mod-proof-invariance` | surface built 🟡 → awaits F (human scoring) |
 | Prove solution-set structure (both inclusions) | L5 | D6 | human-scored proof surface | `mod-proof-structure` | surface built 🟡 → awaits F (human scoring) |
 | Justify the trichotomy **without the determinant** | L3 | D6 | human-scored proof surface | `mod-proof-trichotomy` | surface built 🟡 → awaits F (human scoring) |
-| Retrieve trichotomy / uniqueness-≠-reachability / row-op legality after a delay | L3–L5 | D12 | spaced retention | `mod-spaced-*` | awaits F (scheduler) |
+| Retrieve trichotomy / uniqueness-≠-reachability / row-op legality after a delay | L3–L5 | D12 | spaced retention | `mod-spaced-*` | built + verified (H) · not administered |
 
 ## Abstraction-return deferrals discharged here
 Any accountable abstraction-return whose **owner is this module**
@@ -181,16 +183,19 @@ Covers the seven areas the module must assess under the declared profile:
   and machinery-verified, but the plan has **not been administered**, so no real learner
   evidence exists. `mod-timed-mock` (Package I) and enrichment `mod-enrich-ode` stay
   planned / off the bar.
-- **Class B (lesson-owned reassessment):** `not yet runnable` — the owning-lesson outcomes
-  now have **real in-lesson evidence**: fresh **produced** classification, both-coordinate
+- **Class B (lesson-owned reassessment):** `runnable — not administered`. The owning-lesson
+  outcomes have **real in-lesson evidence**: fresh **produced** classification, both-coordinate
   column confirmation, complete parametric set, produced ∅-refusal (E3), and in-lesson
   **E4 unfamiliar transfer** (symbolic-parameter characterization, degenerate zero-pivot
   swap, scored null-direction construction). All non-scoring lesson-owned interaction gaps
   are closed, but **no lesson has passed Gate 8** (single gate; the produced
   reasoning/proof `self-check`s are still unscored). **Package F (runner + human-scoring
-  surface + scheduler) is SHIPPED**; reassessment now awaits only **real administration +
-  author scoring** of the produced lesson-owned surfaces to let the lessons clear Gate 8.
-- **Delayed-retention verified:** no (not yet administered).
+  surface) is SHIPPED and Package H (the real spacing scheduler + spaced items) is PARTIALLY
+  SHIPPED**, so the reassessment set (including its D12 spaced items) is now fully
+  *runnable*; what remains is **real administration + author scoring** of the produced
+  lesson-owned surfaces to let the lessons clear Gate 8 — not any missing machinery.
+- **Delayed-retention verified:** no (spaced machinery built + verified; **not administered** —
+  no learner has reached a due date and answered).
 - **Readiness claim supported (per [COURSE §6.2](../../../../authoring/mastery-standard.md#62-what-evidence-justifies-each-readiness-claim)):**
   **none at the module level.** The built lessons now evidence **independent performance
   (E3)** and **in-lesson unfamiliar transfer (E4)** for the computational/procedural and

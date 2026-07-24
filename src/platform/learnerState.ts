@@ -29,6 +29,18 @@ import {
   type VersionedState,
 } from "./identity";
 import { isJsonValue, type JsonValue } from "./json";
+import {
+  deriveStableKey,
+  dueAtFrom,
+  isPrimarySetId,
+  isSpacedDelay,
+  isSpacedExerciseId,
+  isSpacedSetId,
+  SPACED_DELAY_DAYS,
+  SPACED_ITEMS,
+  SPACED_MODULE_ID,
+  spacedSetForExercise,
+} from "./spacedConfig";
 
 /** Raw per-lesson progress — flags only; interpretation lives elsewhere. */
 export interface LessonProgress {
@@ -144,6 +156,13 @@ export interface AttemptSet {
   schedulerEmittedAt?: string;
   /** Opaque payload returned by the scheduler hook (Package H owns semantics). */
   schedulerHint?: JsonValue;
+  /**
+   * (v3) For a one-item SPACED attempt: the exact `ScheduledSpacedReview` it
+   * answers. Keys the attempt to its occurrence, so a 7-day and a 30-day attempt
+   * on the same one-item set never collide, and completion resolves the exact
+   * occurrence (never "the oldest for this exercise").
+   */
+  scheduledReviewId?: string;
 }
 
 export type ReviewState = "pending" | "scored";
@@ -170,6 +189,52 @@ export interface ReviewRecord {
   omitted?: boolean;
 }
 
+/* --------------------------------------------------------------------------
+ * Package H — delayed / spaced retrieval (schema v3)
+ *
+ * Each scheduled OCCURRENCE is modeled explicitly and keyed by a STABLE
+ * deterministic id (`spaced:moduleId:exerciseId:delayDays`), so the same item is
+ * answered once at ~7d and again at ~30d via distinct occurrences. The MODULE-WIDE
+ * terminal state (seeded/failed) lives in a separate `SpacedCohort` record, NOT on
+ * an AttemptSet — once the first eligible primary release seeds or fails, later
+ * releases never invoke the scheduler.
+ * ------------------------------------------------------------------------ */
+
+export type SpacedReviewStatus = "scheduled" | "completed";
+
+export interface ScheduledSpacedReview {
+  /** STABLE deterministic key = `deriveStableKey(moduleId, exerciseId, delayDays)`. */
+  id: string;
+  moduleId: string;
+  exerciseId: ExerciseId;
+  /** One of `SPACED_DELAY_DAYS` (7 | 30). */
+  delayDays: number;
+  /** The one-item spaced ModuleSet that renders this occurrence. */
+  setId: string;
+  /** The primary-set release (cohort anchor) that seeded this occurrence. */
+  originAttemptSetId: string;
+  /** ISO-8601 = anchor releasedAt + delayDays (exact, canonical). */
+  dueAt: string;
+  status: SpacedReviewStatus;
+  /** Present iff `status === "completed"`: the one-item attempt that answered it. */
+  completedInAttemptSetId?: string;
+}
+
+export type SpacedCohortStatus = "seeded" | "failed";
+
+/** Module-wide terminal state gating the D12 cohort (keyed by moduleId). */
+export interface SpacedCohort {
+  moduleId: string;
+  status: SpacedCohortStatus;
+  /** The first eligible primary release. */
+  anchorAttemptSetId: string;
+  /** The release timestamp that started the 7/30-day clock (canonical ISO). */
+  anchorReleasedAt: string;
+  /** Present iff `status === "failed"`. */
+  failedAt?: string;
+  error?: string;
+}
+
 /** The whole persisted envelope. `schemaVersion` gates migrations. */
 export interface LearnerState {
   schemaVersion: number;
@@ -182,6 +247,10 @@ export interface LearnerState {
   attemptSets: Record<string, AttemptSet>;
   /** (v2) Human-review records, keyed by ReviewRecord id. */
   reviews: Record<string, ReviewRecord>;
+  /** (v3) Spaced-retrieval occurrences, keyed by stable occurrence id. */
+  spacedReviews: Record<string, ScheduledSpacedReview>;
+  /** (v3) Module-wide spacing cohort terminal state, keyed by moduleId. */
+  spacedCohorts: Record<string, SpacedCohort>;
   /**
    * Open index so `LearnerState` is a subtype of `VersionedState`
    * (`{ schemaVersion } & Record<string, unknown>`). Migration steps may introduce
@@ -198,6 +267,8 @@ export function createEmptyLearnerState(): LearnerState {
     bookmarks: [],
     attemptSets: {},
     reviews: {},
+    spacedReviews: {},
+    spacedCohorts: {},
   };
 }
 
@@ -211,10 +282,12 @@ export function createEmptyLearnerState(): LearnerState {
  * disturbing the existing v1 collections.
  * - 0 -> 1: normalize any pre-versioned/unknown blob into a well-formed envelope.
  * - 1 -> 2: add the module-assessment collections (idempotent via the builder).
+ * - 2 -> 3: add the spaced-retrieval collections (idempotent via the builder).
  */
 export const LEARNER_MIGRATIONS: Record<number, Migration> = {
   1: (state) => buildLearnerState(state, 1),
   2: (state) => buildLearnerState(state, 2),
+  3: (state) => buildLearnerState(state, 3),
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -428,6 +501,7 @@ function normalizeAttemptSet(raw: unknown): AttemptSet | null {
   if (typeof a.releasedAt === "string") set.releasedAt = a.releasedAt;
   if (typeof a.schedulerEmittedAt === "string") set.schedulerEmittedAt = a.schedulerEmittedAt;
   if (isJsonValue(a.schedulerHint)) set.schedulerHint = a.schedulerHint;
+  if (typeof a.scheduledReviewId === "string") set.scheduledReviewId = a.scheduledReviewId;
   return set;
 }
 
@@ -476,6 +550,232 @@ function normalizeReviews(raw: unknown): Record<string, ReviewRecord> {
   return out;
 }
 
+/* --------------------------------------------------------------------------
+ * Package H — spaced-retrieval normalization (per-entry, hardened)
+ *
+ * These go BEYOND the string-only-timestamp house style: `dueAt` must be a
+ * PARSEABLE timestamp, ids/sets/exercises/delays must be allowlisted and mutually
+ * consistent, the stable id must match `deriveStableKey`, and status/completion
+ * must agree. Cross-record integrity (origin references, anchor alignment,
+ * cohort completeness) is a second pass in `reconcileSpacedState`.
+ * ------------------------------------------------------------------------ */
+
+/** A string that `Date.parse` accepts (finite ms). Used for exact ms comparison. */
+function isParseableTimestamp(value: unknown): value is string {
+  return typeof value === "string" && Number.isFinite(Date.parse(value));
+}
+
+function normalizeSpacedReview(raw: unknown): ScheduledSpacedReview | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.id !== "string") return null;
+  if (r.moduleId !== SPACED_MODULE_ID) return null;
+  const exerciseId = canonicalId("exercise", r.exerciseId);
+  if (!exerciseId || !isSpacedExerciseId(exerciseId)) return null;
+  if (typeof r.delayDays !== "number" || !Number.isFinite(r.delayDays) || !isSpacedDelay(r.delayDays)) {
+    return null;
+  }
+  if (typeof r.setId !== "string" || !isSpacedSetId(r.setId)) return null;
+  // setId must correspond to exerciseId per the fixed mapping (no crossed pairing).
+  if (spacedSetForExercise(exerciseId) !== r.setId) return null;
+  if (typeof r.originAttemptSetId !== "string") return null;
+  if (!isParseableTimestamp(r.dueAt)) return null;
+  if (r.status !== "scheduled" && r.status !== "completed") return null;
+  // Stable id must be exactly the derived key (no smuggled/mismatched keys).
+  if (r.id !== deriveStableKey(r.moduleId, exerciseId, r.delayDays)) return null;
+  const review: ScheduledSpacedReview = {
+    id: r.id,
+    moduleId: r.moduleId,
+    exerciseId: exerciseId as ExerciseId,
+    delayDays: r.delayDays,
+    setId: r.setId,
+    originAttemptSetId: r.originAttemptSetId,
+    dueAt: r.dueAt,
+    status: r.status,
+  };
+  // Status/completion consistency: completed ⟺ completedInAttemptSetId present.
+  if (r.status === "completed") {
+    if (typeof r.completedInAttemptSetId !== "string") return null;
+    review.completedInAttemptSetId = r.completedInAttemptSetId;
+  } else if (r.completedInAttemptSetId !== undefined) {
+    return null; // scheduled must NOT carry a completion pointer
+  }
+  return review;
+}
+
+function normalizeSpacedReviews(raw: unknown): Record<string, ScheduledSpacedReview> {
+  const out: Record<string, ScheduledSpacedReview> = {};
+  for (const [key, value] of Object.entries(asRecord(raw))) {
+    const review = normalizeSpacedReview(value);
+    if (review && review.id === key) out[key] = review;
+  }
+  return out;
+}
+
+function normalizeSpacedCohort(raw: unknown): SpacedCohort | null {
+  if (!raw || typeof raw !== "object") return null;
+  const c = raw as Record<string, unknown>;
+  if (c.moduleId !== SPACED_MODULE_ID) return null;
+  if (c.status !== "seeded" && c.status !== "failed") return null;
+  if (typeof c.anchorAttemptSetId !== "string") return null;
+  if (!isParseableTimestamp(c.anchorReleasedAt)) return null;
+  const cohort: SpacedCohort = {
+    moduleId: c.moduleId,
+    status: c.status,
+    anchorAttemptSetId: c.anchorAttemptSetId,
+    anchorReleasedAt: c.anchorReleasedAt,
+  };
+  if (c.status === "failed") {
+    if (!isParseableTimestamp(c.failedAt)) return null; // failed ⟺ failedAt present
+    cohort.failedAt = c.failedAt;
+    if (typeof c.error === "string") cohort.error = c.error;
+  } else if (c.failedAt !== undefined) {
+    return null; // seeded must NOT carry a failedAt
+  }
+  return cohort;
+}
+
+function normalizeSpacedCohorts(raw: unknown): Record<string, SpacedCohort> {
+  const out: Record<string, SpacedCohort> = {};
+  for (const [key, value] of Object.entries(asRecord(raw))) {
+    const cohort = normalizeSpacedCohort(value);
+    if (cohort && cohort.moduleId === key) out[key] = cohort;
+  }
+  return out;
+}
+
+/** The occurrence ids a seeded cohort for `moduleId` must contain (all present, no extras). */
+function expectedCohortIds(moduleId: string): string[] {
+  if (moduleId !== SPACED_MODULE_ID) return [];
+  const ids: string[] = [];
+  for (const { exerciseId } of SPACED_ITEMS) {
+    for (const delay of SPACED_DELAY_DAYS) ids.push(deriveStableKey(moduleId, exerciseId, delay));
+  }
+  return ids;
+}
+
+/**
+ * Cross-record integrity + reconciliation pass (Package H). Pure and TOTAL —
+ * never throws; only drops invalid occurrences and demotes an inconsistent
+ * `seeded` cohort to `failed`, so a corrupt import degrades to a smaller
+ * consistent state (a newer-schema/unparseable blob is handled earlier by the
+ * persistence LoadOutcome path). Also RECONCILES: an occurrence still `scheduled`
+ * whose linked spaced attempt is already released is completed (belt-and-suspenders
+ * for an interruption between the two atomic writes).
+ */
+export function reconcileSpacedState(state: {
+  attemptSets: Record<string, AttemptSet>;
+  spacedReviews: Record<string, ScheduledSpacedReview>;
+  spacedCohorts: Record<string, SpacedCohort>;
+}): {
+  spacedReviews: Record<string, ScheduledSpacedReview>;
+  spacedCohorts: Record<string, SpacedCohort>;
+} {
+  const { attemptSets } = state;
+  // Index released spaced attempts by the occurrence they answer.
+  const attemptByReviewId = new Map<string, AttemptSet>();
+  for (const a of Object.values(attemptSets)) {
+    if (a.scheduledReviewId && a.status === "released") attemptByReviewId.set(a.scheduledReviewId, a);
+  }
+
+  const ms = (t: string) => Date.parse(t);
+  const dueAtValid = (occ: ScheduledSpacedReview, anchor: AttemptSet): boolean =>
+    !!anchor.releasedAt &&
+    isParseableTimestamp(anchor.releasedAt) &&
+    ms(occ.dueAt) === ms(dueAtFrom(anchor.releasedAt, occ.delayDays));
+
+  /** A completion attempt fully matches its occurrence (mutual, mapped, due). */
+  const completionValid = (occ: ScheduledSpacedReview): boolean => {
+    if (occ.status !== "completed" || !occ.completedInAttemptSetId) return true; // n/a
+    const done = attemptSets[occ.completedInAttemptSetId];
+    return (
+      !!done &&
+      done.id === occ.completedInAttemptSetId &&
+      done.setId === occ.setId &&
+      done.scheduledReviewId === occ.id &&
+      done.status === "released" &&
+      isParseableTimestamp(done.releasedAt ?? "") &&
+      ms(done.releasedAt!) >= ms(occ.dueAt)
+    );
+  };
+
+  // 1) Reconcile: complete a scheduled occurrence whose linked attempt is released.
+  const reconciled: Record<string, ScheduledSpacedReview> = {};
+  for (const [id, occ] of Object.entries(state.spacedReviews)) {
+    if (occ.status === "scheduled") {
+      const done = attemptByReviewId.get(id);
+      if (
+        done &&
+        done.setId === occ.setId &&
+        isParseableTimestamp(done.releasedAt ?? "") &&
+        ms(done.releasedAt!) >= ms(occ.dueAt)
+      ) {
+        reconciled[id] = { ...occ, status: "completed", completedInAttemptSetId: done.id };
+        continue;
+      }
+    }
+    reconciled[id] = occ;
+  }
+
+  // 2) Per-occurrence structural validity against its cohort + origin attempt.
+  const cohorts = { ...state.spacedCohorts };
+  const occurrenceValid = (occ: ScheduledSpacedReview): boolean => {
+    const cohort = cohorts[occ.moduleId];
+    if (!cohort || cohort.status !== "seeded") return false; // no active occ without a seeded cohort
+    if (cohort.anchorAttemptSetId !== occ.originAttemptSetId) return false;
+    const anchor = attemptSets[occ.originAttemptSetId];
+    if (!anchor || anchor.status !== "released") return false;
+    if (anchor.moduleId !== occ.moduleId) return false;
+    if (!isPrimarySetId(anchor.setId)) return false; // eligible released primary
+    if (!isParseableTimestamp(anchor.releasedAt ?? "")) return false;
+    if (ms(cohort.anchorReleasedAt) !== ms(anchor.releasedAt!)) return false; // cohort anchor === attempt release
+    if (!dueAtValid(occ, anchor)) return false; // dueAt === anchor + delay (exact ms)
+    if (!completionValid(occ)) return false;
+    return true;
+  };
+
+  const candidate: Record<string, ScheduledSpacedReview> = {};
+  for (const [id, occ] of Object.entries(reconciled)) {
+    if (occurrenceValid(occ)) candidate[id] = occ;
+  }
+
+  // 3) Cohort completeness: a `seeded` cohort must hold EXACTLY its six occurrences.
+  const failedModules = new Set<string>();
+  for (const [moduleId, cohort] of Object.entries(cohorts)) {
+    if (cohort.status !== "seeded") continue;
+    const wanted = expectedCohortIds(moduleId);
+    const present = wanted.every(
+      (id) => candidate[id] && candidate[id]!.originAttemptSetId === cohort.anchorAttemptSetId,
+    );
+    const extras = Object.values(candidate).some(
+      (o) => o.moduleId === moduleId && !wanted.includes(o.id),
+    );
+    if (!present || extras) failedModules.add(moduleId);
+  }
+
+  // 4) Demote incomplete seeded cohorts to `failed`; drop their occurrences.
+  const outCohorts: Record<string, SpacedCohort> = {};
+  for (const [moduleId, cohort] of Object.entries(cohorts)) {
+    if (cohort.status === "seeded" && failedModules.has(moduleId)) {
+      outCohorts[moduleId] = {
+        moduleId: cohort.moduleId,
+        status: "failed",
+        anchorAttemptSetId: cohort.anchorAttemptSetId,
+        anchorReleasedAt: cohort.anchorReleasedAt,
+        failedAt: new Date().toISOString(),
+        error: "incomplete cohort on import",
+      };
+    } else {
+      outCohorts[moduleId] = cohort;
+    }
+  }
+  const outReviews: Record<string, ScheduledSpacedReview> = {};
+  for (const [id, occ] of Object.entries(candidate)) {
+    if (!failedModules.has(occ.moduleId)) outReviews[id] = occ;
+  }
+  return { spacedReviews: outReviews, spacedCohorts: outCohorts };
+}
+
 /**
  * Construct a well-formed `LearnerState` at an EXPLICIT schema version. Unlike a
  * shallow cast this:
@@ -491,13 +791,24 @@ function normalizeReviews(raw: unknown): Record<string, ReviewRecord> {
  */
 function buildLearnerState(raw: unknown, version: number): LearnerState {
   const source = asRecord(raw);
+  const attemptSets = normalizeAttemptSets(source.attemptSets);
+  // Cross-record integrity (v3) runs AFTER every collection is per-entry normalized,
+  // so it can validate occurrences against their cohort + origin attempts and
+  // reconcile released-but-unmarked completions. Pure + total: only prunes/demotes.
+  const { spacedReviews, spacedCohorts } = reconcileSpacedState({
+    attemptSets,
+    spacedReviews: normalizeSpacedReviews(source.spacedReviews),
+    spacedCohorts: normalizeSpacedCohorts(source.spacedCohorts),
+  });
   return {
     schemaVersion: version,
     lessonProgress: normalizeLessonProgress(source.lessonProgress),
     exerciseAttempts: normalizeExerciseAttempts(source.exerciseAttempts),
     bookmarks: normalizeBookmarks(source.bookmarks),
-    attemptSets: normalizeAttemptSets(source.attemptSets),
+    attemptSets,
     reviews: normalizeReviews(source.reviews),
+    spacedReviews,
+    spacedCohorts,
   };
 }
 
@@ -575,8 +886,10 @@ export function makeAttemptSet(params: {
   items: AttemptItemSnapshot[];
   id?: string;
   startedAt?: string;
+  /** For a one-item spaced attempt: the exact occurrence it answers. */
+  scheduledReviewId?: string;
 }): AttemptSet {
-  return {
+  const set: AttemptSet = {
     id: params.id ?? localId("attempt"),
     setId: params.setId,
     setVersion: params.setVersion,
@@ -587,6 +900,59 @@ export function makeAttemptSet(params: {
     items: params.items,
     responses: [],
   };
+  if (params.scheduledReviewId) set.scheduledReviewId = params.scheduledReviewId;
+  return set;
+}
+
+/* --------------------------------------------------------------------------
+ * Package H builders (v3)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Build one scheduled occurrence with a deterministic stable id and an exact
+ * `dueAt = anchorReleasedAt + delayDays`. The scheduler computes these purely off
+ * the SINGLE canonical release timestamp, so every occurrence in a cohort shares
+ * the same anchor.
+ */
+export function makeScheduledSpacedReview(params: {
+  moduleId: string;
+  exerciseId: ExerciseId;
+  delayDays: number;
+  setId: string;
+  originAttemptSetId: string;
+  anchorReleasedAt: string;
+}): ScheduledSpacedReview {
+  return {
+    id: deriveStableKey(params.moduleId, params.exerciseId, params.delayDays),
+    moduleId: params.moduleId,
+    exerciseId: params.exerciseId,
+    delayDays: params.delayDays,
+    setId: params.setId,
+    originAttemptSetId: params.originAttemptSetId,
+    dueAt: dueAtFrom(params.anchorReleasedAt, params.delayDays),
+    status: "scheduled",
+  };
+}
+
+export function makeSpacedCohort(params: {
+  moduleId: string;
+  status: SpacedCohortStatus;
+  anchorAttemptSetId: string;
+  anchorReleasedAt: string;
+  failedAt?: string;
+  error?: string;
+}): SpacedCohort {
+  const cohort: SpacedCohort = {
+    moduleId: params.moduleId,
+    status: params.status,
+    anchorAttemptSetId: params.anchorAttemptSetId,
+    anchorReleasedAt: params.anchorReleasedAt,
+  };
+  if (params.status === "failed") {
+    cohort.failedAt = params.failedAt ?? new Date().toISOString();
+    if (params.error) cohort.error = params.error;
+  }
+  return cohort;
 }
 
 export function makeAttemptItemResponse(params: {
