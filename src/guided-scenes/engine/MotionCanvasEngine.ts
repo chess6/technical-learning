@@ -89,6 +89,15 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
   private paused = true;
   private hasPlayed = false;
   private reducedMotionApplied = false;
+  /**
+   * The learner's latest playback intent, tracked independently of the Player
+   * because `mount()` is async and the Play button is live throughout it.
+   * `mount()` resolves *to* this value instead of force-pausing, so a Play
+   * pressed mid-mount is honored rather than silently reverted.
+   */
+  private playRequested = false;
+  /** True once mount() has fully configured the Player. */
+  private ready = false;
 
   constructor(options: GuidedSceneEngineOptions) {
     super(true);
@@ -157,8 +166,13 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
     await player.configure(settings);
     if (this.isDisposed) return;
 
-    player.togglePlayback(false);
-    this.paused = true;
+    // Resolve to the learner's intent, not unconditionally to paused. The Play
+    // button is enabled for the whole of this async mount, so an unconditional
+    // togglePlayback(false) here raced every early Play: the button flipped to
+    // "Pause" and then back to "Play" a beat later with nothing having moved.
+    this.ready = true;
+    player.togglePlayback(this.playRequested);
+    this.paused = !this.playRequested;
 
     if (typeof ResizeObserver !== "undefined") {
       this.resizeObserver = new ResizeObserver(() => {
@@ -173,8 +187,12 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
   }
 
   play(): void {
-    if (this.isDisposed || !this.player) return;
+    if (this.isDisposed) return;
     this.hasPlayed = true;
+    this.playRequested = true;
+    // Before mount() finishes, the Player is absent or still being configured;
+    // recording the intent is the whole handling — mount() applies it.
+    if (!this.ready || !this.player) return;
     // Replaying from the end should start over.
     if (this.state.progress >= 0.999) {
       this.player.requestReset();
@@ -183,13 +201,17 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
   }
 
   pause(): void {
-    if (this.isDisposed || !this.player) return;
+    if (this.isDisposed) return;
+    this.playRequested = false;
+    if (!this.ready || !this.player) return;
     this.player.togglePlayback(false);
   }
 
   reset(): void {
-    if (this.isDisposed || !this.player) return;
+    if (this.isDisposed) return;
     this.hasPlayed = false;
+    this.playRequested = false;
+    if (!this.ready || !this.player) return;
     this.player.togglePlayback(false);
     this.player.requestReset();
   }
@@ -216,6 +238,8 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
   }
 
   protected onDispose(): void {
+    this.ready = false;
+    this.playRequested = false;
     for (const unsubscribe of this.unsubscribers.splice(0)) {
       unsubscribe();
       instrumentation.resourceReleased();
@@ -271,6 +295,9 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
     if (this.reducedMotion && !this.reducedMotionApplied && duration > 0) {
       this.reducedMotionApplied = true;
       this.hasPlayed = false;
+      // Reduced motion has no continuous playback, so it also revokes any
+      // pending play intent — otherwise mount() would honor it.
+      this.playRequested = false;
       this.player?.togglePlayback(false);
       // Stay on the first frame; the player seeks to the first major idea.
       this.player?.requestSeek(0);
