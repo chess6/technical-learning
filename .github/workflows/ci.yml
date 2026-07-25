@@ -45,5 +45,26 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      # A developer machine reaches the suite with node_modules/.vite already
+      # populated; a fresh `npm ci` does not. Pre-bundling here moves that cost
+      # out of the first tests, which would otherwise pay it inside their own
+      # per-test timeout.
+      - name: Prime Vite dependency cache
+        run: npx vite optimize
+
       - name: E2E tests
         run: npm run test:e2e
+
+      # Without this a failing e2e job reports only "failure" — no report, no
+      # trace, nothing to diagnose from. Traces are retained on failure (see
+      # playwright.config.ts), so this makes the next red run explainable.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore
