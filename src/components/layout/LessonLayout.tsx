@@ -5,7 +5,10 @@ import type {
   LessonDefinition,
   RouteBlock,
 } from "../../lessons/types";
-import { getAdjacentLessons, getLessonPosition } from "../../lessons/registry";
+import {
+  getAdjacentLessons,
+  getLessonPosition,
+} from "../../lessons/courseModel";
 import {
   flattenLessonToc,
   getBlockAnchorId,
@@ -36,36 +39,63 @@ type LessonLayoutProps = {
   exploration?: ReactNode;
   /**
    * Renders a Practice panel. Called with no arguments for the full exercise set,
-   * or with a subset of exercise ids (and an optional heading) when a lesson
-   * splits practice into more than one placed block. Returns null when empty.
+   * or with a subset of exercise ids when a lesson splits practice into more
+   * than one placed block. Returns null when empty.
    */
-  renderExercises?: (exerciseIds?: string[], title?: string) => ReactNode;
+  renderExercises?: (exerciseIds?: string[]) => ReactNode;
   summary?: ReactNode;
   onReset?: () => void;
 };
 
 type PhaseProps = {
   id: string;
-  title: string;
-  ariaLabel: string;
+  /** Internal block kind — analytics/telemetry hook, never a heading. */
+  kind: string;
+  /** Authored, content-specific heading. Omitted for most blocks by default. */
+  heading?: string;
+  /** Screen-reader description of the block's function (supplements, never
+   *  replaces, whatever visible label the content carries). */
+  regionLabel: string;
   variant: string;
   children: ReactNode;
 };
 
-/** One lesson block with a conversational title. Blocks are not numbered — the
- * route can repeat and reorder them, so a fixed "1, 2, 3…" rail would lie. */
-function Phase({ id, title, ariaLabel, variant, children }: PhaseProps) {
+/**
+ * One block of a lesson.
+ *
+ * **A block has no visible heading unless the lesson authored one.** The block
+ * kind stays available as route metadata, as `data-block-kind` / `data-phase`
+ * hooks, as the styling variant, and as the accessible region description — but
+ * it is never surfaced as an `h2`. A reader infers a block's role from its
+ * content and typography, not from a generic phase label
+ * (product/semantic-page-grammar.md §1); the repeated rail was what made every
+ * lesson read as the same template.
+ *
+ * Blocks are not numbered either — the route can repeat and reorder them, so a
+ * fixed "1, 2, 3…" rail would lie.
+ */
+function Phase({
+  id,
+  kind,
+  heading,
+  regionLabel,
+  variant,
+  children,
+}: PhaseProps) {
   return (
     <section
       id={id}
       className={`phase phase--${variant}`}
-      aria-label={ariaLabel}
+      aria-label={regionLabel}
+      data-block-kind={kind}
       data-phase={variant}
       tabIndex={-1}
     >
-      <div className="phase__head">
-        <h2 className="phase__title">{title}</h2>
-      </div>
+      {heading && (
+        <div className="phase__head">
+          <h2 className="phase__title">{heading}</h2>
+        </div>
+      )}
       <div className="phase__body">{children}</div>
     </section>
   );
@@ -86,15 +116,36 @@ const FALLBACK_ROUTE: RouteBlock[] = [
   { kind: "summary" },
 ];
 
-const PHASE_PRESENTATION: Record<string, { title: string; variant: string }> = {
-  motivate: { title: "Think about it", variant: "think" },
-  watch: { title: "Watch the idea", variant: "watch" },
-  visual: { title: "Watch the idea", variant: "watch" },
-  check: { title: "Quick check", variant: "check" },
-  worked: { title: "Worked examples", variant: "worked" },
-  explore: { title: "Try it yourself", variant: "explore" },
-  practice: { title: "Practice", variant: "practice" },
-  summary: { title: "Remember this", variant: "remember" },
+/**
+ * Per-kind presentation: the styling variant, and the accessible name of the
+ * region. `region` is a screen-reader functional description
+ * (semantic-page-grammar §1.1, layer 4) — it announces what a block *is for* to
+ * assistive tech; it is deliberately NOT rendered as a visible heading.
+ *
+ * `defaultHeading` exists only for the two conventional textbook labels that
+ * genuinely orient a reader — "Practice" and "Worked examples" (grammar §5.2's
+ * furniture). Every other kind renders headless unless a lesson authors one.
+ */
+const BLOCK_PRESENTATION: Record<
+  string,
+  { region: string; variant: string; defaultHeading?: string }
+> = {
+  // Each region name is deliberately distinct from the name its CHILD region
+  // carries (the guided-scene figure, the worked-example panel, the explorer,
+  // the exercise panel), so assistive tech — and any locator — never sees two
+  // nested regions announcing the same thing.
+  motivate: { region: "Motivating question", variant: "think" },
+  watch: { region: "Guided explanation", variant: "watch" },
+  visual: { region: "Guided walkthrough", variant: "watch" },
+  check: { region: "Checkpoint", variant: "check" },
+  worked: {
+    region: "Worked computations",
+    variant: "worked",
+    defaultHeading: "Worked examples",
+  },
+  explore: { region: "Exploration", variant: "explore" },
+  practice: { region: "Practice", variant: "practice", defaultHeading: "Practice" },
+  summary: { region: "Summary", variant: "remember" },
 };
 
 export function LessonLayout({
@@ -136,24 +187,14 @@ export function LessonLayout({
     </div>
   ) : null;
 
+  // No lede on either: the worked examples and the explorer both carry their own
+  // titles, so a stock sentence above them is template filler, not orientation.
   const workedCombinedContent = workedExamples ? (
-    <>
-      <p className="phase__lede">
-        Watch the derivation and the notebook reasoning together — the animation
-        and the algebra are one object.
-      </p>
-      <div className="lesson-layout__worked">{workedExamples}</div>
-    </>
+    <div className="lesson-layout__worked">{workedExamples}</div>
   ) : null;
 
   const exploreContent = exploration ? (
-    <>
-      <p className="phase__lede">
-        Now take control of the same example you just watched — drag the arrows or
-        nudge the numbers and see what changes.
-      </p>
-      <div className="lesson-layout__explore">{exploration}</div>
-    </>
+    <div className="lesson-layout__explore">{exploration}</div>
   ) : null;
 
   // Resolve every route block once: its stable anchor id and rendered node.
@@ -208,73 +249,52 @@ export function LessonLayout({
         };
       }
       case "worked": {
-        if (block.workedId) {
-          const content = workedById?.get(block.workedId);
-          if (!content) return null;
-          return {
-            key: anchorId,
-            anchorId,
-            node: (
-              <Phase
-                id={anchorId}
-                title="Worked examples"
-                ariaLabel="Worked example"
-                variant="worked"
-              >
-                <div className="lesson-layout__worked">{content}</div>
-              </Phase>
-            ),
-          };
-        }
-        if (!workedCombinedContent) return null;
+        // A per-id worked example already renders its own title as the block's
+        // heading, so the outer block stays headless; the combined block keeps
+        // the conventional "Worked examples" label over a set of them.
+        const content = block.workedId
+          ? workedById?.get(block.workedId)
+          : workedCombinedContent;
+        if (!content) return null;
         return {
           key: anchorId,
           anchorId,
           node: (
             <Phase
               id={anchorId}
-              title="Worked examples"
-              ariaLabel="Worked examples"
+              kind="worked"
+              heading={
+                block.heading ??
+                (block.workedId
+                  ? undefined
+                  : BLOCK_PRESENTATION.worked!.defaultHeading)
+              }
+              regionLabel={block.heading ?? BLOCK_PRESENTATION.worked!.region}
               variant="worked"
             >
-              {workedCombinedContent}
-            </Phase>
-          ),
-        };
-      }
-      case "check": {
-        const content = block.checkpointId
-          ? checkpointsById?.get(block.checkpointId)
-          : checkpoint;
-        if (!content) return null;
-        const present = PHASE_PRESENTATION.check!;
-        return {
-          key: anchorId,
-          anchorId,
-          node: (
-            <Phase
-              id={anchorId}
-              title={present.title}
-              ariaLabel={present.title}
-              variant={present.variant}
-            >
-              {content}
+              {block.workedId ? (
+                <div className="lesson-layout__worked">{content}</div>
+              ) : (
+                content
+              )}
             </Phase>
           ),
         };
       }
       case "practice": {
-        const content = renderExercises?.(block.exerciseIds, block.title);
+        const content = renderExercises?.(block.exerciseIds);
         if (!content) return null;
-        const label = block.title ?? PHASE_PRESENTATION.practice!.title;
+        const present = BLOCK_PRESENTATION.practice!;
+        const heading = block.heading ?? present.defaultHeading!;
         return {
           key: anchorId,
           anchorId,
           node: (
             <Phase
               id={anchorId}
-              title={label}
-              ariaLabel={label}
+              kind="practice"
+              heading={heading}
+              regionLabel={heading}
               variant="practice"
             >
               <div className="lesson-layout__practice">{content}</div>
@@ -283,16 +303,20 @@ export function LessonLayout({
         };
       }
       default: {
-        // motivate | watch | visual | explore | summary
+        // motivate | watch | visual | check | explore | summary — all headless
+        // unless the lesson authored a content-specific heading.
         const contentByKind: Partial<Record<RouteBlock["kind"], ReactNode>> = {
           motivate: motivation,
           watch: watchContent,
           visual: visualContent,
+          check: block.kind === "check" && block.checkpointId
+            ? checkpointsById?.get(block.checkpointId)
+            : checkpoint,
           explore: exploreContent,
           summary,
         };
         const content = contentByKind[block.kind];
-        const present = PHASE_PRESENTATION[block.kind];
+        const present = BLOCK_PRESENTATION[block.kind];
         if (!content || !present) return null;
         return {
           key: anchorId,
@@ -300,8 +324,9 @@ export function LessonLayout({
           node: (
             <Phase
               id={anchorId}
-              title={present.title}
-              ariaLabel={present.title}
+              kind={block.kind}
+              heading={block.heading}
+              regionLabel={block.heading ?? present.region}
               variant={present.variant}
             >
               {content}

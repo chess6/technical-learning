@@ -18,6 +18,13 @@ type WorkedExamplePanelProps = {
   enableEigenClipStage?: boolean;
   /** 1-based number for the first example in this panel (lesson-wide numbering). */
   startNumber?: number;
+  /**
+   * Heading level for each example's title. `3` (default) is right under the
+   * combined block's "Worked examples" h2; a worked example placed on its own by
+   * a `worked` route block has no heading above it, so it takes `2` and becomes
+   * the section heading itself.
+   */
+  headingLevel?: 2 | 3;
 };
 
 /**
@@ -30,6 +37,7 @@ export function WorkedExamplePanel({
   resetToken = 0,
   enableEigenClipStage = false,
   startNumber = 1,
+  headingLevel = 3,
 }: WorkedExamplePanelProps) {
   if (examples.length === 0) return null;
 
@@ -42,6 +50,7 @@ export function WorkedExamplePanel({
           exampleNumber={startNumber + index}
           resetToken={resetToken}
           enableEigenClipStage={enableEigenClipStage}
+          headingLevel={headingLevel}
         />
       ))}
     </div>
@@ -53,11 +62,13 @@ function WorkedExampleBlock({
   exampleNumber,
   resetToken,
   enableEigenClipStage,
+  headingLevel,
 }: {
   example: WorkedExample;
   exampleNumber: number;
   resetToken: number;
   enableEigenClipStage: boolean;
+  headingLevel: 2 | 3;
 }) {
   const createEngine = useMemo(
     () =>
@@ -73,15 +84,20 @@ function WorkedExampleBlock({
     (example.guidedSceneId === "eigenvectors-derivation" ||
       example.guidedSceneId === "eigenvectors-invariant-directions");
 
+  const Heading = headingLevel === 2 ? "h2" : "h3";
+
   return (
     <article className="worked-example" data-testid={`worked-example-${example.id}`}>
       <header className="worked-example__header">
         <div className="worked-example__eyebrow" aria-hidden="true">
           Example {exampleNumber}
         </div>
-        <h3 className="worked-example__title" aria-label={`Example ${exampleNumber}: ${example.title}`}>
+        <Heading
+          className="worked-example__title"
+          aria-label={`Example ${exampleNumber}: ${example.title}`}
+        >
           <ProseWithMath text={example.title} />
-        </h3>
+        </Heading>
         {example.prompt && (
           <p className="worked-example__prompt">
             <ProseWithMath text={example.prompt} />

@@ -216,21 +216,52 @@ export type FormalBlock = {
  *   split practice into more than one set placed where each fits.
  * - `handoff` renders a CTA link to another lesson.
  */
+
+/**
+ * Optional authored labels for a route block.
+ *
+ * A block's `kind` is **internal** — it drives the route, `data-block-kind`
+ * analytics, the styling variant, and the accessible region description. It is
+ * never rendered as a heading: a repeated "Think about it / Watch the idea /
+ * Quick check / Try it yourself / Remember this" rail makes every lesson look
+ * assembled from a template instead of written about a specific piece of
+ * mathematics (product/semantic-page-grammar.md §1).
+ *
+ * So a block has **no visible heading by default**, and flows straight into its
+ * content. Where naming genuinely helps — a guided animation that no section
+ * title introduces, a summary whose synthesis deserves stating — the lesson
+ * authors a content-specific heading here, in its own words.
+ */
+export type AuthoredBlockLabels = {
+  /**
+   * Visible heading for this block, in the lesson's own words. Omit whenever
+   * the block's content already names itself (a motivating question, a
+   * checkpoint prompt, an explorer that carries its own title).
+   */
+  heading?: string;
+  /**
+   * Table-of-contents label. Defaults to `heading`. Set it alone when the
+   * block's own child renders the visible heading — an exploration names
+   * itself on the page, but still deserves a row in the contents.
+   */
+  tocLabel?: string;
+};
+
 export type RouteBlock =
-  | { kind: "motivate" }
-  | { kind: "watch" }
-  | { kind: "visual" }
+  | ({ kind: "motivate" } & AuthoredBlockLabels)
+  | ({ kind: "watch" } & AuthoredBlockLabels)
+  | ({ kind: "visual" } & AuthoredBlockLabels)
   | { kind: "section"; sectionId: string }
   | { kind: "formal"; formalId: string }
-  | { kind: "check"; checkpointId?: string }
-  | { kind: "worked"; workedId?: string }
-  | { kind: "explore" }
-  | { kind: "practice"; exerciseIds?: string[]; title?: string }
-  | { kind: "summary" }
+  | ({ kind: "check"; checkpointId?: string } & AuthoredBlockLabels)
+  | ({ kind: "worked"; workedId?: string } & AuthoredBlockLabels)
+  | ({ kind: "explore" } & AuthoredBlockLabels)
+  | ({ kind: "practice"; exerciseIds?: string[] } & AuthoredBlockLabels)
+  | ({ kind: "summary" } & AuthoredBlockLabels)
   | { kind: "handoff"; to: string; label: string };
 
 /**
- * A structured, scannable "Remember this" summary — the compression payoff
+ * A structured, scannable summary — the compression payoff
  * (INTERACTIVE_TEXTBOOK_VISION §3) turned into a small set of labeled, reusable
  * fields, and a re-entry point for a returning learner (§14).
  *
@@ -315,10 +346,10 @@ export type LessonDefinition = {
   callouts?: AuthoredCallout[];
   /** Optional so an intro chapter can omit Practice entirely. */
   exercises?: ExerciseDefinition[];
-  /** Optional so an intro chapter can omit a "Remember this" summary. */
+  /** Optional so an intro chapter can omit a closing summary. */
   keyTakeaway?: string;
   /**
-   * Optional structured "Remember this" summary. When present, `LessonSummary`
+   * Optional structured summary. When present, `LessonSummary`
    * renders the labeled compression fields (with progressive disclosure);
    * when absent it falls back to `keyTakeaway` + `learningObjectives`.
    */

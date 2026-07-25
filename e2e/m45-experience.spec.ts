@@ -16,7 +16,7 @@ test("sidebar lists course structure and highlights the current lesson", async (
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/lesson/vectors");
 
-  const nav = page.getByRole("navigation", { name: "Course contents" });
+  const nav = page.getByRole("navigation", { name: /contents$/ });
   // Multiple course sections are listed: the current lesson lives under
   // "Foundations", and later chapters (e.g. "Systems & elimination") are present.
   await expect(nav.getByText("Foundations", { exact: true })).toBeVisible();

@@ -1,10 +1,8 @@
+/* A load-bearing equation is given room, not a card: whitespace does the
+   grouping, so a section is prose + its equation rather than prose + a box. */
 .equation-block {
-  margin: 0;
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-sm);
+  margin: var(--space-2) 0;
+  padding: var(--space-4) 0;
 }
 
 .equation-block__label {
@@ -19,7 +17,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   color: var(--color-text);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
 }
 
 .equation-block__rendered .katex,

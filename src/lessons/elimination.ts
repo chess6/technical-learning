@@ -58,11 +58,11 @@ export const eliminationLesson: LessonDefinition = {
     {
       kind: "practice",
       exerciseIds: ["elim-predict-fixed-point"],
-      title: "Predict first",
+      heading: "Predict first",
     },
     // Watch: R2 → R2 − 2·R1 pivots the second line about the fixed crossing,
     // in three synchronized views (equations, augmented matrix, lines).
-    { kind: "visual" },
+    { kind: "visual", heading: "One row operation, seen three ways" },
     { kind: "section", sectionId: "three-operations" },
     { kind: "formal", formalId: "def-row-operation" },
     { kind: "formal", formalId: "thm-invariance" },
@@ -70,7 +70,7 @@ export const eliminationLesson: LessonDefinition = {
     { kind: "worked" },
     { kind: "check" },
     { kind: "section", sectionId: "illegal-moves" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Rewrite the system, keep the solutions" },
     // The remaining practice (drill → transfer) lands after Explore; the
     // committed prediction has already been made above, before the reveal.
     {
@@ -97,7 +97,7 @@ export const eliminationLesson: LessonDefinition = {
         "elim-explain-invariance",
       ],
     },
-    { kind: "summary" },
+    { kind: "summary", heading: "Reversible moves preserve the solution set" },
   ],
   sections: [
     {

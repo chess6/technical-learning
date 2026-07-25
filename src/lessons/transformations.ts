@@ -34,9 +34,9 @@ export const transformationsLesson: LessonDefinition = {
     { kind: "formal", formalId: "prop-matrix-basis" },
     // Linear vs affine (translation) vs nonlinear warp comparison figure.
     { kind: "section", sectionId: "not-linear" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Transform the plane" },
     { kind: "practice" },
-    { kind: "summary" },
+    { kind: "summary", heading: "The columns are where the basis vectors land" },
   ],
   formalBlocks: [
     {

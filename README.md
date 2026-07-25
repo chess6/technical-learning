@@ -1,9 +1,14 @@
-# Linear Algebra — Visual Learning POC
+# Interactive Textbook — visual learning POC
 
-Desktop-first browser POC for learning linear algebra (and select algorithms)
-through guided Motion Canvas animations and interactive Mafs diagrams. Intuition
-before notation, guided explanation then learner-controlled exploration,
-deterministic and mathematically correct.
+Desktop-first browser POC for learning mathematics and algorithms through guided
+Motion Canvas animations and interactive Mafs diagrams. Intuition before
+notation, guided explanation then learner-controlled exploration, deterministic
+and mathematically correct.
+
+The platform holds **courses**, not one subject: today Linear Algebra and
+Algorithmic Thinking. The app-level brand is deliberately neutral
+([src/platform/product.ts](src/platform/product.ts)); a course's own title and
+subtitle are rendered contextually wherever a course frame is on screen.
 
 ## Setup & commands
 
@@ -44,10 +49,16 @@ and math utilities; both libraries are lazy-loaded so the home page stays light.
 Full layer map, contracts, and decisions:
 [docs/engineering/architecture.md](docs/engineering/architecture.md).
 
-## Lessons
+## Courses and lessons
 
-Built lessons, in registry order (the sidebar numbers built lessons positionally;
-the authoritative L1–L14 spine lives in
+The curriculum tree ([src/lessons/courseModel.ts](src/lessons/courseModel.ts))
+holds `subject → course → unit → lesson refs`; the registry
+([src/lessons/registry.ts](src/lessons/registry.ts)) owns lesson *content* and
+nothing else. **Numbering, progress, and Prev/Next are course-relative**, so a
+course's last lesson does not link on to a different subject. Routes stay
+`/lesson/:lessonId`; the active course is derived from lesson membership.
+
+**Linear Algebra** — *Visual Learning* (authoritative L1–L14 spine:
 [docs/courses/linear-algebra/course-spine.md](docs/courses/linear-algebra/course-spine.md)):
 
 - Chapter 0. Why Linear Algebra? — `/lesson/why-linear-algebra`
@@ -58,7 +69,13 @@ the authoritative L1–L14 spine lives in
 - 5. Solution Sets & Homogeneous Systems — `/lesson/solution-sets`
 - 6. Determinants as Signed Area Scaling — `/lesson/determinants`
 - 7. Eigenvectors and Eigenvalues — `/lesson/eigenvectors`
-- Karatsuba: three multiplications instead of four — `/lesson/karatsuba`
+
+**Algorithmic Thinking** — *Divide, conquer, analyze*:
+
+- 1. Karatsuba: three multiplications instead of four — `/lesson/karatsuba`
+
+Not-yet-built spine positions are `future` nodes in the same tree and render as
+dimmed entries in their course's sidebar.
 
 `mathjs` is a **dev-only** dependency (cross-check tests); no production module
 imports it.
@@ -74,6 +91,13 @@ Key entry points:
 - **Build a lesson:** [docs/authoring/lesson-design.md](docs/authoring/lesson-design.md)
   (orchestrator); route any course/lesson request through
   [docs/authoring/course-authoring-workflow.md](docs/authoring/course-authoring-workflow.md).
+- **How a page reads:** [docs/product/semantic-page-grammar.md](docs/product/semantic-page-grammar.md)
+  is authoritative for anything learner-visible. Block kinds (`motivate`,
+  `watch`, `check`, `explore`, `summary`, …) are **internal**: they drive the
+  route, `data-block-kind`, styling variants, and accessible region descriptions,
+  and are never rendered as headings or table-of-contents rows. A block has no
+  visible heading unless the lesson authors a content-specific one
+  (`RouteBlock.heading` / `.tocLabel`).
 - **Visual system:** the identity is the **live interactive notebook**, shipped in
   two *presentations* of that one identity, chosen from the app header and
   remembered locally:

@@ -5,6 +5,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useSidebarOpen } from "../../hooks/useSidebarOpen";
 import { useTheme } from "../../hooks/useTheme";
 import { LearnerStateProvider } from "../../platform/useLearnerState";
+import { PRODUCT_NAME } from "../../platform/product";
 import { registerSpacedScheduler } from "../../lessons/spacedSchedule";
 import "./AppShell.css";
 
@@ -34,9 +35,10 @@ export function AppShell() {
         >
           Contents
         </button>
+        {/* App-level brand only. The course a learner is inside is named by the
+            sidebar and the lesson header, so this must stay subject-neutral. */}
         <Link to="/" className="app-shell__brand">
-          <span className="app-shell__brand-main">Linear Algebra</span>
-          <span className="app-shell__brand-sub">Visual Learning</span>
+          <span className="app-shell__brand-main">{PRODUCT_NAME}</span>
         </Link>
         <div className="app-shell__tools">
           <ThemeToggle theme={theme} onChange={setTheme} />

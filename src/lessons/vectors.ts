@@ -8,7 +8,8 @@ export const vectorsLesson: LessonDefinition = {
   // basis section rather than trailing it.
   route: [
     { kind: "motivate" },
-    { kind: "visual" },
+    // No section title precedes the scene here, so it names itself.
+    { kind: "visual", heading: "Two arrows, and everywhere they can reach" },
     { kind: "section", sectionId: "vectors" },
     { kind: "section", sectionId: "combinations" },
     { kind: "check", checkpointId: "span-reachability" },
@@ -19,9 +20,9 @@ export const vectorsLesson: LessonDefinition = {
     { kind: "section", sectionId: "basis" },
     { kind: "check" },
     { kind: "worked" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Build a linear combination" },
     { kind: "practice" },
-    { kind: "summary" },
+    { kind: "summary", heading: "A basis is a coordinate language" },
   ],
   formalBlocks: [
     {

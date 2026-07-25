@@ -76,7 +76,7 @@ export function KaratsubaTreeDiagram({
 
   return (
     <section className="karatsuba-tree" aria-label="Conceptual recurrence tree">
-      <h4 className="karatsuba-tree__title">Conceptual recurrence tree</h4>
+      <h3 className="karatsuba-tree__title">Conceptual recurrence tree</h3>
       <p className="karatsuba-tree__note">
         Models asymptotic branching — not the literal call tree of a specific product.
       </p>

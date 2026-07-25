@@ -79,7 +79,9 @@ export const chapter0Lesson: LessonDefinition = {
     // before any explanatory detail.
     { kind: "visual" },
     { kind: "section", sectionId: "mystery" },
-    { kind: "explore" },
+    // The explorer names itself on the page ("Move the whole craft with four
+    // numbers"); the label here only gives it a row in the contents.
+    { kind: "explore", tocLabel: "Move the whole craft with four numbers" },
     { kind: "section", sectionId: "where-you-see-this" },
     { kind: "section", sectionId: "translation-limit" },
     { kind: "formal", formalId: "ch0-open-question" },

@@ -18,14 +18,14 @@ export const eigenvectorsLesson: LessonDefinition = {
   // edge cases only make sense once you have seen the generic case worked out.
   route: [
     { kind: "motivate" },
-    { kind: "visual" },
+    { kind: "visual", heading: "Most directions turn; a few do not" },
     { kind: "section", sectionId: "intro" },
     { kind: "check" },
     { kind: "worked" },
     { kind: "section", sectionId: "edge" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Hunt for invariant directions" },
     { kind: "practice" },
-    { kind: "summary" },
+    { kind: "summary", heading: "Directions the map only scales" },
   ],
   sections: [
     {

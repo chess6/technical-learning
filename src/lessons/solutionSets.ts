@@ -57,10 +57,13 @@ export const solutionSetsLesson: LessonDefinition = {
     { kind: "formal", formalId: "cor-uniqueness" },
     { kind: "worked", workedId: "wex-existence-multiplicity" },
     { kind: "check" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "The solution set as the null space, moved" },
     { kind: "section", sectionId: "free-variables" },
     { kind: "practice" },
-    { kind: "summary" },
+    {
+      kind: "summary",
+      heading: "One particular solution plus the null space",
+    },
   ],
   formalBlocks: [
     {

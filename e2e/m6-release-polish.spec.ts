@@ -21,7 +21,7 @@ test("home page loads without fetching lesson/guided-scene/explorer code", async
   page.on("request", (request) => requests.push(request.url()));
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Linear Algebra" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Interactive Textbook" })).toBeVisible();
 
   const heavy = requests.filter((url) =>
     /LessonPage|guided-scene|MafsSceneShell|Explorer|makeScene2D/i.test(url),
@@ -63,7 +63,10 @@ test("exploration lazily loads with a reserved-space placeholder, not a layout j
   page,
 }) => {
   await page.goto("/lesson/vectors");
-  const explorationHeading = page.getByRole("heading", { name: "Try it yourself" });
+  // The exploration names itself; there is no generic "Try it yourself" rail.
+  const explorationHeading = page.getByRole("heading", {
+    name: "Build a linear combination",
+  });
   await explorationHeading.scrollIntoViewIfNeeded();
   await expect(page.locator(".mafs-scene-shell")).toBeVisible();
 });

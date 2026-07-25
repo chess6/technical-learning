@@ -1,11 +1,12 @@
 import { useEffect, useId } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { COURSE_SECTIONS } from "../../lessons/curriculum";
 import {
-  getLessonById,
+  activeCourse,
+  courseUnits,
   getLessonIndex,
   getLessonNumber,
-} from "../../lessons/registry";
+} from "../../lessons/courseModel";
+import { getLessonById } from "../../lessons/registry";
 import {
   flattenLessonToc,
   getLessonTocTree,
@@ -36,8 +37,13 @@ function SidebarSublist({ items }: { items: readonly LessonTocItem[] }) {
 }
 
 /**
- * Persistent course table of contents. Registry-driven — no per-lesson
- * branching. Collapses to a drawer on narrow viewports. The current lesson
+ * Table of contents for the course the learner is currently in.
+ *
+ * Course identity and spine are read from the curriculum, not hardcoded: the
+ * active course is derived from which course contains the current lesson, so
+ * Karatsuba shows the Algorithms & Complexity spine rather than the linear
+ * algebra one. Off a lesson (the home catalog, a dev route) the default course
+ * is shown. Collapses to a drawer on narrow viewports; the current lesson
  * expands to show that lesson's on-page TOC as a nested sublist.
  */
 export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
@@ -46,6 +52,7 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
   const currentLessonId = location.pathname.startsWith("/lesson/")
     ? location.pathname.slice("/lesson/".length).split("/")[0]
     : undefined;
+  const course = activeCourse(currentLessonId);
   const currentIndex =
     currentLessonId !== undefined ? getLessonIndex(currentLessonId) : -1;
   const currentLesson =
@@ -63,20 +70,23 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
     <aside
       className="course-sidebar"
       data-open={open ? "true" : "false"}
+      data-course={course.id}
       aria-labelledby={titleId}
     >
       <div className="course-sidebar__inner">
         <p className="course-sidebar__course" id={titleId}>
-          <span className="course-sidebar__course-main">Linear Algebra</span>
-          <span className="course-sidebar__course-sub">Visual Learning</span>
+          <span className="course-sidebar__course-main">{course.title}</span>
+          {course.subtitle ? (
+            <span className="course-sidebar__course-sub">{course.subtitle}</span>
+          ) : null}
         </p>
 
-        <nav className="course-sidebar__nav" aria-label="Course contents">
-          {COURSE_SECTIONS.map((section) => (
-            <div key={section.id} className="course-sidebar__section">
-              <p className="course-sidebar__section-title">{section.title}</p>
+        <nav className="course-sidebar__nav" aria-label={`${course.title} contents`}>
+          {courseUnits(course).map((unit) => (
+            <div key={unit.id} className="course-sidebar__section">
+              <p className="course-sidebar__section-title">{unit.title}</p>
               <ul className="course-sidebar__list">
-                {section.items.map((item) => {
+                {unit.items.map((item) => {
                   if (item.kind === "future") {
                     return (
                       <li key={item.id} className="course-sidebar__item">
@@ -101,19 +111,18 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
 
                   const lesson = getLessonById(item.lessonId);
                   if (!lesson) return null;
+                  // Numbering and prior/current/upcoming are relative to THIS
+                  // course's path, so each course counts from its own start.
                   const index = getLessonIndex(lesson.id);
-                  const number = getLessonNumber(lesson.id);
-                  const badge = number === 0 ? "0" : String(number);
+                  const badge = String(getLessonNumber(lesson.id));
                   const state =
-                    index < 0
+                    index < 0 || currentIndex < 0
                       ? "upcoming"
-                      : currentIndex < 0
-                        ? "upcoming"
-                        : index < currentIndex
-                          ? "prior"
-                          : index === currentIndex
-                            ? "current"
-                            : "upcoming";
+                      : index < currentIndex
+                        ? "prior"
+                        : index === currentIndex
+                          ? "current"
+                          : "upcoming";
 
                   return (
                     <li key={lesson.id} className="course-sidebar__item">

@@ -21,14 +21,14 @@ export const determinantsLesson: LessonDefinition = {
   // exploring — the check lands mid-lesson, not after all the prose.
   route: [
     { kind: "motivate" },
-    { kind: "visual" },
+    { kind: "visual", heading: "The unit square becomes a parallelogram" },
     { kind: "section", sectionId: "intro" },
     { kind: "section", sectionId: "name" },
     { kind: "check" },
     { kind: "section", sectionId: "sign" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Stretch and flip signed area" },
     { kind: "practice" },
-    { kind: "summary" },
+    { kind: "summary", heading: "Signed area scaling, with zero as collapse" },
   ],
   sections: [
     {

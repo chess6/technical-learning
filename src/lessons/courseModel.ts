@@ -1,18 +1,25 @@
 /**
- * Course contract — the multi-course container model (secondary representation).
+ * The curriculum — `Subject -> Course -> Unit -> Lesson refs`, and the
+ * course-relative navigation derived from it.
  *
- * This is the future-correct shape: `Subject -> Course -> Unit -> Lesson refs`,
- * with Karatsuba modeled as its own algorithms course rather than a section
- * inside Linear Algebra. It references lesson ids; the registry
+ * This is the **minimal near-term schema** from
+ * `docs/courses/multi-domain-architecture.md` §2, and it is now AUTHORITATIVE:
+ * the sidebar, the home catalog, lesson numbering, progress, and Prev/Next all
+ * read it. Deliberately NOT built (§2 "deliberately deferred", §6): prerequisite
+ * edges, cross-domain connections, learning paths, per-learner progress,
+ * namespaced routing, or any backend.
+ *
+ * The tree holds **references**, never content: the registry
  * ([src/lessons/registry.ts](./registry.ts)) remains the single source of truth
- * for lesson *content*.
+ * for what a lesson *is*, and no lesson file knows which course contains it.
+ * Because leaves are references, one lesson id may appear in more than one
+ * module — that is how shared lessons become possible later, for free.
  *
- * IMPORTANT (coexistence): during this scaffold the existing navigation data
- * ([src/lessons/curriculum.ts](./curriculum.ts) `COURSE_SECTIONS`) and the flat
- * `lessons[]` registry remain AUTHORITATIVE. The UI still reads them. This model
- * is validated against them via the compatibility adapter below and is not yet
- * wired into rendering — so visible order, numbering, Prev/Next, and Karatsuba's
- * placement are unchanged.
+ * Why this replaced a single flat `lessons[]` index: with a second course, an
+ * array index conflates authoring order, the path a learner walks, and global
+ * progress. "Lesson 9 of 9" and "Next → Karatsuba after Eigenvectors" are both
+ * wrong the moment Karatsuba is not the sequel to eigenvectors. Everything
+ * below is therefore computed against the ACTIVE COURSE, not the registry.
  */
 
 import {
@@ -23,8 +30,8 @@ import {
   isExperimentalId,
   resolveId,
 } from "../platform/identity";
-import type { CourseNavItem, CourseSection } from "./curriculum";
 import { getLessonById } from "./registry";
+import type { LessonDefinition } from "./types";
 
 /* --------------------------------------------------------------------------
  * Model types
@@ -179,12 +186,24 @@ export const CURRICULUM: readonly Subject[] = [
         id: "algorithmic-thinking",
         title: "Algorithmic Thinking",
         subtitle: "Divide, conquer, analyze",
-        // Karatsuba now lives in its own course, not as a section of Linear Algebra.
+        // Karatsuba lives in its own course, not as a section of Linear Algebra.
         units: [
           {
-            id: "algorithms",
-            title: "Algorithms & complexity",
+            id: "divide-and-conquer",
+            title: "Divide & conquer",
             items: [{ kind: "lesson", lessonId: "karatsuba" }],
+          },
+          {
+            id: "data-structures",
+            title: "Data structures",
+            items: [
+              {
+                kind: "future",
+                id: "red-black-trees",
+                title: "Red–Black Trees",
+                subtitle: "Balance as an invariant you can recolor back into place",
+              },
+            ],
           },
         ],
       },
@@ -192,24 +211,17 @@ export const CURRICULUM: readonly Subject[] = [
   },
 ];
 
-/**
- * Legacy projection order: how the model's units map onto today's flat sidebar
- * section order. This is the compatibility shim that lets the future-correct
- * model (Karatsuba as its own course) reproduce the current visible ordering
- * (algorithms section last) without the UI having to change.
- */
-export const LEGACY_SECTION_ORDER: readonly string[] = [
-  "foundations",
-  "systems-elimination",
-  "maps-inverses-determinants",
-  "structure",
-  "spectra-geometry-data",
-  "algorithms",
-];
-
 /* --------------------------------------------------------------------------
- * Adapter helpers
+ * Reading the tree
  * ------------------------------------------------------------------------ */
+
+/** Every course, in declaration order. The home catalog renders exactly this. */
+export const COURSES: readonly Course[] = CURRICULUM.flatMap(
+  (subject) => subject.courses,
+);
+
+/** The course shown when no lesson names one (the home page, a dev route). */
+export const DEFAULT_COURSE: Course = COURSES[0]!;
 
 /** Normalize a course to its units, honoring the unitless-course convenience. */
 export function courseUnits(course: Course): readonly Unit[] {
@@ -240,36 +252,105 @@ export function curriculumLessonIds(
     .map((item) => item.lessonId);
 }
 
-/**
- * Compatibility adapter: project the model onto the legacy `CourseSection[]`
- * shape the current sidebar consumes, in today's visible order. Used to PROVE
- * equivalence; the live UI does not read this yet.
- */
-export function curriculumToCourseSections(
-  curriculum: readonly Subject[] = CURRICULUM,
-): CourseSection[] {
-  const unitsById = new Map(allUnits(curriculum).map((u) => [u.id, u]));
-  const sections: CourseSection[] = [];
-  for (const unitId of LEGACY_SECTION_ORDER) {
-    const unit = unitsById.get(unitId);
-    if (!unit) continue;
-    sections.push({
-      id: unit.id,
-      title: unit.title,
-      items: unit.items.map((item): CourseNavItem => {
-        if (item.kind === "lesson") {
-          return { kind: "lesson", lessonId: item.lessonId };
-        }
-        return item.subtitle === undefined
-          ? { kind: "future", id: item.id, title: item.title }
-          : { kind: "future", id: item.id, title: item.title, subtitle: item.subtitle };
-      }),
-    });
-  }
-  return sections;
+/* --------------------------------------------------------------------------
+ * Course-relative navigation
+ *
+ * Every helper here answers its question about the ACTIVE COURSE — the course
+ * that contains the lesson being read. Nothing is positional against the global
+ * registry, so a second course cannot make "lesson N of M", Prev/Next, or the
+ * sidebar's prior/current/upcoming states lie.
+ * ------------------------------------------------------------------------ */
+
+/** Ordered built-lesson ids of a course: the path a learner actually walks. */
+export function courseLessonIds(course: Course): string[] {
+  return courseUnits(course)
+    .flatMap((unit) => unit.items)
+    .filter((item): item is LessonRef => item.kind === "lesson")
+    .map((item) => item.lessonId);
 }
 
-/** The subject a lesson belongs to in the model (for future course-identity use). */
+/** The course a lesson belongs to, or `undefined` for an unplaced lesson id. */
+export function courseForLesson(
+  lessonId: string,
+  curriculum: readonly Subject[] = CURRICULUM,
+): Course | undefined {
+  for (const subject of curriculum) {
+    for (const course of subject.courses) {
+      if (courseLessonIds(course).includes(lessonId)) return course;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The course whose frame the UI should show. Derived from lesson membership —
+ * routes stay `/lesson/:lessonId`, so a lesson carries its own context and no
+ * URL change is needed (multi-domain-architecture §2, "determining the active
+ * course near-term").
+ */
+export function activeCourse(lessonId?: string): Course {
+  if (lessonId === undefined) return DEFAULT_COURSE;
+  return courseForLesson(lessonId) ?? DEFAULT_COURSE;
+}
+
+/** Position of a lesson within its own course path, or -1 when unplaced. */
+export function getLessonIndex(lessonId: string): number {
+  const course = courseForLesson(lessonId);
+  if (!course) return -1;
+  return courseLessonIds(course).indexOf(lessonId);
+}
+
+/** Built lessons of a course that carry a number (intro chapters do not). */
+function contentLessonIds(course: Course): string[] {
+  return courseLessonIds(course).filter(
+    (id) => getLessonById(id)?.kind !== "intro",
+  );
+}
+
+/**
+ * Course-relative number: `0` for an intro chapter (Chapter 0), otherwise the
+ * 1-based position among that course's numbered lessons. Numbering restarts per
+ * course — Karatsuba is lesson 1 of Algorithmic Thinking, not lesson 9 of
+ * everything.
+ */
+export function getLessonNumber(lessonId: string): number {
+  const lesson = getLessonById(lessonId);
+  if (!lesson || lesson.kind === "intro") return 0;
+  const course = courseForLesson(lessonId);
+  if (!course) return 0;
+  return contentLessonIds(course).indexOf(lessonId) + 1;
+}
+
+/** Progress within the active course, never against the whole registry. */
+export function getLessonPosition(lessonId: string): {
+  current: number;
+  total: number;
+} {
+  const course = courseForLesson(lessonId);
+  return {
+    current: getLessonNumber(lessonId),
+    total: course ? contentLessonIds(course).length : 0,
+  };
+}
+
+/**
+ * Prev/Next within the active course. A course's last lesson has no `next` —
+ * the next course is a different subject, not the sequel to this one.
+ */
+export function getAdjacentLessons(lessonId: string): {
+  previous: LessonDefinition | null;
+  next: LessonDefinition | null;
+} {
+  const course = courseForLesson(lessonId);
+  if (!course) return { previous: null, next: null };
+  const path = courseLessonIds(course);
+  const index = path.indexOf(lessonId);
+  const at = (i: number) =>
+    i >= 0 && i < path.length ? (getLessonById(path[i]!) ?? null) : null;
+  return { previous: at(index - 1), next: at(index + 1) };
+}
+
+/** The subject a lesson belongs to in the model. */
 export function subjectForLesson(
   lessonId: string,
   curriculum: readonly Subject[] = CURRICULUM,

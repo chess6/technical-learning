@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { COURSE_SECTIONS } from "../curriculum";
 import {
   CURRICULUM,
-  curriculumLessonIds,
-  curriculumToCourseSections,
+  COURSES,
+  activeCourse,
+  courseForLesson,
+  courseLessonIds,
   courseUnits,
+  curriculumLessonIds,
+  getAdjacentLessons,
+  getLessonNumber,
+  getLessonPosition,
   subjectForLesson,
   validateCurriculum,
   type Course,
@@ -23,24 +28,71 @@ describe("curriculum model validity", () => {
   });
 });
 
-describe("compatibility adapter reproduces current navigation (semantic equivalence)", () => {
-  it("flattened lesson order equals the authoritative registry order", () => {
-    // This is the ordering that governs numbering, Prev/Next, and the home list.
-    expect(curriculumLessonIds()).toEqual(lessons.map((l) => l.id));
+describe("the curriculum covers the registry", () => {
+  it("places every built lesson in exactly one course", () => {
+    const placed = curriculumLessonIds();
+    expect(new Set(placed)).toEqual(new Set(lessons.map((l) => l.id)));
+    expect(placed).toHaveLength(lessons.length);
+  });
+});
+
+describe("navigation is course-relative, not registry-positional", () => {
+  const LINEAR_ALGEBRA = COURSES.find((c) => c.id === "linear-algebra")!;
+  const ALGORITHMS = COURSES.find((c) => c.id === "algorithmic-thinking")!;
+
+  it("derives the active course from lesson membership", () => {
+    expect(activeCourse("vectors").id).toBe("linear-algebra");
+    expect(activeCourse("karatsuba").id).toBe("algorithmic-thinking");
+    // Off a lesson (the home catalog, a dev route) the default course is shown.
+    expect(activeCourse().id).toBe(COURSES[0]!.id);
+    expect(activeCourse("not-a-lesson").id).toBe(COURSES[0]!.id);
+    expect(courseForLesson("not-a-lesson")).toBeUndefined();
   });
 
-  it("projects onto the legacy CourseSection[] shape identically to COURSE_SECTIONS", () => {
-    // Semantic equivalence asserted structurally: same sections, titles, and items.
-    expect(curriculumToCourseSections()).toEqual(COURSE_SECTIONS);
+  it("restarts numbering in each course", () => {
+    // Chapter 0 is an intro chapter and is excluded from the numbered count.
+    expect(getLessonNumber("why-linear-algebra")).toBe(0);
+    expect(getLessonNumber("vectors")).toBe(1);
+    expect(getLessonNumber("eigenvectors")).toBe(7);
+    // Karatsuba is chapter 1 of ITS course, not the ninth linear-algebra lesson.
+    expect(getLessonNumber("karatsuba")).toBe(1);
   });
 
-  it("covers exactly the same set of lessons as the current sidebar", () => {
-    const fromSections = new Set(
-      COURSE_SECTIONS.flatMap((s) =>
-        s.items.filter((i) => i.kind === "lesson").map((i) => i.lessonId),
-      ),
-    );
-    expect(new Set(curriculumLessonIds())).toEqual(fromSections);
+  it("reports progress against the active course, not the whole registry", () => {
+    const laTotal = courseLessonIds(LINEAR_ALGEBRA).filter(
+      (id) => getLessonById(id)!.kind !== "intro",
+    ).length;
+    expect(getLessonPosition("vectors")).toEqual({ current: 1, total: laTotal });
+    expect(getLessonPosition("karatsuba")).toEqual({ current: 1, total: 1 });
+    expect(getLessonPosition("karatsuba").total).toBeLessThan(lessons.length);
+  });
+
+  it("never links across a course boundary", () => {
+    // The regression this whole model exists to prevent: Karatsuba is not the
+    // sequel to eigenvectors, it just used to be next in one global array.
+    const last = courseLessonIds(LINEAR_ALGEBRA).at(-1)!;
+    expect(last).toBe("eigenvectors");
+    expect(getAdjacentLessons("eigenvectors").next).toBeNull();
+    expect(getAdjacentLessons("eigenvectors").previous?.id).toBe("determinants");
+
+    expect(courseLessonIds(ALGORITHMS)).toEqual(["karatsuba"]);
+    expect(getAdjacentLessons("karatsuba")).toEqual({
+      previous: null,
+      next: null,
+    });
+  });
+
+  it("walks a course path in declared unit order", () => {
+    expect(courseLessonIds(LINEAR_ALGEBRA)).toEqual([
+      "why-linear-algebra",
+      "vectors",
+      "transformations",
+      "systems",
+      "elimination",
+      "solution-sets",
+      "determinants",
+      "eigenvectors",
+    ]);
   });
 });
 

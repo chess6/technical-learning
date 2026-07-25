@@ -392,12 +392,20 @@ Each step is independently shippable and preserves current behavior: the four
 linear-algebra lessons and Karatsuba keep working, and Prev/Next for the default
 path is unchanged.
 
+> **Status (2026-07-24).** Steps 1–3 are **shipped**. `src/lessons/courseModel.ts`
+> is the authoritative `subject → course → unit → lesson refs` tree; the flat
+> `COURSE_SECTIONS` list is gone; the sidebar, the home catalog, numbering,
+> progress, and Prev/Next all read the tree and are **course-relative**; the
+> app-level brand is product-level (`src/platform/product.ts`) and each course's
+> title/subtitle renders contextually. Steps 4–6 (namespaced routing, the graph
+> model, learner progress) remain deferred exactly as written below.
+
 ### Step 0 — today (baseline)
 
 Flat `lessons[]`, flat `COURSE_SECTIONS`, hardcoded course name, positional
 progress, `/lesson/:lessonId`. Working, correct for one course.
 
-### Step 1 — introduce the near-term tree behind the same behavior
+### Step 1 — introduce the near-term tree behind the same behavior *(shipped)*
 
 - **`curriculum.ts`**: replace `COURSE_SECTIONS` with the `CURRICULUM: Subject[]`
   tree (§2). Encode today's content as one subject → one course → modules that
@@ -406,7 +414,7 @@ progress, `/lesson/:lessonId`. Working, correct for one course.
   `getLessonById`, and that the default course's flattened lesson id order equals
   today's registry order (so Prev/Next does not move).
 
-### Step 2 — path-aware Prev/Next and progress
+### Step 2 — path-aware Prev/Next and progress *(shipped)*
 
 - **`registry.ts`**: add `getAdjacentInPath` / `getPositionInPath` (§2); mark the
   global-array helpers deprecated but keep them until callers migrate.
@@ -416,7 +424,7 @@ progress, `/lesson/:lessonId`. Working, correct for one course.
   old global Prev/Next (behavior preserved); add a synthetic second course in a
   test fixture to prove numbering restarts per course.
 
-### Step 3 — data-driven course identity + first-class `future`
+### Step 3 — data-driven course identity + first-class `future` *(shipped)*
 
 - **`CourseSidebar.tsx`**: render `course.title` / `course.subtitle` instead of
   the hardcoded `Linear Algebra` / `Visual Learning`; render `future` items from
@@ -449,9 +457,11 @@ progress, `/lesson/:lessonId`. Working, correct for one course.
 - Add `LearnerState` with local-first persistence; compute `nextBestLessons`
   client-side. Introduce a backend only when progress must sync across devices.
 
-**Touch points summary:** `curriculum.ts` (Steps 1, 3, 5), `registry.ts` helpers
-(Step 2), `CourseSidebar.tsx` (Steps 2–3, 5), `routes.tsx` (Step 4). Lesson
-content files and `LessonDefinition` are **not** touched by any step.
+**Touch points summary:** `courseModel.ts` (Steps 1, 3, 5 — it replaced
+`curriculum.ts`), the navigation helpers that moved out of `registry.ts`
+(Step 2), `CourseSidebar.tsx` and `HomePage.tsx` (Steps 2–3, 5), `routes.tsx`
+(Step 4). Lesson content files and `LessonDefinition` are **not** touched by any
+step, and were not touched by Steps 1–3.
 
 ---
 

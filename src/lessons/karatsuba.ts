@@ -24,16 +24,16 @@ export const karatsubaLesson: LessonDefinition = {
   // exponent) *after* the worked examples — closer to the practice they feed.
   route: [
     { kind: "motivate" },
-    { kind: "visual" },
+    { kind: "visual", heading: "Where FOIL's four pieces land" },
     { kind: "section", sectionId: "weighted-rect" },
     { kind: "section", sectionId: "aux-rect" },
     { kind: "check" },
     { kind: "worked" },
     { kind: "section", sectionId: "carry-vs-width" },
     { kind: "section", sectionId: "exponent" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "Place-value rectangles and three products" },
     { kind: "practice" },
-    { kind: "summary" },
+    { kind: "summary", heading: "Three products instead of four" },
   ],
   sections: [
     {

@@ -69,6 +69,9 @@ export function LessonPage() {
         startNumber={index + 1}
         resetToken={resetToken}
         enableEigenClipStage={isEigenLesson}
+        // Placed on its own by a `worked` route block: no heading sits above it,
+        // so the example's own title is the section heading.
+        headingLevel={2}
       />,
     ]),
   );

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  lessons,
-  getLessonById,
-  getLessonNumber,
-  getLessonPosition,
-} from "../registry";
+import { lessons, getLessonById } from "../registry";
+import { getLessonNumber, getLessonPosition } from "../courseModel";
 import { getSceneMeta, SCENE_META, hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { getExplorer } from "../../explorations/registry";
 import { getMatrixExample } from "../../math";
@@ -141,12 +137,13 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
     expect(getLessonNumber("why-linear-algebra")).toBe(0);
     expect(getLessonNumber("vectors")).toBe(1);
     expect(getLessonPosition("vectors").current).toBe(1);
-    // Systems is at position 3 (after transformations); elimination follows at
-    // 4, so Karatsuba shifts to 7 (intro chapter still excluded from the count).
+    // Systems is at position 3 (after transformations); elimination follows at 4.
     expect(getLessonNumber("systems")).toBe(3);
     expect(getLessonNumber("elimination")).toBe(4);
     expect(getLessonNumber("solution-sets")).toBe(5);
-    expect(getLessonNumber("karatsuba")).toBe(8);
+    // Numbering is course-relative: Karatsuba is chapter 1 of its OWN course.
+    // (Course-boundary behaviour is covered in courseModel.test.ts.)
+    expect(getLessonNumber("karatsuba")).toBe(1);
   });
 
   it("tours scale, rotation, reflection, shear, and projection", () => {

@@ -38,7 +38,9 @@ export function ExplorationPanel({
     >
       <header className="exploration-panel__header">
         <div className="exploration-panel__intro">
-          <h3 className="exploration-panel__title">{title}</h3>
+          {/* The block above this carries no generic heading, so the
+              exploration's own title is the section heading at this level. */}
+          <h2 className="exploration-panel__title">{title}</h2>
           {description && (
             <p className="exploration-panel__description">
               <ProseWithMath text={description} />

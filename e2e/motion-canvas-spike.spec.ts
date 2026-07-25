@@ -103,7 +103,7 @@ test("Motion Canvas scene renders, controls work, and disposes cleanly", async (
   expect((await counters(page)).activeEngines).toBe(1);
 
   // Navigating to a page without a scene disposes the engine.
-  await page.getByRole("link", { name: "Linear Algebra" }).first().click();
+  await page.getByRole("link", { name: "Interactive Textbook" }).first().click();
   await expect.poll(async () => (await counters(page)).activeEngines).toBe(0);
 
   const afterFirst = await counters(page);

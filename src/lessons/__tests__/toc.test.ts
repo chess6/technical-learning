@@ -1,25 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { chapter0Lesson } from "../chapter0";
 import { vectorsLesson } from "../vectors";
-import {
-  flattenLessonToc,
-  getLessonTocTree,
-} from "../toc";
+import { lessons } from "../registry";
+import { flattenLessonToc, getLessonTocTree } from "../toc";
+
+/**
+ * The internal block names. A lesson's `route` still uses them, and they still
+ * drive `data-block-kind`, styling variants, and accessible region descriptions
+ * — but a learner must never meet them, in a heading or in a table of contents
+ * (product/semantic-page-grammar.md §1.1).
+ */
+const GENERIC_PHASE_LABELS = [
+  "Think about it",
+  "Watch the idea",
+  "Quick check",
+  "Try it yourself",
+  "Remember this",
+];
 
 describe("getLessonTocTree", () => {
-  it("nests Chapter 0 sections under the preceding primary phases", () => {
+  it("uses content-specific headings, not phase names", () => {
     const tree = getLessonTocTree(chapter0Lesson);
     expect(tree.map((item) => item.label)).toEqual([
-      "Think about it",
-      "Watch the idea",
-      "Try it yourself",
-    ]);
-    expect(tree[1]!.children?.map((c) => c.label)).toEqual([
+      // The motivating question and the mystery scene speak for themselves and
+      // claim no row; the chapter's own words carry the contents.
       "Four numbers move a whole graphic",
-    ]);
-    expect(tree[2]!.children?.map((c) => c.label)).toEqual([
+      "Move the whole craft with four numbers",
       "The same idea, everywhere",
       "One move four numbers can't make",
+    ]);
+    // The open question nests under the section that raises it.
+    expect(tree.at(-1)!.children?.map((c) => c.label)).toEqual([
       "The question this course opens with",
     ]);
   });
@@ -28,15 +39,47 @@ describe("getLessonTocTree", () => {
     const flat = flattenLessonToc(getLessonTocTree(chapter0Lesson));
     const ids = flat.map((item) => item.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toContain("motivate-0");
     expect(ids).toContain("section-mystery");
+    expect(ids).toContain("explore-3");
     expect(ids).toContain("formal-ch0-open-question");
   });
 
   it("builds a nested TOC for a content lesson with interleaved sections", () => {
     const tree = getLessonTocTree(vectorsLesson);
     expect(flattenLessonToc(tree).length).toBeGreaterThanOrEqual(3);
-    // At least one primary phase should carry nested children.
+    // At least one entry should carry nested detail (a formal statement).
     expect(tree.some((item) => (item.children?.length ?? 0) > 0)).toBe(true);
+  });
+});
+
+describe("no lesson surfaces a generic phase name", () => {
+  it.each(lessons.map((lesson) => [lesson.id, lesson] as const))(
+    "%s has a content-specific table of contents",
+    (_id, lesson) => {
+      const labels = flattenLessonToc(getLessonTocTree(lesson)).map((i) => i.label);
+      for (const generic of GENERIC_PHASE_LABELS) {
+        expect(labels, `"${generic}" must not appear in the contents`).not.toContain(
+          generic,
+        );
+      }
+      // Whatever survives must be real, non-empty authored text.
+      for (const label of labels) expect(label.trim().length).toBeGreaterThan(0);
+    },
+  );
+
+  it("still lists something worth navigating in every lesson", () => {
+    for (const lesson of lessons) {
+      const labels = flattenLessonToc(getLessonTocTree(lesson)).map((i) => i.label);
+      expect(labels.length, `${lesson.id} has an empty table of contents`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("keeps the two conventional textbook labels where they orient a reader", () => {
+    // "Practice" and "Worked examples" are furniture, not a phase rail
+    // (semantic-page-grammar §5.2): they name a *kind* of block the way a
+    // textbook does, and only appear where such a block exists.
+    const labels = flattenLessonToc(getLessonTocTree(vectorsLesson)).map((i) => i.label);
+    expect(labels).toContain("Worked examples");
+    expect(labels).toContain("Practice");
   });
 });

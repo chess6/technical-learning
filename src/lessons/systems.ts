@@ -55,10 +55,13 @@ export const systemsLesson: LessonDefinition = {
     { kind: "worked" },
     { kind: "formal", formalId: "prop-trichotomy" },
     { kind: "check" },
-    { kind: "explore" },
+    { kind: "explore", tocLabel: "One system, two pictures" },
     { kind: "section", sectionId: "why-it-matters" },
     { kind: "practice" },
-    { kind: "summary" },
+    {
+      kind: "summary",
+      heading: "Existence, uniqueness, and the columns that decide them",
+    },
   ],
   formalBlocks: [
     {

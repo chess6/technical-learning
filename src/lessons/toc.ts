@@ -22,15 +22,21 @@ const FALLBACK_ROUTE: RouteBlock[] = [
   { kind: "summary" },
 ];
 
-const PHASE_TITLE: Record<string, string> = {
-  motivate: "Think about it",
-  watch: "Watch the idea",
-  visual: "Watch the idea",
-  check: "Quick check",
+/**
+ * The only two default labels left.
+ *
+ * Generic phase names ("Think about it", "Watch the idea", "Quick check", "Try
+ * it yourself", "Remember this") are internal block kinds and must never appear
+ * in a table of contents — a ToC entry reads "When does a system have no
+ * solution?", not "Check" (product/semantic-page-grammar.md §1.1). What remains
+ * are the two conventional textbook labels that genuinely orient a reader
+ * (grammar §5.2 furniture). Everything else comes from authored, content-specific
+ * text: section titles, formal-block labels, worked-example titles, or a block's
+ * own `heading` / `tocLabel`.
+ */
+const CONVENTIONAL_LABEL: Record<string, string> = {
   worked: "Worked examples",
-  explore: "Try it yourself",
   practice: "Practice",
-  summary: "Remember this",
 };
 
 const FORMAL_KIND_LABEL: Record<string, string> = {
@@ -47,16 +53,7 @@ const FORMAL_KIND_LABEL: Record<string, string> = {
 export const plainTocLabel = (text: string): string =>
   text.replace(/\$/g, "").trim();
 
-/** Kinds that start a new top-level TOC entry (children nest under them). */
-const PRIMARY_KINDS = new Set([
-  "motivate",
-  "watch",
-  "visual",
-  "explore",
-  "check",
-  "practice",
-  "summary",
-]);
+
 
 function formalById(lesson: LessonDefinition): Map<string, FormalBlock> {
   return new Map((lesson.formalBlocks ?? []).map((block) => [block.id, block]));
@@ -97,9 +94,22 @@ export function getBlockAnchorId(block: RouteBlock, index: number): string {
   }
 }
 
+/** The lesson's own words for this block, if it authored any. */
+function authored(block: RouteBlock): string | undefined {
+  if ("tocLabel" in block && block.tocLabel) return block.tocLabel;
+  if ("heading" in block && block.heading) return block.heading;
+  return undefined;
+}
+
+/** Authored label or nothing — a block with no authored words gets no ToC row. */
+function authoredLabel(block: RouteBlock): string | null {
+  const label = authored(block);
+  return label ? plainTocLabel(label) : null;
+}
+
 /**
  * Learner-facing TOC label for a route block, or `null` when the block should
- * not appear in the TOC (missing content, or handoff).
+ * not appear in the TOC (no authored label, missing content, or a handoff).
  */
 export function getBlockTocLabel(
   lesson: LessonDefinition,
@@ -126,10 +136,13 @@ export function getBlockTocLabel(
     case "worked": {
       if (block.workedId) {
         if (!worked.has(block.workedId)) return null;
-        return plainTocLabel(worked.get(block.workedId) ?? "Worked example");
+        // A placed worked example is named by its own title.
+        return plainTocLabel(
+          authored(block) ?? worked.get(block.workedId) ?? "Worked example",
+        );
       }
       if ((lesson.workedExamples?.length ?? 0) === 0) return null;
-      return PHASE_TITLE.worked!;
+      return plainTocLabel(authored(block) ?? CONVENTIONAL_LABEL.worked!);
     }
     case "check": {
       if (block.checkpointId) {
@@ -140,7 +153,9 @@ export function getBlockTocLabel(
       } else if (!lesson.checkpoint) {
         return null;
       }
-      return PHASE_TITLE.check!;
+      // A checkpoint prompt speaks for itself; it earns a row only when the
+      // lesson gave it a content-specific label.
+      return authoredLabel(block);
     }
     case "practice": {
       const all = lesson.exercises ?? [];
@@ -148,35 +163,40 @@ export function getBlockTocLabel(
         ? all.filter((ex) => block.exerciseIds!.includes(ex.id))
         : all;
       if (subset.length === 0) return null;
-      return plainTocLabel(block.title ?? PHASE_TITLE.practice!);
+      return plainTocLabel(authored(block) ?? CONVENTIONAL_LABEL.practice!);
     }
     case "motivate":
-      return lesson.motivatingQuestion ? PHASE_TITLE.motivate! : null;
+      return lesson.motivatingQuestion ? authoredLabel(block) : null;
     case "watch":
     case "visual":
-      return lesson.guidedSceneId ? PHASE_TITLE[block.kind]! : null;
+      return lesson.guidedSceneId ? authoredLabel(block) : null;
     case "explore":
       // LessonLayout always renders an explore slot (live explorer or placeholder).
-      return PHASE_TITLE.explore!;
+      return authoredLabel(block);
     case "summary":
       return lesson.keyTakeaway || lesson.structuredSummary
-        ? PHASE_TITLE.summary!
+        ? authoredLabel(block)
         : null;
     default:
       return null;
   }
 }
 
+/**
+ * Formal statements and individually placed worked examples are *detail* under
+ * the heading that introduced them; everything else that earned a label is a
+ * top-level entry. With the generic phase rail gone, section titles are what
+ * usually carry the top level.
+ */
 function isPrimaryBlock(block: RouteBlock): boolean {
-  if (PRIMARY_KINDS.has(block.kind)) return true;
-  // Combined worked examples are a phase; per-id worked examples nest as detail.
-  return block.kind === "worked" && !block.workedId;
+  if (block.kind === "formal") return false;
+  return !(block.kind === "worked" && block.workedId);
 }
 
 /**
- * Nested TOC for a lesson, derived from its authored `route`. Primary phases
- * are top-level; sections, formal statements, and per-id worked examples nest
- * under the preceding primary phase.
+ * Nested TOC for a lesson, derived from its authored `route`. Every entry is
+ * content-specific — a generic phase name never appears here. Formal statements
+ * and individually placed worked examples nest under the preceding entry.
  */
 export function getLessonTocTree(lesson: LessonDefinition): LessonTocItem[] {
   const route = lesson.route ?? FALLBACK_ROUTE;

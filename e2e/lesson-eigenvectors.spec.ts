@@ -19,8 +19,10 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   await expect(
     page.getByRole("heading", { name: "Eigenvectors and Eigenvalues" }),
   ).toBeVisible();
+  // The guided scene is introduced by an authored, content-specific heading —
+  // never by the internal block name.
   await expect(
-    page.getByRole("heading", { name: "Watch the idea" }),
+    page.getByRole("heading", { name: "Most directions turn; a few do not" }),
   ).toBeVisible();
   await expect(page.locator(".guided-scene-player__canvas canvas").first()).toBeVisible();
 

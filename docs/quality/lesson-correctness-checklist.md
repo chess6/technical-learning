@@ -1274,3 +1274,108 @@ both themes.
 - [x] Screenshots saved to `screenshots/`: `identity-home-notebook.png`,
   `identity-home-observatory.png`, `identity-lesson-notebook.png`,
   `identity-lesson-observatory.png`, `identity-home-notebook-390.png`.
+
+---
+
+## Platform identity, course context, and page grammar (2026-07-24)
+
+Two product-direction corrections, applied together because they are the same
+mistake seen twice: **one course presented as the whole product**, and **internal
+machinery presented as learner-facing prose.**
+
+**No lesson content, math, animation, grading, persistence, or assessment
+behaviour changed in this pass.** Every edit is to the shared shell, the
+curriculum tree, and per-lesson *labels* — never to a lesson's mathematics.
+
+### Part A — the platform is not "Linear Algebra"
+
+Implements only the **minimal near-term schema** of
+`docs/courses/multi-domain-architecture.md` §2 (Steps 1–3). Explicitly NOT built:
+prerequisite/graph edges, learning paths, learner accounts, a backend, or
+namespaced routing (§6 stays deferred).
+
+- [x] `src/lessons/courseModel.ts` is now **authoritative** — `subject → course →
+  unit → lesson refs`, holding ids only. `curriculum.ts` and its flat
+  `COURSE_SECTIONS` are deleted; `registry.ts` is a pure **content** registry.
+- [x] Curriculum data covers **Linear Algebra** (Chapter 0 + L1–L7 built, the rest
+  of the L1–L14 spine as `future` nodes) and **Algorithms & Complexity →
+  Algorithmic Thinking** (Karatsuba built, Red–Black Trees `future`).
+- [x] **The app brand is product-level** — `PRODUCT_NAME` ("Interactive Textbook",
+  from `docs/product/vision.md`) in `src/platform/product.ts`; the header, the
+  document title, and the home `h1` no longer name a course.
+- [x] **The sidebar renders the active course** — title, subtitle, and units come
+  from the tree, and the active course is derived from **lesson membership**, so
+  `/lesson/:lessonId` routes are unchanged. Karatsuba shows the Algorithmic
+  Thinking spine; nothing from linear algebra leaks in.
+- [x] **The home page is a catalog** — one card per course, each with its own
+  title, subtitle, chapter count, entry CTA, and course-relative chapter list.
+- [x] **Numbering, prior/current/upcoming, progress, and Prev/Next are
+  course-relative.** Karatsuba is chapter **1 of 1** in its course, not 9 of 9;
+  eigenvectors is the last linear-algebra lesson and therefore has **no Next
+  link** — the cross-course "Next → Karatsuba" is gone.
+- [x] No lesson content was duplicated and no computation moved: the tree holds
+  bare `{ kind, lessonId }` references (asserted in `courseModel.test.ts`).
+
+### Part B — the generic phase rail is not chapter prose
+
+`docs/product/semantic-page-grammar.md` §1 is authoritative for learner-visible
+naming: a reader infers a block's role from content and typography, never from a
+repeated generic phase label. The shell was rendering "Think about it", "Watch
+the idea", "Quick check", "Try it yourself", and "Remember this" as `h2`s and as
+table-of-contents rows on every lesson.
+
+- [x] **Block kinds stay internal** and are still available as route metadata,
+  `data-block-kind` + `data-phase` hooks, styling variants, and accessible region
+  descriptions (`aria-label` on each block's `<section>`).
+- [x] **`Phase` renders no visible heading by default**, and no generic name is
+  inserted into either table of contents (the on-page one or the sidebar's
+  expansion of the current lesson).
+- [x] **A route block may author its own labels** — `RouteBlock.heading` (visible,
+  content-specific) and `.tocLabel` (contents only, for a block whose child
+  already carries the visible heading, e.g. an explorer).
+- [x] **Only two conventional textbook labels survive** — *Practice* and *Worked
+  examples* (grammar §5.2 furniture), plus the existing *Definition* / *Theorem*
+  labels on formal blocks and the content-specific titles of sections, worked
+  examples, and exercises.
+- [x] **Every lesson was audited, not find-and-replaced.** Guided scenes that no
+  section title introduces got an authored heading naming what the animation
+  builds (vectors, elimination, determinants, eigenvectors, karatsuba); the ones
+  a section title already introduces got none (transformations, systems, solution
+  sets); Chapter 0's mystery scene is deliberately unheaded. Each summary's
+  heading now names its **synthesis** ("A basis is a coordinate language",
+  "One particular solution plus the null space"), not "Remember this".
+- [x] **Redundant utility copy removed** — the stock ledes above worked examples
+  ("Watch the derivation and the notebook reasoning together…") and above the
+  explorer ("Now take control of the same example you just watched…"), which were
+  identical on every lesson.
+- [x] **Heading hierarchy repaired** where the removed `h2` would have left a gap:
+  `ExplorationPanel`'s own content-specific title is now the block's `h2`, a
+  worked example placed on its own by a `worked` route block takes `h2`
+  (`headingLevel` prop) while examples inside the combined block stay `h3`, and
+  `KaratsubaTreeDiagram` moved `h4` → `h3`.
+- [x] **Typography follows the structure**: with the rail gone, a section title is
+  the page's top heading level under the lesson title, so section and authored
+  block headings share one display treatment; a displayed equation is given room
+  rather than a bordered card (one fewer nested card per section).
+- [x] `MotivatingQuestion`'s region label is "Motivating question", not "Predict" —
+  prediction is a tool, not a ritual (`vision.md` §4).
+
+### Testing review
+
+- [x] `src/lessons/__tests__/toc.test.ts` — asserts, **for every registered
+  lesson**, that no generic phase label appears anywhere in its contents, that the
+  contents are never empty, and that the two conventional labels survive where a
+  block of that kind exists.
+- [x] `src/lessons/__tests__/courseModel.test.ts` — active course derived from
+  membership (including the unplaced-id fallback), numbering restarting per
+  course, progress measured against the course, and **no adjacency across a course
+  boundary** (`getAdjacentLessons("eigenvectors").next === null`).
+- [x] `e2e/course-context-and-grammar.spec.ts` (5 specs) — the catalog lists both
+  courses and files Karatsuba under its own; Karatsuba's sidebar carries
+  `data-course="algorithmic-thinking"` with no linear-algebra links; the last
+  linear-algebra lesson renders **no Next link**; **all nine lessons** are swept
+  for generic phase text in headings and in both tables of contents while still
+  emitting `data-block-kind`; and every lesson has exactly one `h1` with no
+  skipped heading levels.
+- [x] Verified at package tier: `./check.sh --e2e`.
+

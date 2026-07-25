@@ -180,7 +180,7 @@
   }
 }
 
-/* ---- The chapter spine ---------------------------------------------------- */
+/* ---- The catalog ---------------------------------------------------------- */
 
 .home-page__list-heading {
   font-family: var(--font-display);
@@ -191,6 +191,53 @@
   color: var(--color-text-faint);
   margin-bottom: calc(var(--space-6) * -1 + var(--space-2));
   scroll-margin-top: calc(var(--header-height) + var(--space-4));
+}
+
+.home-page__catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/* A course reads as a chapter of the catalog: its own title block, then its
+   spine. Courses are siblings — none is the page's subject. */
+.home-page__course {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.home-page__course-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--prose-max);
+}
+
+.home-page__course-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.05;
+}
+
+.home-page__course-sub {
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.home-page__course-count {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.home-page__course .home-page__cta {
+  margin-top: var(--space-2);
 }
 
 .home-page__list {

@@ -4,12 +4,16 @@
   gap: var(--space-3);
 }
 
+/* With the generic phase rail gone, a section title IS the page's top heading
+   level under the lesson title — so it carries display weight, not label weight. */
 .explanation-block__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.018em;
+  text-wrap: balance;
   color: var(--color-text);
 }
 

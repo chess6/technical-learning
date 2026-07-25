@@ -8,7 +8,7 @@ type MotivatingQuestionProps = {
 /** A prediction/motivating prompt shown before the explanation. */
 export function MotivatingQuestion({ question }: MotivatingQuestionProps) {
   return (
-    <aside className="motivating-question" aria-label="Predict">
+    <aside className="motivating-question" aria-label="Motivating question">
       <p className="motivating-question__body">
         <ProseWithMath text={question} />
       </p>
