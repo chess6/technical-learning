@@ -780,9 +780,9 @@ Combinations, and Basis"), not as a separate lesson: it teaches span, independen
 basis, and coordinates-relative-to-a-basis, landing on the fixed point
 \(\mathbf{p}=(4,1)=[\mathbf{p}]_E\) being \([\mathbf{p}]_B=(1,1)\) in \(B=(\mathbf{v},\mathbf{w})\).
 Lesson 2 then recalls unique standard-basis coordinates to *derive* the matrix-columns
-rule. Forward edges to the current "Later topics"
-([src/lessons/curriculum.ts](../../src/lessons/curriculum.ts)) — change of basis and
-SVD — are therefore seeded explicitly: "the same arrow has different coordinates in
+rule. Forward edges to the still-unbuilt spine nodes
+([src/lessons/courseModel.ts](../../src/lessons/courseModel.ts) `future` refs) —
+orthogonality, least squares and SVD — are therefore seeded explicitly: "the same arrow has different coordinates in
 a different basis" is the direct seed of change of basis.
 
 ---

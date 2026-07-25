@@ -56,9 +56,9 @@ export const subspacesRankLesson: LessonDefinition = {
   id: "subspaces-rank",
   title: "Subspaces, Column Space, Null Space, and Rank",
   subtitle:
-    "A map carries two spaces — what it can reach, and what it destroys — and rank counts what survived",
+    "Two of a map's spaces settle every solvability question — what it can reach, and what it destroys — and rank counts what survived",
   learningObjectives: [
-    "Name which of the two subspaces decides existence and which decides uniqueness",
+    "Name which of the two governing subspaces decides existence and which decides uniqueness",
     "Say which $\\mathbb{R}^k$ each space lives in, and why they need not be the same",
     "Read $\\operatorname{Col}(A)$ as the span of the columns — everything the map can produce",
     "Read $\\operatorname{Null}(A)$ as a property of the map, not of one homogeneous system",
@@ -98,7 +98,7 @@ export const subspacesRankLesson: LessonDefinition = {
     {
       id: "two-questions",
       title: "Why always those two questions?",
-      body: "Look back at what you have actually been doing. Lesson 3 asked whether $\\mathbf{b}$ was reachable, and how many recipes reached it. Lesson 4 answered both by eliminating. Lesson 5 split the answer into a particular solution plus null directions. Lessons 6 and 7 asked whether the map could be undone. Four lessons, four procedures — and underneath, **the same two questions every time**: does a solution exist, and is it unique. That is not a coincidence about the exercises. It is a fact about linear maps: each one carries exactly two subspaces, and those two questions are questions about them.",
+      body: "Look back at what you have actually been doing. Lesson 3 asked whether $\\mathbf{b}$ was reachable, and how many recipes reached it. Lesson 4 answered both by eliminating. Lesson 5 split the answer into a particular solution plus null directions. Lessons 6 and 7 asked whether the map could be undone. Four lessons, four procedures — and underneath, **the same two questions every time**: does a solution exist, and is it unique. That is not a coincidence about the exercises. It is a fact about linear maps: every map carries **two subspaces that settle exactly those two questions** — one built from its outputs, one from its inputs — so every solvability question you have asked was a question about one of them.",
       observation:
         "One space lives among the outputs and answers existence. The other lives among the inputs and answers uniqueness. Because they sit in different places, they are never in competition — and they can be very different sizes.",
     },
@@ -182,7 +182,7 @@ export const subspacesRankLesson: LessonDefinition = {
     {
       id: "def-two-spaces",
       kind: "definition",
-      label: "The two spaces of a map",
+      label: "The two spaces that decide solvability",
       statement:
         "For an $m \\times n$ matrix $A$: the **column space** is $\\operatorname{Col}(A) = \\operatorname{span}\\{\\text{columns of }A\\} \\subseteq \\mathbb{R}^m$, and the **null space** is $\\operatorname{Null}(A) = \\{\\mathbf{x} : A\\mathbf{x} = \\mathbf{0}\\} \\subseteq \\mathbb{R}^n$. The **rank** is $\\operatorname{rank}A = \\dim\\operatorname{Col}(A)$.",
       interpretation:
@@ -266,6 +266,13 @@ export const subspacesRankLesson: LessonDefinition = {
       interpretation:
         "Stated for completeness because it is surprising and because you will meet it again — the rows and the columns of a matrix are different objects living in different spaces, yet they contain exactly as many independent directions as each other. **Its proof is not given here**; it belongs with the deeper structural results.",
       visibility: "reference",
+      layers: [
+        {
+          kind: "looking-ahead",
+          title: "These two are not the only subspaces a matrix has",
+          body: "Saying \"the two spaces\" is a claim about *which questions this lesson asks*, not a census. The span of the rows is a subspace too (of $\\mathbb{R}^n$), and so is $\\operatorname{Null}(A^{\\mathsf{T}})$ (of $\\mathbb{R}^m$) — together the four are conventionally called the *fundamental subspaces*, and a matrix has infinitely many other subspaces besides. $\\operatorname{Col}(A)$ and $\\operatorname{Null}(A)$ are singled out here because they are the two that answer **existence and uniqueness**, which is what you have been asking since Lesson 3. The other two come into their own once right angles are available, in Lesson 12 and again in the singular value decomposition.",
+        },
+      ],
     },
   ],
   guidedSceneId: "subspaces-rank",
@@ -536,7 +543,7 @@ export const subspacesRankLesson: LessonDefinition = {
     },
   ],
   keyTakeaway:
-    "A linear map carries two subspaces, and they answer the two questions you have been asking since Lesson 3. $\\operatorname{Col}(A)$ lives among the outputs and decides **existence**: $A\\mathbf{x}=\\mathbf{b}$ is solvable exactly when $\\mathbf{b}$ is in it. $\\operatorname{Null}(A)$ lives among the inputs and decides **uniqueness**. Rank counts the dimensions that survive into the output, and it is the number of pivots — with a basis of $\\operatorname{Col}(A)$ taken from $A$'s own columns, never from its reduced form. Invertibility and $\\det \\ne 0$ are simply rank at its maximum, and as the rank falls the null space grows by exactly as much.",
+    "Two of a linear map's subspaces answer the two questions you have been asking since Lesson 3. $\\operatorname{Col}(A)$ lives among the outputs and decides **existence**: $A\\mathbf{x}=\\mathbf{b}$ is solvable exactly when $\\mathbf{b}$ is in it. $\\operatorname{Null}(A)$ lives among the inputs and decides **uniqueness**. Rank counts the dimensions that survive into the output, and it is the number of pivots — with a basis of $\\operatorname{Col}(A)$ taken from $A$'s own columns, never from its reduced form. Invertibility and $\\det \\ne 0$ are simply rank at its maximum, and as the rank falls the null space grows by exactly as much.",
   structuredSummary: {
     coreMentalModel:
       "A map has an output side and an input side: what it can reach, and what it destroys. Rank counts what survived.",

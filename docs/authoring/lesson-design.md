@@ -328,7 +328,7 @@ Representation fit (which object gets which notation) is owned by
   grouping — not a wall of identical bordered cards or ALL-CAPS labels. Scrolling
   through phases is fine; do not compress a lesson into one viewport.
 - **Navigation.** A **course table-of-contents sidebar** (`CourseSidebar` +
-  `src/lessons/curriculum.ts`) is the desktop navigation: grouped sections, current
+  `src/lessons/courseModel.ts`) is the desktop navigation: grouped units, current
   lesson clear, narrow screens use a drawer. **No** cramped horizontal lesson tabs;
   **no** points/streaks/badges. The **per-lesson table of contents**
   (`LessonTableOfContents`) is generated from the `route`, so it reflects that

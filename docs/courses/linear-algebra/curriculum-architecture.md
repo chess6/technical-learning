@@ -44,8 +44,11 @@ It sits between its neighbors and duplicates neither:
 Verified source-of-truth files this doc reconciles against:
 
 - `src/lessons/registry.ts` — the built, ordered lessons (content authority).
-- `src/lessons/curriculum.ts` — `COURSE_SECTIONS` (sidebar spine + `future` stubs).
-- `src/lessons/courseModel.ts` — `Subject → Course → Unit → LessonRef` (validated).
+- `src/lessons/courseModel.ts` — `CURRICULUM`, the validated
+  `Subject → Course → Unit → LessonRef` tree, holding built `lesson` refs and
+  `future` nodes. **This is the runnable spine.** (The former flat
+  `curriculum.ts` / `COURSE_SECTIONS` was deleted in the multi-domain cutover;
+  references to it elsewhere are historical.)
 - `src/platform/identity.ts` — `ConceptId` brand + `ID_SYNTAX`.
 - `src/math/examples.ts`, `src/lessons/exampleData.ts` — the shared examples.
 
@@ -114,7 +117,7 @@ Consequences to plan for when future lessons are promoted:
   the validated `courseModel.ts`, and numbering is course-relative, so it prints
   as lesson 1 of Algorithmic Thinking.
 
-### 1.2 Section grouping (matches `curriculum.ts` today)
+### 1.2 Section grouping (matches `courseModel.ts` units today)
 
 | Section id | Title | Spine members | Profile target |
 | --- | --- | --- | --- |
@@ -382,7 +385,17 @@ machinery: an eigenspace is `Null(A − λI)` (L8), its dimension is
 
 `eigenvectors` (L11) has since been expanded to the full spine node —
 diagonalization, the criterion, powers, and both failure modes — so **every built
-node now meets its spine row**.
+node now meets its spine row in content**.
+
+> **Evidence caveat (2026-07-25).** "Meets its spine row" is a statement about
+> *coverage*, not about attainment. L11's retrospective Stage 1–2 audit
+> ([insight.md](lessons/11-eigenvectors/insight.md)) ratified its insight, but the
+> accompanying evidence recalibration found only **2 of 11** lesson-owned outcomes
+> independently demonstrated and **no E4 transfer evidence**, so
+> [L11's Gate 8 is NOT PASSED](lessons/11-eigenvectors/mastery-contract.md#6-acceptance-record-gate-8--corrected-not-passed).
+> The same distinction applies to L8–L10, whose P3 proof surfaces are unscored in
+> the lesson and are routed to the
+> [`structure` module's Gate 9](modules/structure/assessment-plan.md).
 
 **Recommendation: build `orthogonality` (L12) next.** This is a recommendation,
 not an authorization.

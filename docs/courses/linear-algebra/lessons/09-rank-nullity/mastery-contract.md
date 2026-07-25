@@ -63,9 +63,9 @@ Gate 5 for **L9 `rank-nullity`**, after [insight.md](insight.md) reached `PASS`.
 | Explain why one-to-one ⟺ onto holds for square maps and fails otherwise | D5/D13 | lesson | E3 | `rn-square-only` | independently demonstrated |
 | Produce a geometric multiplicity as \(n - \operatorname{rank}(A-\lambda I)\) | D3/D10 | lesson | E3 | `rn-eigen-multiplicity` (`exercise-sequence`) | independently demonstrated |
 | Reject the false decomposition claim | D13 | lesson | E3 | `rn-not-a-decomposition` | independently demonstrated |
-| Construct the rank–nullity proof | D6 | lesson | E6 *(unscored)* | `rn-prove-theorem` (`self-check`) | **practiced**; P3 credit at Gate 9 |
-| Integrate rank–nullity with determinants and eigen-multiplicity on a later mixed item | D10 | **module** | E5 | `structure` module set | Gate 9 |
-| Retain "the total is \(n\)" under delayed retrieval | D12 | **module** | E3 | spaced retrieval | Gate 9 |
+| Construct the rank–nullity proof | D6 | lesson | E6 *(unscored)* | `rn-prove-theorem` (`self-check`) | **practiced**; P3 credit at Gate 9 → [`mod-struct-prove-rank-nullity`](../../modules/structure/assessment-plan.md), built, not administered |
+| Integrate rank–nullity with determinants and eigen-multiplicity on a later mixed item | D10 | **module** | E5 | [`mod-struct-eigen-shift`](../../modules/structure/assessment-plan.md) | **built, not administered** — Gate 9 open |
+| Retain "the total is \(n\)" under delayed retrieval | D12 | **module** | E3 | [`mod-struct-retain-total-n`](../../modules/structure/assessment-plan.md) | **built at E1, not administered** |
 
 **Transfer:** the lesson owns exactly one D9 outcome (`rn-impossible-map`).
 

@@ -65,9 +65,9 @@ Gate 5 for **L10 `change-of-basis`**, after [insight.md](insight.md) reached `PA
 | State which quantities survive a change of basis, and which do not | D5 | lesson | E3 | `cob-invariants` | independently demonstrated |
 | Reject the converse: equal determinant does not imply similar | D7/D13 | lesson | E4 | `cob-converse-false` | independently demonstrated |
 | Explain that the vector does not move | D13 | lesson | E3 | `cob-vector-unmoved` | independently demonstrated |
-| Derive `[A]_B = P⁻¹AP` | D6 | lesson | E6 *(unscored)* | `cob-derive-similarity` (`self-check`) | **practiced**; P3 credit at Gate 9 |
-| Integrate change of basis with rank and determinants on a later mixed item | D10 | **module** | E5 | `structure` module set | Gate 9 |
-| Retain the direction convention under delayed retrieval | D12 | **module** | E3 | spaced retrieval | Gate 9 |
+| Derive `[A]_B = P⁻¹AP` | D6 | lesson | E6 *(unscored)* | `cob-derive-similarity` (`self-check`) | **practiced**; P3 credit at Gate 9 → [`mod-struct-derive-similarity`](../../modules/structure/assessment-plan.md), built, not administered |
+| Integrate change of basis with rank and determinants on a later mixed item | D10 | **module** | E5 | [`mod-struct-cob-matrix-fresh` + `mod-struct-derive-similarity`](../../modules/structure/assessment-plan.md) | **built, not administered** — Gate 9 open |
+| Retain the direction convention under delayed retrieval | D12 | **module** | E3 | [`mod-struct-retain-p-direction`](../../modules/structure/assessment-plan.md) | **built at E1, not administered** |
 
 **Transfer:** the lesson owns one D9 outcome (`cob-converse-false`).
 

@@ -121,15 +121,15 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 | Topic | P1 bar | P2 bar | P3 bar | Current spine **[repo]** | Missing / deferred |
 | --- | --- | --- | --- | --- | --- |
-| Subspaces, column/null space, rank (L8) | Find bases of the four subspaces (E3). [ext-1806] | + rank in applications; numerical rank (E4). | + subspace proofs; general fields (E6). | **Built**; two spaces in their correct ambient spaces, rank as a count in \(\mathbb{R}^3\), basis of \(\operatorname{Col}(A)\) from \(A\)'s own columns, subspace proof offered unscored. | Row/left-null space (only two of the four subspaces); numerical rank; **learner-scored** subspace proofs (P3 — prepared, not attained). |
-| Dimension & rank–nullity (L9) | State & use rank + nullity = n (E3). | + interpret for data/networks (E4). | + prove rank–nullity (E6). | **Built**; proof shown in full, non-square maps throughout, impossibility results, geometric multiplicity computed. | Data/network interpretation (P2); **learner-constructed** proof scored (P3 — prepared, not attained). |
-| Change of basis (L10) | Coordinates in a new basis (E3). | + camera/frame transforms (E4). | + how a map's matrix transforms; similarity (E6). | **Built**; \(P\)'s direction derived from its columns, \([A]_B = P^{-1}AP\) derived, invariants with the converse denied, diagonal description in an adapted basis. | Camera/frame applications (P2); orthonormal bases and \(P^{-1}=P^{\mathsf T}\) (deferred to L12). |
+| Subspaces, column/null space, rank (L8) | Find bases of the four subspaces (E3). [ext-1806] | + rank in applications; numerical rank (E4). | + subspace proofs; general fields (E6). | **Built**; the two spaces that govern solvability, in their correct ambient spaces, rank as a count in \(\mathbb{R}^3\), basis of \(\operatorname{Col}(A)\) from \(A\)'s own columns, subspace proof offered unscored. | Row/left-null space (deliberately out of scope — named once, owned by L12/L14); numerical rank; **learner-scored** subspace proofs — the surface is now `mod-struct-prove-subspace` in the [structure Gate 9 set](modules/structure/assessment-plan.md), **built, not administered**, so P3 stays prepared-not-attained. |
+| Dimension & rank–nullity (L9) | State & use rank + nullity = n (E3). | + interpret for data/networks (E4). | + prove rank–nullity (E6). | **Built**; proof shown in full, non-square maps throughout, impossibility results, geometric multiplicity computed. | Data/network interpretation (P2); **learner-constructed** proof scored — surface is `mod-struct-prove-rank-nullity` (structure Gate 9), **built, not administered**. |
+| Change of basis (L10) | Coordinates in a new basis (E3). | + camera/frame transforms (E4). | + how a map's matrix transforms; similarity (E6). | **Built**; \(P\)'s direction derived from its columns, \([A]_B = P^{-1}AP\) derived, invariants with the converse denied, diagonal description in an adapted basis. | Camera/frame applications (P2); orthonormal bases and \(P^{-1}=P^{\mathsf T}\) (deferred to L12); **learner-constructed** similarity derivation scored — surface is `mod-struct-derive-similarity` (structure Gate 9), **built, not administered**. |
 
 ### Spectra, geometry, data (L11–L14)
 
 | Topic | P1 bar | P2 bar | P3 bar | Current spine **[repo]** | Missing / deferred |
 | --- | --- | --- | --- | --- | --- |
-| Eigenvectors & diagonalization (L11) | Find eigenvalues/vectors (2×2/3×3); diagonalize (E3). | + \(A^k\), dynamics, stability, symmetric/PD (E4). [ext-1806] | + characteristic vs minimal polynomial; determinant-free existence [ext-Axler] (E6). | Built **in full**; derivation ladder, algebraic vs geometric multiplicity, the diagonalizability criterion applied before factoring, \(A^k = PD^kP^{-1}\), and both failure modes (defective; no real eigenvalues). | \(3\times3\) hand computation; stability/dynamics applications and symmetric/PD matrices (P2); complex eigenvalues, Jordan form, minimal polynomial, spectral theorem (P3). |
+| Eigenvectors & diagonalization (L11) | Find eigenvalues/vectors (2×2/3×3); diagonalize (E3). | + \(A^k\), dynamics, stability, symmetric/PD (E4). [ext-1806] | + characteristic vs minimal polynomial; determinant-free existence [ext-Axler] (E6). | Built **in full** *(coverage)*; derivation ladder, algebraic vs geometric multiplicity, the diagonalizability criterion applied before factoring, \(A^k = PD^kP^{-1}\), and both failure modes (defective; no real eigenvalues). Insight gated retrospectively ([PASS](lessons/11-eigenvectors/insight.md)). | **Evidence, not coverage, is the gap here:** only 2 of 11 lesson-owned outcomes are independently demonstrated and there is **no E4 item** — every transfer-tier item is multiple-choice or a scaffolded sequence, so the P2 \(A^k\)/dynamics bar is *taught, not evidenced* ([Gate 8 NOT PASSED](lessons/11-eigenvectors/mastery-contract.md#6-acceptance-record-gate-8--corrected-not-passed)). Also \(3\times3\) hand computation; stability applications and symmetric/PD (P2); complex eigenvalues, Jordan form, minimal polynomial, spectral theorem (P3). |
 | Orthogonality & projections (L12) | Dot product, projection onto a line (E3). | + Gram–Schmidt, QR, orthonormal bases (E4). [ext-1806] | + inner-product spaces, spectral theorem (E6). [ext-Axler] | **Future** (`orthogonality`). | Whole lesson unbuilt. |
 | Least squares (L13) | Normal equations for a best-fit line (E3). | + regression, conditioning, QR-based solve (E4). | + projection theorem, existence/uniqueness proofs (E6). | **Future** (`least-squares`). | Whole lesson unbuilt. |
 | SVD (L14) | — (often beyond P1). | Compute/interpret; low-rank approx, compression (E4). [ext-1806] | Prove existence; consequences of spectral theorem (E6). [ext-Axler] | **Future** (`svd`, capstone). | Whole lesson unbuilt. |
@@ -140,12 +140,16 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 Distilling the tables — honest, **[repo]**-derived:
 
-1. **12 of 15 spine nodes are built** (Ch0, L1–L10, L11-intro); only the
-   geometry/data arc (L12, L13, L14) is `future`. The built path is now
-   **contiguous from Ch 0 through L11** — a learner walking it skips no declared
-   prerequisite anywhere. No profile is *complete* yet; the built prefix best
-   serves **P1 S1–S3**, now with genuine \(\mathbb{R}^3\) and non-square content
-   in L8–L9. Since the L11 expansion, **every built node meets its spine row**.
+1. **12 of 15 spine nodes are built** (Ch0, L1–L11); only the geometry/data arc
+   (L12, L13, L14) is `future`. The built path is now **contiguous from Ch 0
+   through L11** — a learner walking it skips no declared prerequisite anywhere.
+   No profile is *complete* yet; the built prefix best serves **P1 S1–S3**, now
+   with genuine \(\mathbb{R}^3\) and non-square content in L8–L9. Since the L11
+   expansion, **every built node meets its spine row in coverage** — but coverage
+   is not attainment: L11's evidence recalibration puts only 2 of its 11
+   lesson-owned outcomes at "independently demonstrated" and leaves it with **no
+   E4 evidence**, so its
+   [Gate 8 is NOT PASSED](lessons/11-eigenvectors/mastery-contract.md#6-acceptance-record-gate-8--corrected-not-passed).
 2. **Dimensionality ceiling — substantially raised, not removed.** L8 works in
    \(\mathbb{R}^3\) and L9 in non-square shapes up to \(2\times4\), which is where
    rank and the conservation law have real content; L7 reads volume in
@@ -163,10 +167,19 @@ Distilling the tables — honest, **[repo]**-derived:
    some proofs (elimination invariance, solution-set structure) but no *proof
    construction by the learner*, no counterexample construction, and no abstract
    objects — the whole P3 bar is unmet.
-5. **No cumulative or delayed assessment (D10/D12) across modules** — calibration
-   case #9. Assessment is per-lesson; there is no module-level cumulative set,
-   spaced retrieval, mock exam, or exam mode. This is the largest *assessment*
-   gap for every profile's S3 claim.
+5. **Cumulative/delayed assessment (D10/D12) exists as machinery and content, but
+   has never been administered** — calibration case #9, partly addressed. Two of
+   the five modules now have a Gate 9 plan with **built** module-owned items
+   running through the deferred-feedback runner: `systems-elimination` (transfer,
+   applied, spaced, and a timed mock) and `structure` (cumulative integration,
+   the P3 proof surfaces, error diagnosis, method selection, retention). Neither
+   has real learner results, and per the mastery standard **built-but-unadministered
+   evidence licenses no readiness claim**. Still genuinely missing: any Gate 9 for
+   `foundations`, `maps-inverses-determinants` and `spectra-geometry-data`; a
+   timed set outside `systems-elimination`; and **automated spacing beyond one
+   module** — the scheduler is hard-scoped to a single `SPACED_MODULE_ID`
+   (`src/platform/spacedConfig.ts`), so `structure`'s retention items must be
+   administered manually until that is generalized.
 6. **P2 algorithmic/numerical content missing.** LU/QR, cost analysis,
    conditioning, and software-assisted large problems ([ext-1806]) are absent;
    the near-singular preset is the only conditioning seed.

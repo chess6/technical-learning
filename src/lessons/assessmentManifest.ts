@@ -203,4 +203,142 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "human-scored",
     },
   },
+
+  /* ---------------------------------------------------------------------- */
+  /* `structure` module (L8/L9/L10) — Gate 9.                                */
+  /* ---------------------------------------------------------------------- */
+
+  // One reduction answering existence (L8), rank (L8) and nullity (L9) at once,
+  // on a non-square shape where n ≠ m — integrated by construction.
+  "mod-struct-rank-nullity-ledger": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // The learner forms A − λI themselves; the free count they produce IS the
+  // geometric multiplicity. Spans L7 (det = 0), L8 (null space), L9 (dimension).
+  "mod-struct-eigen-shift": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // A produced coordinate matrix on a fresh, non-adapted basis. E3, not higher:
+  // `matrix-entry`'s ceiling, and it exercises one outcome rather than joining
+  // several.
+  "mod-struct-cob-matrix-fresh": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-struct-select-method": {
+    evidenceTarget: "E3",
+    methodSelection: true,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  "mod-struct-diagnose-colspace": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  // The three P3 proof surfaces. E5 is the manifest's ceiling for a claim; the
+  // E6 (justification) reading these target is recorded in the module's
+  // assessment plan and is contingent on real human scoring.
+  "mod-struct-prove-subspace-inclusion": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  "mod-struct-prove-rank-nullity": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  "mod-struct-derive-similarity": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  // Delayed retention: recognition is the measurement, so E1 is the claim — not
+  // a shortfall. These carry produced evidence elsewhere (in-lesson).
+  "mod-struct-retain-two-spaces": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-struct-retain-total-n": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-struct-retain-p-direction": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
 };

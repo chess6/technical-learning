@@ -5,7 +5,7 @@ artifact that certifies *integration and delayed retention across a module* and
 **discharges the module-owned outcomes** its lessons deferred.
 
 > **Saved as:** `docs/courses/<course>/modules/<module>/assessment-plan.md`
-> (module id = the `curriculum.ts` section id, e.g. `systems-elimination`).
+> (module id = the `courseModel.ts` unit id, e.g. `systems-elimination`).
 
 Follow [authoring/mastery-standard.md §6](../mastery-standard.md#6-assessment-architecture)
 (assessment architecture) and draw items from

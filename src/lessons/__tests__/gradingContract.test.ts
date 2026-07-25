@@ -409,6 +409,423 @@ const CONTRACTS: { id: string; spec: GradingContractSpec }[] = [
       ],
     },
   },
+  /* ---------------------------------------------------------------------- */
+  /* `structure` module (Gate 9).                                             */
+  /* ---------------------------------------------------------------------- */
+  {
+    // elimination-solution · STRUCT_LEDGER: 3x4, consistent, rank 2 / nullity 2.
+    // x_p = (1,0,1,0); Null = span{(-2,1,0,0), (-3,0,-1,1)}.
+    id: "mod-struct-rank-nullity-ledger",
+    spec: {
+      mustAccept: [
+        {
+          name: "canonical echelon form + both null directions",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+        {
+          name: "a different particular solution and rescaled directions",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [-1, 1, 1, 0],
+            nullDirections: [
+              [-4, 2, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+      ],
+      mustReject: [
+        {
+          name: "declared inconsistent (b IS in Col(A))",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: false,
+            classification: "none",
+          },
+        },
+        {
+          name: "unreduced matrix (row-equivalent but not echelon)",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [2, 4, 1, 7, 3],
+              [1, 2, 1, 4, 2],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+        {
+          name: "echelon but NOT row-equivalent to the system",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 2],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+        {
+          name: "nullity read as n - m instead of n - rank",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 1,
+            particular: [1, 0, 1, 0],
+            nullDirections: [[-2, 1, 0, 0]],
+          },
+        },
+        {
+          name: "pivot columns guessed as the first two",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 1],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+        {
+          name: "null-space point offered as the particular solution",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [-2, 1, 0, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          },
+        },
+        {
+          name: "two DEPENDENT null directions",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-4, 2, 0, 0],
+            ],
+          },
+        },
+        {
+          name: "a direction outside the null space",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular: [1, 0, 1, 0],
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [1, 0, 0, 0],
+            ],
+          },
+        },
+        {
+          name: "zero-filled produced fields",
+          answer: {
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 0,
+            particular: [0, 0, 0, 0],
+            nullDirections: [],
+          },
+        },
+        ...particularCellBlanks(
+          (particular) => ({
+            reduced: [
+              [1, 2, 0, 3, 1],
+              [0, 0, 1, 1, 1],
+              [0, 0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 2],
+            freeCount: 2,
+            particular,
+            nullDirections: [
+              [-2, 1, 0, 0],
+              [-3, 0, -1, 1],
+            ],
+          }),
+          [1, 0, 1, 0],
+        ),
+      ],
+    },
+  },
+  {
+    // elimination-solution · STRUCT_EIGEN_SHIFT: the all-ones A - I, homogeneous.
+    // rank 1, geometric multiplicity 2, Null = span{(-1,1,0), (-1,0,1)}.
+    // Every true value of the particular solution is 0, so the blank-each-cell
+    // battery is the sharpest possible test of "a blank is never read as zero".
+    id: "mod-struct-eigen-shift",
+    spec: {
+      mustAccept: [
+        {
+          name: "canonical eigenspace basis",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular: [0, 0, 0],
+            nullDirections: [
+              [-1, 1, 0],
+              [-1, 0, 1],
+            ],
+          },
+        },
+        {
+          name: "a different basis of the same eigenspace",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular: [0, 0, 0],
+            nullDirections: [
+              [1, -1, 0],
+              [0, 1, -1],
+            ],
+          },
+        },
+      ],
+      mustReject: [
+        {
+          name: "geometric multiplicity guessed as 1 (defective, which it is not)",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 1,
+            particular: [0, 0, 0],
+            nullDirections: [[-1, 1, 0]],
+          },
+        },
+        {
+          name: "a nonzero vector offered as the solution of a homogeneous system",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular: [1, 0, 0],
+            nullDirections: [
+              [-1, 1, 0],
+              [-1, 0, 1],
+            ],
+          },
+        },
+        {
+          name: "an eigenvector of the WRONG eigenvalue (the all-ones direction)",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular: [0, 0, 0],
+            nullDirections: [
+              [-1, 1, 0],
+              [1, 1, 1],
+            ],
+          },
+        },
+        {
+          name: "two dependent directions (one plane vector counted twice)",
+          answer: {
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular: [0, 0, 0],
+            nullDirections: [
+              [-1, 1, 0],
+              [-2, 2, 0],
+            ],
+          },
+        },
+        {
+          name: "shifted by the wrong lambda (matrix not row-equivalent)",
+          answer: {
+            reduced: [
+              [1, 0, 0, 0],
+              [0, 1, 0, 0],
+              [0, 0, 1, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0, 1, 2],
+            freeCount: 0,
+            particular: [0, 0, 0],
+            nullDirections: [],
+          },
+        },
+        ...particularCellBlanks(
+          (particular) => ({
+            reduced: [
+              [1, 1, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            consistent: true,
+            pivotColumns: [0],
+            freeCount: 2,
+            particular,
+            nullDirections: [
+              [-1, 1, 0],
+              [-1, 0, 1],
+            ],
+          }),
+          [0, 0, 0],
+        ),
+      ],
+    },
+  },
+  {
+    // matrix-entry · [A]_B = P^-1 A P for A = [[3,-2],[4,1]], P = [[1,1],[1,2]].
+    id: "mod-struct-cob-matrix-fresh",
+    spec: {
+      mustAccept: [{ name: "P inverse A P", answer: { entries: [[-3, -8], [4, 7]] } }],
+      mustReject: [
+        { name: "A itself (no change of basis performed)", answer: { entries: [[3, -2], [4, 1]] } },
+        { name: "P A P inverse (the conversion run backwards)", answer: { entries: [[15, -8], [22, -11]] } },
+        { name: "the transpose of the right answer", answer: { entries: [[-3, 4], [-8, 7]] } },
+        { name: "one entry wrong (trace no longer 4)", answer: { entries: [[-3, -8], [4, 6]] } },
+        { name: "a blank entry (never read as zero)", answer: { entries: [[-3, -8], [4, null]] } },
+        { name: "wrong dimensions", answer: { entries: [[-3, -8]] } },
+      ],
+    },
+  },
+  {
+    id: "mod-struct-retain-two-spaces",
+    spec: {
+      mustAccept: [{ name: "Col in R^2, Null in R^5", answer: { choice: 2 } }],
+      mustReject: [
+        { name: "both in R^5", answer: { choice: 0 } },
+        { name: "both in R^2", answer: { choice: 1 } },
+        { name: "the two spaces swapped", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    id: "mod-struct-retain-total-n",
+    spec: {
+      mustAccept: [{ name: "nullity 3 (n - rank, n = 6)", answer: { choice: 2 } }],
+      mustReject: [
+        { name: "m - rank = 1 (the wrong total)", answer: { choice: 0 } },
+        { name: "2", answer: { choice: 1 } },
+        { name: "4", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    id: "mod-struct-retain-p-direction",
+    spec: {
+      mustAccept: [{ name: "P converts B-coordinates to standard", answer: { choice: 0 } }],
+      mustReject: [
+        { name: "P inverse (the other direction)", answer: { choice: 1 } },
+        { name: "P transpose (orthonormal only)", answer: { choice: 2 } },
+        { name: "either / a free convention", answer: { choice: 3 } },
+      ],
+    },
+  },
   {
     id: "mod-spaced-rowops",
     spec: {

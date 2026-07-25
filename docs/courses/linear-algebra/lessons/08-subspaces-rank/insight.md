@@ -5,9 +5,20 @@ Selects one primary breakthrough from [insight-brief.md](insight-brief.md) and
 verifies its complete chain, then runs Audit A (mathematics) and Audit B
 (grounding & model change).
 
+> **Amendment (2026-07-25, scope correction).** The contract as first approved said
+> a linear map has *exactly two* subspaces. That is false — the row space and
+> \(\operatorname{Null}(A^{\mathsf T})\) are subspaces of the same map (the four
+> together are the *fundamental subspaces*), and a matrix has infinitely many other
+> subspaces besides. The insight was never about a census: it is about **which two
+> spaces govern existence and uniqueness**. Every statement below is rescoped to
+> that claim, which is what the causal chain actually derives; Audit A check 2 is
+> re-run against it. Nothing else in the contract changes, and the lesson's
+> mathematics is unaffected.
+
 Primary insight selected: **Package P1** — *every question you have asked about a
-matrix since Lesson 3 was a question about one of exactly two subspaces, and they
-live in different spaces.* **P2** (collapse has degrees; rank counts them) is
+matrix since Lesson 3 was a question about one of the two subspaces that govern
+existence and uniqueness, and they live in different spaces.* **P2** (collapse has
+degrees; rank counts them) is
 woven in as the quantitative half of the same chain; **P3** supplies the
 definition and the affine-vs-subspace misconception; **P4** (row rank = column
 rank) is stated as a `reference` result and not built upon.
@@ -44,13 +55,15 @@ The learner has answered the *same two questions* in four consecutive lessons
 with four different-looking procedures — L3 by classifying pictures, L4 by
 eliminating, L5 by decomposing the solution set, L6/L7 by testing invertibility.
 Nothing has explained why those two questions keep recurring, or why they are
-*always* the two. The redundancy is exact: they recur because a linear map has
-exactly two associated subspaces, and every question about solving \(A\mathbf{x}=\mathbf{b}\)
-is a question about one of them.
+*always* the two. The redundancy is exact: they recur because solving
+\(A\mathbf{x}=\mathbf{b}\) has exactly two ways to go wrong — the target may be
+unreachable, or the map may destroy a direction — and each failure mode is a
+question about **one designated subspace of the map**: the column space for the
+first, the null space for the second. Two questions, two spaces, one each.
 
 ### 5. The model change (what the learner now believes instead)
-A matrix is not just a machine; it comes with **two spaces**, and they answer the
-two questions the learner keeps asking:
+A matrix is not just a machine; among its subspaces there are **two designated
+ones**, and they answer the two questions the learner keeps asking:
 
 - **\(\operatorname{Col}(A)\), inside the output space \(\mathbb{R}^m\)** — every
   vector the map can actually produce. *Existence*: \(A\mathbf{x}=\mathbf{b}\) is
@@ -168,6 +181,10 @@ the learner has been producing since L4 without interpreting it.
   related in any way beyond the count;
 - \(\operatorname{rank}+\operatorname{nullity}=n\) as a *proved* law — it is
   observed here from the pivot/free-variable split and **proved in L9**;
+- the claim that a map has **only** these two subspaces — the row space and
+  \(\operatorname{Null}(A^{\mathsf T})\) are subspaces of the same map (the four
+  are the *fundamental subspaces*), and there are infinitely many others. What is
+  licensed is that these two, and no others, decide existence and uniqueness;
 - anything about orthogonality between the spaces (that is L12).
 
 ### 10. What the learner can predict or do afterward
@@ -237,10 +254,15 @@ complementary/perpendicular, has the picture, not the concept.
   invertibility (L6); \(\det\ne0\) as the extreme case (L7). All built.
 - **Limitations:** examples are \(3\times3\) and \(2\times2\); general \(m\times n\)
   with \(m\ne n\) is *stated* (so the "different spaces" point is honest) but not
-  drilled. Row rank = column rank is stated without proof. Orthogonality between
-  the spaces is out of scope (L12). Rank–nullity is *observed*, proved in L9.
+  drilled. Row rank = column rank is stated without proof. The **row space and
+  \(\operatorname{Null}(A^{\mathsf T})\) are out of scope** — named once as existing,
+  never worked with, and left to L12/L14 where orthogonality makes them useful.
+  Orthogonality between the spaces is out of scope (L12). Rank–nullity is
+  *observed*, proved in L9.
 - **Likely misconceptions:**
   - "\(\operatorname{Col}(A)\) and \(\operatorname{Null}(A)\) live in the same space."
+  - "A matrix has only these two subspaces" — the lesson's scoping is about which
+    two *decide solvability*, not a count of everything a matrix carries.
   - "The column space is spanned by the columns of the *reduced* matrix."
   - "Every flat is a subspace" (offset solution sets are not).
   - "Rank is a property of the numbers' size" rather than of independence.
@@ -253,7 +275,7 @@ complementary/perpendicular, has the picture, not the concept.
 | Check | Result |
 | --- | --- |
 | 1. Conclusion follows | PASS — §6a derives \(\operatorname{Col}\) from the column picture rather than asserting it; §6c proves both closure claims from linearity; §6f states the pivot-basis fact with the from-\(A\)-not-\(R\) caveat. |
-| 2. Sufficiency / scope | PASS — rank–nullity is explicitly **observed, not proved**, and deferred to L9 (§6g, §9). Row rank = column rank is explicitly **stated, not proved** (§7). |
+| 2. Sufficiency / scope | PASS **after the 2026-07-25 amendment**. The original text overreached: "a linear map has exactly two associated subspaces" is false (the four fundamental subspaces, and infinitely many others). The chain never derived that census — it derives that *two designated* subspaces decide existence and uniqueness — so the claim is now stated at the strength the derivation supports, the row space / \(\operatorname{Null}(A^{\mathsf T})\) are named as existing but out of scope, and the false reading is added to §9's not-licensed list and the misconception list. Rank–nullity remains explicitly **observed, not proved**, deferred to L9 (§6g, §9); row rank = column rank remains **stated, not proved** (§7). |
 | 3. Structure-preserving representation | PASS — the two-panel layout encodes the different-spaces fact; the three properties the picture could falsely add (same space, perpendicularity, reduced-matrix basis) are named and discarded (§13). |
 | 4. Hidden normalization | PASS — the isometric projection is stated as a projection, not presented as the geometry itself; square examples are flagged as a special case of \(m\times n\). |
 | 5. Nature of connections | PASS — L9, L11, L13, L14 labelled **exact**; data/feature redundancy labelled **architectural** (§11). |
@@ -284,7 +306,7 @@ arrive as the answers.
 | Role | Filled by | Status |
 | --- | --- | --- |
 | Contract author | Claude Code agent (AI) | Complete |
-| Mathematical reviewer | Claude Code agent (AI) — **not independent** | Self-review; Audit A passed. The pivot-basis-from-\(A\)-not-\(R\) caveat and the "different spaces" scoping were added during review. |
+| Mathematical reviewer | Claude Code agent (AI) — **not independent** | Self-review; Audit A passed. The pivot-basis-from-\(A\)-not-\(R\) caveat and the "different spaces" scoping were added during review. **A later review (2026-07-25) caught the "exactly two subspaces" overreach and rescoped it** — see the amendment note at the top and Audit A check 2. |
 | Pedagogical reviewer | Claude Code agent (AI) — **not independent** | Self-review; chain items 1–14 present. |
 | User / domain-owner approval | Repository owner | **Authorized to build** ("Create Subspaces & Rank … end-to-end"). Independent math/pedagogy review still outstanding. |
 
@@ -297,7 +319,7 @@ arrive as the answers.
 **Exact primary insight (verbatim for the Stage 3 plan's metadata):**
 
 > Every question you have asked about a matrix since Lesson 3 was a question
-> about one of exactly two subspaces attached to the map, and they live in
+> about one of the two subspaces that govern solvability, and they live in
 > different spaces: the **column space** inside the output space is everything
 > the map can produce, so it decides *existence*; the **null space** inside the
 > input space is everything the map crushes to zero, so it decides *uniqueness*.

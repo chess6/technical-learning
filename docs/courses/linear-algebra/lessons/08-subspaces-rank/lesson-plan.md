@@ -8,8 +8,12 @@ Consumes [insight.md](insight.md) (`PASS`) and [mastery-contract.md](mastery-con
 - [x] `Gate result: PASS` confirmed — [insight.md](insight.md)
 - Exact primary insight — **verbatim, planning metadata only**:
 
+  > *(Amended 2026-07-25 — see [insight.md](insight.md) amendment note: the
+  > original "exactly two subspaces" was rescoped to the two that govern
+  > solvability.)*
+  >
   > Every question you have asked about a matrix since Lesson 3 was a question
-  > about one of exactly two subspaces attached to the map, and they live in
+  > about one of the two subspaces that govern solvability, and they live in
   > different spaces: the **column space** inside the output space is everything
   > the map can produce, so it decides *existence*; the **null space** inside the
   > input space is everything the map crushes to zero, so it decides *uniqueness*.
@@ -19,8 +23,8 @@ Consumes [insight.md](insight.md) (`PASS`) and [mastery-contract.md](mastery-con
   > from the columns of \(A\) itself and not of its reduced form. Invertibility and
   > \(\det\ne0\) are then just the extreme case: rank is as large as it can be.
 
-- Learner-facing phrasing: *"A map comes with two spaces: what it can reach, and
-  what it destroys. Rank counts what survived."*
+- Learner-facing phrasing: *"Two of a map's spaces settle solvability: what it can
+  reach, and what it destroys. Rank counts what survived."*
 - Obstacle: missing purpose + missing structure.
 - Mechanisms: predictive reorganization + structural compression + representational change.
 - Grounded (representational/operational, no story) — bridge, limits and
@@ -115,10 +119,10 @@ the image plane (right). Created once; only ever moved or revealed.
 | §6i forward edge to eigenspaces | `looking-ahead` layer | — (L11 discharges) |
 
 ## Key takeaway
-> A map carries two subspaces: the column space, in the output space, holding
-> everything it can reach (existence); and the null space, in the input space,
-> holding everything it crushes (uniqueness). Rank counts the surviving
-> dimensions, and invertibility is just rank at its maximum.
+> Two of a map's subspaces settle solvability: the column space, in the output
+> space, holding everything it can reach (existence); and the null space, in the
+> input space, holding everything it crushes (uniqueness). Rank counts the
+> surviving dimensions, and invertibility is just rank at its maximum.
 
 ## Edge cases
 rank 3 / 2 / 1 / 0; the \(2\times3\) non-square case; the \(\mathbb{R}^2\)

@@ -19,7 +19,7 @@ export interface ModuleSet {
   id: string;
   /** Content version — bump when `itemIds` (membership or order) changes. */
   version: number;
-  /** Owning module/section id (matches curriculum.ts). */
+  /** Owning module id (matches a `courseModel.ts` unit id). */
   moduleId: string;
   title: string;
   /** Deferred-feedback exam mode is the only supported mode (see AttemptSet.mode). */
@@ -142,6 +142,72 @@ const SYSTEMS_ELIMINATION_MOCK: ModuleSet = {
   itemIds: ["mod-mock-compute", "mod-mock-classify", "mod-mock-proof"],
 };
 
+/* -------------------------------------------------------------------------- */
+/* The `structure` module (L8 subspaces & rank, L9 rank–nullity, L10 change of  */
+/* basis) — Gate 9. Three sets, with DISJOINT membership so no item is          */
+/* administered twice: a cumulative/interleaved review, the P3 proof surfaces,  */
+/* and the delayed-retention set.                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cumulative & interleaved across L8/L9/L10. Auto-graded produced items and
+ * human-scored written items alternate, so no run of one kind cues the other,
+ * and the two shapes (a non-square ledger, a shifted matrix) sit either side of
+ * a change-of-basis computation — the learner must decide what each asks for.
+ */
+const STRUCTURE_REVIEW: ModuleSet = {
+  id: "structure-review",
+  version: 1,
+  moduleId: "structure",
+  title: "Structure of Linear Maps — cumulative review",
+  mode: "exam",
+  itemIds: [
+    "mod-struct-rank-nullity-ledger", // L8+L9 · non-square ledger (auto)
+    "mod-struct-select-method", // D8 · method selection (human)
+    "mod-struct-cob-matrix-fresh", // L10 · [A]_B on a fresh basis (auto)
+    "mod-struct-diagnose-colspace", // D13 · error diagnosis (human)
+    "mod-struct-eigen-shift", // L7+L8+L9 · eigenspace as a null space (auto)
+  ],
+};
+
+/**
+ * The P3 override's proof surfaces, all human-scored against versioned rubrics.
+ * Every statement is FRESH — none re-runs the proof its own lesson displays — so
+ * this measures construction rather than recall.
+ */
+const STRUCTURE_PROOF: ModuleSet = {
+  id: "structure-proof",
+  version: 1,
+  moduleId: "structure",
+  title: "Structure of Linear Maps — proof & counterexample (P3)",
+  mode: "exam",
+  itemIds: [
+    "mod-struct-prove-subspace-inclusion", // L8 · subspace reasoning + strict case
+    "mod-struct-prove-rank-nullity", // L9 · the independence step + a use
+    "mod-struct-derive-similarity", // L10 · invariance derived + converse killed
+  ],
+};
+
+/**
+ * Delayed retention (D12). NOT a platform "spaced set": the scheduler is scoped
+ * to a single `SPACED_MODULE_ID` (see `platform/spacedConfig.ts`), so nothing
+ * seeds these automatically and they are administered manually after a delay.
+ * Registered as an ordinary set for exactly that reason — generalizing the
+ * scheduler is tracked in the module's assessment plan, not faked here.
+ */
+const STRUCTURE_RETENTION: ModuleSet = {
+  id: "structure-retention",
+  version: 1,
+  moduleId: "structure",
+  title: "Structure of Linear Maps — delayed retention",
+  mode: "exam",
+  itemIds: [
+    "mod-struct-retain-two-spaces", // L8 · which space, which ambient R^k
+    "mod-struct-retain-total-n", // L9 · the total is n, not m
+    "mod-struct-retain-p-direction", // L10 · P's direction, from its columns
+  ],
+};
+
 export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_REVIEW,
   SYSTEMS_ELIMINATION_TRANSFER,
@@ -150,6 +216,9 @@ export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_SPACED_UNIQUENESS,
   SYSTEMS_ELIMINATION_SPACED_ROWOPS,
   SYSTEMS_ELIMINATION_MOCK,
+  STRUCTURE_REVIEW,
+  STRUCTURE_PROOF,
+  STRUCTURE_RETENTION,
 ];
 
 /* -------------------------------------------------------------------------- */

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getGradingCapability, requiresHumanScore, resolveCapabilityId } from "../capabilities";
 import {
   MODULE_ITEMS,
+  SYSTEMS_ELIMINATION_ITEMS,
   SYS_SPACED_TRICHOTOMY,
   SYS_MOCK_COMPUTE,
   SYS_MOCK_CLASSIFY,
@@ -38,7 +39,7 @@ const HUMAN_SCORED = new Set([
 
 describe("Package G module items", () => {
   it("authors exactly the required items (8 Package G + 3 spaced + 3 mock) with unique ids", () => {
-    const ids = MODULE_ITEMS.map((e) => e.id);
+    const ids = SYSTEMS_ELIMINATION_ITEMS.map((e) => e.id);
     expect(ids.sort()).toEqual([...EXPECTED_IDS].sort());
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -50,18 +51,22 @@ describe("Package G module items", () => {
   });
 
   it("routes the written reasoning/proof items to human scoring, others auto", () => {
-    for (const item of MODULE_ITEMS) {
+    for (const item of SYSTEMS_ELIMINATION_ITEMS) {
       expect(requiresHumanScore(item), item.id).toBe(HUMAN_SCORED.has(item.id));
     }
   });
 
   it("the fresh transfer item uses the produced solution-set capability", () => {
-    const solset = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "solution-set");
+    const solset = SYSTEMS_ELIMINATION_ITEMS.filter(
+      (e) => resolveCapabilityId(e) === "solution-set",
+    );
     expect(solset.map((e) => e.id).sort()).toEqual(["mod-transfer-solset-fresh"]);
   });
 
   it("the concrete elimination items capture produced elimination evidence", () => {
-    const elim = MODULE_ITEMS.filter((e) => resolveCapabilityId(e) === "elimination-solution");
+    const elim = SYSTEMS_ELIMINATION_ITEMS.filter(
+      (e) => resolveCapabilityId(e) === "elimination-solution",
+    );
     expect(elim.map((e) => e.id).sort()).toEqual(
       [
         "mod-cumulative-elim-solset",

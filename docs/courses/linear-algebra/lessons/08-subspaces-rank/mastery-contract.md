@@ -67,7 +67,11 @@ Gate 5 for spine node **L8 `subspaces-rank`**, against the
   stated so "different spaces" is honest.
 - **Misconceptions (D13):** (1) the two spaces live in the same place;
   (2) the column-space basis comes from the *reduced* matrix; (3) every flat is a
-  subspace; (4) big null space ⇒ big column space.
+  subspace; (4) big null space ⇒ big column space; (5) a map has *only* these two
+  subspaces — the lesson selects the two that decide solvability, and names the
+  row space / \(\operatorname{Null}(A^{\mathsf T})\) as existing but out of scope
+  (`ref-row-rank`'s `looking-ahead` layer), consistent with §1g's
+  "no four-subspaces survey".
 
 ## 1d. Outcomes with evidence
 
@@ -80,9 +84,9 @@ Gate 5 for spine node **L8 `subspaces-rank`**, against the
 | Predict the image's shape (solid/plane/line/point) from the pivot count | D1/D4 | lesson | E3 | `rank-image-shape` | independently demonstrated |
 | Show the two dimensions move in **opposite** directions on a fresh rank-1 map | D7/D9 | lesson | E4 | `rank-opposite-directions` (`exercise-sequence`) | independently demonstrated |
 | Restate invertibility / \(\det\ne0\) / unique solution as one statement about rank | D10 | lesson | E3 | `rank-restate-invertibility` | independently demonstrated |
-| Construct the proof that \(\operatorname{Null}(A)\) and \(\operatorname{Col}(A)\) are subspaces | D6 | lesson | E6 *(unscored)* | `rank-prove-subspace` (`self-check` + rubric) | **practiced**; P3 credit deferred to Gate 9 |
-| Integrate rank with elimination and determinants on a mixed later item | D10 | **module** | E5 | `structure` module set (Gate 9) | at Gate 9 |
-| Retain the two-space distinction under delayed retrieval | D12 | **module** | E3 | spaced retrieval (Gate 9) | at Gate 9 |
+| Construct the proof that \(\operatorname{Null}(A)\) and \(\operatorname{Col}(A)\) are subspaces | D6 | lesson | E6 *(unscored)* | `rank-prove-subspace` (`self-check` + rubric) | **practiced**; P3 credit deferred to Gate 9 → [`mod-struct-prove-subspace-inclusion`](../../modules/structure/assessment-plan.md), built, not administered |
+| Integrate rank with elimination and determinants on a mixed later item | D10 | **module** | E5 | [`mod-struct-rank-nullity-ledger`](../../modules/structure/assessment-plan.md) | **built, not administered** — Gate 9 open |
+| Retain the two-space distinction under delayed retrieval | D12 | **module** | E3 | [`mod-struct-retain-two-spaces`](../../modules/structure/assessment-plan.md) | **built at E1, not administered** — the module plan records why recognition falls short of this E3 request |
 
 **Transfer obligation:** this lesson owns exactly one D9 outcome (the rank-1
 opposite-directions item). It owes no second.
