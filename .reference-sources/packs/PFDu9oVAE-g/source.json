@@ -1,0 +1,14 @@
+{
+  "videoId": "PFDu9oVAE-g",
+  "title": "Eigenvectors and eigenvalues | Chapter 14, Essence of linear algebra",
+  "channel": "3Blue1Brown",
+  "uploadDate": "20160915",
+  "sourceUrl": "https://www.youtube.com/watch?v=PFDu9oVAE-g",
+  "captionProvenance": "manual",
+  "repoSlug": "3b1b-videos",
+  "repoUrl": "https://github.com/3b1b/videos",
+  "inspectedCommit": "e317d6c5eaa8370a2deb4d148c246b0d0e9fbe6f",
+  "sceneSources": ["_2016/eola/chapter10.py"],
+  "license": "CC BY-NC-SA 4.0",
+  "usage": "reference-only"
+}

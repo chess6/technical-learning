@@ -1,0 +1,80 @@
+{
+  "videoId": "mVzsz8Actrc",
+  "repoSlug": "manim-js",
+  "inspectedCommit": "7cd0da52fab9300c48e05d71bc655151a52d8a79",
+  "note": "no narration; beats derive from frame-count timing in source. All scheduling is frame-based at fr = 30 fps (src/globals.js: frames(sec) = round(30*sec)). Graph01 defines t.start = frames(2) = 60, t.txt = frames(5) = 150, t.trace = frames(14.7) = 441. Graph_BFS.show() advances a state machine every this.f = 52 frames (~1.73 s) once its frame counter fc exceeds 441 and fc % 52 === 0, so the first algorithm step lands at fc = 468 (~15.6 s) and each subsequent state transition at +52 frames. Edge set is randomized per run (randomizeEdges(EU, 0.47)), so loop length and end times vary; estimates for the loop/finish beats are approximate against the 103 s video and the recorded run.",
+  "beats": [
+    {
+      "id": "graph-build",
+      "title": "Graph draws itself in (nodes then edges, staggered)",
+      "start": 2.0,
+      "end": 4.5,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph01 (t.start)", "Graph (constructor, graph.js)", "Graph_U (constructor, graph.js)", "Node", "Edge", "Circle", "TextFade"]
+      },
+      "whatChanges": "19 Node circles fade/grow in, start times staggered across frames(1.7) (start + frames(1.7)*i/n); ~33 randomly chosen Edge lines grow in over 0.8 s each, similarly staggered. Node labels are blanked to \" \" by Graph_BFS so vertices start unnumbered.",
+      "invariant": "Vertex positions (hard-coded triangular-lattice coordinates in G.V) never move for the rest of the video."
+    },
+    {
+      "id": "pseudocode-writein",
+      "title": "BFS pseudocode types itself in beside the graph",
+      "start": 5.0,
+      "end": 13.6,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph_BFS.constructor (this.z)", "Tracer (graph.js)", "TextWriteIn (src/text.js)"]
+      },
+      "whatChanges": "Title 'Breadth-first search' (Yellow) then five pseudocode lines write in one character per frame; each line's start = previous start + str.length + 17 frames, so pacing is proportional to text length (a stand-in for narration pace).",
+      "invariant": "Pseudocode text, once written, stays on screen verbatim for the entire video; only the Tracer arrow moves against it."
+    },
+    {
+      "id": "init-enqueue-start",
+      "title": "State 0: enqueue start vertex 0",
+      "start": 15.6,
+      "end": 17.3,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph_BFS.show (state === 0)", "Graph_BFS.resetNode", "Tracer.reset(0)", "Node.reColor"]
+      },
+      "whatChanges": "Tracer arrow points at line 'Create a queue, and enqueue start vertex'; vertex 0 recolors to Yellow (= in queue) and its BFS number '0' fades in via a fresh TextFade.",
+      "invariant": "queue = [0], visited = {0}; all other vertices remain unnumbered Blue."
+    },
+    {
+      "id": "dequeue-expand-loop",
+      "title": "States 1–2 alternate: dequeue vertex, absorb its unvisited neighbors",
+      "start": 17.3,
+      "end": 85.0,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph_BFS.show (state === 1, state === 2)", "Node.highlight", "Node.reColor", "Edge.highlight", "Graph_BFS.resetNode", "Tracer.reset"]
+      },
+      "whatChanges": "Every 52 frames (~1.73 s) one transition fires. State 1: arrow moves to 'Dequeue a vertex from queue' and the front-of-queue node pulses with an Orange arc-sweep highlight. State 2: arrow moves to 'Add its unvisited neighbors to queue'; the dequeued node turns Green (done), each incident edge to an unvisited neighbor flashes Orange, and each neighbor turns Yellow and receives its BFS order number (TextFade starts staggered +4 frames apart so numbers pop in sequence).",
+      "invariant": "Queue discipline: bottom index only increments, top only increments, so numbering equals dequeue-independent BFS order. visited[] only ever gains members; a Green node never changes color again; layer-by-layer frontier expansion is visible as Yellow ring growing outward from vertex 0."
+    },
+    {
+      "id": "restart-new-component",
+      "title": "State 4 (conditional): restart BFS at an unvisited vertex",
+      "start": null,
+      "end": null,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph_BFS.show (state === 4)"]
+      },
+      "whatChanges": "If the queue empties while unvisited vertices remain (possible because edges are random), the arrow returns to the enqueue line and the lowest-index unvisited vertex is enqueued, numbered, and turned Yellow. Occurs zero or more times per run; timing depends on the random edge set of the recorded run.",
+      "invariant": "Same queue/visited discipline; previously finished (Green) vertices are untouched."
+    },
+    {
+      "id": "finish",
+      "title": "State 3: End",
+      "start": 85.0,
+      "end": null,
+      "sceneSource": {
+        "file": "Graph Algorithms/1_bfs.js",
+        "classesOrFunctions": ["Graph_BFS.show (state === 3)", "Tracer.reset(3)"]
+      },
+      "whatChanges": "Arrow moves to 'End'; the last dequeued vertex recolors Green; this.finished = true stops the state machine while the final frame keeps rendering. (Video runs 103 s; the tail past this beat is the held final frame plus the brief spoken outro whisper caught.)",
+      "invariant": "All 19 vertices Green and numbered 0..18 in BFS order; the entire pseudocode, graph, and numbering remain on screen."
+    }
+  ]
+}

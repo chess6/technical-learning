@@ -1,0 +1,22 @@
+{
+  "videoId": "mVzsz8Actrc",
+  "title": "Breadth-first search, visualized | Graph Algorithm 1",
+  "channel": "Jazon Jiao",
+  "uploadDate": "2019-05-09",
+  "sourceUrl": "https://www.youtube.com/watch?v=mVzsz8Actrc",
+  "captionProvenance": "whisper-local (video is essentially non-narrated)",
+  "repoSlug": "manim-js",
+  "repoUrl": "https://github.com/JazonJiao/Manim.js",
+  "inspectedCommit": "7cd0da52fab9300c48e05d71bc655151a52d8a79",
+  "sceneSources": [
+    "Graph Algorithms/1_bfs.js",
+    "Graph Algorithms/graph.html",
+    "Graph Algorithms/graph.js",
+    "src/graphics.js",
+    "src/globals.js",
+    "src/text.js",
+    "src/timer.js"
+  ],
+  "license": "none declared",
+  "usage": "reference-only"
+}

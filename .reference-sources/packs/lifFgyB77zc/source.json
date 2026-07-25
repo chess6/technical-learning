@@ -1,0 +1,18 @@
+{
+  "videoId": "lifFgyB77zc",
+  "title": "The Most Elegant Search Structure | (a,b)-trees",
+  "channel": "Tom Sláma (Tom S)",
+  "uploadDate": "20230409",
+  "sourceUrl": "https://www.youtube.com/watch?v=lifFgyB77zc",
+  "captionProvenance": "manual",
+  "repoSlug": "xiaoxiae-videos",
+  "repoUrl": "https://github.com/xiaoxiae/videos",
+  "inspectedCommit": "f65794b0dfc81b225364ea776feac8326599cdaa",
+  "sceneSources": [
+    "17-ab/scenes.py",
+    "17-ab/SCRIPT.md",
+    "17-ab/DESCRIPTION.md"
+  ],
+  "license": "GPL-3.0",
+  "usage": "reference-only"
+}
