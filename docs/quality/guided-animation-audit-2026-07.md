@@ -75,11 +75,11 @@ unearned prerequisites.
    findings → shipped improvements" below). Was: exists to show
    `T(x) = a·T(e₁) + b·T(e₂)` but never draws a component, coefficient, or
    construction; concepts live in captions while dots pulse.
-2. **matrix-transformations** — the "Transform the sample" beat contains no
-   transformation (the sample is born already transformed; the beat is a
-   line-width pulse); the grid fades in pre-deformed in the core sequence; the
-   presets tour runs ~1.5 s per new transformation (below the ~3 s/new-idea
-   bar).
+2. ~~**matrix-transformations**~~ — **fixed** (see "matrix-transformations:
+   findings → shipped improvements" below). Was: the "Transform the sample"
+   beat contains no transformation (the sample is born already transformed;
+   the beat is a line-width pulse); the grid fades in pre-deformed in the core
+   sequence; the presets tour runs ~1.5 s per new transformation.
 3. **eigenvectors-invariant-directions** — grids fade in pre-deformed in
    `scalar`/`defective`; a visible snap glitch entering `rotation`; hidden
    morphs burn time with no visible change; λ demo labels are hand-acted
@@ -163,6 +163,46 @@ Representation split remains correct: the guided scene owns the encoding
 insight; rotations/order-preservation live in the interactive exploration;
 the height bound lives in formal blocks + worked induction — the scene does
 not duplicate them.
+
+## matrix-transformations: findings → shipped improvements
+
+Findings: the beat named "Transform the sample" contained no transformation —
+the sample arrow was bound directly to the live matrix, which was already `A`
+by the time the beat ran, so the vector was *born* transformed and the beat
+was a line-width pulse under the caption "By linearity it lands on the
+transformed basis". The grid, whose motto the scene states outright, was
+forced to opacity 0 during the column beats and then faded in already
+deformed. The presets tour spent ~1.5 s per new transformation.
+
+Shipped:
+
+- **The sample travels.** It has its own progress signal, so it is drawn at
+  `x` — its untransformed position — with its components on the original
+  basis, and then carried to `Ax` while both dashed components swing onto
+  `Ae₁` and `Ae₂`. The path is the shared `lerpIdentityToMatrix`, which is
+  exactly the straight-line path the deforming grid takes, so the travel is
+  not an invented motion.
+- **The grid deforms where the claim is made.** It is visible (dim) while each
+  column moves, so the shear is watched as the *consequence* of the column
+  rather than appearing pre-cooked two beats later. The grid beat then traces
+  one gridline against its image — deliberately the **vertical** line `x = 1`,
+  because this shear maps horizontal lines onto themselves and a horizontal
+  probe would draw its image on top of its own ghost.
+- **The tour is unhurried and honest**: 13 s for four presets (~3.2 s each),
+  one redundant rank-1 example dropped, and every preset resets to the
+  identity first — morphing one unrelated preset straight into another
+  animates a transition that means nothing (the rule `chapter0` already
+  follows).
+- **The matrix readout can no longer go stale.** It was set imperatively
+  *after* each morph resolved, so the header showed the previous matrix while
+  the geometry was already becoming the next one. It is now a function of the
+  live entries — the same defect class flagged for the determinant scene
+  below, fixed here at its root.
+- Tip labels and coordinate readouts no longer collide with each other or with
+  the sample, and `majorSteps` now covers all nine beats (it previously
+  skipped `col2`, `transform-sample`, and `compare`, so Prev/Next could not
+  reach the payoff). Migrated to `runSegment`; the export measures 48.53 s
+  against a 48.5 s authored budget.
 
 ## columns-rule-graphic: findings → shipped improvements
 
