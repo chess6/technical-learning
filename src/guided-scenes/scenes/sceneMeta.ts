@@ -14,6 +14,7 @@ import {
   SOLUTION_SETS_SEGMENTS,
   MATRIX_COMPOSITION_SEGMENTS,
   SUBSPACES_RANK_SEGMENTS,
+  RANK_NULLITY_SEGMENTS,
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
   toSteps,
@@ -65,6 +66,7 @@ const ELIMINATION_STEPS = toSteps(ELIMINATION_SEGMENTS);
 const SOLUTION_SETS_STEPS = toSteps(SOLUTION_SETS_SEGMENTS);
 const MATRIX_COMPOSITION_STEPS = toSteps(MATRIX_COMPOSITION_SEGMENTS);
 const SUBSPACES_RANK_STEPS = toSteps(SUBSPACES_RANK_SEGMENTS);
+const RANK_NULLITY_STEPS = toSteps(RANK_NULLITY_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -172,6 +174,21 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "nullspace",
       "count",
       "rank-one",
+    ]),
+  },
+  "rank-nullity": {
+    id: "rank-nullity",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for the rank–nullity theorem, drawn as a ledger rather than as geometry. Three tokens representing the three input dimensions of a 3 by 3 map are posted one at a time into one of two columns: survived, which counts the rank, or crushed, which counts the nullity. Two survive and one is crushed, and the running tally reads two plus one equals three — the total being the input dimension. The map is then degraded so that only one direction survives, and a token moves across the ledger from one column to the other, changing the split while the total stays at three. Finally the shape changes to a 2 by 3 map: the surviving column now has only two slots because the output space is two dimensional, a greyed band marks the slot that cannot exist, and the scene concludes that no map from a bigger space to a smaller one can be one to one.",
+    steps: RANK_NULLITY_STEPS,
+    majorSteps: pickMajor(RANK_NULLITY_STEPS, [
+      "budget",
+      "post",
+      "balance",
+      "degrade",
+      "ceiling",
+      "forbidden",
     ]),
   },
   "vectors-linear-combinations": {

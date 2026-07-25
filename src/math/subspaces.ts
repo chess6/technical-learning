@@ -159,3 +159,55 @@ export function rankNullityCount(
     balances: total === inputDimension,
   };
 }
+
+/* --------------------------------------------------------------------------
+ * Lesson 9 — what the conservation law licenses and forbids.
+ *
+ * These read directly off the two counts, which is the lesson's point: once the
+ * budget is fixed, "one-to-one?" and "onto?" stop being separate investigations.
+ * ------------------------------------------------------------------------ */
+
+/** The largest rank a map of this shape could possibly have. */
+export function maxPossibleRank(rows: number, columns: number): number {
+  return Math.min(rows, columns);
+}
+
+/**
+ * One-to-one: distinct inputs always give distinct outputs. Equivalent to
+ * `nullity === 0`, since two inputs collide exactly when their difference is a
+ * nonzero null vector.
+ */
+export function isInjective(matrix: Matrix, tolerance = DEFAULT_TOLERANCE): boolean {
+  return nullityOf(matrix, tolerance) === 0;
+}
+
+/**
+ * Onto: every vector of the output space is reached. Equivalent to
+ * `rank === m`, i.e. the column space fills its ambient space.
+ */
+export function isSurjective(matrix: Matrix, tolerance = DEFAULT_TOLERANCE): boolean {
+  return rankOf(matrix, tolerance) === matrix.length;
+}
+
+/** `A − λI` for a square matrix. */
+export function shiftByEigenvalue(matrix: Matrix, lambda: number): Matrix {
+  return matrix.map((row, i) => row.map((entry, j) => (i === j ? entry - lambda : entry)));
+}
+
+/**
+ * The **geometric multiplicity** of `lambda`: the dimension of the eigenspace
+ * `Null(A − λI)`, computed as `n − rank(A − λI)` — rank–nullity doing work.
+ *
+ * This is the forward edge into eigenvectors. It is what distinguishes a
+ * repeated eigenvalue with a whole plane of eigendirections from a defective one
+ * with only a line, and Lesson 11 currently has no way to say that precisely.
+ *
+ * Returns 0 for a non-eigenvalue (the eigenspace is then just {0}).
+ */
+export function geometricMultiplicity(
+  matrix: Matrix,
+  lambda: number,
+  tolerance = DEFAULT_TOLERANCE,
+): number {
+  return nullityOf(shiftByEigenvalue(matrix, lambda), tolerance);
+}

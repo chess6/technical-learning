@@ -1,0 +1,65 @@
+.rn-explorer__matrix table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.rn-explorer__matrix td {
+  padding: 0.45rem 0.9rem;
+  text-align: right;
+  border: 1px solid var(--color-border);
+  min-width: 3rem;
+}
+
+.rn-explorer__shape {
+  margin-top: 0.7rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.rn-explorer__verdicts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rn-explorer__verdict {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+/* A satisfied verdict is tinted; an unsatisfied one is not. The tint is a
+   secondary cue only — the Yes/No text carries the answer on its own. */
+.rn-explorer__verdict[data-ok] {
+  border-color: var(--role-basis-1);
+  background: color-mix(in srgb, var(--role-basis-1) 12%, transparent);
+}
+
+.rn-explorer__verdict-q {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.rn-explorer__why {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+}
+
+.rn-explorer__reasons {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.rn-explorer__reasons li + li {
+  margin-top: 0.3rem;
+}

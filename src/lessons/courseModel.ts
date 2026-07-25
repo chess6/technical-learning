@@ -122,13 +122,7 @@ export const CURRICULUM: readonly Subject[] = [
             title: "Structure of linear maps",
             items: [
               { kind: "lesson", lessonId: "subspaces-rank" },
-              {
-                kind: "future",
-                id: "rank-nullity",
-                title: "Dimension & Rank–Nullity",
-                subtitle:
-                  "Input dimensions either survive or collapse into the null space",
-              },
+              { kind: "lesson", lessonId: "rank-nullity" },
               {
                 kind: "future",
                 id: "change-of-basis",

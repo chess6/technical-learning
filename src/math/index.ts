@@ -148,8 +148,13 @@ export type {
 
 export {
   columnSpaceBasis,
+  geometricMultiplicity,
   imageShape,
   isInColumnSpace,
+  isInjective,
+  isSurjective,
+  maxPossibleRank,
+  shiftByEigenvalue,
   nullSpaceBasis,
   nullityOf,
   pivotColumnsOf,

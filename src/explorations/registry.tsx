@@ -57,6 +57,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.SubspacesRankExplorer,
     })),
   ),
+  "rank-nullity": lazy(() =>
+    import("./RankNullityExplorer").then((m) => ({
+      default: m.RankNullityExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,

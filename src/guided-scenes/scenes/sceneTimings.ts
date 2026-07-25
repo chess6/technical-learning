@@ -194,6 +194,56 @@ export const SUBSPACES_RANK_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
+ * Lesson 9 — "Dimension & Rank–Nullity". A LEDGER, deliberately not geometry:
+ * Lesson 8 owned the geometric picture, and repeating it would teach nothing new.
+ * n input dimensions enter as tokens, each is posted to exactly one of two
+ * columns (survived / crushed), and the running total never changes.
+ *
+ * The tokens are created once and only ever MOVED between columns, so
+ * conservation is visible as motion rather than as a redraw. The final beats
+ * switch to a 2x3 map, where the surviving column has only two slots — so at
+ * least one token must be crushed, and no such map can be one-to-one.
+ */
+export const RANK_NULLITY_SEGMENTS: readonly SceneSegment[] = [
+  {
+    id: "budget",
+    title: "Three dimensions go in",
+    duration: 5,
+    summary: "The input dimension n is a budget: three independent directions enter the map.",
+  },
+  {
+    id: "post",
+    title: "Each one has a fate",
+    duration: 7,
+    summary: "Every input dimension either survives into the image or collapses into the null space — never both, never neither.",
+  },
+  {
+    id: "balance",
+    title: "The books balance",
+    duration: 5.5,
+    summary: "Two survived, one was crushed, and 2 + 1 = 3: the total is the input dimension.",
+  },
+  {
+    id: "degrade",
+    title: "Spend the budget differently",
+    duration: 6.5,
+    summary: "Degrade the map and a token moves ACROSS the ledger. The split changes; the total cannot.",
+  },
+  {
+    id: "ceiling",
+    title: "A map with a lower ceiling",
+    duration: 6.5,
+    summary: "For a 2-by-3 map the surviving column has only two slots — the output space is not big enough to hold three dimensions.",
+  },
+  {
+    id: "forbidden",
+    title: "So this can never happen",
+    duration: 6,
+    summary: "At least one of the three must be crushed, so no map from a bigger space to a smaller one is one-to-one. No computation needed.",
+  },
+];
+
+/**
  * Lesson 6 — "Matrix Composition & Inverses". The scene asks one question seven
  * times: *where does the basis land?* Apply B, then A; show that a single matrix
  * does both; read the product's columns off the two basis paths; swap the order;

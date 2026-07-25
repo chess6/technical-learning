@@ -316,6 +316,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "matrix-composition",
       "determinants",
       "subspaces-rank",
+      "rank-nullity",
       "eigenvectors",
       "karatsuba",
       "binary-search-trees",
@@ -764,7 +765,7 @@ describe("Subspaces & Rank lesson (spine L8)", () => {
   it("sits between determinants and eigenvectors, opening the structure module", () => {
     const ids = lessons.map((l) => l.id);
     expect(ids.indexOf("subspaces-rank")).toBe(ids.indexOf("determinants") + 1);
-    expect(ids.indexOf("subspaces-rank")).toBe(ids.indexOf("eigenvectors") - 1);
+    expect(ids.indexOf("subspaces-rank")).toBe(ids.indexOf("rank-nullity") - 1);
   });
 
   it("wires its own guided scene and explorer", () => {
@@ -853,6 +854,113 @@ describe("Subspaces & Rank lesson (spine L8)", () => {
       "nullspace",
       "count",
       "rank-one",
+    ]);
+  });
+});
+
+describe("Rank–Nullity lesson (spine L9)", () => {
+  it("follows Subspaces & Rank and precedes Eigenvectors", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("rank-nullity")).toBe(ids.indexOf("subspaces-rank") + 1);
+    expect(ids.indexOf("rank-nullity")).toBe(ids.indexOf("eigenvectors") - 1);
+  });
+
+  it("wires its own scene and explorer", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    expect(lesson.guidedSceneId).toBe("rank-nullity");
+    expect(lesson.explorationId).toBe("rank-nullity");
+    expect(hasGuidedScene("rank-nullity")).toBe(true);
+    expect(getExplorer("rank-nullity")).toBeTypeOf("function");
+  });
+
+  it("names the diagnosed obstacle instead of restating L8's observation", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const opening = lesson.sections.find((s) => s.id === "too-obvious")!;
+    // The lesson must confront "this looks too obvious to need a name" head-on.
+    expect(opening.body.toLowerCase()).toMatch(/bookkeeping/);
+    expect(opening.body).toMatch(/\\mathbb\{R\}\^3.*\\mathbb\{R\}\^2/);
+  });
+
+  it("proves the theorem, showing BOTH spanning and independence", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const thm = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-rank-nullity")!;
+    expect(thm.kind).toBe("theorem");
+    const proof = (thm.layers ?? []).find((l) => l.kind === "math-note")!;
+    // Both halves must be present: a proof that only shows the images span has
+    // not established the count.
+    expect(proof.body.toLowerCase()).toContain("span");
+    expect(proof.body.toLowerCase()).toContain("independent");
+    // The basis extension must be flagged as a CHOICE, not a decomposition.
+    expect((thm.layers ?? []).some((l) => l.kind === "trap")).toBe(true);
+  });
+
+  it("keeps the total at n and says so where it matters", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const thm = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-rank-nullity")!;
+    expect(thm.interpretation).toMatch(/input/);
+    expect(thm.interpretation.toLowerCase()).toMatch(/never appears|never/);
+    // The staged misconception exists and is confronted with a NON-SQUARE map.
+    const callout = (lesson.callouts ?? []).find((c) => c.id === "total-is-n")!;
+    expect(callout.confront).toMatch(/m = 2|m=2/);
+  });
+
+  it("states the impossibility results the law licenses", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const cor = (lesson.formalBlocks ?? []).find((f) => f.id === "cor-consequences")!;
+    const text = cor.statement.toLowerCase();
+    expect(text).toMatch(/not \*\*one-to-one\*\*|not one-to-one/);
+    expect(text).toMatch(/not \*\*onto\*\*|not onto/);
+    expect(text).toMatch(/min\(m, n\)|\\min\(m, n\)/);
+  });
+
+  it("scopes one-to-one ⟺ onto to square maps, with a counterexample", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const callout = (lesson.callouts ?? []).find(
+      (c) => c.id === "onto-iff-one-to-one",
+    )!;
+    expect(callout.resolve).toMatch(/m = n|m=n/);
+    // Both directions of counterexample must be present (onto-not-1-1 and 1-1-not-onto).
+    const confront = callout.confront ?? "";
+    expect(confront.toLowerCase()).toMatch(/onto/);
+    expect(confront.toLowerCase()).toMatch(/one-to-one/);
+  });
+
+  it("carries the eigen forward edge as a computable item, not a promise", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    const forward = lesson.sections.find((s) => s.id === "forward")!;
+    expect(forward.equation).toMatch(/A - \\lambda I/);
+    const item = lesson.exercises!.find((ex) => ex.id === "rn-eigen-multiplicity");
+    expect(item, "geometric multiplicity must be GRADED, not merely mentioned").toBeDefined();
+  });
+
+  it("grades non-square maps, since the square case cannot show the law's content", () => {
+    const lesson = getLessonById("rank-nullity")!;
+    // Inspect the authored text directly rather than a JSON dump, whose extra
+    // escaping makes any regex here a test of the serializer, not the content.
+    const graded = lesson
+      .exercises!.map((ex) => {
+        const prompt = "prompt" in ex ? ex.prompt : "";
+        const choices = "choices" in ex ? ex.choices.join(" ") : "";
+        return `${prompt} ${choices}`;
+      })
+      .join(" ");
+    expect(graded).toContain("2 \\times 3");
+    expect(graded).toContain("\\mathbb{R}^5 \\to \\mathbb{R}^2");
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+  });
+
+  it("uses the ledger beats, not a repeat of L8's geometry", () => {
+    const meta = getSceneMeta("rank-nullity");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual([
+      "budget",
+      "post",
+      "balance",
+      "degrade",
+      "ceiling",
+      "forbidden",
     ]);
   });
 });

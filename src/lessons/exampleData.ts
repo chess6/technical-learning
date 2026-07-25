@@ -418,6 +418,76 @@ export const SUBSPACE_FRESH = {
   ] as const,
 } as const;
 
+/**
+ * Lesson 9 (`rank-nullity`) presets. The SHAPE is the point — with m = n the
+ * theorem degenerates into "rank determines nullity", which L8 already gave, and
+ * neither impossibility result can be stated. Ranks and shapes are verified in
+ * `src/lessons/__tests__/subspaceExample.test.ts`.
+ */
+export interface RankNullityPreset {
+  id: string;
+  label: string;
+  matrix: readonly (readonly number[])[];
+  /** Rows (m) × columns (n) — asserted by test. */
+  shape: readonly [number, number];
+}
+
+export const RANK_NULLITY_PRESETS: readonly RankNullityPreset[] = [
+  {
+    // Bigger space to smaller: onto, but CANNOT be one-to-one.
+    id: "wide-onto",
+    label: "ℝ³ → ℝ² (onto)",
+    matrix: [
+      [1, 2, 3],
+      [0, 1, 4],
+    ],
+    shape: [2, 3],
+  },
+  {
+    // Same shape, degenerate: neither one-to-one nor onto.
+    id: "wide-degenerate",
+    label: "ℝ³ → ℝ² (rank 1)",
+    matrix: [
+      [1, 2, 3],
+      [2, 4, 6],
+    ],
+    shape: [2, 3],
+  },
+  {
+    // Smaller space to bigger: one-to-one, but CANNOT be onto.
+    id: "tall-injective",
+    label: "ℝ² → ℝ³ (one-to-one)",
+    matrix: [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ],
+    shape: [3, 2],
+  },
+  {
+    // Square, full rank: both at once — the only shape where that is possible.
+    id: "square-both",
+    label: "ℝ³ → ℝ³ (both)",
+    matrix: [
+      [1, 0, 2],
+      [0, 1, 3],
+      [0, 0, 1],
+    ],
+    shape: [3, 3],
+  },
+  {
+    // Square, degenerate: neither.
+    id: "square-neither",
+    label: "ℝ³ → ℝ³ (neither)",
+    matrix: [
+      [1, 0, 2],
+      [0, 1, 3],
+      [1, 1, 5],
+    ],
+    shape: [3, 3],
+  },
+];
+
 export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "distinct", label: "Distinct real", exampleId: "eigen-distinct" },
   { id: "negative", label: "Negative λ", exampleId: "eigen-negative" },
