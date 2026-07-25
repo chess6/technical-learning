@@ -534,9 +534,21 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
       objects: ["moving-grid", "ihat", "jhat"],
     },
     {
+      refTime: 146.3,
+      kind: "cut",
+      objects: ["moving-grid"],
+      note: "Sub-scene reset to the identity before the family beat.",
+    },
+    {
       refTime: 150.0,
       kind: "continuous-morph",
       objects: ["moving-grid", "fan-x"],
+    },
+    {
+      refTime: 158.5,
+      kind: "cut",
+      objects: ["moving-grid"],
+      note: "Reset to the identity before the sneaky-vector beat.",
     },
     {
       refTime: 164.7,
@@ -544,9 +556,21 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
       objects: ["moving-grid", "vec-sneaky", "label-sneaky"],
     },
     {
+      refTime: 169.0,
+      kind: "cut",
+      objects: ["moving-grid"],
+      note: "Reset before the diagonal-family beat.",
+    },
+    {
       refTime: 173.6,
       kind: "continuous-morph",
       objects: ["moving-grid", "fan-diag"],
+    },
+    {
+      refTime: 179.8,
+      kind: "cut",
+      objects: ["moving-grid", "fan-x", "fan-diag"],
+      note: "Reset to the resting grid with both families for the recap.",
     },
     {
       refTime: 196.4,
