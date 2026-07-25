@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  COLUMNS_RULE_GRAPHIC_SEGMENTS,
   DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
@@ -168,6 +169,39 @@ describe("scene timings (pure data)", () => {
         }
       }
     });
+  });
+
+  it("columns-rule callback constructs the decomposition and predicts before revealing", () => {
+    const ids = COLUMNS_RULE_GRAPHIC_SEGMENTS.map((s) => s.id);
+    // The rule is built, not asserted: a decompose beat draws the head-to-tail
+    // walk, a predict beat holds before the reveal, and image resolves it.
+    expect(ids).toEqual([
+      "vertex",
+      "decompose",
+      "predict",
+      "image",
+      "all-vertices",
+    ]);
+    expect(ids.indexOf("predict")).toBeLessThan(ids.indexOf("image"));
+
+    const byId = Object.fromEntries(
+      COLUMNS_RULE_GRAPHIC_SEGMENTS.map((s) => [s.id, s]),
+    );
+    // decompose choreography: 0.5 dim + 1.4 grow₁ + 0.3 fade + 1.4 grow₂
+    // + 0.6 pulse ≈ 4.2s; keep headroom so the walk never feels rushed.
+    expect(byId.decompose!.duration).toBeGreaterThanOrEqual(6.5);
+    // image: 0.5 restore + 3.4 morph + 0.7 pulse ≈ 4.6s.
+    expect(byId.image!.duration).toBeGreaterThanOrEqual(7.0);
+    // A prediction is only real if there is silence to think in: the beat
+    // spends ≈0.5s brightening the basis, the rest is think time.
+    expect(byId.predict!.duration).toBeGreaterThanOrEqual(4.5);
+
+    // Every beat is a navigable chapter with a summary.
+    expect(COLUMNS_RULE_GRAPHIC_SEGMENTS.every((s) => Boolean(s.summary))).toBe(
+      true,
+    );
+    const meta = getSceneMeta("columns-rule-graphic");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual(ids);
   });
 
   it("karatsuba scene has no deeper beat and ~58s elementary timeline", () => {

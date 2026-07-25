@@ -74,14 +74,47 @@ export const CHAPTER0_SEGMENTS: readonly SceneSegment[] = [
 
 /**
  * Lesson 2 callback — a short "return to the graphic" animation shown AFTER the
- * columns rule is derived. It writes a vertex as x = a·e₁ + b·e₂, then shows the
- * image is a·T(e₁) + b·T(e₂), and applies that to several marked vertices of the
- * shared craft. Resolves Chapter 0's mystery with the derived rule.
+ * columns rule is derived. The decomposition is CONSTRUCTED rather than
+ * asserted: a walk of a along e₁ then b along e₂ is drawn head-to-tail and
+ * lands on the vertex, the learner predicts where that walk ends once the basis
+ * moves, and then the same two component arrows ride the transformation onto
+ * the columns. Resolves Chapter 0's mystery with the derived rule.
+ *
+ * The component arrows are bound to the LIVE matrix columns, so the head-to-tail
+ * walk stays exact through every frame of the morph — the construction cannot
+ * drift from the vertex it explains.
  */
 export const COLUMNS_RULE_GRAPHIC_SEGMENTS: readonly SceneSegment[] = [
-  { id: "vertex", title: "One vertex as a·e₁ + b·e₂", duration: 5 },
-  { id: "image", title: "Its image is a·T(e₁) + b·T(e₂)", duration: 5.5 },
-  { id: "all-vertices", title: "Every vertex follows the two columns", duration: 5.5 },
+  {
+    id: "vertex",
+    title: "One vertex, two coordinates",
+    duration: 5.5,
+    summary: "Pick one vertex of the craft and read its standard coordinates (a, b).",
+  },
+  {
+    id: "decompose",
+    title: "Walk a along e₁, then b along e₂",
+    duration: 7,
+    summary: "The two components are drawn head-to-tail — the walk ends exactly on the vertex.",
+  },
+  {
+    id: "predict",
+    title: "Predict: where does the walk end?",
+    duration: 5.5,
+    summary: "The recipe (a, b) is fixed; only e₁ and e₂ move to the columns. Predict the landing point before it moves.",
+  },
+  {
+    id: "image",
+    title: "Same walk, new basis",
+    duration: 7.5,
+    summary: "The same two component arrows ride T onto the columns and land on the moved vertex: T(x) = a·T(e₁) + b·T(e₂).",
+  },
+  {
+    id: "all-vertices",
+    title: "Every vertex, the same two columns",
+    duration: 6,
+    summary: "Each vertex keeps its own (a, b) but walks on the same two columns — which is why two columns move the whole craft.",
+  },
 ];
 
 /**

@@ -87,10 +87,12 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "columns-rule-graphic",
     size: SCENE_SIZE,
     ariaLabel:
-      "Lesson 2 callback animation: one vertex of the shared craft is written as a times e one plus b times e two, its image is shown to be a times T of e one plus b times T of e two, and the same rule is then applied to every marked vertex so the two matrix columns reposition the whole craft — resolving Chapter 0's mystery.",
+      "Lesson 2 callback animation: one vertex of the shared craft is marked and its standard coordinates a and b are read off. The decomposition is then constructed head-to-tail — a walk of a along e one followed by b along e two, ending exactly on the vertex. After a pause to predict where that walk will end once the basis moves, the matrix is applied: the same two component arrows swing onto the matrix columns and land on the moved vertex, showing that T of x equals a times T of e one plus b times T of e two with the same a and b. Finally every marked vertex shows its own head-to-tail walk on those same two columns, so the two columns reposition the whole craft — resolving Chapter 0's mystery.",
     steps: COLUMNS_RULE_GRAPHIC_STEPS,
     majorSteps: pickMajor(COLUMNS_RULE_GRAPHIC_STEPS, [
       "vertex",
+      "decompose",
+      "predict",
       "image",
       "all-vertices",
     ]),
