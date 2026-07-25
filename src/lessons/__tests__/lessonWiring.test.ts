@@ -1138,6 +1138,103 @@ describe("the structure module actually prepares Eigenvectors", () => {
   });
 });
 
+describe("Eigenvectors is now the full spine node, not an intro", () => {
+  const eigen = () => getLessonById("eigenvectors")!;
+
+  it("names diagonalization in its title and objectives", () => {
+    expect(eigen().title).toMatch(/Diagonalization/i);
+    const objectives = eigen().learningObjectives.join(" ");
+    expect(objectives).toMatch(/A = PDP\^\{-1\}|PDP/);
+    expect(objectives.toLowerCase()).toMatch(/defective/);
+  });
+
+  it("carries the formal results the spine row promises", () => {
+    const ids = (eigen().formalBlocks ?? []).map((f) => f.id);
+    for (const id of [
+      "def-eigen",
+      "thm-characteristic",
+      "prop-multiplicities",
+      "thm-diagonalization",
+      "cor-powers",
+    ]) {
+      expect(ids).toContain(id);
+    }
+  });
+
+  it("states the diagonalizability criterion as a checkable condition", () => {
+    const thm = (eigen().formalBlocks ?? []).find(
+      (f) => f.id === "thm-diagonalization",
+    )!;
+    expect(thm.kind).toBe("theorem");
+    expect(thm.statement).toMatch(/if and only if/);
+    expect(thm.statement.toLowerCase()).toMatch(/geometric multiplicit/);
+    // Distinct eigenvalues sufficing must be stated, since it is the common case.
+    expect(thm.statement.toLowerCase()).toMatch(/distinct/);
+    // And the factorization must be flagged as non-unique.
+    expect((thm.layers ?? []).some((l) => l.kind === "trap")).toBe(true);
+  });
+
+  it("separates the two failure modes rather than lumping them together", () => {
+    const limits = eigen().sections.find((s) => s.id === "limits")!;
+    expect(limits.body.toLowerCase()).toMatch(/defective/);
+    expect(limits.body.toLowerCase()).toMatch(/no real eigenvalues/);
+    const item = eigen().exercises!.find((ex) => ex.id === "eigen-two-failure-modes");
+    expect(item, "the distinction must be graded").toBeDefined();
+  });
+
+  it("keeps diagonalizability independent of invertibility, with both counterexamples", () => {
+    const callout = (eigen().callouts ?? []).find(
+      (c) => c.id === "singular-not-defective",
+    )!;
+    expect(callout.resolve ?? "").toMatch(/independent/);
+    const item = eigen().exercises!.find(
+      (ex) => ex.id === "eigen-diagonalizable-vs-invertible",
+    );
+    expect(item).toBeDefined();
+  });
+
+  it("computes the geometric multiplicity with rank–nullity, not by inspection", () => {
+    const section = eigen().sections.find((s) => s.id === "multiplicities")!;
+    expect(section.equation).toMatch(/n - \\operatorname\{rank\}/);
+    const prop = (eigen().formalBlocks ?? []).find(
+      (f) => f.id === "prop-multiplicities",
+    )!;
+    expect(prop.statement).toMatch(/\\le/);
+  });
+
+  it("shows the powers payoff and checks it against direct multiplication", () => {
+    const worked = (eigen().workedExamples ?? []).find((w) => w.id === "wex-power")!;
+    const equations = worked.equations.join(" ");
+    expect(equations).toMatch(/243/);
+    // The shortcut must be VERIFIED, not just asserted.
+    expect(equations.toLowerCase()).toMatch(/check/);
+  });
+
+  it("keeps every pre-existing exercise id (learner state is keyed by id)", () => {
+    const ids = new Set(eigen().exercises!.map((ex) => ex.id));
+    for (const id of [
+      "eigen-check-reverse",
+      "eigen-drill-lambdas",
+      "eigen-drill-vector",
+      "eigen-transfer-real",
+      "eigen-drag",
+    ]) {
+      expect(ids.has(id), `${id} must not be renamed`).toBe(true);
+    }
+  });
+
+  it("reaches the depth of its neighbours", () => {
+    const l = eigen();
+    expect(l.sections.length).toBeGreaterThanOrEqual(6);
+    expect((l.formalBlocks ?? []).length).toBeGreaterThanOrEqual(5);
+    expect((l.workedExamples ?? []).length).toBeGreaterThanOrEqual(4);
+    expect((l.callouts ?? []).length).toBeGreaterThanOrEqual(5);
+    expect(l.exercises!.length).toBeGreaterThanOrEqual(12);
+    expect(l.structuredSummary).toBeDefined();
+    expect((l.checkpoints ?? []).length).toBeGreaterThanOrEqual(1);
+  });
+});
+
 describe("Karatsuba lesson wiring", () => {
   it("resolves scene, explorer, and shared examples without a matrix exampleId", () => {
     const lesson = getLessonById("karatsuba")!;

@@ -60,19 +60,64 @@ export function LessonPage() {
     lesson.sections.map((section) => [section.id, renderSection(section)]),
   );
 
+  const callouts = (lesson.callouts ?? []).map((callout) => (
+    <MisconceptionCallout
+      key={callout.id}
+      title={callout.title}
+      belief={callout.belief}
+      confront={callout.confront}
+      resolve={callout.resolve}
+      visual={
+        callout.solutionVisualId ? (
+          <EigenSolutionDiagram
+            exampleId={callout.exampleId}
+            highlightLambda={callout.highlightLambda}
+            height={200}
+            ariaLabel={callout.title}
+          />
+        ) : undefined
+      }
+    />
+  ));
+
+  /**
+   * Misconception callouts ride along with the COMBINED `worked` block. A lesson
+   * that places its worked examples individually (`worked` + `workedId`) never
+   * renders that block — so its callouts silently never reached the page. Seven
+   * lessons were authoring staged misconceptions the learner could not see.
+   *
+   * Rather than adding a route-block kind for callouts (that would be new
+   * schema), attach them to the LAST per-id worked block when no combined block
+   * exists. That keeps every existing lesson rendering exactly as before and
+   * puts the callouts where a combined block would have put them — after the
+   * worked material they respond to.
+   */
+  const workedBlockIds = (lesson.route ?? [])
+    .filter((block) => block.kind === "worked")
+    .map((block) => (block.kind === "worked" ? block.workedId : undefined));
+  const hasCombinedWorkedBlock =
+    workedBlockIds.length > 0 && workedBlockIds.some((id) => id === undefined);
+  const lastPlacedWorkedId = [...workedBlockIds]
+    .reverse()
+    .find((id): id is string => id !== undefined);
+  const calloutsRideOnWorkedId =
+    !hasCombinedWorkedBlock && callouts.length > 0 ? lastPlacedWorkedId : undefined;
+
   const workedById = new Map(
     (lesson.workedExamples ?? []).map((example, index) => [
       example.id,
-      <WorkedExamplePanel
-        key={example.id}
-        examples={[example]}
-        startNumber={index + 1}
-        resetToken={resetToken}
-        enableEigenClipStage={isEigenLesson}
-        // Placed on its own by a `worked` route block: no heading sits above it,
-        // so the example's own title is the section heading.
-        headingLevel={2}
-      />,
+      <div key={example.id}>
+        <WorkedExamplePanel
+          examples={[example]}
+          startNumber={index + 1}
+          resetToken={resetToken}
+          enableEigenClipStage={isEigenLesson}
+          // Placed on its own by a `worked` route block: no heading sits above it,
+          // so the example's own title is the section heading.
+          headingLevel={2}
+        />
+        {calloutsRideOnWorkedId === example.id && callouts}
+      </div>,
     ]),
   );
 
@@ -144,25 +189,7 @@ export function LessonPage() {
                 enableEigenClipStage={isEigenLesson}
               />
             )}
-            {lesson.callouts?.map((callout) => (
-              <MisconceptionCallout
-                key={callout.id}
-                title={callout.title}
-                belief={callout.belief}
-                confront={callout.confront}
-                resolve={callout.resolve}
-                visual={
-                  callout.solutionVisualId ? (
-                    <EigenSolutionDiagram
-                      exampleId={callout.exampleId}
-                      highlightLambda={callout.highlightLambda}
-                      height={200}
-                      ariaLabel={callout.title}
-                    />
-                  ) : undefined
-                }
-              />
-            ))}
+            {callouts}
           </>
         ) : undefined
       }

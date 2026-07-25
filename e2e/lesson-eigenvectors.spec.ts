@@ -9,7 +9,7 @@ function collectConsoleErrors(page: Page): string[] {
   return errors;
 }
 
-test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exercises work", async ({
+test("Eigenvectors loads, guided scene plays, worked computation, explorer, and exercises work", async ({
   page,
 }) => {
   const errors = collectConsoleErrors(page);
@@ -17,7 +17,10 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   await page.goto("/lesson/eigenvectors");
 
   await expect(
-    page.getByRole("heading", { name: "Eigenvectors and Eigenvalues" }),
+    page.getByRole("heading", {
+      name: "Eigenvectors, Eigenvalues, and Diagonalization",
+      level: 1,
+    }),
   ).toBeVisible();
   // The guided scene is introduced by an authored, content-specific heading —
   // never by the internal block name.
@@ -33,8 +36,11 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   });
   await page.getByRole("button", { name: "Replay" }).first().click();
 
+  // The lesson now places its four worked examples individually along the route
+  // rather than as one "Worked examples" block, so each carries its own
+  // content-specific heading — which is what the page grammar asks for.
   await expect(
-    page.getByRole("heading", { name: "Worked examples" }),
+    page.getByRole("heading", { name: "Computing the eigenvalues and eigenvectors" }),
   ).toBeVisible();
   await expect(page.getByTestId("worked-example-eigen-compute-distinct")).toBeVisible();
   await expect(page.getByTestId("misconception-callout").first()).toBeVisible();
@@ -79,7 +85,7 @@ test("Lesson 4 loads, guided scene plays, worked computation, explorer, and exer
   expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
 });
 
-test("Lesson 4 expand modal and 3D extension preserve semantic step and single renderer", async ({
+test("Eigenvectors expand modal and 3D extension preserve semantic step and single renderer", async ({
   page,
 }) => {
   const errors = collectConsoleErrors(page);
@@ -171,4 +177,37 @@ test("non-eigen lesson does not load the three.js chunk", async ({ page }) => {
   await expect(page.getByTestId("eigen-clip-stage")).toHaveCount(0);
   await page.waitForTimeout(500);
   expect(threeRequests, threeRequests.join("\n")).toEqual([]);
+});
+
+test("Eigenvectors delivers the diagonalization sequel, not just the intro", async ({
+  page,
+}) => {
+  const errors = collectConsoleErrors(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/lesson/eigenvectors");
+
+  await expect(
+    page.getByRole("heading", {
+      name: "Eigenvectors, Eigenvalues, and Diagonalization",
+      level: 1,
+    }),
+  ).toBeVisible();
+
+  // The spine row promises diagonalization; the page must actually contain it.
+  await expect(
+    page.getByRole("heading", { name: /Collect enough of them/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /When there is no such basis/ }),
+  ).toBeVisible();
+
+  // Both failure modes are named on the page, not just one.
+  const main = page.locator("main");
+  await expect(main).toContainText("defective");
+  await expect(main).toContainText("no real eigenvalues");
+
+  // The powers payoff is present with its verified number.
+  await expect(main).toContainText("243");
+
+  expect(errors, `console errors:\n${errors.join("\n")}`).toEqual([]);
 });

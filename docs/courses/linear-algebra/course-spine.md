@@ -116,7 +116,7 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 | L8 | Subspaces, column space, null space, rank | Every question asked since L3 was about one of **two** subspaces, in **different** spaces: the column space decides existence, the null space decides uniqueness, and rank counts what survived. | built | `subspaces-rank` |
 | L9 | Dimension & rank–nullity | Conservation: \(n\) is a budget, every input dimension has exactly one fate, and because the total is fixed the law **forbids** whole classes of maps. | built | `rank-nullity` |
 | L10 | Change of basis | A matrix was never the map — it is a **description** in a basis nobody mentioned; naming the choice makes \(P\)'s direction derivable and \([A]_B = P^{-1}AP\) readable. | built | `change-of-basis` |
-| L11 | Eigenvectors & diagonalization | Directions a map only *scales*; diagonalizing = choosing the basis where the map is pure scaling. | built (intro) | `eigenvectors` |
+| L11 | Eigenvectors & diagonalization | Directions a map only *scales*; diagonalizing = choosing the basis where the map is pure scaling — when there are enough such directions. | built | `eigenvectors` |
 | L12 | Orthogonality & projections | Right angles give the *best approximation*; projection is "closest point in a subspace." | future | `orthogonality` |
 | L13 | Least squares | When \(A\mathbf{x}=\mathbf{b}\) has *no* solution, project \(\mathbf{b}\) onto the column space and solve that. | future | `least-squares` |
 | L14 | Singular value decomposition | **Every matrix is rotate → scale → rotate**; reunifies rank, orthogonality, geometry, and compression. | future | `svd` |
@@ -131,7 +131,7 @@ linear-algebra dependency order.
 
 The `future` lessons (L12–L14) are the ones still to be authored; Ch 0–L11 are
 built (see their lesson definitions), so the built path is now **contiguous
-through L11** — a learner walking it skips no declared prerequisite. L4–L10 are
+through L11**, and every built node meets its spine row — a learner walking it skips no declared prerequisite. L4–L10 are
 detailed below for the record. Each future lesson must lead with its insight,
 reuse a prior example wherever possible, and preserve semantic roles/notation.
 

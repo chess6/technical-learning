@@ -75,7 +75,7 @@ Two orderings coexist today and must not be confused:
 | L8 | Subspaces, column space, null space, rank | `subspaces-rank` | built | LA | **Lesson 8** |
 | L9 | Dimension & rank–nullity | `rank-nullity` | built | LA | **Lesson 9** |
 | L10 | Change of basis | `change-of-basis` | built | LA | **Lesson 10** |
-| L11 | Eigenvectors & diagonalization | `eigenvectors` | built (intro) | LA | **Lesson 11** |
+| L11 | Eigenvectors & diagonalization | `eigenvectors` | built | LA | **Lesson 11** |
 | L12 | Orthogonality & projections | `orthogonality` | future | LA | — |
 | L13 | Least squares | `least-squares` | future | LA | — |
 | L14 | Singular value decomposition | `svd` | future | LA | — |
@@ -380,21 +380,14 @@ built path is contiguous from Ch 0 through L11. Every hard prerequisite edge int
 machinery: an eigenspace is `Null(A − λI)` (L8), its dimension is
 `n − rank(A − λI)` (L9), and diagonalization is a change of basis (L10).
 
-**Recommendation: deepen `eigenvectors` (L11) before opening L12.** This is a
-recommendation, not an authorization.
+`eigenvectors` (L11) has since been expanded to the full spine node —
+diagonalization, the criterion, powers, and both failure modes — so **every built
+node now meets its spine row**.
 
-### Why L11 before L12
+**Recommendation: build `orthogonality` (L12) next.** This is a recommendation,
+not an authorization.
 
-- **It is the only *built* lesson still marked "intro".** The spine promises
-  "eigenvectors **& diagonalization**"; the built lesson stops before
-  diagonalization. Every other built node meets its spine row.
-- **Its prerequisites just landed.** Until L10 existed, diagonalization could
-  only be described. It can now be derived.
-- **L12–L14 do not depend on it, but the course's credibility does.** Opening a
-  new arc while the previous one has a known shortfall widens the gap the
-  benchmark already records.
-
-### Then L12 `orthogonality`
+### Why L12 `orthogonality`
 
 The earliest remaining spine gap, and DAG-ready (needs L1 only). It unblocks both
 L13 and L14, and it owns two deferrals this module recorded: the relationship

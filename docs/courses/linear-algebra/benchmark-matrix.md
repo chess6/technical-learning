@@ -129,7 +129,7 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 | Topic | P1 bar | P2 bar | P3 bar | Current spine **[repo]** | Missing / deferred |
 | --- | --- | --- | --- | --- | --- |
-| Eigenvectors & diagonalization (L11) | Find eigenvalues/vectors (2×2/3×3); diagonalize (E3). | + \(A^k\), dynamics, stability, symmetric/PD (E4). [ext-1806] | + characteristic vs minimal polynomial; determinant-free existence [ext-Axler] (E6). | Built **intro** + derivation ladder; full treatment deferred. | Diagonalization/multiplicity/dynamics (P1/P2); operator theory (P3). |
+| Eigenvectors & diagonalization (L11) | Find eigenvalues/vectors (2×2/3×3); diagonalize (E3). | + \(A^k\), dynamics, stability, symmetric/PD (E4). [ext-1806] | + characteristic vs minimal polynomial; determinant-free existence [ext-Axler] (E6). | Built **in full**; derivation ladder, algebraic vs geometric multiplicity, the diagonalizability criterion applied before factoring, \(A^k = PD^kP^{-1}\), and both failure modes (defective; no real eigenvalues). | \(3\times3\) hand computation; stability/dynamics applications and symmetric/PD matrices (P2); complex eigenvalues, Jordan form, minimal polynomial, spectral theorem (P3). |
 | Orthogonality & projections (L12) | Dot product, projection onto a line (E3). | + Gram–Schmidt, QR, orthonormal bases (E4). [ext-1806] | + inner-product spaces, spectral theorem (E6). [ext-Axler] | **Future** (`orthogonality`). | Whole lesson unbuilt. |
 | Least squares (L13) | Normal equations for a best-fit line (E3). | + regression, conditioning, QR-based solve (E4). | + projection theorem, existence/uniqueness proofs (E6). | **Future** (`least-squares`). | Whole lesson unbuilt. |
 | SVD (L14) | — (often beyond P1). | Compute/interpret; low-rank approx, compression (E4). [ext-1806] | Prove existence; consequences of spectral theorem (E6). [ext-Axler] | **Future** (`svd`, capstone). | Whole lesson unbuilt. |
@@ -145,9 +145,7 @@ Distilling the tables — honest, **[repo]**-derived:
    **contiguous from Ch 0 through L11** — a learner walking it skips no declared
    prerequisite anywhere. No profile is *complete* yet; the built prefix best
    serves **P1 S1–S3**, now with genuine \(\mathbb{R}^3\) and non-square content
-   in L8–L9. **The one built node that does not meet its spine row is L11**,
-   which the spine names "Eigenvectors & diagonalization" but which stops before
-   diagonalization.
+   in L8–L9. Since the L11 expansion, **every built node meets its spine row**.
 2. **Dimensionality ceiling — substantially raised, not removed.** L8 works in
    \(\mathbb{R}^3\) and L9 in non-square shapes up to \(2\times4\), which is where
    rank and the conservation law have real content; L7 reads volume in

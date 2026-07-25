@@ -147,6 +147,19 @@ export type {
 } from "./elimination";
 
 export {
+  algebraicMultiplicity2x2,
+  diagonalPower2x2,
+  diagonalize2x2,
+  eigenvalueMultiplicities2x2,
+  isDiagonalizable2x2,
+  matrixPower2x2,
+} from "./diagonalization";
+export type {
+  Diagonalization2x2,
+  EigenvalueMultiplicity,
+} from "./diagonalization";
+
+export {
   STANDARD_BASIS,
   changeOfBasisMatrix,
   coordinatesInBasis,

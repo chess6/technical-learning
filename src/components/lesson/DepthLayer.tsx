@@ -22,7 +22,17 @@ export function DepthLayer({ layer }: DepthLayerProps) {
     <details className="depth-layer" data-kind={layer.kind}>
       <summary className="depth-layer__summary">
         <span className="depth-layer__kind">{KIND_LABEL[layer.kind]}</span>
-        <span className="depth-layer__title">{layer.title}</span>
+        {/*
+          Titles are KaTeX-in-prose, exactly like section titles, formal-block
+          labels and the body below. Rendering them as plain text printed the
+          delimiters literally — "$P$ and $D$ are not unique" — across nine
+          lessons. The content validator already feeds every `$...$` fragment in
+          a layer title to KaTeX, so the data was always authored as math; only
+          this one span failed to render it.
+        */}
+        <span className="depth-layer__title">
+          <ProseWithMath text={layer.title} />
+        </span>
       </summary>
       <div className="depth-layer__body">
         <ProseWithMath text={layer.body} />
