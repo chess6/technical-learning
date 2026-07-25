@@ -113,9 +113,9 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 | L5 | Solution sets & homogeneous systems | Every solution set is *one particular solution + all null directions*; linear vs affine. | built | `solution-sets` |
 | L6 | Matrix composition & inverses | Composition needs no new rule: column \(j\) of \(AB\) is \(A\) applied to column \(j\) of \(B\); an inverse asks that question backwards, and exists only when nothing collapsed. | built | `matrix-composition` |
 | L7 | Determinants | A geometric/algebraic **detector of invertibility** (signed area/volume scale), not the first sighting of collapse. | built | `determinants` |
-| L8 | Subspaces, column space, null space, rank | **Column space controls possible outputs; null space controls non-uniqueness; rank counts independent output directions.** | future | `subspaces-rank` |
-| L9 | Dimension & rank–nullity | Conservation: input dimensions either **survive** into the output or **disappear** into the null space. | future | `rank-nullity` |
-| L10 | Change of basis | Pays off L1: the *same vector/map* wears different coordinates in a different basis. | future | `change-of-basis` |
+| L8 | Subspaces, column space, null space, rank | Every question asked since L3 was about one of **two** subspaces, in **different** spaces: the column space decides existence, the null space decides uniqueness, and rank counts what survived. | built | `subspaces-rank` |
+| L9 | Dimension & rank–nullity | Conservation: \(n\) is a budget, every input dimension has exactly one fate, and because the total is fixed the law **forbids** whole classes of maps. | built | `rank-nullity` |
+| L10 | Change of basis | A matrix was never the map — it is a **description** in a basis nobody mentioned; naming the choice makes \(P\)'s direction derivable and \([A]_B = P^{-1}AP\) readable. | built | `change-of-basis` |
 | L11 | Eigenvectors & diagonalization | Directions a map only *scales*; diagonalizing = choosing the basis where the map is pure scaling. | built (intro) | `eigenvectors` |
 | L12 | Orthogonality & projections | Right angles give the *best approximation*; projection is "closest point in a subspace." | future | `orthogonality` |
 | L13 | Least squares | When \(A\mathbf{x}=\mathbf{b}\) has *no* solution, project \(\mathbf{b}\) onto the column space and solve that. | future | `least-squares` |
@@ -129,11 +129,11 @@ linear-algebra dependency order.
 
 ## 3. Per-lesson central insight & content
 
-The `future` lessons (L8–L10, L12–L14) are the ones still to be authored;
-Ch 0–L7 and L11 (intro) are built (see their lesson definitions) — the built
-path is now **contiguous through L7**. L4/L5/L6/L7 are detailed below for the
-record. Each future lesson must lead with its insight, reuse a prior example
-wherever possible, and preserve semantic roles/notation.
+The `future` lessons (L12–L14) are the ones still to be authored; Ch 0–L11 are
+built (see their lesson definitions), so the built path is now **contiguous
+through L11** — a learner walking it skips no declared prerequisite. L4–L10 are
+detailed below for the record. Each future lesson must lead with its insight,
+reuse a prior example wherever possible, and preserve semantic roles/notation.
 
 ### L4 — Elimination as reversible constraint manipulation *(built)*
 
@@ -194,34 +194,54 @@ multiplicativity via elementary matrices; determinant by elimination (product of
 the pivots); and the same reading one dimension up as signed volume. **Deferred:**
 the general \(n\times n\) cofactor/multilinear definition.
 
-### L8 — Subspaces, column space, null space, rank
+### L8 — Subspaces, column space, null space, rank *(built)*
 
-**Insight:** formalize what was used informally. **Column space controls possible
-outputs; null space controls non-uniqueness; rank measures independent output
-directions.**
+**Insight (as built):** every question the learner has asked about a matrix since
+L3 was a question about one of exactly **two** subspaces, and they live in
+**different** spaces — the column space in the output space decides *existence*,
+the null space in the input space decides *uniqueness*. In the plane those could
+only be "everything" or "a line", so collapse looked binary; in \(\mathbb{R}^3\)
+it becomes a **count**.
 
-Teach: subspace definition; column space = span of columns = reachable outputs;
-null space = inputs sent to \(\mathbf{0}\); rank as dimension of the column
-space. Directly connects L3's consistency/uniqueness to named objects.
+Teaches: subspace as a flat through the origin; \(\operatorname{Col}(A)\subseteq\mathbb{R}^m\)
+and \(\operatorname{Null}(A)\subseteq\mathbb{R}^n\); rank as the pivot count, with
+a basis of \(\operatorname{Col}(A)\) taken from **\(A\)'s own columns**, not its
+reduced form; invertibility and \(\det\ne0\) restated as "rank is maximal".
+**This is the abstraction return L6 and L7 both deferred** — the first lesson to
+leave \(\mathbb{R}^2\). Rank–nullity is *observed* here and proved in L9; row
+rank = column rank is stated only.
 
-### L9 — Dimension & rank–nullity
+### L9 — Dimension & rank–nullity *(built)*
 
-**Insight (conservation):** input dimensions either **survive** into the output
-(rank) or **disappear** into the null space (nullity): \(\operatorname{rank} +
-\operatorname{nullity} = n\).
+**Insight (as built):** \(n\) is a **budget** the map spends. Each input
+dimension has exactly one fate — survive into the image, or collapse into the
+null space — so \(\operatorname{rank}+\operatorname{nullity}=n\) is a
+conservation law, not column bookkeeping. Because the total is fixed, the two
+counts are one measurement, and the law **forbids** whole classes of maps.
 
-Teach it *visually* as conservation — the ideal payoff of the "moving space"
-language: watch a dimension collapse and account for exactly where it went.
+Teaches: \(\dim\) (well-definedness stated); the theorem with its proof (a basis
+extension of the null space, whose images form a basis of the image);
+\(\operatorname{rank}\le\min(m,n)\); no bigger-to-smaller map is one-to-one;
+no smaller-to-bigger map is onto; one-to-one \(\iff\) onto **only** for square
+maps. Uses **non-square** maps throughout — with \(m=n\) the law says nothing L8
+did not. Computes geometric multiplicity as \(n-\operatorname{rank}(A-\lambda I)\),
+which is the object L11 needs.
 
-### L10 — Change of basis
+### L10 — Change of basis *(built)*
 
-**Insight:** pays off the L1 distinction between a **vector** and its
-**coordinates** — the same object/map has different coordinates in a different
-basis.
+**Insight (as built):** a matrix was never the map and a coordinate list was
+never the vector — both are **descriptions** relative to a basis, and since L2
+that basis has silently been the standard one. Naming the choice makes \(P\)'s
+direction *derivable* from its columns and makes \([A]_B=P^{-1}AP\) a readable
+sentence: translate, act, translate back.
 
-Teach: coordinate vectors in a basis; change-of-basis matrix; how a map's matrix
-transforms under a change of basis (foreshadows diagonalization as "the basis
-where the matrix is diagonal").
+Teaches: \([\mathbf{x}]_B\) and \(P\); \(\mathbf{x}=P[\mathbf{x}]_B\);
+the similarity theorem, **derived** from what \([A]_B\) must do; invariance of
+\(\det\), rank, nullity and trace — with the **converse explicitly denied**; and
+the diagonal description in a basis of scaled directions. Reuses L1's exact
+numbers so no new arithmetic competes with the new interpretation, and L11's
+matrix so the payoff lands where the next lesson opens. Orthonormal bases are
+L12's and are deliberately excluded.
 
 ### L11 — Eigenvectors & diagonalization *(built intro; full treatment later)*
 

@@ -121,9 +121,9 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 | Topic | P1 bar | P2 bar | P3 bar | Current spine **[repo]** | Missing / deferred |
 | --- | --- | --- | --- | --- | --- |
-| Subspaces, column/null space, rank (L8) | Find bases of the four subspaces (E3). [ext-1806] | + rank in applications; numerical rank (E4). | + subspace proofs; general fields (E6). | **Future** (`subspaces-rank`). | Whole lesson unbuilt (foreshadowed in L3). |
-| Dimension & rank–nullity (L9) | State & use rank + nullity = n (E3). | + interpret for data/networks (E4). | + prove rank–nullity (E6). | **Future** (`rank-nullity`). | Whole lesson unbuilt. |
-| Change of basis (L10) | Coordinates in a new basis (E3). | + camera/frame transforms (E4). | + how a map's matrix transforms; similarity (E6). | **Future** (`change-of-basis`). | Whole lesson unbuilt. |
+| Subspaces, column/null space, rank (L8) | Find bases of the four subspaces (E3). [ext-1806] | + rank in applications; numerical rank (E4). | + subspace proofs; general fields (E6). | **Built**; two spaces in their correct ambient spaces, rank as a count in \(\mathbb{R}^3\), basis of \(\operatorname{Col}(A)\) from \(A\)'s own columns, subspace proof offered unscored. | Row/left-null space (only two of the four subspaces); numerical rank; **learner-scored** subspace proofs (P3 — prepared, not attained). |
+| Dimension & rank–nullity (L9) | State & use rank + nullity = n (E3). | + interpret for data/networks (E4). | + prove rank–nullity (E6). | **Built**; proof shown in full, non-square maps throughout, impossibility results, geometric multiplicity computed. | Data/network interpretation (P2); **learner-constructed** proof scored (P3 — prepared, not attained). |
+| Change of basis (L10) | Coordinates in a new basis (E3). | + camera/frame transforms (E4). | + how a map's matrix transforms; similarity (E6). | **Built**; \(P\)'s direction derived from its columns, \([A]_B = P^{-1}AP\) derived, invariants with the converse denied, diagonal description in an adapted basis. | Camera/frame applications (P2); orthonormal bases and \(P^{-1}=P^{\mathsf T}\) (deferred to L12). |
 
 ### Spectra, geometry, data (L11–L14)
 
@@ -140,15 +140,19 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 Distilling the tables — honest, **[repo]**-derived:
 
-1. **9 of 15 spine nodes are built** (Ch0, L1, L2, L3, L4, L5, L6, L7,
-   L11-intro); the rest of the structural core (L8, L9, L10) and the
-   geometry/data arc (L12, L13, L14) are `future`. No profile is *complete*
-   yet; the built prefix best serves **P1 S1–S3 in 2D**. With L6 built, the
-   built path is now **contiguous through L7** — a learner walking it no longer
-   skips a declared prerequisite between Solution Sets and Determinants.
-2. **Dimensionality ceiling.** Content lives in \(\mathbb{R}^2\) (with one curated
-   3D eigen extension and, since the L7 deepening, a 3D volume reading of the
-   determinant). P2 and P3 both require confident work in \(\mathbb{R}^n\)
+1. **12 of 15 spine nodes are built** (Ch0, L1–L10, L11-intro); only the
+   geometry/data arc (L12, L13, L14) is `future`. The built path is now
+   **contiguous from Ch 0 through L11** — a learner walking it skips no declared
+   prerequisite anywhere. No profile is *complete* yet; the built prefix best
+   serves **P1 S1–S3**, now with genuine \(\mathbb{R}^3\) and non-square content
+   in L8–L9. **The one built node that does not meet its spine row is L11**,
+   which the spine names "Eigenvectors & diagonalization" but which stops before
+   diagonalization.
+2. **Dimensionality ceiling — substantially raised, not removed.** L8 works in
+   \(\mathbb{R}^3\) and L9 in non-square shapes up to \(2\times4\), which is where
+   rank and the conservation law have real content; L7 reads volume in
+   \(\mathbb{R}^3\). The remaining ceiling is *general* \(n\): there is still no
+   drill at \(n > 4\), and abstract vector spaces are untouched. P2 and P3 both require confident work in \(\mathbb{R}^n\)
    and, for P3, abstract spaces. The [abstraction path](../../product/semantic-page-grammar.md#4-mathematical-object-and-representation-standard)
    exists precisely to lift this ceiling per lesson.
 3. **Computational-fluency volume (D3).** Improving but still short. L5, L6 and

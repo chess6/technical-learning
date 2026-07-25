@@ -1068,6 +1068,76 @@ describe("Change of Basis lesson (spine L10)", () => {
   });
 });
 
+describe("the structure module actually prepares Eigenvectors", () => {
+  const eigen = () => getLessonById("eigenvectors")!;
+
+  it("no longer cites determinants as 'Lesson 3'", () => {
+    // Determinants is spine L7 and now prints as Lesson 7. A stale reference is
+    // worse than none: it sends the learner to the wrong lesson.
+    const text = JSON.stringify(eigen());
+    expect(text).not.toMatch(/Lesson 3/);
+  });
+
+  it("reads an eigenspace as a null space, with a dimension", () => {
+    const edge = eigen().sections.find((s) => s.id === "edge")!;
+    const connections = (edge.layers ?? []).filter((l) => l.kind === "connection");
+    const text = connections.map((l) => `${l.title} ${l.body}`).join(" ");
+    expect(text).toMatch(/\\operatorname\{Null\}\(A - \\lambda I\)/);
+    expect(text.toLowerCase()).toMatch(/geometric multiplicity/);
+    expect(text).toMatch(/n - \\operatorname\{rank\}/);
+  });
+
+  it("names diagonalization as change of basis rather than a new technique", () => {
+    const edge = eigen().sections.find((s) => s.id === "edge")!;
+    const text = (edge.layers ?? []).map((l) => `${l.title} ${l.body}`).join(" ");
+    expect(text).toMatch(/P\^\{-1\}AP/);
+    expect(text.toLowerCase()).toMatch(/change of basis/);
+  });
+
+  it("settles the repeated-eigenvalue case by COMPUTING, not cautioning", () => {
+    const callout = (eigen().callouts ?? []).find((c) => c.id === "repeated-not-two")!;
+    // The old resolve said "ask the nullspace"; it must now say how to get it.
+    expect(callout.resolve ?? "").toMatch(/\\operatorname\{rank\}/);
+    const item = eigen().exercises!.find(
+      (ex) => ex.id === "eigen-geometric-multiplicity",
+    );
+    expect(item, "the distinction must be graded, not only described").toBeDefined();
+  });
+
+  it("grades the diagonalization payoff the new lessons unlocked", () => {
+    const item = eigen().exercises!.find(
+      (ex) => ex.id === "eigen-diagonalization-is-change-of-basis",
+    );
+    expect(item).toBeDefined();
+    expect(item!.tier).toBe("transfer");
+  });
+
+  it("keeps the three new lessons contiguous between determinants and eigenvectors", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.slice(ids.indexOf("determinants"), ids.indexOf("eigenvectors") + 1)).toEqual([
+      "determinants",
+      "subspaces-rank",
+      "rank-nullity",
+      "change-of-basis",
+      "eigenvectors",
+    ]);
+  });
+
+  it("hands each prerequisite forward exactly once, without duplicating it", () => {
+    // L8 introduces the two spaces; L9 the count; L10 the basis change. None of
+    // them should re-teach another's headline result.
+    const l9 = getLessonById("rank-nullity")!;
+    const l10 = getLessonById("change-of-basis")!;
+    const l9Formals = (l9.formalBlocks ?? []).map((f) => f.id);
+    const l10Formals = (l10.formalBlocks ?? []).map((f) => f.id);
+    expect(l9Formals).not.toContain("def-two-spaces");
+    expect(l10Formals).not.toContain("thm-rank-nullity");
+    // …and each does introduce its own.
+    expect(l9Formals).toContain("thm-rank-nullity");
+    expect(l10Formals).toContain("thm-similarity");
+  });
+});
+
 describe("Karatsuba lesson wiring", () => {
   it("resolves scene, explorer, and shared examples without a matrix exampleId", () => {
     const lesson = getLessonById("karatsuba")!;

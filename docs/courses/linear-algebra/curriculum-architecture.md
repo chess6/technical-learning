@@ -72,10 +72,10 @@ Two orderings coexist today and must not be confused:
 | L5 | Solution sets & homogeneous systems | `solution-sets` | built | LA | **Lesson 5** |
 | L6 | Matrix composition & inverses | `matrix-composition` | built | LA | **Lesson 6** |
 | L7 | Determinants | `determinants` | built | LA | **Lesson 7** |
-| L8 | Subspaces, column space, null space, rank | `subspaces-rank` | future | LA | — |
-| L9 | Dimension & rank–nullity | `rank-nullity` | future | LA | — |
-| L10 | Change of basis | `change-of-basis` | future | LA | — |
-| L11 | Eigenvectors & diagonalization | `eigenvectors` | built (intro) | LA | **Lesson 8** |
+| L8 | Subspaces, column space, null space, rank | `subspaces-rank` | built | LA | **Lesson 8** |
+| L9 | Dimension & rank–nullity | `rank-nullity` | built | LA | **Lesson 9** |
+| L10 | Change of basis | `change-of-basis` | built | LA | **Lesson 10** |
+| L11 | Eigenvectors & diagonalization | `eigenvectors` | built (intro) | LA | **Lesson 11** |
 | L12 | Orthogonality & projections | `orthogonality` | future | LA | — |
 | L13 | Least squares | `least-squares` | future | LA | — |
 | L14 | Singular value decomposition | `svd` | future | LA | — |
@@ -211,12 +211,12 @@ edge set is **identical** to the course-spine dependency fence
 
 ### 2.3 Ordering notes
 
-- **Several future nodes are DAG-ready; sequencing, not prerequisites, orders
-  them.** With L6 now built, the future nodes whose hard prerequisites are all
-  built are `subspaces-rank` (L8; needs L3+L6), `change-of-basis` (L10; needs
-  L1+L2), and `orthogonality` (L12; needs L1). The DAG permits any of them next;
-  the spine builds L8 first (earliest gap, unblocks L9) and defers L10/L12 to
-  their narrative slots. See §6.
+- **The structural core is complete.** L8, L9 and L10 are built, so every hard
+  prerequisite edge into `eigenvectors` (L11) is now satisfied: `determinants →
+  eigen` and `change-of-basis → eigen` both resolve to built lessons. The
+  remaining future nodes are the geometry/data arc `orthogonality` (L12),
+  `least-squares` (L13) and `svd` (L14); of these only L12 is DAG-ready today
+  (it needs L1 alone), and L13/L14 depend on it. See §6.
 - **`determinants` (L7) now ships after its prerequisite `matrix-composition`
   (L6) — obligation discharged.** L6 is built and L7 was deepened against it: the
   determinant lesson's motivating question is "Lesson 6 left you with a number you
@@ -374,57 +374,38 @@ closed by the time they were read.
 
 ## 6. Next-lesson recommendation
 
-`matrix-composition` (L6) is now **built**, so the former recommendation is
-discharged and the built path is contiguous through L7. With L6 in place,
-`determinants` (L7) was also deepened to the current instructional standard: it
-now opens on the number L6 would not let the learner divide by, rather than
-introducing collapse cold (the §2.3 obligation, discharged).
+L8, L9 and L10 are now **built**, so the structural core is complete and the
+built path is contiguous from Ch 0 through L11. Every hard prerequisite edge into
+`eigenvectors` is satisfied, and the three new lessons hand it concrete
+machinery: an eigenspace is `Null(A − λI)` (L8), its dimension is
+`n − rank(A − λI)` (L9), and diagonalization is a change of basis (L10).
 
-**Recommendation: build `subspaces-rank` (L8) next.** This is a recommendation,
-**not** an authorization — promoting a `future` node still requires an explicit
-reopen (scope note above; `project-core` Scope).
+**Recommendation: deepen `eigenvectors` (L11) before opening L12.** This is a
+recommendation, not an authorization.
 
-### Why L8 (for)
+### Why L11 before L12
 
-- **Its hard prerequisites are now all built.** L8 needs `matrix-composition`
-  (L6) and `systems` (L3) (§2.1). L6 was the blocker; it no longer is.
-- **It is the earliest remaining spine gap**, so building it keeps the built
-  prefix contiguous rather than opening a second hole.
-- **Three built lessons are already waiting on its vocabulary.** L3 discusses
-  reachability without naming the column space; L5 uses \(\operatorname{Null}(A)\)
-  and free variables without naming rank or nullity; L6 and the deepened L7 both
-  say "the plane collapsed" where the precise statement is \(\operatorname{rank} < 2\).
-  L8 converts three informal usages into named objects — the strengthened-edge
-  pattern (VISION §14) rather than a new isolated node.
-- **It is the recorded destination of two deferrals.** Both the L6 mastery
-  contract and the deepened L7 record their \(\mathbb{R}^2\)-only scope with L8
-  named as the owner of the abstraction return. Building L8 is how those
-  deferrals get discharged with evidence instead of staying promises.
-- **It unblocks L9 (rank–nullity)**, the conservation-law payoff the spine treats
-  as the structural core's climax.
+- **It is the only *built* lesson still marked "intro".** The spine promises
+  "eigenvectors **& diagonalization**"; the built lesson stops before
+  diagonalization. Every other built node meets its spine row.
+- **Its prerequisites just landed.** Until L10 existed, diagonalization could
+  only be described. It can now be derived.
+- **L12–L14 do not depend on it, but the course's credibility does.** Opening a
+  new arc while the previous one has a known shortfall widens the gap the
+  benchmark already records.
 
-### Why not L8 / cautions
+### Then L12 `orthogonality`
 
-- **It is the first lesson whose content genuinely wants \(\mathbb{R}^n\).**
-  "Column space controls outputs" is thin in the plane, where the only cases are a
-  point, a line, or everything. The lesson must either lift the dimension (new
-  visual grammar, higher risk) or be explicit that it shows the \(n\)-dimensional
-  statement through a 2-D window. Settle this in Mode B, not during implementation.
-- **"Four subspaces" is a coverage temptation.** [ext-1806] expects bases for all
-  four; the spine's insight needs only column space, null space, and rank. Fix the
-  scope in the mastery contract rather than drifting into a survey.
-- **The §5 glossary/catalog drift is unaddressed.** The glossary term list is
-  hand-maintained rather than derived from the §3 catalog; L6 required a manual
-  repointing that nothing would have caught. L8 introduces four more first-class
-  named objects, so it is a natural place either to wire the two together or to
-  add a test that they agree.
+The earliest remaining spine gap, and DAG-ready (needs L1 only). It unblocks both
+L13 and L14, and it owns two deferrals this module recorded: the relationship
+between subspaces at right angles (deferred by L8's "not perpendicular" caveat)
+and orthonormal bases with `P⁻¹ = Pᵀ` (deferred by L10).
 
-### Verdict
+### Standing cautions
 
-When the next LA lesson is reopened, build **L8 `subspaces-rank`**: it is the
-unique next spine node, its prerequisites are now built, it names three ideas
-that three built lessons already use informally, and it is the recorded owner of
-the abstraction-return deferrals from L6 and L7. **Do not bake an L-number into
-any id or fixture** (§1.1), reserve the §3 concept ids at authoring time, and
-complete [quality/lesson-correctness-checklist.md](../../quality/lesson-correctness-checklist.md)
-plus the spine's promotion checklist (`future → built`).
+- **Do not bake an L-number into any id or fixture** (§1.1). Building L8–L10 moved
+  `eigenvectors` 8 → 11 and cost exactly three test assertions, because nothing
+  else encodes the number.
+- **The §5 glossary/catalog drift is still open**: the glossary term list is
+  hand-maintained rather than derived from the §3 catalog. L8–L10 introduced four
+  more first-class concepts without a test that the two agree.

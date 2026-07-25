@@ -1,4 +1,5 @@
 import type { LessonDefinition } from "./types";
+import { EXERCISE_SEQUENCE_ID } from "./capabilities";
 
 export const eigenvectorsLesson: LessonDefinition = {
   id: "eigenvectors",
@@ -34,7 +35,7 @@ export const eigenvectorsLesson: LessonDefinition = {
       body: "Apply a matrix to a fan of vectors. Most tips swing off their original rays. A few stay on the same line through the origin — those special directions are eigenvectors, scaled by an eigenvalue $\\lambda$ via $A\\mathbf{v}=\\lambda\\mathbf{v}$. The zero vector is never an eigenvector.",
       equation: "A\\mathbf{v} = \\lambda\\mathbf{v}",
       observation:
-        "An eigenvalue of $-1$ reverses the arrow while keeping it on the same line. An eigenvalue of $0$ collapses length the way Lesson 3's determinant collapsed area.",
+        "An eigenvalue of $-1$ reverses the arrow while keeping it on the same line. An eigenvalue of $0$ collapses length the way Lesson 7's determinant collapsed area.",
       layers: [
         {
           kind: "connection",
@@ -54,9 +55,14 @@ export const eigenvectorsLesson: LessonDefinition = {
       body: "A scalar matrix $A=\\lambda I$ makes every nonzero direction an eigenvector. A defective matrix can have a repeated $\\lambda$ with only one eigendirection — do not invent a second. A pure rotation has no real eigenvectors (complex eigenvalues may still exist).",
       layers: [
         {
-          kind: "looking-ahead",
-          title: "Toward change of basis",
-          body: "When a matrix has a full set of eigendirections, those directions become a coordinate language that makes the map look diagonal — the seed of diagonalization and change of basis.",
+          kind: "connection",
+          title: "An eigenspace is a null space — so it has a dimension",
+          body: "The set of eigenvectors for a given $\\lambda$, together with $\\mathbf{0}$, is exactly $\\operatorname{Null}(A - \\lambda I)$ — a subspace in the sense of Lesson 8. So it has a **dimension**, called the *geometric multiplicity*, and Lesson 9 computes it without any guesswork: $\\dim\\operatorname{Null}(A - \\lambda I) = n - \\operatorname{rank}(A - \\lambda I)$. That number, not intuition, decides whether a repeated $\\lambda$ gives one line or a whole plane of directions.",
+        },
+        {
+          kind: "connection",
+          title: "And a full set of eigendirections is a basis — Lesson 10's payoff",
+          body: "When the eigendirections are numerous and independent enough to form a basis, Lesson 10 says what happens: in that basis the map's matrix is $P^{-1}AP$, and because each basis vector is merely scaled, that matrix is **diagonal**. Diagonalization is not a new technique — it is change of basis, applied to the basis this lesson hunts for.",
         },
         {
           kind: "math-note",
@@ -102,8 +108,8 @@ export const eigenvectorsLesson: LessonDefinition = {
         },
         {
           kind: "connection",
-          title: "Why det(A − λI) = 0? — determinant collapse from Lesson 3",
-          body: "A nonzero direction can land on $\\mathbf{0}$ only if $A-\\lambda I$ flattens the plane. In Lesson 3 that was exactly what $\\det=0$ meant: the map collapses a dimension. So the eigenvalues are the $\\lambda$ that make the auxiliary map singular.",
+          title: "Why det(A − λI) = 0? — determinant collapse from Lesson 7",
+          body: "A nonzero direction can land on $\\mathbf{0}$ only if $A-\\lambda I$ flattens the plane. In Lesson 7 that was exactly what $\\det=0$ meant: the map collapses a dimension — and by Lesson 8 it means $\\operatorname{Null}(A-\\lambda I) \\ne \\{\\mathbf{0}\\}$, which is precisely the demand that a nonzero eigenvector exist. So the eigenvalues are the $\\lambda$ that make the auxiliary map singular.",
         },
       ],
     },
@@ -138,7 +144,7 @@ export const eigenvectorsLesson: LessonDefinition = {
       confront:
         "A defective matrix can have a repeated $\\lambda$ with only one eigendirection — do not invent a second.",
       resolve:
-        "Ask the nullspace of $A-\\lambda I$: sometimes it is a line, sometimes the whole plane (scalar case).",
+        "Do not guess — **compute**. The eigenspace is $\\operatorname{Null}(A-\\lambda I)$, and Lesson 9 gives its dimension as $n - \\operatorname{rank}(A-\\lambda I)$. For $\\begin{bmatrix} 3 & 1 \\\\ 0 & 3\\end{bmatrix}$ with $\\lambda = 3$: $A - 3I = \\begin{bmatrix} 0 & 1 \\\\ 0 & 0\\end{bmatrix}$ has rank $1$, so the eigenspace has dimension $2 - 1 = 1$ — one line, defective. For $3I$ the shifted matrix is $\\mathbf{0}$, rank $0$, so the dimension is $2$: the whole plane.",
     },
   ],
   exercises: [
@@ -180,7 +186,7 @@ export const eigenvectorsLesson: LessonDefinition = {
         interpretation:
           "Two real stretch factors along two different lines — one axis, one slanted.",
         connection:
-          "Zero of the characteristic determinant is Lesson 3's collapse idea applied to $A-\\lambda I$.",
+          "Zero of the characteristic determinant is Lesson 7's collapse idea applied to $A-\\lambda I$ — equivalently, Lesson 8's statement that $\\operatorname{Null}(A-\\lambda I)$ is more than the origin.",
       },
     },
     {
@@ -228,6 +234,62 @@ export const eigenvectorsLesson: LessonDefinition = {
         connection:
           "Contrast with the scalar case, where the eigenspace is the whole plane.",
       },
+    },
+    {
+      // Uses Lesson 9's rank–nullity to SETTLE the repeated-eigenvalue case that
+      // this lesson previously could only name. The prerequisite is now built, so
+      // the distinction is computed rather than asserted.
+      id: "eigen-geometric-multiplicity",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
+      tier: "drill",
+      prompt:
+        "Two matrices, one repeated eigenvalue each. Decide how many independent eigendirections each really has — by computing, not by looking.",
+      config: {
+        steps: [
+          {
+            kind: "numeric",
+            prompt:
+              "For $A=\\begin{bmatrix} 3 & 1 \\\\ 0 & 3 \\end{bmatrix}$ and $\\lambda = 3$, compute $\\operatorname{rank}(A - 3I)$.",
+            expected: 1,
+            explanation:
+              "$A - 3I = \\begin{bmatrix} 0 & 1 \\\\ 0 & 0\\end{bmatrix}$: one nonzero row, so rank $1$.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "So what is $\\dim\\operatorname{Null}(A - 3I)$ — the number of independent eigendirections for $\\lambda = 3$?",
+            expected: 1,
+            explanation:
+              "By rank–nullity (Lesson 9), $2 - 1 = 1$. The eigenvalue repeats twice in the characteristic polynomial but supplies only ONE line: the matrix is defective.",
+          },
+          {
+            kind: "numeric",
+            prompt:
+              "Now $B = \\begin{bmatrix} 3 & 0 \\\\ 0 & 3 \\end{bmatrix}$, also with $\\lambda = 3$. What is $\\dim\\operatorname{Null}(B - 3I)$?",
+            expected: 2,
+            explanation:
+              "$B - 3I = \\mathbf{0}$, which has rank $0$, so the nullity is $2 - 0 = 2$: every direction is an eigendirection. Same repeated eigenvalue as $A$, opposite answer — and the rank told you which without any hunting.",
+          },
+        ],
+      },
+    },
+    {
+      // The Lesson 10 payoff, made explicit: diagonalization IS change of basis.
+      id: "eigen-diagonalization-is-change-of-basis",
+      type: "multiple-choice",
+      tier: "transfer",
+      prompt:
+        "$A=\\begin{bmatrix} 3 & 1 \\\\ 0 & 2 \\end{bmatrix}$ has eigendirections $(1,0)$ and $(-1,1)$. Taking those as a basis $B$, what is $[A]_B = P^{-1}AP$?",
+      choices: [
+        "$\\begin{bmatrix} 3 & 1 \\\\ 0 & 2 \\end{bmatrix}$ — unchanged",
+        "$\\begin{bmatrix} 3 & 0 \\\\ 0 & 2 \\end{bmatrix}$ — diagonal, with the eigenvalues on the diagonal",
+        "$\\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$ — the identity",
+        "It cannot be computed without knowing $P^{-1}$ explicitly",
+      ],
+      correctChoice: 1,
+      explanation:
+        "In that basis each basis vector is merely scaled — $A(1,0) = 3(1,0)$ and $A(-1,1) = 2(-1,1)$ — so each column of $[A]_B$ has a single nonzero entry: its own eigenvalue. Diagonalization is not a separate technique; it is Lesson 10's change of basis applied to a basis of eigenvectors. (And by Lesson 10's invariants, $\\det$ and trace are unchanged: $6$ and $5$ either way.)",
     },
     {
       id: "eigen-drag",
