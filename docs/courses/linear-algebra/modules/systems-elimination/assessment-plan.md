@@ -110,11 +110,14 @@ Any accountable abstraction-return whose **owner is this module**
 | Deferred from | Destination (general case) | Item | Result |
 | --- | --- | --- | --- |
 | L5 solution-sets | operate on a null space via free-variable count in a **fresh** system (2D/3D-by-count) | `mod-transfer-solset-fresh` | **built** (G) · not administered |
-| L5 solution-sets → **structure module** | full \(\mathbb{R}^n\) null space & rank–nullity | *(owned by the structure module L8/L9; not dischargeable here — cross-referenced only)* | out of module scope |
+| L5 solution-sets → **structure module** | full \(\mathbb{R}^n\) null space & rank–nullity | *(owned by the structure module L8/L9; not dischargeable here)* → now [`mod-struct-rank-nullity-ledger`](../structure/assessment-plan.md) | **accepted by the structure module** (built, not administered) |
 
-> The **full \(\mathbb{R}^n\)** null-space/rank–nullity return is owned by the future
+> The **full \(\mathbb{R}^n\)** null-space/rank–nullity return is owned by the
 > **structure module**, not this one; this module discharges only the fresh-system,
-> free-variable-count level. Recorded so the deferral has an owner and destination.
+> free-variable-count level. That module now **exists and has accepted the
+> deferral** ([assessment plan](../structure/assessment-plan.md)) with a produced
+> \(3\times4\) ledger item — built, not administered, and with its own honest
+> ceiling at \(n = 4\) rather than general \(n\).
 
 ## The assessment set (cumulative · interleaved · spaced)
 

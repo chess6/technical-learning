@@ -21,6 +21,7 @@
 
 import type { SolutionSetConfig } from "./capabilities";
 import { ELIMINATION_ID, SELF_CHECK_ID, SOLUTION_SET_ID } from "./capabilities";
+import { STRUCTURE_MODULE_ITEMS } from "./structureModuleItems";
 import type { ExerciseDefinition } from "./types";
 
 /* -------------------------------------------------------------------------- */
@@ -533,8 +534,12 @@ const modMockProof: ExerciseDefinition = {
   },
 };
 
-/** All module items (Package G + H spaced + I mock), in a stable authored order. */
-export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
+/**
+ * The systems–elimination module's own items (Package G + H spaced + I mock), in
+ * a stable authored order. Kept as its own export so per-module tests can assert
+ * exact membership without being disturbed by other modules' items.
+ */
+export const SYSTEMS_ELIMINATION_ITEMS: readonly ExerciseDefinition[] = [
   modSelectMethod,
   modTransferClassify,
   modTransferSolsetFresh,
@@ -550,4 +555,16 @@ export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   modMockCompute,
   modMockClassify,
   modMockProof,
+];
+
+/**
+ * Every module-owned item across every module, in module order. This is what the
+ * runner resolves against and what the assessment manifest, the evidence-ceiling
+ * audit, the cue-lint and the grading-contract coverage test all iterate — so a
+ * new module's items are governed by the same safeguards the moment they are
+ * added here.
+ */
+export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
+  ...SYSTEMS_ELIMINATION_ITEMS,
+  ...STRUCTURE_MODULE_ITEMS,
 ];
