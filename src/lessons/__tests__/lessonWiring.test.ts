@@ -594,6 +594,171 @@ describe("Matrix Composition & Inverses lesson (spine L6)", () => {
   });
 });
 
+describe("Determinants lesson, deepened to the instructional standard", () => {
+  it("keeps its existing guided scene and explorer (the visualization was preserved)", () => {
+    const lesson = getLessonById("determinants")!;
+    expect(lesson.guidedSceneId).toBe("determinant-area-scaling");
+    expect(lesson.explorationId).toBe("determinant-area-scaling");
+    expect(lesson.exampleId).toBe("shear-2-1");
+    expect(hasGuidedScene("determinant-area-scaling")).toBe(true);
+    expect(getExplorer("determinant-area-scaling")).toBeTypeOf("function");
+  });
+
+  it("DERIVES ad − bc instead of stating it", () => {
+    const lesson = getLessonById("determinants")!;
+    const derive = lesson.sections.find((s) => s.id === "derive");
+    expect(derive, "a derivation section must exist").toBeDefined();
+    // The bounding-box dissection is the derivation the lesson claims to give.
+    expect(derive!.equation).toMatch(/\(a\+b\)\(c\+d\)/);
+    expect(derive!.body.toLowerCase()).toMatch(/rectangle/);
+    const worked = (lesson.workedExamples ?? []).map((w) => w.id);
+    expect(worked).toContain("wex-derive-area");
+  });
+
+  it("carries the formal results a P2 lesson owes", () => {
+    const lesson = getLessonById("determinants")!;
+    const formals = new Map(
+      (lesson.formalBlocks ?? []).map((f) => [f.id, f] as const),
+    );
+    expect(formals.has("def-determinant")).toBe(true);
+    expect(formals.get("thm-invertibility")!.kind).toBe("theorem");
+    expect(formals.get("thm-multiplicative")!.kind).toBe("theorem");
+    expect(formals.get("prop-row-ops")!.kind).toBe("proposition");
+    // Each theorem must carry its justification, not just its statement.
+    for (const id of ["thm-multiplicative", "prop-row-ops"]) {
+      const layers = formals.get(id)!.layers ?? [];
+      expect(
+        layers.some((l) => l.kind === "math-note"),
+        `${id} needs a justification layer`,
+      ).toBe(true);
+    }
+  });
+
+  it("connects det = 0 to invertibility AND to the solution count", () => {
+    const lesson = getLessonById("determinants")!;
+    const thm = (lesson.formalBlocks ?? []).find(
+      (f) => f.id === "thm-invertibility",
+    )!;
+    const statement = thm.statement.toLowerCase();
+    expect(statement).toMatch(/invertible/);
+    expect(statement).toMatch(/independen/);
+    expect(statement).toMatch(/null/);
+    expect(statement).toMatch(/exactly one solution/);
+    // The checkpoint must reach the same conclusion, not stop at "collapses".
+    expect(lesson.checkpoint!.answer.toLowerCase()).toMatch(/infinitely many/);
+  });
+
+  it("teaches determinant behaviour under composition and row operations", () => {
+    const lesson = getLessonById("determinants")!;
+    const sectionIds = lesson.sections.map((s) => s.id);
+    expect(sectionIds).toContain("multiplicative");
+    expect(sectionIds).toContain("row-ops");
+    const multiplicative = lesson.sections.find(
+      (s) => s.id === "multiplicative",
+    )!;
+    expect(multiplicative.equation).toMatch(/\\det\(AB\)/);
+    // The three row-operation effects must all be present.
+    const rowOps = (lesson.formalBlocks ?? []).find(
+      (f) => f.id === "prop-row-ops",
+    )!;
+    const text = rowOps.statement.toLowerCase();
+    expect(text).toMatch(/adding a multiple/);
+    expect(text).toMatch(/swap/);
+    expect(text).toMatch(/scal/);
+  });
+
+  it("confronts 'negative determinant means negative area' as an elicited misconception", () => {
+    const lesson = getLessonById("determinants")!;
+    const callout = (lesson.callouts ?? []).find((c) => c.id === "negative-area");
+    expect(callout, "the negative-area misconception must be staged").toBeDefined();
+    // elicit -> confront -> resolve, all three present.
+    expect(callout!.belief).toBeTruthy();
+    expect(callout!.confront).toBeTruthy();
+    expect(callout!.resolve).toBeTruthy();
+    expect(callout!.resolve!.toLowerCase()).toMatch(/orientation/);
+    // And it is checked by MEASUREMENT, not only by restating the rule.
+    const measured = lesson.exercises!.find(
+      (ex) => ex.id === "det-negative-area-measure",
+    );
+    expect(measured).toBeDefined();
+    expect((measured as { expected: number }).expected).toBe(1);
+  });
+
+  it("stages the other two determinant misconceptions", () => {
+    const lesson = getLessonById("determinants")!;
+    const ids = (lesson.callouts ?? []).map((c) => c.id);
+    expect(ids).toContain("zero-det-nonzero-matrix");
+    expect(ids).toContain("det-not-additive");
+  });
+
+  it("leaves 2×2 at least once (the abstraction return to volume)", () => {
+    const lesson = getLessonById("determinants")!;
+    const beyond = lesson.sections.find((s) => s.id === "beyond-2d");
+    expect(beyond, "the lesson must not stay entirely in 2D").toBeDefined();
+    expect(beyond!.body.toLowerCase()).toMatch(/volume/);
+    // The deferral of the general n×n case is recorded, not silently skipped.
+    const ahead = (beyond!.layers ?? []).filter(
+      (l) => l.kind === "looking-ahead",
+    );
+    expect(ahead.length).toBeGreaterThanOrEqual(1);
+    const volume = lesson.exercises!.find((ex) => ex.id === "det-volume-3d");
+    expect((volume as { expected: number }).expected).toBe(24);
+  });
+
+  it("has a practice ecology across all three tiers, not four look-alike items", () => {
+    const lesson = getLessonById("determinants")!;
+    const exercises = lesson.exercises!;
+    expect(exercises.length).toBeGreaterThanOrEqual(10);
+    const tiers = new Set(exercises.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+    // Every item is tiered — an untiered item is an unplaced item.
+    expect(exercises.every((ex) => ex.tier !== undefined)).toBe(true);
+    // Fresh instances exist (not just the worked example's numbers).
+    const ids = new Set(exercises.map((ex) => ex.id));
+    expect(ids.has("det-product-fresh")).toBe(true);
+    expect(ids.has("det-by-elimination-fresh")).toBe(true);
+    expect(ids.has("det-region-area")).toBe(true);
+    expect(ids.has("det-tiny-not-singular")).toBe(true);
+  });
+
+  it("poses a second checkpoint that predicts a composite before computing", () => {
+    const lesson = getLessonById("determinants")!;
+    const predict = (lesson.checkpoints ?? []).find(
+      (c) => c.id === "predict-composite",
+    );
+    expect(predict).toBeDefined();
+    expect(predict!.prompt.toLowerCase()).toMatch(/without computing/);
+  });
+
+  it("names its backward connections to Lessons 3–6", () => {
+    const lesson = getLessonById("determinants")!;
+    const connectionText = [
+      ...lesson.sections.flatMap((s) => s.layers ?? []),
+      ...(lesson.formalBlocks ?? []).flatMap((f) => f.layers ?? []),
+      ...(lesson.workedExamples ?? []).flatMap((w) => w.layers ?? []),
+    ]
+      .map((l) => `${l.title} ${l.body}`)
+      .join(" ")
+      .toLowerCase();
+    // The spine's requirement: determinants must reference L6's
+    // non-invertibility motivation rather than introducing collapse cold.
+    expect(connectionText).toMatch(/lesson 6/);
+    expect(connectionText).toMatch(/lesson 4|lesson 3/);
+    expect(lesson.motivatingQuestion!.toLowerCase()).toMatch(/lesson 6/);
+  });
+
+  it("has a structured summary naming the compression", () => {
+    const lesson = getLessonById("determinants")!;
+    expect(lesson.structuredSummary).toBeDefined();
+    expect(lesson.structuredSummary!.mainResult).toMatch(/\\det\(AB\)/);
+    expect(lesson.structuredSummary!.commonMistake!.toLowerCase()).toMatch(
+      /negative area/,
+    );
+  });
+});
+
 describe("Karatsuba lesson wiring", () => {
   it("resolves scene, explorer, and shared examples without a matrix exampleId", () => {
     const lesson = getLessonById("karatsuba")!;

@@ -9,7 +9,7 @@ function collectConsoleErrors(page: Page): string[] {
   return errors;
 }
 
-test("Lesson 3 loads, guided scene plays, explorer and exercises work", async ({
+test("Determinants loads, guided scene plays, explorer and exercises work", async ({
   page,
 }) => {
   const errors = collectConsoleErrors(page);
@@ -39,9 +39,13 @@ test("Lesson 3 loads, guided scene plays, explorer and exercises work", async ({
   await expect(page.getByTestId("det-value")).toHaveText("2");
 
   const practice = page.getByRole("region", { name: "Practice exercises" });
+  // Answer by CONTENT, not by position: the practice set is an ecology whose
+  // order is an authoring decision, and a position-indexed click silently
+  // breaks (or worse, silently passes on a different item) whenever it changes.
   await expect(practice.getByText("Question 1 of")).toBeVisible();
-  await practice.getByRole("button", { name: /Next question/ }).click();
-  await practice.getByRole("button", { name: /how much the transformation scales area/ }).click();
+  await practice
+    .getByRole("button", { name: /how much the transformation scales area/ })
+    .click();
   await expect(
     practice.locator('.exercise-panel__feedback[data-state="correct"]').first(),
   ).toContainText("Correct");
