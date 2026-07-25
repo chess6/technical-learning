@@ -28,6 +28,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./eliminationScene").then((m) => m.eliminationScene),
   "solution-sets": () =>
     import("./solutionSetsScene").then((m) => m.solutionSetsScene),
+  "matrix-composition": () =>
+    import("./matrixCompositionScene").then((m) => m.matrixCompositionScene),
   "determinant-area-scaling": () =>
     import("./determinantAreaScalingScene").then(
       (m) => m.determinantAreaScalingScene,

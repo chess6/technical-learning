@@ -53,7 +53,12 @@ describe("navigation is course-relative, not registry-positional", () => {
     // Chapter 0 is an intro chapter and is excluded from the numbered count.
     expect(getLessonNumber("why-linear-algebra")).toBe(0);
     expect(getLessonNumber("vectors")).toBe(1);
-    expect(getLessonNumber("eigenvectors")).toBe(7);
+    // L6 `matrix-composition` is now built, so it shifts every later badge:
+    // determinants 6 -> 7 and eigenvectors 7 -> 8. Numbers are a VIEW over the
+    // built path (curriculum-architecture 1.1); ids are the identity.
+    expect(getLessonNumber("matrix-composition")).toBe(6);
+    expect(getLessonNumber("determinants")).toBe(7);
+    expect(getLessonNumber("eigenvectors")).toBe(8);
     // Karatsuba is chapter 1 of ITS course, not the ninth linear-algebra lesson.
     expect(getLessonNumber("karatsuba")).toBe(1);
   });
@@ -104,6 +109,7 @@ describe("navigation is course-relative, not registry-positional", () => {
       "systems",
       "elimination",
       "solution-sets",
+      "matrix-composition",
       "determinants",
       "eigenvectors",
     ]);
@@ -124,7 +130,7 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
     { built: "systems" }, // L3
     { built: "elimination" }, // L4
     { built: "solution-sets" }, // L5
-    { future: "matrix-composition" }, // L6
+    { built: "matrix-composition" }, // L6
     { built: "determinants" }, // L7
     { future: "subspaces-rank" }, // L8
     { future: "rank-nullity" }, // L9

@@ -313,6 +313,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "systems",
       "elimination",
       "solution-sets",
+      "matrix-composition",
       "determinants",
       "eigenvectors",
       "karatsuba",
@@ -397,10 +398,14 @@ describe("Elimination lesson (reversible constraint manipulation)", () => {
 });
 
 describe("Solution Sets & Homogeneous Systems lesson", () => {
-  it("sits between elimination and determinants", () => {
+  it("sits between elimination and matrix composition", () => {
     const ids = lessons.map((l) => l.id);
     expect(ids.indexOf("solution-sets")).toBe(ids.indexOf("elimination") + 1);
-    expect(ids.indexOf("solution-sets")).toBe(ids.indexOf("determinants") - 1);
+    // L6 now sits between solution sets and determinants, closing the spine gap
+    // that let determinants introduce collapse cold.
+    expect(ids.indexOf("solution-sets")).toBe(
+      ids.indexOf("matrix-composition") - 1,
+    );
   });
 
   it("wires its own guided scene and synchronized explorer", () => {
@@ -443,6 +448,149 @@ describe("Solution Sets & Homogeneous Systems lesson", () => {
     expect(tiers.has("check")).toBe(true);
     expect(tiers.has("drill")).toBe(true);
     expect(tiers.has("transfer")).toBe(true);
+  });
+});
+
+describe("Matrix Composition & Inverses lesson (spine L6)", () => {
+  it("closes the spine gap between solution sets and determinants", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("matrix-composition")).toBe(
+      ids.indexOf("solution-sets") + 1,
+    );
+    expect(ids.indexOf("matrix-composition")).toBe(
+      ids.indexOf("determinants") - 1,
+    );
+  });
+
+  it("wires its own guided scene and synchronized explorer", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    expect(lesson.guidedSceneId).toBe("matrix-composition");
+    expect(lesson.explorationId).toBe("matrix-composition");
+    expect(hasGuidedScene("matrix-composition")).toBe(true);
+    expect(getSceneMeta("matrix-composition").id).toBe("matrix-composition");
+    expect(getExplorer("matrix-composition")).toBeTypeOf("function");
+  });
+
+  it("reuses Lesson 2's map so Lesson 7 measures the SAME A", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    expect(lesson.exampleId).toBe("shear-2-1");
+    expect(getMatrixExample(lesson.exampleId!)).toBeDefined();
+    expect(getLessonById("determinants")!.exampleId).toBe("shear-2-1");
+  });
+
+  it("derives the product rather than asserting the entry recipe", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const def = (lesson.formalBlocks ?? []).find((f) => f.id === "def-product")!;
+    expect(def.kind).toBe("definition");
+    // The definition must be the COLUMNS one; the entry recipe is a consequence.
+    expect(def.statement).toMatch(/\\operatorname\{col\}_j\(AB\)/);
+    const derivation = lesson.sections.find((s) => s.id === "recipe")!;
+    expect(derivation.body.toLowerCase()).toMatch(/expand|derived|not a rule/);
+  });
+
+  it("states the invertibility criterion with a justification layer", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const thm = (lesson.formalBlocks ?? []).find(
+      (f) => f.id === "thm-invertibility",
+    )!;
+    expect(thm.kind).toBe("theorem");
+    const notes = (thm.layers ?? []).filter((l) => l.kind === "math-note");
+    expect(notes.length).toBeGreaterThanOrEqual(1);
+    // P2 owes a derivation that says WHERE each hypothesis is used.
+    expect(notes[0]!.body).toMatch(/ad ?- ?bc|ad-bc/);
+    expect(notes[0]!.body.toLowerCase()).toMatch(/independen/);
+  });
+
+  it("scopes ad − bc to invertibility and defers its meaning to Lesson 7", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const ahead = lesson.sections
+      .flatMap((s) => s.layers ?? [])
+      .filter((l) => l.kind === "looking-ahead");
+    expect(ahead.length).toBeGreaterThanOrEqual(1);
+    const text = ahead.map((l) => `${l.title} ${l.body}`).join(" ");
+    expect(text.toLowerCase()).toMatch(/determinant/);
+    expect(text.toLowerCase()).toMatch(/area/);
+  });
+
+  it("stages the four scalar-arithmetic misconceptions as callouts", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const ids = (lesson.callouts ?? []).map((c) => c.id);
+    expect(ids).toEqual([
+      "not-entrywise",
+      "apply-b-first",
+      "nonzero-means-invertible",
+      "inverse-of-product",
+    ]);
+  });
+
+  it("poses two checkpoints, including the no-function-can-undo argument", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    expect(lesson.checkpoint).toBeDefined();
+    const second = (lesson.checkpoints ?? []).find(
+      (c) => c.id === "undo-impossible",
+    );
+    expect(second).toBeDefined();
+    // The point is that NO function can undo it, not merely no matrix.
+    expect(second!.answer.toLowerCase()).toMatch(/no function/);
+  });
+
+  it("keeps Watch before Explore and covers all three practice tiers", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const route = lesson.route ?? [];
+    const watchAt = route.findIndex(
+      (b) => b.kind === "visual" || b.kind === "watch",
+    );
+    const exploreAt = route.findIndex((b) => b.kind === "explore");
+    expect(watchAt).toBeGreaterThanOrEqual(0);
+    expect(exploreAt).toBeGreaterThan(watchAt);
+
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+  });
+
+  it("grades production, not recognition, on fresh matrices", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const ids = new Set(lesson.exercises!.map((ex) => ex.id));
+    for (const id of [
+      "comp-column-fresh",
+      "comp-product-entries-fresh",
+      "comp-build-inverse-fresh",
+      "comp-singular-witness",
+      "comp-reversal",
+    ]) {
+      expect(ids.has(id)).toBe(true);
+    }
+    // Recall is capped: at most two recognition items, both in the check tier.
+    const recallish = lesson.exercises!.filter(
+      (ex) => ex.tier === "check" && ex.type === "multiple-choice",
+    );
+    expect(recallish.length).toBeLessThanOrEqual(2);
+  });
+
+  it("connects back to Lesson 3/4 by re-solving their system with the inverse", () => {
+    const lesson = getLessonById("matrix-composition")!;
+    const solve = lesson.exercises!.find(
+      (ex) => ex.id === "comp-solve-with-inverse",
+    );
+    expect(solve).toBeDefined();
+    // Must land on the SAME (2, -1) elimination produced in Lesson 4.
+    expect((solve as { expected: readonly number[] }).expected).toEqual([2, -1]);
+  });
+
+  it("tours the scene beats that carry the derivation", () => {
+    const meta = getSceneMeta("matrix-composition");
+    const ids = meta.majorSteps.map((s) => s.id);
+    expect(ids).toEqual([
+      "apply-b",
+      "apply-a",
+      "one-map",
+      "columns",
+      "order",
+      "undo",
+      "no-undo",
+    ]);
   });
 });
 

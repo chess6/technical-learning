@@ -236,6 +236,94 @@ export const DETERMINANT_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "reflection", label: "Reflection", exampleId: "reflection" },
 ];
 
+export const COMPOSITION_LESSON_PRESETS: readonly TransformPreset[] = [
+  { id: "identity", label: "Identity", exampleId: "identity" },
+  { id: "shear", label: "Shear", exampleId: "shear-2-1" },
+  { id: "rotation", label: "Rotation", exampleId: "rotation" },
+  { id: "reflection", label: "Reflection", exampleId: "reflection" },
+  { id: "scale", label: "Scale", exampleId: "uniform-scale" },
+  { id: "singular", label: "Collapse", exampleId: "singular-collapse" },
+  { id: "near-singular", label: "Near-singular", exampleId: "near-singular" },
+];
+
+/**
+ * Lesson 6 (`matrix-composition`) practice data — deliberately FRESH numbers,
+ * distinct from the scene's `A = shear-2-1` and `R = rotation`, so a drill
+ * cannot be passed by recalling what was animated.
+ *
+ * Every value below is verified against `src/math` in
+ * `src/lessons/__tests__/compositionExample.test.ts` (product, product columns,
+ * inverse, singular parameter, null direction) — nothing here is hand-computed
+ * and trusted.
+ *
+ * - `productLeft` M and `productRight` N: `MN = [[7,4],[0,8]]` while
+ *   `NM = [[6,2],[-1,9]]`, so the pair is a genuine non-commuting counterexample
+ *   with clean integer entries in both orders.
+ * - `invertibleSource` K has `det = 1`, so `K⁻¹ = [[1,-1],[-2,3]]` is integral —
+ *   the learner can build it by solving `K x = e_j` without fractions.
+ * - `singularRow` with `singularParameter = 3` makes `[[2,6],[1,k]]` singular.
+ * - `singularFresh` collapses the plane; `singularNullDirection` is a nonzero
+ *   vector it sends to `0` (the witness that two inputs share an output).
+ */
+export interface CompositionFreshExample {
+  id: string;
+  /** Left factor M — applied SECOND in the product MN. */
+  productLeft: [[number, number], [number, number]];
+  /** Right factor N — applied FIRST in the product MN. */
+  productRight: [[number, number], [number, number]];
+  /** MN, the composite "apply N, then M". */
+  product: [[number, number], [number, number]];
+  /** NM — the other order, which differs. */
+  productReversed: [[number, number], [number, number]];
+  /** An invertible matrix with det = 1, so its inverse has integer entries. */
+  invertibleSource: [[number, number], [number, number]];
+  /** The inverse of `invertibleSource`. */
+  inverseOfSource: [[number, number], [number, number]];
+  /** Fixed entries of the parameterized matrix `[[2,6],[1,k]]`. */
+  singularRow: [number, number];
+  /** The value of `k` that makes `[[2,6],[1,k]]` singular. */
+  singularParameter: number;
+  /** A fresh singular matrix, for the collapse-witness construction. */
+  singularFresh: [[number, number], [number, number]];
+  /** A nonzero vector `singularFresh` sends to zero. */
+  singularNullDirection: Vector2;
+}
+
+export const COMPOSITION_FRESH: CompositionFreshExample = {
+  id: "composition-fresh",
+  productLeft: [
+    [3, 1],
+    [-1, 2],
+  ],
+  productRight: [
+    [2, 0],
+    [1, 4],
+  ],
+  product: [
+    [7, 4],
+    [0, 8],
+  ],
+  productReversed: [
+    [6, 2],
+    [-1, 9],
+  ],
+  invertibleSource: [
+    [3, 1],
+    [2, 1],
+  ],
+  inverseOfSource: [
+    [1, -1],
+    [-2, 3],
+  ],
+  singularRow: [2, 6],
+  singularParameter: 3,
+  singularFresh: [
+    [3, 6],
+    [1, 2],
+  ],
+  singularNullDirection: [2, -1],
+};
+
 export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "distinct", label: "Distinct real", exampleId: "eigen-distinct" },
   { id: "negative", label: "Negative λ", exampleId: "eigen-negative" },

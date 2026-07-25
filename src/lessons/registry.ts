@@ -4,6 +4,7 @@ import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
 import { eliminationLesson } from "./elimination";
 import { karatsubaLesson } from "./karatsuba";
+import { matrixCompositionLesson } from "./matrixComposition";
 import { redBlackTreesLesson } from "./redBlackTrees";
 import { solutionSetsLesson } from "./solutionSets";
 import { systemsLesson } from "./systems";
@@ -27,6 +28,7 @@ export const lessons: LessonDefinition[] = [
   systemsLesson,
   eliminationLesson,
   solutionSetsLesson,
+  matrixCompositionLesson,
   determinantsLesson,
   eigenvectorsLesson,
   karatsubaLesson,

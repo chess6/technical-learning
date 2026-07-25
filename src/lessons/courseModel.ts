@@ -113,12 +113,7 @@ export const CURRICULUM: readonly Subject[] = [
             id: "maps-inverses-determinants",
             title: "Composition, inverses & determinants",
             items: [
-              {
-                kind: "future",
-                id: "matrix-composition",
-                title: "Matrix Composition & Inverses",
-                subtitle: "Apply B then A; why order matters; undoing a map",
-              },
+              { kind: "lesson", lessonId: "matrix-composition" },
               { kind: "lesson", lessonId: "determinants" },
             ],
           },

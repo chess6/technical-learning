@@ -132,6 +132,28 @@ export const SOLUTION_SETS_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
+ * Lesson 6 — "Matrix Composition & Inverses". The scene asks one question seven
+ * times: *where does the basis land?* Apply B, then A; show that a single matrix
+ * does both; read the product's columns off the two basis paths; swap the order;
+ * undo; and finally meet a map with nothing to undo.
+ *
+ * Object-persistence rule (see the lesson plan): the two basis arrows and the
+ * shared craft are created once and only ever MOVED or re-coloured — never
+ * removed and re-added — so their identity survives scrubbing and reduced
+ * motion. Reuses A = [[2,1],[0,1]] (`shear-2-1`, the L2/L7 map) and
+ * R = [[0,−1],[1,0]] (`rotation`), with `singular-collapse` for the final beat.
+ */
+export const MATRIX_COMPOSITION_SEGMENTS: readonly SceneSegment[] = [
+  { id: "apply-b", title: "Apply the first map", duration: 5.5 },
+  { id: "apply-a", title: "Then apply the second", duration: 6.5 },
+  { id: "one-map", title: "One matrix does both", duration: 6 },
+  { id: "columns", title: "Column j is where eⱼ ended up", duration: 7 },
+  { id: "order", title: "Swap the order", duration: 6.5 },
+  { id: "undo", title: "Undo it", duration: 6 },
+  { id: "no-undo", title: "When there is nothing to undo", duration: 7 },
+];
+
+/**
  * Explicit per-beat animation budgets the elimination scene consumes INSIDE
  * each segment. Every animated yield in `eliminationScene` reads its duration
  * from here (parallel animations in one beat share a single entry — the beat's

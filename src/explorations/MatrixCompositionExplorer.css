@@ -1,0 +1,32 @@
+.comp-explorer__scene {
+  width: 100%;
+}
+
+.comp-explorer__order {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.comp-explorer__order-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.comp-explorer__order-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* The pressed order is the one the canvas is drawing — make that unmistakable
+   rather than relying on aria-pressed alone. */
+.comp-explorer__order-buttons .btn[aria-pressed="true"] {
+  border-color: var(--role-selected);
+  color: var(--role-selected);
+  background: color-mix(in srgb, var(--role-selected) 12%, transparent);
+}

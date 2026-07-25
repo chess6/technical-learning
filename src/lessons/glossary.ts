@@ -208,7 +208,9 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
       "A square matrix $A$ is invertible when there is a matrix $A^{-1}$ with $A^{-1}A = I$; equivalently its columns are independent, so $A\\mathbf{x} = \\mathbf{b}$ has a unique solution for every $\\mathbf{b}$.",
     intuition: "The transformation can be undone — no information is lost.",
     notation: "$A^{-1}A = AA^{-1} = I$",
-    firstLessonIntroduced: "determinants",
+    // Introduced in L6, where the inverse is BUILT (its columns solve
+    // A x = e_j). Determinants (L7) then names the number that detects it.
+    firstLessonIntroduced: "matrix-composition",
     prerequisites: ["linear-transformation", "independence", "consistency"],
     examples: [
       "A rotation is invertible — rotate back by the same angle",

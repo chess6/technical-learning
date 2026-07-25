@@ -12,6 +12,7 @@ import {
   SYSTEMS_SEGMENTS,
   ELIMINATION_SEGMENTS,
   SOLUTION_SETS_SEGMENTS,
+  MATRIX_COMPOSITION_SEGMENTS,
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
   toSteps,
@@ -59,6 +60,7 @@ const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
 const ELIMINATION_STEPS = toSteps(ELIMINATION_SEGMENTS);
 const SOLUTION_SETS_STEPS = toSteps(SOLUTION_SETS_SEGMENTS);
+const MATRIX_COMPOSITION_STEPS = toSteps(MATRIX_COMPOSITION_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -134,6 +136,22 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "null-line",
       "translate",
       "cases",
+    ]),
+  },
+  "matrix-composition": {
+    id: "matrix-composition",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for composing two linear maps and undoing one. A shared craft and the two standard basis arrows are first rotated a quarter turn by R, then sheared by A, so each basis arrow traces a two-stage path. The plane is then reset and the single matrix A R is applied in one motion, landing the craft in exactly the same place. Dimming everything else shows that the endpoint of e one's path is column one of A R, which equals A applied to column one of R, and likewise for e two. The order is then swapped: R A lands the craft somewhere else, so the order of composition matters in general. Next, A's image is returned exactly onto the dashed original by A inverse, illustrating that A inverse times A is the identity. Finally a singular map squashes the plane onto a line and two distinct marked points merge into a single image point, so no map could choose which one to return to.",
+    steps: MATRIX_COMPOSITION_STEPS,
+    majorSteps: pickMajor(MATRIX_COMPOSITION_STEPS, [
+      "apply-b",
+      "apply-a",
+      "one-map",
+      "columns",
+      "order",
+      "undo",
+      "no-undo",
     ]),
   },
   "vectors-linear-combinations": {

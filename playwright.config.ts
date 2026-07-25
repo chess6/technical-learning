@@ -1,5 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/**
+ * Dev-server port. Overridable so a second checkout (a git worktree running a
+ * parallel package) can run e2e without colliding with — or silently REUSING —
+ * the dev server of another checkout on the default port. Reusing another
+ * checkout's server is the dangerous failure: the suite passes or fails against
+ * the wrong code with no warning.
+ */
+const PORT = process.env.E2E_PORT ?? "5173";
+const BASE_URL = `http://localhost:${PORT}`;
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
@@ -13,7 +23,7 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: BASE_URL,
     trace: "on-first-retry",
   },
   projects: [
@@ -23,8 +33,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
+    command: `npm run dev -- --port ${PORT} --strictPort`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

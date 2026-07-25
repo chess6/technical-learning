@@ -47,6 +47,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.SolutionSetExplorer,
     })),
   ),
+  "matrix-composition": lazy(() =>
+    import("./MatrixCompositionExplorer").then((m) => ({
+      default: m.MatrixCompositionExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,
