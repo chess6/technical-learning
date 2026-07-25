@@ -30,8 +30,11 @@ tmp-screenshots/
 .reference-sources/packs/*/transcript.txt
 .reference-sources/packs/*/captions.*
 
-# Rendered video exports
+# Rendered video exports (see docs/engineering/video-export.md)
 exports/
+
+# Python tooling cache (scripts/)
+scripts/__pycache__/
 
 # Editor directories and files
 .vscode/*
