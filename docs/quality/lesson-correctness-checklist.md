@@ -1379,3 +1379,91 @@ table-of-contents rows on every lesson.
   skipped heading levels.
 - [x] Verified at package tier: `./check.sh --e2e`.
 
+---
+
+## Binary Search Trees — Gate 7 correctness review (2026-07-24)
+
+First lesson of the `data-structures` unit, built from
+`docs/courses/data-structures/lessons/binary-search-trees/` (insight `PASS` →
+mastery contract → plan). Promoted `future → built`; it is now chapter 2 of
+Algorithmic Thinking, ahead of Red–Black Trees.
+
+### Math layer
+
+- [x] **All tree state is computed in `src/math/binarySearchTrees.ts`.** No scene
+  or explorer recomputes a key, a path, a height, or a bound.
+- [x] **Three conventions fixed in the module header**, because each one silently
+  breaks a lesson claim if left loose: height counts **edges** (so
+  $n \le 2^{h+1}-1$ needs no correction), cost counts **key comparisons** (so
+  cost $=$ depth $+1$ is an identity, not an approximation), and duplicates are
+  **rejected** (so in-order-equals-sorted cannot fail).
+- [x] **The weaker test is implemented on purpose.** `passesLocalChildChecks`
+  exists beside `isValidBST` so the lesson's misconception can be *demonstrated*
+  rather than asserted, and so a test can pin the two disagreeing.
+
+### Invariants (all seven, `src/math/invariants.ts`)
+
+- [x] (1) in-order is the sorted sequence, for every insertion order — 150
+  randomized orders;
+- [x] (2) every insert-at-leaf tree is valid, **and** (negative) a
+  locally-valid/globally-invalid tree is *rejected*;
+- [x] (3) comparison count $=$ depth $+1$, present and absent keys;
+- [x] (4) sorted insertion gives height $n-1$; (5) the balanced build attains
+  $\lceil\log_2(n+1)\rceil-1$; (6) every random order lands inside the bounds;
+- [x] (7) binary search's probes equal the **balanced** tree's path — and a
+  companion test asserts they do **not** equal an arbitrary tree's, so the
+  restriction the Stage-2 audit forced into the insight contract cannot silently
+  widen back into the false claim.
+- [x] **Guard on the guard:** the negative assertion itself is tested against a
+  not-actually-locally-valid fixture and against a genuinely valid tree, so it
+  cannot pass vacuously.
+
+### Honest-visualization review
+
+- [x] The `lift` beat moves array cells **straight down** into tree positions —
+  the horizontal slot never changes — and is captioned as a redraw, so the
+  animation cannot imply that a computation occurred.
+- [x] The `degenerate` beat is captioned as a *different insertion order*, not a
+  different algorithm.
+- [x] Every caption number (probe sequence, path, heights, costs) is read from
+  `src/math` at scene-build time rather than typed into the scene.
+- [x] Explorer readouts (height, worst-case comparisons, bounds band, comparison
+  trace, in-order readout) all come from the same helpers the exercises grade
+  against.
+
+### Testing review
+
+- [x] `binarySearchTrees.test.ts` — 20 tests: construction, duplicate rejection,
+  empty/single-key edges, shape-independent in-order over 200 shuffles, the cost
+  identity, both degenerate directions, median-first reproducing the balanced
+  tree exactly, the bounds over $n \le 12$, the closed form's tightness, the
+  interval reports, and the array↔balanced-tree identity at odd *and* even sizes.
+- [x] `bstInvariants.test.ts` — 10 tests over the seven invariants plus the
+  guard-on-the-guard trio.
+- [x] `bstGradingContract.test.ts` — 42 tests. Every auto-graded item carries the
+  adversarial battery, with the rejects chosen to be the *plausible* wrong
+  answers rather than noise: right keys in the wrong order, cost counted as depth
+  rather than depth $+1$, heights instead of comparison counts, "$\log_2 7$" on a
+  chain (the $O(\log n)$ reflex), the interval taken from the parent alone (the
+  misconception itself), and a right answer with a circular justification.
+  It also asserts no graded item reuses the scene's key set.
+- [x] `e2e/lesson-binary-search-trees.spec.ts` — 5 specs: the lesson loads inside
+  the **Algorithmic Thinking** frame with its authored scene heading; switching
+  the insertion order moves height 2→6 and cost 3→7 **while the in-order readout
+  is asserted unchanged**; a search highlights exactly one node per comparison;
+  the interval toggle is off by default; and no horizontal overflow at 1440 px
+  and 390 px in **both themes**.
+- [x] The nine-lesson page-grammar sweep in `course-context-and-grammar.spec.ts`
+  picks the new lesson up automatically (added to `LESSON_IDS`): no generic phase
+  headings, no generic ToC rows, one `h1`, no skipped heading levels.
+- [x] Verified at package tier: `./check.sh --e2e`.
+
+### Scope honesty
+
+- [x] The lesson **refuses** the unqualified "$O(\log n)$" claim in prose, in a
+  callout, and in a graded distractor. Search is $\Theta(h)$; balance is the
+  sequel's job.
+- [x] The average-case-over-random-orders result is offered as an enrichment
+  layer **with its assumption stated**, and is never assessed.
+- [x] Deletion is named in a `looking-ahead` layer only.
+

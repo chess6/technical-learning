@@ -36,6 +36,7 @@ const LESSON_IDS = [
   "determinants",
   "eigenvectors",
   "karatsuba",
+  "binary-search-trees",
 ];
 
 function collectConsoleErrors(page: Page): string[] {

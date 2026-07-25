@@ -1,0 +1,114 @@
+.bst-explorer__stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The tree is the lesson's dark instrument, the same ground the guided scene
+   draws on — so the figure reads as one object across Watch and Explore. */
+.bst-explorer__svg {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-canvas);
+  box-shadow: var(--shadow-canvas);
+}
+
+.bst-explorer__edge {
+  stroke: var(--color-axis);
+  stroke-width: 2;
+}
+
+.bst-explorer__node {
+  fill: var(--color-canvas-elevated);
+  stroke: var(--role-intermediate);
+  stroke-width: 2;
+}
+
+/* A node on the search path is a comparison the search actually paid for. */
+.bst-explorer__node[data-on-path] {
+  fill: color-mix(in srgb, var(--role-selected) 22%, var(--color-canvas-elevated));
+  stroke: var(--role-selected);
+  stroke-width: 3;
+}
+
+.bst-explorer__node-text {
+  fill: var(--color-canvas-text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.bst-explorer__interval {
+  fill: var(--role-basis-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.bst-explorer__caption {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.bst-explorer__order,
+.bst-explorer__search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bst-explorer__order-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.bst-explorer__order-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bst-explorer__order-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--color-divider);
+  border-radius: 999px;
+  background: var(--color-surface-subtle);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.bst-explorer__order-index {
+  color: var(--color-text-faint);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.bst-explorer__search-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.bst-explorer__search-key {
+  min-height: 2rem;
+  padding: 0 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bst-explorer__search-key[data-active] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}

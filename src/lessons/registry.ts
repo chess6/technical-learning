@@ -1,3 +1,4 @@
+import { binarySearchTreesLesson } from "./binarySearchTrees";
 import { chapter0Lesson } from "./chapter0";
 import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
@@ -28,6 +29,7 @@ export const lessons: LessonDefinition[] = [
   determinantsLesson,
   eigenvectorsLesson,
   karatsubaLesson,
+  binarySearchTreesLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

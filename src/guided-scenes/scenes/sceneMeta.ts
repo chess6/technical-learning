@@ -12,6 +12,7 @@ import {
   SYSTEMS_SEGMENTS,
   ELIMINATION_SEGMENTS,
   SOLUTION_SETS_SEGMENTS,
+  BST_LIFT_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -50,6 +51,7 @@ const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
+const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
@@ -221,6 +223,23 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "Development scene: a coordinate grid transforming from the identity to a shear matrix.",
     steps: SPIKE_STEPS,
     majorSteps: SPIKE_STEPS,
+  },
+  "bst-lift-from-array": {
+    id: "bst-lift-from-array",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Binary search trees: binary search probing a sorted array, its probes lifted into a tree, the ordering rule read off the result, and the cost of a balanced shape compared with the chain that sorted insertion produces.",
+    steps: BST_LIFT_STEPS,
+    majorSteps: pickMajor(BST_LIFT_STEPS, [
+      "probe-first",
+      "second-search",
+      "lift",
+      "read-the-rule",
+      "interval-stays",
+      "cost-is-depth",
+      "degenerate",
+      "the-gap",
+    ]),
   },
   "karatsuba-cross-terms": {
     id: "karatsuba-cross-terms",

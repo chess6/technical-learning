@@ -316,6 +316,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "determinants",
       "eigenvectors",
       "karatsuba",
+      "binary-search-trees",
     ]);
   });
 

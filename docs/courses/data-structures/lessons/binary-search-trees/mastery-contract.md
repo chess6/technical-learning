@@ -251,18 +251,47 @@ D9); a real-world application; a D11 speed obligation in-lesson.
 
 ## 5. Acceptance record (Gate 8)
 
-Filled after implementation. Deliberately unchecked.
+Filled at implementation (2026-07-24).
 
-- [ ] Insight Contract linked and `PASS`; primary insight preserved in meaning.
-- [ ] Every §1 field filled; upstream artifacts linked, not restated.
-- [ ] Every outcome operational, owner-marked, paired with an evidence item.
-- [ ] O1–O7 independently demonstrated with real in-lesson evidence.
-- [ ] O8, O9 recorded as Gate-9 obligations, not claimed mastered.
-- [ ] Assessment set matches §3c; no instruction repeated; recall capped at one;
-      **no transfer item manufactured** (the lesson owns D8, not D9).
-- [ ] Backward bridge (Karatsuba) + forward edge (red-black trees) present.
-- [ ] Delayed-retention hook recorded.
-- [ ] Correctness gate passed — all seven invariants tested, including the
-      negative locally-valid/globally-invalid fixture.
-- [ ] No rejection condition holds; no anti-over-reaction guardrail tripped.
-- [ ] Profile-dependent items match P2 + the single raised statement.
+- [x] Insight Contract linked and `PASS`; primary insight preserved in meaning —
+      including its audit-forced restriction (the array↔tree identity is claimed
+      only for the balanced member), which ships as a **test**, not just prose.
+- [x] Every §1 field filled; upstream artifacts linked, not restated.
+- [x] Every outcome operational, owner-marked, paired with an evidence item.
+- [x] O1–O7 independently demonstrated with real in-lesson evidence
+      (`bst-search-trace`, `bst-order-predicts-shape`, `bst-inorder-why`,
+      `bst-height-induction-step`, `bst-invalid-local-check`,
+      `bst-construct-minimum-height`, `bst-choose-structure`).
+- [x] O8, O9 recorded as Gate-9 obligations, **not** claimed mastered.
+- [x] Assessment set matches §3c; no instruction repeated (a test asserts no
+      graded item reuses the scene's key set); recall capped at one; **no D9
+      transfer item manufactured**.
+- [x] Backward bridge (Karatsuba) + forward edge (red-black trees) present.
+- [x] Delayed-retention hook recorded (O2, O5 at ~14 days) — to be seeded when
+      the Algorithmic Thinking module set exists at Gate 9.
+- [x] Correctness gate passed — all seven invariants tested, including the
+      negative locally-valid/globally-invalid fixture, plus a guard-on-the-guard
+      so that assertion cannot pass vacuously.
+- [x] No rejection condition holds; no anti-over-reaction guardrail tripped.
+- [x] Profile-dependent items match P2 + the single raised statement.
+
+### Deviations from the plan, recorded rather than glossed
+
+1. **No new grading capabilities were written.** The plan named four; the
+   existing `exercise-sequence` (numeric / multiple-choice / text sub-steps) and
+   `self-check` (model answer + rubric, human-scored) capabilities carry all
+   eight items. Reuse beat new infrastructure, and the items inherit the
+   capabilities' existing UI and evidence ceilings.
+2. **O6 is a guided construction, not a free predicate-verified one.** The plan
+   wanted "any order attaining minimum height", verified by predicate; the
+   available `construct` step grades a 2-D vector, not an insertion order. It is
+   implemented as *which key must be first* (forced: the median) + *the resulting
+   height* + *why no order does better*. That is partially scaffolded, so its
+   honest evidence level is **E3, not E4** — recorded here rather than claimed
+   upward. A predicate-graded order remains a genuine future capability.
+3. **The worked example's title dropped its TeX.** Table-of-contents labels are
+   plain text, so `$2^{h+1}-1$` rendered raw there; the title now reads "How many
+   nodes fit in a tree of height h" and the mathematics lives in the equations.
+
+None of the three changes what the lesson teaches or what it evidences, beyond
+deviation 2's honest downgrade of one evidence claim.

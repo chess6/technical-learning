@@ -225,6 +225,27 @@ export const KARATSUBA_SEGMENTS: readonly SceneSegment[] = [
   { id: "exponent", title: "The exponent bends", duration: 7 },
 ];
 
+/**
+ * Binary Search Trees — the bridge made visible. Binary search runs on a sorted
+ * array, its probes are circled, a second search shows the first probe being
+ * recomputed, and then the probed cells are LIFTED straight down into tree
+ * positions (a pure vertical move, so the drawing cannot imply a computation).
+ * The ordering rule is then read OFF the picture rather than asserted, and the
+ * scene closes on the two extremes: median-first vs sorted insertion.
+ */
+export const BST_LIFT_SEGMENTS: readonly SceneSegment[] = [
+  { id: "establish", title: "A sorted array, and a key to find", duration: 4 },
+  { id: "probe-first", title: "One comparison, half the array gone", duration: 5 },
+  { id: "probe-rest", title: "Two more probes finish it", duration: 5 },
+  { id: "second-search", title: "A different key repeats the first probe", duration: 5 },
+  { id: "lift", title: "Keep the probes: they were a tree", duration: 6 },
+  { id: "read-the-rule", title: "The rule was not assumed", duration: 5 },
+  { id: "interval-stays", title: "Every position inherits a range", duration: 5 },
+  { id: "cost-is-depth", title: "One comparison per level", duration: 5 },
+  { id: "degenerate", title: "Insert in order — and get a stick", duration: 6.5 },
+  { id: "the-gap", title: "Same keys. Three comparisons, or seven", duration: 5.5 },
+];
+
 /** Total timeline length in seconds. */
 export function totalDuration(segments: readonly SceneSegment[]): number {
   return segments.reduce((sum, segment) => sum + segment.duration, 0);

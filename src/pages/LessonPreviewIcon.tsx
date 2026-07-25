@@ -47,6 +47,20 @@ export function LessonPreviewIcon({ lessonId }: { lessonId: string }) {
           <line x1="12" y1="24" x2="36" y2="24" className="lesson-preview-icon__result" />
         </svg>
       );
+    case "binary-search-trees":
+      return (
+        <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">
+          {/* The two shapes the same keys can take: balanced, and a chain. */}
+          <path d="M16 10 L8 22 M16 10 L24 22" className="lesson-preview-icon__basis-1" />
+          <circle cx="16" cy="10" r="3" className="lesson-preview-icon__result-fill" />
+          <circle cx="8" cy="22" r="3" className="lesson-preview-icon__result-fill" />
+          <circle cx="24" cy="22" r="3" className="lesson-preview-icon__result-fill" />
+          <path d="M34 8 L40 18 M40 18 L46 28" className="lesson-preview-icon__original" />
+          <circle cx="34" cy="8" r="2.5" className="lesson-preview-icon__grid-shape" />
+          <circle cx="40" cy="18" r="2.5" className="lesson-preview-icon__grid-shape" />
+          <circle cx="46" cy="28" r="2.5" className="lesson-preview-icon__grid-shape" />
+        </svg>
+      );
     case "karatsuba":
       return (
         <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">

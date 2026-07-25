@@ -63,8 +63,14 @@ describe("navigation is course-relative, not registry-positional", () => {
       (id) => getLessonById(id)!.kind !== "intro",
     ).length;
     expect(getLessonPosition("vectors")).toEqual({ current: 1, total: laTotal });
-    expect(getLessonPosition("karatsuba")).toEqual({ current: 1, total: 1 });
-    expect(getLessonPosition("karatsuba").total).toBeLessThan(lessons.length);
+    const algoTotal = courseLessonIds(ALGORITHMS).length;
+    expect(getLessonPosition("karatsuba")).toEqual({ current: 1, total: algoTotal });
+    expect(getLessonPosition("binary-search-trees")).toEqual({
+      current: 2,
+      total: algoTotal,
+    });
+    // Progress is measured against the COURSE, never the whole registry.
+    expect(algoTotal).toBeLessThan(lessons.length);
   });
 
   it("never links across a course boundary", () => {
@@ -75,11 +81,15 @@ describe("navigation is course-relative, not registry-positional", () => {
     expect(getAdjacentLessons("eigenvectors").next).toBeNull();
     expect(getAdjacentLessons("eigenvectors").previous?.id).toBe("determinants");
 
-    expect(courseLessonIds(ALGORITHMS)).toEqual(["karatsuba"]);
-    expect(getAdjacentLessons("karatsuba")).toEqual({
-      previous: null,
-      next: null,
-    });
+    expect(courseLessonIds(ALGORITHMS)).toEqual([
+      "karatsuba",
+      "binary-search-trees",
+    ]);
+    expect(getAdjacentLessons("karatsuba").previous).toBeNull();
+    // Within a course, adjacency is real…
+    expect(getAdjacentLessons("karatsuba").next?.id).toBe("binary-search-trees");
+    // …and the course's own last lesson still leads nowhere.
+    expect(getAdjacentLessons("binary-search-trees").next).toBeNull();
   });
 
   it("walks a course path in declared unit order", () => {

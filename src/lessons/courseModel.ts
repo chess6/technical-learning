@@ -197,12 +197,7 @@ export const CURRICULUM: readonly Subject[] = [
             id: "data-structures",
             title: "Data structures",
             items: [
-              {
-                kind: "future",
-                id: "binary-search-trees",
-                title: "Binary Search Trees",
-                subtitle: "Keeping the midpoints — why the shape is the cost",
-              },
+              { kind: "lesson", lessonId: "binary-search-trees" },
               {
                 kind: "future",
                 id: "red-black-trees",

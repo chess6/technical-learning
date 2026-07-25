@@ -256,6 +256,65 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ],
     relatedTerms: ["determinant", "linear-transformation", "invertibility"],
   },
+  {
+    id: "binary-search-tree",
+    term: "Binary search tree",
+    definition:
+      "A binary tree over an ordered key set in which, at every node, every key in the left subtree is smaller than the node's key and every key in the right subtree is larger.",
+    intuition:
+      "A comparison-decision procedure, stored: every node is a comparison you already made, so the path you walk is the search.",
+    notation: "$\\text{legal at a position} \\iff lo < \\text{key} < hi$",
+    notationNote:
+      "The condition is *global*, not local: a position's legal range is inherited from the whole path above it, so a tree can satisfy every parent–child comparison and still not be a search tree.",
+    firstLessonIntroduced: "binary-search-trees",
+    prerequisites: [],
+    examples: [
+      "Inserting $16, 8, 42, 4, 15, 23, 50$ builds a tree of height $2$ on those keys",
+    ],
+    nonExamples: [
+      "Root $25$ with right child $30$ and $20$ under $30$: every parent–child pair is ordered, but $20$ sits where only keys above $25$ may live",
+    ],
+    relatedTerms: ["tree-height", "in-order-traversal"],
+  },
+  {
+    id: "tree-height",
+    term: "Height (of a tree)",
+    definition:
+      "The number of **edges** on the longest root-to-leaf path. A single node has height $0$; the empty tree has height $-1$.",
+    intuition:
+      "The number of levels below the root — and, for a search tree, the worst-case search cost minus one.",
+    notation: "$h$, with worst-case search cost $h + 1$ comparisons",
+    notationNote:
+      "Counting edges (not nodes) is what makes $n \\le 2^{h+1} - 1$ and $\\lceil\\log_2(n+1)\\rceil - 1 \\le h \\le n-1$ come out without off-by-one corrections.",
+    firstLessonIntroduced: "binary-search-trees",
+    prerequisites: ["binary-search-tree"],
+    examples: [
+      "Seven keys: height $2$ from median-first insertion, height $6$ from sorted insertion",
+    ],
+    nonExamples: [
+      "Height is not the node count, and not the average depth — it is the worst case",
+    ],
+    relatedTerms: ["binary-search-tree"],
+  },
+  {
+    id: "in-order-traversal",
+    term: "In-order traversal",
+    definition:
+      "Visiting a binary tree as left subtree, then the node, then right subtree.",
+    intuition:
+      "The one traversal that respects the search-tree condition — it reads the intervals left to right, so it always emits the keys in sorted order.",
+    notation:
+      "$\\text{inorder}(x) = \\text{inorder}(x.\\text{left}) \\;\\Vert\\; [x.\\text{key}] \\;\\Vert\\; \\text{inorder}(x.\\text{right})$",
+    notationNote:
+      "The output is *shape-independent*: every legal tree on the same keys reads out identically, which is why shape carries cost information and no content information.",
+    firstLessonIntroduced: "binary-search-trees",
+    prerequisites: ["binary-search-tree"],
+    examples: ["Both the balanced tree and the chain on the same seven keys read out $4, 8, 15, 16, 23, 42, 50$"],
+    nonExamples: [
+      "Pre-order and post-order ignore the ordering condition and do not emit sorted keys",
+    ],
+    relatedTerms: ["binary-search-tree", "tree-height"],
+  },
 ];
 
 /** Terms indexed by id, for lookups and referential-integrity checks. */

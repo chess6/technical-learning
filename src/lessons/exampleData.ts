@@ -244,3 +244,59 @@ export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "defective", label: "Defective", exampleId: "eigen-repeated-defective" },
   { id: "rotation", label: "No real", exampleId: "eigen-no-real" },
 ];
+
+/* --------------------------------------------------------------------------
+ * Binary search trees (Algorithmic Thinking · data structures)
+ *
+ * One source of truth for every key set the BST lesson uses. The guided scene,
+ * the explorer, the worked examples, and the exercises all read from here, so a
+ * number can never drift between what is animated and what is graded.
+ * ------------------------------------------------------------------------ */
+
+export interface BstKeySetExample {
+  id: string;
+  /** Keys in ASCENDING order — the array the bridge runs binary search on. */
+  sorted: readonly number[];
+  /** Optional insertion order when the example is about a specific shape. */
+  order?: readonly number[];
+  /** The key the scene or an exercise searches for. */
+  target?: number;
+}
+
+/**
+ * The scene's and the explorer's shared key set. Seven keys so the balanced
+ * shape is a full tree of height 2 and the sorted order degenerates to a
+ * seven-node chain — the two extremes are both clean at this size.
+ */
+export const BST_SEVEN: BstKeySetExample = {
+  id: "bst-seven",
+  sorted: [4, 8, 15, 16, 23, 42, 50],
+  target: 23,
+};
+
+/** Deliberately unseen in the scene: the fresh instance outcome O1 grades. */
+export const BST_FRESH_TRACE: BstKeySetExample = {
+  id: "bst-fresh-trace",
+  sorted: [7, 12, 20, 31, 39, 47, 55],
+  order: [31, 12, 47, 7, 20, 39, 55],
+  target: 20,
+};
+
+/** The Check and outcome O2: one key set, two orders, very different cost. */
+export const BST_ORDERS_PAIR = {
+  id: "bst-orders-pair",
+  sorted: [2, 5, 9, 11, 14, 18, 25] as const,
+  medianFirst: [11, 5, 2, 9, 18, 14, 25] as const,
+  sorted_order: [2, 5, 9, 11, 14, 18, 25] as const,
+} as const;
+
+/**
+ * The counterexample carrying supporting insight C: 20 sits in 25's RIGHT
+ * subtree, where only keys above 25 may live — yet every parent–child pair is
+ * ordered correctly, so the naive local check accepts it.
+ */
+export const BST_INVALID_LOCAL = {
+  id: "bst-invalid-local",
+  offendingKey: 20,
+  interval: { lo: 25, hi: 30 },
+} as const;
