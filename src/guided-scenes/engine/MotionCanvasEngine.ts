@@ -2,6 +2,7 @@ import {
   MetaFile,
   Player,
   Stage,
+  ValueDispatcher,
   Vector2,
   bootstrap,
   type FullSceneDescription,
@@ -39,18 +40,29 @@ const VERSIONS: Versions = {
  * one unavoidable use of internal APIs required for plugin-free embedding (see
  * docs/engineering/decisions/001-motion-canvas-runtime.md). They are used only for construction, never for
  * lifecycle instrumentation.
+ *
+ * Exported for the dev-only video-export harness (src/export/exportHarness.ts),
+ * which needs the same plugin-free project construction plus a custom exporter
+ * plugin. `plugins` stays empty for normal in-app playback.
  */
-async function buildProject(sceneId: string): Promise<Project> {
+export async function buildGuidedProject(
+  sceneId: string,
+  plugins: Project["plugins"] = [],
+): Promise<Project> {
   const name = `guided-${sceneId}`;
   const description = {
     ...((await getSceneDescription(sceneId)) as object),
     name,
   } as unknown as FullSceneDescription;
+  // The vite plugin's generated `?scene` module assigns onReplaced so HMR and
+  // the Renderer can reload scenes. Player only optionally chains it, but
+  // Renderer.reloadScenes dereferences it — mirror the generated code here.
+  description.onReplaced ??= new ValueDispatcher(description);
 
   return bootstrap(
     name,
     VERSIONS,
-    [],
+    plugins,
     { name, scenes: [description] },
     new MetaFile(name, false),
     new MetaFile(`${name}-settings`, false),
@@ -93,7 +105,7 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
 
     let project: Project;
     try {
-      project = await buildProject(this.sceneId);
+      project = await buildGuidedProject(this.sceneId);
     } catch (error) {
       if (this.isDisposed) return;
       this.setState({
@@ -189,6 +201,16 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
     this.player.requestSeek(Math.round(clamped * this.durationFrames));
   }
 
+  setSpeed(speed: number): void {
+    if (this.isDisposed || !this.player) return;
+    const clamped = Math.max(0.25, Math.min(4, speed));
+    // Speed scales only the real-time update loop; frames, duration, and
+    // normalized progress stay in authored time, so seeking and step markers
+    // are unaffected. onStateChanged echoes the value back into engine state.
+    this.player.setSpeed(clamped);
+    this.setState({ speed: clamped });
+  }
+
   resize(): void {
     this.player?.requestRender();
   }
@@ -255,8 +277,11 @@ export class MotionCanvasEngine extends AbstractGuidedSceneEngine {
     }
   };
 
-  private handleState = (playerState: { paused: boolean }): void => {
+  private handleState = (playerState: { paused: boolean; speed?: number }): void => {
     this.paused = playerState.paused;
+    if (typeof playerState.speed === "number" && playerState.speed > 0) {
+      this.setState({ speed: playerState.speed });
+    }
     this.recompute();
   };
 

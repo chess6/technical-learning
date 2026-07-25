@@ -23,6 +23,19 @@ tmp-screenshots/
 # Local script runtime (dev server pid/log)
 .run/
 
+# Reference-only study caches (never vendored; see docs/engineering/reference-sources.md)
+.reference-sources/animation-repos/
+.reference-sources/transcripts/
+.reference-sources/packs/*/transcript.json
+.reference-sources/packs/*/transcript.txt
+.reference-sources/packs/*/captions.*
+
+# Rendered video exports (see docs/engineering/video-export.md)
+exports/
+
+# Python tooling cache (scripts/)
+scripts/__pycache__/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,0 +1,175 @@
+{
+  "videoId": "B3y0RsVCyrw",
+  "repoSlug": "reducible",
+  "inspectedCommit": "88f4f8f7da11443b4e995bf0c71683c55e2cf17b",
+  "beats": [
+    {
+      "id": "origin-story",
+      "title": "Huffman's term paper and the compression problem",
+      "start": 0,
+      "end": 129,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["IntroStory", "Transition"]
+      },
+      "whatChanges": "Portraits, exam-vs-paper choice, and text/image/video examples are progressively replaced by bit-count expressions boxed under one question.",
+      "invariant": "The framing problem statement (represent symbols in the fewest bits) stays on screen as everything else transforms beneath it."
+    },
+    {
+      "id": "communication-network-constraints",
+      "title": "Source-encoder-message-decoder-receiver setup and the three requirements",
+      "start": 129,
+      "end": 308,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["ProblemFormulation"]
+      },
+      "whatChanges": "Encoding tables and the encoded 'Shannon' bitstring are ReplacementTransformed through valid, lossy, and ambiguous variants as each requirement is introduced.",
+      "invariant": "The five-component communication diagram and its arrows stay fixed while only the encoding dictionary and message bits mutate."
+    },
+    {
+      "id": "compression-balancing-act",
+      "title": "Redundancy vs information loss on a bit-length scale",
+      "start": 308,
+      "end": 347,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["BalancingAct"]
+      },
+      "whatChanges": "A triangle marker slides along a number line of encoded-message length as encodings swap between redundant, lossy, and optimal.",
+      "invariant": "The number line with its redundancy and information-loss arrows persists, visualizing that a hard lower limit must exist."
+    },
+    {
+      "id": "self-information-axioms",
+      "title": "Measuring information: four axioms force I(x) = -log2 p(x)",
+      "start": 347,
+      "end": 536,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["IntroSelfInformation"]
+      },
+      "whatChanges": "Thought-experiment statements give way to a growing list of axioms and then a plotted information-vs-probability curve.",
+      "invariant": "The axiom list stays visible as the unique function satisfying it is derived and graphed."
+    },
+    {
+      "id": "entropy-of-distributions",
+      "title": "Entropy as weighted average; biased-coin maximum; the name",
+      "start": 536,
+      "end": 659,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["IntroEntropy", "NamingEntropy"]
+      },
+      "whatChanges": "Seattle/Phoenix bar charts collapse to H values, then a dot sweeps the biased-coin entropy curve while an updater redraws the bar chart in lockstep.",
+      "invariant": "The bar-chart probabilities and the curve point always agree, keeping distribution and entropy visibly coupled."
+    },
+    {
+      "id": "source-coding-theorem-question-game",
+      "title": "Average length per symbol, L >= H(X), and the yes/no question diagram",
+      "start": 659,
+      "end": 878,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["EntropyCompression", "EntropyExample"]
+      },
+      "whatChanges": "A sampled symbol stream cascades from the distribution, then a question tree is built top-down and its edge labels transform from yes/no into bits.",
+      "invariant": "The source distribution and the bound L >= H(X) remain on screen while the question diagram gives the bound operational meaning."
+    },
+    {
+      "id": "dyadic-splits",
+      "title": "Uneven distribution: split into equally likely groups to hit entropy",
+      "start": 878,
+      "end": 1004,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["EntropyExample"]
+      },
+      "whatChanges": "Sorted probabilities are recursively split with dashed lines and the split groups transform into the earlier question diagram, yielding codes with L exactly H(X).",
+      "invariant": "Group probability sums stay displayed at each split, and the encoding-length-equals-self-information pattern holds throughout."
+    },
+    {
+      "id": "shannon-fano-top-down",
+      "title": "Shannon-Fano coding, prefix-free codes as full binary trees, suboptimality",
+      "start": 1004,
+      "end": 1158,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["ShannonFano"]
+      },
+      "whatChanges": "Node groups split top-down into a tree, edges are colored 0/1, a message is decoded path-by-path, and a counterexample shows L = 2.31 beaten by 2.30.",
+      "invariant": "The prefix property is visibly maintained: every symbol stays a leaf with a unique root path while codes and totals are annotated."
+    },
+    {
+      "id": "cost-and-two-least-likely",
+      "title": "L as depth-weighted sum; two least likely symbols must sit at the bottom",
+      "start": 1158,
+      "end": 1278,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["ShannonFano.motivate_huffman"]
+      },
+      "whatChanges": "Depth labels appear on tree edges, then the two lowest-probability leaves are pulled to the bottom under a new parent while remaining symbols are boxed as constrained.",
+      "invariant": "The formula L = sum of p_i times depth stays pinned at top as concrete numbers and generalized p_1..p_n symbols swap beneath it."
+    },
+    {
+      "id": "recursive-cost-greedy-merge",
+      "title": "L as sum of internal node probabilities; the subproblem recursion",
+      "start": 1278,
+      "end": 1450,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["ShannonFano.show_generalized_motivation_of_huffman"]
+      },
+      "whatChanges": "Internal node values are expanded via TransformFromCopy into sums of leaf probabilities, then the cost is rewritten as p1 + p2 + L(merged set), justifying repeated greedy merging.",
+      "invariant": "The equivalence of the two cost formulations is kept on screen, with colored rectangles tying each formula term to its tree region."
+    },
+    {
+      "id": "huffman-build-choreography",
+      "title": "Building the Huffman tree by repeated lowest-pair merges",
+      "start": 1450,
+      "end": 1497,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["HuffmanCodesProbDist", "HuffmanCodes.make_huffman_tree", "HuffmanCodes.animate_huffman_step", "HuffmanCodes.transform_heap"]
+      },
+      "whatChanges": "At each step the two lowest nodes move from the sorted column into tree position, edges grow, a parent circle appears, and a copy of the parent re-enters the re-sorted frontier.",
+      "invariant": "The frontier column stays sorted by probability after every merge, and each parent's displayed value is always the sum of its children."
+    },
+    {
+      "id": "huffman-on-real-text",
+      "title": "From text to character frequencies to the same merge process",
+      "start": 1497,
+      "end": 1558,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["HuffmanCodes"]
+      },
+      "whatChanges": "Characters of 'ADBADEDBBDD' fly into per-letter groups, become frequency/key leaf boxes, are sorted, and merge into the full tree.",
+      "invariant": "Every original character is visibly conserved into exactly one leaf, so leaf frequencies always sum to the text length."
+    },
+    {
+      "id": "implementation-priority-queue",
+      "title": "Node class plus heapq priority-queue implementation",
+      "start": 1558,
+      "end": 1627,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["HuffmanImplementation", "HuffmanImplementationPIP"]
+      },
+      "whatChanges": "Syntax-highlighted code for Node and getHuffmanTree is written line-group by line-group beside a picture-in-picture replay of the animation.",
+      "invariant": "The code mirrors the exact merge loop just animated: pop two minima, push their sum, repeat until one root remains."
+    },
+    {
+      "id": "bottom-up-perspective-conclusion",
+      "title": "Top-down Shannon-Fano vs bottom-up Huffman; the story arc",
+      "start": 1627,
+      "end": 1750,
+      "sceneSource": {
+        "file": "2021/Huffman/huffman.py",
+        "classesOrFunctions": ["HuffmanConclusion"]
+      },
+      "whatChanges": "The four requirements return with checkmarks, 'obvious' gets crossed out, and the ideas collapse into an information-theory-to-Huffman progression box.",
+      "invariant": "The requirement list and the top-down/bottom-up contrast anchor the recap of everything built earlier."
+    }
+  ]
+}

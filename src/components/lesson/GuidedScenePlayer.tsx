@@ -7,14 +7,20 @@ import {
 } from "../../hooks/useGuidedPlayback";
 import {
   createInitialState,
+  PLAYBACK_SPEEDS,
+  type GuidedSceneChapter,
   type GuidedSceneEngine,
   type GuidedSceneEngineOptions,
   type GuidedSceneState,
-  type GuidedSceneStep,
+  type PlaybackSpeed,
 } from "../../guided-scenes/engine/types";
 import { guidedSceneDebug } from "../../guided-scenes/engine/instrumentation";
 import { getSceneMeta } from "../../guided-scenes/scenes/sceneMeta";
 import { SCENE_ASPECT } from "../../guided-scenes/scenes/safeFrame";
+import {
+  getPreferredPlaybackSpeed,
+  setPreferredPlaybackSpeed,
+} from "./playbackPreferences";
 import type { ClipPosition } from "./clipPosition";
 import "./GuidedScenePlayer.css";
 
@@ -40,6 +46,9 @@ type GuidedScenePlayerProps = {
   autoplayEnabled?: boolean;
 };
 
+/** Arrow-key seek interval (documented in the shortcut hint). */
+const SEEK_STEP_SECONDS = 5;
+
 /**
  * Autoplay rule (documented):
  * - Autoplay once when the canvas is substantially visible (≥55%) and
@@ -49,6 +58,16 @@ type GuidedScenePlayerProps = {
  * - Reduced motion: seek to the first major stage (or final frame if none),
  *   no continuous playback; use Prev/Next idea.
  * - Page/tab hide pauses playback.
+ *
+ * Viewing modes:
+ * - Theater: the figure becomes a fixed in-app overlay (engine stays mounted —
+ *   no remount, playback continues). Escape or the button exits.
+ * - Fullscreen: true browser fullscreen on the figure via the Fullscreen API,
+ *   when supported. Escape/browser UI exits are observed via fullscreenchange.
+ *
+ * Playback speed applies to the engine clock only; the timeline, chapter
+ * positions, and seeking all stay in authored (1×) time. The chosen speed is
+ * a session preference that survives remounts and navigation.
  */
 
 export function GuidedScenePlayer({
@@ -62,6 +81,7 @@ export function GuidedScenePlayer({
   const reducedMotion = usePrefersReducedMotion();
   const showDebug = useShowGuidedDebug();
   const containerRef = useRef<HTMLDivElement>(null);
+  const figureRef = useRef<HTMLElement>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const engineRef = useRef<GuidedSceneEngine | null>(null);
   const [state, setState] = useState<GuidedSceneState>(() =>
@@ -69,6 +89,16 @@ export function GuidedScenePlayer({
   );
   const [mounted, setMounted] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
+  const [speed, setSpeed] = useState<PlaybackSpeed>(() =>
+    getPreferredPlaybackSpeed(),
+  );
+  const [theater, setTheater] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreenSupported] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      typeof document.documentElement.requestFullscreen === "function",
+  );
   const autoplay = useAutoplayOnceGuard();
   const substantiallyVisible = useSubstantialVisibility(containerEl, 0.55);
   const lastReportedStepId = useRef<string | null>(null);
@@ -82,7 +112,7 @@ export function GuidedScenePlayer({
   onClipPositionChangeRef.current = onClipPositionChange;
 
   const meta = getSceneMeta(sceneId);
-  const majorSteps =
+  const majorSteps: GuidedSceneChapter[] =
     meta.majorSteps.length > 0 ? meta.majorSteps : meta.steps;
 
   const bindContainer = useCallback((node: HTMLDivElement | null) => {
@@ -152,6 +182,12 @@ export function GuidedScenePlayer({
     pendingSeekRef.current = null;
   }, [state.duration, mounted]);
 
+  // Apply the session speed preference to each engine instance.
+  useEffect(() => {
+    if (!mounted) return;
+    engineRef.current?.setSpeed(speed);
+  }, [speed, mounted]);
+
   // Autoplay once when substantially visible.
   useEffect(() => {
     if (!autoplayEnabled) return;
@@ -185,12 +221,39 @@ export function GuidedScenePlayer({
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    if (!substantiallyVisible && engine.getState().status === "playing") {
+    if (
+      !substantiallyVisible &&
+      !theater &&
+      !fullscreen &&
+      engine.getState().status === "playing"
+    ) {
       engine.pause();
     }
 
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [substantiallyVisible, mounted]);
+  }, [substantiallyVisible, mounted, theater, fullscreen]);
+
+  // Track fullscreen entered/left through any path (F key, button, Escape,
+  // browser UI). State always follows document.fullscreenElement.
+  useEffect(() => {
+    if (!fullscreenSupported) return;
+    const onChange = (): void => {
+      setFullscreen(document.fullscreenElement === figureRef.current);
+      engineRef.current?.resize();
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, [fullscreenSupported]);
+
+  // Theater mode locks page scroll while the overlay is up.
+  useEffect(() => {
+    if (!theater) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [theater]);
 
   const currentMajorIndex = majorStepIndex(majorSteps, state.progress);
   const currentMajorStepId =
@@ -222,6 +285,30 @@ export function GuidedScenePlayer({
   };
   const handleSeek = (value: number): void => engineRef.current?.seek(value);
 
+  const handleSpeed = (value: PlaybackSpeed): void => {
+    setPreferredPlaybackSpeed(value);
+    setSpeed(value);
+  };
+
+  const seekBySeconds = useCallback((deltaSeconds: number): void => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    const { duration, progress } = engine.getState();
+    if (!duration || duration <= 0) return;
+    engine.seek(progress + deltaSeconds / duration);
+  }, []);
+
+  const toggleFullscreen = useCallback((): void => {
+    if (!fullscreenSupported) return;
+    const figure = figureRef.current;
+    if (!figure) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void figure.requestFullscreen();
+    }
+  }, [fullscreenSupported]);
+
   const goPrevIdea = (): void => {
     if (currentMajorIndex === null || currentMajorIndex <= 0) {
       handleSeek(majorSteps[0]?.at ?? 0);
@@ -239,22 +326,115 @@ export function GuidedScenePlayer({
     handleSeek(majorSteps[next]!.at);
   };
 
+  const isPlaying = state.status === "playing";
+
+  /**
+   * Shared shortcut handling. Never intercepts while the learner is typing
+   * (input/textarea/select/contenteditable) and defers to native behavior on
+   * focused controls (Space on buttons, arrows on the scrubber).
+   */
+  const handleShortcut = useCallback(
+    (event: KeyboardEvent): void => {
+      if (isTypingTarget(event.target)) return;
+      const targetTag =
+        event.target instanceof HTMLElement ? event.target.tagName : "";
+
+      switch (event.key) {
+        case " ":
+          // A focused button already toggles on Space; don't double-fire.
+          if (targetTag === "BUTTON") return;
+          event.preventDefault();
+          if (engineRef.current?.getState().status === "playing") {
+            handlePause();
+          } else {
+            handlePlay();
+          }
+          break;
+        case "k":
+        case "K":
+          if (engineRef.current?.getState().status === "playing") {
+            handlePause();
+          } else {
+            handlePlay();
+          }
+          break;
+        case "ArrowLeft":
+          event.preventDefault();
+          seekBySeconds(-SEEK_STEP_SECONDS);
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          seekBySeconds(SEEK_STEP_SECONDS);
+          break;
+        case "r":
+        case "R":
+          handleReplay();
+          break;
+        case "f":
+        case "F":
+          toggleFullscreen();
+          break;
+        case "t":
+        case "T":
+          setTheater((current) => !current);
+          break;
+        case "[":
+          goPrevIdea();
+          break;
+        case "]":
+          goNextIdea();
+          break;
+        case "Escape":
+          setTheater(false);
+          break;
+        default:
+          break;
+      }
+    },
+    // Handlers read live engine state via refs; recreation is cheap and driven
+    // by the few values the chapter functions close over.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [seekBySeconds, toggleFullscreen, currentMajorIndex, majorSteps],
+  );
+
+  // In theater/fullscreen the player owns the page: listen document-wide so
+  // shortcuts work without needing focus inside the figure.
+  useEffect(() => {
+    if (!theater && !fullscreen) return;
+    const listener = (event: KeyboardEvent): void => handleShortcut(event);
+    document.addEventListener("keydown", listener);
+    return () => document.removeEventListener("keydown", listener);
+  }, [theater, fullscreen, handleShortcut]);
+
+  const onFigureKeyDown = (event: React.KeyboardEvent): void => {
+    // Document listener already handles these modes; avoid double-firing.
+    if (theater || fullscreen) return;
+    handleShortcut(event.nativeEvent);
+  };
+
   const stageTitle =
     currentMajorIndex !== null
       ? majorSteps[currentMajorIndex]?.title
       : majorSteps[0]?.title;
-
-  const isPlaying = state.status === "playing";
+  const stageSummary =
+    currentMajorIndex !== null
+      ? majorSteps[currentMajorIndex]?.summary
+      : majorSteps[0]?.summary;
 
   const majorCount = majorSteps.length;
 
   return (
     <figure
+      ref={figureRef}
       className="guided-scene-player"
       data-scene-id={sceneId}
       data-major-step={currentMajorStepId ?? undefined}
+      data-theater={theater || undefined}
+      data-fullscreen={fullscreen || undefined}
       role="region"
       aria-label={title ?? "Guided animation"}
+      tabIndex={0}
+      onKeyDown={onFigureKeyDown}
     >
       <div className="guided-scene-player__frame">
         <div
@@ -270,6 +450,11 @@ export function GuidedScenePlayer({
         <span className="guided-scene-player__stage-title">
           {stageTitle ?? "Ready to play"}
         </span>
+        {stageSummary && (
+          <span className="guided-scene-player__stage-summary">
+            {stageSummary}
+          </span>
+        )}
       </figcaption>
 
       {reducedMotion && (
@@ -338,29 +523,124 @@ export function GuidedScenePlayer({
                 aria-label={`Idea ${index + 1}: ${step.title}`}
                 aria-current={currentMajorIndex === index ? "step" : undefined}
                 data-active={currentMajorIndex === index}
-                title={step.title}
+                title={step.summary ? `${step.title} — ${step.summary}` : step.title}
                 onClick={() => handleSeek(step.at)}
               />
             ))}
           </div>
         )}
+
+        <div
+          className="guided-scene-player__display"
+          role="group"
+          aria-label="Display options"
+        >
+          {!reducedMotion && (
+            <div
+              className="guided-scene-player__speeds"
+              role="group"
+              aria-label="Playback speed"
+            >
+              {PLAYBACK_SPEEDS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className="guided-scene-player__speed"
+                  aria-pressed={speed === option}
+                  data-active={speed === option}
+                  onClick={() => handleSpeed(option)}
+                >
+                  {formatSpeed(option)}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            className="btn btn--ghost"
+            aria-pressed={theater}
+            onClick={() => setTheater((current) => !current)}
+          >
+            {theater ? "Exit theater" : "Theater"}
+          </button>
+          {fullscreenSupported && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              aria-pressed={fullscreen}
+              onClick={toggleFullscreen}
+            >
+              {fullscreen ? "Exit full screen" : "Full screen"}
+            </button>
+          )}
+        </div>
       </div>
 
       {state.canSeek && (
-        <label className="guided-scene-player__scrubber">
-          <span className="sr-only">Timeline scrubber</span>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.001}
-            value={state.progress}
-            onChange={(event) => handleSeek(Number(event.target.value))}
-            aria-label="Animation timeline"
-            aria-valuetext={`${Math.round(state.progress * 100)}%`}
-          />
-        </label>
+        <div className="guided-scene-player__timeline">
+          <label className="guided-scene-player__scrubber">
+            <span className="sr-only">Timeline scrubber</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.001}
+              value={state.progress}
+              onChange={(event) => handleSeek(Number(event.target.value))}
+              aria-label="Animation timeline"
+              aria-valuetext={`${Math.round(state.progress * 100)}%`}
+            />
+          </label>
+          {majorCount > 1 && (
+            <div
+              className="guided-scene-player__chapter-markers"
+              aria-hidden="true"
+            >
+              {majorSteps.map((step, index) => (
+                <span
+                  key={step.id}
+                  className="guided-scene-player__chapter-marker"
+                  data-active={currentMajorIndex === index}
+                  style={{ left: `${step.at * 100}%` }}
+                  title={step.title}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
+
+      <details className="guided-scene-player__shortcuts">
+        <summary>Keyboard shortcuts</summary>
+        <dl>
+          <div>
+            <dt>Space / K</dt>
+            <dd>play or pause</dd>
+          </div>
+          <div>
+            <dt>← / →</dt>
+            <dd>back / forward {SEEK_STEP_SECONDS}s</dd>
+          </div>
+          <div>
+            <dt>[ / ]</dt>
+            <dd>previous / next idea</dd>
+          </div>
+          <div>
+            <dt>R</dt>
+            <dd>replay</dd>
+          </div>
+          <div>
+            <dt>T</dt>
+            <dd>theater mode</dd>
+          </div>
+          {fullscreenSupported && (
+            <div>
+              <dt>F</dt>
+              <dd>full screen</dd>
+            </div>
+          )}
+        </dl>
+      </details>
 
       {state.error && (
         <div className="guided-scene-player__error" role="alert">
@@ -382,8 +662,19 @@ export function GuidedScenePlayer({
 
 export type { GuidedSceneFactory };
 
+function formatSpeed(speed: PlaybackSpeed): string {
+  return `${speed}×`;
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
+
 function majorStepIndex(
-  steps: readonly GuidedSceneStep[],
+  steps: readonly GuidedSceneChapter[],
   progress: number,
 ): number | null {
   if (steps.length === 0) return null;

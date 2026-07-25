@@ -13,6 +13,7 @@ import { getGuidedSceneFactory } from "../../guided-scenes/registry";
 import { getPlaybackBeats } from "../../guided-scenes/scenes/derivationSteps";
 import { GuidedScenePlayer } from "./GuidedScenePlayer";
 import { EigenClipModal } from "./EigenClipModal";
+import { DerivationStepNav } from "./DerivationStepNav";
 import type { ClipMode, ClipPosition } from "./clipPosition";
 import "./EigenClipStage.css";
 
@@ -185,15 +186,31 @@ export function EigenClipStage({
         </p>
       )}
 
-      {/* Single-renderer: unmount inline when modal is open.
-          Derivation-step nav lives only in the expand modal — the lesson page
-          already has its own notebook steps beside the clip. */}
+      {/* Single-renderer: unmount inline when modal is open. The derivation
+          step nav renders in BOTH placements — inline beside the clip and in
+          the expand modal — so clicking a derivation step highlights and seeks
+          without requiring Expand. (The page's notebook equations are static
+          prose; this nav is the playback-linked list.) */}
       {!expanded && (
         <div
           className="eigen-clip-stage__inline"
           data-testid="eigen-clip-inline"
+          data-has-steps={Boolean(
+            mode === "derivation" && beats && beats.length > 0,
+          )}
         >
-          {renderActiveViz({ autoplay: mode === "derivation" })}
+          <div className="eigen-clip-stage__inline-viz">
+            {renderActiveViz({ autoplay: mode === "derivation" })}
+          </div>
+          {mode === "derivation" && beats && beats.length > 0 && (
+            <DerivationStepNav
+              className="eigen-clip-stage__inline-steps"
+              beats={beats}
+              activeStepId={position.majorStepId}
+              onSelectStep={handleSelectStep}
+              compact
+            />
+          )}
         </div>
       )}
 

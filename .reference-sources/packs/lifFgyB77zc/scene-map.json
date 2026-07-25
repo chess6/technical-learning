@@ -1,0 +1,163 @@
+{
+  "videoId": "lifFgyB77zc",
+  "repoSlug": "xiaoxiae-videos",
+  "inspectedCommit": "f65794b0dfc81b225364ea776feac8326599cdaa",
+  "beats": [
+    {
+      "id": "fever-dream-hook",
+      "title": "Fever dream: AVL rotation gone wrong",
+      "start": 0,
+      "end": 28,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Fever"]
+      },
+      "whatChanges": "A binary tree performs a wrong rotation (subtrees swap positions via animated moves and edge Transforms) and comically fails, then an (a,b)-tree is revealed as the alternative.",
+      "invariant": "Nothing yet; this is a motivational hook establishing that rotations are fragile."
+    },
+    {
+      "id": "intro-vs-binary-search",
+      "title": "Generalizing binary search trees",
+      "start": 28,
+      "end": 124,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Intro", "IntroFix"]
+      },
+      "whatChanges": "An (a,b)-tree and a BST sit side by side; a search token descends both, and a degenerate insertion sequence makes the BST lean into a path.",
+      "invariant": "The comparison logic and sorted key order are identical in both structures; only node arity differs."
+    },
+    {
+      "id": "basics-anatomy",
+      "title": "Nodes, keys, leaves, and the (a,b) parameters",
+      "start": 124,
+      "end": 186,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Basics", "create_node", "ABTree"]
+      },
+      "whatChanges": "Bee icons morph into key numerals, less-than symbols appear between keys, each key's left/right subtrees are colored red/green, and blue child-count badges plus min/max arrows define a and b as (2,4).",
+      "invariant": "Keys remain sorted left to right and each key separates a smaller-key subtree from a larger-key subtree."
+    },
+    {
+      "id": "basics-invariants-and-operations",
+      "title": "Invariants: same-depth leaves and b >= 2a-1",
+      "start": 186,
+      "end": 227,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Basics"]
+      },
+      "whatChanges": "All leaves flash green as the same-layer rule is stated, a log(n) brace measures tree height, and the two inequalities plus the operations list are written beside the tree.",
+      "invariant": "All leaves sit on the same layer, which forces logarithmic depth."
+    },
+    {
+      "id": "search-walkthrough",
+      "title": "Search: found and not-found",
+      "start": 227,
+      "end": 273,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Search", "ABTree.search_but_like_animate"]
+      },
+      "whatChanges": "The target key token slides across question-mark slots inside each node, edges light up blue/orange/red as slots are tested, and the visited path dims to gray as the token descends.",
+      "invariant": "The tree itself never changes; only emphasis colors and the position of the searched-key token move."
+    },
+    {
+      "id": "insert-into-leaf-parent",
+      "title": "Insert lands in a leaf's parent and overflows it",
+      "start": 273,
+      "end": 299,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Insertion", "ABTree.insert"]
+      },
+      "whatChanges": "After a sped-up search, the falling key token transforms into a key slot inside the bottom node, the node border stretches, a new leaf and edge fade in, and the now five-child node turns red.",
+      "invariant": "All leaves stay on the same layer and sorted order is preserved; red marks the single violated node-size constraint."
+    },
+    {
+      "id": "overflow-pause-prompt",
+      "title": "Pause prompt: how would you fix it?",
+      "start": 299,
+      "end": 310,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["TransparentPause"]
+      },
+      "whatChanges": "A pause icon slides along a progress line overlaid on the frozen frame while the narration invites the viewer to predict the fix.",
+      "invariant": "The tree is frozen in its violating state so the viewer can reason about it."
+    },
+    {
+      "id": "split-bubble-up",
+      "title": "Split: the middle key travels up",
+      "start": 310,
+      "end": 340,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Insertion", "ABTree.bubble_insert", "create_node"]
+      },
+      "whatChanges": "The overfull border is swapped for two half-borders that pull apart, the middle key Transforms upward into its slot in the parent, side keys and subtrees glide into the two new nodes, then more inserts (8, 9) trigger the same split again.",
+      "invariant": "Every key persists as the same visual token throughout the split, and left-to-right sorted order never breaks."
+    },
+    {
+      "id": "split-validity-and-root-growth",
+      "title": "Why splits are safe; the root splits and the tree grows upward",
+      "start": 340,
+      "end": 366,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Insertion", "ABTree.bubble_insert"]
+      },
+      "whatChanges": "The camera zooms onto the two split halves while floor((b+1)/2) >= a is written beneath them, then a cascading split reaches the root, which splits into a new 2-child root as the camera widens.",
+      "invariant": "The leaf row stays anchored in place; the tree grows upward at the root, keeping all leaves at equal depth."
+    },
+    {
+      "id": "delete-easy-and-successor-swap",
+      "title": "Deletion: easy case and the successor swap",
+      "start": 366,
+      "end": 442,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Deletion", "ABTree.delete"]
+      },
+      "whatChanges": "A second-to-last-layer key vanishes with one leaf (animated as insertion played in reverse), then a root key is deleted, both replacement candidates glow orange, and the closest-larger key physically moves up into the empty root slot.",
+      "invariant": "The ordering relation between keys and subtrees is preserved by choosing the closest smaller or larger key as replacement."
+    },
+    {
+      "id": "underflow-merge-or-steal",
+      "title": "Underflow: merge with or steal from a neighbor",
+      "start": 442,
+      "end": 531,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Deletion", "ABTree.bubble_delete", "align_object_by_coords"]
+      },
+      "whatChanges": "The empty node turns red, an a)/b) options list appears, a merge plays as a split run backwards (parent key descends, borders fuse), braces verify (a-1)+a <= b, then a second deletion shows stealing: the neighbor's closest key rises to the parent while the parent key drops down.",
+      "invariant": "Leaves remain on one layer and every intermediate state keeps keys sorted; only node membership of keys changes."
+    },
+    {
+      "id": "selecting-ab-cache",
+      "title": "Choosing a and b: cache lines vs benchmarks",
+      "start": 531,
+      "end": 636,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["SelectingAB", "get_benchmark_graph"]
+      },
+      "whatChanges": "The letters a, b in the title morph into question marks, a CPU and cache-line diagram absorb node-sized blocks, and benchmark curves for insert/search/delete are drawn showing the optimum is not (2,4).",
+      "invariant": "The structure's logic and logarithmic guarantees are unchanged; only the practical constants depend on (a,b)."
+    },
+    {
+      "id": "usage-and-outro",
+      "title": "Where (a,b)-trees live, and outro",
+      "start": 636,
+      "end": 697,
+      "sceneSource": {
+        "file": "17-ab/scenes.py",
+        "classesOrFunctions": ["Usage", "Outro"]
+      },
+      "whatChanges": "The camera dives into individual leaf nodes of a 'Why should I care?' tree, each revealing lists (filesystems, language containers incl. R&B-tree note, databases), then pulls back for the outro.",
+      "invariant": "The tree itself is the stable framing device; only the camera and revealed text change."
+    }
+  ]
+}

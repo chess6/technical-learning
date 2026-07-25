@@ -14,7 +14,9 @@
     "typecheck": "tsc -b",
     "test:grading": "vitest run src/lessons src/math src/components/assessment",
     "test:content": "vitest run src/lessons/__tests__/contentValidation.test.ts",
-    "check:quick": "oxlint && tsc -b && npm run test:grading"
+    "check:quick": "oxlint && tsc -b && npm run test:grading",
+    "export:list": "node scripts/export-scene.mjs --list",
+    "export:scene": "node scripts/export-scene.mjs"
   },
   "dependencies": {
     "@motion-canvas/2d": "^3.17.2",

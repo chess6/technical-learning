@@ -1,0 +1,78 @@
+{
+  "$comment": "Committed record of the reference-only animation source cache. Directories under .reference-sources/animation-repos/ and .reference-sources/transcripts/ are Git-ignored; this manifest pins what was fetched and inspected. Refresh with scripts/fetch-animation-references.sh; rules in docs/engineering/reference-sources.md.",
+  "fetchedAt": "2026-07-24",
+  "repositories": [
+    {
+      "slug": "3b1b-videos",
+      "url": "https://github.com/3b1b/videos",
+      "inspectedCommit": "e317d6c5eaa8370a2deb4d148c246b0d0e9fbe6f",
+      "framework": "manim (3b1b/manim, manimlib)",
+      "license": "CC BY-NC-SA 4.0 (LICENSE.txt; non-commercial, share-alike)",
+      "usage": "reference-only",
+      "studyFocus": "visual continuity, composition, camera and framing discipline"
+    },
+    {
+      "slug": "reducible",
+      "url": "https://github.com/nipunramk/Reducible",
+      "inspectedCommit": "88f4f8f7da11443b4e995bf0c71683c55e2cf17b",
+      "framework": "manim (manimlib fork vendored in-repo)",
+      "license": "none declared",
+      "usage": "reference-only",
+      "studyFocus": "algorithm and tree choreography, stepwise reveals"
+    },
+    {
+      "slug": "xiaoxiae-videos",
+      "url": "https://github.com/xiaoxiae/videos",
+      "inspectedCommit": "f65794b0dfc81b225364ea776feac8326599cdaa",
+      "framework": "manim-community; per-video dirs with SCRIPT.md + scenes.py",
+      "license": "GPL-3.0 (copyleft: study only, never copy code)",
+      "usage": "reference-only",
+      "studyFocus": "(a,b)-trees / 2-3-4 trees; narration script paired with scene source"
+    },
+    {
+      "slug": "welch-labs-videos",
+      "url": "https://github.com/WelchLabs/videos",
+      "inspectedCommit": "4604d68f47b315b125a6f51b2daa13a1b3d3d251",
+      "framework": "manimgl + notebooks",
+      "license": "MIT (code); video content rights remain with creator",
+      "usage": "reference-only",
+      "studyFocus": "progression from exploratory notebooks to final animation"
+    },
+    {
+      "slug": "morphocular-video-code",
+      "url": "https://github.com/morpho-matters/video-code",
+      "inspectedCommit": "3024b051d208d9c731fd1f49a595ad13ef7b9c84",
+      "framework": "morpholib (creator's own library) + manim",
+      "license": "none declared",
+      "usage": "reference-only",
+      "studyFocus": "invariant-preserving transformations, morphing with identity"
+    },
+    {
+      "slug": "manim-js",
+      "url": "https://github.com/JazonJiao/Manim.js",
+      "inspectedCommit": "7cd0da52fab9300c48e05d71bc655151a52d8a79",
+      "framework": "p5.js (browser-native JS animation)",
+      "license": "none declared",
+      "usage": "reference-only",
+      "studyFocus": "browser-native graph/algorithm animation techniques"
+    },
+    {
+      "slug": "vivek3141-videos",
+      "url": "https://github.com/vivek3141/videos",
+      "inspectedCommit": "e05b97a560c678e0936d8ad934f658006ce54520",
+      "framework": "manim (manimlib)",
+      "license": "none declared",
+      "usage": "reference-only",
+      "studyFocus": "math visualization variety (secondary source)"
+    },
+    {
+      "slug": "far1din-manim",
+      "url": "https://github.com/far1din/manim",
+      "inspectedCommit": "a6eeb2fb1935a27c7b1ec7eb75b1663244ff0fc5",
+      "framework": "manim-community",
+      "license": "none declared",
+      "usage": "reference-only",
+      "studyFocus": "ML/CNN explanatory sequencing (secondary source)"
+    }
+  ]
+}

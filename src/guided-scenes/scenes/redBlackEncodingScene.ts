@@ -17,12 +17,23 @@ import { LABEL_BOTTOM_Y, LABEL_TOP_Y } from "./safeFrame";
  * Left: a 2–3–4 node drawn as a box of keys. Right: its binary encoding. Keys
  * arrive on the left and the encoding follows in the *same* frame, so the
  * learner watches the correspondence instead of being told it. Then the node
- * overflows, splits, and the split is seen to be the colour flip — the two reds
- * turning black and the representative turning red, with nothing moving.
+ * overflows and — after an explicit prediction prompt — splits, with the split
+ * seen to be the colour flip: the left panel's key travel and the right
+ * panel's tweened recolour run simultaneously, every node object keeping its
+ * identity. The arriving key then settles into its new home (a red child of
+ * its neighbour, both panels), and a dedicated beat reads the conserved black
+ * height off the picture before the violation is traced upward.
  *
  * Deliberately a single cluster rather than a whole tree: the insight is about
  * what one node *is*, and a full tree at this size would make the colour change
  * — the actual subject — the smallest thing on screen.
+ *
+ * Choreography informed by the reference packs (see
+ * .reference-sources/packs/lifFgyB77zc — Sláma's (a,b)-trees): keys travel and
+ * are never faded out/in; the leaf row stays pinned so height grows upward at
+ * the root; red is reserved for data (extra keys) while the violation marker
+ * uses a distinct colour, because Sláma's red-means-violation grammar would
+ * collide with red-black data colours.
  */
 
 const KEYS = RBT_FOUR_NODE.keys; // [20, 30, 40]
@@ -86,12 +97,23 @@ function makeCircleNode(key: number, pos: Vector2, red: boolean): Node {
   return group;
 }
 
-/** Recolour an already-built circle node in place (fill, stroke, label). */
-function paint(group: Node, red: boolean): void {
+/**
+ * Tweened recolour: the colour flip is the subject of the split beat, so it
+ * must be *watchable* — running over the same duration as the left panel's key
+ * travel, never snapping. The node objects themselves are reused (identity is
+ * preserved; only paint changes).
+ */
+function* paintTween(
+  group: Node,
+  red: boolean,
+  duration: number,
+): ThreadGenerator {
   const [circle, label] = group.children() as [Circle, Txt];
-  circle.fill(red ? ROLE.result : ROLE.background);
-  circle.stroke(red ? ROLE.result : ROLE.textMuted);
-  label.fill(red ? ROLE.background : ROLE.text);
+  yield* all(
+    circle.fill(red ? ROLE.result : ROLE.background, duration, easeInOutCubic),
+    circle.stroke(red ? ROLE.result : ROLE.textMuted, duration, easeInOutCubic),
+    label.fill(red ? ROLE.background : ROLE.text, duration, easeInOutCubic),
+  );
 }
 
 function makeSmallLabel(text: string, pos: Vector2, color: string): Txt {
@@ -121,14 +143,16 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   const title = makeOverlayLabel("", ROLE.text, 28);
   title.position(new Vector2(0, LABEL_TOP_Y));
 
+  // Panel labels sit high enough that the promoted key's lift during the
+  // split (to CLUSTER_Y − 96) never runs into them.
   const panelLeft = makeSmallLabel(
     "2–3–4 tree",
-    new Vector2(LEFT_X, CLUSTER_Y - 110),
+    new Vector2(LEFT_X, CLUSTER_Y - 145),
     ROLE.basis1,
   );
   const panelRight = makeSmallLabel(
     "its binary encoding",
-    new Vector2(RIGHT_X, CLUSTER_Y - 110),
+    new Vector2(RIGHT_X, CLUSTER_Y - 145),
     ROLE.original,
   );
 
@@ -136,9 +160,11 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   const cells = KEYS.map((key, index) =>
     makeKeyCell(key, new Vector2(cellX(index, 3), CLUSTER_Y)),
   );
+  // Waits with a clear gap to the box: 35 drawn flush after 40 would read as
+  // a fourth in-box key breaking sorted order. It "knocks" from outside.
   const arrivingCell = makeKeyCell(
     ARRIVING,
-    new Vector2(cellX(3, 4) + 24, CLUSTER_Y),
+    new Vector2(cellX(3, 4) + 64, CLUSTER_Y),
   );
 
   // ---- right panel: black representative + up to two red children ---------
@@ -181,6 +207,23 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
     opacity: 0,
   });
 
+  // The arriving key's final home after the split: a red child under the (now
+  // black) right node — the same "extra key hangs off in red" rule as before.
+  const red35 = makeCircleNode(
+    ARRIVING,
+    new Vector2(RIGHT_X + 34, CLUSTER_Y + 132),
+    true,
+  );
+  const edge35 = new Line({
+    points: [
+      new Vector2(RIGHT_X + 66, CLUSTER_Y + 84),
+      new Vector2(RIGHT_X + 46, CLUSTER_Y + 108),
+    ],
+    stroke: ROLE.axis,
+    lineWidth: 3,
+    opacity: 0,
+  });
+
   const bhLabel = makeSmallLabel(
     "black height 1 — the reds add keys, not levels",
     new Vector2(0, LABEL_BOTTOM_Y - 48),
@@ -194,7 +237,9 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
 
   view.add(edgeLeft);
   view.add(edgeRight);
+  view.add(edge35);
   view.add(clusterRing);
+  view.add(red35);
   for (const cell of cells) view.add(cell);
   view.add(arrivingCell);
   view.add(rep);
@@ -279,26 +324,58 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       title.text(`A fourth key — ${ARRIVING} — and no room`);
       caption.text("The node is full. In a 2–3–4 tree, a full node splits.");
       yield* all(show(bhLabel, false, 0.3), show(arrivingCell, true, 0.6));
-      yield* waitFor(seconds.overflow! - 0.9);
+      yield* waitFor(1.4);
+      // Prediction before the reveal: name what must stay fixed before seeing
+      // the repair. runSegment pads the rest of the segment as think time.
+      caption.text(
+        `Predict: which key is promoted — and does the right panel MOVE, or RECOLOUR?`,
+      );
     },
 
     *["split-is-recolour"]() {
       title.text("The split IS the colour flip");
       caption.text(
-        `${PROMOTED} is promoted into the parent; the other two become their own 2-nodes. On the right, nothing moved — the colours flipped.`,
+        `${PROMOTED} is promoted into the parent; the other two become their own 2-nodes. On the right, nothing moves — the colours flip.`,
       );
-      // Left: the box breaks into two, with the middle key lifted out.
+      // Left: the box breaks in two with the middle key lifted out, while the
+      // right panel enacts the SAME event as colour alone — one motion, two
+      // views, and every node object keeps its identity.
       yield* all(
         cells[1]!.position(new Vector2(LEFT_X, CLUSTER_Y - 96), 0.9, easeInOutCubic),
         cells[0]!.position(new Vector2(LEFT_X - 70, CLUSTER_Y + 52), 0.9, easeInOutCubic),
         cells[2]!.position(new Vector2(LEFT_X + 70, CLUSTER_Y + 52), 0.9, easeInOutCubic),
-        show(arrivingCell, false, 0.4),
+        paintTween(rep, true, 0.9),
+        paintTween(redLeft, false, 0.9),
+        paintTween(redRight, false, 0.9),
       );
-      // Right: the same event, as colour only.
-      paint(rep, true);
-      paint(redLeft, false);
-      paint(redRight, false);
-      yield* waitFor(seconds["split-is-recolour"]! - 0.9);
+      yield* waitFor(0.6);
+      // Close the loop: the arriving key finally fits — it slides into the
+      // right-hand 2-node (left panel) and hangs off it in red (right panel).
+      caption.text(
+        `And ${ARRIVING} finally fits: into the ${KEYS[2]} node — as a red child, same rule as before.`,
+      );
+      yield* all(
+        arrivingCell.position(
+          new Vector2(LEFT_X + 70 - (CELL_W - 6) / 2 - 3, CLUSTER_Y + 52),
+          0.7,
+          easeInOutCubic,
+        ),
+        cells[2]!.position(
+          new Vector2(LEFT_X + 70 + (CELL_W - 6) / 2 + 3, CLUSTER_Y + 52),
+          0.7,
+          easeInOutCubic,
+        ),
+      );
+      yield* all(show(edge35, true, 0.4), show(red35, true, 0.4));
+    },
+
+    *["invariant-held"]() {
+      title.text("What the flip conserved");
+      caption.text(
+        "Count blacks downward: one on every path, exactly as before. The split changed colours, not counts.",
+      );
+      bhLabel.text("black height still 1 — the flip changed colours, not counts");
+      yield* show(bhLabel, true, 0.5);
     },
 
     *["violation-moves-up"]() {
@@ -315,10 +392,9 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       caption.text(
         "At the root there is nowhere to promote to: the root is simply forced black again, and every path gains one black node at once.",
       );
-      paint(rep, false);
       bhLabel.text("black height 2 — on every path, at the same moment");
-      yield* all(show(marker, false, 0.4), show(bhLabel, true, 0.5));
-      yield* waitFor(seconds["root-split"]! - 0.5);
+      yield* all(paintTween(rep, false, 0.6), show(marker, false, 0.4));
+      yield* waitFor(seconds["root-split"]! - 0.6);
     },
   };
 

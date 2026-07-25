@@ -1,4 +1,4 @@
-import type { GuidedSceneStep } from "../engine/types";
+import type { GuidedSceneChapter } from "../engine/types";
 import {
   LINEAR_COMBINATION_SEGMENTS,
   MATRIX_TRANSFORMATION_SEGMENTS,
@@ -29,21 +29,23 @@ export interface GuidedSceneMeta {
   size: { width: number; height: number };
   ariaLabel: string;
   /** All timeline beats (scrubber / progress). */
-  steps: GuidedSceneStep[];
+  steps: GuidedSceneChapter[];
   /**
-   * Major conceptual stages for Prev/Next idea controls.
-   * A subset of {@link steps}; learner UI should prefer these.
+   * Major conceptual stages ("chapters") for Prev/Next idea controls,
+   * timeline markers, and chapter jumps. A subset of {@link steps}; learner
+   * UI should prefer these. Optional per-segment summaries are authored in
+   * sceneTimings.ts beside the durations.
    */
-  majorSteps: GuidedSceneStep[];
+  majorSteps: GuidedSceneChapter[];
 }
 
 function pickMajor(
-  steps: GuidedSceneStep[],
+  steps: GuidedSceneChapter[],
   ids: readonly string[],
-): GuidedSceneStep[] {
+): GuidedSceneChapter[] {
   return ids
     .map((id) => steps.find((step) => step.id === id))
-    .filter((step): step is GuidedSceneStep => Boolean(step));
+    .filter((step): step is GuidedSceneChapter => Boolean(step));
 }
 
 const LINEAR_STEPS = toSteps(LINEAR_COMBINATION_SEGMENTS);
@@ -265,9 +267,10 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "red-black-encoding",
     size: SCENE_SIZE,
     ariaLabel:
-      "Red-black trees: a 2-3-4 node drawn beside its binary encoding, gaining keys as red children, then overflowing and splitting — with the split shown to be the colour flip that promotes the middle key.",
+      "Red-black trees: a 2-3-4 node drawn beside its binary encoding, gaining keys as red children, then overflowing. After a prediction prompt, the split is shown to be the colour flip that promotes the middle key — happening simultaneously in both panels while every node keeps its identity — the arriving key settles as a red child of its new neighbour, and the unchanged black height is read off before the violation is traced upward.",
     steps: RED_BLACK_STEPS,
     majorSteps: pickMajor(RED_BLACK_STEPS, [
+      "establish",
       "encode-2node",
       "encode-3node",
       "encode-4node",
@@ -275,6 +278,8 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "read-off-r3",
       "overflow",
       "split-is-recolour",
+      "invariant-held",
+      "violation-moves-up",
       "root-split",
     ]),
   },

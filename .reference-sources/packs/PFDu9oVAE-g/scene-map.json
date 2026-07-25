@@ -1,0 +1,151 @@
+{
+  "videoId": "PFDu9oVAE-g",
+  "repoSlug": "3b1b-videos",
+  "inspectedCommit": "e317d6c5eaa8370a2deb4d148c246b0d0e9fbe6f",
+  "beats": [
+    {
+      "id": "prereqs",
+      "title": "Why eigen-things feel confusing; prerequisite mental models",
+      "start": 19.9,
+      "end": 80.0,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["StudentsFindThisConfusing", "EigenThingsArentAllThatBad", "ManyPrerequisites"]
+      },
+      "whatChanges": "Pi-creature classroom reacts to the title; the det(A-lambda I)=0 equation appears in a speech bubble as a scary artifact; four prerequisite cards (transformations, determinants, linear systems, change of basis) fade in.",
+      "invariant": "No geometry yet; the equation is planted early so the later derivation lands as the payoff of the whole video."
+    },
+    {
+      "id": "introduce-example",
+      "title": "The example transformation [[3,1],[0,2]] and a vector knocked off its span",
+      "start": 80.0,
+      "end": 117.4,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["IntroduceExampleTransformation", "VectorKnockedOffSpan"]
+      },
+      "whatChanges": "Grid transforms under the running example matrix; coordinate labels at the tips of i-hat and j-hat morph into the columns of the pinned matrix; a sample vector's span line is drawn, then the transform knocks the vector off it.",
+      "invariant": "The matrix stays pinned top-left as a foreground mobject over the moving grid; the faded background grid never moves; the span line stays fixed while the vector leaves it."
+    },
+    {
+      "id": "vectors-on-their-span",
+      "title": "Special vectors that stay on their span: x-axis (x3) and the (-1,1) line (x2)",
+      "start": 117.4,
+      "end": 202.5,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["VectorRemainsOnSpan", "IHatAsEigenVector", "AllXAxisVectorsAreEigenvectors", "SneakierEigenVector", "FullSneakyEigenspace"]
+      },
+      "whatChanges": "One vector at a time: (1,-1)-direction vector rides its span; i-hat stretches to 3 with the first matrix column highlighted; a fan of x-axis vectors stretches; the sneaky (-1,1) vector stretches by 2 with its coordinate label moving to the doubled tip; the whole diagonal eigenspace stretches.",
+      "invariant": "Span lines (maroon) are drawn before each transform and stay put; path_arc=0 makes vectors slide along their spans instead of arcing; the same example matrix stays pinned."
+    },
+    {
+      "id": "naming-eigen",
+      "title": "Naming: eigenvectors, eigenvalues; negative eigenvalue example",
+      "start": 202.5,
+      "end": 244.5,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["NameEigenvectorsAndEigenvalues", "CanEigenvaluesBeNegative", "EigenvalueNegativeOneHalf"]
+      },
+      "whatChanges": "Both eigenline fans shown together; labels 'Stretched by 3/2' morph into 'Eigenvectors ... with eigenvalue 3/2'; a pink non-eigenvector gets knocked off its faded red span for contrast; a separate matrix flips-and-squishes a vector by -1/2 and the span wiggles to emphasize the vector stayed on it.",
+      "invariant": "The stay-on-span criterion is restated visually for every case; color separates eigen (yellow/maroon gradients) from non-eigen (pink/red)."
+    },
+    {
+      "id": "3d-rotation-motivation",
+      "title": "Why care: eigenvector of a 3D rotation is its axis",
+      "start": 244.5,
+      "end": 315.5,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["ThreeDShowRotationWithEigenvector", "EigenvectorToAxisOfRotation", "EigenvalueOne", "ContrastMatrixUnderstandingWithEigenvalue", "DeduceTransformationFromMatrix"]
+      },
+      "whatChanges": "3D cube rotates around a fixed vector; the word 'Eigenvector' morphs into 'Axis of rotation'; a friendly 'rotate 30 degrees around [2,3,1]' description morphs into an ugly 3x3 trig matrix; back in 2D the columns-to-basis-vectors reading is shown then criticized as coordinate-bound.",
+      "invariant": "The message stays: eigen-analysis reveals what a transformation does independent of the coordinate grid."
+    },
+    {
+      "id": "symbolic-setup",
+      "title": "Av = lambda v, rewriting with lambda I, and (A - lambda I)v = 0",
+      "start": 315.5,
+      "end": 449.3,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["WordsOnComputation", "SymbolicEigenvectors", "NonZeroSolutionsVisually"]
+      },
+      "whatChanges": "The equation Av = lambda v is built term by term with braces naming each part; the RHS becomes (lambda I)v via a lambda-diagonal matrix; terms slide (MoveToTarget with path arcs) into (A - lambda I)v = 0; then a rank-deficient matrix visually squishes the plane to a line while the equation sits in the corner.",
+      "invariant": "It is the same equation morphing in place, never retyped: v stays yellow and lambda stays maroon through every rearrangement, so each algebra step reads as motion of persistent symbols."
+    },
+    {
+      "id": "tweak-lambda",
+      "title": "Turning the lambda knob until det(A - lambda I) = 0",
+      "start": 449.3,
+      "end": 568.3,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["TweakLambda", "ShowEigenVectorAfterComputing", "LineOfReasoning", "IfYouDidntKnowDeterminants"]
+      },
+      "whatChanges": "For A = [[2,2],[1,3]], lambda is animated continuously (0 to 3, back to 0.5, settling at 1); the matrix's diagonal entries, the grid, the unit square, and a live determinant readout all update in lockstep until the plane collapses at lambda = 1; then the found eigenvector rides its span; the four-line reasoning chain Av=lambda v to det=0 is stacked.",
+      "invariant": "One scalar (lambda) drives numbers and geometry simultaneously, so 'det becomes 0' and 'plane squishes to a line' are visibly the same event. Explicit pause-and-ponder at 9:06."
+    },
+    {
+      "id": "revisit-example",
+      "title": "Full computation on the running example: eigenvalues 2 and 3, eigenline of (-1,1)",
+      "start": 568.3,
+      "end": 646.3,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["RevisitExampleTransformation"]
+      },
+      "whatChanges": "The lambda symbol physically flies into both diagonal entries making 3-lambda, 2-lambda; entry copies slide out to build the determinant product (3-lambda)(2-lambda)=0; lambda=2 is substituted back into the diagonal, the plane resets and A-2I visibly collapses everything onto the (-1,1) line; then the matrix is restored to unaltered A which stretches that same line by 2.",
+      "invariant": "Same pinned matrix, same grid, same eigenline as beats 2-4: the algebraic detour ends by replaying the geometric fact it predicts, on the same objects."
+    },
+    {
+      "id": "rotation-no-real-eigenvalues",
+      "title": "90-degree rotation: no eigenvectors, lambda^2 + 1 = 0",
+      "start": 646.3,
+      "end": 695.5,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["ThereMightNotBeEigenvectors", "Rotate90Degrees", "Rotate90DegreesWithVector", "SolveRotationEigenvalues"]
+      },
+      "whatChanges": "The rotation grid turns with a sample vector leaving its span; diagonal entries morph into -lambda; the determinant expands to lambda^2 + 1 with roots i and -i; an on-screen text aside links complex eigenvalues to rotation.",
+      "invariant": "Same computation choreography as the previous beat, so the failure case (no real roots) is read against the identical procedure."
+    },
+    {
+      "id": "shear-and-scaling",
+      "title": "Shear (one eigenline, lambda = 1) and uniform scaling (every vector eigen)",
+      "start": 695.5,
+      "end": 783.5,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["ShearExample", "EigenvalueCanHaveMultipleEigenVectors", "ScalingExample"]
+      },
+      "whatChanges": "The shear fixes the x-axis fan while everything else slants; the same lambda-into-diagonal and determinant choreography yields (1-lambda)^2 and the single root 1; then 2I scales three random-colored vectors, all eigen with eigenvalue 2.",
+      "invariant": "Geometry first, algebra second, and they must agree; the x-axis eigen-fan uses the same yellow-to-green gradient as before. Pause-and-ponder at 12:42."
+    },
+    {
+      "id": "diagonal-matrices",
+      "title": "Basis vectors as eigenvectors: diagonal matrices and easy powers",
+      "start": 783.5,
+      "end": 876.1,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["BasisVectorsAreEigenvectors", "DefineDiagonalMatrix", "RepeatedMultiplicationInAction", "RepeatedMultilpicationOfMatrices", "RepeatedMultilpicationOfNonDiagonalMatrices"]
+      },
+      "whatChanges": "A matrix scaling i-hat by -1 and j-hat by 2 is applied one axis at a time; tip coordinates again fly into the matrix columns; diagonal entries pulse in maroon; repeated multiplication collapses to eigenvalue powers, versus an angry pi-creature for the non-diagonal 100th power.",
+      "invariant": "The tip-coordinates-become-columns move recurs, and lambda-maroon marks diagonal entries as eigenvalues wherever they appear."
+    },
+    {
+      "id": "eigenbasis",
+      "title": "Change to an eigenbasis; sandwich to a diagonal matrix; closing puzzle",
+      "start": 876.1,
+      "end": 1035.0,
+      "sceneSource": {
+        "file": "_2016/eola/chapter10.py",
+        "classesOrFunctions": ["ChangeToEigenBasis", "CannotDoWithWithAllTransformations"]
+      },
+      "whatChanges": "Both eigen-fans reappear on the running example and the transform plays there-and-back; one vector from each fan survives as new basis; their tip coordinates fly in to form the change-of-basis matrix, its inverse copy swings to the left of A; the grid is redrawn skewed to the eigenbasis (with a grey ghost copy) and the transform now reads as pure scaling equal to diag(3,2).",
+      "invariant": "The same transformation and the same eigenlines from beat 3 persist; only the coordinate grid painted over them changes, which is the whole point of an eigenbasis."
+    }
+  ]
+}

@@ -168,7 +168,7 @@ describe("EigenClipStage", () => {
     expect(document.activeElement).toBe(expand);
   });
 
-  it("shows derivation steps only in the expand modal and seeks on click", async () => {
+  it("shows derivation steps inline and in the expand modal, seeking on click", async () => {
     render(
       <EigenClipStage
         sceneId="eigenvectors-derivation"
@@ -176,15 +176,51 @@ describe("EigenClipStage", () => {
       />,
     );
 
-    // Main page already has notebook steps — no duplicate nav inline.
-    expect(screen.queryByTestId("derivation-step-nav")).toBeNull();
+    // The playback-linked step nav renders on the default page too — clicking
+    // a derivation step must work without opening Expand.
+    const inlineNav = screen.getByTestId("derivation-step-nav");
+    expect(
+      inlineNav.closest('[data-testid="eigen-clip-inline"]'),
+    ).toBeTruthy();
+
+    const inlineShift = inlineNav.querySelector(
+      '[data-step-id="shift"] button',
+    ) as HTMLButtonElement | null;
+    expect(inlineShift).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(inlineShift!);
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
+      ).toBe("shift");
+    });
+    expect(
+      inlineNav
+        .querySelector('[data-step-id="shift"]')
+        ?.getAttribute("data-active"),
+    ).toBe("true");
+
+    // Return to the first beat so the modal assertions below are unchanged.
+    const inlineRecap = screen
+      .getByTestId("derivation-step-nav")
+      .querySelector('[data-step-id="recap"] button') as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(inlineRecap);
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
+      ).toBe("recap");
+    });
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-expand-clip"));
     });
     const modal = await screen.findByTestId("eigen-clip-modal");
     expect(modal.getAttribute("data-major-step")).toBe("recap");
-    expect(screen.getByTestId("derivation-step-nav")).toBeTruthy();
+    // Single renderer, single nav: the inline one unmounts while expanded.
+    expect(screen.getAllByTestId("derivation-step-nav")).toHaveLength(1);
 
     const shift = modal.querySelector(
       '[data-step-id="shift"] button',
@@ -213,7 +249,16 @@ describe("EigenClipStage", () => {
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
       ).toBe("shift");
     });
-    expect(screen.queryByTestId("derivation-step-nav")).toBeNull();
+    // Back inline: the nav is still there and still marks the active beat.
+    const navAfterClose = screen.getByTestId("derivation-step-nav");
+    expect(
+      navAfterClose.closest('[data-testid="eigen-clip-inline"]'),
+    ).toBeTruthy();
+    expect(
+      navAfterClose
+        .querySelector('[data-step-id="shift"]')
+        ?.getAttribute("data-active"),
+    ).toBe("true");
   });
 
   it("disposes engines cleanly after open/close cycles", async () => {

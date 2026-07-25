@@ -1,0 +1,14 @@
+{
+  "videoId": "B3y0RsVCyrw",
+  "title": "Huffman Codes: An Information Theory Perspective",
+  "channel": "Reducible",
+  "uploadDate": "20210730",
+  "sourceUrl": "https://www.youtube.com/watch?v=B3y0RsVCyrw",
+  "captionProvenance": "automatic",
+  "repoSlug": "reducible",
+  "repoUrl": "https://github.com/nipunramk/Reducible",
+  "inspectedCommit": "88f4f8f7da11443b4e995bf0c71683c55e2cf17b",
+  "sceneSources": ["2021/Huffman/huffman.py"],
+  "license": "none declared",
+  "usage": "reference-only"
+}

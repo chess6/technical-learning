@@ -448,7 +448,8 @@ model precisely is the first line of defense: "coordinates are not the vector; t
 ## 8. Animation philosophy (the pedagogy layer)
 
 authoring/lesson-design.md owns animation *choreography* (autoplay rules, safe frame,
-Play/Pause/Replay, one-change-at-a-time, establishing first frame). This section
+Play/Pause/Replay, chapters/summaries, playback speed, theater/fullscreen,
+keyboard shortcuts, one-change-at-a-time, establishing first frame). This section
 owns what an animation is *for*.
 
 An animation exists to **make a change of state thinkable**. Its pedagogical jobs:

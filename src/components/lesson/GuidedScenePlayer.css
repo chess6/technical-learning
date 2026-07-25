@@ -9,6 +9,89 @@
   min-height: 14rem;
 }
 
+.guided-scene-player:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+/* container-type on the watch/worked-example wrappers creates layout
+   containment, which would trap this fixed overlay inside the column (and
+   under the app header). Release containment while theater is active; it is
+   restored the moment the overlay closes. Native fullscreen needs no release
+   (the top layer escapes stacking contexts). */
+.phase--watch .phase__body:has(.guided-scene-player[data-theater]),
+.worked-example__body:has(.guided-scene-player[data-theater]) {
+  container-type: normal;
+}
+
+/* Theater mode: fixed in-app overlay. The same element (and engine) stays
+   mounted — only the layout changes, so playback continues uninterrupted. */
+.guided-scene-player[data-theater] {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  height: 100vh;
+  min-height: 0;
+  padding: clamp(0.75rem, 2vw, 2rem) clamp(0.75rem, 4vw, 4rem);
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--color-canvas) 92%, black);
+  backdrop-filter: blur(2px);
+}
+
+.guided-scene-player[data-theater] .guided-scene-player__frame {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.guided-scene-player[data-theater] .guided-scene-player__canvas {
+  max-height: min(72vh, 60rem);
+}
+
+.guided-scene-player[data-theater] .guided-scene-player__stage-eyebrow,
+.guided-scene-player[data-theater] .guided-scene-player__stage-title,
+.guided-scene-player[data-theater] .guided-scene-player__stage-summary,
+.guided-scene-player[data-theater] .btn--ghost,
+.guided-scene-player[data-theater] .guided-scene-player__speed,
+.guided-scene-player[data-theater] .guided-scene-player__shortcuts {
+  color: var(--color-canvas-text);
+}
+
+.guided-scene-player[data-theater] .guided-scene-player__shortcuts dt {
+  color: var(--color-canvas-muted);
+}
+
+/* True fullscreen (Fullscreen API on the figure). */
+.guided-scene-player:fullscreen {
+  padding: clamp(0.75rem, 2vw, 2rem) clamp(0.75rem, 4vw, 4rem);
+  overflow-y: auto;
+  background: var(--color-canvas);
+}
+
+.guided-scene-player:fullscreen .guided-scene-player__frame {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.guided-scene-player:fullscreen .guided-scene-player__canvas {
+  max-height: min(76vh, 80rem);
+}
+
+.guided-scene-player:fullscreen .guided-scene-player__stage-eyebrow,
+.guided-scene-player:fullscreen .guided-scene-player__stage-title,
+.guided-scene-player:fullscreen .guided-scene-player__stage-summary,
+.guided-scene-player:fullscreen .btn--ghost,
+.guided-scene-player:fullscreen .guided-scene-player__speed,
+.guided-scene-player:fullscreen .guided-scene-player__shortcuts {
+  color: var(--color-canvas-text);
+}
+
+.guided-scene-player:fullscreen .guided-scene-player__shortcuts dt {
+  color: var(--color-canvas-muted);
+}
+
 /* Subtle warm frame around the dark canvas — an illustration on the page. */
 .guided-scene-player__frame {
   padding: var(--space-3);
@@ -67,6 +150,13 @@
   color: var(--color-text);
   line-height: var(--leading-snug);
   text-wrap: balance;
+}
+
+.guided-scene-player__stage-summary {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-snug);
+  text-wrap: pretty;
 }
 
 .guided-scene-player__reduced-note {
@@ -131,6 +221,48 @@
   transform: scale(1.15);
 }
 
+/* Compact display options: speed group + theater/fullscreen toggles. */
+.guided-scene-player__display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.guided-scene-player__speeds {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+}
+
+.guided-scene-player__speed {
+  padding: 0.15rem 0.45rem;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.guided-scene-player__speed:hover {
+  color: var(--color-text);
+}
+
+.guided-scene-player__speed[data-active="true"] {
+  background: var(--color-primary);
+  color: var(--color-on-accent);
+}
+
+.guided-scene-player__timeline {
+  position: relative;
+  padding-bottom: 0.55rem;
+}
+
 .guided-scene-player__scrubber {
   display: block;
   padding: 0 var(--space-1);
@@ -140,6 +272,61 @@
   width: 100%;
   height: 4px;
   accent-color: var(--color-primary);
+}
+
+/* Chapter tick marks under the scrubber, aligned to normalized positions.
+   Decorative: the idea dots are the accessible jump controls. */
+.guided-scene-player__chapter-markers {
+  position: absolute;
+  left: var(--space-1);
+  right: var(--space-1);
+  bottom: 0;
+  height: 0.45rem;
+  pointer-events: none;
+}
+
+.guided-scene-player__chapter-marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--color-divider-strong);
+  transform: translateX(-50%);
+}
+
+.guided-scene-player__chapter-marker[data-active="true"] {
+  background: var(--color-primary);
+}
+
+.guided-scene-player__shortcuts {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+
+.guided-scene-player__shortcuts summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.guided-scene-player__shortcuts dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-2) 0 0;
+}
+
+.guided-scene-player__shortcuts dl div {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.guided-scene-player__shortcuts dt {
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.guided-scene-player__shortcuts dd {
+  margin: 0;
 }
 
 .guided-scene-player__error {

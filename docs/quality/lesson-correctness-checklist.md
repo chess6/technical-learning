@@ -1561,3 +1561,29 @@ It is the course's last lesson and therefore has no Next link.
 - [x] No optimality claim: the lesson proves sufficiency and a logarithmic bound,
   not that red-black balance is minimal.
 
+
+---
+
+## Guided-scene revision — red-black encoding + player controls (2026-07-24)
+
+Scope: no grading semantics touched. `red-black-encoding` scene revised per
+[guided-animation-audit-2026-07.md](guided-animation-audit-2026-07.md): the
+split's colour flip is a watchable tween simultaneous with the 2–3–4 key
+travel (same node objects); the arriving key 35 now completes its arc into
+the freed 2-node / red child of 40 instead of vanishing; a prediction prompt
+precedes the reveal; a new `invariant-held` beat reads the conserved black
+height off the picture (still 1 after the flip — one black on every path
+through the cluster; 2 only after the root split, uniformly), matching what
+`redBlackTrees.test.ts` proves about the model. All 11 beats are chapters
+with summaries; `violation-moves-up` is reachable via Prev/Next.
+
+- [x] Displayed black-height claims re-derived against the encoding
+      (one black crossed per cluster on every path; root split adds one
+      level to all paths at once).
+- [x] Sorted order preserved by the new choreography: 35 enters left of 40;
+      right panel nodes never move.
+- [x] Timing metadata and scene bodies share `RED_BLACK_SEGMENTS`
+      (`runSegment` measured padding); step markers verified by
+      `sceneTimings.test.ts` monotonicity and `lessonWiring.test.ts`.
+- [x] Player controls (speed/theater/fullscreen/keyboard/chapters) covered by
+      `GuidedScenePlayer.test.tsx`; verified at package tier with e2e.
