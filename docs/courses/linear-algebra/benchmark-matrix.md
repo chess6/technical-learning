@@ -114,8 +114,8 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 | Topic | P1 bar | P2 bar | P3 bar | Current spine **[repo]** | Missing / deferred |
 | --- | --- | --- | --- | --- | --- |
-| Composition & inverses (L6) | Multiply matrices; compute \(A^{-1}\) (2×2/3×3) (E3). | + when to *avoid* inverses; solve via factorization (E4). | + prove invertibility ⇔ trivial null space; both directions (E6). | **Future** (`matrix-composition`). | Whole lesson unbuilt. |
-| Determinants (L7) | Compute; det=0 ⇔ singular (E3). | + volume scaling, Cramer's cost caveats (E4). | + multilinear/alternating definition; det **late** [ext-Axler] (E6). | Built; signed-area model, edge cases. | Cofactor/\(n\times n\) expansion (P1/P2); axiomatic definition (P3). |
+| Composition & inverses (L6) | Multiply matrices; compute \(A^{-1}\) (2×2/3×3) (E3). | + when to *avoid* inverses; solve via factorization (E4). | + prove invertibility ⇔ trivial null space; both directions (E6). | **Built**; product derived from the columns rule, inverse built by solving \(A\mathbf{x}=\mathbf{e}_j\), six-way invertibility criterion, reversal rule; the "avoid inverses" caveat is stated. | \(3\times3\)/\(n\times n\) products and inverses (P1/P2); LU/factorization solve (P2); learner-constructed proof of the criterion (P3 — a derivation is shown, not constructed). |
+| Determinants (L7) | Compute; det=0 ⇔ singular (E3). | + volume scaling, Cramer's cost caveats (E4). | + multilinear/alternating definition; det **late** [ext-Axler] (E6). | Built and **deepened**; \(ad-bc\) derived from area, six-way criterion tied to L5/L6, multiplicativity, row-operation rules derived via elementary matrices, determinant by elimination, 3D volume, conditioning boundary case. | Cofactor/\(n\times n\) expansion (P1/P2); Cramer cost analysis (P2); axiomatic multilinear definition (P3). |
 
 ### Structure (L8, L9, L10)
 
@@ -140,18 +140,23 @@ levels reference [COURSE §5](../../authoring/mastery-standard.md#5-evidence-lev
 
 Distilling the tables — honest, **[repo]**-derived:
 
-1. **Only 8 of 15 spine nodes are built** (Ch0, L1, L2, L3, L4, L5, L7,
-   L11-intro); the structural core (L6, L8, L9, L10) and the geometry/data arc
-   (L12, L13, L14) are `future`. No profile is *complete* yet; the built prefix
-   best serves **P1 S1–S3 in 2D**.
+1. **9 of 15 spine nodes are built** (Ch0, L1, L2, L3, L4, L5, L6, L7,
+   L11-intro); the rest of the structural core (L8, L9, L10) and the
+   geometry/data arc (L12, L13, L14) are `future`. No profile is *complete*
+   yet; the built prefix best serves **P1 S1–S3 in 2D**. With L6 built, the
+   built path is now **contiguous through L7** — a learner walking it no longer
+   skips a declared prerequisite between Solution Sets and Determinants.
 2. **Dimensionality ceiling.** Content lives in \(\mathbb{R}^2\) (with one curated
-   3D eigen extension). P2 and P3 both require confident work in \(\mathbb{R}^n\)
+   3D eigen extension and, since the L7 deepening, a 3D volume reading of the
+   determinant). P2 and P3 both require confident work in \(\mathbb{R}^n\)
    and, for P3, abstract spaces. The [abstraction path](../../product/semantic-page-grammar.md#4-mathematical-object-and-representation-standard)
    exists precisely to lift this ceiling per lesson.
-3. **Computational-fluency volume (D3).** The built lessons demonstrate methods
-   well but carry few *fresh, independent* drill items — a direct hit on
-   [calibration case #2](../../authoring/mastery-standard.md#8-calibration-cases). P1/P2
-   both need more E2–E3 procedural practice than currently exists.
+3. **Computational-fluency volume (D3).** Improving but still short. L5, L6 and
+   the deepened L7 each now carry fresh-instance drill (matrices and systems the
+   learner has not seen animated), which was the direct hit on
+   [calibration case #2](../../authoring/mastery-standard.md#8-calibration-cases).
+   The earlier lessons (L1–L4) still carry fewer *fresh, independent* items than
+   P1/P2 need.
 4. **Proof program (D6) absent for Profile 3.** The lessons include theorems and
    some proofs (elimination invariance, solution-set structure) but no *proof
    construction by the learner*, no counterexample construction, and no abstract

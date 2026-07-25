@@ -111,7 +111,7 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 | L3 | Linear systems: row & column pictures | \(A\mathbf{x}=\mathbf{b}\) is *both* intersecting constraints (rows) *and* "which combination of columns is \(\mathbf{b}\)?" | built | `systems` |
 | L4 | Elimination as reversible constraint manipulation | **Replace a system with an easier system having exactly the same solution set.** | built | `elimination` |
 | L5 | Solution sets & homogeneous systems | Every solution set is *one particular solution + all null directions*; linear vs affine. | built | `solution-sets` |
-| L6 | Matrix composition & inverses | "Apply \(B\), then \(A\)" is a new map \(AB\); an inverse *undoes* a map (when it can). | future | `matrix-composition` |
+| L6 | Matrix composition & inverses | Composition needs no new rule: column \(j\) of \(AB\) is \(A\) applied to column \(j\) of \(B\); an inverse asks that question backwards, and exists only when nothing collapsed. | built | `matrix-composition` |
 | L7 | Determinants | A geometric/algebraic **detector of invertibility** (signed area/volume scale), not the first sighting of collapse. | built | `determinants` |
 | L8 | Subspaces, column space, null space, rank | **Column space controls possible outputs; null space controls non-uniqueness; rank counts independent output directions.** | future | `subspaces-rank` |
 | L9 | Dimension & rank–nullity | Conservation: input dimensions either **survive** into the output or **disappear** into the null space. | future | `rank-nullity` |
@@ -129,10 +129,11 @@ linear-algebra dependency order.
 
 ## 3. Per-lesson central insight & content
 
-The `future` lessons (L6, L8–L10, L12–L14) are the ones still to be authored;
-Ch 0–L5, L7, and L11 (intro) are built (see their lesson definitions). L4/L5/L7
-are detailed below for the record. Each future lesson must lead with its insight,
-reuse a prior example wherever possible, and preserve semantic roles/notation.
+The `future` lessons (L8–L10, L12–L14) are the ones still to be authored;
+Ch 0–L7 and L11 (intro) are built (see their lesson definitions) — the built
+path is now **contiguous through L7**. L4/L5/L6/L7 are detailed below for the
+record. Each future lesson must lead with its insight, reuse a prior example
+wherever possible, and preserve semantic roles/notation.
 
 ### L4 — Elimination as reversible constraint manipulation *(built)*
 
@@ -158,22 +159,40 @@ Teach: particular + homogeneous decomposition; parameterized lines and planes;
 interaction is the natural bridge* — reuse it to show the free-variable
 directions as an actual line/plane of solutions.
 
-### L6 — Matrix composition & inverses
+### L6 — Matrix composition & inverses *(built)*
 
-**Insight:** composing maps builds a new map; inverting *undoes* one.
+**Insight (as built):** a matrix *is* a record of where the basis lands, so
+"do \(B\), then \(A\)" needs no new definition — only the same question asked
+once more: \(\operatorname{col}_j(AB) = A\,\operatorname{col}_j(B)\). The entry
+recipe, the failure of \(AB=BA\) in general, and associativity are all
+consequences. Run the question backwards and \(A^{-1}\) is the matrix whose
+columns solve \(A\mathbf{x}=\mathbf{e}_j\), which is possible exactly when the
+map collapsed nothing.
 
-Teach: apply \(B\) then \(A\); why order matters (\(AB \ne BA\)); the columns of
-\(AB\) (each column of \(B\) pushed through \(A\)); inverse as undoing;
-solving \(A\mathbf{x}=\mathbf{b}\) via \(A^{-1}\); why **not every matrix is
-invertible** (sets up L7). Continuity: reuse L2's transformation and L3's system.
+Teaches: apply \(B\) then \(A\); why order matters (and which families *do*
+commute); the columns of \(AB\); associativity and \(I\); inverse as undoing;
+solving \(A\mathbf{x}=\mathbf{b}\) via \(A^{-1}\) (with the honest caveat that
+elimination is the better computation); why **not every matrix is invertible**;
+and \((AB)^{-1}=B^{-1}A^{-1}\). Continuity: reuses L2's transformation, L3's
+system, and L5's trivial-null-space corollary. **Scope:** \(ad-bc\) appears only
+as the invertibility detector — its *meaning* is deliberately withheld for L7.
 
-### L7 — Determinants *(built; re-slotted)*
+### L7 — Determinants *(built; re-slotted; deepened once L6 landed)*
 
-**Insight (reframed):** determinants are a **detector of invertibility** —
-signed area/volume scaling — arriving *after* the learner has already met
-collapse in L3/L6, so the determinant answers a question they already have.
-(The built lesson stands; when revisited, ensure it references the L6
-non-invertibility motivation rather than introducing the issue cold.)
+**Insight:** determinants are a **detector of invertibility** — signed
+area/volume scaling — arriving *after* the learner has already met collapse in
+L3/L5 and already *wanted* an inverse in L6, so the determinant answers a
+question they already have. The L6 obligation above is now discharged: the
+lesson opens on "the number Lesson 6 would not let you divide by" rather than
+introducing collapse cold.
+
+Teaches: \(ad-bc\) **derived** from the area of the parallelogram; \(|\det|\) as
+the factor scaling *every* region; the sign as orientation (never a negative
+area); \(\det=0\) as collapse, tied to the L5/L6 equivalences; multiplicativity
+\(\det(AB)=\det A\det B\); the row-operation rules **derived** from
+multiplicativity via elementary matrices; determinant by elimination (product of
+the pivots); and the same reading one dimension up as signed volume. **Deferred:**
+the general \(n\times n\) cofactor/multilinear definition.
 
 ### L8 — Subspaces, column space, null space, rank
 
