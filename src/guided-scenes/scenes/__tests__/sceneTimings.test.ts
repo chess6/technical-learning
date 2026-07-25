@@ -6,6 +6,7 @@ import {
   EIGENVECTOR_SEGMENTS,
   ELIMINATION_BEATS,
   ELIMINATION_SEGMENTS,
+  MATRIX_TRANSFORMATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   LINEAR_COMBINATION_SEGMENTS,
   sumBeats,
@@ -169,6 +170,33 @@ describe("scene timings (pure data)", () => {
         }
       }
     });
+  });
+
+  it("matrix-transformations gives the sample its own travel beat and an unhurried tour", () => {
+    const byId = Object.fromEntries(
+      MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s]),
+    );
+    // The linearity payoff is x visibly travelling to Ax: 0.4 ghost + 2.6
+    // travel + 0.7 pulse ≈ 3.7s of choreography, and it must not feel rushed.
+    expect(byId["transform-sample"]!.duration).toBeGreaterThanOrEqual(6.0);
+    // The sample beat draws x BEFORE it moves, plus its components.
+    expect(byId.sample!.duration).toBeGreaterThanOrEqual(4.0);
+    // The grid beat traces a gridline against its image.
+    expect(byId.grid!.duration).toBeGreaterThanOrEqual(5.0);
+    // Four presets, each reset-to-identity then applied: keep ≥3s per new
+    // transformation (the audit measured the old tour at ~1.5s each).
+    const PRESET_COUNT = 4;
+    expect(byId.presets!.duration / PRESET_COUNT).toBeGreaterThanOrEqual(3.0);
+
+    // Every beat is navigable, including the payoff that used to be skipped.
+    const meta = getSceneMeta("matrix-transformations");
+    const majorIds = meta.majorSteps.map((s) => s.id);
+    expect(majorIds).toContain("transform-sample");
+    expect(majorIds).toContain("col2");
+    expect(majorIds).toEqual(MATRIX_TRANSFORMATION_SEGMENTS.map((s) => s.id));
+    expect(
+      MATRIX_TRANSFORMATION_SEGMENTS.every((s) => Boolean(s.summary)),
+    ).toBe(true);
   });
 
   it("columns-rule callback constructs the decomposition and predicts before revealing", () => {

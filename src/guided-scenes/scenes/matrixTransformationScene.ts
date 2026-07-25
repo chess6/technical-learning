@@ -8,7 +8,11 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { MATRIX_LESSON_EXAMPLE } from "../../lessons/exampleData";
-import { matrixVectorMultiply, type Matrix2x2 } from "../../math";
+import {
+  lerpIdentityToMatrix,
+  matrixVectorMultiply,
+  type Matrix2x2,
+} from "../../math";
 import { MATRIX_TRANSFORMATION_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
@@ -19,9 +23,11 @@ import {
   makeArrow,
   makeLabel,
   makeOverlayLabel,
+  makeSegment,
   makeStaticGrid,
   makeTransformedGrid,
   morphMatrixEntries,
+  runSegment,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -41,6 +47,10 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  */
 
 const A = MATRIX_LESSON_EXAMPLE.matrix as Matrix2x2;
+const IDENTITY: Matrix2x2 = [
+  [1, 0],
+  [0, 1],
+];
 const SAMPLE = (MATRIX_LESSON_EXAMPLE.inputVector ?? [1.5, 0.5]) as [
   number,
   number,
@@ -87,32 +97,103 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   view.add(e1);
   view.add(e2);
 
+  /**
+   * How far the sample vector has been carried along by A, independent of the
+   * basis morph. At 0 the sample sits at x (its ORIGINAL position); at 1 it
+   * sits at Ax. Because lerpIdentityToMatrix is linear in the entries,
+   * ((1−t)I + tA)·x = (1−t)x + t·Ax — the straight-line path is exactly the
+   * path the deforming grid takes, so the travel is not an invented motion.
+   *
+   * This exists because the sample used to be bound directly to `matrix()`,
+   * which by the sample beat was already A: the vector was born transformed
+   * and its "transform" beat was only a line-width pulse.
+   */
+  const sampleT = createSignal(0);
+  const sampleMatrix = (): Matrix2x2 =>
+    lerpIdentityToMatrix(matrix(), sampleT());
+  const samplePoint = (): [number, number] =>
+    matrixVectorMultiply(sampleMatrix(), SAMPLE) as [number, number];
+
+  // Where the sample started, kept on screen so the travel has a reference.
+  const sampleGhost = makeArrow(ROLE.dim, 3);
+  sampleGhost.opacity(0).points([new Vector2(0, 0), px(SAMPLE)]);
+  view.add(sampleGhost);
+
+  // The two components of the sample, on whichever basis is current: they make
+  // "same coefficients, new basis images" watchable rather than asserted.
+  const comp1 = makeSegment(ROLE.basis1, 3, true);
+  comp1.opacity(0).points(() => {
+    const m = sampleMatrix();
+    return [new Vector2(0, 0), px([SAMPLE[0] * m[0][0], SAMPLE[0] * m[1][0]])];
+  });
+  const comp2 = makeSegment(ROLE.basis2, 3, true);
+  comp2.opacity(0).points(() => {
+    const m = sampleMatrix();
+    return [
+      px([SAMPLE[0] * m[0][0], SAMPLE[0] * m[1][0]]),
+      px(samplePoint()),
+    ];
+  });
+  view.add(comp1);
+  view.add(comp2);
+
   const sample = makeArrow(ROLE.selected, 5);
-  sample
-    .end(0)
-    .points(() => [new Vector2(0, 0), px(matrixVectorMultiply(matrix(), SAMPLE))]);
+  sample.end(0).points(() => [new Vector2(0, 0), px(samplePoint())]);
   view.add(sample);
 
-  const e1Label = makeLabel("e₁", ROLE.basis1);
-  e1Label.opacity(0).position(() => px([ma(), mc()]).add(new Vector2(16, 16)));
-  const e2Label = makeLabel("e₂", ROLE.basis2);
-  e2Label.opacity(0).position(() => px([mb(), md()]).add(new Vector2(16, -6)));
+  /**
+   * One gridline and its image — the "lines stay lines" probe.
+   *
+   * Deliberately the VERTICAL line x = 1: this shear maps every horizontal
+   * line onto itself, so a horizontal probe would draw its image exactly on
+   * top of its ghost and demonstrate nothing. The vertical line visibly tilts
+   * (endpoints (1, ±1.8) land at (1∓1.8, ±1.8)) while staying straight.
+   */
+  const PROBE_FROM: [number, number] = [1, -1.8];
+  const PROBE_TO: [number, number] = [1, 1.8];
+  const probeGhost = makeSegment(ROLE.dim, 3);
+  probeGhost.opacity(0).points([px(PROBE_FROM), px(PROBE_TO)]);
+  const probeImage = makeSegment(ROLE.transformed, 4);
+  probeImage.opacity(0).end(0).points(() => [
+    px(matrixVectorMultiply(matrix(), PROBE_FROM) as [number, number]),
+    px(matrixVectorMultiply(matrix(), PROBE_TO) as [number, number]),
+  ]);
+  view.add(probeGhost);
+  view.add(probeImage);
+
+  // Tip annotations are stacked away from the vectors and from each other:
+  // Ae₁ ends near (2, 0) and Ae₂ near (1, 1), so labels offset toward the
+  // arrows used to pile onto the same few pixels (and onto the sample once it
+  // is drawn at its untransformed position). e₁ reads below its tip, e₂ above.
+  const e1Label = makeLabel("e₁", ROLE.basis1, 34);
+  e1Label.opacity(0).position(() => px([ma(), mc()]).add(new Vector2(20, 28)));
+  const e2Label = makeLabel("e₂", ROLE.basis2, 34);
+  e2Label.opacity(0).position(() => px([mb(), md()]).add(new Vector2(-16, -32)));
   view.add(e1Label);
   view.add(e2Label);
 
   // Tip coordinate readouts — bind column entries to the landing tip.
-  const e1Coords = makeLabel("", ROLE.basis1, 32);
+  const e1Coords = makeLabel("", ROLE.basis1, 26);
   e1Coords
     .opacity(0)
-    .position(() => px([ma(), mc()]).add(new Vector2(22, -28)));
-  const e2Coords = makeLabel("", ROLE.basis2, 32);
+    .position(() => px([ma(), mc()]).add(new Vector2(20, 62)));
+  const e2Coords = makeLabel("", ROLE.basis2, 26);
   e2Coords
     .opacity(0)
-    .position(() => px([mb(), md()]).add(new Vector2(22, 28)));
+    .position(() => px([mb(), md()]).add(new Vector2(-16, -66)));
   view.add(e1Coords);
   view.add(e2Coords);
 
-  const matrixLabel = makeOverlayLabel("", ROLE.text, 42);
+  // Reactive, not a snapshot: the readout is a function of the live entries, so
+  // it tracks every frame of every morph. It used to be set imperatively AFTER
+  // each morph resolved, which left the header showing the previous matrix
+  // while the geometry was already becoming the next one (visible on the
+  // presets tour and on the closing morph back to A).
+  const matrixLabel = makeOverlayLabel(
+    () => `A = [[${fmt(ma())}, ${fmt(mb())}], [${fmt(mc())}, ${fmt(md())}]]`,
+    ROLE.text,
+    42,
+  );
   matrixLabel.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(matrixLabel);
 
@@ -120,13 +201,8 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   caption.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 
-  const setMatrixLabel = () =>
-    matrixLabel.text(
-      `A = [[${fmt(ma())}, ${fmt(mb())}], [${fmt(mc())}, ${fmt(md())}]]`,
-    );
   const setCaption = (text: string) => caption.text(text);
 
-  setMatrixLabel();
   setCaption("Identity grid — watch where e₁ and e₂ go under A");
   matrixLabel.opacity(1);
   caption.opacity(1);
@@ -145,7 +221,6 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *identity() {
-      setMatrixLabel();
       setCaption("Identity: e₁ = (1,0), e₂ = (0,1)");
       yield* all(
         matrixLabel.opacity(1, 0.4),
@@ -156,30 +231,31 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         e2Label.opacity(1, 0.4),
       );
       yield* all(e1Ghost.opacity(0.5, 0.5), e2Ghost.opacity(0.5, 0.5));
-      yield* waitFor(seconds.identity - 1.6);
     },
     *col1() {
       // Column → tip coordinates → Ae₁: identity preserved across the beat.
-      setCaption("First column of A is exactly Ae₁");
+      setCaption("First column of A is exactly Ae₁ — and the grid shears with it");
+      // The grid is VISIBLE (dim) while the column moves, so the deformation is
+      // watched as a consequence of the column. It used to be forced to 0 here
+      // and faded in already-deformed two beats later, which asserted the
+      // scene's own motto instead of showing it.
       yield* focusOpacities([
         { node: e1, opacity: 1 },
         { node: e1Label, opacity: 1 },
         { node: e2, opacity: 0.3 },
         { node: e2Label, opacity: 0.3 },
         { node: sample, opacity: 0.2 },
-        { node: tGrid, opacity: 0 },
+        { node: tGrid, opacity: 0.32 },
       ]);
       yield* e1.lineWidth(9, 0.35);
       yield* all(
         ma(A[0][0], 1.3, easeInOutCubic),
         mc(A[1][0], 1.3, easeInOutCubic),
       );
-      setMatrixLabel();
       e1Coords.text(`(${fmt(A[0][0])}, ${fmt(A[1][0])})`);
       e1Label.text("Ae₁");
       yield* e1Coords.opacity(1, 0.35);
       yield* e1.lineWidth(6, 0.3);
-      yield* waitFor(seconds.col1 - 2.3);
     },
     *col2() {
       setCaption("Second column of A is exactly Ae₂");
@@ -196,73 +272,108 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         mb(A[0][1], 1.3, easeInOutCubic),
         md(A[1][1], 1.3, easeInOutCubic),
       );
-      setMatrixLabel();
       e2Coords.text(`(${fmt(A[0][1])}, ${fmt(A[1][1])})`);
       e2Label.text("Ae₂");
       yield* e2Coords.opacity(1, 0.35);
       yield* e2.lineWidth(6, 0.3);
-      yield* waitFor(seconds.col2 - 2.3);
     },
     *sample() {
-      setCaption(`Write the sample as ${fmt(SAMPLE[0])}·e₁ + ${fmt(SAMPLE[1])}·e₂`);
+      // sampleT is still 0, so this draws x where it actually is — BEFORE the
+      // transformation reaches it. Its components are shown on the original
+      // (ghost) basis, which is what the coefficients are read against.
+      setCaption(
+        `A vector that is not a basis vector: x = ${fmt(SAMPLE[0])}·e₁ + ${fmt(SAMPLE[1])}·e₂`,
+      );
+      // The column readouts have made their point; retire them so the sample's
+      // own construction owns the space it is drawn in.
       yield* focusOpacities([
         { node: sample, opacity: 1 },
         { node: e1, opacity: 0.55 },
         { node: e2, opacity: 0.55 },
-        { node: e1Coords, opacity: 0.35 },
-        { node: e2Coords, opacity: 0.35 },
+        { node: e1Label, opacity: 0.5 },
+        { node: e2Label, opacity: 0.5 },
+        { node: e1Coords, opacity: 0 },
+        { node: e2Coords, opacity: 0 },
       ]);
-      yield* sample.end(1, 1.2, easeInOutCubic);
-      yield* waitFor(seconds.sample - 1.55);
+      yield* sample.end(1, 1.0, easeInOutCubic);
+      yield* all(comp1.opacity(0.85, 0.4), comp2.opacity(0.85, 0.4));
     },
     *["transform-sample"]() {
-      setCaption("By linearity it lands on the transformed basis");
-      yield* sample.lineWidth(8, 0.4);
-      yield* sample.lineWidth(5, 0.5);
-      yield* waitFor(seconds["transform-sample"] - 0.9);
+      setCaption("Hold the coefficients fixed and let A move the basis under them");
+      // Leave the starting position on screen so the travel has a reference…
+      yield* sampleGhost.opacity(0.45, 0.4);
+      // …then carry x to Ax. Every bound node moves off the same signal: the
+      // arrow, both dashed components, and the tip they meet at. The tip is
+      // Ax by construction, so the drawing cannot drift from the claim.
+      yield* sampleT(1, 2.6, easeInOutCubic);
+      setCaption(
+        `Same ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])} — now on Ae₁ and Ae₂. That is Ax.`,
+      );
+      yield* sample.lineWidth(8, 0.35);
+      yield* sample.lineWidth(5, 0.35);
     },
     *grid() {
-      setCaption("The whole grid follows the same rule — lines stay straight");
+      setCaption("The whole grid followed the same rule — a line is still a line");
       yield* all(
-        tGrid.opacity(0.9, 1),
-        e1Coords.opacity(0.25, 0.5),
-        e2Coords.opacity(0.25, 0.5),
+        tGrid.opacity(0.9, 0.8),
+        comp1.opacity(0.25, 0.5),
+        comp2.opacity(0.25, 0.5),
       );
-      yield* waitFor(seconds.grid - 1);
+      // Trace one original gridline and its image: straightness and
+      // parallelism are read off the picture instead of being claimed.
+      yield* probeGhost.opacity(0.6, 0.4);
+      yield* probeImage.opacity(1, 0.2);
+      yield* probeImage.end(1, 1.1, easeInOutCubic);
+      setCaption("Tilted and stretched — but still straight, and still through the same grid");
     },
     *compare() {
       setCaption("Faint = original axes · bright = transformed basis");
       yield* all(e1Ghost.opacity(0.7, 0.6), e2Ghost.opacity(0.7, 0.6));
-      yield* waitFor(seconds.compare - 0.6);
     },
     *presets() {
-      yield* all(e1Coords.opacity(0, 0.3), e2Coords.opacity(0, 0.3));
+      // Retire the derivation annotations; the tour is about the rule holding
+      // for other matrices, not about this one's columns.
+      yield* all(
+        e1Coords.opacity(0, 0.3),
+        e2Coords.opacity(0, 0.3),
+        comp1.opacity(0, 0.3),
+        comp2.opacity(0, 0.3),
+        sampleGhost.opacity(0, 0.3),
+        probeGhost.opacity(0, 0.3),
+        probeImage.opacity(0, 0.3),
+        sample.opacity(0.3, 0.3),
+      );
+      // One preset dropped (a second rank-1 example after the projection added
+      // no new idea) to buy time: each remaining step now gets ~3.1s, above the
+      // one-new-idea-per-3s bar the audit measured this beat against.
       const tour: Array<[string, Matrix2x2]> = [
-        ["Scale", [[2, 0], [0, 2]]],
-        ["Rotation", [[0, -1], [1, 0]]],
-        ["Reflection", [[1, 0], [0, -1]]],
-        ["Projection onto x — the plane flattens", [[1, 0], [0, 0]]],
-        ["Singular collapse", [[2, 4], [1, 2]]],
+        ["Scale — everything grows, directions keep their lines", [[2, 0], [0, 2]]],
+        ["Rotation — every direction turns", [[0, -1], [1, 0]]],
+        ["Reflection — the plane flips across the x-axis", [[1, 0], [0, -1]]],
+        ["Projection — the plane flattens onto a line", [[1, 0], [0, 0]]],
       ];
-      const per = (seconds.presets - 0.4) / tour.length;
+      const per = (seconds.presets - 0.3) / tour.length;
       for (const [name, target] of tour) {
-        setCaption(`${name}`);
-        yield* morphTo(target, per * 0.7);
-        setMatrixLabel();
+        // Reset to the identity before each preset, as chapter0 does: morphing
+        // one unrelated preset straight into another animates a transition that
+        // means nothing.
+        yield* morphTo(IDENTITY, per * 0.18);
+        setCaption(name);
+        yield* morphTo(target, per * 0.52);
         yield* waitFor(per * 0.3);
       }
     },
     *summary() {
-      setCaption("Two columns set where e₁, e₂ land — every vertex follows");
-      yield* morphTo(A, 1.2);
+      setCaption("Two columns set where e₁, e₂ land — linearity carries the rest");
+      yield* all(morphTo(A, 1.2), sample.opacity(1, 0.6));
       e1Label.text("Ae₁");
       e2Label.text("Ae₂");
-      setMatrixLabel();
-      yield* waitFor(seconds.summary - 1.2);
     },
   };
 
+  // Measured padding: each body runs, then the segment is padded to its exact
+  // authored length, so the timeline always matches the step metadata.
   for (const segment of MATRIX_TRANSFORMATION_SEGMENTS) {
-    yield* bodies[segment.id]!();
+    yield* runSegment(segment.duration, bodies[segment.id]!);
   }
 });

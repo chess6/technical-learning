@@ -39,16 +39,72 @@ export const LINEAR_COMBINATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "coordinates", title: "Coordinates in a basis", duration: 7 },
 ];
 
+/**
+ * Lesson 2 Watch scene — the columns rule derived on the basis, then verified
+ * on a general vector and on the whole grid.
+ *
+ * Timing notes (2026-07 audit): the sample beat previously drew a vector that
+ * was ALREADY transformed and the next beat only pulsed its line width, so the
+ * linearity payoff — x visibly travelling to Ax on the same coefficients — was
+ * asserted rather than shown. `transform-sample` now owns that travel and is
+ * budgeted for it. The grid likewise used to fade in pre-deformed; it now
+ * deforms during the column beats, which need room to register.
+ */
 export const MATRIX_TRANSFORMATION_SEGMENTS: readonly SceneSegment[] = [
-  { id: "identity", title: "Identity grid", duration: 3 },
-  { id: "col1", title: "First column → e₁", duration: 4 },
-  { id: "col2", title: "Second column → e₂", duration: 4 },
-  { id: "sample", title: "x·e₁ + y·e₂", duration: 4 },
-  { id: "transform-sample", title: "Transform the sample", duration: 4 },
-  { id: "grid", title: "Deform the grid", duration: 4 },
-  { id: "compare", title: "Original vs transformed", duration: 3 },
-  { id: "presets", title: "A tour of transformations", duration: 8 },
-  { id: "summary", title: "Columns are the basis images", duration: 3 },
+  {
+    id: "identity",
+    title: "Identity grid",
+    duration: 3.5,
+    summary: "Start from the identity: e₁ = (1, 0) and e₂ = (0, 1), grid undeformed.",
+  },
+  {
+    id: "col1",
+    title: "First column → e₁",
+    duration: 4.5,
+    summary: "Moving the first column moves e₁ — and the grid shears with it.",
+  },
+  {
+    id: "col2",
+    title: "Second column → e₂",
+    duration: 4.5,
+    summary: "The second column is exactly where e₂ lands; the grid follows again.",
+  },
+  {
+    id: "sample",
+    title: "A general vector, before it moves",
+    duration: 4.5,
+    summary: "A vector that is not a basis vector, written in the original basis as 1.5·e₁ + 0.5·e₂.",
+  },
+  {
+    id: "transform-sample",
+    title: "Watch it land",
+    duration: 6.5,
+    summary: "The same coefficients on the new basis images: x travels to 1.5·Ae₁ + 0.5·Ae₂ = Ax.",
+  },
+  {
+    id: "grid",
+    title: "Straight lines stay straight",
+    duration: 5.5,
+    summary: "One gridline and its image: lines map to lines, parallels stay parallel, the origin is pinned.",
+  },
+  {
+    id: "compare",
+    title: "Original vs transformed",
+    duration: 3,
+    summary: "Faint original axes beside the transformed basis, so the change is legible at a glance.",
+  },
+  {
+    id: "presets",
+    title: "A tour of transformations",
+    duration: 13,
+    summary: "Scale, rotation, reflection, projection — each reset to the identity first, so no tour step morphs into an unrelated one.",
+  },
+  {
+    id: "summary",
+    title: "Columns are the basis images",
+    duration: 3.5,
+    summary: "Two columns fix where e₁ and e₂ land, and linearity carries every other vector along.",
+  },
 ];
 
 /**

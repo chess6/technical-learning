@@ -180,13 +180,16 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "matrix-transformations",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation showing a 2 by 2 matrix moving the basis vectors, deforming the coordinate grid, and touring scale, shear, rotation, reflection, and singular transformations.",
+      "Guided animation deriving the columns rule. Starting from the identity, each matrix column is moved in turn and the basis vector it carries moves with it while the coordinate grid visibly shears. A general vector is then drawn at its original position and written as one and a half times e one plus one half times e two; when the transformation is applied it travels to the same combination of the transformed basis images, so the coefficients are seen to be unchanged. One gridline is then traced against its image to show that straight lines map to straight lines and the origin stays pinned, and the scene closes with a tour of scale, rotation, reflection, and a projection that collapses the plane, each reset to the identity before it is applied.",
     steps: MATRIX_STEPS,
     majorSteps: pickMajor(MATRIX_STEPS, [
       "identity",
       "col1",
+      "col2",
       "sample",
+      "transform-sample",
       "grid",
+      "compare",
       "presets",
       "summary",
     ]),
