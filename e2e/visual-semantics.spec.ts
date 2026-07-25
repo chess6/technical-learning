@@ -128,6 +128,10 @@ test.describe("guided scenes under reduced motion show an establishing frame", (
   const LESSONS: readonly { path: string; heading: RegExp }[] = [
     { path: "/lesson/systems", heading: /Linear Systems: Two Pictures of One Equation/i },
     { path: "/lesson/vectors", heading: /Vectors, Linear Combinations, and Basis/i },
+    // The newest scene is included deliberately: its focus beats SNAP rather
+    // than fade, so the establishing frame is exactly the case that would
+    // regress if a beat went back to tweening its state in.
+    { path: "/lesson/matrix-composition", heading: /Matrix Composition & Inverses/i },
   ];
 
   for (const { path, heading } of LESSONS) {
