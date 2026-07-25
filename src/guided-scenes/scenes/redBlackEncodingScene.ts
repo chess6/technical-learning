@@ -143,14 +143,16 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   const title = makeOverlayLabel("", ROLE.text, 28);
   title.position(new Vector2(0, LABEL_TOP_Y));
 
+  // Panel labels sit high enough that the promoted key's lift during the
+  // split (to CLUSTER_Y − 96) never runs into them.
   const panelLeft = makeSmallLabel(
     "2–3–4 tree",
-    new Vector2(LEFT_X, CLUSTER_Y - 110),
+    new Vector2(LEFT_X, CLUSTER_Y - 145),
     ROLE.basis1,
   );
   const panelRight = makeSmallLabel(
     "its binary encoding",
-    new Vector2(RIGHT_X, CLUSTER_Y - 110),
+    new Vector2(RIGHT_X, CLUSTER_Y - 145),
     ROLE.original,
   );
 
@@ -158,9 +160,11 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   const cells = KEYS.map((key, index) =>
     makeKeyCell(key, new Vector2(cellX(index, 3), CLUSTER_Y)),
   );
+  // Waits with a clear gap to the box: 35 drawn flush after 40 would read as
+  // a fourth in-box key breaking sorted order. It "knocks" from outside.
   const arrivingCell = makeKeyCell(
     ARRIVING,
-    new Vector2(cellX(3, 4) + 24, CLUSTER_Y),
+    new Vector2(cellX(3, 4) + 64, CLUSTER_Y),
   );
 
   // ---- right panel: black representative + up to two red children ---------

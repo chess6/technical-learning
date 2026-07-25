@@ -15,6 +15,16 @@
   border-radius: var(--radius-lg);
 }
 
+/* container-type on the watch/worked-example wrappers creates layout
+   containment, which would trap this fixed overlay inside the column (and
+   under the app header). Release containment while theater is active; it is
+   restored the moment the overlay closes. Native fullscreen needs no release
+   (the top layer escapes stacking contexts). */
+.phase--watch .phase__body:has(.guided-scene-player[data-theater]),
+.worked-example__body:has(.guided-scene-player[data-theater]) {
+  container-type: normal;
+}
+
 /* Theater mode: fixed in-app overlay. The same element (and engine) stays
    mounted — only the layout changes, so playback continues uninterrupted. */
 .guided-scene-player[data-theater] {
@@ -41,8 +51,15 @@
 
 .guided-scene-player[data-theater] .guided-scene-player__stage-eyebrow,
 .guided-scene-player[data-theater] .guided-scene-player__stage-title,
-.guided-scene-player[data-theater] .guided-scene-player__stage-summary {
+.guided-scene-player[data-theater] .guided-scene-player__stage-summary,
+.guided-scene-player[data-theater] .btn--ghost,
+.guided-scene-player[data-theater] .guided-scene-player__speed,
+.guided-scene-player[data-theater] .guided-scene-player__shortcuts {
   color: var(--color-canvas-text);
+}
+
+.guided-scene-player[data-theater] .guided-scene-player__shortcuts dt {
+  color: var(--color-canvas-muted);
 }
 
 /* True fullscreen (Fullscreen API on the figure). */
@@ -64,8 +81,15 @@
 
 .guided-scene-player:fullscreen .guided-scene-player__stage-eyebrow,
 .guided-scene-player:fullscreen .guided-scene-player__stage-title,
-.guided-scene-player:fullscreen .guided-scene-player__stage-summary {
+.guided-scene-player:fullscreen .guided-scene-player__stage-summary,
+.guided-scene-player:fullscreen .btn--ghost,
+.guided-scene-player:fullscreen .guided-scene-player__speed,
+.guided-scene-player:fullscreen .guided-scene-player__shortcuts {
   color: var(--color-canvas-text);
+}
+
+.guided-scene-player:fullscreen .guided-scene-player__shortcuts dt {
+  color: var(--color-canvas-muted);
 }
 
 /* Subtle warm frame around the dark canvas — an illustration on the page. */
