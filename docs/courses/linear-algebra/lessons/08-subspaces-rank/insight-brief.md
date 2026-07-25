@@ -43,20 +43,20 @@ asks; what they cannot do is say what question each computation answers.
 | --- | --- | --- |
 | R1 | Column space = the set of reachable outputs = span of the columns. *(inherited)* | structural compression |
 | R2 | Null space = the set of crushed inputs; it is what makes solutions non-unique. *(inherited)* | structural compression |
-| R3 | **Every question asked about a matrix in L3–L7 was secretly about one of exactly two spaces**: one in the output, one in the input. | predictive reorganization |
+| R3 | **Every question asked about a matrix in L3–L7 was secretly about one of two designated spaces**: one in the output (existence), one in the input (uniqueness). *(Two, because solving has exactly two failure modes — not because a map has only two subspaces; see R9.)* | predictive reorganization |
 | R4 | Rank = how many independent directions survive the map — the *output* dimension, countable by pivots. | representational change |
 | R5 | Subspace = "flat through the origin"; the closure axioms are just *why* it must contain the origin and stay flat. | semantic grounding |
 | R6 | Rank counts pivots; the pivot columns of \(A\) are a basis for the column space. *(inherited)* | operational grounding |
 | R7 | Collapse has *degrees*: \(\mathbb{R}^3 \to\) plane \(\to\) line \(\to\) point. L6/L7's binary "collapsed or not" was a two-dimensional accident. | representational change |
 | R8 | The two spaces live in **different places** — \(\operatorname{Null}(A)\subseteq\mathbb{R}^n\) (inputs), \(\operatorname{Col}(A)\subseteq\mathbb{R}^m\) (outputs). Confusing them is the central error. | misconception repair |
-| R9 | Row space and its rank equal the column rank — the surprising symmetry. | structural compression |
+| R9 | Row space and its rank equal the column rank — the surprising symmetry. (Also the reminder that the row space and \(\operatorname{Null}(A^{\mathsf T})\) exist: the map's subspaces are not exhausted by the two P1 selects.) | structural compression |
 | R10 | \(\det \ne 0\) is the *extreme case* of rank: "every dimension survived". | connection to L7 |
 
 ---
 
 ## 1c. Consolidated candidate packages
 
-### P1 — "Two spaces, and you have been using both all along"
+### P1 — "Two spaces decide it, and you have been using both all along"
 *(absorbs R1, R2, R3, R8)*
 
 The model change is **retrospective**: the learner re-reads five lessons of their

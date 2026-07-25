@@ -28,11 +28,13 @@ distinct from its neighbors:
   each profile. Read it when deciding *how deep* a topic must go for a target
   profile; read this when deciding *what the sequence is*.
 
-The runnable encoding of this spine is `src/lessons/curriculum.ts`
-(`COURSE_SECTIONS`): built lessons are `lesson` refs; not-yet-authored lessons
-are `future` nodes placed in their correct spine position with a one-line
-insight. **This document is the source of truth for the sequence; keep the two
-in sync.**
+The runnable encoding of this spine is `src/lessons/courseModel.ts`
+(`CURRICULUM`, a validated `Subject → Course → Unit → LessonRef` tree): built
+lessons are `lesson` refs; not-yet-authored lessons are `future` nodes placed in
+their correct unit with a title and subtitle. **This document is the source of
+truth for the sequence; keep the two in sync.** *(The flat `curriculum.ts` /
+`COURSE_SECTIONS` this document used to name was deleted in the multi-domain
+cutover — see [multi-domain-architecture.md](../multi-domain-architecture.md).)*
 
 > **Scope note (durable).** Listing all 14 lessons here does **not** reopen
 > authoring of the `future` lessons. Per `.cursor/rules/project-core.mdc`, the
@@ -60,16 +62,23 @@ Gate 1 declaration the rest of the workflow calibrates against:
   - the **Systems & elimination** module (`systems-elimination`: L3 systems, L4
     elimination, L5 solution-sets) — proof of solution-set structure and row-op
     invariance;
-  - the future **Structure of linear maps** module (`structure`: L8 subspaces &
-    rank, L9 rank–nullity, L10 change of basis) — subspace and rank–nullity
-    proofs.
+  - the **Structure of linear maps** module (`structure`: L8 subspaces & rank,
+    L9 rank–nullity, L10 change of basis) — subspace and rank–nullity proofs.
+    All three lessons are now **built**, and the P3 proof surfaces they offer
+    unscored are routed to that module's
+    [Gate 9 plan](modules/structure/assessment-plan.md), which is authored and
+    whose items are built but **not administered** — so the override remains a
+    target, not an attainment.
 
 > **This is a target, not a claim of current attainment.** The built vertical
 > slice does **not** yet satisfy P2 or the P3 overrides — see the honest
 > [gap summary](benchmark-matrix.md#3-course-level-gaps-summary), which currently
-> reports the built prefix best serving **P1 S1–S3 in 2D**. The declaration fixes
-> what each lesson/module is *built toward*; Gate 10 validation reports the real
-> distance to it.
+> reports the built prefix best serving **P1 S1–S3**, now with genuine
+> \(\mathbb{R}^3\) and non-square content in L8–L9 but with the dimensionality
+> ceiling only raised, not removed. The declaration fixes what each lesson/module
+> is *built toward*; Gate 10 validation reports the real distance to it —
+> per-module records live at `modules/<module>/validation.md`
+> ([structure](modules/structure/validation.md) is the first).
 
 ---
 
@@ -101,7 +110,7 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 ## 2. The spine at a glance
 
 `Status`: **built** = a real lesson in the registry today; **future** = a
-`future` node in `curriculum.ts`, not yet authored.
+`future` node in `courseModel.ts`, not yet authored.
 
 | Spine | Lesson | Central insight (the "not memorize X, but Y") | Status | Curriculum id |
 | --- | --- | --- | --- | --- |
@@ -113,7 +122,7 @@ insight as a re-interpretation of prior lessons, not as a new axiom.*
 | L5 | Solution sets & homogeneous systems | Every solution set is *one particular solution + all null directions*; linear vs affine. | built | `solution-sets` |
 | L6 | Matrix composition & inverses | Composition needs no new rule: column \(j\) of \(AB\) is \(A\) applied to column \(j\) of \(B\); an inverse asks that question backwards, and exists only when nothing collapsed. | built | `matrix-composition` |
 | L7 | Determinants | A geometric/algebraic **detector of invertibility** (signed area/volume scale), not the first sighting of collapse. | built | `determinants` |
-| L8 | Subspaces, column space, null space, rank | Every question asked since L3 was about one of **two** subspaces, in **different** spaces: the column space decides existence, the null space decides uniqueness, and rank counts what survived. | built | `subspaces-rank` |
+| L8 | Subspaces, column space, null space, rank | Every question asked since L3 was about one of the **two subspaces that govern solvability**, and they sit in **different** spaces: the column space decides existence, the null space decides uniqueness, and rank counts what survived. | built | `subspaces-rank` |
 | L9 | Dimension & rank–nullity | Conservation: \(n\) is a budget, every input dimension has exactly one fate, and because the total is fixed the law **forbids** whole classes of maps. | built | `rank-nullity` |
 | L10 | Change of basis | A matrix was never the map — it is a **description** in a basis nobody mentioned; naming the choice makes \(P\)'s direction derivable and \([A]_B = P^{-1}AP\) readable. | built | `change-of-basis` |
 | L11 | Eigenvectors & diagonalization | Directions a map only *scales*; diagonalizing = choosing the basis where the map is pure scaling — when there are enough such directions. | built | `eigenvectors` |
@@ -197,11 +206,13 @@ the general \(n\times n\) cofactor/multilinear definition.
 ### L8 — Subspaces, column space, null space, rank *(built)*
 
 **Insight (as built):** every question the learner has asked about a matrix since
-L3 was a question about one of exactly **two** subspaces, and they live in
-**different** spaces — the column space in the output space decides *existence*,
-the null space in the input space decides *uniqueness*. In the plane those could
-only be "everything" or "a line", so collapse looked binary; in \(\mathbb{R}^3\)
-it becomes a **count**.
+L3 was a question about one of the **two subspaces that govern solvability**, and
+they live in **different** spaces — the column space in the output space decides
+*existence*, the null space in the input space decides *uniqueness*. In the plane
+those could only be "everything" or "a line", so collapse looked binary; in
+\(\mathbb{R}^3\) it becomes a **count**. *(Two because solving has exactly two
+failure modes — not a census: the row space and \(\operatorname{Null}(A^{\mathsf T})\)
+are subspaces of the same map, named once and left to L12/L14.)*
 
 Teaches: subspace as a flat through the origin; \(\operatorname{Col}(A)\subseteq\mathbb{R}^m\)
 and \(\operatorname{Null}(A)\subseteq\mathbb{R}^n\); rank as the pivot count, with
@@ -243,14 +254,29 @@ numbers so no new arithmetic competes with the new interpretation, and L11's
 matrix so the payoff lands where the next lesson opens. Orthonormal bases are
 L12's and are deliberately excluded.
 
-### L11 — Eigenvectors & diagonalization *(built intro; full treatment later)*
+### L11 — Eigenvectors & diagonalization *(built in full)*
 
-**Insight:** eigenvectors are directions a map merely **scales**; diagonalizing
-picks the basis (L10) in which the map is pure scaling.
+**Insight (as built, and now gated):** a matrix that appears to **mix** your
+coordinates is, for most maps, doing nothing but **independent stretching** seen
+in coordinates never adapted to it. L10 said a matrix is only a description in
+some basis; this lesson finds the basis the map itself prefers — and finds it not
+by searching among directions but by asking which \(\lambda\) makes
+\(A-\lambda I\) **collapse**, which \(\det = 0\) has detected since L7, whose
+solutions are L8's null space and whose *count* is L9's dimension.
 
-The built lesson is an intuitive introduction. The full treatment eventually
-adds: characteristic equation; eigenspaces; multiplicity; diagonalization;
-repeated application and dynamical systems (the Dynamics thread, §4).
+Delivers the whole spine row: characteristic equation; eigenspaces as
+\(\operatorname{Null}(A-\lambda I)\); algebraic vs geometric multiplicity;
+diagonalization as L10's change of basis; \(A^k = PD^kP^{-1}\) and the long-run
+reading (the Dynamics thread, §4); the criterion applied *before* factoring; and
+both failure modes (defective; no real eigenvalues), kept distinct.
+
+Its Gates 3–4 were run **retrospectively** —
+[insight-brief](lessons/11-eigenvectors/insight-brief.md) /
+[insight contract](lessons/11-eigenvectors/insight.md) (`PASS`) — and the same
+audit found the lesson's **evidence** short of its claims: no E4 transfer item
+exists and only 2 of 11 lesson-owned outcomes are independently demonstrated, so
+[Gate 8 is NOT PASSED](lessons/11-eigenvectors/mastery-contract.md#6-acceptance-record-gate-8--corrected-not-passed).
+Coverage is complete; attainment is not.
 
 ### L12 — Orthogonality & projections
 
@@ -335,7 +361,7 @@ Notes:
 - **L12 before L13, L14**: projection is the engine of both least squares and the
   geometric reading of SVD.
 
-This ordering is currently *implicit* in the `curriculum.ts` sequence. It is now
+This ordering is currently *implicit* in the `courseModel.ts` unit sequence. It is now
 made **explicit** as a prerequisite edge table + DAG in
 [courses/linear-algebra/curriculum-architecture.md](curriculum-architecture.md) §2 (the content for the
 typed `prerequisite` edges that `courses/multi-domain-architecture.md` §3
@@ -353,7 +379,7 @@ When a future lesson is authored (promoted from `future` to a real lesson):
 - [ ] It advances at least one application thread and references that thread's
       previous appearance (§4).
 - [ ] Its prerequisites (§5) are actually taught earlier in the spine.
-- [ ] `curriculum.ts`: the matching `future` node is replaced by a `lesson` ref,
-      and the registry order stays consistent with this spine.
+- [ ] `courseModel.ts`: the matching `future` node is replaced by a `lesson` ref
+      in the right unit, and the registry order stays consistent with this spine.
 - [ ] This document's status column is updated (future → built).
 - [ ] Standard lesson artifacts + `quality/lesson-correctness-checklist.md` completed.

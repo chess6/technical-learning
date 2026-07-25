@@ -19,7 +19,7 @@ export interface ModuleSet {
   id: string;
   /** Content version — bump when `itemIds` (membership or order) changes. */
   version: number;
-  /** Owning module/section id (matches curriculum.ts). */
+  /** Owning module id (matches a `courseModel.ts` unit id). */
   moduleId: string;
   title: string;
   /** Deferred-feedback exam mode is the only supported mode (see AttemptSet.mode). */

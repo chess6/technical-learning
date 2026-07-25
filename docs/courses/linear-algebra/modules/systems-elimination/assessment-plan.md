@@ -31,7 +31,7 @@ References the lesson mastery contracts; does not restate them.
 > conservative `REVIEW_PENDING`/`COMPLETE`/`FAILED` blocker). **Gate 9 stays NOT PASSED.**
 
 ## Module metadata
-- **Module / section id:** `systems-elimination` (matches `src/lessons/curriculum.ts`).
+- **Module / section id:** `systems-elimination` (matches the unit id in `src/lessons/courseModel.ts`).
 - **Lessons in module:** L3 systems, L4 elimination, L5 solution-sets.
 - **Profile target for this module:** **P3 override** (proof of solution-set
   structure and row-op invariance), on top of the course primary **P2** and the

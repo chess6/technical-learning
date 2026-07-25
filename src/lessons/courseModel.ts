@@ -88,8 +88,9 @@ export const CURRICULUM: readonly Subject[] = [
         id: "linear-algebra",
         title: "Linear Algebra",
         subtitle: "Visual Learning",
-        // Units mirror the authoritative LA spine in curriculum.ts. Lesson refs
-        // are built lessons; future nodes are spine positions not yet authored.
+        // Units mirror the authoritative LA spine in
+        // docs/courses/linear-algebra/course-spine.md. Lesson refs are built
+        // lessons; future nodes are spine positions not yet authored.
         units: [
           {
             id: "foundations",

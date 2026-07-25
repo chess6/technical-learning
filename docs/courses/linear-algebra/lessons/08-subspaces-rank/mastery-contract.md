@@ -67,7 +67,11 @@ Gate 5 for spine node **L8 `subspaces-rank`**, against the
   stated so "different spaces" is honest.
 - **Misconceptions (D13):** (1) the two spaces live in the same place;
   (2) the column-space basis comes from the *reduced* matrix; (3) every flat is a
-  subspace; (4) big null space ⇒ big column space.
+  subspace; (4) big null space ⇒ big column space; (5) a map has *only* these two
+  subspaces — the lesson selects the two that decide solvability, and names the
+  row space / \(\operatorname{Null}(A^{\mathsf T})\) as existing but out of scope
+  (`ref-row-rank`'s `looking-ahead` layer), consistent with §1g's
+  "no four-subspaces survey".
 
 ## 1d. Outcomes with evidence
 

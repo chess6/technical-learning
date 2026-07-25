@@ -63,8 +63,8 @@ Per-lesson planning artifacts live under the lesson they belong to, e.g.
 - `mastery-contract.md` — the per-lesson Lesson Mastery Contract
 - `lesson-plan.md` — Stage 3 implementation-ready plan
 
-**Module** (Gate 9–10) artifacts live under the module (= `curriculum.ts` section
-id), e.g. `courses/linear-algebra/modules/systems-elimination/`:
+**Module** (Gate 9–10) artifacts live under the module (= the `courseModel.ts`
+unit id), e.g. `courses/linear-algebra/modules/systems-elimination/`:
 
 - `assessment-plan.md` — Gate 9 cumulative module assessment (discharges
   module-owned outcomes); template [authoring/templates/module-assessment-plan.md](authoring/templates/module-assessment-plan.md)

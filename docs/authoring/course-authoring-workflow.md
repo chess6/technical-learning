@@ -133,7 +133,7 @@ Turning an approved plan into a working lesson. Requires a completed Mode B.
 
 After lessons exist. Do not skip once a module is complete. Both artifacts are
 **module-scoped**, under `docs/courses/<course>/modules/<module>/` (module id = the
-`curriculum.ts` section id, e.g. `systems-elimination`).
+`courseModel.ts` unit id, e.g. `systems-elimination`).
 
 1. **Cumulative module assessment** (Gate 9) — a cumulative, interleaved, spaced
    set per [authoring/mastery-standard.md §6](mastery-standard.md#6-assessment-architecture),

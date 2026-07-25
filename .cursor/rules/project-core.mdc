@@ -19,10 +19,12 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
 
 ## Scope
 
-- **Built surface** (in `src/lessons/curriculum.ts` as `kind: "lesson"`):
-  `why-linear-algebra`, `vectors`, `transformations`, `systems`, `elimination`,
-  `solution-sets`, `determinants`, `eigenvectors` (intro), plus the `karatsuba`
-  track. These are the active product.
+- **Built surface** (in `src/lessons/courseModel.ts` as `kind: "lesson"`):
+  linear algebra — `why-linear-algebra`, `vectors`, `transformations`, `systems`,
+  `elimination`, `solution-sets`, `matrix-composition`, `determinants`,
+  `subspaces-rank`, `rank-nullity`, `change-of-basis`, `eigenvectors` (full);
+  plus the Algorithmic Thinking course — `karatsuba`, `binary-search-trees`,
+  `red-black-trees`. These are the active product.
 - Spine nodes marked `kind: "future"` are **closed to implementation**: do not
   write lesson code for, or promote (`future → built`), a `future` lesson unless
   the user **explicitly reopens that specific lesson**. This is a hard approval

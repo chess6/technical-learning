@@ -33,13 +33,15 @@ no mandatory phases, exercise quotas, universal templates, or closed DSL.
   algorithms course rather than a section of Linear Algebra.
 - **Unitless-course convenience:** a course may list lessons directly; the
   adapter treats them as a single implicit default unit.
-- A **compatibility adapter** projects the model onto today's sidebar shape and
-  reproduces the current lesson order/numbering.
-- **Coexistence:** the existing `curriculum.ts` `COURSE_SECTIONS` and the flat
-  `registry.ts` `lessons[]` remain the **temporary authoritative source**. The
-  model is a validated secondary representation; the live UI does not read it
-  yet. "Render identically" is interpreted **semantically** (same sections,
-  titles, items, order), not as byte-identical markup.
+- A **compatibility adapter** projects the model onto the sidebar shape and
+  reproduces lesson order/numbering.
+- **Coexistence is over — the model is authoritative.** The flat
+  `curriculum.ts` / `COURSE_SECTIONS` list this bullet used to name as the
+  "temporary authoritative source" was **deleted** in the multi-domain cutover
+  ([multi-domain-architecture.md](../courses/multi-domain-architecture.md)).
+  `courseModel.ts` `CURRICULUM` now drives the sidebar, the home catalog,
+  course-relative numbering, progress and Prev/Next; `registry.ts` is a pure
+  **content** registry that no longer encodes sequence.
 
 ### 3. Exercise capabilities — `src/lessons/capabilities.ts` + `ExercisePanel`
 
