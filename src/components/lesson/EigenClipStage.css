@@ -35,6 +35,26 @@
   width: 100%;
 }
 
+/* Inline derivation nav: clip stays primary, steps sit beside it on wide
+   viewports and stack under it on narrow ones. */
+.eigen-clip-stage__inline[data-has-steps="true"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.eigen-clip-stage__inline-viz {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.eigen-clip-stage__inline-steps {
+  flex: 0 1 13rem;
+  min-width: 11rem;
+  align-self: center;
+}
+
 .eigen-clip-stage__loading {
   display: flex;
   flex-direction: column;
