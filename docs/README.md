@@ -26,6 +26,7 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Change math or a visualization | [engineering/math-correctness.md](engineering/math-correctness.md) + [quality/known-failure-modes.md](quality/known-failure-modes.md) |
 | Understand the code architecture / contracts | [engineering/architecture.md](engineering/architecture.md), [engineering/platform-contracts.md](engineering/platform-contracts.md) |
 | Ship a lesson/visualization change | complete [quality/lesson-correctness-checklist.md](quality/lesson-correctness-checklist.md) |
+| Study external animation references / transcripts without copying | [engineering/reference-sources.md](engineering/reference-sources.md) |
 | Understand a past decision | [engineering/decisions/](engineering/decisions/) |
 | Find historical milestones/experiments | [archive/](archive/) |
 
