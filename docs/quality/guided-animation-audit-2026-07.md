@@ -71,15 +71,15 @@ unearned prerequisites.
 
 ### Most in need of improvement (backlog, ranked)
 
-1. **columns-rule-graphic** — exists to show `T(x) = a·T(e₁) + b·T(e₂)` but
-   never draws a component, coefficient, or construction; concepts live in
-   captions while dots pulse. Needs the parallelogram construction for at
-   least one vertex, or demotion to a static figure.
-2. **matrix-transformations** — the "Transform the sample" beat contains no
-   transformation (the sample is born already transformed; the beat is a
-   line-width pulse); the grid fades in pre-deformed in the core sequence; the
-   presets tour runs ~1.5 s per new transformation (below the ~3 s/new-idea
-   bar).
+1. ~~**columns-rule-graphic**~~ — **fixed** (see "columns-rule-graphic:
+   findings → shipped improvements" below). Was: exists to show
+   `T(x) = a·T(e₁) + b·T(e₂)` but never draws a component, coefficient, or
+   construction; concepts live in captions while dots pulse.
+2. ~~**matrix-transformations**~~ — **fixed** (see "matrix-transformations:
+   findings → shipped improvements" below). Was: the "Transform the sample"
+   beat contains no transformation (the sample is born already transformed;
+   the beat is a line-width pulse); the grid fades in pre-deformed in the core
+   sequence; the presets tour runs ~1.5 s per new transformation.
 3. **eigenvectors-invariant-directions** — grids fade in pre-deformed in
    `scalar`/`defective`; a visible snap glitch entering `rotation`; hidden
    morphs burn time with no visible change; λ demo labels are hand-acted
@@ -163,3 +163,85 @@ Representation split remains correct: the guided scene owns the encoding
 insight; rotations/order-preservation live in the interactive exploration;
 the height bound lives in formal blocks + worked induction — the scene does
 not duplicate them.
+
+## matrix-transformations: findings → shipped improvements
+
+Findings: the beat named "Transform the sample" contained no transformation —
+the sample arrow was bound directly to the live matrix, which was already `A`
+by the time the beat ran, so the vector was *born* transformed and the beat
+was a line-width pulse under the caption "By linearity it lands on the
+transformed basis". The grid, whose motto the scene states outright, was
+forced to opacity 0 during the column beats and then faded in already
+deformed. The presets tour spent ~1.5 s per new transformation.
+
+Shipped:
+
+- **The sample travels.** It has its own progress signal, so it is drawn at
+  `x` — its untransformed position — with its components on the original
+  basis, and then carried to `Ax` while both dashed components swing onto
+  `Ae₁` and `Ae₂`. The path is the shared `lerpIdentityToMatrix`, which is
+  exactly the straight-line path the deforming grid takes, so the travel is
+  not an invented motion.
+- **The grid deforms where the claim is made.** It is visible (dim) while each
+  column moves, so the shear is watched as the *consequence* of the column
+  rather than appearing pre-cooked two beats later. The grid beat then traces
+  one gridline against its image — deliberately the **vertical** line `x = 1`,
+  because this shear maps horizontal lines onto themselves and a horizontal
+  probe would draw its image on top of its own ghost.
+- **A prediction precedes the reveal.** A `predict-sample` beat (5.5 s) sits
+  between drawing `x` and moving it: both column tip readouts return, `x`
+  stays put, and the question is posed with ~5 s of held silence. The answer
+  is *derivable* — the columns were established two beats earlier and the
+  coefficients are stated as fixed — so it is a prediction rather than a
+  guess, and the reveal resolves it concretely to `Ax = (3.5, 0.5)`.
+- **The tour is unhurried and honest**: 13 s for four presets (~3.2 s each),
+  one redundant rank-1 example dropped, and every preset resets to the
+  identity first — morphing one unrelated preset straight into another
+  animates a transition that means nothing (the rule `chapter0` already
+  follows).
+- **The matrix readout can no longer go stale.** It was set imperatively
+  *after* each morph resolved, so the header showed the previous matrix while
+  the geometry was already becoming the next one. It is now a function of the
+  live entries — the same defect class flagged for the determinant scene
+  below, fixed here at its root.
+- Tip labels and coordinate readouts no longer collide with each other or with
+  the sample, and `majorSteps` now covers all nine beats (it previously
+  skipped `col2`, `transform-sample`, and `compare`, so Prev/Next could not
+  reach the payoff). Migrated to `runSegment`; the export measures 48.53 s
+  against a 48.5 s authored budget.
+
+## columns-rule-graphic: findings → shipped improvements
+
+Findings (the audit's top-ranked gap): the scene's whole purpose is
+`T(x) = a·T(e₁) + b·T(e₂)`, yet no component, coefficient, or construction
+was ever drawn. `vertex` pulsed a dot, `image` re-ran the main scene's I→A
+morph and pulsed the dot again, `all-vertices` faded in three more dots and
+pulsed each. Every conceptual step lived in a caption; a static two-panel
+figure would have carried the same content.
+
+Shipped:
+
+- **The walk is constructed.** `a·e₁` grows from the origin, then `b·e₂`
+  grows from its tip, ending on the vertex — which is pulsed so the
+  coincidence is *read*, not assumed. Dashed guides drop the vertex onto the
+  axes first, so `(a, b)` is earned before it is used.
+- **The components are carried through T, not redrawn.** Both arrows are
+  bound to the live matrix columns (`a·col₁`, `b·col₂`), so the same two
+  objects ride the morph onto the columns and the walk's endpoint is *by
+  construction* `M·x`. Confirmed on a mid-morph export frame: the walk still
+  terminates on the moving vertex. This is the Sláma pack's
+  "keys travel, nothing is faded out and replaced" rule applied to vectors.
+- **A prediction precedes the reveal** (`predict`, 5.5 s with ~5 s of held
+  think time): the columns' destinations are named, the fixed recipe is
+  pinned, and the learner is asked where the walk now ends.
+- **Algebra tracks geometry term by term**: `x = a·e₁` appears as the first
+  arrow grows, `+ b·e₂` as the second does, and the prediction's
+  "→ where?" resolves to the full rule only after the answer is shown.
+- **The invariant is visible**: the `(a, b)` readout is derived from the
+  geometry and pinned *unchanged* across the transform.
+- Closing beat gives every marked vertex its own walk on the same two
+  columns, replacing four pulsing dots with the rule applying vertex-wise.
+- Craft scaled 0.78 → 1.6 (components were ~27 px), emphasis staged so
+  `a·e₁` is never read as a second copy of `e₁`, and the scene migrated to
+  `runSegment` measured padding — the export is exactly 945 frames = 31.5 s
+  = the segment sum, so no body overruns its budget.

@@ -3,6 +3,7 @@ import {
   Vector2,
   all,
   createSignal,
+  easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
@@ -17,22 +18,32 @@ import { COLUMNS_RULE_GRAPHIC_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatSceneNumber,
   makeArrow,
   makeGraphicParts,
   makeLabel,
   makeOverlayLabel,
+  makeSegment,
   makeStaticGrid,
   makeTransformedGrid,
   morphMatrixEntries,
+  runSegment,
   toPixels,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
 /**
  * Lesson 2 callback — "return to the graphic", shown AFTER the columns rule is
- * derived. It writes one craft vertex as x = a·e₁ + b·e₂, shows its image is
- * a·T(e₁) + b·T(e₂) (same coordinates, transformed basis), and then applies the
- * rule to every marked vertex so the two columns reposition the whole craft.
+ * derived. It CONSTRUCTS one craft vertex as x = a·e₁ + b·e₂ (a head-to-tail
+ * walk that ends on the vertex), pauses for the learner to predict where that
+ * walk lands once the basis moves, then carries the very same component arrows
+ * through T so they arrive at a·T(e₁) + b·T(e₂) — the moved vertex.
+ *
+ * Object-identity rule: the two component arrows are created once and bound to
+ * the LIVE matrix columns (`a·col₁` and `b·col₂`). They are never faded out and
+ * replaced, so the learner watches one recipe ride the transformation, and the
+ * walk's endpoint is *by construction* the transformed vertex — the drawing
+ * cannot drift from the claim. Only the labels re-text (e₁ → T(e₁)).
  *
  * Uses the shared A = [[2, 1], [0, 1]] and the shared craft, so it stays
  * numerically and visually continuous with the main Lesson 2 scene/explorer.
@@ -44,7 +55,15 @@ const IDENTITY: Matrix2x2 = [
   [0, 1],
 ];
 
-const DISPLAY = 0.78;
+/**
+ * Craft scale. Larger than the other callback scenes on purpose: this scene's
+ * subject is the *components* of one vertex, and at the previous 0.78 the two
+ * component arrows were ~27 px — too short to read as a construction.
+ * Bounded by the safe frame after T doubles x: the extremes are the thruster
+ * (x = −1.6) and the nose (x = 1.55), giving |2 · 1.6 · 1.6| ≈ 328 px and
+ * 2 · 1.55 · 1.6 ≈ 317 px against a 400 px half-width.
+ */
+const DISPLAY = 1.6;
 const scalePt = ([x, y]: MathVector2): MathVector2 => [x * DISPLAY, y * DISPLAY];
 const DISPLAY_GRAPHIC: OpeningGraphic = {
   ...OPENING_GRAPHIC,
@@ -54,8 +73,11 @@ const DISPLAY_GRAPHIC: OpeningGraphic = {
 
 // A few marked vertices spread across the hull (indices into the outline).
 const MARKED = [1, 3, 8, 12];
-// The single demo vertex whose decomposition we narrate (both coords nonzero).
+// The single demo vertex whose decomposition we construct (both coords nonzero).
 const DEMO = 1;
+
+const lerp = (from: number, to: number, t: number): number =>
+  from + (to - from) * t;
 
 export const columnsRuleGraphicScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
@@ -70,6 +92,18 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
   ];
   const project = (v: MathVector2): Vector2 =>
     toPixels(matrixVectorMultiply(matrix(), v));
+
+  // The demo vertex's standard coordinates. These are the (a, b) of the whole
+  // scene: fixed by the craft, never re-derived, and unchanged by T.
+  const [aCoord, bCoord] = DISPLAY_GRAPHIC.outline[DEMO]!;
+
+  /** Tip of the first component, a·col₁, in math units. */
+  const firstLeg = (): MathVector2 => [aCoord * ma(), aCoord * mc()];
+  /** Tip of the walk, a·col₁ + b·col₂ — identically M·x, the moved vertex. */
+  const walkEnd = (): MathVector2 => [
+    aCoord * ma() + bCoord * mb(),
+    aCoord * mc() + bCoord * md(),
+  ];
 
   const ghostGrid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
   ghostGrid.opacity(0.16);
@@ -95,12 +129,101 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
   e2.points(() => [new Vector2(0, 0), toPixels([mb(), md()])]);
   view.add(e1);
   view.add(e2);
-  const e1Label = makeLabel("e₁", ROLE.basis1, 30);
-  e1Label.position(() => toPixels([ma(), mc()]).add(new Vector2(18, 16)));
-  const e2Label = makeLabel("e₂", ROLE.basis2, 30);
-  e2Label.position(() => toPixels([mb(), md()]).add(new Vector2(16, -8)));
+  // Basis labels sit at the arrow tips, offset outward; the component labels
+  // below live at the segment midpoints, so the two sets never stack.
+  const e1Label = makeLabel("e₁", ROLE.basis1, 28);
+  e1Label.position(() => toPixels([ma(), mc()]).add(new Vector2(30, 30)));
+  const e2Label = makeLabel("e₂", ROLE.basis2, 28);
+  e2Label.position(() => toPixels([mb(), md()]).add(new Vector2(-40, -22)));
   view.add(e1Label);
   view.add(e2Label);
+
+  // ---- the demo vertex's head-to-tail walk -------------------------------
+  // Growth fractions for the initial construction; held at 1 afterwards so the
+  // same two arrows ride the transformation.
+  const grow1 = createSignal(0);
+  const grow2 = createSignal(0);
+
+  const comp1 = makeArrow(ROLE.basis1, 7);
+  comp1.points(() => {
+    const tip = firstLeg();
+    return [
+      new Vector2(0, 0),
+      toPixels([tip[0] * grow1(), tip[1] * grow1()]),
+    ];
+  });
+  comp1.opacity(0);
+  const comp2 = makeArrow(ROLE.basis2, 7);
+  comp2.points(() => {
+    const start = firstLeg();
+    const end = walkEnd();
+    return [
+      toPixels(start),
+      toPixels([
+        lerp(start[0], end[0], grow2()),
+        lerp(start[1], end[1], grow2()),
+      ]),
+    ];
+  });
+  comp2.opacity(0);
+  view.add(comp1);
+  view.add(comp2);
+
+  const comp1Label = makeLabel("a·e₁", ROLE.basis1, 26);
+  comp1Label.position(() => {
+    const tip = firstLeg();
+    return toPixels([tip[0] * 0.5, tip[1] * 0.5]).add(new Vector2(-16, 36));
+  });
+  comp1Label.opacity(0);
+  const comp2Label = makeLabel("b·e₂", ROLE.basis2, 26);
+  comp2Label.position(() => {
+    const start = firstLeg();
+    const end = walkEnd();
+    return toPixels([
+      (start[0] + end[0]) / 2,
+      (start[1] + end[1]) / 2,
+    ]).add(new Vector2(76, 16));
+  });
+  comp2Label.opacity(0);
+  view.add(comp1Label);
+  view.add(comp2Label);
+
+  // Dashed guides from the vertex back to the axes: what "coordinates" means.
+  const guideX = makeSegment(ROLE.textMuted, 2.5, true);
+  guideX.points(() => {
+    const v = walkEnd();
+    return [toPixels([v[0], 0]), toPixels(v)];
+  });
+  guideX.opacity(0);
+  const guideY = makeSegment(ROLE.textMuted, 2.5, true);
+  guideY.points(() => {
+    const v = walkEnd();
+    return [toPixels([0, v[1]]), toPixels(v)];
+  });
+  guideY.opacity(0);
+  view.add(guideX);
+  view.add(guideY);
+
+  // ---- the other marked vertices, each with its own walk -----------------
+  // Same two columns, different (a, b) — built the same way so the closing beat
+  // shows a rule applying vertex-wise rather than four dots pulsing.
+  const otherWalks = MARKED.filter((i) => i !== DEMO).map((i) => {
+    const [va, vb] = DISPLAY_GRAPHIC.outline[i]!;
+    const leg = (): MathVector2 => [va * ma(), va * mc()];
+    const end = (): MathVector2 => [
+      va * ma() + vb * mb(),
+      va * mc() + vb * md(),
+    ];
+    const first = makeSegment(ROLE.basis1, 3);
+    first.points(() => [new Vector2(0, 0), toPixels(leg())]);
+    first.opacity(0);
+    const second = makeSegment(ROLE.basis2, 3);
+    second.points(() => [toPixels(leg()), toPixels(end())]);
+    second.opacity(0);
+    view.add(first);
+    view.add(second);
+    return { first, second };
+  });
 
   // Marked vertices (dots that ride the matrix).
   const markedDots = MARKED.map((i) => {
@@ -113,20 +236,29 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
     view.add(dot);
     return dot;
   });
+  const demoDot = markedDots[MARKED.indexOf(DEMO)]!;
+
+  // The recipe readout: pinned, and deliberately never edited after the
+  // transform — the visible proof that (a, b) is what stays fixed.
+  const recipe = makeLabel(
+    `a = ${formatSceneNumber(aCoord)}   b = ${formatSceneNumber(bCoord)}`,
+    ROLE.selected,
+    26,
+  );
+  recipe.position(new Vector2(-236, -150));
+  recipe.opacity(0);
+  view.add(recipe);
 
   const matrixLabel = makeOverlayLabel("", ROLE.text, 38);
   matrixLabel.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(matrixLabel);
-  const caption = makeOverlayLabel("", ROLE.textMuted, 32);
+  const caption = makeOverlayLabel("", ROLE.textMuted, 30);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
   view.add(caption);
 
-  matrixLabel.text("x = a·e₁ + b·e₂");
-  caption.text("Pick any vertex of the craft and read its coordinates (a, b).");
-
-  const seconds = Object.fromEntries(
-    COLUMNS_RULE_GRAPHIC_SEGMENTS.map((s) => [s.id, s.duration]),
-  ) as Record<string, number>;
+  // Establishing frame, correct at t = 0.
+  matrixLabel.text("x = ?");
+  caption.text("One vertex of the craft, and the basis it is measured against.");
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *vertex() {
@@ -140,32 +272,102 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
         matrixLabel.opacity(1, 0.5),
         caption.opacity(1, 0.5),
       );
-      yield* markedDots[0]!.opacity(1, 0.4);
-      yield* all(markedDots[0]!.size(24, 0.3), markedDots[0]!.size(18, 0.3));
-      yield* waitFor(seconds.vertex - 1.6);
+      yield* demoDot.opacity(1, 0.4);
+      caption.text("Drop it onto the axes: that pair of readings is (a, b).");
+      yield* all(guideX.opacity(0.9, 0.5), guideY.opacity(0.9, 0.5));
+      yield* recipe.opacity(1, 0.4);
     },
+
+    *decompose() {
+      matrixLabel.text("x = a·e₁");
+      caption.text("Walk a steps along e₁…");
+      // Hand the stage to the walk: the craft becomes context and the unit
+      // basis arrows step back, so a·e₁ (shorter than e₁, since a < 1) is not
+      // read as a second copy of e₁ lying on top of it.
+      yield* all(
+        craft.opacity(0.3, 0.5),
+        ghostCraft.opacity(0.45, 0.5),
+        e1.opacity(0.35, 0.5),
+        e2.opacity(0.35, 0.5),
+        e1Label.opacity(0.35, 0.5),
+        e2Label.opacity(0.35, 0.5),
+        comp1.opacity(1, 0.4),
+        comp1Label.opacity(1, 0.4),
+      );
+      yield* grow1(1, 1.4, easeInOutCubic);
+
+      matrixLabel.text("x = a·e₁ + b·e₂");
+      caption.text("…then b steps along e₂ — head to tail, ending on the vertex.");
+      yield* all(comp2.opacity(1, 0.3), comp2Label.opacity(1, 0.3));
+      yield* grow2(1, 1.4, easeInOutCubic);
+      // The walk's endpoint IS the vertex (same matrix, same coordinates):
+      // pulse the dot so the coincidence is read, not assumed.
+      yield* demoDot.size(30, 0.3);
+      yield* demoDot.size(18, 0.3);
+    },
+
+    *predict() {
+      matrixLabel.text("T(x) = a·T(e₁) + b·T(e₂)  →  where?");
+      caption.text(
+        "T moves e₁ and e₂ to the columns (2, 0) and (1, 1). The recipe (a, b) does not change. Predict where this walk now ends.",
+      );
+      // Bring the basis arrows back up: they are what is about to move, so the
+      // prediction is made against the objects that will change.
+      yield* all(
+        e1.opacity(1, 0.5),
+        e2.opacity(1, 0.5),
+        e1Label.opacity(1, 0.5),
+        e2Label.opacity(1, 0.5),
+      );
+      // runSegment pads the rest of the beat: that silence is the think time.
+    },
+
     *image() {
-      matrixLabel.text("T(x) = a·T(e₁) + b·T(e₂)");
-      caption.text("Apply T: e₁, e₂ move to the columns — same a, b, new basis.");
-      yield* tGrid.opacity(0.8, 0.4);
-      yield* morphMatrixEntries(ma, mb, mc, md, A, seconds.image * 0.5);
+      caption.text("Same two steps, now walked on the columns.");
+      yield* all(
+        craft.opacity(0.85, 0.5),
+        ghostCraft.opacity(0.5, 0.5),
+        tGrid.opacity(0.8, 0.5),
+      );
       e1Label.text("T(e₁)");
       e2Label.text("T(e₂)");
-      yield* all(markedDots[0]!.size(24, 0.3), markedDots[0]!.size(18, 0.3));
-      yield* waitFor(seconds.image - (seconds.image * 0.5) - 0.9);
+      comp1Label.text("a·T(e₁)");
+      comp2Label.text("b·T(e₂)");
+      // The single motion of the scene: every bound node — grid, craft, basis
+      // arrows, both component arrows, the guides and every marked dot — is a
+      // function of this matrix, so they all move together and the walk stays
+      // exact on every frame.
+      yield* morphMatrixEntries(ma, mb, mc, md, A, 3.4);
+      // Resolve the prediction: the question mark set in `predict` must not
+      // survive its own answer.
+      matrixLabel.text("T(x) = a·T(e₁) + b·T(e₂)");
+      caption.text("It lands on the moved vertex — the same (a, b), a new basis.");
+      yield* demoDot.size(28, 0.35);
+      yield* demoDot.size(18, 0.35);
     },
+
     *["all-vertices"]() {
-      caption.text("Every vertex follows the same two columns — the whole craft moves.");
-      yield* all(...markedDots.slice(1).map((d) => d.opacity(1, 0.5)));
-      for (const d of markedDots) {
-        yield* d.size(d.size().x + 6, 0.12);
-        yield* d.size(d.size().x - 6, 0.12);
-      }
-      yield* waitFor(seconds["all-vertices"] - 1.6);
+      matrixLabel.text("every vertex: same columns, its own (a, b)");
+      caption.text(
+        "Each vertex walks its own recipe on the same two columns — which is why two columns move the whole craft.",
+      );
+      yield* all(
+        craft.opacity(1, 0.5),
+        guideX.opacity(0, 0.4),
+        guideY.opacity(0, 0.4),
+        ...markedDots.map((d) => d.opacity(1, 0.5)),
+      );
+      yield* all(
+        ...otherWalks.flatMap(({ first, second }) => [
+          first.opacity(0.75, 0.6),
+          second.opacity(0.75, 0.6),
+        ]),
+      );
+      yield* waitFor(0.4);
     },
   };
 
   for (const segment of COLUMNS_RULE_GRAPHIC_SEGMENTS) {
-    yield* bodies[segment.id]!();
+    yield* runSegment(segment.duration, bodies[segment.id]!);
   }
 });

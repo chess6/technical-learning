@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  COLUMNS_RULE_GRAPHIC_SEGMENTS,
   DETERMINANT_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
   ELIMINATION_BEATS,
   ELIMINATION_SEGMENTS,
+  MATRIX_TRANSFORMATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   LINEAR_COMBINATION_SEGMENTS,
   sumBeats,
@@ -168,6 +170,74 @@ describe("scene timings (pure data)", () => {
         }
       }
     });
+  });
+
+  it("matrix-transformations gives the sample its own travel beat and an unhurried tour", () => {
+    const byId = Object.fromEntries(
+      MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s]),
+    );
+    // The linearity payoff is x visibly travelling to Ax: 0.4 ghost + 2.6
+    // travel + 0.7 pulse ≈ 3.7s of choreography, and it must not feel rushed.
+    expect(byId["transform-sample"]!.duration).toBeGreaterThanOrEqual(6.0);
+    // The sample beat draws x BEFORE it moves, plus its components.
+    expect(byId.sample!.duration).toBeGreaterThanOrEqual(4.0);
+    // A prediction sits between drawing x and moving it, and is only real if
+    // there is silence to think in (≈0.5s of choreography, the rest held).
+    const ids = MATRIX_TRANSFORMATION_SEGMENTS.map((s) => s.id);
+    expect(ids.indexOf("sample")).toBeLessThan(ids.indexOf("predict-sample"));
+    expect(ids.indexOf("predict-sample")).toBeLessThan(
+      ids.indexOf("transform-sample"),
+    );
+    expect(byId["predict-sample"]!.duration).toBeGreaterThanOrEqual(4.5);
+    // The grid beat traces a gridline against its image.
+    expect(byId.grid!.duration).toBeGreaterThanOrEqual(5.0);
+    // Four presets, each reset-to-identity then applied: keep ≥3s per new
+    // transformation (the audit measured the old tour at ~1.5s each).
+    const PRESET_COUNT = 4;
+    expect(byId.presets!.duration / PRESET_COUNT).toBeGreaterThanOrEqual(3.0);
+
+    // Every beat is navigable, including the payoff that used to be skipped.
+    const meta = getSceneMeta("matrix-transformations");
+    const majorIds = meta.majorSteps.map((s) => s.id);
+    expect(majorIds).toContain("transform-sample");
+    expect(majorIds).toContain("col2");
+    expect(majorIds).toEqual(MATRIX_TRANSFORMATION_SEGMENTS.map((s) => s.id));
+    expect(
+      MATRIX_TRANSFORMATION_SEGMENTS.every((s) => Boolean(s.summary)),
+    ).toBe(true);
+  });
+
+  it("columns-rule callback constructs the decomposition and predicts before revealing", () => {
+    const ids = COLUMNS_RULE_GRAPHIC_SEGMENTS.map((s) => s.id);
+    // The rule is built, not asserted: a decompose beat draws the head-to-tail
+    // walk, a predict beat holds before the reveal, and image resolves it.
+    expect(ids).toEqual([
+      "vertex",
+      "decompose",
+      "predict",
+      "image",
+      "all-vertices",
+    ]);
+    expect(ids.indexOf("predict")).toBeLessThan(ids.indexOf("image"));
+
+    const byId = Object.fromEntries(
+      COLUMNS_RULE_GRAPHIC_SEGMENTS.map((s) => [s.id, s]),
+    );
+    // decompose choreography: 0.5 dim + 1.4 grow₁ + 0.3 fade + 1.4 grow₂
+    // + 0.6 pulse ≈ 4.2s; keep headroom so the walk never feels rushed.
+    expect(byId.decompose!.duration).toBeGreaterThanOrEqual(6.5);
+    // image: 0.5 restore + 3.4 morph + 0.7 pulse ≈ 4.6s.
+    expect(byId.image!.duration).toBeGreaterThanOrEqual(7.0);
+    // A prediction is only real if there is silence to think in: the beat
+    // spends ≈0.5s brightening the basis, the rest is think time.
+    expect(byId.predict!.duration).toBeGreaterThanOrEqual(4.5);
+
+    // Every beat is a navigable chapter with a summary.
+    expect(COLUMNS_RULE_GRAPHIC_SEGMENTS.every((s) => Boolean(s.summary))).toBe(
+      true,
+    );
+    const meta = getSceneMeta("columns-rule-graphic");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual(ids);
   });
 
   it("karatsuba scene has no deeper beat and ~58s elementary timeline", () => {

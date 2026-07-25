@@ -93,10 +93,12 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "columns-rule-graphic",
     size: SCENE_SIZE,
     ariaLabel:
-      "Lesson 2 callback animation: one vertex of the shared craft is written as a times e one plus b times e two, its image is shown to be a times T of e one plus b times T of e two, and the same rule is then applied to every marked vertex so the two matrix columns reposition the whole craft — resolving Chapter 0's mystery.",
+      "Lesson 2 callback animation: one vertex of the shared craft is marked and its standard coordinates a and b are read off. The decomposition is then constructed head-to-tail — a walk of a along e one followed by b along e two, ending exactly on the vertex. After a pause to predict where that walk will end once the basis moves, the matrix is applied: the same two component arrows swing onto the matrix columns and land on the moved vertex, showing that T of x equals a times T of e one plus b times T of e two with the same a and b. Finally every marked vertex shows its own head-to-tail walk on those same two columns, so the two columns reposition the whole craft — resolving Chapter 0's mystery.",
     steps: COLUMNS_RULE_GRAPHIC_STEPS,
     majorSteps: pickMajor(COLUMNS_RULE_GRAPHIC_STEPS, [
       "vertex",
+      "decompose",
+      "predict",
       "image",
       "all-vertices",
     ]),
@@ -230,13 +232,17 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "matrix-transformations",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation showing a 2 by 2 matrix moving the basis vectors, deforming the coordinate grid, and touring scale, shear, rotation, reflection, and singular transformations.",
+      "Guided animation deriving the columns rule. Starting from the identity, each matrix column is moved in turn and the basis vector it carries moves with it while the coordinate grid visibly shears. A general vector is then drawn at its original position and written as one and a half times e one plus one half times e two. The animation pauses to let the learner predict the landing point from the two columns already on screen, and only then applies the transformation: the vector travels to the same combination of the transformed basis images, arriving at three and a half, one half, so the coefficients are seen to be unchanged. One gridline is then traced against its image to show that straight lines map to straight lines and the origin stays pinned, and the scene closes with a tour of scale, rotation, reflection, and a projection that collapses the plane, each reset to the identity before it is applied.",
     steps: MATRIX_STEPS,
     majorSteps: pickMajor(MATRIX_STEPS, [
       "identity",
       "col1",
+      "col2",
       "sample",
+      "predict-sample",
+      "transform-sample",
       "grid",
+      "compare",
       "presets",
       "summary",
     ]),

@@ -32,8 +32,9 @@ analyses are committed.
 ## Fetching
 
 ```bash
-scripts/fetch-animation-references.sh            # clone missing / update all (idempotent, shallow)
-scripts/fetch-animation-references.sh --status   # local HEADs, no network
+scripts/fetch-animation-references.sh            # check out the pinned manifest SHAs
+scripts/fetch-animation-references.sh --latest   # move to upstream HEAD (to re-pin)
+scripts/fetch-animation-references.sh --status   # pinned vs local SHA, no network
 scripts/fetch-animation-references.sh xiaoxiae-videos   # limit to one slug
 
 scripts/fetch-transcripts.py <video/playlist/channel URL>...
@@ -45,14 +46,28 @@ scripts/fetch-transcripts.py --whisper <url>             # EXPLICIT local transc
                                                          # "whisper-local", not creator-provided)
 ```
 
+**Commits are pinned, not floating.** Each repo is checked out at its
+`inspectedCommit` from `manifest.json`, so an `analysis.md` written against a
+SHA keeps describing the code actually on disk. The script fetches that exact
+commit into the shallow clone (GitHub serves arbitrary SHAs), and reports —
+with a non-zero exit — any repo whose HEAD differs from its pin, has no pin, or
+whose pinned commit upstream will no longer serve (force-push or GC). Use
+`--latest` deliberately when refreshing: it moves to upstream HEAD and warns
+for every repo that has drifted from the manifest, which is the signal to
+re-pin and re-check the analyses citing it.
+
 The transcript tool needs `yt-dlp` (`pip3 install --user yt-dlp`). It downloads
 no video media by default, prefers creator-supplied English captions, falls back
 to automatic ones, sleeps between requests, and skips already-fetched videos.
+`--limit` bounds the playlist/channel enumeration itself (`playlistend` /
+`playlist_items`), so a large channel is never paged in full just to keep a few.
 Normalized output per video: `metadata.json`, the original caption file,
 `transcript.json` (`{"segments": [{"start", "duration", "text"}]}`), and
 `transcript.txt`. Provenance is recorded as `manual` / `automatic` /
-`whisper-local`. Offline unit tests for the normalization layer:
-`python3 -m pytest scripts/test_fetch_transcripts.py`.
+`whisper-local`. Offline unit tests for the normalization layer live in
+`scripts/test_fetch_transcripts.py` and run as part of the full `./check.sh`
+tier (they are skipped with a warning — never silently — when python3/pytest
+is unavailable, since Python is a dev-tool dependency, not a product one).
 
 ## Licensing and the reference-only rule
 

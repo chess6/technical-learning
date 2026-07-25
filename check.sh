@@ -50,6 +50,16 @@ if [[ "$quick" -eq 1 ]]; then
 else
   log "Unit tests"
   npm run test
+
+  # Transcript-tool tests (pure normalization; no network). Python is a dev-tool
+  # dependency, not a product one: skip loudly when it is absent, but never
+  # tolerate a FAILING suite.
+  log "Transcript tool tests (python)"
+  if command -v python3 >/dev/null && python3 -c "import pytest" 2>/dev/null; then
+    python3 -m pytest scripts/test_fetch_transcripts.py -q
+  else
+    warn "skipped: python3 with pytest not available (pip3 install --user pytest)"
+  fi
 fi
 
 if [[ "$with_e2e" -eq 1 ]]; then

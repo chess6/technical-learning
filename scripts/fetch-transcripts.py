@@ -207,6 +207,12 @@ def enumerate_video_urls(yt_dlp, url: str, limit: int | None) -> list[str]:
         "extract_flat": "in_playlist",
         "skip_download": True,
     }
+    if limit is not None:
+        # Bound the enumeration itself rather than slicing afterwards: a channel
+        # can hold thousands of entries, and paging all of them to keep five is
+        # both slow and needlessly hard on the server.
+        opts["playlistend"] = limit
+        opts["playlist_items"] = f"1:{limit}"
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=False)
     if info is None:
@@ -214,6 +220,7 @@ def enumerate_video_urls(yt_dlp, url: str, limit: int | None) -> list[str]:
     if info.get("_type") == "playlist":
         entries = [e for e in info.get("entries") or [] if e]
         if limit is not None:
+            # Belt and braces: extractors that ignore playlistend still get cut.
             entries = entries[:limit]
         return [
             e.get("url") or f"https://www.youtube.com/watch?v={e['id']}"

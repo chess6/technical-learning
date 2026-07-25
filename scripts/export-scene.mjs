@@ -28,11 +28,16 @@
  */
 
 import { spawn, spawnSync } from "node:child_process";
-import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** No new frame for this long ⇒ the renderer is wedged; abort the pass. */
+const DEFAULT_STALL_TIMEOUT_S = 90;
+/** Hard ceiling on a single scene's render, however healthy it looks. */
+const DEFAULT_SCENE_TIMEOUT_S = 1800;
 
 function parseArgs(argv) {
   const options = {
@@ -43,6 +48,8 @@ function parseArgs(argv) {
     port: Number(process.env.PORT ?? 5173),
     keepFrames: false,
     list: false,
+    stallTimeout: DEFAULT_STALL_TIMEOUT_S,
+    sceneTimeout: DEFAULT_SCENE_TIMEOUT_S,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -61,6 +68,12 @@ function parseArgs(argv) {
         break;
       case "--port":
         options.port = Number(argv[++i]);
+        break;
+      case "--stall-timeout":
+        options.stallTimeout = Number(argv[++i]);
+        break;
+      case "--scene-timeout":
+        options.sceneTimeout = Number(argv[++i]);
         break;
       case "--keep-frames":
         options.keepFrames = true;
@@ -91,6 +104,12 @@ function parseArgs(argv) {
     console.error("error: --scale must be in (0, 4]");
     process.exit(1);
   }
+  for (const key of ["stallTimeout", "sceneTimeout"]) {
+    if (!Number.isFinite(options[key]) || options[key] <= 0) {
+      console.error(`error: --${key === "stallTimeout" ? "stall" : "scene"}-timeout must be > 0 seconds`);
+      process.exit(1);
+    }
+  }
   return options;
 }
 
@@ -98,7 +117,9 @@ function printHelp() {
   console.log(
     `Export a guided Motion Canvas scene to MP4.\n\n` +
       `  node scripts/export-scene.mjs --list\n` +
-      `  node scripts/export-scene.mjs --scene <id> [--fps 30] [--scale 2] [--out exports/] [--keep-frames]\n`,
+      `  node scripts/export-scene.mjs --scene <id> [--fps 30] [--scale 2] [--out exports/] [--keep-frames]\n` +
+      `\nTimeouts (seconds): --stall-timeout ${DEFAULT_STALL_TIMEOUT_S} (no new frame), ` +
+      `--scene-timeout ${DEFAULT_SCENE_TIMEOUT_S} (whole scene)\n`,
   );
 }
 
@@ -162,6 +183,26 @@ async function main() {
   const browser = await chromium.launch();
   let exitCode = 0;
 
+  // Chromium is a detached child: an unhandled throw or a Ctrl-C between
+  // launch() and close() would leak a headless browser (and the dev server we
+  // may have started). Tear both down once, on any exit path.
+  let cleanedUp = false;
+  const cleanup = async () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
+    try {
+      await browser.close();
+    } catch {
+      /* already gone */
+    }
+    server.stop();
+  };
+  const onSignal = (signal) => {
+    void cleanup().then(() => process.exit(signal === "SIGINT" ? 130 : 143));
+  };
+  process.once("SIGINT", onSignal);
+  process.once("SIGTERM", onSignal);
+
   try {
     const page = await browser.newPage();
     page.on("console", (message) => {
@@ -207,8 +248,9 @@ async function main() {
       if (!ok) exitCode = 1;
     }
   } finally {
-    await browser.close();
-    server.stop();
+    process.off("SIGINT", onSignal);
+    process.off("SIGTERM", onSignal);
+    await cleanup();
   }
   process.exit(exitCode);
 }
@@ -224,15 +266,28 @@ async function exportScene(page, sceneId, options) {
   );
   // Fire-and-forget: start() resolves only when rendering completes, and the
   // in-page exporter applies backpressure until this loop drains the queue —
-  // awaiting it here would deadlock at the queue cap.
+  // awaiting it here would deadlock at the queue cap. The rejection handler is
+  // essential: a renderer that throws before reaching its own error path (bad
+  // scene module, WebGL failure) would otherwise leave the status at
+  // "rendering" and hang this loop until the stall timeout.
   await page.evaluate(
     ({ sceneId, fps, scale }) => {
-      void window.__exportApi.start({ sceneId, fps, resolutionScale: scale });
+      window.__exportApi
+        .start({ sceneId, fps, resolutionScale: scale })
+        .catch((error) => {
+          window.__exportStatus.state = "error";
+          window.__exportStatus.error =
+            error instanceof Error
+              ? `${error.message}\n${error.stack ?? ""}`.trim()
+              : String(error);
+        });
     },
     { sceneId, fps: options.fps, scale: options.scale },
   );
 
   let written = 0;
+  const startedAt = Date.now();
+  let lastFrameAt = startedAt;
   // Drain the in-page frame queue until the renderer reports done.
   for (;;) {
     const { frames, state, error } = await page.evaluate(() => ({
@@ -248,6 +303,7 @@ async function exportScene(page, sceneId, options) {
       );
       written += 1;
     }
+    if (frames.length > 0) lastFrameAt = Date.now();
     if (written > 0 && written % 300 < frames.length) {
       console.log(`  ${written} frames captured…`);
     }
@@ -256,6 +312,25 @@ async function exportScene(page, sceneId, options) {
       return false;
     }
     if (state === "done" && frames.length === 0) break;
+
+    // Two independent guards so a wedged renderer can never hang the run: no
+    // new frame for stallTimeout, or the whole scene exceeding sceneTimeout.
+    const idleS = (Date.now() - lastFrameAt) / 1000;
+    if (idleS > options.stallTimeout) {
+      console.error(
+        `error: ${sceneId} produced no frame for ${Math.round(idleS)}s ` +
+          `(--stall-timeout ${options.stallTimeout}); aborting after ${written} frames`,
+      );
+      return false;
+    }
+    const elapsedS = (Date.now() - startedAt) / 1000;
+    if (elapsedS > options.sceneTimeout) {
+      console.error(
+        `error: ${sceneId} exceeded --scene-timeout ${options.sceneTimeout}s ` +
+          `after ${written} frames`,
+      );
+      return false;
+    }
     await new Promise((resolveSleep) => setTimeout(resolveSleep, 120));
   }
 

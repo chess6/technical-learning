@@ -15,7 +15,16 @@ npm run export:scene -- --scene eigenvectors-derivation \
 
 Options: `--fps <n>` (default 30), `--scale <n>` resolution multiplier of the
 960×540 stage (default 2 → 1920×1080; 4 → 4K), `--out <dir>` (default
-`exports/`, Git-ignored), `--port <n>`, `--keep-frames`, repeatable `--scene`.
+`exports/`, Git-ignored), `--port <n>`, `--keep-frames`, repeatable `--scene`,
+plus the two watchdogs below.
+
+**The run cannot hang.** A renderer that throws before reaching its own error
+path (bad scene module, WebGL failure) is caught and reported rather than
+leaving the drain loop spinning, and two independent timeouts bound every
+pass: `--stall-timeout` (default 90 s with no new frame) and `--scene-timeout`
+(default 1800 s for a whole scene). Any of these fails the run with a non-zero
+exit. Chromium and a script-started dev server are torn down on every exit
+path, including Ctrl-C, so no headless browser is left behind.
 
 ## How it works
 
