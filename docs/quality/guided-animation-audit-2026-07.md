@@ -188,6 +188,12 @@ Shipped:
   one gridline against its image — deliberately the **vertical** line `x = 1`,
   because this shear maps horizontal lines onto themselves and a horizontal
   probe would draw its image on top of its own ghost.
+- **A prediction precedes the reveal.** A `predict-sample` beat (5.5 s) sits
+  between drawing `x` and moving it: both column tip readouts return, `x`
+  stays put, and the question is posed with ~5 s of held silence. The answer
+  is *derivable* — the columns were established two beats earlier and the
+  coefficients are stated as fixed — so it is a prediction rather than a
+  guess, and the reveal resolves it concretely to `Ax = (3.5, 0.5)`.
 - **The tour is unhurried and honest**: 13 s for four presets (~3.2 s each),
   one redundant rank-1 example dropped, and every preset resets to the
   identity first — morphing one unrelated preset straight into another
