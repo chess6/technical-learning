@@ -298,16 +298,38 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       yield* sample.end(1, 1.0, easeInOutCubic);
       yield* all(comp1.opacity(0.85, 0.4), comp2.opacity(0.85, 0.4));
     },
+    *["predict-sample"]() {
+      // A prediction is only real if the learner already holds every piece.
+      // Both columns were derived two beats ago, so bring their tip readouts
+      // back: (2, 0) and (1, 1) are exactly the data the answer is built from.
+      setCaption(
+        `Both columns are known, and ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])} do not change. Where does x land?`,
+      );
+      yield* all(
+        e1.opacity(1, 0.5),
+        e2.opacity(1, 0.5),
+        e1Label.opacity(1, 0.5),
+        e2Label.opacity(1, 0.5),
+        e1Coords.opacity(0.9, 0.5),
+        e2Coords.opacity(0.9, 0.5),
+      );
+      // runSegment pads the remaining ~5s: that silence is the think time.
+    },
     *["transform-sample"]() {
       setCaption("Hold the coefficients fixed and let A move the basis under them");
+      // Retire the column readouts again so the travel owns the space.
+      yield* all(e1Coords.opacity(0, 0.3), e2Coords.opacity(0, 0.3));
       // Leave the starting position on screen so the travel has a reference…
       yield* sampleGhost.opacity(0.45, 0.4);
       // …then carry x to Ax. Every bound node moves off the same signal: the
       // arrow, both dashed components, and the tip they meet at. The tip is
       // Ax by construction, so the drawing cannot drift from the claim.
       yield* sampleT(1, 2.6, easeInOutCubic);
+      // Close the loop on the prediction with the actual landing point,
+      // computed from the shared matrix helper rather than written by hand.
+      const landed = matrixVectorMultiply(A, SAMPLE);
       setCaption(
-        `Same ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])} — now on Ae₁ and Ae₂. That is Ax.`,
+        `Same ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])}, now on Ae₁ and Ae₂: Ax = (${fmt(landed[0])}, ${fmt(landed[1])}).`,
       );
       yield* sample.lineWidth(8, 0.35);
       yield* sample.lineWidth(5, 0.35);

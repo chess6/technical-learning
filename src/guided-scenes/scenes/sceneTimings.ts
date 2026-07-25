@@ -76,6 +76,12 @@ export const MATRIX_TRANSFORMATION_SEGMENTS: readonly SceneSegment[] = [
     summary: "A vector that is not a basis vector, written in the original basis as 1.5·e₁ + 0.5·e₂.",
   },
   {
+    id: "predict-sample",
+    title: "Predict where it lands",
+    duration: 5.5,
+    summary: "Both columns are already known and x's coefficients do not change — so the landing point can be worked out before it is shown.",
+  },
+  {
     id: "transform-sample",
     title: "Watch it land",
     duration: 6.5,

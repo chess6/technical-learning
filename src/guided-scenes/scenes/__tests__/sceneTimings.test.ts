@@ -181,6 +181,14 @@ describe("scene timings (pure data)", () => {
     expect(byId["transform-sample"]!.duration).toBeGreaterThanOrEqual(6.0);
     // The sample beat draws x BEFORE it moves, plus its components.
     expect(byId.sample!.duration).toBeGreaterThanOrEqual(4.0);
+    // A prediction sits between drawing x and moving it, and is only real if
+    // there is silence to think in (≈0.5s of choreography, the rest held).
+    const ids = MATRIX_TRANSFORMATION_SEGMENTS.map((s) => s.id);
+    expect(ids.indexOf("sample")).toBeLessThan(ids.indexOf("predict-sample"));
+    expect(ids.indexOf("predict-sample")).toBeLessThan(
+      ids.indexOf("transform-sample"),
+    );
+    expect(byId["predict-sample"]!.duration).toBeGreaterThanOrEqual(4.5);
     // The grid beat traces a gridline against its image.
     expect(byId.grid!.duration).toBeGreaterThanOrEqual(5.0);
     // Four presets, each reset-to-identity then applied: keep ≥3s per new

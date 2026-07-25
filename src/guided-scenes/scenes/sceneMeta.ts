@@ -180,13 +180,14 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "matrix-transformations",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation deriving the columns rule. Starting from the identity, each matrix column is moved in turn and the basis vector it carries moves with it while the coordinate grid visibly shears. A general vector is then drawn at its original position and written as one and a half times e one plus one half times e two; when the transformation is applied it travels to the same combination of the transformed basis images, so the coefficients are seen to be unchanged. One gridline is then traced against its image to show that straight lines map to straight lines and the origin stays pinned, and the scene closes with a tour of scale, rotation, reflection, and a projection that collapses the plane, each reset to the identity before it is applied.",
+      "Guided animation deriving the columns rule. Starting from the identity, each matrix column is moved in turn and the basis vector it carries moves with it while the coordinate grid visibly shears. A general vector is then drawn at its original position and written as one and a half times e one plus one half times e two. The animation pauses to let the learner predict the landing point from the two columns already on screen, and only then applies the transformation: the vector travels to the same combination of the transformed basis images, arriving at three and a half, one half, so the coefficients are seen to be unchanged. One gridline is then traced against its image to show that straight lines map to straight lines and the origin stays pinned, and the scene closes with a tour of scale, rotation, reflection, and a projection that collapses the plane, each reset to the identity before it is applied.",
     steps: MATRIX_STEPS,
     majorSteps: pickMajor(MATRIX_STEPS, [
       "identity",
       "col1",
       "col2",
       "sample",
+      "predict-sample",
       "transform-sample",
       "grid",
       "compare",
