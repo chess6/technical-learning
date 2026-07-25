@@ -235,3 +235,27 @@ export type {
   NormalizedCoefficients,
   TreeNode,
 } from "./karatsuba";
+
+export {
+  binarySearchProbes,
+  buildBalanced,
+  height as bstHeight,
+  heightBounds,
+  inOrder as bstInOrder,
+  insert as bstInsert,
+  insertAll as bstInsertAll,
+  intervalAt,
+  isValidBST,
+  medianFirstOrder,
+  passesLocalChildChecks,
+  searchTrace as bstSearchTrace,
+  size as bstSize,
+  worstCaseComparisons,
+} from "./binarySearchTrees";
+export type {
+  BSTNode,
+  HeightBounds,
+  KeyInterval,
+  SearchTrace,
+  ValidityResult,
+} from "./binarySearchTrees";

@@ -9,6 +9,18 @@ import {
   magnitude,
 } from "./vectors";
 import {
+  binarySearchProbes as bstBinarySearchProbes,
+  buildBalanced as bstBuildBalanced,
+  height as bstHeight,
+  heightBounds as bstHeightBounds,
+  inOrder as bstInOrder,
+  insertAll as bstInsertAll,
+  isValidBST as bstIsValid,
+  passesLocalChildChecks as bstPassesLocalChildChecks,
+  searchTrace as bstSearchTrace,
+  type BSTNode as BSTTreeNode,
+} from "./binarySearchTrees";
+import {
   applyMatrixToUnitSquare,
   determinant2x2,
   matrixColumn,
@@ -178,4 +190,120 @@ export function gridFamilyDirection(
     if (magnitude(dir) > tolerance) return dir;
   }
   return null;
+}
+
+/* --------------------------------------------------------------------------
+ * Binary search trees
+ *
+ * The seven checks the Binary Search Trees lesson owes (mastery-contract §1g).
+ * They are stated as assertions rather than booleans so a failure names the
+ * offending tree, and they are used by both the unit suite and any scene or
+ * explorer regression that wants to prove what it is drawing.
+ * ------------------------------------------------------------------------ */
+
+/** (1) In-order traversal returns the sorted keys — for EVERY insertion order. */
+export function assertInOrderIsSorted(order: readonly number[]): void {
+  const expected = [...order].sort((a, b) => a - b);
+  const actual = bstInOrder(bstInsertAll(order));
+  if (actual.length !== expected.length) {
+    fail(
+      `in-order length ${actual.length} !== ${expected.length} for order [${order.join(", ")}]`,
+    );
+  }
+  for (let i = 0; i < expected.length; i += 1) {
+    if (actual[i] !== expected[i]) {
+      fail(
+        `in-order [${actual.join(", ")}] !== sorted [${expected.join(", ")}] ` +
+          `for order [${order.join(", ")}]`,
+      );
+    }
+  }
+}
+
+/** (2) Every insert-at-leaf tree is valid by the inherited-interval test. */
+export function assertInsertAtLeafIsValid(order: readonly number[]): void {
+  const result = bstIsValid(bstInsertAll(order));
+  if (!result.valid) {
+    fail(
+      `insert-at-leaf produced an invalid tree for order [${order.join(", ")}]: ` +
+        `key ${result.offendingKey} outside its interval`,
+    );
+  }
+}
+
+/**
+ * (2, negative half) A tree that satisfies every parent–child comparison but
+ * violates an inherited interval MUST be rejected. This is the lesson's
+ * counterexample; if validity ever regresses to the local check, this fails.
+ */
+export function assertLocallyValidTreeIsRejected(root: BSTTreeNode | null): void {
+  if (!bstPassesLocalChildChecks(root)) {
+    fail("fixture is not locally valid — it cannot demonstrate the misconception");
+  }
+  if (bstIsValid(root).valid) {
+    fail("a locally-valid but globally-invalid tree was accepted as a BST");
+  }
+}
+
+/** (3) A search's comparison count is exactly the depth it reached, plus one. */
+export function assertSearchCostIsDepthPlusOne(
+  root: BSTTreeNode | null,
+  key: number,
+): void {
+  const trace = bstSearchTrace(root, key);
+  if (trace.comparisons.length !== trace.depth + 1) {
+    fail(
+      `search for ${key} made ${trace.comparisons.length} comparisons at depth ${trace.depth}`,
+    );
+  }
+}
+
+/** (4) Sorted insertion degenerates to a chain of height n − 1. */
+export function assertSortedInsertionDegenerates(keys: readonly number[]): void {
+  const sorted = [...keys].sort((a, b) => a - b);
+  const h = bstHeight(bstInsertAll(sorted));
+  if (h !== sorted.length - 1) {
+    fail(`sorted insertion gave height ${h}, expected ${sorted.length - 1}`);
+  }
+}
+
+/** (5) The balanced build attains the minimum height ⌈log₂(n+1)⌉ − 1. */
+export function assertBalancedAttainsMinimumHeight(
+  sortedKeys: readonly number[],
+): void {
+  const h = bstHeight(bstBuildBalanced(sortedKeys));
+  const { min } = bstHeightBounds(sortedKeys.length);
+  if (h !== min) {
+    fail(`balanced build gave height ${h}, expected the minimum ${min}`);
+  }
+}
+
+/** (6) Every order lands inside ⌈log₂(n+1)⌉ − 1 ≤ h ≤ n − 1. */
+export function assertHeightWithinBounds(order: readonly number[]): void {
+  const h = bstHeight(bstInsertAll(order));
+  const { min, max } = bstHeightBounds(order.length);
+  if (h < min || h > max) {
+    fail(
+      `height ${h} outside [${min}, ${max}] for order [${order.join(", ")}]`,
+    );
+  }
+}
+
+/**
+ * (7) The balanced tree's root→node path is exactly binary search's probe
+ * sequence on the same sorted array — the one identity claimed only for the
+ * balanced member of the family.
+ */
+export function assertBalancedTreeMatchesBinarySearch(
+  sortedKeys: readonly number[],
+  target: number,
+): void {
+  const probes = bstBinarySearchProbes(sortedKeys, target);
+  const path = bstSearchTrace(bstBuildBalanced(sortedKeys), target).comparisons;
+  if (probes.length !== path.length || probes.some((p, i) => p !== path[i])) {
+    fail(
+      `binary-search probes [${probes.join(", ")}] !== balanced path [${path.join(", ")}] ` +
+        `for target ${target}`,
+    );
+  }
 }
