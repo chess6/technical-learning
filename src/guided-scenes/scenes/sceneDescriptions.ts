@@ -46,6 +46,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./karatsubaCrossTermsScene").then((m) => m.karatsubaCrossTermsScene),
   "bst-lift-from-array": () =>
     import("./bstLiftScene").then((m) => m.bstLiftScene),
+  "red-black-encoding": () =>
+    import("./redBlackEncodingScene").then((m) => m.redBlackEncodingScene),
 };
 
 export function getSceneDescription(sceneId: string): Promise<unknown> {

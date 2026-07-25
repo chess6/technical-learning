@@ -73,6 +73,8 @@ course's last lesson does not link on to a different subject. Routes stay
 **Algorithmic Thinking** — *Divide, conquer, analyze*:
 
 - 1. Karatsuba: three multiplications instead of four — `/lesson/karatsuba`
+- 2. Binary Search Trees: keeping the midpoints — `/lesson/binary-search-trees`
+- 3. Red–Black Trees: a 2–3–4 tree in disguise — `/lesson/red-black-trees`
 
 Not-yet-built spine positions are `future` nodes in the same tree and render as
 dimmed entries in their course's sidebar.

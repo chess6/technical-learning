@@ -315,6 +315,46 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     ],
     relatedTerms: ["binary-search-tree", "tree-height"],
   },
+  {
+    id: "red-black-encoding",
+    term: "Red–black encoding",
+    definition:
+      "The map that sends one node of a 2–3–4 tree to a **black representative** together with its extra keys as **red children**: a 2-node to a lone black node, a 3-node to a black node with one red child, a 4-node to a black node with two red children.",
+    intuition:
+      "Red means \"I am an extra key inside my parent's node\"; black means \"I start a new level.\"",
+    notation: "$T \\mapsto E(T)$, with $bh(E(T)) = \\operatorname{height}(T)$",
+    notationNote:
+      "The colour bit records **membership**, not recency or importance. Every one of the five red-black properties is a restatement of something the 2–3–4 tree already guaranteed.",
+    firstLessonIntroduced: "red-black-trees",
+    prerequisites: ["binary-search-tree"],
+    examples: [
+      "Black 40 with red child 20 encodes the 3-node $\\{20, 40\\}$",
+    ],
+    nonExamples: [
+      "A red child of a red node is **not** a five-key node — it is the same node drawn illegally, repaired by a rotation",
+    ],
+    relatedTerms: ["black-height", "binary-search-tree"],
+  },
+  {
+    id: "black-height",
+    term: "Black height",
+    definition:
+      "For a node $x$, the number of **black** nodes on any path from $x$ down to a `nil` leaf, counting the `nil` leaf (which is black) but not $x$ itself.",
+    intuition:
+      "The height of the 2–3–4 tree underneath: reds add keys within a level, only blacks start a new one.",
+    notation: "$bh(x)$; and $n \\ge 2^{bh}-1$, so $\\operatorname{height} \\le 2\\log_2(n+1)$",
+    notationNote:
+      "A split preserves a subtree's **external** black height — counted on a path entering from outside, so the representative's own colour counts. Measured from the node exclusive instead, it is not preserved, and the theorem is false.",
+    firstLessonIntroduced: "red-black-trees",
+    prerequisites: ["red-black-encoding", "tree-height"],
+    examples: [
+      "The tree with black 40, red 20 over blacks 10 and 30, and black 60 over reds 50 and 70 has $bh = 2$",
+    ],
+    nonExamples: [
+      "A local recolour does not change the tree's total black height — only a split that reaches the root does, and it raises every path at once",
+    ],
+    relatedTerms: ["red-black-encoding", "tree-height"],
+  },
 ];
 
 /** Terms indexed by id, for lookups and referential-integrity checks. */

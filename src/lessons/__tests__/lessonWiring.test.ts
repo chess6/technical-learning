@@ -317,6 +317,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "eigenvectors",
       "karatsuba",
       "binary-search-trees",
+      "red-black-trees",
     ]);
   });
 

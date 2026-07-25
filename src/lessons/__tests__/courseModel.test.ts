@@ -84,12 +84,16 @@ describe("navigation is course-relative, not registry-positional", () => {
     expect(courseLessonIds(ALGORITHMS)).toEqual([
       "karatsuba",
       "binary-search-trees",
+      "red-black-trees",
     ]);
     expect(getAdjacentLessons("karatsuba").previous).toBeNull();
     // Within a course, adjacency is real…
     expect(getAdjacentLessons("karatsuba").next?.id).toBe("binary-search-trees");
     // …and the course's own last lesson still leads nowhere.
-    expect(getAdjacentLessons("binary-search-trees").next).toBeNull();
+    expect(getAdjacentLessons("red-black-trees").next).toBeNull();
+    expect(getAdjacentLessons("red-black-trees").previous?.id).toBe(
+      "binary-search-trees",
+    );
   });
 
   it("walks a course path in declared unit order", () => {

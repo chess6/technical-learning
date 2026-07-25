@@ -198,12 +198,7 @@ export const CURRICULUM: readonly Subject[] = [
             title: "Data structures",
             items: [
               { kind: "lesson", lessonId: "binary-search-trees" },
-              {
-                kind: "future",
-                id: "red-black-trees",
-                title: "Red–Black Trees",
-                subtitle: "Balance as an invariant you can recolor back into place",
-              },
+              { kind: "lesson", lessonId: "red-black-trees" },
             ],
           },
         ],

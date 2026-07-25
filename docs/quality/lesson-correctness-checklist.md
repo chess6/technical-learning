@@ -1467,3 +1467,97 @@ Algorithmic Thinking, ahead of Red–Black Trees.
   layer **with its assumption stated**, and is never assessed.
 - [x] Deletion is named in a `looking-ahead` layer only.
 
+---
+
+## Red–Black Trees — Gate 7 correctness review (2026-07-24)
+
+Third chapter of Algorithmic Thinking, built from
+`docs/courses/data-structures/lessons/red-black-trees/`. Promoted `future → built`.
+It is the course's last lesson and therefore has no Next link.
+
+### Corrections the build forced
+
+- [x] **The insight contract's case 3 was internally inconsistent** — "a fourth
+  key arrives (a 5-node)" cannot also leave "two 2-nodes", because promoting the
+  middle of four keys leaves a 2-node and a 3-node. Splitting **pre-emptively**,
+  on the way down, makes the contract's own sentence true and is what the lesson
+  animates. Recorded in the module header, not silently absorbed.
+- [x] **The left-leaning normalization is adopted and disclosed.** The contract
+  names it as a legal, separately-stated choice; taking it makes `encode`/`decode`
+  an exact bijection, so the round-trip is a test rather than a caveat, and the
+  mirror freedom is still explained to the learner in a depth layer.
+- [x] **Invariant (4) was wrong on the first attempt, and the test caught it.**
+  "A split preserves EXTERNAL black height" is false under the exclusive count
+  (1 before, 2 after). It holds on a path entering *through* the representative,
+  so the representative's own colour counts. That qualifier is exactly what
+  misconception M4 drops; writing the test to match the code would have shipped
+  the lesson asserting the wrong quantity.
+
+### Math layer
+
+- [x] Everything the scene and explorer show — trees, colours, per-path black
+  counts, repair classifications, legality reports — comes from
+  `src/math/redBlackTrees.ts`.
+- [x] `classifyRepair` is **derived from the real insertion**, so the
+  classification a learner is graded on and the repair the explorer performs can
+  never disagree.
+- [x] `rotateOnlyAt` implements a purely structural rotation with **every node
+  keeping its own colour** — the honest meaning of "the rotation alone", and the
+  reason it can move a black node between paths.
+
+### Invariants (all seven, `src/math/invariants.ts`)
+
+- [x] (1) `encode(decode(R)) = R`; (2) every repair preserves the key order;
+  (3) the tree stays legal; (5) only a root split changes the total black height,
+  and then by exactly one; (6) `height ≤ 2·log₂(n+1)` after every insertion —
+  **including on sorted input up to n = 64**, the order that destroyed the plain
+  BST in the previous lesson.
+- [x] (4) a split preserves **external** black height, with the qualifier
+  implemented explicitly and justified in the comment.
+- [x] (7) **NEGATIVE**: a bare rotation must break the tree. If it ever stops
+  breaking it, the lesson's sharpest confrontation has quietly become a claim
+  about nothing, so the assertion fails loudly. Guards-on-the-guard: the starting
+  tree must be legal first, and a non-cluster fixture must be rejected by (4).
+
+### Honest-visualization review
+
+- [x] The scene animates **one cluster**, not a whole tree: the insight is about
+  what a single node *is*, and at 960×540 a full tree would make the colour change
+  — the actual subject — the smallest thing on screen. The whole-tree view is the
+  explorer's job.
+- [x] At `split-is-recolour` the left panel physically splits while the right panel
+  **only changes colour**, which is the claim being made. No pointer is animated
+  on the encoded side, because none moves.
+- [x] The violation marker is captioned as a *repair state*, so M3 cannot form.
+
+### Testing review
+
+- [x] `redBlackTrees.test.ts` — 21 tests: legality after **every single
+  insertion** across 120 random orders; the height bound on sorted input; the
+  encoding round-trip both directions; black height equal to the decoded 2–3–4
+  height; the total black height changing only on a root split, **uniformly**;
+  classification agreeing with the insertion it describes; and a bare rotation
+  preserving order while breaking legality.
+- [x] `rbInvariants.test.ts` — 10 tests over the seven invariants plus the two
+  guards-on-the-guard.
+- [x] `rbtGradingContract.test.ts` — 46 tests. Rejects are answers a learner would
+  actually produce: arity read *after* insertion, "it has room so nothing to do"
+  (missing the orientation half), the black count read from the node exclusive,
+  the tree's height in place of its black height, and — twice — the red-red pair
+  read as a five-key node.
+- [x] `e2e/lesson-red-black-trees.spec.ts` — 5 specs: the lesson sits third in
+  Algorithmic Thinking with **no Next link**; the explorer shows the decoded
+  2–3–4 tree beside the encoding; **Rotate only (break it)** breaks legality and
+  diverges the per-path black counts **while the in-order readout is asserted
+  unchanged** — the misconception repair, executed rather than narrated; cluster
+  rings off by default; no horizontal overflow at 1440 px and 390 px in both themes.
+- [x] Verified at package tier: `./check.sh --e2e`.
+
+### Scope honesty
+
+- [x] Deletion is named as the dual in a `looking-ahead` layer and **not taught**.
+- [x] The amortized restructuring figure is stated **with its variant caveat** and
+  is never assessed.
+- [x] No optimality claim: the lesson proves sufficiency and a logarithmic bound,
+  not that red-black balance is minimal.
+

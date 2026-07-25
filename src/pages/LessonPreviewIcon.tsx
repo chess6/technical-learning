@@ -61,6 +61,25 @@ export function LessonPreviewIcon({ lessonId }: { lessonId: string }) {
           <circle cx="46" cy="28" r="2.5" className="lesson-preview-icon__grid-shape" />
         </svg>
       );
+    case "red-black-trees":
+      return (
+        <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">
+          {/* One black representative with its two red children: a 4-node. */}
+          <path d="M24 14 L12 30 M24 14 L36 30" className="lesson-preview-icon__basis-1" />
+          <circle cx="24" cy="14" r="5" className="lesson-preview-icon__grid-shape" />
+          <circle cx="12" cy="30" r="4.5" className="lesson-preview-icon__result-fill" />
+          <circle cx="36" cy="30" r="4.5" className="lesson-preview-icon__result-fill" />
+          <rect
+            x="5"
+            y="7"
+            width="38"
+            height="30"
+            rx="9"
+            className="lesson-preview-icon__basis-2"
+            strokeDasharray="4 3"
+          />
+        </svg>
+      );
     case "karatsuba":
       return (
         <svg viewBox="0 0 48 48" aria-hidden="true" className="lesson-preview-icon">

@@ -246,6 +246,26 @@ export const BST_LIFT_SEGMENTS: readonly SceneSegment[] = [
   { id: "the-gap", title: "Same keys. Three comparisons, or seven", duration: 5.5 },
 ];
 
+/**
+ * Red–Black Trees — the encoding, shown as one cluster in two panels. The left
+ * panel holds a 2–3–4 node as a box of keys; the right holds its binary
+ * encoding. Keys are added to the left and the encoding follows in the same
+ * frame, so the correspondence is watched rather than asserted; then the node
+ * overflows and the split is SEEN to be the colour flip.
+ */
+export const RED_BLACK_SEGMENTS: readonly SceneSegment[] = [
+  { id: "establish", title: "One key, one node", duration: 4 },
+  { id: "encode-2node", title: "A 2-node is a lone black node", duration: 4.5 },
+  { id: "encode-3node", title: "A second key hangs off in red", duration: 5.5 },
+  { id: "encode-4node", title: "Three keys, two reds", duration: 5 },
+  { id: "read-off-r2", title: "“No two reds” is the drawing rule", duration: 5 },
+  { id: "read-off-r3", title: "Black nodes count levels", duration: 5 },
+  { id: "overflow", title: "A fourth key, and no room", duration: 5 },
+  { id: "split-is-recolour", title: "The split IS the colour flip", duration: 6.5 },
+  { id: "violation-moves-up", title: "The break moves up one level", duration: 5 },
+  { id: "root-split", title: "The only way the tree gets taller", duration: 5.5 },
+];
+
 /** Total timeline length in seconds. */
 export function totalDuration(segments: readonly SceneSegment[]): number {
   return segments.reduce((sum, segment) => sum + segment.duration, 0);

@@ -13,6 +13,7 @@ import {
   ELIMINATION_SEGMENTS,
   SOLUTION_SETS_SEGMENTS,
   BST_LIFT_SEGMENTS,
+  RED_BLACK_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -52,6 +53,7 @@ const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
+const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
 const CHAPTER0_STEPS = toSteps(CHAPTER0_SEGMENTS);
 const COLUMNS_RULE_GRAPHIC_STEPS = toSteps(COLUMNS_RULE_GRAPHIC_SEGMENTS);
 const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
@@ -239,6 +241,23 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "cost-is-depth",
       "degenerate",
       "the-gap",
+    ]),
+  },
+  "red-black-encoding": {
+    id: "red-black-encoding",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Red-black trees: a 2-3-4 node drawn beside its binary encoding, gaining keys as red children, then overflowing and splitting — with the split shown to be the colour flip that promotes the middle key.",
+    steps: RED_BLACK_STEPS,
+    majorSteps: pickMajor(RED_BLACK_STEPS, [
+      "encode-2node",
+      "encode-3node",
+      "encode-4node",
+      "read-off-r2",
+      "read-off-r3",
+      "overflow",
+      "split-is-recolour",
+      "root-split",
     ]),
   },
   "karatsuba-cross-terms": {

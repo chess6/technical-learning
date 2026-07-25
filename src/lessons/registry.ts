@@ -4,6 +4,7 @@ import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
 import { eliminationLesson } from "./elimination";
 import { karatsubaLesson } from "./karatsuba";
+import { redBlackTreesLesson } from "./redBlackTrees";
 import { solutionSetsLesson } from "./solutionSets";
 import { systemsLesson } from "./systems";
 import { transformationsLesson } from "./transformations";
@@ -30,6 +31,7 @@ export const lessons: LessonDefinition[] = [
   eigenvectorsLesson,
   karatsubaLesson,
   binarySearchTreesLesson,
+  redBlackTreesLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

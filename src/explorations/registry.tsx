@@ -17,6 +17,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.BstInsertionOrderExplorer,
     })),
   ),
+  "red-black-encoding": lazy(() =>
+    import("./RedBlackEncodingExplorer").then((m) => ({
+      default: m.RedBlackEncodingExplorer,
+    })),
+  ),
   "linear-combination": lazy(() =>
     import("./LinearCombinationExplorer").then((m) => ({
       default: m.LinearCombinationExplorer,

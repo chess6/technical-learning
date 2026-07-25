@@ -37,6 +37,7 @@ const LESSON_IDS = [
   "eigenvectors",
   "karatsuba",
   "binary-search-trees",
+  "red-black-trees",
 ];
 
 function collectConsoleErrors(page: Page): string[] {

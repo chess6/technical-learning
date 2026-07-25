@@ -300,3 +300,50 @@ export const BST_INVALID_LOCAL = {
   offendingKey: 20,
   interval: { lo: 25, hi: 30 },
 } as const;
+
+/* --------------------------------------------------------------------------
+ * Red–black trees (Algorithmic Thinking · data structures)
+ *
+ * Concrete instances shared by the scene, the explorer, and the exercises. Every
+ * derived fact (shape, arity, repair kind, black heights) is COMPUTED from
+ * `src/math/redBlackTrees`, never written down here — these are only the inputs.
+ * ------------------------------------------------------------------------ */
+
+export const RBT_CANONICAL = {
+  id: "rbt-canonical",
+  /** Sorted insertion — the order that destroys a plain BST and not this one. */
+  order: [10, 20, 30, 40, 50, 60, 70] as const,
+} as const;
+
+/** A standalone full 4-node, and the key that forces it to split. */
+export const RBT_FOUR_NODE = {
+  id: "rbt-four-node",
+  keys: [20, 30, 40] as const,
+  arriving: 35,
+  /** Promoting the middle leaves exactly two 2-nodes. */
+  promoted: 30,
+} as const;
+
+/** Deliberately unseen in the scene: the fresh instance outcome O2 grades. */
+export const RBT_FRESH_CLASSIFY = {
+  id: "rbt-fresh-classify",
+  order: [8, 3, 11, 1, 6, 14, 4] as const,
+  arriving: 13,
+} as const;
+
+/** The bare-rotation counterexample: rotate left at 20, with no recolour. */
+export const RBT_BARE_ROTATION = {
+  id: "rbt-bare-rotation",
+  at: 20,
+  direction: "left" as const,
+  /** The leaf whose root→nil path gains a black node. */
+  brokenPathLeaf: 10,
+} as const;
+
+/** A B-tree node of a branching order the lesson never draws (O7 transfer). */
+export const RBT_BTREE_WIDE = {
+  id: "rbt-btree-wide",
+  keys: [5, 9, 14, 21, 30] as const,
+  promoted: 14,
+  keysPerHalf: 2,
+} as const;

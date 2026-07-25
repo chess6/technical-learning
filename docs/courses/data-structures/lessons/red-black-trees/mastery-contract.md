@@ -370,22 +370,71 @@ Options:
 
 ## 6. Acceptance record (Gate 8)
 
-Filled **after** implementation. Left deliberately unchecked.
+Filled at implementation (2026-07-24).
 
-- [ ] Insight Contract linked and `PASS`; primary insight preserved in meaning.
-- [ ] Every field in §1 filled; upstream artifacts linked, not restated.
-- [ ] Every outcome operational, marked lesson- or module-owned, paired with an
-      evidence item at a stated level.
-- [ ] Every **lesson-owned** core outcome (O1–O7) independently demonstrated with
-      real in-lesson evidence.
-- [ ] O8, O9 recorded as Gate-9 obligations and **not** claimed mastered.
-- [ ] Assessment set matches §3c; does not repeat instruction; recall capped at
-      one; transfer item present (the lesson owns D9 via O7).
-- [ ] Backward bridge (Karatsuba) + forward edge (B-trees) present; ≥1 cumulative
-      connection.
-- [ ] Delayed-retention hook (O9) recorded.
-- [ ] Correctness gate passed — all seven invariants in §1g tested, including the
-      bare-rotation negative assertion.
-- [ ] No rejection condition holds; no anti-over-reaction guardrail tripped.
-- [ ] Profile-dependent items match the declared P2 + single raised statement — no
-      silent stage inflation, no "proof-ready" claim.
+### Two Gate-7 corrections to the insight contract
+
+1. **Splitting is pre-emptive (top-down), and the contract needed this to be
+   consistent.** Its case-3 narration says a *fourth key arrives* at a full
+   4-node ("a 5-node") and then that the split leaves **two 2-nodes**. Those two
+   sentences cannot both hold: a 4-node holds three keys, so promoting the
+   middle of *four* keys leaves a 2-node and a 3-node. Splitting a full node on
+   the way *down*, before the key is placed, makes the contract's own sentence
+   literally true and is what the lesson animates. Recorded in the header of
+   `src/math/redBlackTrees.ts`.
+2. **3-nodes are kept left-leaning.** The contract already names this as a legal,
+   explicitly-separate normalization ("fixing it collapses mirror-image cases but
+   does not change $T$"). Adopting it makes `encode`/`decode` an **exact**
+   bijection instead of one "up to orientation" — so the round-trip is a passing
+   test rather than a caveat. The mirror freedom is stated to the learner as a
+   depth layer, so nothing is hidden.
+
+### A third correction, found by writing the invariant
+
+Invariant (4) — "a split preserves **external** black height" — was first
+implemented with the *exclusive* black-height count, and it failed: the 4-node
+cluster reads 1 before and 2 after. The claim is only true measured on a path
+entering **through** the representative, so its own colour counts (black 1 +
+reds 0 before; red 0 + black child 1 after). That qualifier is precisely what
+misconception **M4** drops, and had the test been written to match the code the
+lesson would have shipped asserting the wrong quantity. The reasoning now lives
+in the assertion's comment.
+
+### Checklist
+
+- [x] Insight Contract linked and `PASS`; primary insight preserved in meaning,
+      with the two corrections above recorded rather than absorbed silently.
+- [x] Every field in §1 filled; upstream artifacts linked, not restated.
+- [x] Every outcome operational, owner-marked, paired with an evidence item.
+- [x] Lesson-owned core outcomes evidenced in-lesson (`rbt-encode-decode`,
+      `rbt-classify-repair`, `rbt-external-bh-explain`,
+      `rbt-height-induction-step`, `rbt-bare-rotation-diagnose`,
+      `rbt-root-split`, `rbt-btree-transfer`).
+- [x] O8, O9 recorded as Gate-9 obligations and **not** claimed mastered.
+- [x] Assessment set matches §3c; recall capped at one; a genuine transfer item
+      is present at a branching order the lesson never draws.
+- [x] Backward bridge (Binary Search Trees: "the cost is the height, and the
+      insertion order picks it") + forward edge (B-trees, deletion by duality).
+- [x] Delayed-retention hook recorded for O2/O5, to be seeded at Gate 9.
+- [x] Correctness gate passed — the seven invariants, including the **negative**
+      one (a bare rotation must break the tree) and its guard-on-the-guard.
+- [x] No rejection condition holds; no anti-over-reaction guardrail tripped.
+- [x] Profile-dependent items match P2 + the single raised statement.
+
+### Deviations from the plan
+
+1. **No new grading capabilities.** The plan named three; the existing
+   `exercise-sequence` and `self-check` capabilities carry all eight items.
+2. **O1 and O6 are guided rather than free constructions.** The plan wanted
+   `construct-in-explorer` with predicate grading; the available `construct` step
+   grades a 2-D vector, not a tree or a key sequence. O1 ships as a counting
+   sequence over the canonical tree's clusters, O6 as "identify the insertion
+   that raises the total black height, and why nothing else can". Both are
+   partially scaffolded, so their honest evidence level is **E3, not E4** —
+   recorded here rather than claimed upward. Predicate-graded construction over a
+   structure remains a real future capability, and it is the one thing that would
+   raise these two outcomes.
+3. **The scene animates one cluster, not a whole tree.** The insight is about
+   what a single node *is*; at 960×540 a full tree would make the colour change —
+   the actual subject — the smallest thing on screen. The whole-tree view is the
+   explorer's job, and it has it.
