@@ -33,6 +33,7 @@ export abstract class AbstractGuidedSceneEngine implements GuidedSceneEngine {
   abstract pause(): void;
   abstract reset(): void;
   abstract seek(progress: number): void;
+  abstract setSpeed(speed: number): void;
   abstract resize(): void;
 
   getState(): GuidedSceneState {
@@ -80,7 +81,8 @@ export abstract class AbstractGuidedSceneEngine implements GuidedSceneEngine {
       next.currentStep !== previous.currentStep ||
       next.error !== previous.error ||
       next.duration !== previous.duration ||
-      next.canSeek !== previous.canSeek;
+      next.canSeek !== previous.canSeek ||
+      next.speed !== previous.speed;
 
     if (structuralChange) {
       this.notify();

@@ -33,6 +33,7 @@ export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
   private lastTimestamp = 0;
   private progress = 0;
   private playing = false;
+  private speed = 1;
 
   constructor(options: GuidedSceneEngineOptions) {
     super(true);
@@ -99,6 +100,12 @@ export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
     this.publish(this.playing ? "playing" : this.progress >= 1 ? "complete" : "paused");
   }
 
+  setSpeed(speed: number): void {
+    if (this.isDisposed) return;
+    this.speed = Math.max(0.25, Math.min(4, speed));
+    this.setState({ speed: this.speed });
+  }
+
   resize(): void {
     this.render();
   }
@@ -133,7 +140,7 @@ export class SvgFallbackEngine extends AbstractGuidedSceneEngine {
     const tick = (timestamp: number): void => {
       if (this.isDisposed || !this.playing) return;
       if (this.lastTimestamp === 0) this.lastTimestamp = timestamp;
-      const delta = (timestamp - this.lastTimestamp) / 1000;
+      const delta = ((timestamp - this.lastTimestamp) / 1000) * this.speed;
       this.lastTimestamp = timestamp;
       this.progress = Math.min(1, this.progress + delta / DURATION_SECONDS);
       this.render();

@@ -20,16 +20,31 @@ export interface GuidedSceneStep {
   at: number;
 }
 
+/**
+ * A major conceptual stage ("chapter") of a guided scene: a {@link GuidedSceneStep}
+ * plus an optional one-sentence summary shown while the chapter is active.
+ * Scenes without summaries keep working — the summary is presentation-only.
+ */
+export interface GuidedSceneChapter extends GuidedSceneStep {
+  summary?: string;
+}
+
+/** Playback speeds every engine must support. */
+export const PLAYBACK_SPEEDS = [0.5, 1, 1.5, 2] as const;
+export type PlaybackSpeed = (typeof PLAYBACK_SPEEDS)[number];
+
 export interface GuidedSceneState {
   status: GuidedSceneStatus;
   /** Normalized playback position in the range 0..1. */
   progress: number;
-  /** Total duration in seconds, or null when unknown. */
+  /** Total duration in seconds at 1× speed, or null when unknown. */
   duration: number | null;
   /** Index into {@link GuidedSceneEngine.steps}, or null when not applicable. */
   currentStep: number | null;
   /** Whether reliable seeking/scrubbing is supported. */
   canSeek: boolean;
+  /** Playback rate multiplier (1 = authored speed). */
+  speed: number;
   /** Human-readable error message when status is "error". */
   error: string | null;
 }
@@ -45,6 +60,11 @@ export interface GuidedSceneEngine {
   reset(): void;
   /** Seek to a normalized position (0..1). No-op when canSeek is false. */
   seek(progress: number): void;
+  /**
+   * Set the playback rate multiplier. Seeking, progress, and step timing are
+   * expressed in normalized/authored time and are unaffected by speed.
+   */
+  setSpeed(speed: number): void;
   /** Re-fit the rendering surface to its container. */
   resize(): void;
   /** Tear down all resources. Must be idempotent. */
@@ -74,6 +94,7 @@ export function createInitialState(canSeek: boolean): GuidedSceneState {
     duration: null,
     currentStep: null,
     canSeek,
+    speed: 1,
     error: null,
   };
 }

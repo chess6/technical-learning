@@ -1,4 +1,4 @@
-import type { GuidedSceneStep } from "../engine/types";
+import type { GuidedSceneChapter } from "../engine/types";
 
 /**
  * Single source of truth for guided-scene timing.
@@ -16,6 +16,12 @@ export interface SceneSegment {
   title: string;
   /** Seconds this segment occupies on the timeline. */
   duration: number;
+  /**
+   * Optional one-sentence chapter summary, surfaced by the player while this
+   * segment is the active major step. Authored here so chapter metadata lives
+   * beside the timing it describes, not in UI components.
+   */
+  summary?: string;
 }
 
 export const LINEAR_COMBINATION_SEGMENTS: readonly SceneSegment[] = [
@@ -199,12 +205,42 @@ export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
  * Teaches how to compute eigenvalues/eigenvectors — not a second Watch block.
  */
 export const EIGEN_DERIVATION_SEGMENTS: readonly SceneSegment[] = [
-  { id: "recap", title: "Av = λv", duration: 4 },
-  { id: "shift", title: "(A − λI)v = 0", duration: 5.5 },
-  { id: "charpoly", title: "det(A − λI) = 0", duration: 5.5 },
-  { id: "solveLambda", title: "Solve for λ", duration: 4.5 },
-  { id: "solveV", title: "Solve the eigenspaces", duration: 6 },
-  { id: "interpret", title: "Interpret geometrically", duration: 4.5 },
+  {
+    id: "recap",
+    title: "Av = λv",
+    duration: 4,
+    summary: "The defining equation: the matrix acts like a pure stretch on v.",
+  },
+  {
+    id: "shift",
+    title: "(A − λI)v = 0",
+    duration: 5.5,
+    summary: "Move both terms to one side — v must be sent to zero by the shifted matrix.",
+  },
+  {
+    id: "charpoly",
+    title: "det(A − λI) = 0",
+    duration: 5.5,
+    summary: "A nonzero v dies only if the shifted matrix collapses the plane: determinant zero.",
+  },
+  {
+    id: "solveLambda",
+    title: "Solve for λ",
+    duration: 4.5,
+    summary: "The characteristic polynomial's roots are the only possible eigenvalues.",
+  },
+  {
+    id: "solveV",
+    title: "Solve the eigenspaces",
+    duration: 6,
+    summary: "Substitute each λ back and solve for the direction it stretches.",
+  },
+  {
+    id: "interpret",
+    title: "Interpret geometrically",
+    duration: 4.5,
+    summary: "Each eigenspace is an invariant line; λ is the stretch factor along it.",
+  },
 ];
 
 /**
@@ -254,16 +290,72 @@ export const BST_LIFT_SEGMENTS: readonly SceneSegment[] = [
  * overflows and the split is SEEN to be the colour flip.
  */
 export const RED_BLACK_SEGMENTS: readonly SceneSegment[] = [
-  { id: "establish", title: "One key, one node", duration: 4 },
-  { id: "encode-2node", title: "A 2-node is a lone black node", duration: 4.5 },
-  { id: "encode-3node", title: "A second key hangs off in red", duration: 5.5 },
-  { id: "encode-4node", title: "Three keys, two reds", duration: 5 },
-  { id: "read-off-r2", title: "“No two reds” is the drawing rule", duration: 5 },
-  { id: "read-off-r3", title: "Black nodes count levels", duration: 5 },
-  { id: "overflow", title: "A fourth key, and no room", duration: 5 },
-  { id: "split-is-recolour", title: "The split IS the colour flip", duration: 6.5 },
-  { id: "violation-moves-up", title: "The break moves up one level", duration: 5 },
-  { id: "root-split", title: "The only way the tree gets taller", duration: 5.5 },
+  {
+    id: "establish",
+    title: "One key, one node",
+    duration: 4,
+    summary: "Both panels start from the same single key — one cluster, two drawings.",
+  },
+  {
+    id: "encode-2node",
+    title: "A 2-node is a lone black node",
+    duration: 4.5,
+    summary: "A one-key 2–3–4 node encodes as a single black node; black = cluster boundary.",
+  },
+  {
+    id: "encode-3node",
+    title: "A second key hangs off in red",
+    duration: 5.5,
+    summary: "The second key stays inside the same cluster, so it hangs off in red.",
+  },
+  {
+    id: "encode-4node",
+    title: "Three keys, two reds",
+    duration: 5,
+    summary: "Three keys still form one cluster: one black representative, two red children.",
+  },
+  {
+    id: "read-off-r2",
+    title: "“No two reds” is the drawing rule",
+    duration: 5,
+    summary: "Red-on-red would mean a cluster with four keys — the encoding forbids it.",
+  },
+  {
+    id: "read-off-r3",
+    title: "Black nodes count levels",
+    duration: 5,
+    summary: "Every path crosses one black node per cluster: black height = 2–3–4 height.",
+  },
+  {
+    id: "overflow",
+    title: "A fourth key, and no room",
+    duration: 5,
+    summary: "The node is full — predict which key is promoted, and whether the encoding moves or recolours.",
+  },
+  {
+    id: "split-is-recolour",
+    title: "The split IS the colour flip",
+    duration: 6.5,
+    summary: "The 2–3–4 split and the red-black colour flip are the same move — and the arriving key finally fits.",
+  },
+  {
+    id: "invariant-held",
+    title: "What the flip conserved",
+    duration: 5,
+    summary: "Black height is untouched: still one black on every path — the split changed colours, not counts.",
+  },
+  {
+    id: "violation-moves-up",
+    title: "The break moves up one level",
+    duration: 5,
+    summary: "The promoted key may turn its parent red-on-red: the violation moves up, never multiplies.",
+  },
+  {
+    id: "root-split",
+    title: "The only way the tree gets taller",
+    duration: 5.5,
+    summary: "Only a root split adds height — every leaf gains one level at once, so black height stays equal everywhere.",
+  },
 ];
 
 /** Total timeline length in seconds. */
@@ -272,15 +364,16 @@ export function totalDuration(segments: readonly SceneSegment[]): number {
 }
 
 /** Derive normalized (0..1) step markers from segment durations. */
-export function toSteps(segments: readonly SceneSegment[]): GuidedSceneStep[] {
+export function toSteps(segments: readonly SceneSegment[]): GuidedSceneChapter[] {
   const total = totalDuration(segments);
-  const steps: GuidedSceneStep[] = [];
+  const steps: GuidedSceneChapter[] = [];
   let elapsed = 0;
   for (const segment of segments) {
     steps.push({
       id: segment.id,
       title: segment.title,
       at: total > 0 ? elapsed / total : 0,
+      ...(segment.summary ? { summary: segment.summary } : {}),
     });
     elapsed += segment.duration;
   }

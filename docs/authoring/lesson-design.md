@@ -199,6 +199,30 @@ Guided-scene requirements:
   continuous autoplay.
 - Support **Play / Pause / Replay**; expose **major conceptual steps** by
   meaningful name (not timestamps); no internal/debug controls in learner UI.
+- **Chapters = major steps.** A scene's major steps double as its chapters:
+  optional one-sentence `summary` strings are authored on the segments in
+  `sceneTimings.ts` (never in UI components) and surface as the active-chapter
+  line under "Watching now", tick marks under the scrubber, and idea-dot
+  tooltips. Scenes without summaries keep working unchanged. High-priority
+  scenes should author summaries for every major step.
+- **Playback speed** (0.5× / 1× / 1.5× / 2×) is a session preference that
+  survives remounts and navigation (module store in `playbackPreferences.ts`,
+  deliberately not persisted to storage). Speed scales only the engine clock —
+  chapter positions, seeking, and step markers stay in authored 1× time. The
+  control hides under reduced motion.
+- **Theater and fullscreen.** Theater mode enlarges the live player as a fixed
+  in-app overlay without remounting (playback continues); true fullscreen uses
+  the Fullscreen API on the player figure where supported (the control hides
+  where it isn't). Escape and browser chrome exits are honored via
+  `fullscreenchange`; leaving either mode restores normal layout and page
+  scroll. Neither mode depends on exported video.
+- **Keyboard shortcuts** (documented in-player under a "Keyboard shortcuts"
+  disclosure): Space/K play-pause, ←/→ seek ±5 s, `[`/`]` previous/next idea,
+  R replay, T theater, F fullscreen. Shortcuts never fire while the learner is
+  typing (input/textarea/select/contenteditable) and defer to native behavior
+  on focused controls (Space on buttons, arrows on the scrubber). Inside
+  theater/fullscreen they work document-wide; otherwise only with focus in the
+  player.
 - The **paused initial frame** must communicate what's coming (subdued grid,
   origin, a short caption) — never a blank stage.
 - Maintain a **safe frame**: overlay captions are center-anchored via
@@ -376,7 +400,12 @@ disability-product effort:
 - text equivalents for important visual conclusions (readouts, legends);
 - do not convey meaning by color alone;
 - respect `prefers-reduced-motion` for autoplay (pause continuous motion; allow
-  discrete step navigation).
+  discrete step navigation; the playback-speed control hides);
+- player shortcuts must never intercept typing contexts (inputs, textareas,
+  selects, contenteditable, exercise controls) and the shortcut list stays
+  discoverable in the player's "Keyboard shortcuts" disclosure;
+- theater/fullscreen keep all controls reachable and visible-focus intact, and
+  Escape always exits.
 
 Full disability-specific optimization (screen-reader narration scripts,
 color-blind palettes as a primary design driver) remains outside the POC's scope —
