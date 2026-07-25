@@ -324,6 +324,100 @@ export const COMPOSITION_FRESH: CompositionFreshExample = {
   singularNullDirection: [2, -1],
 };
 
+/**
+ * Lesson 8 / 9 (`subspaces-rank`, `rank-nullity`) 3×3 examples.
+ *
+ * R^3 is the smallest space in which rank is a non-degenerate count: a map can
+ * send the unit cube to a solid, a plane, a line, or a point, so "collapse" stops
+ * being binary. Each preset's rank is VERIFIED against `src/math` in
+ * `src/lessons/__tests__/subspaceExample.test.ts` — the labels below are claims
+ * the tests hold, not comments.
+ *
+ * `rank-two-3d` is the scene's main map: row 3 = row 1 + row 2. `rank-one-3d`
+ * has every row a multiple of (1,2,3), so its image is a line and its null space
+ * is a plane — the pair that shows the two dimensions moving in opposite
+ * directions.
+ */
+export interface SubspacePreset {
+  id: string;
+  label: string;
+  matrix: readonly [
+    readonly [number, number, number],
+    readonly [number, number, number],
+    readonly [number, number, number],
+  ];
+  /** Rank, asserted by test — never trusted from this literal alone. */
+  rank: number;
+}
+
+export const SUBSPACE_PRESETS: readonly SubspacePreset[] = [
+  {
+    id: "full-rank-3d",
+    label: "Rank 3 (solid)",
+    matrix: [
+      [1, 0, 2],
+      [0, 1, 3],
+      [0, 0, 1],
+    ],
+    rank: 3,
+  },
+  {
+    id: "rank-two-3d",
+    label: "Rank 2 (plane)",
+    matrix: [
+      [1, 0, 2],
+      [0, 1, 3],
+      [1, 1, 5],
+    ],
+    rank: 2,
+  },
+  {
+    id: "rank-one-3d",
+    label: "Rank 1 (line)",
+    matrix: [
+      [1, 2, 3],
+      [2, 4, 6],
+      [3, 6, 9],
+    ],
+    rank: 1,
+  },
+  {
+    id: "rank-zero-3d",
+    label: "Rank 0 (point)",
+    matrix: [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ],
+    rank: 0,
+  },
+];
+
+/**
+ * FRESH 3×3 maps for L8/L9 practice — different numbers from every preset above,
+ * so a drill cannot be passed by recalling what the scene animated. Verified in
+ * the same test.
+ */
+export const SUBSPACE_FRESH = {
+  /** Rank 2: row 3 = 2·row 1 − row 2. Pivot columns 0 and 1. */
+  rankTwo: [
+    [2, 1, 0],
+    [0, 3, 1],
+    [4, -1, -1],
+  ] as const,
+  /** Rank 1: every row is a multiple of (1, -1, 2). Null space is a plane. */
+  rankOne: [
+    [1, -1, 2],
+    [3, -3, 6],
+    [-2, 2, -4],
+  ] as const,
+  /** Wide 2×3: Col(A) lives in R², Null(A) lives in R³. */
+  wide: [
+    [1, 2, 3],
+    [0, 1, 4],
+  ] as const,
+} as const;
+
 export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "distinct", label: "Distinct real", exampleId: "eigen-distinct" },
   { id: "negative", label: "Negative λ", exampleId: "eigen-negative" },

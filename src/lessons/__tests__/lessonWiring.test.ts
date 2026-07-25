@@ -315,6 +315,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "solution-sets",
       "matrix-composition",
       "determinants",
+      "subspaces-rank",
       "eigenvectors",
       "karatsuba",
       "binary-search-trees",
@@ -756,6 +757,103 @@ describe("Determinants lesson, deepened to the instructional standard", () => {
     expect(lesson.structuredSummary!.commonMistake!.toLowerCase()).toMatch(
       /negative area/,
     );
+  });
+});
+
+describe("Subspaces & Rank lesson (spine L8)", () => {
+  it("sits between determinants and eigenvectors, opening the structure module", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("subspaces-rank")).toBe(ids.indexOf("determinants") + 1);
+    expect(ids.indexOf("subspaces-rank")).toBe(ids.indexOf("eigenvectors") - 1);
+  });
+
+  it("wires its own guided scene and explorer", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    expect(lesson.guidedSceneId).toBe("subspaces-rank");
+    expect(lesson.explorationId).toBe("subspaces-rank");
+    expect(hasGuidedScene("subspaces-rank")).toBe(true);
+    expect(getExplorer("subspaces-rank")).toBeTypeOf("function");
+  });
+
+  it("keeps the two spaces in DIFFERENT ambient spaces throughout", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const def = (lesson.formalBlocks ?? []).find((f) => f.id === "def-two-spaces")!;
+    // The ambient spaces must be stated, not left implicit.
+    expect(def.statement).toMatch(/\\mathbb\{R\}\^m/);
+    expect(def.statement).toMatch(/\\mathbb\{R\}\^n/);
+    // And the misconception is staged with a NON-SQUARE counterexample, since a
+    // square matrix is exactly where the distinction is invisible.
+    const callout = (lesson.callouts ?? []).find((c) => c.id === "same-space")!;
+    expect(callout.confront).toMatch(/2 \\times 3|2\\times3/);
+  });
+
+  it("stages the reduced-matrix basis trap in prose, a layer, and a graded item", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    expect((lesson.callouts ?? []).some((c) => c.id === "basis-from-reduced")).toBe(true);
+    const prop = (lesson.formalBlocks ?? []).find((f) => f.id === "prop-pivot-basis")!;
+    expect((prop.layers ?? []).some((l) => l.kind === "trap")).toBe(true);
+    const trap = lesson.exercises!.find((ex) => ex.id === "rank-basis-trap");
+    expect(trap).toBeDefined();
+  });
+
+  it("observes rank + nullity = n without claiming to prove it", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const section = lesson.sections.find((s) => s.id === "opposite")!;
+    expect(section.equation).toMatch(/observed here; proved next lesson/);
+    // The proof must NOT be asserted anywhere in this lesson's formal blocks.
+    const formalText = (lesson.formalBlocks ?? [])
+      .map((f) => `${f.statement} ${f.interpretation}`)
+      .join(" ");
+    expect(formalText).not.toMatch(/rank.*\+.*nullity.*=.*n/i);
+  });
+
+  it("states row rank = column rank as a reference result, unproved", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const ref = (lesson.formalBlocks ?? []).find((f) => f.id === "ref-row-rank")!;
+    expect(ref.visibility).toBe("reference");
+    expect(ref.interpretation.toLowerCase()).toMatch(/not given here|proof is not/);
+  });
+
+  it("restates the L5/L6/L7 criteria as one statement about rank", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const thm = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-rank-criterion")!;
+    const statement = thm.statement.toLowerCase();
+    for (const phrase of ["invertible", "\\det", "independent", "null", "rank"]) {
+      expect(statement).toContain(phrase.toLowerCase());
+    }
+  });
+
+  it("opens the forward edge eigenvectors needs (eigenspace as a null space)", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const ahead = lesson.sections
+      .flatMap((s) => s.layers ?? [])
+      .filter((l) => l.kind === "looking-ahead")
+      .map((l) => `${l.title} ${l.body}`)
+      .join(" ");
+    expect(ahead).toMatch(/A - \\lambda I/);
+    expect(ahead.toLowerCase()).toMatch(/eigen/);
+  });
+
+  it("covers all three practice tiers on fresh matrices", () => {
+    const lesson = getLessonById("subspaces-rank")!;
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+    expect(lesson.exercises!.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("tours the scene beats that separate the two spaces", () => {
+    const meta = getSceneMeta("subspaces-rank");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual([
+      "two-panels",
+      "reach",
+      "colspace",
+      "crush",
+      "nullspace",
+      "count",
+      "rank-one",
+    ]);
   });
 });
 

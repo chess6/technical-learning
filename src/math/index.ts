@@ -147,6 +147,18 @@ export type {
 } from "./elimination";
 
 export {
+  columnSpaceBasis,
+  imageShape,
+  isInColumnSpace,
+  nullSpaceBasis,
+  nullityOf,
+  pivotColumnsOf,
+  rankNullityCount,
+  rankOf,
+} from "./subspaces";
+export type { ImageShape, RankNullityCount, SubspaceBasis } from "./subspaces";
+
+export {
   classifyDeterminant,
   signedParallelogramArea,
 } from "./determinantClassify";

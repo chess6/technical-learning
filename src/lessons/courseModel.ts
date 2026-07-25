@@ -121,13 +121,7 @@ export const CURRICULUM: readonly Subject[] = [
             id: "structure",
             title: "Structure of linear maps",
             items: [
-              {
-                kind: "future",
-                id: "subspaces-rank",
-                title: "Subspaces, Column Space, Null Space, Rank",
-                subtitle:
-                  "Column space controls outputs; null space controls uniqueness",
-              },
+              { kind: "lesson", lessonId: "subspaces-rank" },
               {
                 kind: "future",
                 id: "rank-nullity",

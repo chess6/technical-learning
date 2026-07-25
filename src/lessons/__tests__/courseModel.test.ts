@@ -58,7 +58,8 @@ describe("navigation is course-relative, not registry-positional", () => {
     // built path (curriculum-architecture 1.1); ids are the identity.
     expect(getLessonNumber("matrix-composition")).toBe(6);
     expect(getLessonNumber("determinants")).toBe(7);
-    expect(getLessonNumber("eigenvectors")).toBe(8);
+    expect(getLessonNumber("subspaces-rank")).toBe(8);
+    expect(getLessonNumber("eigenvectors")).toBe(9);
     // Karatsuba is chapter 1 of ITS course, not the ninth linear-algebra lesson.
     expect(getLessonNumber("karatsuba")).toBe(1);
   });
@@ -84,7 +85,9 @@ describe("navigation is course-relative, not registry-positional", () => {
     const last = courseLessonIds(LINEAR_ALGEBRA).at(-1)!;
     expect(last).toBe("eigenvectors");
     expect(getAdjacentLessons("eigenvectors").next).toBeNull();
-    expect(getAdjacentLessons("eigenvectors").previous?.id).toBe("determinants");
+    expect(getAdjacentLessons("eigenvectors").previous?.id).toBe(
+      "subspaces-rank",
+    );
 
     expect(courseLessonIds(ALGORITHMS)).toEqual([
       "karatsuba",
@@ -111,6 +114,7 @@ describe("navigation is course-relative, not registry-positional", () => {
       "solution-sets",
       "matrix-composition",
       "determinants",
+      "subspaces-rank",
       "eigenvectors",
     ]);
   });
@@ -132,7 +136,7 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
     { built: "solution-sets" }, // L5
     { built: "matrix-composition" }, // L6
     { built: "determinants" }, // L7
-    { future: "subspaces-rank" }, // L8
+    { built: "subspaces-rank" }, // L8
     { future: "rank-nullity" }, // L9
     { future: "change-of-basis" }, // L10
     { built: "eigenvectors" }, // L11

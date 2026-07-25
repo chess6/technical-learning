@@ -13,6 +13,7 @@ import {
   ELIMINATION_SEGMENTS,
   SOLUTION_SETS_SEGMENTS,
   MATRIX_COMPOSITION_SEGMENTS,
+  SUBSPACES_RANK_SEGMENTS,
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
   toSteps,
@@ -63,6 +64,7 @@ const SYSTEMS_STEPS = toSteps(SYSTEMS_SEGMENTS);
 const ELIMINATION_STEPS = toSteps(ELIMINATION_SEGMENTS);
 const SOLUTION_SETS_STEPS = toSteps(SOLUTION_SETS_SEGMENTS);
 const MATRIX_COMPOSITION_STEPS = toSteps(MATRIX_COMPOSITION_SEGMENTS);
+const SUBSPACES_RANK_STEPS = toSteps(SUBSPACES_RANK_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -154,6 +156,22 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "order",
       "undo",
       "no-undo",
+    ]),
+  },
+  "subspaces-rank": {
+    id: "subspaces-rank",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for the column space, the null space, and rank, drawn as two labelled panels under an isometric projection. The left panel is the input space R three and the right panel is the output space R three. The unit cube on the left is pushed through a rank two map and lands flat on the right: every output lies on one plane, which is named the column space and decides whether A x equals b is solvable. Attention then returns to the left panel, where a whole line of inputs is shown collapsing onto the single origin point on the right; that line is named the null space and is drawn in the input panel to make clear it is a different space from the column space. The rank is then counted: three dimensions in, two out. Finally a rank one map replaces it, and the image shrinks to a line while the null space grows to a plane, showing the two dimensions moving in opposite directions.",
+    steps: SUBSPACES_RANK_STEPS,
+    majorSteps: pickMajor(SUBSPACES_RANK_STEPS, [
+      "two-panels",
+      "reach",
+      "colspace",
+      "crush",
+      "nullspace",
+      "count",
+      "rank-one",
     ]),
   },
   "vectors-linear-combinations": {

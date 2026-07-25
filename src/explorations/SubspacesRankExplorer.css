@@ -1,0 +1,57 @@
+.subspace-explorer__matrix table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.subspace-explorer__matrix td {
+  padding: 0.45rem 0.85rem;
+  text-align: right;
+  border: 1px solid var(--color-border);
+  min-width: 3.2rem;
+}
+
+/* A pivot column is one surviving dimension — the readout's rank, made visible
+   in the matrix itself rather than only stated as a number. */
+.subspace-explorer__matrix td[data-pivot] {
+  background: color-mix(in srgb, var(--role-basis-1) 16%, transparent);
+  font-weight: 600;
+}
+
+.subspace-explorer__legend {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.subspace-explorer__fixed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.subspace-explorer__fixed-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.subspace-explorer__bases dt {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.7rem;
+}
+
+.subspace-explorer__bases dd {
+  margin: 0.2rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.subspace-explorer__note {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}

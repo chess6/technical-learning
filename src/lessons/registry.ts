@@ -7,6 +7,7 @@ import { karatsubaLesson } from "./karatsuba";
 import { matrixCompositionLesson } from "./matrixComposition";
 import { redBlackTreesLesson } from "./redBlackTrees";
 import { solutionSetsLesson } from "./solutionSets";
+import { subspacesRankLesson } from "./subspacesRank";
 import { systemsLesson } from "./systems";
 import { transformationsLesson } from "./transformations";
 import type { LessonDefinition } from "./types";
@@ -30,6 +31,7 @@ export const lessons: LessonDefinition[] = [
   solutionSetsLesson,
   matrixCompositionLesson,
   determinantsLesson,
+  subspacesRankLesson,
   eigenvectorsLesson,
   karatsubaLesson,
   binarySearchTreesLesson,

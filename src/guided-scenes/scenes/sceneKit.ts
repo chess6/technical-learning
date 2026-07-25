@@ -389,3 +389,77 @@ export function makeTransformedGrid(
   }
   return group;
 }
+
+/* --------------------------------------------------------------------------
+ * Three-dimensional scenes (isometric)
+ *
+ * Lessons 8 and 9 are the first whose content genuinely needs R³: in the plane,
+ * "collapse" is binary, and rank has only degenerate values. These helpers draw
+ * 3-D geometry under a FIXED isometric projection.
+ *
+ * The projection is a deliberate, stated simplification and every scene using it
+ * must say so on-canvas: it preserves incidence and straightness (so a plane
+ * reads as a plane and a line as a line) but NOT angles or lengths, so nothing
+ * about perpendicularity or distance may be inferred from these pictures.
+ * ------------------------------------------------------------------------ */
+
+/** Cosine/sine of the standard 30° isometric tilt. */
+const ISO_COS = Math.cos(Math.PI / 6);
+const ISO_SIN = Math.sin(Math.PI / 6);
+
+/**
+ * Project a math-space 3-D point to scene pixels (y of the screen grows down).
+ * `scale` is pixels per unit; `origin` shifts the whole panel.
+ */
+export function toIsometric(
+  point: readonly [number, number, number],
+  scale = 46,
+  origin: Vector2 = new Vector2(0, 0),
+): Vector2 {
+  const [x, y, z] = point;
+  const screenX = (x - y) * ISO_COS * scale;
+  const screenY = ((x + y) * ISO_SIN - z) * scale;
+  return new Vector2(origin.x + screenX, origin.y + screenY);
+}
+
+/** The 12 edges of the unit cube, as index pairs into `UNIT_CUBE`-style corners. */
+export const CUBE_EDGES: readonly (readonly [number, number])[] = [
+  [0, 1], [1, 3], [3, 2], [2, 0], // bottom face (z = 0)
+  [4, 5], [5, 7], [7, 6], [6, 4], // top face (z = 1)
+  [0, 4], [1, 5], [2, 6], [3, 7], // verticals
+];
+
+/**
+ * Corners of the unit cube in the vertex order `CUBE_EDGES` indexes into.
+ * Deliberately local rather than reusing `UNIT_CUBE` from src/math, whose corner
+ * ORDER is its own contract; an edge list is only valid against a fixed order.
+ */
+export const ISO_CUBE_CORNERS: readonly (readonly [number, number, number])[] = [
+  [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],
+  [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1],
+];
+
+/** Short 3-D axis indicators for an isometric panel. */
+export function makeIsometricAxes(
+  scale: number,
+  origin: Vector2,
+  extent = 1.9,
+): Node {
+  const group = new Node({});
+  const axes: readonly (readonly [number, number, number])[] = [
+    [extent, 0, 0],
+    [0, extent, 0],
+    [0, 0, extent],
+  ];
+  for (const axis of axes) {
+    group.add(
+      new Line({
+        stroke: ROLE.axis,
+        lineWidth: 1.5,
+        opacity: 0.75,
+        points: [toIsometric([0, 0, 0], scale, origin), toIsometric(axis, scale, origin)],
+      }),
+    );
+  }
+  return group;
+}

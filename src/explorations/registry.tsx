@@ -52,6 +52,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.MatrixCompositionExplorer,
     })),
   ),
+  "subspaces-rank": lazy(() =>
+    import("./SubspacesRankExplorer").then((m) => ({
+      default: m.SubspacesRankExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,

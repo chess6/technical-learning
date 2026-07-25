@@ -138,6 +138,62 @@ export const SOLUTION_SETS_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
+ * Lesson 8 — "Subspaces, Column Space, Null Space, Rank". Two labelled panels
+ * under a stated isometric projection: the INPUT space R^3 on the left (holding
+ * the null space) and the OUTPUT space R^3 on the right (holding the column
+ * space). The lesson's central confusion — that the two spaces live in the same
+ * place — is prevented by the layout rather than corrected by a warning.
+ *
+ * Runs the rank-2 map [[1,0,2],[0,1,3],[1,1,5]] (row 3 = row 1 + row 2), then
+ * switches to the rank-1 map [[1,2,3],[2,4,6],[3,6,9]] so the learner sees the
+ * two dimensions move in OPPOSITE directions.
+ */
+export const SUBSPACES_RANK_SEGMENTS: readonly SceneSegment[] = [
+  {
+    id: "two-panels",
+    title: "Two spaces, not one",
+    duration: 5.5,
+    summary: "Inputs live in the left panel, outputs in the right. The map is the arrow between them.",
+  },
+  {
+    id: "reach",
+    title: "What the map can reach",
+    duration: 6.5,
+    summary: "Sweeping every input sweeps out only a plane of outputs — not the whole output space.",
+  },
+  {
+    id: "colspace",
+    title: "Name it: the column space",
+    duration: 6,
+    summary: "That plane is the span of the columns: everything the map can produce, so it decides existence.",
+  },
+  {
+    id: "crush",
+    title: "What the map destroys",
+    duration: 6,
+    summary: "A whole line of different inputs lands on the single point zero.",
+  },
+  {
+    id: "nullspace",
+    title: "Name it: the null space",
+    duration: 6,
+    summary: "That line is Null(A), and it lives in the INPUT panel — a different space from the column space.",
+  },
+  {
+    id: "count",
+    title: "Rank counts what survived",
+    duration: 5.5,
+    summary: "Three dimensions went in, two came out: the rank is 2, and one dimension was crushed.",
+  },
+  {
+    id: "rank-one",
+    title: "Take away one more",
+    duration: 7,
+    summary: "A rank-1 map: the image shrinks to a line while the null space grows to a plane. They move in opposite directions.",
+  },
+];
+
+/**
  * Lesson 6 — "Matrix Composition & Inverses". The scene asks one question seven
  * times: *where does the basis land?* Apply B, then A; show that a single matrix
  * does both; read the product's columns off the two basis paths; swap the order;
