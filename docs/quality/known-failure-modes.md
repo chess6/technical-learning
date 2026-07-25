@@ -87,6 +87,38 @@ overlay Y anchors in the stage **margin**, outside the teaching half-extent
 anchor them at the edge, never center-anchored on the tip. Prefer shorter copy over
 a wrap that crowds the geometry.
 
+## 7. A claimed operation shown as a pre-computed picture appearing
+
+**Hazard.** The caption names a motion — slide, travel, collapse, split, merge,
+peel — and the scene delivers something else that ends in the same place: a
+second object faded in where the first would have arrived, an already-deformed
+figure faded in, a snap, a pulse, or a tween that runs while the affected object
+is at opacity 0. The end state is right, so it survives review of the source and
+of the final frame; only the middle is missing, which is the part that teaches.
+
+**Prevention.** Animate the object the caption names, from where it is to where
+it ends up, and leave a ghost so the "from" stays visible. Interpolate a matrix
+or a position signal rather than cross-fading two states. If the beat's subject
+is off screen, bring it on screen before the motion, or reword the beat to
+describe what is actually watched. When the next example is unrelated, reset to
+an intelligible baseline (usually the identity) first — but reset **visibly**, or
+snap only opacities, never a position or a shape.
+
+## 8. A readout written imperatively beside geometry that is still moving
+
+**Hazard.** A number is `set` before and after a tween — a determinant headline,
+a matrix readout, a running total — so for the whole tween the screen shows the
+previous value. This is worst exactly where the number matters most, because
+those are the beats with the longest morphs. The same class covers a total typed
+as a third literal beside the two counts it should be the sum of.
+
+**Prevention.** Bind the readout to the live signals (`label.text(() => …)`) so
+it is recomputed every frame, and compute derived quantities *from* the parts
+rather than alongside them. Put the formatter in a Motion-Canvas-free module so
+a unit test can hold it against the mathematics. Beware `Txt.text(value,
+duration)`: Motion Canvas interpolates text character by character, which renders
+scrambled words mid-tween — snap captions and spend the time as a hold.
+
 ---
 
 ## When you find a new failure mode

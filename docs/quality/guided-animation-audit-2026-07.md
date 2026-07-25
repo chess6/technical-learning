@@ -204,8 +204,8 @@ that scene; "Export" = MP4 frame count ÷ 30 fps against the declared total.
 | --- | --- | --- | --- | --- | --- | --- |
 | `why-linear-algebra` | caption called e₁,e₂ "axes"; translation ghost faded in already displaced → now travels; matrix readout made live; reference grid was invisible at 0.16 opacity; origin marker added; migrated to `runSegment` | `predict-translation` — five transforms have run and the origin never moved; can any of them slide the craft off it? | the origin dot + ring, marked from `reveal` and watchable through every preset | migrated | 10/10 | ✅ 49.53 s / 49.5 s |
 | `vectors-linear-combinations` | `addition` grew a second arrow → w itself travels with a ghost; coordinate payoff split into read → predict → construct, the reveal re-using the same v and w arrows; w label moved off p; basis grid brightened; migrated to `runSegment` | `predict-coordinates` — the arrow has not moved and both grid directions are lit: how many steps of each land on p? | p's position is written once at construction and never again | migrated | 14/14 | ✅ 62.73 s / 62.7 s |
-| `matrix-transformations` | **no change** — treated in the previous pass (sample travels, grid deforms where the claim is made, live matrix readout, unhurried tour). Re-verified only. | `predict-sample` (existing) | the coefficients, pinned unchanged across the travel | already | 10/10 | ✅ |
-| `columns-rule-graphic` | **no change** — treated in the previous pass (walk constructed, components carried through T, `(a,b)` pinned). Re-verified only. | `predict` (existing) | the `(a, b)` readout, derived and unchanged across the transform | already | 5/5 | ✅ |
+| `matrix-transformations` | **no change** — treated in the previous pass (sample travels, grid deforms where the claim is made, live matrix readout, unhurried tour). Re-verified only. | `predict-sample` (existing) | the coefficients, pinned unchanged across the travel | already | 10/10 | ✅ 54.03 s / 54 s |
+| `columns-rule-graphic` | **no change** — treated in the previous pass (walk constructed, components carried through T, `(a,b)` pinned). Re-verified only. | `predict` (existing) | the `(a, b)` readout, derived and unchanged across the transform | already | 5/5 | ✅ 31.5 s / 31.5 s |
 | `linear-systems` | b and the solution point shared one gold → b is now `target`; two equations recoloured as a co-equal pair; `none` tweened b while it was invisible → now crosses to the output space; `regroup` was an unreachable chapter; closed on the no-solution case → now returns to its own system; migrated to `runSegment` | `predict-column` — the row picture already gave (2, −1); what do those numbers do to the columns? | the solution point (2, −1), the same in both pictures | migrated | 9/9 | ✅ 48.53 s / 48.5 s |
 | `elimination` | R1/R2 recoloured as a co-equal pair (they were before/after hues); prediction beat added; summaries authored. Choreography unchanged — it is the repo's reference implementation | `predict` — both equations hold at the crossing; must R2 − 2·R1 still pass through it? | the solution dot, on screen and pulsed at every stage | already | 6/6 | ✅ 32.5 s / 32.5 s |
 | `solution-sets` | `difference` faded in a copy → one arrow travels; `cases` split into three chapters; dots recoloured (co-equal pair vs derived); labels de-collided | `predict-generate` — A x₁ = b and A(x₁−x₂) = 0 are both on screen; what is A(x₁ + (x₁−x₂))? | Null(A) is unchanged across all three cases, including the empty one | already | 9/9 | ✅ 47.03 s / 47 s |
@@ -214,17 +214,17 @@ that scene; "Export" = MP4 frame count ÷ 30 fps against the declared total.
 | `subspaces-rank` | pre-flattened cube faded in → the output cube is a copy of the input cube and deforms; null line snapped on → a probe travels it while its image holds the origin; `rank-one` resets before re-deforming; prediction added; projection note moved off the caption | `predict-rank-one` — the next map has rank 1: does Null(A) shrink, stay, or grow? | the two panels never share a frame, and the probe's image is computed through the same live matrix | already | 8/8 | ✅ 52.03 s / 52 s |
 | `rank-nullity` | tally was a hand-typed third number → derived from the live split; prediction added; "no room" band given the violation role | `predict-degrade` — only one direction will survive: does a token leave, appear, or cross? | the running total, which is the sum of the two counts by construction | already | 7/7 | ✅ 43.0 s / 43 s |
 | `change-of-basis` | the eigenbasis was never drawn and nothing moved in the beat claiming identical motion → the deformation is replayed over the eigenbasis with both directions drawn; readout reveal is now a constructed walk; prediction added; the two basis directions were both violet → co-equal pair | `predict-readout` — both grid directions are lit and p has not moved: how many steps of each? | the arrow's position is written once, at setup, and nowhere else | already | 7/7 | ✅ 42.0 s / 42 s |
-| `eigenvectors-invariant-directions` | **near-no-change** — treated in the previous pass. One real defect found: both eigenlines wore gold, which is also the "selected" role, and disagreed with the derivation scene. Each line now takes its arrow's co-equal pair colour | `predict-reverse` (existing) | the eigenlines, placed once and unmoved across the whole λ arc | already | 12/12 | ✅ |
+| `eigenvectors-invariant-directions` | **near-no-change** — treated in the previous pass. One real defect found: both eigenlines wore gold, which is also the "selected" role, and disagreed with the derivation scene. Each line now takes its arrow's co-equal pair colour | `predict-reverse` (existing) | the eigenlines, placed once and unmoved across the whole λ arc | already | 12/12 | ✅ 58.53 s / 58.5 s |
 | `eigenvectors-derivation` | eigendirection colours aligned with the Watch scene; prediction added; det readout made live during the collapse; migrated to `runSegment` | `predict-collapse` — v ≠ 0 is sent to the origin: what must A − λI do to area? | the unit square's area under A − λI, live, including the nudge-off-and-back falsification | migrated | 7/7 | ✅ 35.5 s / 35.5 s |
 | `bst-lift-from-array` | `degenerate` moved all seven keys at once under a caption saying each walks in turn → one at a time; sorted-order ruler added and kept through the chain; prediction added; `establish` and `probe-rest` were unreachable chapters | `predict-gap` — same keys, same order: worst-case comparisons for this chain vs the balanced shape? | the sorted-order ruler: horizontal position never changes, through the lift and the chain | already | 11/11 | ✅ 59.03 s / 59 s |
-| `red-black-encoding` | **no change** — treated in the previous pass (simultaneous split/recolour, 35's arc closed, prediction, black-height beat, all beats chaptered). Re-verified only. | `overflow` (existing) | black height, read off the picture immediately after the flip | already | 11/11 | ✅ |
+| `red-black-encoding` | **no change** — treated in the previous pass (simultaneous split/recolour, 35's arc closed, prediction, black-height beat, all beats chaptered). Re-verified only. | `overflow` (existing) | black height, read off the picture immediately after the flip | already | 11/11 | ✅ 56.03 s / 56 s |
 | `karatsuba-cross-terms` | `exponent`'s leaf pulse was an opacity no-op → leaf dots plus two same-scale count bars; `subtract` gave 1.2 s of think time → 4.2 s, and the corners now slide out; `share` cross-faded → the labels travel and merge; carry chips now travel between place columns; captions were rendering scrambled text mid-tween → snap; `setup`/`weights` were unreachable chapters; migrated to `runSegment` | `subtract` — AC and BD are known; remove them from this rectangle: what is left? | the place-value weights, attached to each region and carried into the combined term | migrated | 10/10 | ✅ 63.03 s / 63 s |
 
 ### Development-only infrastructure
 
 | Scene | Change |
 | --- | --- |
-| `transform-spike` | Not a lesson and not redesigned as one. Migrated off its bare `waitFor` sequence onto the shared segment loop (`SPIKE_SEGMENTS` + `requireBeats` + `runSegment`) so the scene where timing-infrastructure changes get tried first cannot be the one scene that drifts from the contract. |
+| `transform-spike` | Not a lesson and not redesigned as one. Migrated off its bare `waitFor` sequence onto the shared segment loop (`SPIKE_SEGMENTS` + `requireBeats` + `runSegment`) so the scene where timing-infrastructure changes get tried first cannot be the one scene that drifts from the contract. Export: 3.03 s / 3 s. |
 
 ### Prediction coverage
 
@@ -252,12 +252,24 @@ beat elsewhere (`plane`, `vector-v`, `setup`, `establish`, `equations`,
   three new test suites.
 - `Record the closed guided-animation audit and its completion ledger` — this
   document.
+- `Address what the export frames and the full e2e run found` — the four defects
+  frame review turned up after the first pass (the linear-systems space tag
+  renaming mid-crossfade, an elimination label outside the safe frame, chapter
+  0's invisible grid and filled travelling ghost, rank-nullity's off-stage
+  opening frame), plus the lesson specs that addressed chapters by ordinal.
+- `Record the two failure modes this pass met more than once` — the
+  known-failure-modes entries for pre-computed pictures and imperative readouts.
 
 ### Checks run
 
-`./check.sh` (oxlint, `tsc -b`, 1330 unit tests, python transcript tests),
-`npm run build`, and `npm run test:e2e`. Seventeen MP4 exports rendered and
-frame-counted; contact sheets and the discontinuity scan reviewed for each.
+- `./check.sh` — oxlint, `tsc -b`, **1330 unit tests across 99 files**, python
+  transcript tests. Passing.
+- `npm run build` — production build. Passing.
+- `npm run test:e2e` — **120 Playwright tests**. Passing, including the 19 new
+  per-scene chapter cases and the reduced-motion case.
+- **18 MP4 exports** rendered at 30 fps (17 production scenes + the spike) and
+  frame-counted against their declared totals; contact sheets and the
+  discontinuity scan reviewed for each.
 
 ### Not verified
 
