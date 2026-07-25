@@ -461,16 +461,93 @@ export const DETERMINANT_SEGMENTS: readonly SceneSegment[] = [
   { id: "summary", title: "Signed area scaling", duration: 3 },
 ];
 
+/**
+ * Lesson 4 Watch scene — eigenvectors as invariant directions.
+ *
+ * Two shape rules this list encodes (both from the July 2026 guided-animation
+ * audit, which found the old nine-beat cut fading in already-deformed grids and
+ * spending whole seconds on invisible matrix morphs):
+ *
+ * - **Every case matrix is reached from the identity with the grid on screen.**
+ *   `scalar` / `defective` / `rotation` each budget a visible return-to-identity
+ *   plus a visible deformation, which is why they cost ~5.5s rather than ~5s.
+ * - **The λ ladder is split into navigable beats** (`stretch`, `reverse`,
+ *   `collapse`) with a prediction between the established mechanic and the
+ *   counterintuitive one, replacing the single opaque 11s `lambdas` block.
+ */
 export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
-  { id: "fan", title: "A fan of directions", duration: 3.5 },
-  { id: "apply", title: "Most directions turn", duration: 5 },
-  { id: "highlight", title: "Some stay on their line", duration: 4.5 },
-  { id: "equation", title: "Av = λv", duration: 3.5 },
-  { id: "lambdas", title: "Stretch, reverse, collapse", duration: 11 },
-  { id: "scalar", title: "Scalar: every direction", duration: 5 },
-  { id: "defective", title: "Defective: only one line", duration: 5 },
-  { id: "rotation", title: "No real eigenvectors", duration: 4.5 },
-  { id: "summary", title: "Invariant directions", duration: 4 },
+  {
+    id: "fan",
+    title: "A fan of directions",
+    duration: 3.5,
+    summary: "Six directions drawn from the origin, before A touches any of them.",
+  },
+  {
+    id: "apply",
+    title: "Most directions turn",
+    duration: 5.5,
+    summary: "The grid and the fan deform together off one signal — most tips leave their ray.",
+  },
+  {
+    id: "highlight",
+    title: "Some stay on their line",
+    duration: 5,
+    summary: "Two lines map onto themselves; the scale factor is read off the picture.",
+  },
+  {
+    id: "equation",
+    title: "Av = λv",
+    duration: 4,
+    summary: "Name the behavior after it has been felt: eigenvector, eigenvalue.",
+  },
+  {
+    id: "stretch",
+    title: "λ > 1 stretches",
+    duration: 5,
+    summary: "Same line, farther out — the mechanic the prediction will build on.",
+  },
+  {
+    id: "predict-reverse",
+    title: "Predict: λ = −1",
+    duration: 5.5,
+    summary: "Av = λv and λ are both given. Where does the tip land? Held silence to think.",
+  },
+  {
+    id: "reverse",
+    title: "λ < 0 reverses",
+    duration: 4.5,
+    summary: "The reveal: same line, opposite ray, same length — staying on a line is not staying on a ray.",
+  },
+  {
+    id: "collapse",
+    title: "λ = 0 collapses",
+    duration: 4.5,
+    summary: "Zero scale retracts the tip to the origin — the Lesson 3 collapse, seen along one line.",
+  },
+  {
+    id: "scalar",
+    title: "Scalar: every direction",
+    duration: 5.5,
+    summary: "A = λI. Space springs back to the identity, then scales — so every line stays.",
+  },
+  {
+    id: "defective",
+    title: "Defective: only one line",
+    duration: 5.5,
+    summary: "Repeated λ, and the grid visibly shears: exactly one line survives.",
+  },
+  {
+    id: "rotation",
+    title: "No real eigenvectors",
+    duration: 5.5,
+    summary: "The counterexample — the grid rotates and no line is left in place.",
+  },
+  {
+    id: "summary",
+    title: "Invariant directions",
+    duration: 4.5,
+    summary: "Back to A: eigenvector = nonzero direction A keeps; λ = the signed scale along it.",
+  },
 ];
 
 /**

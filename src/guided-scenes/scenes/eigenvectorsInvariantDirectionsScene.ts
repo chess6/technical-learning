@@ -7,31 +7,43 @@ import {
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
-import { EIGEN_LESSON_EXAMPLE } from "../../lessons/exampleData";
 import {
-  analyzeEigen2x2,
   lerpIdentityToMatrix,
   matrixVectorMultiply,
   normalizeVector,
-  requireMatrixExample,
   scaleVector,
   stabilizeDirection,
   type Matrix2x2,
   type Vector2 as MathV,
 } from "../../math";
+import {
+  COLLAPSE,
+  DEFECTIVE,
+  MAIN,
+  MAIN_FIRST,
+  MAIN_PAIRS,
+  NEGATIVE,
+  REVERSE,
+  ROTATION,
+  SCALAR,
+  STRETCH,
+  ZERO_EIG,
+  demoBaseFor,
+  eigenDirections,
+  type Eigenpair,
+} from "./eigenSceneData";
 import { EIGENVECTOR_SEGMENTS } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
   formatSceneNumber,
-  focusOpacities,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
   makeStaticGrid,
   makeTransformedGrid,
-  morphMatrixEntries,
+  runSegment,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -49,16 +61,26 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * - Keep ghost v while Av moves so input vs output is visible.
  * - Highlight full lines through the origin (same line ≠ same direction).
  * - Act out λ > 1 / λ < 0 / λ = 0 with length and flip, not matrix morph alone.
+ *
+ * Three rules this scene now holds itself to (July 2026 guided-animation audit,
+ * which found the earlier cut violating all three):
+ *
+ * 1. **No pre-deformed grid, and no snap.** Every case matrix is swapped in
+ *    *at the identity* — where `lerpIdentityToMatrix(M, 0) = I` for every M, so
+ *    the swap is invisible by construction — and then applied with the grid on
+ *    screen. `toIdentity()` + `setMatrixAtIdentity()` are the only sanctioned
+ *    way to change matrices, which is what removes the `applyT(0)` snap that
+ *    used to jolt every fan arrow entering `rotation`.
+ * 2. **No hidden morphs.** Time is never spent animating something invisible.
+ *    The old `scalar` beat burned a full second morphing a matrix while the
+ *    grid, fan, ghosts and demo were all at opacity 0; matrix swaps behind a
+ *    hidden grid are now instantaneous, and the seconds go to visible motion.
+ * 3. **Every λ is derived, geometry included.** `requireEigenpair` reads both
+ *    the eigenvalue and its direction from `analyzeEigen2x2`, and the demo
+ *    arrow's landing point is `base · λ` — so the label and the picture are
+ *    computed from the same number and cannot drift apart. Editing a matrix in
+ *    `src/math/examples.ts` now fails loudly instead of silently relabeling.
  */
-
-const MAIN = EIGEN_LESSON_EXAMPLE.matrix as Matrix2x2;
-const SCALAR = requireMatrixExample("eigen-repeated-diagonalizable")
-  .matrix as Matrix2x2;
-const DEFECTIVE = requireMatrixExample("eigen-repeated-defective")
-  .matrix as Matrix2x2;
-const ROTATION = requireMatrixExample("eigen-no-real").matrix as Matrix2x2;
-const NEGATIVE = requireMatrixExample("eigen-negative").matrix as Matrix2x2;
-const ZERO_EIG = requireMatrixExample("eigen-zero").matrix as Matrix2x2;
 
 /** Fan chosen so several directions clearly leave their ray under MAIN.
  * Lengths stay inside the overlay-clear teaching band (~±2.5 units). */
@@ -83,37 +105,6 @@ function unitDir(v: MathV): MathV {
   const n = normalizeVector(v);
   if (!n) return [1, 0];
   return stabilizeDirection(n);
-}
-
-function eigenDirections(m: Matrix2x2): MathV[] {
-  const analysis = analyzeEigen2x2(m);
-  if (analysis.kind === "complex") return [];
-  if (analysis.kind === "distinct-real") {
-    return analysis.pairs
-      .map((p) => normalizeVector(p.eigenvector))
-      .filter((v): v is MathV => v !== null)
-      .map((v) => scaleVector(stabilizeDirection(v), 1.6));
-  }
-  return analysis.eigenspaceBasis
-    .map((v) => normalizeVector(v))
-    .filter((v): v is MathV => v !== null)
-    .map((v) => scaleVector(stabilizeDirection(v), 1.6));
-}
-
-function firstEigenpair(m: Matrix2x2): { lambda: number; dir: MathV } | null {
-  const analysis = analyzeEigen2x2(m);
-  if (analysis.kind === "distinct-real" && analysis.pairs[0]) {
-    const p = analysis.pairs[0];
-    const n = normalizeVector(p.eigenvector);
-    if (!n) return null;
-    return { lambda: p.eigenvalue, dir: stabilizeDirection(n) };
-  }
-  if (analysis.kind === "repeated-real" && analysis.eigenspaceBasis[0]) {
-    const n = normalizeVector(analysis.eigenspaceBasis[0]);
-    if (!n) return null;
-    return { lambda: analysis.eigenvalue, dir: stabilizeDirection(n) };
-  }
-  return null;
 }
 
 export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
@@ -251,9 +242,10 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   demoLambda.opacity(() => demoLambdaOpacity());
   demoLambda.position(() => {
     const d: MathV = [demoDx(), demoDy()];
-    const ghostTip = px(scaleVector(d, demoGhostScale()));
-    // Perpendicular screen offset so the label never sits on the arrow.
-    return ghostTip.add(new Vector2(-d[1] * 46, -d[0] * 46));
+    // Beside the SHAFT, not at the tip: parked at the tip, a wide readout
+    // ("λ = -1") overlapped its own arrowhead. Perpendicular screen offset.
+    const mid = px(scaleVector(d, demoGhostScale() * 0.55));
+    return mid.add(new Vector2(-d[1] * 66, -d[0] * 66));
   });
   view.add(demoLambda);
 
@@ -272,33 +264,84 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   top.opacity(1);
   caption.opacity(1);
 
-  function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
+  /**
+   * Bring space back to the identity so a new matrix can be swapped in without
+   * a jump. Tweened while the grid is on screen — the un-deformation is itself
+   * worth watching, and it is what replaced the `applyT(0)` snap that used to
+   * jolt every fan arrow at the top of `rotation`. Instant only when nothing
+   * bound to `applyT` is visible, where a tween would be time spent on nothing.
+   */
+  function* toIdentity(dur: number): ThreadGenerator {
+    if (applyT() === 0) return;
+    if (gridDeformOpacity() > 0.01) {
+      yield* applyT(0, dur, easeInOutCubic);
+      return;
+    }
+    applyT(0);
   }
 
-  function updateEigenGraphics(m: Matrix2x2): void {
-    const dirs = eigenDirections(m);
+  /**
+   * Write the live matrix. Legal ONLY at the identity (`applyT() === 0`), where
+   * `lerpIdentityToMatrix(M, 0) = I` and every fan tip sits at its own `v`
+   * regardless of M — so the swap is invisible by construction and costs no
+   * time. Always `yield* toIdentity(...)` first; that pairing is what lets each
+   * case beat *show* its deformation instead of fading in a pre-deformed grid.
+   */
+  function setMatrixAtIdentity(m: Matrix2x2): void {
+    ma(m[0][0]);
+    mb(m[0][1]);
+    mc(m[1][0]);
+    md(m[1][1]);
+  }
+
+  /** Directions the eigenline apparatus is currently drawn at. */
+  let placedDirs: MathV[] = [];
+
+  function placeEigenGraphics(dirs: readonly MathV[]): void {
     for (let i = 0; i < 2; i += 1) {
       const d = dirs[i];
-      if (!d) {
-        eigenLines[i]!.opacity(0);
-        eigenArrows[i]!.opacity(0);
-        continue;
-      }
-      const tip = px(d);
-      const anti = px(scaleVector(d, -1));
-      eigenLines[i]!.points([anti, tip]);
-      eigenLines[i]!.opacity(0.9);
-      eigenArrows[i]!.points([new Vector2(0, 0), tip]);
-      eigenArrows[i]!.opacity(1);
+      if (!d) continue;
+      eigenLines[i]!.points([px(scaleVector(d, -1)), px(d)]);
+      eigenArrows[i]!.points([new Vector2(0, 0), px(d)]);
     }
+    placedDirs = dirs.slice();
   }
 
-  function hideEigenGraphics(): void {
-    for (let i = 0; i < 2; i += 1) {
-      eigenLines[i]!.opacity(0);
-      eigenArrows[i]!.opacity(0);
-    }
+  /**
+   * Fade the eigenlines of `m` in, and any surplus line out.
+   *
+   * Re-pointing a line that is ON SCREEN teleports it — entering `stretch`,
+   * A's diagonal eigenline jumped onto NEGATIVE's vertical one in a single
+   * frame, which is the same snap this scene exists to have stopped doing. So
+   * a *moving* apparatus is retired first and then arrives at its new position;
+   * an unchanged one (NEGATIVE and ZERO_EIG share both axes) is left alone.
+   */
+  function* showEigenGraphics(m: Matrix2x2, dur = 0.45): ThreadGenerator {
+    const dirs = eigenDirections(m);
+    const moving =
+      dirs.length !== placedDirs.length ||
+      dirs.some((d, i) => {
+        const was = placedDirs[i];
+        return !was || Math.hypot(d[0] - was[0], d[1] - was[1]) > 1e-9;
+      });
+    const onScreen = eigenLines.some((line) => line.opacity() > 0.01);
+    if (moving && onScreen) yield* hideEigenGraphics(dur * 0.6);
+    placeEigenGraphics(dirs);
+    yield* all(
+      ...[0, 1].flatMap((i) => [
+        eigenLines[i]!.opacity(i < dirs.length ? 0.9 : 0, dur),
+        eigenArrows[i]!.opacity(i < dirs.length ? 1 : 0, dur),
+      ]),
+    );
+  }
+
+  function* hideEigenGraphics(dur = 0.35): ThreadGenerator {
+    yield* all(
+      ...[0, 1].flatMap((i) => [
+        eigenLines[i]!.opacity(0, dur),
+        eigenArrows[i]!.opacity(0, dur),
+      ]),
+    );
   }
 
   function setDemoDirection(dir: MathV): void {
@@ -307,14 +350,50 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
     demoDy(u[1]);
   }
 
-  const seconds = Object.fromEntries(
-    EIGENVECTOR_SEGMENTS.map((s) => [s.id, s.duration]),
-  ) as Record<string, number>;
+  /**
+   * Park the demo arrow + ghost on `pair`'s line at its un-transformed length,
+   * with the λ label showing. Nothing has moved yet: the reveal is the caller's
+   * `demoScale(base * λ, …)`, and because that target is computed from the same
+   * λ the label prints, the number and the picture cannot disagree.
+   */
+  function* armDemo(
+    pair: Eigenpair,
+    // `label` exists so `highlight` can say "scale" before `equation` has
+    // earned the name λ — name-after-intuition, on the same readout object.
+    opts: { fadeIn?: number; label?: (lambda: number) => string } = {},
+  ): ThreadGenerator {
+    const { fadeIn = 0.4, label = (l: number) => `λ = ${fmt(l)}` } = opts;
+    const base = demoBaseFor(pair.lambda);
+    setDemoDirection(pair.dir);
+    demoGhostScale(base);
+    demoScale(base);
+    demoLambda.text(label(pair.lambda));
+    yield* all(
+      demoGhostOpacity(0.9, fadeIn),
+      demoOpacity(1, fadeIn),
+      demoLambdaOpacity(1, fadeIn),
+    );
+  }
+
+  /** The armed demo's reveal: carry the tip to Av = λ·v over `dur`. */
+  function* revealDemo(pair: Eigenpair, dur: number): ThreadGenerator {
+    yield* demoScale(demoBaseFor(pair.lambda) * pair.lambda, dur, easeInOutCubic);
+  }
+
+  function* hideDemo(dur = 0.3): ThreadGenerator {
+    yield* all(
+      demoOpacity(0, dur),
+      demoGhostOpacity(0, dur),
+      demoLambdaOpacity(0, dur),
+    );
+  }
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *fan() {
       setTop("A fan of directions");
-      setCaption("Watch which tips leave their original ray");
+      setCaption("Six directions from the origin — watch which tips leave their ray");
+      // Establishing frame at t = 0: direct sets, because there is nothing yet
+      // to tween from. Every later state change in this scene is animated.
       applyT(0);
       gridDeformOpacity(0);
       ghostOpacity(0);
@@ -322,8 +401,14 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       demoGhostOpacity(0);
       demoLambdaOpacity(0);
       showPairLabels(0);
-      hideEigenGraphics();
-      yield* waitFor(seconds.fan);
+      for (let i = 0; i < 2; i += 1) {
+        eigenLines[i]!.opacity(0);
+        eigenArrows[i]!.opacity(0);
+      }
+      // Nothing moves in this beat: it is the paused establishing frame, and
+      // runSegment holds it for the segment's full length so the learner can
+      // take in the fan before A touches it.
+      yield* waitFor(0);
     },
 
     *apply() {
@@ -331,174 +416,175 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
       setCaption("Space follows A — ghost v · bright tip Av · most directions turn");
       showPairLabels(1);
       yield* ghostOpacity(0.85, 0.4);
-      // Grid deforms together with the fan: same t drives both.
-      yield* all(
-        gridDeformOpacity(0.85, 0.6),
-        applyT(1, 2.2, easeInOutCubic),
-      );
-      yield* waitFor(seconds.apply - 2.6);
+      // One signal drives the grid and the fan, so the deforming space and the
+      // moving tips cannot drift apart: lerp(v, Av, t) = lerp(I, A, t) · v.
+      yield* all(gridDeformOpacity(0.85, 0.6), applyT(1, 2.6, easeInOutCubic));
     },
 
     *highlight() {
       setTop("Some lines stay put");
-      setCaption("Grid slid off — but this line maps onto itself: an eigenline");
+      setCaption("Most tips swung off their ray — but two lines map onto themselves");
       showPairLabels(0);
-      for (const a of fanArrows) a.opacity(0.2);
-      ghostOpacity(0.2);
-      yield* gridDeformOpacity(0.4, 0.4);
-      updateEigenGraphics(MAIN);
-      const pair = firstEigenpair(MAIN);
-      if (pair) {
-        setDemoDirection(pair.dir);
-        const base = 1.0;
-        demoGhostScale(base);
-        demoScale(base * pair.lambda);
-        demoGhostOpacity(0.9);
-        demoOpacity(1);
-        demoLambda.text(`scale ≈ ${fmt(pair.lambda)}`);
-        demoLambdaOpacity(1);
-      }
-      yield* waitFor(seconds.highlight - 0.4);
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0.2, 0.4)),
+        ghostOpacity(0.2, 0.4),
+        gridDeformOpacity(0.4, 0.4),
+      );
+      yield* showEigenGraphics(MAIN);
+      // The scale factor is READ OFF the picture, not asserted: the ghost sits
+      // at `base` and the result lands at `base · λ`, both from the analyzer.
+      yield* armDemo(MAIN_FIRST, { label: (l) => `scale = ${fmt(l)}` });
+      setCaption(
+        `This line maps onto itself — the tip only scales, by ${fmt(MAIN_FIRST.lambda)}`,
+      );
+      yield* revealDemo(MAIN_FIRST, 1.0);
     },
 
     *equation() {
       // Name-after-intuition: the line-staying behavior was felt; now name it.
-      demoLambdaOpacity(0);
-      const analysis = analyzeEigen2x2(MAIN);
-      const lambdas =
-        analysis.kind === "distinct-real"
-          ? analysis.pairs.map((p) => fmt(p.eigenvalue)).join(", ")
-          : "?";
       setTop("Call them eigenvectors");
       setCaption("Nonzero directions A only scales — Av = λv");
-      yield* waitFor(1.2);
+      yield* waitFor(1.4);
+      const lambdas = MAIN_PAIRS.map((p) => fmt(p.lambda)).join(", ");
       setTop("Av = λv");
-      setCaption(`λ ≈ ${lambdas} · zero vector is never an eigenvector`);
-      yield* waitFor(seconds.equation - 1.2);
+      setCaption(`λ ≈ ${lambdas} · the zero vector is never an eigenvector`);
+      // Rename the SAME readout rather than swapping in a new one: the number
+      // the learner has been watching is the thing that just got a name.
+      demoLambda.text(`λ = ${fmt(MAIN_FIRST.lambda)}`);
     },
 
-    *lambdas() {
-      for (const a of fanArrows) a.opacity(0);
-      ghostOpacity(0);
-      hideEigenGraphics();
-      // A single arrow reads the signed scale cleanly here; a full grid would
-      // only add clutter, so retire it for the λ demos.
-      yield* gridDeformOpacity(0, 0.3);
-      demoOpacity(0);
-      demoGhostOpacity(0);
-      demoLambdaOpacity(0);
-
+    *stretch() {
       setTop("λ > 1 stretches");
-      setCaption("Same line — tip moves farther from the origin");
-      yield* morphTo(NEGATIVE, 0.8);
-      setDemoDirection([1, 0]);
-      demoGhostScale(1.0);
-      demoScale(1.0);
-      demoGhostOpacity(0.85);
-      demoOpacity(1);
-      demoLambda.text("λ = 2");
-      demoLambdaOpacity(1);
-      yield* demoScale(2.0, 1.4, easeInOutCubic);
-      yield* waitFor(1.2);
+      setCaption("Retire the fan — one line, one arrow, and the signed scale on it");
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0, 0.4)),
+        ghostOpacity(0, 0.4),
+        gridDeformOpacity(0, 0.4),
+        hideDemo(0.4),
+      );
+      // With the grid hidden this return is instant and the swap shows nothing,
+      // so neither costs time. The old cut spent 0.8s morphing a matrix that
+      // no visible node was bound to — a full second of blank screen.
+      yield* toIdentity(0.3);
+      setMatrixAtIdentity(NEGATIVE);
+      // Both of this matrix's eigenlines are the axes, and ZERO_EIG's are the
+      // same two — so this apparatus is placed once and persists unchanged
+      // across stretch → predict → reverse → collapse.
+      yield* showEigenGraphics(NEGATIVE);
+      setCaption("Same line — the tip just moves farther from the origin");
+      yield* armDemo(STRETCH);
+      yield* revealDemo(STRETCH, 1.5);
+    },
 
+    *["predict-reverse"]() {
+      setTop("Predict");
+      // Caption FIRST: set after the re-arm, a learner who jumps straight to
+      // this chapter reads the previous beat's caption under a "Predict"
+      // heading for the better part of a second.
+      setCaption(
+        `Av = λv, and on this line λ = ${fmt(REVERSE.lambda)}. Where does the tip land?`,
+      );
+      // A prediction, not a guess: Av = λv was named two beats ago, the line is
+      // already on screen, and λ for THIS line is stated outright. Everything
+      // the answer is built from is visible and fixed before the question.
+      yield* hideDemo(0.35);
+      yield* armDemo(REVERSE);
+      // runSegment holds the remaining ~4.7s: that silence is the think time.
+    },
+
+    *reverse() {
       setTop("λ < 0 reverses");
-      setCaption("Same line — tip flips to the opposite ray");
-      setDemoDirection([0, 1]);
-      demoGhostScale(1.5);
-      demoScale(1.5);
-      demoGhostOpacity(0.9);
-      demoLambda.text("λ = −1");
-      yield* demoScale(-1.5, 1.6, easeInOutCubic);
-      yield* waitFor(1.6);
+      // The reveal resolves the prediction concretely, on the same arrow the
+      // question was asked about — nothing is faded out and replaced.
+      yield* revealDemo(REVERSE, 1.8);
+      setCaption("Same line, opposite ray — the length is kept, the direction is not");
+    },
 
+    *collapse() {
       setTop("λ = 0 collapses");
-      setCaption("Lesson 3: zero scale kills length — tip retracts to the origin");
-      yield* morphTo(ZERO_EIG, 0.8);
-      setDemoDirection([0, 1]);
-      demoGhostScale(1.6);
-      demoScale(1.6);
-      demoGhostOpacity(0.9);
-      demoLambda.text("λ = 0");
-      yield* demoScale(0, 1.6, easeInOutCubic);
-      // 9.3 = 9.0 of demo beats + 0.3 spent retiring the grid at the start.
-      yield* waitFor(Math.max(0, seconds.lambdas - 9.3));
+      yield* hideDemo(0.3);
+      yield* toIdentity(0.2);
+      setMatrixAtIdentity(ZERO_EIG);
+      yield* showEigenGraphics(ZERO_EIG);
+      yield* armDemo(COLLAPSE);
+      setCaption("Lesson 3's collapse along one line — zero scale kills the length");
+      yield* revealDemo(COLLAPSE, 1.7);
     },
 
     *scalar() {
       setTop("Scalar: every direction");
-      setCaption("A = λI — the whole grid just scales, so every line stays");
-      demoOpacity(0);
-      demoGhostOpacity(0);
-      demoLambdaOpacity(0);
-      applyT(1);
-      yield* morphTo(SCALAR, 1.0);
-      yield* gridDeformOpacity(0.75, 0.5);
-      yield* focusOpacities([
-        ...fanArrows.map((a) => ({ node: a, opacity: 0.95 })),
-      ]);
-      yield* ghostOpacity(0.55, 0.5);
-      updateEigenGraphics(SCALAR);
-      yield* waitFor(seconds.scalar - 2.0);
+      setCaption("Space is back at the identity — now watch A = λI act on all of it");
+      yield* hideDemo(0.3);
+      // The λ beats left applyT at 0, so this swap is invisible and free. What
+      // follows is the FIRST sight of this matrix acting: the grid deforms on
+      // screen instead of being faded in already deformed.
+      setMatrixAtIdentity(SCALAR);
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0.95, 0.5)),
+        ghostOpacity(0.55, 0.5),
+        gridDeformOpacity(0.8, 0.5),
+        hideEigenGraphics(0.5),
+      );
+      yield* applyT(1, 1.9, easeInOutCubic);
+      setCaption("Every line came back onto itself — so every direction is an eigendirection");
+      yield* showEigenGraphics(SCALAR);
     },
 
     *defective() {
       setTop("Defective: only one line");
-      setCaption("Repeated λ — the grid shears; just one line survives");
-      demoOpacity(0);
-      demoGhostOpacity(0);
-      demoLambdaOpacity(0);
-      applyT(1);
-      yield* morphTo(DEFECTIVE, 1.0);
-      yield* gridDeformOpacity(0.5, 0.4);
-      updateEigenGraphics(DEFECTIVE);
-      eigenLines[1]!.opacity(0);
-      eigenArrows[1]!.opacity(0);
-      yield* focusOpacities([
-        ...fanArrows.map((a) => ({ node: a, opacity: 0.2 })),
-      ]);
-      yield* ghostOpacity(0.15, 0.4);
-      yield* waitFor(seconds.defective - 1.8);
+      setCaption("Undo A first — space springs back to the identity");
+      yield* hideEigenGraphics(0.35);
+      // The grid is on screen, so this return is TWEENED and watchable. It is
+      // also what makes the next deformation honest: the learner sees the
+      // shear happen rather than arriving pre-cooked under a caption.
+      yield* toIdentity(0.9);
+      setMatrixAtIdentity(DEFECTIVE);
+      setCaption("Repeated λ — the grid shears, and just one line survives");
+      yield* applyT(1, 1.9, easeInOutCubic);
+      yield* showEigenGraphics(DEFECTIVE);
+      yield* all(
+        ...fanArrows.map((a) => a.opacity(0.25, 0.4)),
+        ghostOpacity(0.2, 0.4),
+      );
     },
 
     *rotation() {
       setTop("No real eigenvectors");
-      setCaption("Counterexample: the grid rotates — no line is left in place");
-      hideEigenGraphics();
-      demoOpacity(0);
-      demoGhostOpacity(0);
-      demoLambdaOpacity(0);
-      // Reset to identity with the grid hidden, then rotate the whole space so
-      // the "every line turns" point lands with the grid, not just the fan.
-      gridDeformOpacity(0);
-      yield* morphTo(ROTATION, 1.0);
-      applyT(0);
+      setCaption("Undo it again — every arrow back on its own ray");
       yield* all(
-        ...fanArrows.map((a) => a.opacity(0.95, 0.35)),
-        ghostOpacity(0.85, 0.35),
-        gridDeformOpacity(0.8, 0.35),
+        hideEigenGraphics(0.35),
+        ...fanArrows.map((a) => a.opacity(0.95, 0.4)),
+        ghostOpacity(0.85, 0.4),
       );
-      yield* applyT(1, 1.8, easeInOutCubic);
-      yield* waitFor(Math.max(0, seconds.rotation - 3.15));
+      // This is the beat whose applyT(0) snap the audit caught: the fan used to
+      // jump from Av back to v in a single frame. It is now tweened, and the
+      // matrix swap happens at the identity where it cannot show.
+      yield* toIdentity(0.9);
+      setMatrixAtIdentity(ROTATION);
+      setCaption("Counterexample: the grid rotates — no line is left in place");
+      yield* applyT(1, 2.1, easeInOutCubic);
     },
 
     *summary() {
       setTop("Invariant directions");
-      setCaption("Eigenvector: nonzero direction A keeps; λ = signed scale");
-      applyT(1);
-      yield* morphTo(MAIN, 1.0);
-      yield* gridDeformOpacity(0.4, 0.4);
-      ghostOpacity(0.35);
-      for (const a of fanArrows) a.opacity(0.35);
-      updateEigenGraphics(MAIN);
-      demoOpacity(0);
-      demoGhostOpacity(0);
-      demoLambdaOpacity(0);
-      showPairLabels(0);
-      yield* waitFor(seconds.summary - 1.4);
+      setCaption("Back to A one last time");
+      yield* toIdentity(0.8);
+      setMatrixAtIdentity(MAIN);
+      yield* applyT(1, 1.6, easeInOutCubic);
+      yield* all(
+        showEigenGraphics(MAIN),
+        ...fanArrows.map((a) => a.opacity(0.35, 0.4)),
+        ghostOpacity(0.35, 0.4),
+        gridDeformOpacity(0.4, 0.4),
+      );
+      setCaption("Eigenvector: nonzero direction A keeps · λ: the signed scale along it");
     },
   };
 
+  // Measured padding: each body runs, then the segment is padded to its exact
+  // authored length, so the rendered timeline matches the step metadata and the
+  // chapter markers cannot drift when choreography is edited.
   for (const segment of EIGENVECTOR_SEGMENTS) {
-    yield* bodies[segment.id]!();
+    yield* runSegment(segment.duration, bodies[segment.id]!);
   }
 });

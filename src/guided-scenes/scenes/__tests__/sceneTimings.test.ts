@@ -33,16 +33,39 @@ describe("scene timings (pure data)", () => {
     }
   });
 
-  it("gives the eigen Watch scene enough time for its held demos", () => {
-    // The lambdas beat runs stretch → reverse → collapse with explicit holds.
-    // Internal choreography budget (see eigenvectorsInvariantDirectionsScene):
-    //   0.8 + 1.4 + 1.2 + 1.6 + 1.6 + 0.8 + 1.6 = 9.0s.
-    const lambdas = EIGENVECTOR_SEGMENTS.find((s) => s.id === "lambdas");
-    expect(lambdas).toBeDefined();
-    expect(lambdas!.duration).toBeGreaterThanOrEqual(9.0);
+  it("splits the eigen λ ladder into navigable beats with a prediction before the reveal", () => {
+    const ids = EIGENVECTOR_SEGMENTS.map((s) => s.id);
+    const byId = Object.fromEntries(EIGENVECTOR_SEGMENTS.map((s) => [s.id, s]));
+
+    // The opaque 11s `lambdas` block is gone: stretch, reverse, and collapse
+    // are each their own chapter, so Prev/Next can reach them.
+    expect(ids).not.toContain("lambdas");
+    for (const id of ["stretch", "reverse", "collapse"]) {
+      expect(ids).toContain(id);
+    }
+
+    // The prediction sits AFTER the mechanic it builds on (stretch established
+    // that λ scales along the line) and BEFORE the counterintuitive reveal, so
+    // the answer is derivable rather than a guess.
+    expect(ids.indexOf("equation")).toBeLessThan(ids.indexOf("stretch"));
+    expect(ids.indexOf("stretch")).toBeLessThan(ids.indexOf("predict-reverse"));
+    expect(ids.indexOf("predict-reverse")).toBeLessThan(ids.indexOf("reverse"));
+    // A prediction is only real if there is silence to think in: the beat
+    // spends ≈0.75s re-arming the demo, the rest is held think time.
+    expect(byId["predict-reverse"]!.duration).toBeGreaterThanOrEqual(4.5);
+
+    // Each case matrix is now reached from the identity WITH the grid on
+    // screen (return ≈0.9 + deform ≈1.9 + annotate ≈0.8), instead of fading in
+    // a pre-deformed grid. That choreography needs ≥5s per case beat.
+    for (const id of ["scalar", "defective", "rotation"]) {
+      expect(byId[id]!.duration, id).toBeGreaterThanOrEqual(5.0);
+    }
+
     for (const segment of EIGENVECTOR_SEGMENTS) {
       expect(segment.duration).toBeGreaterThan(0);
     }
+    // Every beat is a navigable chapter with an authored summary.
+    expect(EIGENVECTOR_SEGMENTS.every((s) => Boolean(s.summary))).toBe(true);
   });
 
   // expand choreography: announce + reset (≈1.0) + morphs/hold (≈3.3) ≈ 4.25s floor.
@@ -74,12 +97,19 @@ describe("scene timings (pure data)", () => {
       "apply",
       "highlight",
       "equation",
-      "lambdas",
+      "stretch",
+      "predict-reverse",
+      "reverse",
+      "collapse",
       "scalar",
       "defective",
       "rotation",
       "summary",
     ]);
+    // Every authored beat is reachable — no chapter is skipped by Prev/Next.
+    expect(meta.majorSteps.map((step) => step.id)).toEqual(
+      EIGENVECTOR_SEGMENTS.map((s) => s.id),
+    );
   });
 
   it("keeps determinant major steps including successive area expansion", () => {

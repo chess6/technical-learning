@@ -80,10 +80,15 @@ unearned prerequisites.
    beat contains no transformation (the sample is born already transformed;
    the beat is a line-width pulse); the grid fades in pre-deformed in the core
    sequence; the presets tour runs ~1.5 s per new transformation.
-3. **eigenvectors-invariant-directions** — grids fade in pre-deformed in
-   `scalar`/`defective`; a visible snap glitch entering `rotation`; hidden
-   morphs burn time with no visible change; λ demo labels are hand-acted
-   rather than derived from `src/math` (honest today, fragile tomorrow).
+3. ~~**eigenvectors-invariant-directions**~~ — **fixed** (see
+   "eigenvectors-invariant-directions: findings → shipped improvements" below).
+   Was: grids fade in pre-deformed in `scalar`/`defective`; a visible snap
+   glitch entering `rotation`; hidden morphs burn time with no visible change;
+   λ demo labels are hand-acted rather than derived from `src/math` (honest
+   today, fragile tomorrow).
+
+**The ranked backlog is now empty.** New scene work should re-run the criteria
+above rather than reading down this list.
 
 ### Caption↔visual mismatches (all scenes)
 
@@ -118,11 +123,16 @@ co-equal pairs (R1/R2).
 
 ### Timing regimes
 
-Only elimination, solution-sets, and bst-lift use the measured `runSegment`
-pattern; the rest still hand-subtract (`waitFor(duration − guessed_total)`),
-which desynchronizes step markers the moment choreography is edited (and can
-go negative). Migrating the remaining scenes to `runSegment` is mechanical and
-worth doing opportunistically. (The red-black scene already used `runSegment`.)
+Scenes on the measured `runSegment` pattern (as of this audit's last shipped
+fix): bst-lift, matrix-transformations, columns-rule-graphic, matrix-composition,
+change-of-basis, eigenvectors-invariant-directions, elimination, rank-nullity,
+solution-sets, subspaces-rank, red-black-encoding.
+
+Still hand-subtracting (`waitFor(duration − guessed_total)`), which
+desynchronizes step markers the moment choreography is edited and can go
+negative: chapter0, determinant-area-scaling, eigenvectors-derivation,
+karatsuba-cross-terms, vectors-linear-combinations, linear-systems,
+transform-spike. Migrating them is mechanical and worth doing opportunistically.
 
 ## Red-black scene: findings → shipped improvements
 
@@ -245,3 +255,63 @@ Shipped:
   `a·e₁` is never read as a second copy of `e₁`, and the scene migrated to
   `runSegment` measured padding — the export is exactly 945 frames = 31.5 s
   = the segment sum, so no body overruns its budget.
+
+## eigenvectors-invariant-directions: findings → shipped improvements
+
+Findings (the audit's last ranked gap): `scalar` snapped `applyT` to 1 and then
+faded a grid in that was *already* deformed, so the beat asserted its own motto
+instead of showing it. Entering `rotation`, `applyT` was snapped from 1 back to
+0, jolting all six fan arrows to their untransformed positions in a single
+frame. `scalar` spent a full second morphing a matrix while the grid, fan,
+ghosts and demo were all at opacity 0 — a second of blank screen. And the λ
+demos hand-acted their numbers (`demoLambda.text("λ = 2")` beside a hand-chosen
+direction): honest for today's matrices, and silently wrong the moment one was
+edited. There was no prediction anywhere in the scene.
+
+Shipped:
+
+- **One mechanism removes the pre-deformed grid, the snap, and the hidden
+  morphs at once.** Every case matrix is now swapped in *at the identity* —
+  where `lerpIdentityToMatrix(M, 0) = I` for every `M`, so the swap is
+  invisible **by construction** and costs no time — and then applied with the
+  grid on screen. `toIdentity()` tweens the return when the grid is visible
+  (the un-deformation is itself worth watching) and is instantaneous only when
+  nothing bound to `applyT` is on screen. `scalar`, `defective`, and `rotation`
+  each budget a visible return plus a visible deformation, which is why they
+  cost ~5.5 s rather than ~5 s.
+- **Every λ is derived, geometry included.** `requireEigenpair` resolves each
+  demo by the *property* its beat teaches ("the negative one"), reading both the
+  eigenvalue and its direction from `analyzeEigen2x2`; the arrow's landing point
+  is `base · λ`, so the printed number and the drawn tip come from the same
+  value and cannot drift. The derivation lives in a Motion-Canvas-free
+  `eigenSceneData.ts` precisely so `eigenSceneData.test.ts` can check it —
+  scene modules import `@motion-canvas/2d` and are never resolved in jsdom, so a
+  guard inside the scene would have had no unit coverage at all. Editing a
+  matrix in `src/math/examples.ts` now fails a test instead of relabelling a
+  picture.
+- **A prediction precedes the reveal.** The opaque 11 s `lambdas` block is split
+  into `stretch` → `predict-reverse` → `reverse` → `collapse`, all navigable
+  chapters. The prediction sits *after* the mechanic it builds on and *before*
+  the counterintuitive outcome: `Av = λv` was named two beats earlier, the line
+  is on screen, and λ for that line is stated outright, so the learner derives
+  the landing point rather than guessing it. ~4.7 s of held silence, and the
+  reveal resolves it on the same arrow — nothing is faded out and replaced.
+- **The apparatus persists.** `NEGATIVE` and `ZERO_EIG` share both
+  eigendirections, so the eigenlines are placed once and stay put across the
+  whole λ arc; `showEigenGraphics` retires a *moving* apparatus before
+  re-pointing it and leaves an unchanged one alone. (Re-pointing a visible line
+  teleports it — A's diagonal eigenline jumping onto NEGATIVE's vertical one was
+  a snap this rebuild introduced and the frame-difference check below caught.)
+- Migrated to `runSegment` measured padding; the export is 1756 frames at 30 fps
+  = 58.53 s against a 58.5 s authored budget, so no body overruns its segment.
+  All twelve beats are chapters with authored summaries (they were nine, and
+  `lambdas` hid three ideas behind one marker).
+
+**Verification method worth reusing.** Beyond spot-checking frames, the export
+was scanned for discontinuities: decode to a small greyscale, crop out the
+caption bands, and flag any frame whose change dwarfs *both* its neighbours.
+Continuous motion sits at a ratio near 1; a snap is an isolated spike. That is
+what found the eigenline teleport above, and what confirms the `rotation`
+boundary is now smooth (Δ = 0.05 at t = 48.50 s). The only isolated change left
+in the scene is the deliberate `scale = 3` → `λ = 3` rename-in-place at
+t = 15.40 s, which is a text swap, not a geometric jump.
