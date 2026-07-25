@@ -71,10 +71,10 @@ unearned prerequisites.
 
 ### Most in need of improvement (backlog, ranked)
 
-1. **columns-rule-graphic** — exists to show `T(x) = a·T(e₁) + b·T(e₂)` but
-   never draws a component, coefficient, or construction; concepts live in
-   captions while dots pulse. Needs the parallelogram construction for at
-   least one vertex, or demotion to a static figure.
+1. ~~**columns-rule-graphic**~~ — **fixed** (see "columns-rule-graphic:
+   findings → shipped improvements" below). Was: exists to show
+   `T(x) = a·T(e₁) + b·T(e₂)` but never draws a component, coefficient, or
+   construction; concepts live in captions while dots pulse.
 2. **matrix-transformations** — the "Transform the sample" beat contains no
    transformation (the sample is born already transformed; the beat is a
    line-width pulse); the grid fades in pre-deformed in the core sequence; the
@@ -163,3 +163,39 @@ Representation split remains correct: the guided scene owns the encoding
 insight; rotations/order-preservation live in the interactive exploration;
 the height bound lives in formal blocks + worked induction — the scene does
 not duplicate them.
+
+## columns-rule-graphic: findings → shipped improvements
+
+Findings (the audit's top-ranked gap): the scene's whole purpose is
+`T(x) = a·T(e₁) + b·T(e₂)`, yet no component, coefficient, or construction
+was ever drawn. `vertex` pulsed a dot, `image` re-ran the main scene's I→A
+morph and pulsed the dot again, `all-vertices` faded in three more dots and
+pulsed each. Every conceptual step lived in a caption; a static two-panel
+figure would have carried the same content.
+
+Shipped:
+
+- **The walk is constructed.** `a·e₁` grows from the origin, then `b·e₂`
+  grows from its tip, ending on the vertex — which is pulsed so the
+  coincidence is *read*, not assumed. Dashed guides drop the vertex onto the
+  axes first, so `(a, b)` is earned before it is used.
+- **The components are carried through T, not redrawn.** Both arrows are
+  bound to the live matrix columns (`a·col₁`, `b·col₂`), so the same two
+  objects ride the morph onto the columns and the walk's endpoint is *by
+  construction* `M·x`. Confirmed on a mid-morph export frame: the walk still
+  terminates on the moving vertex. This is the Sláma pack's
+  "keys travel, nothing is faded out and replaced" rule applied to vectors.
+- **A prediction precedes the reveal** (`predict`, 5.5 s with ~5 s of held
+  think time): the columns' destinations are named, the fixed recipe is
+  pinned, and the learner is asked where the walk now ends.
+- **Algebra tracks geometry term by term**: `x = a·e₁` appears as the first
+  arrow grows, `+ b·e₂` as the second does, and the prediction's
+  "→ where?" resolves to the full rule only after the answer is shown.
+- **The invariant is visible**: the `(a, b)` readout is derived from the
+  geometry and pinned *unchanged* across the transform.
+- Closing beat gives every marked vertex its own walk on the same two
+  columns, replacing four pulsing dots with the rule applying vertex-wise.
+- Craft scaled 0.78 → 1.6 (components were ~27 px), emphasis staged so
+  `a·e₁` is never read as a second copy of `e₁`, and the scene migrated to
+  `runSegment` measured padding — the export is exactly 945 frames = 31.5 s
+  = the segment sum, so no body overruns its budget.
