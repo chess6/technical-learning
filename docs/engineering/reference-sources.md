@@ -56,6 +56,13 @@ whose pinned commit upstream will no longer serve (force-push or GC). Use
 for every repo that has drifted from the manifest, which is the signal to
 re-pin and re-check the analyses citing it.
 
+`--status` is the offline half of that guarantee and **exits non-zero on any
+noncompliant row** — `MISMATCH`, `unpinned`, or `absent`. `absent` counts
+deliberately: a status check that passed for an unfetched cache would certify
+"the analyses describe the code on disk" with no code on disk. Reconcile by
+running the fetch (or re-pinning `manifest.json`), never by ignoring the exit
+code.
+
 The transcript tool needs `yt-dlp` (`pip3 install --user yt-dlp`). It downloads
 no video media by default, prefers creator-supplied English captions, falls back
 to automatic ones, sleeps between requests, and skips already-fetched videos.
@@ -66,8 +73,11 @@ Normalized output per video: `metadata.json`, the original caption file,
 `transcript.txt`. Provenance is recorded as `manual` / `automatic` /
 `whisper-local`. Offline unit tests for the normalization layer live in
 `scripts/test_fetch_transcripts.py` and run as part of the full `./check.sh`
-tier (they are skipped with a warning — never silently — when python3/pytest
-is unavailable, since Python is a dev-tool dependency, not a product one).
+tier. They are **mandatory**: a missing `python3` or `pytest` fails the tier
+with an install hint rather than warning past it, because a gate that degrades
+to a skip reports PASS for a suite it never ran. Install them once
+(`pip3 install --user pytest`) — the tests are offline and pure, so there is no
+environment in which running them is impractical.
 
 ## Licensing and the reference-only rule
 

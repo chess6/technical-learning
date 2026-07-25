@@ -91,10 +91,16 @@ local_sha() {
 }
 
 MISMATCHES=0
+# Set by print_status: rows whose STATE is not exactly `pinned`.
+NONCOMPLIANT=0
 
+# Prints the table and counts every repo that is not exactly at its pinned SHA.
+# `absent` counts: a status check that passes for a cache nobody has fetched
+# would certify "the analyses match the code on disk" with no code on disk.
 print_status() {
   printf '%-24s %-10s %-42s %s\n' "SLUG" "STATE" "LOCAL HEAD" "PINNED"
   local entry slug dir pin have state
+  NONCOMPLIANT=0
   for entry in "${REPOS[@]}"; do
     slug="${entry%%|*}"
     want_repo "$slug" || continue
@@ -110,6 +116,7 @@ print_status() {
     else
       state="MISMATCH"
     fi
+    [[ "$state" == "pinned" ]] || NONCOMPLIANT=$((NONCOMPLIANT + 1))
     printf '%-24s %-10s %-42s %s\n' \
       "$slug" "$state" "${have:-(absent)}" "${pin:-(none)}"
   done
@@ -117,6 +124,17 @@ print_status() {
 
 if [[ "$STATUS_ONLY" -eq 1 ]]; then
   print_status
+  # --status is the cheap, offline compliance check (CI and pre-analysis use
+  # it), so it must FAIL on noncompliance rather than merely printing it.
+  # Re-pin the manifest or run the fetch to make it green.
+  if [[ "$NONCOMPLIANT" -gt 0 ]]; then
+    echo
+    die "$NONCOMPLIANT repository/repositories are not at their pinned SHA" \
+        "(absent / unpinned / MISMATCH above) — run" \
+        "scripts/fetch-animation-references.sh to reconcile"
+  fi
+  echo
+  ok "all inspected repositories are at their pinned SHA"
   exit 0
 fi
 
@@ -204,4 +222,9 @@ ok "cache: $CACHE_DIR (git-ignored; reference-only, do not vendor)"
 
 if [[ "$MISMATCHES" -gt 0 ]]; then
   die "$MISMATCHES repository/repositories do not match the manifest (see warnings above)"
+fi
+# The table is the authority on the end state: never exit 0 while a row above
+# reads absent / unpinned / MISMATCH, even if no warning path counted it.
+if [[ "$NONCOMPLIANT" -gt 0 && "$WANT_LATEST" -eq 0 ]]; then
+  die "$NONCOMPLIANT repository/repositories are not at their pinned SHA (see the table above)"
 fi

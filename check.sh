@@ -51,15 +51,17 @@ else
   log "Unit tests"
   npm run test
 
-  # Transcript-tool tests (pure normalization; no network). Python is a dev-tool
-  # dependency, not a product one: skip loudly when it is absent, but never
-  # tolerate a FAILING suite.
+  # Transcript-tool tests (pure normalization; no network). Mandatory: a tier
+  # that silently degrades when a toolchain is missing reports PASS for a suite
+  # it never ran, so an absent python3/pytest is a FAILING gate, not a warning.
   log "Transcript tool tests (python)"
-  if command -v python3 >/dev/null && python3 -c "import pytest" 2>/dev/null; then
-    python3 -m pytest scripts/test_fetch_transcripts.py -q
-  else
-    warn "skipped: python3 with pytest not available (pip3 install --user pytest)"
+  if ! command -v python3 >/dev/null; then
+    die "python3 is required to run the transcript tool tests (install python3)"
   fi
+  if ! python3 -c "import pytest" 2>/dev/null; then
+    die "pytest is required to run the transcript tool tests (pip3 install --user pytest)"
+  fi
+  python3 -m pytest scripts/test_fetch_transcripts.py -q
 fi
 
 if [[ "$with_e2e" -eq 1 ]]; then
