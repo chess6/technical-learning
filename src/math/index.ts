@@ -40,6 +40,16 @@ export {
 export type { TransformedGridSegment } from "./matrices";
 
 export {
+  collapseWitness2x2,
+  commutes,
+  composeInOrder,
+  inverse2x2,
+  inverseColumns,
+  isInvertible2x2,
+  productColumn,
+} from "./matrixComposition";
+
+export {
   assertTransformedBasisMatchesColumns,
   assertGridDirectionMatchesBasis,
   assertPointMatchesMatrixTransform,
