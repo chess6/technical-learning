@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -37,30 +43,12 @@ test("Matrix Composition lesson: scene beats, order toggle, and the singular cas
   // Pause so seeking to a beat is stable rather than chased by playback.
   await scene.getByRole("button", { name: "Pause" }).click();
 
-  const ideaTitles = [
-    "Apply the first map",
-    "Then apply the second",
-    "One matrix does both",
-    "Column j is where eⱼ ended up",
-    "Swap the order",
-    "Undo it",
-    "When there is nothing to undo",
-  ];
-  const ideaChips = scene.getByRole("button", { name: /^Idea \d+:/ });
-  await expect(ideaChips).toHaveCount(ideaTitles.length);
+  await expectChaptersMatchMetadata(scene, "matrix-composition");
 
-  const stageTitle = scene.locator(".guided-scene-player__stage-title");
-
-  // The derivation beat and the collapse beat are the two the lesson turns on.
-  await scene
-    .getByRole("button", { name: "Idea 4: Column j is where eⱼ ended up" })
-    .click();
-  await expect(stageTitle).toHaveText("Column j is where eⱼ ended up");
-
-  await scene
-    .getByRole("button", { name: "Idea 7: When there is nothing to undo" })
-    .click();
-  await expect(stageTitle).toHaveText("When there is nothing to undo");
+  // The derivation beat and the collapse beat are the two the lesson turns on,
+  // addressed by NAME rather than by an ordinal that moves.
+  await gotoChapter(scene, "Column j is where eⱼ ended up");
+  await gotoChapter(scene, "When there is nothing to undo");
 
   // --- Explorer ---
   const explore = page.getByRole("region", {

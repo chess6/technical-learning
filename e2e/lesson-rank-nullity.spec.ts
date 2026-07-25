@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -34,13 +40,10 @@ test("Rank–Nullity: the ledger balances at n for every shape", async ({ page }
     timeout: 8000,
   });
   await scene.getByRole("button", { name: "Pause" }).click();
-  await expect(scene.getByRole("button", { name: /^Idea \d+:/ })).toHaveCount(6);
+  await expectChaptersMatchMetadata(scene, "rank-nullity");
 
-  const stageTitle = scene.locator(".guided-scene-player__stage-title");
-  await scene.getByRole("button", { name: "Idea 4: Spend the budget differently" }).click();
-  await expect(stageTitle).toHaveText("Spend the budget differently");
-  await scene.getByRole("button", { name: "Idea 6: So this can never happen" }).click();
-  await expect(stageTitle).toHaveText("So this can never happen");
+  await gotoChapter(scene, "Spend the budget differently");
+  await gotoChapter(scene, "So this can never happen");
 
   const explore = page.getByRole("region", { name: "Spend the budget" });
   await explore.scrollIntoViewIfNeeded();

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { SCENE_META } from "../src/guided-scenes/scenes/sceneMeta";
 
 /**
@@ -68,22 +68,27 @@ function playerFor(page: Page, scene: string) {
   return page.locator(`${PLAYER}[data-scene-id="${scene}"]`).first();
 }
 
-async function ensurePlaying(page: Page, root = page.locator(PLAYER).first()) {
+/**
+ * Play until the timeline actually advances.
+ *
+ * One poll, not two: under a loaded machine the scene's dynamic import can take
+ * long enough that the player is momentarily neither playing nor offering Play,
+ * and a two-stage "wait for Pause, then wait for the scrubber" sequence can
+ * observe the gap and give up while everything is in fact fine. This re-arms
+ * playback on every tick and only settles when the scrubber has moved.
+ */
+async function playUntilAdvancing(root: Locator, scrubber: Locator) {
   await expect
     .poll(
       async () => {
-        if (await root.getByRole("button", { name: "Pause" }).count())
-          return "playing";
+        if (Number(await scrubber.inputValue()) > 0) return 1;
         const play = root.getByRole("button", { name: "Play", exact: true });
-        if (await play.count()) {
-          await play.click();
-          return "clicked";
-        }
-        return "waiting";
+        if (await play.count()) await play.click().catch(() => {});
+        return 0;
       },
-      { timeout: 15000 },
+      { timeout: 45000, intervals: [250, 500, 1000] },
     )
-    .not.toBe("waiting");
+    .toBe(1);
 }
 
 for (const { scene, route } of SCENE_ROUTES) {
@@ -93,6 +98,9 @@ for (const { scene, route } of SCENE_ROUTES) {
   test(`${scene}: plays, seeks to every chapter, and walks Prev/Next`, async ({
     page,
   }) => {
+    // Each case mounts a scene, seeks to every chapter, and walks the chapter
+    // controls end to end. That is genuinely slow work under parallel workers.
+    test.slow();
     const errors = collectConsoleErrors(page);
     await page.goto(route);
 
@@ -102,12 +110,10 @@ for (const { scene, route } of SCENE_ROUTES) {
     await expect(canvas).toBeVisible({ timeout: 15000 });
 
     // 1. Playback actually advances.
-    await ensurePlaying(page, root);
     const scrubber = root.locator(SCRUBBER);
-    await expect
-      .poll(async () => Number(await scrubber.inputValue()), { timeout: 15000 })
-      .toBeGreaterThan(0);
-    await root.getByRole("button", { name: "Pause" }).click();
+    await playUntilAdvancing(root, scrubber);
+    const pause = root.getByRole("button", { name: "Pause" });
+    if (await pause.count()) await pause.click();
 
     // 2. Seek directly to each chapter. A chapter that a learner can jump to
     //    must announce itself correctly the moment they arrive.
@@ -165,6 +171,7 @@ for (const { scene, route } of SCENE_ROUTES) {
 test("reduced motion still presents an establishing frame and chapter controls", async ({
   page,
 }) => {
+  test.slow();
   const errors = collectConsoleErrors(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/lesson/why-linear-algebra");

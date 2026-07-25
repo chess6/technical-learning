@@ -255,11 +255,36 @@ export const linearSystemsScene = makeScene2D(function* (view) {
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
 
+  /**
+   * Cross to the other space.
+   *
+   * The tag is taken DOWN for the crossfade and only re-labelled once the
+   * outgoing space's objects are gone. Setting it first — which is what the
+   * scene used to do — meant that for the third of a second the transition
+   * takes, a tag reading "coefficient space" sat over the column arrows: the
+   * scene naming one space while the other's objects were still on screen, in
+   * the one scene whose entire job is keeping the two apart.
+   */
+  function* crossTo(
+    space: string,
+    targets: readonly { node: Parameters<typeof focusOpacities>[0][number]["node"]; opacity: number }[],
+    fade: number,
+    tag: number,
+  ): ThreadGenerator {
+    yield* focusOpacities([...targets, { node: spaceTag, opacity: 0 }], fade);
+    setSpace(space);
+    yield* spaceTag.opacity(0.85, tag);
+  }
+
   // Establish the coefficient space (row picture) — every output-space object is
   // fully hidden, so the two pictures never share one visible plane.
-  const showRow = function* (emphasis = 1, duration = 0.35): ThreadGenerator {
-    setSpace(COEFFICIENT_SPACE);
-    yield* focusOpacities(
+  const showRow = function* (
+    emphasis = 1,
+    duration = 0.35,
+    tag = 0.2,
+  ): ThreadGenerator {
+    yield* crossTo(
+      COEFFICIENT_SPACE,
       [
         { node: line1, opacity: emphasis },
         { node: line2, opacity: emphasis },
@@ -273,6 +298,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         { node: targetLabel, opacity: 0 },
       ],
       duration,
+      tag,
     );
   };
 
@@ -281,9 +307,10 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const showColumn = function* (
     duration = 0.35,
     span = 0,
+    tag = 0.2,
   ): ThreadGenerator {
-    setSpace(OUTPUT_SPACE);
-    yield* focusOpacities(
+    yield* crossTo(
+      OUTPUT_SPACE,
       [
         { node: line1, opacity: 0 },
         { node: line2, opacity: 0 },
@@ -295,6 +322,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         { node: targetLabel, opacity: 1 },
       ],
       duration,
+      tag,
     );
   };
 
@@ -336,7 +364,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       );
       setCaption("x·(1, 2) + y·(3, −1) = (−1, 5) — columns and target live here");
       // Establish the output-space frame only after the lines are fully gone.
-      yield* showColumn(b.show!);
+      yield* showColumn(b.show!, 0, b.tag!);
       yield* waitFor(b.hold!);
     },
     *["predict-column"]() {
@@ -377,7 +405,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         scaled2.opacity(0, b.clear!),
         comboDot.opacity(0, b.clear!),
       );
-      yield* showRow(0.6, b.show!);
+      yield* showRow(0.6, b.show!, b.tag!);
       yield* waitFor(b.hold!);
     },
     *infinite() {
@@ -386,7 +414,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       setCaption("Watch the two lines slide onto each other");
       cx(0);
       cy(0);
-      yield* showRow(1, b.show!);
+      yield* showRow(1, b.show!, b.tag!);
       yield* all(
         a11(EX.aDependent[0][0], b.morph!, easeInOutCubic),
         a12(EX.aDependent[0][1], b.morph!, easeInOutCubic),
@@ -409,7 +437,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       // the columns' line — is one the learner can actually watch. It used to be
       // tweened while every output-space object was at opacity 0.
       setCaption("In the output space: dependent columns span only this line, and b sits on it");
-      yield* showColumn(b.toColumn!, 0.9);
+      yield* showColumn(b.toColumn!, 0.9, b.tag!);
       yield* waitFor(b.hold!);
       setCaption("Now slide b off that line — watch it leave");
       yield* all(
@@ -418,7 +446,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       );
       yield* waitFor(b.hold2!);
       setCaption("b is unreachable now. Back in the row picture, that reads as parallel lines.");
-      yield* showRow(1, b.toRow!);
+      yield* showRow(1, b.toRow!, b.tag2!);
       yield* waitFor(b.hold3!);
     },
     *summary() {

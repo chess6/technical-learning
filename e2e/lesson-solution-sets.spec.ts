@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -60,40 +66,35 @@ test("Solution Sets lesson loads, guided scene plays, and the explorer walks eve
   await scene.getByRole("button", { name: "Pause" }).click();
 
   // Step markers: exactly the six SOLUTION_SETS_SEGMENTS major ideas, in order.
+  // The single opaque `cases` beat is now three chapters, so each case is
+  // reachable on its own. Titles, not ordinals — the ordinals move.
   const ideaTitles = [
     "Two solutions of one system",
     "Subtract them: a homogeneous solution",
     "Add it back to make more",
     "The homogeneous line Null(A)",
     "The set is the null line, shifted",
-    "Empty, a point, or a line",
+    "Case: empty",
+    "Case: a single point",
+    "Case: a line",
   ];
-  const ideaChips = scene.getByRole("button", { name: /^Idea \d+:/ });
-  await expect(ideaChips).toHaveCount(ideaTitles.length);
-  for (let i = 0; i < ideaTitles.length; i += 1) {
-    await expect(
-      scene.getByRole("button", { name: `Idea ${i + 1}: ${ideaTitles[i]}` }),
-    ).toBeVisible();
+  await expectChaptersMatchMetadata(scene, "solution-sets");
+  for (const title of ideaTitles) {
+    await expect(ideaChip(scene, title)).toBeVisible();
   }
 
   const stageTitle = scene.locator(".guided-scene-player__stage-title");
 
   // Seek to the DISCOVERY beat (subtract two solutions) and the SYNTHESIS beat
   // (the set is the null line, shifted); the stage marker must track each.
-  await scene
-    .getByRole("button", { name: "Idea 2: Subtract them: a homogeneous solution" })
-    .click();
-  await expect(stageTitle).toHaveText("Subtract them: a homogeneous solution");
+  await gotoChapter(scene, "Subtract them: a homogeneous solution");
+  await gotoChapter(scene, "The set is the null line, shifted");
 
-  await scene
-    .getByRole("button", { name: "Idea 5: The set is the null line, shifted" })
-    .click();
-  await expect(stageTitle).toHaveText("The set is the null line, shifted");
-
-  await scene
-    .getByRole("button", { name: "Idea 6: Empty, a point, or a line" })
-    .click();
-  await expect(stageTitle).toHaveText("Empty, a point, or a line");
+  // Each of the three cases is its own chapter now, so each is reachable on its
+  // own instead of being buried inside one opaque "Empty, a point, or a line".
+  await gotoChapter(scene, "Case: empty");
+  await gotoChapter(scene, "Case: a single point");
+  await gotoChapter(scene, "Case: a line");
 
   // --- Interactive explorer: the two linked solution-space panels. ---
   const explore = page.getByRole("region", {

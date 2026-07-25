@@ -227,7 +227,9 @@ export const eliminationScene = makeScene2D(function* (view) {
     lineWidth: 4,
     strokeFirst: true,
   });
-  solutionLabel.position(lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(64, 8)));
+  // Below the dot, not to its right: at +64px the label ran past the viewport
+  // border and out of the safe frame, where CSS scaling can clip it.
+  solutionLabel.position(lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(-4, 30)));
   solutionLabel.opacity(0);
   view.add(solutionLabel);
 

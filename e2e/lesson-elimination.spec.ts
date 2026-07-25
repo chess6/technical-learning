@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -59,29 +65,29 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
   // Step-marker alignment: exactly the five ELIMINATION_SEGMENTS major ideas,
   // in order. The idea chips are derived from the same timing metadata that
   // drives the scrubber, so this pins scrubber/idea/segment alignment.
+  // The beats this lesson must offer, addressed by NAME — the ordinals shift
+  // whenever a beat is inserted, and this spec has no opinion about numbering.
   const ideaTitles = [
     "One system, three views",
+    "Predict: what can the operation not move?",
     "R2 → R2 − 2·R1",
     "Triangular: read off y, back-substitute",
     "The crossing never moved",
     "Same solutions, easier system",
   ];
-  const ideaChips = scene.getByRole("button", { name: /^Idea \d+:/ });
-  await expect(ideaChips).toHaveCount(ideaTitles.length);
-  for (let i = 0; i < ideaTitles.length; i += 1) {
-    await expect(
-      scene.getByRole("button", { name: `Idea ${i + 1}: ${ideaTitles[i]}` }),
-    ).toBeVisible();
+  await expectChaptersMatchMetadata(scene, "elimination");
+  for (const title of ideaTitles) {
+    await expect(ideaChip(scene, title)).toBeVisible();
   }
 
   const stageTitle = scene.locator(".guided-scene-player__stage-title");
 
   // Seek to the OPERATION beat (R2 → R2 − 2·R1) and confirm the stage marker
   // tracks it.
-  await scene.getByRole("button", { name: "Idea 2: R2 → R2 − 2·R1" }).click();
-  await expect(stageTitle).toHaveText("R2 → R2 − 2·R1");
+  await gotoChapter(scene, "R2 → R2 − 2·R1");
 
-  // Scrub to the MIDPOINT of the operation (≈0.28 of the 27s timeline), where
+  // Scrub to the MIDPOINT of the operation (≈0.42 of the 32.5s timeline: the
+  // operation beat runs 10.5s–17.5s, so 13.65s sits inside it), where
   // the scaled −2·R1 term is sliding into R2 and R2's line pivots about the
   // fixed crossing. The marker must still report the operation beat — pinning
   // that the scrubber and the step markers share one aligned timeline.
@@ -97,16 +103,13 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
     )!.set!;
     setter.call(input, String(value));
     input.dispatchEvent(new Event("input", { bubbles: true }));
-  }, 0.28);
-  await expect(timeline).toHaveAttribute("aria-valuetext", "28%");
+  }, 0.42);
+  await expect(timeline).toHaveAttribute("aria-valuetext", "42%");
   await expect(stageTitle).toHaveText("R2 → R2 − 2·R1");
   await scene.screenshot({ path: screenshotPath("elimination-scene-operation.png") });
 
   // Seek to the final TRIANGULAR state and confirm the marker tracks it too.
-  await scene
-    .getByRole("button", { name: "Idea 3: Triangular: read off y, back-substitute" })
-    .click();
-  await expect(stageTitle).toHaveText("Triangular: read off y, back-substitute");
+  await gotoChapter(scene, "Triangular: read off y, back-substitute");
   await scene.screenshot({ path: screenshotPath("elimination-scene-triangular.png") });
 
   // --- Interactive explorer: the three synchronized views. ---

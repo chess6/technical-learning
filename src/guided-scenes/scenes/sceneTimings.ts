@@ -1307,7 +1307,7 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   "linear-systems": {
     equations: { in: 0.5, hold: 3.2 },
     row: { lines: 0.6, hold: 1.0, dotIn: 0.4, pulseUp: 0.3, pulseDown: 0.3, hold2: 3.0 },
-    regroup: { fade: 0.6, show: 0.35, hold: 3.5 },
+    regroup: { fade: 0.6, show: 0.35, tag: 0.2, hold: 3.3 },
     "predict-column": { ask: 0.4, think: 4.4 },
     column: {
       arm: 0.4,
@@ -1318,9 +1318,18 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
       pulseDown: 0.25,
       hold: 2.0,
     },
-    unique: { clear: 0.3, show: 0.35, hold: 3.0 },
-    infinite: { show: 0.35, morph: 1.2, pulseUp: 0.3, pulseDown: 0.3, hold: 3.5 },
-    none: { toColumn: 0.4, hold: 1.0, slideB: 1.6, hold2: 1.0, toRow: 0.4, hold3: 2.4 },
+    unique: { clear: 0.3, show: 0.35, tag: 0.2, hold: 2.9 },
+    infinite: { show: 0.35, tag: 0.2, morph: 1.2, pulseUp: 0.3, pulseDown: 0.3, hold: 3.4 },
+    none: {
+      toColumn: 0.4,
+      tag: 0.2,
+      hold: 1.0,
+      slideB: 1.6,
+      hold2: 0.9,
+      toRow: 0.4,
+      tag2: 0.2,
+      hold3: 2.1,
+    },
     summary: { restore: 1.2, hold: 2.5 },
   },
 

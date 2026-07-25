@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -38,16 +44,12 @@ test("Subspaces & Rank: the two panels, and rank coupled to nullity", async ({
   });
   await scene.getByRole("button", { name: "Pause" }).click();
 
-  await expect(scene.getByRole("button", { name: /^Idea \d+:/ })).toHaveCount(7);
-  const stageTitle = scene.locator(".guided-scene-player__stage-title");
+  await expectChaptersMatchMetadata(scene, "subspaces-rank");
 
-  // The two beats that separate the spaces are the ones worth pinning.
-  await scene.getByRole("button", { name: "Idea 3: Name it: the column space" }).click();
-  await expect(stageTitle).toHaveText("Name it: the column space");
-  await scene.getByRole("button", { name: "Idea 5: Name it: the null space" }).click();
-  await expect(stageTitle).toHaveText("Name it: the null space");
-  await scene.getByRole("button", { name: "Idea 7: Take away one more" }).click();
-  await expect(stageTitle).toHaveText("Take away one more");
+  // The beats that separate the two spaces are the ones worth pinning, by NAME.
+  await gotoChapter(scene, "Name it: the column space");
+  await gotoChapter(scene, "Name it: the null space");
+  await gotoChapter(scene, "Take away one more");
 
   // --- Explorer ---
   const explore = page.getByRole("region", { name: "Make a map lose a dimension" });

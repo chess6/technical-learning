@@ -1,5 +1,11 @@
 import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
+import {
+  expectChaptersMatchMetadata,
+  gotoChapter,
+  ideaChip,
+  ideaChips,
+} from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -33,21 +39,12 @@ test("Change of Basis: the same point named twice, and the diagonal payoff", asy
     timeout: 8000,
   });
   await scene.getByRole("button", { name: "Pause" }).click();
-  await expect(scene.getByRole("button", { name: /^Idea \d+:/ })).toHaveCount(6);
+  await expectChaptersMatchMetadata(scene, "change-of-basis");
 
-  const stageTitle = scene.locator(".guided-scene-player__stage-title");
-  await scene
-    .getByRole("button", { name: "Idea 3: A different name for the same point" })
-    .click();
-  await expect(stageTitle).toHaveText("A different name for the same point");
-  await scene
-    .getByRole("button", {
-      name: "Idea 6: The same deformation, described in another basis",
-    })
-    .click();
-  await expect(stageTitle).toHaveText(
-    "The same deformation, described in another basis",
-  );
+  // The two beats the lesson turns on, addressed by NAME (their ordinals move
+  // whenever a beat is inserted, and this spec has no opinion about numbering).
+  await gotoChapter(scene, "A different name for the same point");
+  await gotoChapter(scene, "The same deformation, described in another basis");
 
   const explore = page.getByRole("region", { name: "The same point, named twice" });
   await explore.scrollIntoViewIfNeeded();
