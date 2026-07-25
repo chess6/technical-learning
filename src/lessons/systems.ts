@@ -730,4 +730,24 @@ export const systemsLesson: LessonDefinition = {
   ],
   keyTakeaway:
     "$A\\mathbf{x} = \\mathbf{b}$ is one equation with two pictures: rows are lines whose intersection is the solution, columns are arrows you blend to reach $\\mathbf{b}$. A solution exists exactly when $\\mathbf{b}$ is in the span of the columns; it is unique exactly when the columns are independent. Independent ⇒ one solution for every $\\mathbf{b}$ (invertible); dependent ⇒ none or infinitely many, depending on $\\mathbf{b}$. Next comes **elimination**, a reliable procedure for finding those solutions; later, in Lesson 7, one number — the determinant — will detect independence at a glance.",
+  structuredSummary: {
+    coreMentalModel:
+      "One equation, two pictures: intersecting constraints (rows) and a recipe question about the columns.",
+    definitionsIntroduced: [
+      "$A\\mathbf{x} = \\mathbf{b}$; the row picture and the column picture",
+      "Consistency (is $\\mathbf{b}$ reachable?) as distinct from uniqueness (are the columns independent?)",
+    ],
+    mainResult:
+      "A solution exists iff $\\mathbf{b}$ is in the span of the columns, and is unique iff the columns are independent — giving exactly none, one, or infinitely many.",
+    representationsConnected:
+      "Two lines meeting (rows) ↔ a combination of arrows reaching $\\mathbf{b}$ (columns) ↔ the same pair $(x, y)$.",
+    commonMistake:
+      "Treating existence and uniqueness as one question, so that “no solution” and “infinitely many” look like unrelated accidents rather than the two dependent-column outcomes.",
+    canonicalExample:
+      "Columns $(1,2)$ and $(3,-1)$ with $\\mathbf{b} = (-1,5)$: the unique solution $(2,-1)$ — Lesson 1's coordinates, read as a system.",
+    oneProblemWorthRemembering:
+      "Given a system, decide none / one / infinitely many, and say which picture told you.",
+    whatThisUnlocksNext:
+      "Elimination as a reliable procedure, and later the two subspaces that make existence and uniqueness separate questions about the map.",
+  },
 };

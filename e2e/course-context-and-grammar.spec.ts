@@ -33,7 +33,11 @@ const LESSON_IDS = [
   "systems",
   "elimination",
   "solution-sets",
+  "matrix-composition",
   "determinants",
+  "subspaces-rank",
+  "rank-nullity",
+  "change-of-basis",
   "eigenvectors",
   "karatsuba",
   "binary-search-trees",
@@ -122,7 +126,7 @@ test("the last lesson of a course does not link on to the next course", async ({
   await expect(nav.locator(".lesson-nav__link--next")).toHaveCount(0);
   // Previous stays inside the course.
   await expect(nav.getByRole("link", { name: /Previous/ })).toContainText(
-    "Determinants",
+    "Change of Basis",
   );
   await page.screenshot({ path: screenshotPath("eigenvectors-course-end.png") });
 });

@@ -242,6 +242,7 @@ export const vectorsLesson: LessonDefinition = {
     {
       id: "vec-independent-predict",
       type: "prediction",
+      tier: "check",
       prompt:
         "Predict: are $\\mathbf{v} = (1, 2)$ and $\\mathbf{w} = (3, -1)$ independent, and what does that mean for their span?",
       reveal:
@@ -288,6 +289,7 @@ export const vectorsLesson: LessonDefinition = {
     {
       id: "vec-existence-uniqueness",
       type: "prediction",
+      tier: "check",
       prompt:
         "Predict: why does a basis give *exactly one* coordinate pair $(a, b)$ for each vector — no more, no fewer?",
       reveal:

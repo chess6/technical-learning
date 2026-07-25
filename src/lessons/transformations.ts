@@ -213,6 +213,7 @@ export const transformationsLesson: LessonDefinition = {
     {
       id: "t-linearity-test",
       type: "prediction",
+      tier: "check",
       prompt:
         "Predict: is $T(x, y) = (x + 1,\\ y)$ linear? Test $T(\\mathbf{0})$ and whether $T(\\mathbf{u} + \\mathbf{v}) = T(\\mathbf{u}) + T(\\mathbf{v})$.",
       reveal:
@@ -322,6 +323,63 @@ export const transformationsLesson: LessonDefinition = {
         "Because every vertex is $x\\mathbf{e}_1 + y\\mathbf{e}_2$ with unique $(x, y)$, its image is $xT(\\mathbf{e}_1) + yT(\\mathbf{e}_2)$. Fixing the two basis images fixes all vertices at once — exactly the basis-determination proposition.",
     },
   ],
+  callouts: [
+    {
+      // L2 was the only content lesson with no staged misconception, despite
+      // owning the columns rule that L6, L8 and L10 all build on. These three
+      // are the errors that actually propagate downstream.
+      id: "columns-are-not-rows",
+      title: "“The columns rule works with rows just as well”",
+      belief:
+        "A matrix is a table of four numbers; reading it by rows or by columns is a presentational choice.",
+      confront:
+        "Take $A = \\begin{bmatrix} 2 & 1 \\\\ 0 & 1 \\end{bmatrix}$. Its **columns** are $(2,0)$ and $(1,1)$ — and $A\\mathbf{e}_1 = (2,0)$, $A\\mathbf{e}_2 = (1,1)$, exactly the columns. Its **rows** are $(2,1)$ and $(0,1)$, and neither is the image of any basis vector. Reading this matrix by rows would place $\\mathbf{e}_1$ at $(2,1)$, which is simply somewhere the map does not send it.",
+      resolve:
+        "$A\\mathbf{e}_1$ picks out the **first column**, because $\\mathbf{e}_1$ selects the first entry of every row. Rows and columns are not interchangeable here — the rule is about columns, and everything later (products, rank, change of basis) inherits that.",
+      exampleId: "shear-2-1",
+    },
+    {
+      id: "linear-means-straight-line",
+      title: "“Linear means the graph is a straight line”",
+      belief:
+        "“Linear” is the word from $y = mx + c$, so any straight-line map should count.",
+      confront:
+        "$T(x) = 2x + 3$ has a perfectly straight graph, yet $T(0) = 3 \\ne 0$ and $T(2\\cdot 1) = 5$ while $2\\,T(1) = 10$. Both linearity tests fail.",
+      resolve:
+        "In linear algebra, *linear* means additivity and homogeneity — which force $T(\\mathbf{0}) = \\mathbf{0}$. A map like $2x + 3$ is **affine**: linear plus a shift. That is exactly why no $2\\times2$ matrix can translate the plane, and why Chapter 0's craft could never be slid.",
+    },
+    {
+      id: "grid-lines-stay-put",
+      title: "“A linear map keeps grid lines where they are”",
+      belief:
+        "“Grid lines stay straight and evenly spaced” sounds like the grid does not really change.",
+      confront:
+        "Under $A = \\begin{bmatrix} 2 & 1 \\\\ 0 & 1 \\end{bmatrix}$ the vertical line $x = 1$ becomes the slanted line through $(2,0)$ and $(3,1)$. It is still straight and still evenly spaced from its neighbours — but it is nowhere near where it started, and it is no longer vertical.",
+      resolve:
+        "Linearity constrains the *pattern*, not the position: lines stay lines, parallel stays parallel, spacing stays even, and the origin stays put. Everything else can move. That is why a single map can shear, rotate, reflect or flatten the plane and still be linear.",
+      exampleId: "shear-2-1",
+    },
+  ],
   keyTakeaway:
     "A linear transformation fixes the origin and respects addition and scaling, so it is completely determined by where it sends $\\mathbf{e}_1$ and $\\mathbf{e}_2$ — the columns of its matrix. That is how four numbers move every vertex of the Chapter 0 craft: they are the two basis images, and linearity carries every other point along. The same map has different matrices in different bases.",
+  structuredSummary: {
+    coreMentalModel:
+      "A matrix is a record of where the two basis vectors land; linearity carries every other point along for free.",
+    definitionsIntroduced: [
+      "Linear transformation: additivity $T(\\mathbf{u}+\\mathbf{v}) = T\\mathbf{u}+T\\mathbf{v}$ and homogeneity $T(c\\mathbf{u}) = cT\\mathbf{u}$",
+      "The columns rule $A = [\\,T(\\mathbf{e}_1)\\ T(\\mathbf{e}_2)\\,]$",
+    ],
+    mainResult:
+      "A linear map is determined by its values on a basis, so $A\\mathbf{x} = x\\,T(\\mathbf{e}_1) + y\\,T(\\mathbf{e}_2)$.",
+    representationsConnected:
+      "The deforming grid (picture) ↔ two basis images (geometry) ↔ four matrix entries (symbol).",
+    commonMistake:
+      "Reading the rule off the rows, or calling an affine map like $2x+3$ linear because its graph is straight.",
+    canonicalExample:
+      "$A = \\begin{bmatrix} 2 & 1 \\\\ 0 & 1 \\end{bmatrix}$: $\\mathbf{e}_1 \\mapsto (2,0)$, $\\mathbf{e}_2 \\mapsto (1,1)$.",
+    oneProblemWorthRemembering:
+      "Given where the basis lands, write the matrix — and then predict the image of any vector.",
+    whatThisUnlocksNext:
+      "Composing two maps (each column pushed through the second), and later, that the matrix depends on the basis chosen.",
+  },
 };
