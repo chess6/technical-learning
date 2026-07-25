@@ -13,8 +13,13 @@ import {
   bstSearchTrace,
   buildBalanced,
 } from "../../math";
-import { BST_LIFT_SEGMENTS } from "./sceneTimings";
-import { ROLE, makeOverlayLabel, runSegment } from "./sceneKit";
+import { BST_LIFT_SEGMENTS, requireBeats } from "./sceneTimings";
+import {
+  ROLE,
+  makeOverlayLabel,
+  runSegment,
+  worstCaseComparisons,
+} from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_TOP_Y } from "./safeFrame";
 
 /**
@@ -30,6 +35,8 @@ import { LABEL_BOTTOM_Y, LABEL_TOP_Y } from "./safeFrame";
  * Every key, probe sequence, path, and height comes from `src/math`; this module
  * only maps them onto the canvas.
  */
+
+const SCENE_ID = "bst-lift-from-array";
 
 const KEYS = BST_SEVEN.sorted;
 const TARGET = BST_SEVEN.target!;
@@ -128,10 +135,6 @@ function makeSmallLabel(text: string, pos: Vector2, color: string): Txt {
 export const bstLiftScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  const seconds = Object.fromEntries(
-    BST_LIFT_SEGMENTS.map((segment) => [segment.id, segment.duration]),
-  ) as Record<string, number>;
-
   const caption = makeOverlayLabel("", ROLE.textMuted, 26);
   caption.position(new Vector2(0, LABEL_BOTTOM_Y));
   const title = makeOverlayLabel("", ROLE.text, 28);
@@ -187,6 +190,28 @@ export const bstLiftScene = makeScene2D(function* (view) {
     ROLE.selected,
   );
 
+  // The invariant the whole choreography rests on: horizontal position is
+  // sorted order, and NOTHING in the scene ever changes it. Shown from the lift
+  // onward — including through the degenerate chain, where it is the reason the
+  // stick still holds the same keys in the same order.
+  const orderRuler = new Line({
+    points: [
+      new Vector2(slotX(0) - 30, -166),
+      new Vector2(slotX(KEYS.length - 1) + 30, -166),
+    ],
+    stroke: ROLE.selected,
+    lineWidth: 2,
+    lineDash: [8, 8],
+    endArrow: true,
+    arrowSize: 10,
+    opacity: 0,
+  });
+  const orderLabel = makeSmallLabel(
+    "left → right stays sorted order",
+    new Vector2(0, -192),
+    ROLE.selected,
+  );
+
   view.add(edgeGroup);
   view.add(arrayGroup);
   view.add(ringGroup);
@@ -194,6 +219,8 @@ export const bstLiftScene = makeScene2D(function* (view) {
   view.add(ruleRight);
   view.add(intervalLabel);
   view.add(costLabel);
+  view.add(orderRuler);
+  view.add(orderLabel);
   view.add(caption);
   view.add(title);
 
@@ -230,136 +257,180 @@ export const bstLiftScene = makeScene2D(function* (view) {
   const firstProbes = binarySearchProbes(KEYS, TARGET);
   const secondProbes = binarySearchProbes(KEYS, SECOND_TARGET);
 
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *establish() {
-      yield* waitFor(seconds.establish!);
+      yield* waitFor(beats("establish").hold!);
     },
 
     *["probe-first"]() {
+      const b = beats("probe-first");
       // Probe the midpoint; everything it rules out goes dark and stays dark.
       const probe = firstProbes[0]!;
-      yield* ring(probe, true);
+      yield* ring(probe, true, b.ring!);
       caption.text(`${TARGET} > ${probe}, so everything at or below ${probe} is gone.`);
       const discarded = KEYS.filter((k) => k <= probe);
-      yield* dimKeys(discarded, 0.18, 0.8);
-      yield* waitFor(seconds["probe-first"]! - 1.2);
+      yield* dimKeys(discarded, 0.18, b.dim!);
+      yield* waitFor(b.hold!);
     },
 
     *["probe-rest"]() {
-      for (const probe of firstProbes.slice(1)) {
-        yield* ring(probe, true, 0.3);
-        yield* waitFor(0.5);
+      const b = beats("probe-rest");
+      const rest = firstProbes.slice(1);
+      const ringTimes = [b.ring1!, b.ring2!];
+      const gapTimes = [b.gap1!, b.gap2!];
+      for (const [i, probe] of rest.entries()) {
+        yield* ring(probe, true, ringTimes[i] ?? b.ring1!);
+        yield* waitFor(gapTimes[i] ?? b.gap1!);
       }
       caption.text(`Three probes: ${firstProbes.join(" → ")}. That is the whole search.`);
-      yield* waitFor(seconds["probe-rest"]! - 0.3 * 2 - 0.5 * 2 - 0.2);
+      yield* waitFor(b.hold!);
     },
 
     *["second-search"]() {
+      const b = beats("second-search");
       // Reset, then search a different key — and meet the same first probe.
       yield* all(
-        dimKeys(KEYS, 1, 0.5),
-        ...KEYS.map((key) => ring(key, false, 0.4)),
+        dimKeys(KEYS, 1, b.reset!),
+        ...KEYS.map((key) => ring(key, false, b.reset!)),
       );
       title.text("A different key — and the same first question");
       caption.text(`Now find ${SECOND_TARGET}.`);
-      yield* waitFor(0.6);
-      yield* ring(secondProbes[0]!, true, 0.35);
+      yield* waitFor(b.hold!);
+      yield* ring(secondProbes[0]!, true, b.ring!);
       caption.text(
         `The first comparison is ${secondProbes[0]} again — recomputed from scratch.`,
       );
-      yield* waitFor(seconds["second-search"]! - 1.6);
+      yield* waitFor(b.hold2!);
     },
 
     *lift() {
+      const b = beats("lift");
       title.text("Keep the probes instead of recomputing them");
       caption.text("Every probe becomes a node; every outcome becomes an edge.");
-      yield* all(...KEYS.map((key) => ring(key, false, 0.3)));
+      yield* all(...KEYS.map((key) => ring(key, false, b.clear!)));
       // A purely VERTICAL move: the horizontal slot never changes, so nothing is
-      // rearranged — only remembered.
-      yield* all(...KEYS.map((key) => moveKey(key, treePos(key), 1.4)));
+      // rearranged — only remembered. The ruler makes that checkable.
       yield* all(
-        ...[...edges.values()].map((edge) => edge.opacity(1, 0.6, easeInOutCubic)),
+        orderRuler.opacity(0.8, b.lift!),
+        orderLabel.opacity(0.9, b.lift!),
+        ...KEYS.map((key) => moveKey(key, treePos(key), b.lift!)),
       );
-      yield* waitFor(seconds.lift! - 2.4);
+      yield* all(
+        ...[...edges.values()].map((edge) => edge.opacity(1, b.edges!, easeInOutCubic)),
+      );
+      yield* waitFor(b.hold!);
     },
 
     *["read-the-rule"]() {
+      const b = beats("read-the-rule");
       title.text("Nobody stated the rule — it fell out");
       caption.text(
         "A comparison that sent you left had to discard everything larger. That is the ordering condition.",
       );
       yield* all(
-        ruleLeft.opacity(1, 0.5, easeInOutCubic),
-        ruleRight.opacity(1, 0.5, easeInOutCubic),
+        ruleLeft.opacity(1, b.labels!, easeInOutCubic),
+        ruleRight.opacity(1, b.labels!, easeInOutCubic),
       );
-      yield* waitFor(seconds["read-the-rule"]! - 0.5);
+      yield* waitFor(b.hold!);
     },
 
     *["interval-stays"]() {
+      const b = beats("interval-stays");
       title.text("Each position inherits a range");
       caption.text(
         "Going right at 16 sets the floor; going left at 42 sets the ceiling. Only keys in between may live here.",
       );
       yield* all(
-        ruleLeft.opacity(0, 0.4, easeInOutCubic),
-        ruleRight.opacity(0, 0.4, easeInOutCubic),
-        ring(23, true, 0.4),
+        ruleLeft.opacity(0, b.swap!, easeInOutCubic),
+        ruleRight.opacity(0, b.swap!, easeInOutCubic),
+        ring(23, true, b.swap!),
       );
-      yield* intervalLabel.opacity(1, 0.5, easeInOutCubic);
-      yield* waitFor(seconds["interval-stays"]! - 0.9);
+      yield* intervalLabel.opacity(1, b.label!, easeInOutCubic);
+      yield* waitFor(b.hold!);
     },
 
     *["cost-is-depth"]() {
+      const b = beats("cost-is-depth");
       title.text("One comparison per level");
       const path = bstSearchTrace(BALANCED, TARGET).comparisons;
       caption.text(`Finding ${TARGET} compares ${path.join(", ")}.`);
       yield* all(
-        intervalLabel.opacity(0, 0.3, easeInOutCubic),
-        ...KEYS.map((key) => ring(key, false, 0.3)),
+        intervalLabel.opacity(0, b.clear!, easeInOutCubic),
+        ...KEYS.map((key) => ring(key, false, b.clear!)),
       );
+      // Split the declared walk budget across the path so the beat consumes
+      // exactly what it declared, whatever the path length turns out to be.
+      const perRing = b.walk! / (path.length * 2);
       for (const key of path) {
-        yield* ring(key, true, 0.3);
-        yield* waitFor(0.35);
+        yield* ring(key, true, perRing);
+        yield* waitFor(perRing);
       }
-      yield* costLabel.opacity(1, 0.4, easeInOutCubic);
-      yield* waitFor(seconds["cost-is-depth"]! - path.length * 0.65 - 0.7);
+      yield* costLabel.opacity(1, b.label!, easeInOutCubic);
+      yield* waitFor(b.hold!);
     },
 
     *degenerate() {
+      const b = beats("degenerate");
       title.text("Now insert the same keys in increasing order");
-      caption.text("Each key is larger than everything before it, so each one walks to the far right.");
-      yield* all(
-        costLabel.opacity(0, 0.3, easeInOutCubic),
-        ...KEYS.map((key) => ring(key, false, 0.3)),
-        ...[...edges.values()].map((edge) => edge.opacity(0, 0.4, easeInOutCubic)),
+      caption.text(
+        "Each key is larger than everything before it, so each one in turn walks to the far right.",
       );
-      yield* all(...KEYS.map((key) => moveKey(key, chainPos(key), 1.5)));
-      // Re-point the edges down the chain.
+      yield* all(
+        costLabel.opacity(0, b.clear!, easeInOutCubic),
+        ...KEYS.map((key) => ring(key, false, b.clear!)),
+        ...[...edges.values()].map((edge) => edge.opacity(0, b.clear!, easeInOutCubic)),
+      );
+      // ONE AT A TIME. The caption says each key walks in turn; the scene used
+      // to move all seven simultaneously, which is a different (and much less
+      // instructive) claim. Budget split so the loop consumes exactly `insert`.
+      const perMove = (b.insert! * 0.62) / KEYS.length;
+      const perEdge = (b.insert! * 0.38) / (KEYS.length - 1);
+      const edgeList = [...edges.values()];
+      yield* moveKey(KEYS[0]!, chainPos(KEYS[0]!), perMove);
       for (let i = 1; i < KEYS.length; i += 1) {
-        const edge = edges.get(KEYS[i]!) ?? edges.get(KEYS[1]!)!;
+        yield* moveKey(KEYS[i]!, chainPos(KEYS[i]!), perMove);
+        const edge = edgeList[i - 1]!;
         edge.points([chainPos(KEYS[i - 1]!), chainPos(KEYS[i]!)]);
+        yield* edge.opacity(1, perEdge, easeInOutCubic);
       }
-      yield* all(
-        ...[...edges.values()].map((edge) => edge.opacity(1, 0.5, easeInOutCubic)),
+      yield* waitFor(b.hold!);
+    },
+
+    *["predict-gap"]() {
+      const b = beats("predict-gap");
+      title.text("Same keys. Same rule. Same sorted readout.");
+      caption.text(
+        "This chain holds exactly the keys the balanced tree held, in the same left-to-right order.",
       );
-      yield* waitFor(seconds.degenerate! - 2.4);
+      yield* waitFor(b.ask!);
+      caption.text(
+        `Predict: to find ${TARGET} here, how many comparisons at worst — and how many did the balanced shape need?`,
+      );
+      yield* waitFor(b.think!);
     },
 
     *["the-gap"]() {
-      title.text("Same keys. Same rule. Same sorted readout.");
-      const balancedCost = bstHeight(BALANCED) + 1;
-      const chainCost = KEYS.length;
+      const b = beats("the-gap");
+      title.text("Same keys. Three comparisons, or seven");
+      const balancedCost = worstCaseComparisons(bstHeight(BALANCED));
+      const chainCost = worstCaseComparisons(KEYS.length - 1);
       caption.text(
         `Balanced: ${balancedCost} comparisons. This chain: ${chainCost}. Only the insertion order changed.`,
       );
       costLabel.text(`height ${bstHeight(BALANCED)} vs height ${KEYS.length - 1}`);
       costLabel.position(new Vector2(0, LABEL_BOTTOM_Y - 52));
-      yield* costLabel.opacity(1, 0.5, easeInOutCubic);
-      yield* waitFor(seconds["the-gap"]! - 0.5);
+      yield* costLabel.opacity(1, b.label!, easeInOutCubic);
+      yield* waitFor(b.hold!);
     },
   };
 
   for (const segment of BST_LIFT_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });

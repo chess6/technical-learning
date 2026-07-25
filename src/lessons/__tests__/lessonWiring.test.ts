@@ -590,6 +590,7 @@ describe("Matrix Composition & Inverses lesson (spine L6)", () => {
       "apply-a",
       "one-map",
       "columns",
+      "predict-order",
       "order",
       "undo",
       "no-undo",
@@ -854,6 +855,7 @@ describe("Subspaces & Rank lesson (spine L8)", () => {
       "crush",
       "nullspace",
       "count",
+      "predict-rank-one",
       "rank-one",
     ]);
   });
@@ -959,6 +961,7 @@ describe("Rank–Nullity lesson (spine L9)", () => {
       "budget",
       "post",
       "balance",
+      "predict-degrade",
       "degrade",
       "ceiling",
       "forbidden",
@@ -1060,6 +1063,7 @@ describe("Change of Basis lesson (spine L10)", () => {
     expect(meta.majorSteps.map((s) => s.id)).toEqual([
       "one-arrow",
       "swap-grid",
+      "predict-readout",
       "new-readout",
       "hidden-subscript",
       "map-standard",
@@ -1266,7 +1270,9 @@ describe("Karatsuba lesson wiring", () => {
     ]);
     const majorIds = meta.majorSteps.map((s) => s.id);
     expect(majorIds).toEqual([
+      "setup",
       "foil",
+      "weights",
       "share",
       "aux-rect",
       "subtract",

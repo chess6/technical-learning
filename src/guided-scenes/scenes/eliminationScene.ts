@@ -4,6 +4,7 @@ import {
   all,
   createSignal,
   easeInOutCubic,
+  waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
@@ -197,7 +198,7 @@ export const eliminationScene = makeScene2D(function* (view) {
     );
   }
 
-  const line1 = makeSegment(ROLE.original, 4);
+  const line1 = makeSegment(ROLE.basis1, 4);
   line1.points(() => {
     const seg = rowLineBoxPoints(a11(), a12(), b1(), BOX_EXT);
     return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
@@ -205,7 +206,7 @@ export const eliminationScene = makeScene2D(function* (view) {
   line1.opacity(0);
   view.add(line1);
 
-  const line2 = makeSegment(ROLE.transformed, 4);
+  const line2 = makeSegment(ROLE.basis2, 4);
   line2.points(() => {
     const seg = rowLineBoxPoints(a21(), a22(), b2(), BOX_EXT);
     return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
@@ -244,12 +245,12 @@ export const eliminationScene = makeScene2D(function* (view) {
   eqHeading.opacity(0);
   view.add(eqHeading);
 
-  const eq1 = makeMono(30, ROLE.original);
+  const eq1 = makeMono(30, ROLE.basis1);
   eq1.text(() => equationString(a11(), a12(), b1()));
   eq1.position(new Vector2(LEFT_X, -110));
   eq1.opacity(0);
   view.add(eq1);
-  const eq2 = makeMono(30, ROLE.transformed);
+  const eq2 = makeMono(30, ROLE.basis2);
   eq2.text(() => equationString(a21(), a22(), b2()));
   eq2.position(new Vector2(LEFT_X, -70));
   eq2.opacity(0);
@@ -267,13 +268,13 @@ export const eliminationScene = makeScene2D(function* (view) {
   matHeading.opacity(0);
   view.add(matHeading);
 
-  const mat1 = makeMono(28, ROLE.original);
+  const mat1 = makeMono(28, ROLE.basis1);
   mat1.text(() => matrixRowString(a11(), a12(), b1()));
   mat1.position(new Vector2(LEFT_X, 52));
   mat1.opacity(0);
   view.add(mat1);
   const MAT2_Y = 90;
-  const mat2 = makeMono(28, ROLE.transformed);
+  const mat2 = makeMono(28, ROLE.basis2);
   mat2.text(() => matrixRowString(a21(), a22(), b2()));
   mat2.position(new Vector2(LEFT_X, MAT2_Y));
   mat2.opacity(0);
@@ -284,14 +285,14 @@ export const eliminationScene = makeScene2D(function* (view) {
   // it slides UP onto R2 while R2 interpolates to the sum — the addition is
   // enacted on screen, not left implicit in ticking digits.
   const GHOST_START_Y = 150;
-  const ghostRow = makeMono(28, ROLE.original);
+  const ghostRow = makeMono(28, ROLE.basis1);
   ghostRow.text(matrixRowString(scaledR1[0], scaledR1[1], scaledR1[2]));
   ghostRow.position(new Vector2(LEFT_X, GHOST_START_Y));
   ghostRow.opacity(0);
   view.add(ghostRow);
   const ghostTag = new Txt({
     text: `add  ${fmt(op.factor)}·R1`,
-    fill: ROLE.original,
+    fill: ROLE.basis1,
     fontSize: 20,
     fontWeight: 600,
     x: LEFT_X + 210,
@@ -334,6 +335,22 @@ export const eliminationScene = makeScene2D(function* (view) {
       yield* all(solutionLabel.opacity(1, b.dotPulseUp), solutionDot.size(28, b.dotPulseUp));
       yield* solutionDot.size(18, b.dotPulseDown);
       setCaption("The two lines cross once, at (2, −1) — that point is the solution");
+    },
+    *predict() {
+      const b = B.predict!;
+      setTop("Before the operation runs");
+      setCaption(
+        "(2, −1) satisfies R1 and it satisfies R2. The new R2 will be R2 − 2·R1.",
+      );
+      yield* all(
+        solutionDot.size(28, b.anchor!),
+        solutionLabel.opacity(1, b.anchor!),
+      );
+      yield* solutionDot.size(18, b.ask!);
+      setCaption(
+        "Predict: is (2, −1) still on the second line after the swap — and must it be?",
+      );
+      yield* waitFor(b.think!);
     },
     *operation() {
       const b = B.operation!;
@@ -395,6 +412,10 @@ export const eliminationScene = makeScene2D(function* (view) {
   };
 
   for (const segment of ELIMINATION_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `elimination.${segment.id}`,
+    );
   }
 });

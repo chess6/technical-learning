@@ -4,16 +4,21 @@ import {
   easeInOutCubic,
   waitFor,
   type SimpleSignal,
+  type ThreadGenerator,
   type Vector2 as Vector2Type,
 } from "@motion-canvas/core";
 import { Vector2 } from "@motion-canvas/core";
 import type { Vector2 as MathVector2 } from "../../math";
+import { SPIKE_SEGMENTS, requireBeats } from "./sceneTimings";
+import { runSegment } from "./sceneKit";
 import {
   SAMPLE_VECTOR,
   SPIKE_SCENE_SIZE,
   applyMatrix,
   lerpMatrix,
 } from "./spikeConstants";
+
+const SCENE_ID = "transform-spike";
 
 /**
  * Minimal spike scene: a coordinate grid, the two basis vectors, and one sample
@@ -109,7 +114,28 @@ export const transformSpikeScene = makeScene2D(function* (view) {
   view.add(makeVector(progress, [0, 1], ROLE.basis2));
   view.add(makeVector(progress, SAMPLE_VECTOR, ROLE.sample));
 
-  yield* waitFor(0.4);
-  yield* progress(1, 2.0, easeInOutCubic);
-  yield* waitFor(0.6);
+  // Development-only, but it runs on the SAME timing infrastructure as every
+  // lesson scene: one body per declared segment, wrapped in the measured
+  // `runSegment` padding, with its beats budgeted in `sceneTimings.ts`. That is
+  // deliberate — the spike is where a timing-infrastructure change gets tried
+  // first, so it must not be the one scene that drifts from the contract.
+  const bodies: Record<string, () => ThreadGenerator> = {
+    *identity() {
+      yield* waitFor(requireBeats(SCENE_ID, "identity").hold!);
+    },
+    *transform() {
+      yield* progress(1, requireBeats(SCENE_ID, "transform").morph!, easeInOutCubic);
+    },
+    *result() {
+      yield* waitFor(requireBeats(SCENE_ID, "result").hold!);
+    },
+  };
+
+  for (const segment of SPIKE_SEGMENTS) {
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
+  }
 });

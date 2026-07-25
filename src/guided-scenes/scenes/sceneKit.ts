@@ -16,6 +16,7 @@ import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
 import type { GraphicRole, OpeningGraphic } from "../../lessons/openingGraphic";
 import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
+import { ROLE } from "./semanticRoles";
 
 export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
 
@@ -32,57 +33,100 @@ export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./saf
  * local to each scene module.
  */
 
-export const ROLE = {
-  background: "#0e1116",
-  grid: "#1e2633",
-  gridTransformed: "#2f3a4d",
-  axis: "#3a4556",
-  text: "#e8edf4",
-  textMuted: "#9aa6b5",
-  original: "#7eb8d4",
-  transformed: "#d4a574",
-  basis1: "#7dba8a",
-  basis2: "#b89ad4",
-  selected: "#e8d48a",
-  result: "#e87a9a",
-  dim: "#3a4453",
-} as const;
+/**
+ * The semantic colour grammar lives in its own Motion-Canvas-free module so
+ * `semanticRoles.test.ts` can resolve it (scene modules import
+ * `@motion-canvas/2d` and are never resolved in jsdom). Re-exported here
+ * because every scene already imports its drawing helpers from this kit.
+ */
+export { ROLE, DISTINCT_SEMANTIC_ROLES } from "./semanticRoles";
 
 /** Map a math-space point (y up) to scene pixels. */
 export function toPixels(point: MathVector2): Vector2 {
   return new Vector2(point[0] * SCALE, -point[1] * SCALE);
 }
 
+/** One segment body that ran longer than its declared duration. */
+export interface SegmentOverrun {
+  /** `"<sceneId>.<segmentId>"` when the caller labelled it, else `"<unlabelled>"`. */
+  label: string;
+  declared: number;
+  measured: number;
+}
+
+/**
+ * Every overrun observed since the module was loaded (or since
+ * {@link resetSegmentOverruns}). A rendered scene appends here AND logs a
+ * console error, so the Playwright specs — which fail on any console error —
+ * catch a body that outgrows its segment even if its declared beat budget in
+ * `sceneTimings.ts` still adds up. The pure-data budget test is the primary
+ * gate; this is the belt-and-braces one that watches the code actually run.
+ */
+export const SEGMENT_OVERRUNS: SegmentOverrun[] = [];
+
+export function resetSegmentOverruns(): void {
+  SEGMENT_OVERRUNS.length = 0;
+}
+
+/** Tolerance for float accumulation across a long timeline (one 30fps frame). */
+const OVERRUN_TOLERANCE = 1 / 30;
+
 /**
  * Run one timeline segment's body, then pad the remainder so the segment
  * occupies EXACTLY `duration` seconds — by MEASURING real elapsed time
  * (`useTime`, which accounts for `waitFor` offsets) rather than manually
  * subtracting a guessed choreography total. This guarantees a scene assembled
- * as `for (seg of SEGMENTS) yield* runSegment(seg.duration, bodies[seg.id])`
+ * as `for (seg of SEGMENTS) yield* runSegment(seg.duration, bodies[seg.id], id)`
  * has a total length equal to the sum of the segment durations, so scrubber
  * steps, next/previous-idea markers, reduced-motion frames, and seek all line
- * up with the timing metadata. If a body overruns its budget it is not
- * truncated (the scene simply runs long — caught by the beat-budget test), so
- * author each body to fit within its segment.
+ * up with the timing metadata.
+ *
+ * A body that overruns is NOT truncated — truncating would cut a tween off
+ * mid-motion, which is worse than running long. Instead the overrun is recorded
+ * and reported (see {@link SEGMENT_OVERRUNS}) so it fails a check rather than
+ * silently desynchronizing every later chapter marker.
  */
 export function* runSegment(
   duration: number,
   body: () => ThreadGenerator,
+  label?: string,
 ): ThreadGenerator {
   const start = readTimelineTime();
   yield* body();
-  const remaining = duration - (readTimelineTime() - start);
+  const measured = readTimelineTime() - start;
+  const remaining = duration - measured;
   if (remaining > 1e-6) {
     yield* waitFor(remaining);
+    return;
+  }
+  if (measured > duration + OVERRUN_TOLERANCE) {
+    const overrun: SegmentOverrun = {
+      label: label ?? "<unlabelled>",
+      declared: duration,
+      measured,
+    };
+    SEGMENT_OVERRUNS.push(overrun);
+    console.error(
+      `guided-scene segment overran its declared duration: ${overrun.label} ` +
+        `took ${measured.toFixed(3)}s of a declared ${duration}s`,
+    );
   }
 }
 
-/** Compact numeric formatting for on-canvas labels (avoids "-0"). */
-export function formatSceneNumber(n: number, digits = 2): string {
-  const factor = 10 ** digits;
-  const r = Math.round(n * factor) / factor;
-  return Object.is(r, -0) ? "0" : String(r);
-}
+/**
+ * Numeric/readout formatting lives in the Motion-Canvas-free `sceneReadouts`
+ * module so unit tests can resolve it; re-exported here because every scene
+ * already imports its drawing helpers from this kit.
+ */
+export {
+  formatSceneNumber,
+  formatAreaFactor,
+  formatLedgerTally,
+  formatSignedArea,
+  orientationSweep,
+  orientationWord,
+  worstCaseComparisons,
+} from "./sceneReadouts";
 
 /**
  * Nodes that expose Motion Canvas's animatable opacity API.

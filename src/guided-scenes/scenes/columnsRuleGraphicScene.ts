@@ -368,6 +368,10 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
   };
 
   for (const segment of COLUMNS_RULE_GRAPHIC_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `columns-rule-graphic.${segment.id}`,
+    );
   }
 });

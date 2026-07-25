@@ -16,7 +16,7 @@ import {
   type Matrix2x2,
   type Vector2 as MathVector2,
 } from "../../math";
-import { SYSTEMS_SEGMENTS } from "./sceneTimings";
+import { SYSTEMS_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   focusOpacities,
@@ -24,6 +24,7 @@ import {
   makeLabel,
   makeOverlayLabel,
   makeSegment,
+  runSegment,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -33,13 +34,28 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * One conceptual change at a time: the row picture (two lines meeting) is built
  * first, then the SAME numbers are regrouped into the column picture (combine
  * the columns to reach b), then the no / one / infinitely-many trichotomy is
- * walked in whichever picture reads it fastest. All numbers are Lesson 1's:
- * the independent columns are the basis (v, w); the dependent columns are the
- * pair (v, 2v); the targets are Lesson 1's q and r.
+ * walked. All numbers are Lesson 1's: the independent columns are the basis
+ * (v, w); the dependent columns are the pair (v, 2v); the targets are Lesson 1's
+ * q and r.
+ *
+ * COLOUR CONTRACT (July 2026 audit fix). The scene's whole job is keeping the
+ * coefficient space and the output space apart, and it used to colour the
+ * target `b` and the solution point the SAME gold — the one collision that
+ * matters here. Now:
+ *
+ *   R1 / R2                 co-equal pair   → basis1 / basis2
+ *   col₁ / col₂             co-equal pair   → basis1 / basis2 (never on screen
+ *                                             with the rows; index 1 is always
+ *                                             the greener one)
+ *   the solution point      the invariant   → selected
+ *   the target b            what we aim at  → target
+ *   the running combination derived value   → result
  *
  * A smaller local scale (than the shared SCALE) is used because the target
  * b = (-1, 5) reaches farther than the usual ±4 teaching grid.
  */
+
+const SCENE_ID = "linear-systems";
 
 const EX = LINEAR_SYSTEM_EXAMPLE;
 const SCALE_S = 30;
@@ -143,15 +159,15 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const origin = new Circle({ size: 10, fill: ROLE.text, opacity: 0.8 });
   view.add(origin);
 
-  // --- Row picture: two lines ---
-  const line1 = makeSegment(ROLE.original, 4);
+  // --- Row picture: two lines (a CO-EQUAL pair, so basis1 / basis2) ---
+  const line1 = makeSegment(ROLE.basis1, 4);
   line1.points(() => {
     const seg = rowLineBoxPoints(a11(), a12(), b1(), EXT);
     // A non-line row (0 = 0 / 0 = c) draws nothing — never a false line.
     return seg ? [px(seg[0]), px(seg[1])] : [];
   });
   line1.opacity(0);
-  const line2 = makeSegment(ROLE.transformed, 4);
+  const line2 = makeSegment(ROLE.basis2, 4);
   line2.points(() => {
     const seg = rowLineBoxPoints(a21(), a22(), b2(), EXT);
     return seg ? [px(seg[0]), px(seg[1])] : [];
@@ -164,7 +180,25 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   solutionDot.position(() => px([EX.solution[0], EX.solution[1]]));
   view.add(solutionDot);
 
-  // --- Column picture: column arrows, scaled combination, target b ---
+  // --- Column picture ---
+  /**
+   * Everything the columns can reach when they are DEPENDENT: the line through
+   * the origin along col₁. Drawn only in the dependent beats, where "b is on it"
+   * and "b is off it" is the whole distinction between infinitely many
+   * solutions and none — a distinction the scene used to make in a caption
+   * while b itself was hidden.
+   */
+  const colSpanLine = makeSegment(ROLE.original, 3, true);
+  colSpanLine.points(() => {
+    const c = col1();
+    const len = Math.hypot(c[0], c[1]);
+    if (len < 1e-9) return [];
+    const u: MathVector2 = [c[0] / len, c[1] / len];
+    return [px(scaleVector(u, -EXT)), px(scaleVector(u, EXT))];
+  });
+  colSpanLine.opacity(0);
+  view.add(colSpanLine);
+
   const scaled1 = makeArrow(ROLE.basis1, 5);
   scaled1.lineDash([10, 8]);
   scaled1.points(() => [px([0, 0]), px(scaledCol1())]);
@@ -189,11 +223,11 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   comboDot.position(() => px(combo()));
   view.add(comboDot);
 
-  const targetArrow = makeArrow(ROLE.selected, 5);
+  const targetArrow = makeArrow(ROLE.target, 5);
   targetArrow.points(() => [px([0, 0]), px([b1(), b2()])]);
   targetArrow.opacity(0);
   view.add(targetArrow);
-  const targetLabel = makeLabel("b", ROLE.selected, 34);
+  const targetLabel = makeLabel("b", ROLE.target, 34);
   targetLabel.position(() => px([b1(), b2()]).add(new Vector2(20, -14)));
   targetLabel.opacity(0);
   view.add(targetLabel);
@@ -219,137 +253,203 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const COEFFICIENT_SPACE = "coefficient space  (x, y) — solutions are points";
   const OUTPUT_SPACE = "output space — columns combine to reach b";
 
-  const seconds = Object.fromEntries(
-    SYSTEMS_SEGMENTS.map((s) => [s.id, s.duration]),
-  ) as Record<string, number>;
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
 
   // Establish the coefficient space (row picture) — every output-space object is
   // fully hidden, so the two pictures never share one visible plane.
-  const showRow = function* (emphasis = 1): ThreadGenerator {
+  const showRow = function* (emphasis = 1, duration = 0.35): ThreadGenerator {
     setSpace(COEFFICIENT_SPACE);
-    yield* focusOpacities([
-      { node: line1, opacity: emphasis },
-      { node: line2, opacity: emphasis },
-      { node: arrow1, opacity: 0 },
-      { node: arrow2, opacity: 0 },
-      { node: scaled1, opacity: 0 },
-      { node: scaled2, opacity: 0 },
-      { node: comboDot, opacity: 0 },
-      { node: targetArrow, opacity: 0 },
-      { node: targetLabel, opacity: 0 },
-    ]);
+    yield* focusOpacities(
+      [
+        { node: line1, opacity: emphasis },
+        { node: line2, opacity: emphasis },
+        { node: arrow1, opacity: 0 },
+        { node: arrow2, opacity: 0 },
+        { node: scaled1, opacity: 0 },
+        { node: scaled2, opacity: 0 },
+        { node: comboDot, opacity: 0 },
+        { node: colSpanLine, opacity: 0 },
+        { node: targetArrow, opacity: 0 },
+        { node: targetLabel, opacity: 0 },
+      ],
+      duration,
+    );
   };
 
   // Establish the output space (column picture) — the row-picture lines are fully
   // faded to 0 first, a true transition rather than a translucent overlay.
-  const showColumn = function* (): ThreadGenerator {
+  const showColumn = function* (
+    duration = 0.35,
+    span = 0,
+  ): ThreadGenerator {
     setSpace(OUTPUT_SPACE);
-    yield* focusOpacities([
-      { node: line1, opacity: 0 },
-      { node: line2, opacity: 0 },
-      { node: solutionDot, opacity: 0 },
-      { node: arrow1, opacity: 1 },
-      { node: arrow2, opacity: 1 },
-      { node: targetArrow, opacity: 0.9 },
-      { node: targetLabel, opacity: 1 },
-    ]);
+    yield* focusOpacities(
+      [
+        { node: line1, opacity: 0 },
+        { node: line2, opacity: 0 },
+        { node: solutionDot, opacity: 0 },
+        { node: arrow1, opacity: 1 },
+        { node: arrow2, opacity: 1 },
+        { node: colSpanLine, opacity: span },
+        { node: targetArrow, opacity: 0.9 },
+        { node: targetLabel, opacity: 1 },
+      ],
+      duration,
+    );
   };
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *equations() {
+      const b = beats("equations");
       setTop("A x = b");
       setCaption("x + 3y = −1     and     2x − y = 5");
-      yield* all(top.opacity(1, 0.5), caption.opacity(1, 0.5));
-      yield* waitFor(seconds.equations - 0.5);
+      yield* all(top.opacity(1, b.in!), caption.opacity(1, b.in!));
+      yield* waitFor(b.hold!);
     },
     *row() {
+      const b = beats("row");
       setTop("Row picture");
       setSpace(COEFFICIENT_SPACE);
       setCaption("Each equation is a line — the solution is where they cross");
-      yield* all(spaceTag.opacity(0.85, 0.4), line1.opacity(1, 0.6), line2.opacity(1, 0.6));
-      yield* waitFor(1);
-      yield* solutionDot.opacity(1, 0.4);
-      yield* solutionDot.size(30, 0.3);
-      yield* solutionDot.size(20, 0.3);
+      yield* all(
+        spaceTag.opacity(0.85, b.lines!),
+        line1.opacity(1, b.lines!),
+        line2.opacity(1, b.lines!),
+      );
+      yield* waitFor(b.hold!);
+      yield* solutionDot.opacity(1, b.dotIn!);
+      yield* solutionDot.size(30, b.pulseUp!);
+      yield* solutionDot.size(20, b.pulseDown!);
       setCaption("They meet once, at the point (x, y) = (2, −1)");
-      yield* waitFor(seconds.row - 3.6);
+      yield* waitFor(b.hold2!);
     },
     *regroup() {
+      const b = beats("regroup");
       // True transition: fully fade the coefficient-space picture, THEN name and
       // establish the output space — the lines never linger under the columns.
       setTop("A different space");
-      setCaption("Fade the lines away — the same solution set, seen elsewhere");
+      setCaption("Fade the lines away — the same numbers, regrouped by column");
       yield* all(
-        solutionDot.opacity(0, 0.4),
-        line1.opacity(0, 0.6),
-        line2.opacity(0, 0.6),
+        solutionDot.opacity(0, b.fade!),
+        line1.opacity(0, b.fade!),
+        line2.opacity(0, b.fade!),
       );
       setCaption("x·(1, 2) + y·(3, −1) = (−1, 5) — columns and target live here");
       // Establish the output-space frame only after the lines are fully gone.
-      yield* showColumn();
-      yield* waitFor(seconds.regroup - 1.1);
+      yield* showColumn(b.show!);
+      yield* waitFor(b.hold!);
+    },
+    *["predict-column"]() {
+      const b = beats("predict-column");
+      setTop("Predict");
+      setCaption(
+        "The row picture already told you where the lines meet: (2, −1).",
+      );
+      yield* waitFor(b.ask!);
+      setCaption(
+        "Predict: use those same two numbers as the multiples of col₁ and col₂ — where does the walk end?",
+      );
+      yield* waitFor(b.think!);
     },
     *column() {
+      const b = beats("column");
       setTop("Column picture");
       setSpace(OUTPUT_SPACE);
       setCaption("Combine the columns to reach b");
       cx(0);
       cy(0);
-      yield* all(scaled1.opacity(0.95, 0.4), comboDot.opacity(1, 0.4));
-      yield* cx(EX.solution[0], 1.6, easeInOutCubic);
-      yield* scaled2.opacity(0.95, 0.3);
-      yield* cy(EX.solution[1], 1.6, easeInOutCubic);
+      yield* all(scaled1.opacity(0.95, b.arm!), comboDot.opacity(1, b.arm!));
+      yield* cx(EX.solution[0], b.cx!, easeInOutCubic);
+      yield* scaled2.opacity(0.95, b.arm2!);
+      yield* cy(EX.solution[1], b.cy!, easeInOutCubic);
       setCaption("2·col₁ − 1·col₂ lands exactly on b — the same (2, −1)");
-      yield* comboDot.size(26, 0.25);
-      yield* comboDot.size(18, 0.25);
-      yield* waitFor(seconds.column - 4.7);
+      yield* comboDot.size(26, b.pulseUp!);
+      yield* comboDot.size(18, b.pulseDown!);
+      yield* waitFor(b.hold!);
     },
     *unique() {
+      const b = beats("unique");
       setTop("One solution");
       setCaption("Independent columns ⇒ the lines cross exactly once");
       // Back to the coefficient space; the output-space arrows fully clear.
-      yield* all(scaled1.opacity(0, 0.3), scaled2.opacity(0, 0.3), comboDot.opacity(0, 0.3));
-      yield* showRow(0.6);
-      yield* waitFor(seconds.unique - 0.65);
+      yield* all(
+        scaled1.opacity(0, b.clear!),
+        scaled2.opacity(0, b.clear!),
+        comboDot.opacity(0, b.clear!),
+      );
+      yield* showRow(0.6, b.show!);
+      yield* waitFor(b.hold!);
     },
     *infinite() {
+      const b = beats("infinite");
       setTop("Infinitely many");
-      setCaption("Dependent columns, b on their line: the two equations ARE one line");
+      setCaption("Watch the two lines slide onto each other");
       cx(0);
       cy(0);
-      yield* showRow(1);
+      yield* showRow(1, b.show!);
       yield* all(
-        a11(EX.aDependent[0][0], 1.2, easeInOutCubic),
-        a12(EX.aDependent[0][1], 1.2, easeInOutCubic),
-        a21(EX.aDependent[1][0], 1.2, easeInOutCubic),
-        a22(EX.aDependent[1][1], 1.2, easeInOutCubic),
-        b1(EX.bInfinite[0], 1.2, easeInOutCubic),
-        b2(EX.bInfinite[1], 1.2, easeInOutCubic),
+        a11(EX.aDependent[0][0], b.morph!, easeInOutCubic),
+        a12(EX.aDependent[0][1], b.morph!, easeInOutCubic),
+        a21(EX.aDependent[1][0], b.morph!, easeInOutCubic),
+        a22(EX.aDependent[1][1], b.morph!, easeInOutCubic),
+        b1(EX.bInfinite[0], b.morph!, easeInOutCubic),
+        b2(EX.bInfinite[1], b.morph!, easeInOutCubic),
       );
-      setCaption("The lines coincide — every point on it solves the system");
-      yield* line1.lineWidth(6, 0.3);
-      yield* line1.lineWidth(4, 0.3);
-      yield* waitFor(seconds.infinite - 2.4);
+      setCaption(
+        "They coincide — one line, so every point on it solves the system. The columns became dependent.",
+      );
+      yield* line1.lineWidth(6, b.pulseUp!);
+      yield* line1.lineWidth(4, b.pulseDown!);
+      yield* waitFor(b.hold!);
     },
     *none() {
+      const b = beats("none");
       setTop("No solution");
-      setCaption("Slide b off that line — the two lines become parallel");
+      // Cross to the output space so the move the caption describes — b leaving
+      // the columns' line — is one the learner can actually watch. It used to be
+      // tweened while every output-space object was at opacity 0.
+      setCaption("In the output space: dependent columns span only this line, and b sits on it");
+      yield* showColumn(b.toColumn!, 0.9);
+      yield* waitFor(b.hold!);
+      setCaption("Now slide b off that line — watch it leave");
       yield* all(
-        b1(EX.bNone[0], 1.1, easeInOutCubic),
-        b2(EX.bNone[1], 1.1, easeInOutCubic),
+        b1(EX.bNone[0], b.slideB!, easeInOutCubic),
+        b2(EX.bNone[1], b.slideB!, easeInOutCubic),
       );
-      setCaption("Parallel lines never meet: b is unreachable by the columns");
-      yield* waitFor(seconds.none - 1.1);
+      yield* waitFor(b.hold2!);
+      setCaption("b is unreachable now. Back in the row picture, that reads as parallel lines.");
+      yield* showRow(1, b.toRow!);
+      yield* waitFor(b.hold3!);
     },
     *summary() {
+      const b = beats("summary");
       setTop("Two spaces, one question");
+      // Return to the scene's own system before closing. Freezing on the
+      // no-solution configuration under a caption about "the same solution set"
+      // would leave the last frame contradicting the sentence over it.
+      setCaption("Back to the system we started with — two lines, one crossing");
+      yield* all(
+        spaceTag.opacity(0, b.restore!),
+        line1.opacity(1, b.restore!),
+        line2.opacity(1, b.restore!),
+        solutionDot.opacity(1, b.restore!),
+        a11(EX.a[0][0], b.restore!, easeInOutCubic),
+        a12(EX.a[0][1], b.restore!, easeInOutCubic),
+        a21(EX.a[1][0], b.restore!, easeInOutCubic),
+        a22(EX.a[1][1], b.restore!, easeInOutCubic),
+        b1(EX.b[0], b.restore!, easeInOutCubic),
+        b2(EX.b[1], b.restore!, easeInOutCubic),
+      );
       setCaption("Same solution set, seen through two different spaces");
-      yield* all(spaceTag.opacity(0, 0.4), line1.opacity(0.6, 0.5), line2.opacity(0.6, 0.5));
-      yield* waitFor(seconds.summary - 0.5);
+      yield* waitFor(b.hold!);
     },
   };
 
   for (const segment of SYSTEMS_SEGMENTS) {
-    yield* bodies[segment.id]!();
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });

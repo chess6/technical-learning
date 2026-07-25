@@ -399,6 +399,10 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   };
 
   for (const segment of RED_BLACK_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `red-black-encoding.${segment.id}`,
+    );
   }
 });

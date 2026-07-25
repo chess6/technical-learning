@@ -197,10 +197,14 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   view.add(vLabel);
   view.add(avLabel);
 
-  // Eigendirection lines (dashed — full line through origin).
-  const eigenLines: Line[] = [0, 1].map(() => {
+  // Eigendirection lines (dashed — full line through origin). Each line wears
+  // the colour of the arrow drawn on it: the two eigendirections are a CO-EQUAL
+  // pair, so they take the co-equal pair roles rather than both wearing gold
+  // (which is also the "selected/under discussion" role, and which the
+  // derivation scene assigned differently — the audit's colour-drift finding).
+  const eigenLines: Line[] = [0, 1].map((i) => {
     const line = new Line({
-      stroke: ROLE.selected,
+      stroke: i === 0 ? ROLE.basis1 : ROLE.basis2,
       lineWidth: 3,
       lineDash: [12, 8],
       opacity: 0,
@@ -585,6 +589,10 @@ export const eigenvectorsInvariantDirectionsScene = makeScene2D(function* (
   // authored length, so the rendered timeline matches the step metadata and the
   // chapter markers cannot drift when choreography is edited.
   for (const segment of EIGENVECTOR_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `eigenvectors-invariant-directions.${segment.id}`,
+    );
   }
 });

@@ -3,6 +3,7 @@ import {
   Vector2,
   all,
   createSignal,
+  easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
@@ -12,11 +13,13 @@ import {
   coordinatesInBasis,
   isDiagonal,
   matrixInBasis,
+  matrixVectorMultiply,
   requireMatrixExample,
+  scaleVector,
   type Matrix2x2,
   type Vector2 as MathVector2,
 } from "../../math";
-import { CHANGE_OF_BASIS_SEGMENTS } from "./sceneTimings";
+import { CHANGE_OF_BASIS_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
@@ -25,6 +28,7 @@ import {
   makeArrow,
   makeLabel,
   makeOverlayLabel,
+  makeSegment,
   makeStaticGrid,
   morphMatrixEntries,
   runSegment,
@@ -43,10 +47,25 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * The basis is Lesson 1's — deliberately neither orthogonal nor unit length, so
  * the scene never suggests a change of basis needs either (that is Lesson 12).
  *
+ * Two audit fixes:
+ *
+ *  - **The new name is predicted, then CONSTRUCTED.** Both grid directions are
+ *    lit, the learner is asked how many steps of each land on p, and the reveal
+ *    walks b₁ then b₂ head-to-tail onto the arrow's own tip. The readout is the
+ *    end of a walk rather than a number that appears beside a still picture.
+ *  - **"The same deformation" is re-run.** `map-eigenbasis` used to make its
+ *    claim over a frozen, already-deformed square: nothing moved during the beat
+ *    that says the motion is identical, and the "other basis" was never drawn.
+ *    The plane now returns to the identity and deforms AGAIN — same matrix, same
+ *    path — with the eigenbasis on screen, so "diagonal" is watched: each of the
+ *    two drawn directions only stretches, by 3 and by 2, and never turns.
+ *
  * Correctness discipline: the coordinates shown, and the diagonal matrix in the
  * final beat, come from `src/math`. `assertSceneMathIsConsistent` re-checks them
  * against Lesson 1's hand-worked values before a frame renders.
  */
+
+const SCENE_ID = "change-of-basis";
 
 const B1 = EX.v as MathVector2; // (1, 2)
 const B2 = EX.wIndependent as MathVector2; // (3, -1)
@@ -58,6 +77,8 @@ const A = requireMatrixExample("eigen-distinct").matrix; // [[3,1],[0,2]]
 const EIGEN_1: MathVector2 = [1, 0];
 const EIGEN_2: MathVector2 = [-1, 1];
 const A_IN_EIGENBASIS = matrixInBasis(A, EIGEN_1, EIGEN_2)!;
+/** Drawn length of each eigendirection, in math units. */
+const EIGEN_DRAW = 1.2;
 
 function assertSceneMathIsConsistent(): void {
   // Lesson 1 worked these coordinates by hand; the scene must agree with it.
@@ -76,6 +97,17 @@ function assertSceneMathIsConsistent(): void {
   if (!isDiagonal(A_IN_EIGENBASIS, 1e-9)) {
     throw new Error("changeOfBasisScene: the eigenbasis description is not diagonal.");
   }
+  // …and it is only legible as "each direction only stretches" if the two drawn
+  // directions really are eigenvectors, each scaled by its diagonal entry.
+  for (const [index, dir] of [EIGEN_1, EIGEN_2].entries()) {
+    const image = matrixVectorMultiply(A, dir);
+    const lambda = A_IN_EIGENBASIS[index]![index]!;
+    if (!approximatelyEqualVector(image, scaleVector(dir, lambda), 1e-9)) {
+      throw new Error(
+        `changeOfBasisScene: drawn direction ${index + 1} is not scaled by its diagonal entry.`,
+      );
+    }
+  }
 }
 
 const px = (v: MathVector2): Vector2 => new Vector2(v[0] * SCALE, -v[1] * SCALE);
@@ -83,31 +115,47 @@ const fmt = (n: number) => formatSceneNumber(n);
 const matrixText = (m: Matrix2x2): string =>
   `[ ${fmt(m[0][0])}  ${fmt(m[0][1])} ; ${fmt(m[1][0])}  ${fmt(m[1][1])} ]`;
 
-/** A grid of lines along b₁ and b₂ through the lattice they generate. */
-function makeBasisGrid(first: MathVector2, second: MathVector2, extent = 3): Node {
+/**
+ * A grid of lines along `first` and `second`.
+ *
+ * The two families are CO-EQUAL, so they get the co-equal pair roles rather
+ * than one shared hue: the line family running along `first` wears `firstColor`
+ * and the family running along `second` wears `secondColor`, and the two lines
+ * through the origin are drawn heavier. That is what lets a learner count "one
+ * step along b₁, one along b₂" without being told which is which.
+ */
+function makeBasisGrid(
+  first: MathVector2,
+  second: MathVector2,
+  firstColor: string,
+  secondColor: string,
+  extent = 3,
+): Node {
   const group = new Node({});
-  const line = (from: MathVector2, to: MathVector2, isAxis: boolean) =>
+  const line = (from: MathVector2, to: MathVector2, isAxis: boolean, color: string) =>
     new Line({
-      stroke: isAxis ? ROLE.basis2 : ROLE.basis2,
+      stroke: color,
       lineWidth: isAxis ? 2.5 : 1,
       opacity: isAxis ? 0.9 : 0.4,
       points: [px(from), px(to)],
     });
   for (let k = -extent; k <= extent; k += 1) {
-    // Lines parallel to b₂, offset by k·b₁ …
+    // Lines running along b₂, offset by k·b₁ …
     group.add(
       line(
         [k * first[0] - extent * second[0], k * first[1] - extent * second[1]],
         [k * first[0] + extent * second[0], k * first[1] + extent * second[1]],
         k === 0,
+        secondColor,
       ),
     );
-    // …and lines parallel to b₁, offset by k·b₂.
+    // …and lines running along b₁, offset by k·b₂.
     group.add(
       line(
         [k * second[0] - extent * first[0], k * second[1] - extent * first[1]],
         [k * second[0] + extent * first[0], k * second[1] + extent * first[1]],
         k === 0,
+        firstColor,
       ),
     );
   }
@@ -122,34 +170,42 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   standardGrid.opacity(0.5);
   view.add(standardGrid);
 
-  const basisGrid = makeBasisGrid(B1, B2);
+  const basisGrid = makeBasisGrid(B1, B2, ROLE.basis1, ROLE.basis2);
   basisGrid.opacity(0);
   view.add(basisGrid);
+
+  const eigenGrid = makeBasisGrid(EIGEN_1, EIGEN_2, ROLE.basis1, ROLE.basis2, 3);
+  eigenGrid.opacity(0);
+  view.add(eigenGrid);
 
   // --- The map's deforming outline (later beats) ---
   const m11 = createSignal(1);
   const m12 = createSignal(0);
   const m21 = createSignal(0);
   const m22 = createSignal(1);
+  const liveMatrix = (): Matrix2x2 => [
+    [m11(), m12()],
+    [m21(), m22()],
+  ];
   const outline = new Line({
     stroke: ROLE.transformed,
     lineWidth: 3,
     closed: true,
     opacity: 0,
     points: () =>
-      [
-        [0, 0],
-        [1, 0],
-        [1, 1],
-        [0, 1],
-      ].map(([x, y]) =>
-        px([m11() * x! + m12() * y!, m21() * x! + m22() * y!]),
-      ),
+      (
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 1],
+        ] as MathVector2[]
+      ).map((corner) => px(matrixVectorMultiply(liveMatrix(), corner))),
   });
   view.add(outline);
 
-  // --- Basis vectors of B, shown when its grid is up ---
-  const b1Arrow = makeArrow(ROLE.basis2, 5);
+  // --- Basis vectors of B, shown when its grid is up (a co-equal pair) ---
+  const b1Arrow = makeArrow(ROLE.basis1, 5);
   b1Arrow.points([new Vector2(0, 0), px(B1)]);
   b1Arrow.opacity(0);
   view.add(b1Arrow);
@@ -157,6 +213,42 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   b2Arrow.points([new Vector2(0, 0), px(B2)]);
   b2Arrow.opacity(0);
   view.add(b2Arrow);
+
+  /**
+   * The coordinate WALK: one step along b₁ from the origin, then one along b₂
+   * from its tip. Because POINT_COORDS rebuilds the point (asserted above), the
+   * walk terminates exactly on p — the readout is the end of a construction.
+   */
+  const walkT = createSignal(0);
+  const walk1 = makeSegment(ROLE.basis1, 5);
+  walk1.points(() => [
+    new Vector2(0, 0),
+    px(scaleVector(B1, POINT_COORDS[0] * Math.min(1, walkT()))),
+  ]);
+  walk1.opacity(0);
+  view.add(walk1);
+  const walk2 = makeSegment(ROLE.basis2, 5);
+  walk2.points(() => {
+    const start = scaleVector(B1, POINT_COORDS[0]);
+    const t = Math.max(0, walkT() - 1);
+    const step = scaleVector(B2, POINT_COORDS[1] * t);
+    return [px(start), px([start[0] + step[0], start[1] + step[1]])];
+  });
+  walk2.opacity(0);
+  view.add(walk2);
+
+  // --- The eigenbasis, drawn only in the final beat. Both arrows ride the LIVE
+  // matrix, so "this basis only gets stretched" is a fact of the picture. ---
+  const eigenArrows = [EIGEN_1, EIGEN_2].map((dir, i) => {
+    const arrow = makeArrow(i === 0 ? ROLE.basis1 : ROLE.basis2, 6);
+    arrow.points(() => [
+      new Vector2(0, 0),
+      px(matrixVectorMultiply(liveMatrix(), scaleVector(dir, EIGEN_DRAW))),
+    ]);
+    arrow.opacity(0);
+    view.add(arrow);
+    return arrow;
+  });
 
   const origin = new Circle({ size: 12, fill: ROLE.text });
   view.add(origin);
@@ -169,12 +261,13 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   arrowDot.position(px(POINT));
   view.add(arrowDot);
 
-  // --- Readouts ---
-  const standardReadout = makeLabel("", ROLE.original, 30);
+  // --- Readouts. Neither wears a role hue: they are two NAMES for one point,
+  // not two objects, and are told apart by their basis subscript. ---
+  const standardReadout = makeLabel("", ROLE.textMuted, 30);
   standardReadout.position(px(POINT).add(new Vector2(76, -26)));
   standardReadout.opacity(0);
   view.add(standardReadout);
-  const basisReadout = makeLabel("", ROLE.basis2, 30);
+  const basisReadout = makeLabel("", ROLE.text, 30);
   basisReadout.position(px(POINT).add(new Vector2(76, 22)));
   basisReadout.opacity(0);
   view.add(basisReadout);
@@ -202,59 +295,91 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   const setTop = (s: string) => top.text(s);
   const setCaption = (s: string) => caption.text(s);
 
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *["one-arrow"]() {
+      const b = beats("one-arrow");
       setTop("One arrow on the usual grid");
       setCaption(`The point p sits here. Against the standard grid it reads (${fmt(POINT[0])}, ${fmt(POINT[1])}).`);
       standardReadout.text(`(${fmt(POINT[0])}, ${fmt(POINT[1])})`);
-      yield* standardReadout.opacity(1, 0.6);
-      yield* waitFor(1.6);
+      yield* standardReadout.opacity(1, b.readout!);
+      yield* waitFor(b.hold!);
     },
 
     *["swap-grid"]() {
+      const b = beats("swap-grid");
       setTop("Swap the grid, not the arrow");
       setCaption("Lesson 1's basis gives a second grid. Watch the arrow — it does not move.");
       // Snap the honest note on with the grid so scrubbing here reads correctly.
       honestNote.opacity(1);
       yield* all(
-        basisGrid.opacity(1, 1),
-        b1Arrow.opacity(1, 0.8),
-        b2Arrow.opacity(1, 0.8),
-        standardGrid.opacity(0.16, 1),
+        basisGrid.opacity(1, b.grid!),
+        b1Arrow.opacity(1, b.grid!),
+        b2Arrow.opacity(1, b.grid!),
+        standardGrid.opacity(0.16, b.grid!),
       );
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold!);
+    },
+
+    *["predict-readout"]() {
+      const b = beats("predict-readout");
+      setTop("Predict: what does p read now?");
+      setCaption("Both grid directions are lit, and p has not moved a pixel.");
+      yield* all(
+        b1Arrow.lineWidth(8, b.emphasize!),
+        b2Arrow.lineWidth(8, b.emphasize!),
+      );
+      basisReadout.text("[p]_B = ( ?, ? )");
+      basisReadout.opacity(1);
+      setCaption("Predict: how many steps along b₁, and how many along b₂, land on p?");
+      yield* waitFor(b.ask!);
+      yield* waitFor(b.think!);
     },
 
     *["new-readout"]() {
+      const b = beats("new-readout");
       setTop("A different name for the same point");
-      setCaption(`Counted along the new grid, the same point reads (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])}): one step along b₁, one along b₂.`);
-      basisReadout.text(`(${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
-      basisReadout.opacity(1);
-      yield* all(arrowDot.size(24, 0.35), arrowDot.size(16, 0.35));
-      yield* waitFor(1.6);
+      setCaption("Walk it: one step along b₁…");
+      walk1.opacity(1);
+      walk2.opacity(1);
+      yield* all(
+        b1Arrow.lineWidth(5, b.walk1!),
+        b2Arrow.lineWidth(5, b.walk1!),
+        walkT(1, b.walk1!, easeInOutCubic),
+      );
+      setCaption("…then one step along b₂ — and the walk ends exactly on p.");
+      yield* walkT(2, b.walk2!, easeInOutCubic);
+      basisReadout.text(`[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
+      yield* all(arrowDot.size(24, b.readout! / 2), arrowDot.size(16, b.readout! / 2));
+      yield* waitFor(b.hold!);
       setCaption("Two readouts, one arrow. Nothing about the point changed — only the grid used to name it.");
-      yield* waitFor(1.6);
+      yield* waitFor(b.hold2!);
     },
 
     *["hidden-subscript"]() {
+      const b = beats("hidden-subscript");
       setTop("The subscript that was always there");
       setCaption("So the first reading was never just a pair of numbers — it was the name in the standard basis.");
       standardReadout.text(`[p]_E = (${fmt(POINT[0])}, ${fmt(POINT[1])})`);
       basisReadout.text(`[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
-      yield* waitFor(2);
+      yield* waitFor(b.hold!);
       setCaption("Every vector and every matrix since Lesson 2 has carried that hidden subscript.");
-      yield* waitFor(1.6);
+      yield* waitFor(b.hold2!);
     },
 
     *["map-standard"]() {
+      const b = beats("map-standard");
       setTop("A map, described in the standard basis");
       setCaption("Now watch a map instead of a point. Here is its matrix in standard coordinates.");
       // Retire the point; the subject is the map now.
       standardReadout.opacity(0);
       basisReadout.opacity(0);
+      walk1.opacity(0);
+      walk2.opacity(0);
       arrow.opacity(0.15);
       arrowDot.opacity(0.15);
-      basisGrid.opacity(0.25);
+      basisGrid.opacity(0);
       b1Arrow.opacity(0);
       b2Arrow.opacity(0);
       standardGrid.opacity(0.5);
@@ -262,31 +387,42 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       outline.opacity(1);
       matrixReadout.text(`[A]_E = ${matrixText(A)}`);
       matrixReadout.opacity(1);
-      yield* morphMatrixEntries(m11, m12, m21, m22, A, 2.2);
-      yield* waitFor(1.4);
+      yield* morphMatrixEntries(m11, m12, m21, m22, A, b.morph!);
+      yield* waitFor(b.hold!);
     },
 
     *["map-eigenbasis"]() {
+      const b = beats("map-eigenbasis");
       setTop("The same deformation, described in another basis");
-      setCaption("The shape and its motion are unchanged. Only the description is swapped.");
-      // The outline is NOT re-animated: the deformation already happened and is
-      // identical. Only the matrix beside it changes — which is the whole claim.
-      //
-      // SNAP the new description on the beat's first frame. Swapping it after a
-      // wait would leave a learner who scrubs here looking at the standard-basis
-      // matrix under a title announcing the other basis — the scene would be
-      // contradicting itself at exactly the beat that carries the payoff.
+      setCaption("Undo it, and lay a different basis underneath — these two directions.");
+      // Return to the identity WITH the outline on screen, so the replay starts
+      // from the same place the first run did.
+      yield* all(
+        morphMatrixEntries(m11, m12, m21, m22, [[1, 0], [0, 1]], b.reset!),
+        eigenGrid.opacity(0.55, b.reset!),
+        eigenArrows[0]!.opacity(1, b.reset!),
+        eigenArrows[1]!.opacity(1, b.reset!),
+        standardGrid.opacity(0.18, b.reset!),
+      );
+      // SNAP the new description on before the replay: a learner scrubbing here
+      // must not see the standard-basis matrix under a title announcing another.
       matrixReadout.text(`[A]_B = ${matrixText(A_IN_EIGENBASIS)}`);
-      yield* all(matrixReadout.opacity(0.4, 0.3), matrixReadout.opacity(1, 0.4));
-      yield* waitFor(1.2);
-      setCaption("In this basis the matrix is diagonal: the map only scales along the two chosen directions.");
-      yield* waitFor(2);
-      setCaption("The map did not get simpler. The language did — and choosing that language is the next lesson's business.");
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold!);
+      setCaption("Now run exactly the same matrix again — identical motion, different description.");
+      yield* morphMatrixEntries(m11, m12, m21, m22, A, b.replay!);
+      yield* waitFor(b.hold2!);
+      setCaption(
+        `In this basis the matrix is diagonal: neither drawn direction turns — one is stretched by ${fmt(A_IN_EIGENBASIS[0][0])}, the other by ${fmt(A_IN_EIGENBASIS[1][1])}.`,
+      );
+      yield* waitFor(b.hold3!);
     },
   };
 
   for (const segment of CHANGE_OF_BASIS_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });

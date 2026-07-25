@@ -19,7 +19,7 @@ import {
   type Matrix2x2,
   type Vector2 as MathVector2,
 } from "../../math";
-import { MATRIX_COMPOSITION_SEGMENTS } from "./sceneTimings";
+import { MATRIX_COMPOSITION_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
@@ -56,6 +56,8 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * frame shows the same objects in a different state rather than a different set
  * of objects.
  */
+
+const SCENE_ID = "matrix-composition";
 
 const A = requireMatrixExample("shear-2-1").matrix; // [[2,1],[0,1]]
 const R = requireMatrixExample("rotation").matrix; // [[0,-1],[1,0]]
@@ -237,7 +239,7 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
   setCaption(`A = ${matrixText(A)},  R = ${matrixText(R)} (rotate a quarter turn)`);
 
   /** Bring every teaching object back to full opacity after a focus beat. */
-  const unfocusAll = (): ThreadGenerator =>
+  const unfocusAll = (duration = 0.3): ThreadGenerator =>
     focusOpacities(
       [
         { node: craft, opacity: 1 },
@@ -246,44 +248,52 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
         { node: e1Label, opacity: 1 },
         { node: e2Label, opacity: 1 },
       ],
-      0.3,
+      duration,
     );
+
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *["apply-b"]() {
+      const b = beats("apply-b");
       setTop("Apply the first map");
       setCaption("R rotates a quarter turn. Watch e₁ and e₂ — nothing else is needed.");
-      yield* waitFor(0.8);
-      yield* morphMatrixEntries(m11, m12, m21, m22, R, 2.4);
+      yield* waitFor(b.hold!);
+      yield* morphMatrixEntries(m11, m12, m21, m22, R, b.morph!);
       setCaption(`Now e₁ sits at ${vectorText(productColumn(IDENTITY, R, 0))} and e₂ at ${vectorText(productColumn(IDENTITY, R, 1))} — the columns of R.`);
-      yield* waitFor(0.6);
+      yield* waitFor(b.hold2!);
     },
 
     *["apply-a"]() {
+      const b = beats("apply-a");
       setTop("Then apply the second");
       setCaption("A now acts on the R-image. Each basis arrow moves a SECOND time.");
-      yield* waitFor(0.6);
+      yield* waitFor(b.hold!);
       // Morph straight to AR: applying A to the current (R-deformed) plane IS
       // the composite, so the live matrix becomes AR.
-      yield* morphMatrixEntries(m11, m12, m21, m22, AR, 2.6);
+      yield* morphMatrixEntries(m11, m12, m21, m22, AR, b.morph!);
       setCaption("Two moves. Each arrow traced a path: eⱼ → R eⱼ → A(R eⱼ).");
-      yield* all(path1.opacity(0.85, 0.7), path2.opacity(0.85, 0.7));
-      yield* waitFor(0.5);
+      yield* all(path1.opacity(0.85, b.paths!), path2.opacity(0.85, b.paths!));
+      yield* waitFor(b.hold2!);
     },
 
     *["one-map"]() {
+      const b = beats("one-map");
       setTop("One matrix does both");
       setCaption("Reset to the identity, then apply a SINGLE matrix — AR — in one motion.");
       // Snap-then-morph, so the reset reads under scrubbing rather than as a
-      // long tween the learner might mistake for a third transformation.
+      // long tween the learner might mistake for a third transformation. This is
+      // the documented rule: return to an intelligible baseline (the identity)
+      // before applying an unrelated map.
       setMatrix(IDENTITY);
-      yield* waitFor(1.1);
-      yield* morphMatrixEntries(m11, m12, m21, m22, AR, 2.6);
+      yield* waitFor(b.hold!);
+      yield* morphMatrixEntries(m11, m12, m21, m22, AR, b.morph!);
       setCaption(`It lands in exactly the same place. AR = ${matrixText(AR)} — "apply R first, then A".`);
-      yield* waitFor(1);
+      yield* waitFor(b.hold2!);
     },
 
     *columns() {
+      const b = beats("columns");
       setTop("Column j is where eⱼ ended up");
       setCaption("Dim everything else: follow e₁ alone, from where it started to where it stopped.");
       // Snap the focus (see the `no-undo` note): scrubbing to this beat must
@@ -294,9 +304,9 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
       e1.opacity(1);
       path1.opacity(0.85);
       end1.opacity(1);
-      yield* waitFor(0.5);
+      yield* waitFor(b.hold!);
       setCaption(`Its endpoint is ${vectorText(productColumn(A, R, 0))} — and that is column 1 of AR. Column 1 of AR = A · (column 1 of R).`);
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold2!);
       setCaption("The same is true of e₂ — so the product has no separate rule to memorize.");
       yield* focusOpacities(
         [
@@ -304,43 +314,64 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
           { node: e2Label, opacity: 1 },
           { node: e1, opacity: 0.25 },
         ],
-        0.4,
+        b.focus!,
       );
-      yield* end2.opacity(1, 0.5);
-      yield* waitFor(0.8);
-      yield* unfocusAll();
+      yield* end2.opacity(1, b.end2!);
+      yield* waitFor(b.hold3!);
+      yield* unfocusAll(b.unfocus!);
+      yield* waitFor(b.hold4!);
     },
 
-    *order() {
-      setTop("Swap the order");
-      setCaption("Keep AR's outline as a dashed comparison, then build the OTHER order: A first, then R.");
+    *["predict-order"]() {
+      const b = beats("predict-order");
+      setTop("Predict: does the order matter?");
+      // Keep AR's landing place on screen as a dashed outline — the prediction
+      // is about whether the OTHER order reaches it, so it must stay visible.
       otherOrder.opacity(1);
-      // Hide the AR-specific annotations; they belong to the other order.
       path1.opacity(0);
       path2.opacity(0);
       end1.opacity(0);
       end2.opacity(0);
       setMatrix(IDENTITY);
-      yield* waitFor(1);
-      yield* morphMatrixEntries(m11, m12, m21, m22, RA, 2.6);
-      setCaption(`RA = ${matrixText(RA)} lands somewhere else entirely. Order matters — in general, though I and its multiples do commute.`);
-      yield* waitFor(1.5);
+      setCaption("The dashed outline is where R-then-A landed. Now do it the other way: A first, then R.");
+      yield* waitFor(b.reset!);
+      yield* waitFor(b.ask!);
+      setCaption("Predict: does the craft land back on that dashed outline, or somewhere else?");
+      yield* waitFor(b.think!);
+    },
+
+    *order() {
+      const b = beats("order");
+      setTop("Swap the order");
+      setCaption("Building A-then-R from the identity…");
+      yield* waitFor(b.hold!);
+      yield* morphMatrixEntries(m11, m12, m21, m22, RA, b.morph!);
+      setCaption(`RA = ${matrixText(RA)} lands somewhere else entirely — clear of the dashed AR outline. Order matters in general (though I and its multiples do commute).`);
+      yield* waitFor(b.hold2!);
     },
 
     *undo() {
+      const b = beats("undo");
       setTop("Undo it");
-      setCaption("Start from A's image alone. Is there a map that puts every point back?");
+      setCaption("Reset to the identity, then apply A on its own.");
       otherOrder.opacity(0);
-      setMatrix(A);
-      yield* waitFor(1.2);
+      // Reset to the baseline and then WATCH A being applied, rather than
+      // snapping the craft from RA straight onto A's image — a snap between two
+      // unrelated states says nothing, and the undo only reads if the do was seen.
+      setMatrix(IDENTITY);
+      yield* waitFor(b.hold!);
+      yield* morphMatrixEntries(m11, m12, m21, m22, A, b.toA!);
+      setCaption("Is there a map that puts every point back?");
+      yield* waitFor(b.hold2!);
       setCaption(`A⁻¹ = ${matrixText(A_INVERSE)} sends each basis arrow back where it started: A⁻¹A = I.`);
       // Morphing the live matrix A → I *is* applying A⁻¹ to the current plane.
-      yield* morphMatrixEntries(m11, m12, m21, m22, IDENTITY, 2.4);
+      yield* morphMatrixEntries(m11, m12, m21, m22, IDENTITY, b.undo!);
       setCaption("The craft lands exactly on its dashed original. Nothing was lost, so everything came back.");
-      yield* waitFor(0.8);
+      yield* waitFor(b.hold3!);
     },
 
     *["no-undo"]() {
+      const b = beats("no-undo");
       setTop("When there is nothing to undo");
       setCaption("Two different starting points, u and v.");
       setMatrix(IDENTITY);
@@ -359,20 +390,24 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
       dotV.opacity(1);
       dotULabel.opacity(1);
       dotVLabel.opacity(1);
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold!);
       setCaption("This map squashes the whole plane onto a line.");
-      yield* morphMatrixEntries(m11, m12, m21, m22, SINGULAR, 2.2);
+      yield* morphMatrixEntries(m11, m12, m21, m22, SINGULAR, b.morph!);
       setCaption("u and v have landed on ONE point. An undo would have to choose which to send back — so no function can exist.");
       // Pulse the merged point rather than drawing a "reverse" arrow: there is
       // no reverse arrow to draw, and inventing one would be a lie.
-      yield* all(dotU.size(34, 0.35), dotV.size(34, 0.35));
-      yield* all(dotU.size(22, 0.35), dotV.size(22, 0.35));
-      yield* waitFor(1);
+      yield* all(dotU.size(34, b.up!), dotV.size(34, b.up!));
+      yield* all(dotU.size(22, b.down!), dotV.size(22, b.down!));
+      yield* waitFor(b.hold2!);
     },
   };
 
   for (const segment of MATRIX_COMPOSITION_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });
 

@@ -2,6 +2,8 @@ import { Circle, Line, Node, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
+  createSignal,
+  easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
@@ -13,7 +15,7 @@ import {
   type Matrix,
   type Vec,
 } from "../../math";
-import { SUBSPACES_RANK_SEGMENTS } from "./sceneTimings";
+import { SUBSPACES_RANK_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   CUBE_EDGES,
   ISO_CUBE_CORNERS,
@@ -41,10 +43,27 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * particular, the null line is NOT claimed to be perpendicular to the image
  * plane (it generally is not; that is Lesson 12's subject).
  *
+ * ENACTMENT (July 2026 audit). Two claims used to be made by fading a
+ * pre-computed picture in:
+ *
+ *  - "Push the whole unit cube through A and watch where it lands" faded in an
+ *    ALREADY-FLAT cube. The output cube now starts as an exact copy of the input
+ *    cube and is carried to its image by a single `applyT` signal, so the
+ *    flattening is the event the caption names.
+ *  - "A whole line of them lands on a single point" snapped a line and a dot on.
+ *    A probe now TRAVELS the null line in the input panel while its image —
+ *    computed through the same live matrix — visibly stays on the output origin.
+ *
+ * Every case matrix is swapped in at `applyT = 0`, where the interpolation is
+ * the identity for every matrix, so the swap is invisible by construction and
+ * costs no time (the same mechanism the eigenvectors scene uses).
+ *
  * Correctness discipline: rank, both bases, and every plotted image come from
  * `src/math`. `assertSceneMathIsConsistent` re-checks the relationships the
  * choreography depends on before a frame renders.
  */
+
+const SCENE_ID = "subspaces-rank";
 
 /** Rank 2: row 3 = row 1 + row 2, so the cube flattens onto a plane. */
 const RANK_TWO: Matrix = [
@@ -96,7 +115,23 @@ const asP3 = (v: Vec): P3 => [v[0] ?? 0, v[1] ?? 0, v[2] ?? 0];
 const add3 = (a: P3, b: P3): P3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale3 = (a: P3, k: number): P3 => [a[0] * k, a[1] * k, a[2] * k];
 
-/** Cube edges drawn under a matrix (identity for the original cube). */
+/** Unit vector in the direction of `v` (or `v` itself if it is already tiny). */
+function unit3(v: P3): P3 {
+  const length = Math.hypot(v[0], v[1], v[2]);
+  return length < 1e-9 ? v : scale3(v, 1 / length);
+}
+
+/** Straight-line interpolation from the identity to `m`, at parameter `t`. */
+function lerpIdentityTo(m: Matrix, t: number): Matrix {
+  return m.map((row, i) =>
+    row.map((value, j) => {
+      const identity = i === j ? 1 : 0;
+      return identity + (value - identity) * t;
+    }),
+  );
+}
+
+/** Static cube edges under a fixed matrix (or the identity when null). */
 function makeCube(matrix: Matrix | null, origin: Vector2, color: string, width = 3): Node {
   const group = new Node({});
   const corner = (i: number): P3 => {
@@ -119,10 +154,32 @@ function makeCube(matrix: Matrix | null, origin: Vector2, color: string, width =
   return group;
 }
 
-/** Unit vector in the direction of `v` (or `v` itself if it is already tiny). */
-function unit3(v: P3): P3 {
-  const length = Math.hypot(v[0], v[1], v[2]);
-  return length < 1e-9 ? v : scale3(v, 1 / length);
+/** Cube edges that follow a LIVE matrix, so the deformation can be watched. */
+function makeLiveCube(
+  matrixAt: () => Matrix,
+  origin: Vector2,
+  color: string,
+  width = 3,
+): Node {
+  const group = new Node({});
+  const corner = (i: number): P3 => {
+    const c = ISO_CUBE_CORNERS[i]!;
+    return asP3(matVec(matrixAt(), [c[0], c[1], c[2]]));
+  };
+  for (const [a, b] of CUBE_EDGES) {
+    group.add(
+      new Line({
+        stroke: color,
+        lineWidth: width,
+        lineCap: "round",
+        points: () => [
+          toIsometric(corner(a), SCALE, origin),
+          toIsometric(corner(b), SCALE, origin),
+        ],
+      }),
+    );
+  }
+  return group;
 }
 
 /**
@@ -161,6 +218,13 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   assertSceneMathIsConsistent();
   view.fill(ROLE.background);
 
+  // --- The live map. `activeMap` is only ever swapped at applyT === 0, where
+  // lerpIdentityTo(m, 0) is the identity for EVERY m — so the swap cannot be
+  // seen and costs no time. ---
+  const applyT = createSignal(0);
+  let activeMap: Matrix = RANK_TWO;
+  const liveMatrix = (): Matrix => lerpIdentityTo(activeMap, applyT());
+
   // --- Panels ---
   view.add(makeIsometricAxes(SCALE, LEFT));
   view.add(makeIsometricAxes(SCALE, RIGHT));
@@ -180,11 +244,13 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   mapLabel.position(new Vector2(0, -6));
   view.add(mapLabel);
 
-  // --- Persistent objects (created once; only revealed or moved) ---
+  // --- Persistent objects (created once; only revealed or deformed) ---
   const cube = makeCube(null, LEFT, ROLE.original, 3);
   view.add(cube);
 
-  const imageCube = makeCube(RANK_TWO, RIGHT, ROLE.transformed, 3);
+  // The output cube is the SAME cube, drawn in the output panel and carried by
+  // the live matrix. At applyT = 0 it is an exact copy of the input cube.
+  const imageCube = makeLiveCube(liveMatrix, RIGHT, ROLE.transformed, 3);
   imageCube.opacity(0);
   view.add(imageCube);
 
@@ -210,14 +276,12 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   imageLine.opacity(0);
   view.add(imageLine);
 
+  const NULL_DIR = unit3(asP3(NULL_BASIS_2[0]!));
   const nullLine = makeSegment(ROLE.result, 5);
-  {
-    const d = unit3(asP3(NULL_BASIS_2[0]!));
-    nullLine.points([
-      toIsometric(scale3(d, -2), SCALE, LEFT),
-      toIsometric(scale3(d, 2), SCALE, LEFT),
-    ]);
-  }
+  nullLine.points([
+    toIsometric(scale3(NULL_DIR, -2), SCALE, LEFT),
+    toIsometric(scale3(NULL_DIR, 2), SCALE, LEFT),
+  ]);
   nullLine.opacity(0);
   view.add(nullLine);
 
@@ -228,6 +292,22 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   })();
   nullPlane.opacity(0);
   view.add(nullPlane);
+
+  /**
+   * The probe: one input travelling the null line, and its image. The image
+   * position goes through the SAME live matrix as the cube, so "it never leaves
+   * the origin" is computed, not drawn by hand.
+   */
+  const probeT = createSignal(0);
+  const probePoint = (): P3 => scale3(NULL_DIR, probeT() * 1.7);
+  const probeDot = new Circle({ size: 18, fill: ROLE.selected, opacity: 0 });
+  probeDot.position(() => toIsometric(probePoint(), SCALE, LEFT));
+  view.add(probeDot);
+  const probeImage = new Circle({ size: 18, fill: ROLE.selected, opacity: 0 });
+  probeImage.position(() =>
+    toIsometric(asP3(matVec(liveMatrix(), [...probePoint()])), SCALE, RIGHT),
+  );
+  view.add(probeImage);
 
   // The origin dot in the output panel: where the whole null line lands.
   const outputOrigin = new Circle({ size: 16, fill: ROLE.result, opacity: 0 });
@@ -255,92 +335,144 @@ export const subspacesRankScene = makeScene2D(function* (view) {
 
   // The projection is named on-canvas: it preserves straightness, not angles.
   const projectionNote = makeLabel("isometric view — angles are not to scale", ROLE.dim, 20);
-  projectionNote.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y - 34));
+  // Under the title, not above the caption: the caption wraps to two lines on
+  // the longer beats and printed itself over this note.
+  projectionNote.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y + 34));
   view.add(projectionNote);
+
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *["two-panels"]() {
+      const b = beats("two-panels");
       setTop("Two spaces, not one");
       setCaption("Inputs live on the left. Outputs live on the right. A is the arrow between them.");
-      yield* waitFor(1.2);
-      yield* all(cube.opacity(1, 0.6), mapArrow.opacity(1, 0.6));
-      yield* waitFor(0.6);
+      yield* waitFor(b.hold!);
+      yield* all(cube.opacity(1, b.in!), mapArrow.opacity(1, b.in!));
+      yield* waitFor(b.hold2!);
     },
 
     *reach() {
+      const b = beats("reach");
       setTop("What the map can reach");
-      setCaption("Push the whole unit cube through A and watch where it lands.");
-      yield* imageCube.opacity(1, 1.1);
+      setCaption("Copy the cube into the output panel — untouched, so far.");
+      // applyT is 0, so this copy is geometrically identical to the input cube.
+      yield* imageCube.opacity(1, b.copy!);
+      yield* waitFor(b.hold!);
+      setCaption("Now push it through A and watch where it lands.");
+      yield* applyT(1, b.deform!, easeInOutCubic);
       setCaption("It is flat. Every output lies on one plane — the map cannot reach anything off it.");
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold2!);
     },
 
     *colspace() {
+      const b = beats("colspace");
       setTop("Name it: the column space");
       setCaption("That plane is the span of A's columns: every vector the map can produce.");
-      // Snap the focus so scrubbing to this beat lands on a readable frame.
-      imagePlane.opacity(0.22);
-      colLabel.opacity(1);
-      cube.opacity(0.28);
-      yield* waitFor(1.6);
+      yield* all(
+        imagePlane.opacity(0.22, b.plane!),
+        colLabel.opacity(1, b.plane!),
+        cube.opacity(0.28, b.plane!),
+      );
+      yield* waitFor(b.hold!);
       setCaption("So 'is A x = b solvable?' is one question: is b in Col(A)?");
-      yield* waitFor(1.4);
+      yield* waitFor(b.hold2!);
     },
 
     *crush() {
+      const b = beats("crush");
       setTop("What the map destroys");
-      setCaption("Now look at the inputs instead. A whole line of them lands on a single point.");
+      setCaption("Now look at the inputs instead. Follow ONE input along this line.");
+      // SNAP the configuration, then animate inside it. A learner who scrubs to
+      // a chapter lands on its FIRST frame, and that frame has to already show
+      // what the chapter is about. Only OPACITIES are snapped here — no drawn
+      // object ever changes position or shape discontinuously, so nothing
+      // teleports; the same rule governs `nullspace`, `count`, and `rank-one`.
       cube.opacity(1);
       imagePlane.opacity(0.12);
       nullLine.opacity(1);
       outputOrigin.opacity(1);
-      yield* waitFor(1.5);
-      yield* all(outputOrigin.size(26, 0.4), outputOrigin.size(16, 0.4));
+      probeT(-1);
+      probeDot.opacity(1);
+      probeImage.opacity(1);
+      yield* waitFor(b.hold!);
+      setCaption("The input travels the whole line — and its image never leaves the origin.");
+      // The image position is computed through the live matrix, so this is a
+      // consequence of the map rather than a dot parked on the origin by hand.
+      yield* probeT(1, b.travel!, easeInOutCubic);
+      yield* outputOrigin.size(26, b.up!);
+      yield* outputOrigin.size(16, b.down!);
       setCaption("Every vector on that line is sent to zero. Their differences are invisible to A.");
-      yield* waitFor(1.2);
+      yield* waitFor(b.hold2!);
     },
 
     *nullspace() {
+      const b = beats("nullspace");
       setTop("Name it: the null space");
       setCaption("That line is Null(A) — and it is drawn on the LEFT, in the input space.");
       nullLabel.opacity(1);
       imagePlane.opacity(0.1);
       imageCube.opacity(0.25);
-      yield* waitFor(1.6);
+      probeDot.opacity(0);
+      probeImage.opacity(0);
+      yield* waitFor(b.hold!);
       setCaption("Col(A) is made of outputs; Null(A) is made of inputs. Different spaces, different questions.");
-      yield* waitFor(1.6);
+      yield* waitFor(b.hold2!);
     },
 
     *count() {
+      const b = beats("count");
       setTop("Rank counts what survived");
       setCaption("Three dimensions went in. Two came out. The rank is 2.");
       imagePlane.opacity(0.24);
       imageCube.opacity(1);
       cube.opacity(0.55);
-      yield* waitFor(1.8);
+      yield* waitFor(b.hold!);
       setCaption("One dimension was crushed — exactly the one line drawn on the left.");
-      yield* waitFor(1.6);
+      yield* waitFor(b.hold2!);
+    },
+
+    *["predict-rank-one"]() {
+      const b = beats("predict-rank-one");
+      setTop("Predict");
+      setCaption("The next map has rank 1: its image will be a line, not a plane.");
+      yield* waitFor(b.ask!);
+      setCaption(
+        "Predict: what happens to Null(A) on the left — does it shrink, stay a line, or grow?",
+      );
+      yield* waitFor(b.think!);
     },
 
     *["rank-one"]() {
+      const b = beats("rank-one");
       setTop("Take away one more");
-      setCaption("A different map, of rank 1: the image is now only a LINE.");
-      // Snap to the rank-1 configuration.
+      setCaption("Un-deform first, so the new map starts from the same untouched cube.");
       imagePlane.opacity(0);
-      imageCube.opacity(0);
-      imageLine.opacity(1);
       nullLine.opacity(0);
-      nullPlane.opacity(0.22);
+      nullLabel.opacity(0);
+      colLabel.opacity(0);
+      imageCube.opacity(1);
       cube.opacity(1);
-      yield* waitFor(1.8);
-      setCaption("And the null space has GROWN to a whole plane. Rank fell from 2 to 1; nullity rose from 1 to 2.");
-      yield* waitFor(1.8);
-      setCaption("The two always move in opposite directions — the next lesson makes that a law.");
-      yield* waitFor(1.4);
+      // Return to the identity WITH the cube on screen, then swap the map there
+      // (invisible, since lerpIdentityTo(m, 0) = I for every m) and deform again.
+      yield* applyT(0, b.reset!, easeInOutCubic);
+      activeMap = RANK_ONE;
+      setCaption("A different map, of rank 1 — watch the image collapse one dimension further.");
+      yield* applyT(1, b.deform!, easeInOutCubic);
+      imageLine.opacity(1);
+      colLabel.opacity(1);
+      yield* waitFor(b.hold!);
+      setCaption("And the null space has GROWN to a whole plane. Rank fell 2 → 1; nullity rose 1 → 2.");
+      yield* all(nullPlane.opacity(0.22, b.grow!), nullLabel.opacity(1, b.grow!));
+      yield* waitFor(b.hold2!);
     },
   };
 
   for (const segment of SUBSPACES_RANK_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });

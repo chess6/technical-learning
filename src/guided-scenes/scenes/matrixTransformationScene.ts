@@ -396,6 +396,10 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   // Measured padding: each body runs, then the segment is padded to its exact
   // authored length, so the timeline always matches the step metadata.
   for (const segment of MATRIX_TRANSFORMATION_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `matrix-transformations.${segment.id}`,
+    );
   }
 });

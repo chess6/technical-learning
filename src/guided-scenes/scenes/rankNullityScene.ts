@@ -2,14 +2,16 @@ import { Circle, Rect, Txt, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
+  createSignal,
   easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { rankNullityCount, type Matrix } from "../../math";
-import { RANK_NULLITY_SEGMENTS } from "./sceneTimings";
+import { RANK_NULLITY_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
+  formatLedgerTally,
   makeLabel,
   makeOverlayLabel,
   runSegment,
@@ -33,6 +35,8 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  * vectors, and that no particular input direction is identified as "the one that
  * died" — only the counts are canonical (insight contract §13).
  */
+
+const SCENE_ID = "rank-nullity";
 
 /** The L8 map the learner already watched collapse: rank 2, nullity 1. */
 const SQUARE_RANK_TWO: Matrix = [
@@ -124,7 +128,7 @@ export const rankNullityScene = makeScene2D(function* (view) {
     x: SURVIVED_X,
     y: COLUMN_TOP + 2 * SLOT_GAP,
     radius: 10,
-    fill: ROLE.dim,
+    fill: ROLE.violation,
     opacity: 0,
   });
   view.add(ceilingBand);
@@ -156,12 +160,22 @@ export const rankNullityScene = makeScene2D(function* (view) {
     return token;
   });
 
-  // --- Running tally ---
-  const tally = makeLabel("", ROLE.text, 30);
+  // --- Running tally, DERIVED from the live split ---
+  //
+  // The tally used to be written by hand at each beat, so a token in mid-flight
+  // sat under a total that did not yet include it. It is now a function of the
+  // same two counters `post`/`place` update, and the total is their SUM rather
+  // than a third number that could be typed wrong: the ledger cannot report a
+  // state the tokens are not in, and cannot fail to balance.
+  const survivedCount = createSignal(0);
+  const crushedCount = createSignal(0);
+  const tally = makeLabel(
+    () => formatLedgerTally(survivedCount(), crushedCount()),
+    ROLE.text,
+    30,
+  );
   tally.position(new Vector2(LABEL_CENTER_X + 40, COLUMN_TOP + 3 * SLOT_GAP + 34));
   view.add(tally);
-  const setTally = (rank: number, nullity: number, total: number) =>
-    tally.text(`${rank} survived  +  ${nullity} crushed  =  ${total}`);
 
   const shapeLabel = makeLabel("", ROLE.textMuted, 24);
   shapeLabel.position(new Vector2(STACK_X, COLUMN_TOP + 3 * SLOT_GAP + 34));
@@ -189,23 +203,35 @@ export const rankNullityScene = makeScene2D(function* (view) {
   });
   view.add(honestNote);
 
-  /** Move a token to a column slot, colouring it by its fate. */
-  function* post(index: number, column: "survived" | "crushed", slot: number): ThreadGenerator {
+  /**
+   * Move a token to a column slot, colouring it by its fate. The counters are
+   * updated when the token ARRIVES, so the tally and the picture agree at every
+   * frame, including mid-flight.
+   */
+  function* post(
+    index: number,
+    column: "survived" | "crushed",
+    slot: number,
+    duration: number,
+  ): ThreadGenerator {
     const token = tokens[index]!;
-    token.fill(column === "survived" ? ROLE.basis1 : ROLE.result);
+    const survived = column === "survived";
+    token.fill(survived ? ROLE.basis1 : ROLE.result);
     yield* token.position(
-      columnSlot(column === "survived" ? SURVIVED_X : CRUSHED_X, slot),
-      0.7,
+      columnSlot(survived ? SURVIVED_X : CRUSHED_X, slot),
+      duration,
       easeInOutCubic,
     );
+    if (survived) survivedCount(survivedCount() + 1);
+    else crushedCount(crushedCount() + 1);
   }
 
   /** Snap every token to a stated split, for beats that must read when scrubbed. */
-  function place(survivedCount: number): void {
+  function place(rank: number): void {
     let s = 0;
     let c = 0;
     tokens.forEach((token, i) => {
-      if (i < survivedCount) {
+      if (i < rank) {
         token.fill(ROLE.basis1);
         token.position(columnSlot(SURVIVED_X, s));
         s += 1;
@@ -215,87 +241,117 @@ export const rankNullityScene = makeScene2D(function* (view) {
         c += 1;
       }
     });
+    survivedCount(s);
+    crushedCount(c);
   }
+
+  const beats = (id: string) => requireBeats(SCENE_ID, id);
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *budget() {
+      const b = beats("budget");
       setTop("Three dimensions go in");
       setCaption("The input dimension n is a budget. This map is given three independent directions.");
       shapeLabel.text("a 3 × 3 map");
-      setTally(0, 0, 0);
-      yield* waitFor(1.4);
-      yield* all(...tokens.map((token) => token.size(50, 0.3)));
-      yield* all(...tokens.map((token) => token.size(42, 0.3)));
-      yield* waitFor(0.6);
+      // Establishing beat: nothing is claimed to move yet (the posting IS the
+      // next beat), so the tokens are drawn where they start and are COUNTED
+      // OUT one at a time. They are deliberately on screen at t = 0, because
+      // that frame is what a paused or reduced-motion learner sees.
+      const perToken = b.count! / tokens.length;
+      for (const token of tokens) {
+        yield* token.size(52, perToken / 2, easeInOutCubic);
+        yield* token.size(42, perToken / 2, easeInOutCubic);
+      }
+      yield* waitFor(b.hold!);
     },
 
     *post() {
+      const b = beats("post");
       setTop("Each one has a fate");
       setCaption("Two directions survive into the image…");
-      yield* post(0, "survived", 0);
-      setTally(1, 0, 1);
-      yield* post(1, "survived", 1);
-      setTally(2, 0, 2);
+      survivedCount(0);
+      crushedCount(0);
+      tokens.forEach((token, i) => token.position(stackSlot(i)));
+      yield* post(0, "survived", 0, b.p0!);
+      yield* post(1, "survived", 1, b.p1!);
       setCaption("…and the third is crushed to zero. Never both fates, never neither.");
-      yield* post(2, "crushed", 0);
-      setTally(COUNT_TWO.rank, COUNT_TWO.nullity, COUNT_TWO.total);
-      yield* waitFor(1);
+      yield* post(2, "crushed", 0, b.p2!);
+      yield* waitFor(b.hold!);
     },
 
     *balance() {
+      const b = beats("balance");
       setTop("The books balance");
       place(COUNT_TWO.rank);
-      setTally(COUNT_TWO.rank, COUNT_TWO.nullity, COUNT_TWO.total);
       setCaption("2 + 1 = 3. The total is n, the INPUT dimension — the number of directions the map was given.");
       yield* all(
-        survivedFrame.opacity(0.9, 0.4),
-        crushedFrame.opacity(0.9, 0.4),
+        survivedFrame.opacity(0.9, b.frames!),
+        crushedFrame.opacity(0.9, b.frames!),
       );
-      yield* waitFor(1.8);
+      yield* waitFor(b.hold!);
+    },
+
+    *["predict-degrade"]() {
+      const b = beats("predict-degrade");
+      setTop("Predict");
+      place(COUNT_TWO.rank);
+      setCaption("The next map is degraded so that only ONE direction survives.");
+      yield* waitFor(b.ask!);
+      setCaption(
+        "Predict: does a token leave the ledger, does a new one appear, or does one cross over? And what does the total read afterwards?",
+      );
+      yield* waitFor(b.think!);
     },
 
     *degrade() {
+      const b = beats("degrade");
       setTop("Spend the budget differently");
-      setCaption("Degrade the map so only one direction survives. Watch what the third token does.");
+      setCaption("Watch the second token.");
       place(COUNT_TWO.rank);
-      setTally(COUNT_TWO.rank, COUNT_TWO.nullity, COUNT_TWO.total);
-      yield* waitFor(1.2);
+      yield* waitFor(b.hold!);
       // The token moves ACROSS — it is not deleted and redrawn. That motion IS
-      // the conservation claim.
-      yield* post(1, "crushed", 1);
-      setTally(COUNT_ONE.rank, COUNT_ONE.nullity, COUNT_ONE.total);
+      // the conservation claim, and the tally follows it because both are
+      // functions of the same two counters.
+      yield* post(1, "crushed", 1, b.move!);
+      survivedCount(COUNT_ONE.rank);
+      crushedCount(COUNT_ONE.nullity);
       setCaption("It crossed the ledger. 1 + 2 = 3: the split changed, the total could not.");
-      yield* waitFor(1.8);
+      yield* waitFor(b.hold2!);
     },
 
     *ceiling() {
+      const b = beats("ceiling");
       setTop("A map with a lower ceiling");
       shapeLabel.text("a 2 × 3 map");
       setCaption("Now the outputs live in a 2-dimensional space. The surviving column has only two slots.");
       place(COUNT_WIDE.rank);
-      setTally(COUNT_WIDE.rank, COUNT_WIDE.nullity, COUNT_WIDE.total);
       ceilingBand.opacity(0.55);
       ceilingNote.opacity(1);
-      yield* waitFor(2.2);
+      yield* waitFor(b.hold!);
       setCaption("The budget is still 3 — that is set by the inputs. Only the ceiling changed.");
-      yield* waitFor(1.6);
+      yield* waitFor(b.hold2!);
     },
 
     *forbidden() {
+      const b = beats("forbidden");
       setTop("So this can never happen");
       setCaption("To be one-to-one, all three tokens would have to survive. There is no third slot.");
       place(COUNT_WIDE.rank);
-      setTally(COUNT_WIDE.rank, COUNT_WIDE.nullity, COUNT_WIDE.total);
       ceilingBand.opacity(0.55);
       ceilingNote.opacity(1);
-      yield* all(ceilingBand.opacity(0.85, 0.4), ceilingBand.opacity(0.55, 0.4));
-      yield* waitFor(1.4);
+      yield* ceilingBand.opacity(0.85, b.up!);
+      yield* ceilingBand.opacity(0.55, b.down!);
+      yield* waitFor(b.hold!);
       setCaption("No map from a bigger space to a smaller one is one-to-one — and you did not compute anything to know it.");
-      yield* waitFor(2);
+      yield* waitFor(b.hold2!);
     },
   };
 
   for (const segment of RANK_NULLITY_SEGMENTS) {
-    yield* runSegment(segment.duration, bodies[segment.id]!);
+    yield* runSegment(
+      segment.duration,
+      bodies[segment.id]!,
+      `${SCENE_ID}.${segment.id}`,
+    );
   }
 });
