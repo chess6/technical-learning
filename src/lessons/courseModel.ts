@@ -199,6 +199,12 @@ export const CURRICULUM: readonly Subject[] = [
             items: [
               {
                 kind: "future",
+                id: "binary-search-trees",
+                title: "Binary Search Trees",
+                subtitle: "Keeping the midpoints — why the shape is the cost",
+              },
+              {
+                kind: "future",
                 id: "red-black-trees",
                 title: "Red–Black Trees",
                 subtitle: "Balance as an invariant you can recolor back into place",

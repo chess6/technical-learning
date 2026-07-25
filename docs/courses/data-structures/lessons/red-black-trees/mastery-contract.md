@@ -7,11 +7,12 @@ Completed **after** the [Approved Insight Contract](insight.md) reached
 Filled from [authoring/templates/lesson-mastery-contract.md](../../../../authoring/templates/lesson-mastery-contract.md).
 Upstream artifacts are **linked, never restated**.
 
-> **Two open Mode-A questions this contract records rather than self-authorizes**
-> (see [§8](#8-open-decisions-for-the-user-mode-a-gaps)): the algorithms subject has
-> **no declared profile, course spine, curriculum-architecture, or benchmark
-> matrix**, and this lesson's **prerequisite (binary search trees) is not taught
-> anywhere in the course**. Both are flagged, not silently resolved.
+> **Both open questions are now resolved by the repository owner** (2026-07-24);
+> see [§5](#5-resolved-decisions). The subject keeps a **per-lesson P2**
+> declaration for now, and the missing prerequisite is met by building a
+> **[Binary Search Trees](../binary-search-trees/mastery-contract.md) lesson
+> first** — so this lesson *retrieves* BSTs rather than teaching them, and the
+> in-lesson prerequisite beat planned for it is dropped.
 
 ---
 
@@ -20,8 +21,9 @@ Upstream artifacts are **linked, never restated**.
 - **Lesson / spine position:** `red-black-trees`, unit `data-structures` of the
   **Algorithmic Thinking** course (subject *Algorithms & Complexity*), currently a
   `future` node in [src/lessons/courseModel.ts](../../../../../src/lessons/courseModel.ts).
-  It would be **chapter 2** of that course, after `karatsuba`.
-  *No `course-spine.md` exists for this subject* — see [§8](#8-open-decisions-for-the-user-mode-a-gaps).
+  It becomes **chapter 3** of that course, after `karatsuba` and the newly-inserted
+  [`binary-search-trees`](../binary-search-trees/mastery-contract.md).
+  *No `course-spine.md` exists for this subject* — see [§5](#5-resolved-decisions).
 - **Core course profile in force:** **P2 — demanding applied**, declared
   **per-lesson and provisionally**, because the subject has declared none.
   Rationale: the lesson's centre of gravity is algorithmic (cost, cases, an
@@ -53,15 +55,16 @@ Upstream artifacts are **linked, never restated**.
   disappear.
 - **Prerequisite knowledge to retrieve:** binary-search-tree search/insert; that
   in-order traversal reads a BST's keys in sorted order; big-O; induction on tree
-  height. **None of these is taught in this course today** — see
-  [§8](#8-open-decisions-for-the-user-mode-a-gaps). Under Option B there, the
-  lesson opens with a compact retrieval beat (a BST the learner searches and reads
-  in order) that is *retrieval, not instruction*, and is gated by a prerequisite
-  check item.
-- **Bridge from the previous lesson:** *"Karatsuba's four products became three
-  once we stopped treating the middle two as separate work. Red–black trees have
-  the same shape of answer: seven repair cases become one rule once we stop
-  treating the colours as decoration."*
+  height. **All are supplied by the preceding
+  [Binary Search Trees](../binary-search-trees/mastery-contract.md) lesson**, whose
+  own outcomes O1–O6 cover exactly this ground. This lesson therefore *retrieves*
+  them (a backward-bridge event) and teaches none of them.
+- **Bridge from the previous lesson:** *"Binary search trees ended on a problem:
+  the cost is the height, and the insertion order — which you do not control —
+  picks the height. Red–black trees are the answer, and they arrive looking like
+  five arbitrary colour rules and seven repair cases. They are neither."*
+  (The Karatsuba edge is still fired, one step further back: all three lessons
+  re-decompose or re-encode so that structure becomes visible.)
 - **Motivating problem / mathematical need:** the learner is **shown the finished
   artefact first** — the five colour properties and the insert case table — and
   asked the honest question: *where does this list come from, and why exactly
@@ -243,7 +246,7 @@ forward as Gate-9 obligations. No readiness claim may cite O8/O9 before Gate 9.
   - **No optimality claim.** The lesson proves *sufficiency* — a construction with
     a logarithmic upper bound — not that red-black balance is minimal.
   - **Not a BST tutorial.** Prerequisite BST material is *retrieved*, not taught
-    (subject to [§8](#8-open-decisions-for-the-user-mode-a-gaps)).
+    (subject to [§5](#5-resolved-decisions)).
 
 ### Abstraction return (rejection #4 guard)
 
@@ -308,10 +311,25 @@ representation.
 
 ---
 
-## 5. Open decisions for the user (Mode A gaps)
+## 5. Resolved decisions
 
-These are **not** self-authorized. Both are cheap to answer and both change the
-implementation.
+Both questions below were put to the repository owner and answered on
+2026-07-24. The resolutions are recorded here; the original framing is kept so the
+reasoning stays auditable.
+
+**Resolution 1 — profile:** *accept the per-lesson P2 declaration; open Mode A for
+the algorithms subject later.* This contract's §1a declaration stands, and the
+subject-level spine / curriculum-architecture / benchmark matrix remain **owed**.
+
+**Resolution 2 — placement and prerequisite:** *option (b)* — add a
+**Binary Search Trees** lesson before this one in the same `data-structures` unit
+of Algorithmic Thinking, and build it first. Consequences already applied: this
+contract's §1b now retrieves rather than teaches BSTs; the lesson plan's
+prerequisite beat (`rbt-prereq-bst`) and its practice item are **deleted**; the
+`binary-search-trees` node is added to the curriculum ahead of this one. The doc
+directory `docs/courses/data-structures/` is kept for both lessons (it now holds a
+coherent pair) — the naming inconsistency with `docs/courses/algorithms/karatsuba`
+is left for Mode A to settle rather than churned now.
 
 ### 5.1 The algorithms subject has no Mode A artifacts
 
@@ -321,6 +339,7 @@ contract had to **declare a per-lesson profile (P2) and propose concept ids**
 rather than inherit them. Karatsuba shipped the same way. Options:
 
 - **(a)** Accept the per-lesson P2 declaration for now; open Mode A later.
+  ← **chosen**
 - **(b)** Run Mode A for the algorithms subject first (profile + spine + benchmark),
   then ratify this contract against it.
 
@@ -341,9 +360,8 @@ Options:
 - **(a)** Keep Red–Black Trees as a unit of **Algorithmic Thinking** and open the
   lesson with a compact **BST retrieval beat** (gated by a prerequisite-check
   item). Smallest change; the lesson carries a little prerequisite weight.
-- **(b)** Add a `binary-search-trees` **`future` node before it** in the same unit,
-  and have this lesson retrieve rather than re-teach. Cleanest pedagogically;
-  defers this lesson behind another one.
+- **(b)** Add a `binary-search-trees` node **before it** in the same unit, and have
+  this lesson retrieve rather than re-teach. ← **chosen**
 - **(c)** Promote **Data Structures to its own course** (matching the existing doc
   directory), with BSTs then Red–Black Trees. Best long-term shape; changes the
   catalog, the sidebar, and numbering.

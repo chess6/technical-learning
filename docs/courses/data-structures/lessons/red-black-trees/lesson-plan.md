@@ -5,15 +5,17 @@ Implements [mastery-contract.md](mastery-contract.md) (Gate 5), which implements
 [insight.md](insight.md) (Gate 4, `PASS`). **Neither is restated here** — this
 document says *how it gets built*.
 
-> **Not yet approved for implementation.** Writing lesson code is the Mode C
-> boundary. This plan exists to be approved or redirected first.
+> **Approved for implementation** by the repository owner on 2026-07-24, after
+> [Binary Search Trees](../binary-search-trees/lesson-plan.md) — see
+> [mastery-contract §5](mastery-contract.md#5-resolved-decisions).
 
 ## Gate prerequisite
 
 - Insight Contract: [insight.md](insight.md)
 - [x] `Gate result: PASS` confirmed
-- Mastery Contract: [mastery-contract.md](mastery-contract.md) — complete, with
-  two open Mode-A questions recorded in its §5.
+- Mastery Contract: [mastery-contract.md](mastery-contract.md) — complete; its two
+  open Mode-A questions were resolved by the owner
+  ([§5](mastery-contract.md#5-resolved-decisions)).
 
 ## Approved insight (gate)
 
@@ -61,26 +63,28 @@ Subtitle: *Where the five properties and the repair cases actually come from*
 | --- | --- | --- |
 | 1 | `motivate` | *(none — the question speaks for itself)* |
 | 2 | `section: rules-without-a-source` | "Five rules and seven cases, from nowhere" |
-| 3 | `practice` (`rbt-prereq-bst`) | `heading: "First, a tree you already know"` |
-| 4 | `visual` | `heading: "One node, drawn two ways"` |
-| 5 | `section: the-encoding` | "A black node and its red children are one node" |
-| 6 | `formal: def-encoding` | *Definition* |
-| 7 | `formal: thm-invariants-forced` | *Theorem* (T2) |
-| 8 | `section: split-is-a-recolour` | "Overflow, split, promote — in binary" |
-| 9 | `check` | *(none — the prompt speaks for itself)* |
-| 10 | `formal: thm-recolour` | *Theorem* (T3) |
-| 11 | `worked: wex-mis-oriented` | *(none — the example names itself)* |
-| 12 | `section: bare-rotation-breaks-it` | "What a rotation alone does **not** do" |
-| 13 | `explore` | `tocLabel: "Insert on both sides at once"` |
-| 14 | `formal: thm-height-bound` | *Theorem* (T5) |
-| 15 | `worked: wex-height-induction` | *(none)* |
-| 16 | `practice` | *(default "Practice")* |
-| 17 | `summary` | `heading: "The colour bit records node membership"` |
+| 3 | `visual` | `heading: "One node, drawn two ways"` |
+| 4 | `section: the-encoding` | "A black node and its red children are one node" |
+| 5 | `formal: def-encoding` | *Definition* |
+| 6 | `formal: thm-invariants-forced` | *Theorem* (T2) |
+| 7 | `section: split-is-a-recolour` | "Overflow, split, promote — in binary" |
+| 8 | `check` | *(none — the prompt speaks for itself)* |
+| 9 | `formal: thm-recolour` | *Theorem* (T3) |
+| 10 | `worked: wex-mis-oriented` | *(none — the example names itself)* |
+| 11 | `section: bare-rotation-breaks-it` | "What a rotation alone does **not** do" |
+| 12 | `explore` | `tocLabel: "Insert on both sides at once"` |
+| 13 | `formal: thm-height-bound` | *Theorem* (T5) |
+| 14 | `worked: wex-height-induction` | *(none)* |
+| 15 | `practice` | *(default "Practice")* |
+| 16 | `summary` | `heading: "The colour bit records node membership"` |
 
-Watch-before-Explore is preserved (block 4 before 13), and the visual is
-introduced by an authored, content-specific heading — the section titles do not
-precede it. Block 3 is the prerequisite-retrieval beat from the contract's §5.2
-option (a); **it is deleted if the user picks option (b) or (c)**.
+Watch-before-Explore is preserved (block 3 before 12), and the visual is
+introduced by an authored, content-specific heading — no section title precedes
+it. **The prerequisite beat that earlier drafts placed at block 3 is gone**: the
+owner chose to build a
+[Binary Search Trees](../binary-search-trees/lesson-plan.md) lesson first, so BSTs
+are retrieved by the opening bridge rather than re-taught here
+([mastery-contract §5](mastery-contract.md#5-resolved-decisions)).
 
 ## Motivating question
 
@@ -170,7 +174,6 @@ Initialized from `rbt-canonical`, so the learner takes over the scene's own tree
 
 | # | Id | Outcome | Type | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- | --- |
-| 0 | `rbt-prereq-bst` | prerequisite gate | multiple-choice | the in-order reading of a small BST | "In-order traversal is what makes this a *search* tree — we lean on it throughout." |
 | 1 | `rbt-encode-rule` | D2 recall (**the one recall item**) | multiple-choice | "red = an extra key in my parent's node" | distractors are the three most common wrong readings of the colour bit |
 | 2 | `rbt-encode-decode` | O1 | `custom` (`construct-in-explorer`) | cluster boundaries of a fresh 6-key tree | grades the **boundaries**, so a right-looking picture with wrong ownership fails |
 | 3 | `rbt-classify-repair` | O2 | `custom` (`rbt-repair-classification`) | receiving node + **arity before** + repair kind | method **not named** in the prompt (`methodSelection: true`) |
