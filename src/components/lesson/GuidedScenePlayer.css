@@ -42,7 +42,7 @@
 .guided-scene-player[data-theater] .guided-scene-player__stage-eyebrow,
 .guided-scene-player[data-theater] .guided-scene-player__stage-title,
 .guided-scene-player[data-theater] .guided-scene-player__stage-summary {
-  color: var(--color-canvas-text, #e6e1d7);
+  color: var(--color-canvas-text);
 }
 
 /* True fullscreen (Fullscreen API on the figure). */
@@ -65,7 +65,7 @@
 .guided-scene-player:fullscreen .guided-scene-player__stage-eyebrow,
 .guided-scene-player:fullscreen .guided-scene-player__stage-title,
 .guided-scene-player:fullscreen .guided-scene-player__stage-summary {
-  color: var(--color-canvas-text, #e6e1d7);
+  color: var(--color-canvas-text);
 }
 
 /* Subtle warm frame around the dark canvas — an illustration on the page. */
@@ -231,7 +231,7 @@
 
 .guided-scene-player__speed[data-active="true"] {
   background: var(--color-primary);
-  color: var(--color-on-primary, #fff);
+  color: var(--color-on-accent);
 }
 
 .guided-scene-player__timeline {
