@@ -1,0 +1,33 @@
+{
+  "$comment": "Single source of truth for the reference-video excerpts the benchmark laboratory reconstructs. scripts/fetch-benchmark-media.sh reads this to download (yt-dlp) and slice (ffmpeg) the local, git-ignored media under .reference-sources/media/; the TypeScript manifests import it so manifest timing and extracted frames can never drift apart. Times are seconds in the source video. frameFps is the extraction rate for the lab's frame-accurate reference player.",
+  "windows": [
+    {
+      "benchmarkId": "eigen-span-stretch",
+      "videoId": "PFDu9oVAE-g",
+      "start": 117.4,
+      "end": 202.5,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "huffman-merge",
+      "videoId": "B3y0RsVCyrw",
+      "start": 1450.0,
+      "end": 1497.0,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "ab-split",
+      "videoId": "lifFgyB77zc",
+      "start": 299.0,
+      "end": 366.0,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "bfs-frontier",
+      "videoId": "mVzsz8Actrc",
+      "start": 0.0,
+      "end": 40.0,
+      "frameFps": 15
+    }
+  ]
+}

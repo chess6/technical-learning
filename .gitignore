@@ -26,6 +26,7 @@ tmp-screenshots/
 # Reference-only study caches (never vendored; see docs/engineering/reference-sources.md)
 .reference-sources/animation-repos/
 .reference-sources/transcripts/
+.reference-sources/media/
 .reference-sources/packs/*/transcript.json
 .reference-sources/packs/*/transcript.txt
 .reference-sources/packs/*/captions.*
