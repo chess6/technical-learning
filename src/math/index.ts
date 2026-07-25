@@ -147,6 +147,19 @@ export type {
 } from "./elimination";
 
 export {
+  STANDARD_BASIS,
+  changeOfBasisMatrix,
+  coordinatesInBasis,
+  fromCoordinatesInBasis,
+  isBasis,
+  isDiagonal,
+  isStandardBasis,
+  matrixInBasis,
+  similarityInvariants,
+} from "./changeOfBasis";
+export type { SimilarityInvariants } from "./changeOfBasis";
+
+export {
   columnSpaceBasis,
   geometricMultiplicity,
   imageShape,

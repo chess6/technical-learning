@@ -34,6 +34,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./subspacesRankScene").then((m) => m.subspacesRankScene),
   "rank-nullity": () =>
     import("./rankNullityScene").then((m) => m.rankNullityScene),
+  "change-of-basis": () =>
+    import("./changeOfBasisScene").then((m) => m.changeOfBasisScene),
   "determinant-area-scaling": () =>
     import("./determinantAreaScalingScene").then(
       (m) => m.determinantAreaScalingScene,

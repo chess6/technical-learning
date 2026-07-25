@@ -1,0 +1,14 @@
+.cob-explorer__scene {
+  width: 100%;
+}
+
+.cob-explorer__compare dt {
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+}
+
+.cob-explorer__compare dd {
+  margin: 0.15rem 0 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}

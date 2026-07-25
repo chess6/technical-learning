@@ -15,6 +15,7 @@ import {
   MATRIX_COMPOSITION_SEGMENTS,
   SUBSPACES_RANK_SEGMENTS,
   RANK_NULLITY_SEGMENTS,
+  CHANGE_OF_BASIS_SEGMENTS,
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
   toSteps,
@@ -67,6 +68,7 @@ const SOLUTION_SETS_STEPS = toSteps(SOLUTION_SETS_SEGMENTS);
 const MATRIX_COMPOSITION_STEPS = toSteps(MATRIX_COMPOSITION_SEGMENTS);
 const SUBSPACES_RANK_STEPS = toSteps(SUBSPACES_RANK_SEGMENTS);
 const RANK_NULLITY_STEPS = toSteps(RANK_NULLITY_SEGMENTS);
+const CHANGE_OF_BASIS_STEPS = toSteps(CHANGE_OF_BASIS_SEGMENTS);
 
 export const SCENE_META: Record<string, GuidedSceneMeta> = {
   "why-linear-algebra": {
@@ -189,6 +191,21 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "degrade",
       "ceiling",
       "forbidden",
+    ]),
+  },
+  "change-of-basis": {
+    id: "change-of-basis",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for change of basis. A single arrow to the point (4, 1) is drawn once and never moves. It is first read against the standard square grid, giving the coordinates (4, 1). A second grid built from Lesson 1's basis, which is deliberately neither perpendicular nor unit length, then fades in over the same arrow, and counting along that grid gives the coordinates (1, 1) for the very same point. Both readings are shown together and are then relabelled with their basis subscripts, making explicit that every earlier coordinate list was a name in the standard basis. The scene then switches subject from a point to a map: the unit square deforms under a matrix, whose standard-basis description is shown beside it, and finally the same unchanged deformation is relabelled with its description in another basis, which is diagonal.",
+    steps: CHANGE_OF_BASIS_STEPS,
+    majorSteps: pickMajor(CHANGE_OF_BASIS_STEPS, [
+      "one-arrow",
+      "swap-grid",
+      "new-readout",
+      "hidden-subscript",
+      "map-standard",
+      "map-eigenbasis",
     ]),
   },
   "vectors-linear-combinations": {

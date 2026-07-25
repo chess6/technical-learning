@@ -244,6 +244,56 @@ export const RANK_NULLITY_SEGMENTS: readonly SceneSegment[] = [
 ];
 
 /**
+ * Lesson 10 — "Change of Basis". ONE arrow, drawn once and never moved; the grid
+ * beneath it is swapped. The arrow's position is written only at setup, so
+ * "the vector does not move" is a guarantee of the scene's construction rather
+ * than a claim in a caption.
+ *
+ * Reuses Lesson 1's numbers exactly — basis ((1,2),(3,-1)), point (4,1) with
+ * coordinates (1,1) — so no new arithmetic competes with the new interpretation.
+ * The last two beats show the same deformation described by two different
+ * matrices, the second diagonal, which is the payoff Lesson 11 opens on.
+ */
+export const CHANGE_OF_BASIS_SEGMENTS: readonly SceneSegment[] = [
+  {
+    id: "one-arrow",
+    title: "One arrow on the usual grid",
+    duration: 5,
+    summary: "The point p reads (4, 1) against the standard grid — the grid nobody has mentioned since Lesson 2.",
+  },
+  {
+    id: "swap-grid",
+    title: "Swap the grid, not the arrow",
+    duration: 6,
+    summary: "A second grid, built from Lesson 1's basis, fades in over the same arrow. The arrow does not move.",
+  },
+  {
+    id: "new-readout",
+    title: "A different name for the same point",
+    duration: 6,
+    summary: "Against the new grid the same point reads (1, 1). Both names are shown at once — one point, two descriptions.",
+  },
+  {
+    id: "hidden-subscript",
+    title: "The subscript that was always there",
+    duration: 5.5,
+    summary: "The first reading was never just (4, 1) — it was the coordinates in the standard basis, written without saying so.",
+  },
+  {
+    id: "map-standard",
+    title: "A map, described in the standard basis",
+    duration: 6,
+    summary: "The plane deforms. Beside it, the matrix that describes the deformation in standard coordinates.",
+  },
+  {
+    id: "map-eigenbasis",
+    title: "The same deformation, described in another basis",
+    duration: 7,
+    summary: "Identical motion, different description — and in this basis the matrix is diagonal. The map did not get simpler; the language did.",
+  },
+];
+
+/**
  * Lesson 6 — "Matrix Composition & Inverses". The scene asks one question seven
  * times: *where does the basis land?* Apply B, then A; show that a single matrix
  * does both; read the product's columns off the two basis paths; swap the order;

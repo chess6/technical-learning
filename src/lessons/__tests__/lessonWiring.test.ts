@@ -317,6 +317,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "determinants",
       "subspaces-rank",
       "rank-nullity",
+      "change-of-basis",
       "eigenvectors",
       "karatsuba",
       "binary-search-trees",
@@ -862,7 +863,7 @@ describe("Rank–Nullity lesson (spine L9)", () => {
   it("follows Subspaces & Rank and precedes Eigenvectors", () => {
     const ids = lessons.map((l) => l.id);
     expect(ids.indexOf("rank-nullity")).toBe(ids.indexOf("subspaces-rank") + 1);
-    expect(ids.indexOf("rank-nullity")).toBe(ids.indexOf("eigenvectors") - 1);
+    expect(ids.indexOf("rank-nullity")).toBe(ids.indexOf("change-of-basis") - 1);
   });
 
   it("wires its own scene and explorer", () => {
@@ -961,6 +962,108 @@ describe("Rank–Nullity lesson (spine L9)", () => {
       "degrade",
       "ceiling",
       "forbidden",
+    ]);
+  });
+});
+
+describe("Change of Basis lesson (spine L10)", () => {
+  it("is the last lesson before Eigenvectors", () => {
+    const ids = lessons.map((l) => l.id);
+    expect(ids.indexOf("change-of-basis")).toBe(ids.indexOf("rank-nullity") + 1);
+    expect(ids.indexOf("change-of-basis")).toBe(ids.indexOf("eigenvectors") - 1);
+  });
+
+  it("wires its own scene and explorer", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    expect(lesson.guidedSceneId).toBe("change-of-basis");
+    expect(lesson.explorationId).toBe("change-of-basis");
+    expect(hasGuidedScene("change-of-basis")).toBe(true);
+    expect(getExplorer("change-of-basis")).toBeTypeOf("function");
+  });
+
+  it("reuses Lesson 1's basis and Lesson 11's matrix", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    // The map half must be the matrix eigenvectors opens on, so the payoff lands
+    // on something the next lesson immediately uses.
+    expect(lesson.exampleId).toBe("eigen-distinct");
+    expect(getLessonById("eigenvectors")!.exampleId).toBe("eigen-distinct");
+    const worked = (lesson.workedExamples ?? []).find(
+      (w) => w.id === "wex-l1-revisited",
+    )!;
+    expect(worked.exampleId).toBe("vectors-default");
+  });
+
+  it("DERIVES the similarity theorem from what [A]_B has to do", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const thm = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-similarity")!;
+    expect(thm.kind).toBe("theorem");
+    const note = (thm.layers ?? []).find((l) => l.kind === "math-note")!;
+    // The derivation must start from the DEFINING requirement, not from P^-1AP.
+    expect(note.body).toContain("[A\\mathbf{x}]_B = [A]_B\\,[\\mathbf{x}]_B");
+  });
+
+  it("makes P's direction derivable from its columns, not memorable", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const prop = (lesson.formalBlocks ?? []).find((f) => f.id === "prop-conversion")!;
+    expect(prop.interpretation.toLowerCase()).toMatch(/not a convention to memorize|follows from how/);
+    const check = (lesson.checkpoints ?? []).find((c) => c.id === "which-direction")!;
+    expect(check.prompt.toLowerCase()).toMatch(/derive it/);
+  });
+
+  it("DENIES the similarity converse, with a counterexample", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const prop = (lesson.formalBlocks ?? []).find((f) => f.id === "prop-invariants")!;
+    expect(prop.statement.toLowerCase()).toMatch(/converse is false|converse\*\* is false/);
+    const callout = (lesson.callouts ?? []).find(
+      (c) => c.id === "equal-det-not-similar",
+    )!;
+    // The counterexample must be concrete, not a bare assertion.
+    expect(callout.confront ?? "").toMatch(/1 & 1/);
+    const item = lesson.exercises!.find((ex) => ex.id === "cob-converse-false");
+    expect(item).toBeDefined();
+  });
+
+  it("refuses to imply the basis must be orthonormal", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const callout = (lesson.callouts ?? []).find(
+      (c) => c.id === "must-be-orthonormal",
+    )!;
+    expect(callout.confront ?? "").toMatch(/dot product/);
+    expect(callout.resolve ?? "").toMatch(/independent and spanning/);
+  });
+
+  it("carries the diagonalization payoff Eigenvectors needs", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const section = lesson.sections.find((s) => s.id === "shorter")!;
+    expect(section.equation).toMatch(/3 & 0/);
+    const ahead = (section.layers ?? []).filter((l) => l.kind === "looking-ahead");
+    expect(ahead.length).toBeGreaterThanOrEqual(1);
+    expect(ahead.map((l) => l.body).join(" ").toLowerCase()).toMatch(/eigenvector/);
+    // …and the honest caveat that not every map has such a basis, using L9's test.
+    const traps = (section.layers ?? []).filter((l) => l.kind === "trap");
+    expect(traps.map((l) => l.body).join(" ")).toMatch(/geometric multiplicity/);
+  });
+
+  it("covers all three tiers, including a fresh basis", () => {
+    const lesson = getLessonById("change-of-basis")!;
+    const tiers = new Set(lesson.exercises!.map((ex) => ex.tier).filter(Boolean));
+    expect(tiers.has("check")).toBe(true);
+    expect(tiers.has("drill")).toBe(true);
+    expect(tiers.has("transfer")).toBe(true);
+    const ids = new Set(lesson.exercises!.map((ex) => ex.id));
+    expect(ids.has("cob-coordinates-fresh")).toBe(true);
+    expect(ids.has("cob-matrix-in-basis-fresh")).toBe(true);
+  });
+
+  it("tours the scene beats that separate object from description", () => {
+    const meta = getSceneMeta("change-of-basis");
+    expect(meta.majorSteps.map((s) => s.id)).toEqual([
+      "one-arrow",
+      "swap-grid",
+      "new-readout",
+      "hidden-subscript",
+      "map-standard",
+      "map-eigenbasis",
     ]);
   });
 });

@@ -488,6 +488,27 @@ export const RANK_NULLITY_PRESETS: readonly RankNullityPreset[] = [
   },
 ];
 
+/**
+ * Lesson 10 (`change-of-basis`) basis presets. Deliberately includes a basis that
+ * is neither orthogonal nor unit length as the DEFAULT (Lesson 1's), so nothing
+ * in the lesson suggests either property is required, and a dependent pair so the
+ * "not a basis" guard is reachable by a learner rather than only by a test.
+ */
+export interface BasisPreset {
+  id: string;
+  label: string;
+  first: Vector2;
+  second: Vector2;
+}
+
+export const BASIS_PRESETS: readonly BasisPreset[] = [
+  { id: "standard", label: "Standard", first: [1, 0], second: [0, 1] },
+  { id: "lesson-one", label: "Lesson 1's basis", first: [1, 2], second: [3, -1] },
+  { id: "eigenbasis", label: "Eigenbasis of A", first: [1, 0], second: [-1, 1] },
+  { id: "skewed", label: "Skewed", first: [2, 1], second: [1, 3] },
+  { id: "dependent", label: "Dependent (not a basis)", first: [1, 2], second: [2, 4] },
+];
+
 export const EIGEN_LESSON_PRESETS: readonly TransformPreset[] = [
   { id: "distinct", label: "Distinct real", exampleId: "eigen-distinct" },
   { id: "negative", label: "Negative λ", exampleId: "eigen-negative" },

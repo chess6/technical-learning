@@ -1,4 +1,5 @@
 import { binarySearchTreesLesson } from "./binarySearchTrees";
+import { changeOfBasisLesson } from "./changeOfBasis";
 import { chapter0Lesson } from "./chapter0";
 import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
@@ -34,6 +35,7 @@ export const lessons: LessonDefinition[] = [
   determinantsLesson,
   subspacesRankLesson,
   rankNullityLesson,
+  changeOfBasisLesson,
   eigenvectorsLesson,
   karatsubaLesson,
   binarySearchTreesLesson,

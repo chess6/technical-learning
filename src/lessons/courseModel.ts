@@ -123,12 +123,7 @@ export const CURRICULUM: readonly Subject[] = [
             items: [
               { kind: "lesson", lessonId: "subspaces-rank" },
               { kind: "lesson", lessonId: "rank-nullity" },
-              {
-                kind: "future",
-                id: "change-of-basis",
-                title: "Change of Basis",
-                subtitle: "Same vector, different coordinates — the early payoff",
-              },
+              { kind: "lesson", lessonId: "change-of-basis" },
             ],
           },
           {

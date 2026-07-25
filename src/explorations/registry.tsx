@@ -62,6 +62,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.RankNullityExplorer,
     })),
   ),
+  "change-of-basis": lazy(() =>
+    import("./ChangeOfBasisExplorer").then((m) => ({
+      default: m.ChangeOfBasisExplorer,
+    })),
+  ),
   "graphic-transformation": lazy(() =>
     import("./GraphicTransformationExplorer").then((m) => ({
       default: m.GraphicTransformationExplorer,
