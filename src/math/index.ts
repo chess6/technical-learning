@@ -259,3 +259,32 @@ export type {
   SearchTrace,
   ValidityResult,
 } from "./binarySearchTrees";
+
+export {
+  blackHeight,
+  blackHeightsPerPath,
+  classifyRepair,
+  decode as decode234,
+  encode as encode234,
+  flipColours,
+  height234,
+  heightRB,
+  inOrderRB,
+  insertAllRB,
+  insertRB,
+  isLegalRB,
+  rotateLeft,
+  rotateOnlyAt,
+  rotateRight,
+  sizeRB,
+} from "./redBlackTrees";
+export type {
+  Colour,
+  InsertResult,
+  LegalityResult,
+  Node234,
+  RBNode,
+  RepairClassification,
+  RepairKind,
+  RepairStep,
+} from "./redBlackTrees";

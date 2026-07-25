@@ -9,6 +9,19 @@ import {
   magnitude,
 } from "./vectors";
 import {
+  blackHeight as rbBlackHeight,
+  decode as rbDecode,
+  encode as rbEncode,
+  flipColours as rbFlipColours,
+  heightRB as rbHeight,
+  inOrderRB as rbInOrder,
+  insertAllRB as rbInsertAll,
+  insertRB as rbInsert,
+  isLegalRB as rbIsLegal,
+  rotateOnlyAt as rbRotateOnlyAt,
+  type RBNode as RBTreeNode,
+} from "./redBlackTrees";
+import {
   binarySearchProbes as bstBinarySearchProbes,
   buildBalanced as bstBuildBalanced,
   height as bstHeight,
@@ -304,6 +317,140 @@ export function assertBalancedTreeMatchesBinarySearch(
     fail(
       `binary-search probes [${probes.join(", ")}] !== balanced path [${path.join(", ")}] ` +
         `for target ${target}`,
+    );
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Red-black trees
+ *
+ * The seven checks the Red–Black Trees lesson owes (mastery-contract §1g).
+ * Invariant 7 is a NEGATIVE assertion: the bare-rotation fixture must FAIL
+ * legality, so the lesson's sharpest misconception is confronted by a
+ * demonstration that cannot silently stop demonstrating anything.
+ * ------------------------------------------------------------------------ */
+
+/** (1) decode ∘ encode is the identity (under the left-leaning normalization). */
+export function assertEncodingRoundTrips(order: readonly number[]): void {
+  const tree = rbInsertAll(order);
+  const back = rbEncode(rbDecode(tree));
+  if (JSON.stringify(back) !== JSON.stringify(tree)) {
+    fail(`encode(decode(T)) !== T for order [${order.join(", ")}]`);
+  }
+}
+
+/** (2) Every rotation and recolour preserves the in-order key sequence. */
+export function assertRepairPreservesOrder(order: readonly number[]): void {
+  const inserted: number[] = [];
+  let tree: RBTreeNode | null = null;
+  for (const key of order) {
+    tree = rbInsert(tree, key).tree;
+    if (!inserted.includes(key)) inserted.push(key);
+    // Compare against the sorted keys inserted SO FAR — not a prefix of the
+    // final sorted array, which is a different set part-way through.
+    const expected = [...inserted].sort((a, b) => a - b);
+    const seq = rbInOrder(tree);
+    if (seq.join(",") !== expected.join(",")) {
+      fail(
+        `in-order [${seq.join(", ")}] !== [${expected.join(", ")}] ` +
+          `after inserting ${key} of [${order.join(", ")}]`,
+      );
+    }
+  }
+}
+
+/** (3) A legal tree has no red-red edge and one black height on every path. */
+export function assertLegalRedBlack(order: readonly number[]): void {
+  const result = rbIsLegal(rbInsertAll(order));
+  if (!result.legal) {
+    fail(
+      `illegal red-black tree for order [${order.join(", ")}]: ${result.violations.join("; ")}`,
+    );
+  }
+}
+
+/**
+ * (4) A split-recolour preserves the subtree's **EXTERNAL** black height.
+ *
+ * "External" is load-bearing, and it is exactly the qualifier the lesson's
+ * misconception M4 drops. The count must be taken on a path *entering the
+ * cluster from outside*, which means the representative's own colour counts —
+ * before the split it is black and contributes 1 while its red children
+ * contribute 0; after the split it is red and contributes 0 while whichever
+ * child the path takes contributes 1. `blackHeight` measures from a node
+ * *exclusive*, so the node's own contribution has to be added back here. Using
+ * the exclusive count instead would measure a different quantity, and it is not
+ * preserved.
+ */
+export function assertSplitPreservesExternalBlackHeight(node: RBTreeNode): void {
+  if (node.left === null || node.right === null) {
+    fail("the fixture is not a 4-node cluster — it cannot demonstrate the split");
+  }
+  const external = (n: RBTreeNode): number =>
+    (n.colour === "black" ? 1 : 0) + rbBlackHeight(n);
+  const before = external(node);
+  const after = external(rbFlipColours(node));
+  if (before !== after) {
+    fail(
+      `split changed external black height ${before} → ${after} at node ${node.key}`,
+    );
+  }
+}
+
+/** (5) Only a root split raises the TOTAL black height, and by exactly one. */
+export function assertOnlyRootSplitRaisesBlackHeight(
+  order: readonly number[],
+): void {
+  let tree: RBTreeNode | null = null;
+  for (const key of order) {
+    const before = rbBlackHeight(tree);
+    const result = rbInsert(tree, key);
+    tree = result.tree;
+    const after = rbBlackHeight(tree);
+    const expected = result.rootSplit ? before + 1 : before;
+    if (after !== expected) {
+      fail(
+        `black height went ${before} → ${after} on inserting ${key} (rootSplit=${result.rootSplit})`,
+      );
+    }
+  }
+}
+
+/** (6) height ≤ 2·log₂(n+1) after every insertion, sorted input included. */
+export function assertRedBlackHeightBound(order: readonly number[]): void {
+  let tree: RBTreeNode | null = null;
+  let n = 0;
+  for (const key of order) {
+    tree = rbInsert(tree, key).tree;
+    n += 1;
+    const h = rbHeight(tree);
+    const bound = 2 * Math.log2(n + 1);
+    if (h > bound) {
+      fail(`height ${h} exceeds 2·log2(${n}+1) = ${bound.toFixed(2)}`);
+    }
+  }
+}
+
+/**
+ * (7, NEGATIVE) A **bare** rotation — one with no accompanying recolour — must
+ * break legality somewhere. If this ever stops failing, the lesson's
+ * "a rotation alone does not preserve black height" confrontation has quietly
+ * become a claim about nothing.
+ */
+export function assertBareRotationBreaksTheTree(order: readonly number[]): void {
+  const tree = rbInsertAll(order);
+  if (!rbIsLegal(tree).legal) {
+    fail("the starting tree is already illegal — the counterexample proves nothing");
+  }
+  const broke = order.some((key) =>
+    (["left", "right"] as const).some(
+      (direction) => !rbIsLegal(rbRotateOnlyAt(tree, key, direction)).legal,
+    ),
+  );
+  if (!broke) {
+    fail(
+      `no bare rotation broke the tree built from [${order.join(", ")}] — ` +
+        "the misconception is no longer being demonstrated",
     );
   }
 }
