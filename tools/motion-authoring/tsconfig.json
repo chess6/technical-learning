@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "declaration": false,
     "declarationMap": false,
-    "types": ["node"]
+    "types": ["node", "@motion-canvas/core/project"]
   },
-  "include": ["src", "vite.config.ts", "tuningPersistencePlugin.ts"]
+  "include": ["src", ".generated/**/*.ts", "vite.config.ts", "tuningPersistencePlugin.ts"]
 }

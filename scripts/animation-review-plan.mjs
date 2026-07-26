@@ -34,3 +34,52 @@ export function missingCaptureFailures(records, artifactExists) {
         `${beatId}.${checkpointId} at frame ${frame}`,
     );
 }
+
+/** The smallest inclusive Renderer range containing every selected checkpoint. */
+export function selectedRenderRange(checkpoints, fps) {
+  if (checkpoints.length === 0) {
+    throw new Error("cannot render an empty checkpoint selection");
+  }
+  if (!Number.isFinite(fps) || fps <= 0) {
+    throw new Error("fps must be positive");
+  }
+  const frames = checkpoints.map(({frame}) => frame);
+  const startFrame = Math.min(...frames);
+  const endFrame = Math.max(...frames);
+  return {
+    startFrame,
+    endFrame,
+    startTime: startFrame / fps,
+    endTime: endFrame / fps,
+    expectedFrames: endFrame - startFrame + 1,
+  };
+}
+
+export function unsupportedReferenceDisposition(sceneId, comparisons) {
+  return comparisons.length > 0
+    ? {requested: true, disposition: "supported", reason: null}
+    : {
+        requested: true,
+        disposition: "unsupported",
+        reason: `scene "${sceneId}" has no supported benchmark comparison`,
+      };
+}
+
+export function reducedMotionEvidenceFailures(records, expectedCount) {
+  const failures = [];
+  if (records.length !== expectedCount) {
+    failures.push(`expected ${expectedCount} reduced-motion captures, received ${records.length}`);
+  }
+  for (const record of records) {
+    if (record.captureSource !== "learner-player") {
+      failures.push(`${record.beatId}: capture source must be learner-player`);
+    }
+    if (record.browserMedia?.query !== "(prefers-reduced-motion: reduce)" || !record.browserMedia.matches) {
+      failures.push(`${record.beatId}: browser did not match prefers-reduced-motion: reduce`);
+    }
+    if (record.runId === "production-renderer") {
+      failures.push(`${record.beatId}: reduced-motion evidence reused the production render run`);
+    }
+  }
+  return failures;
+}

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "postinstall": "npm ci --prefix tools/motion-authoring --ignore-scripts",
     "dev": "vite",
     "animate": "node scripts/animate-scene.mjs",
     "animation:review": "node scripts/review-animation.mjs",

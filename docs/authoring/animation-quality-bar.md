@@ -604,6 +604,21 @@ Each item lists **priority · effort · pedagogical function · likely first ado
 The development workflow edits and judges the production Motion Canvas scene;
 it does not maintain a replica. The current pilot is `matrix-transformations`.
 
+Local prerequisites are explicit: Node/npm, Playwright Chromium, FFmpeg, and
+ImageMagick's `montage` command. Install from the repository root:
+
+```bash
+npm ci                         # also installs tools/motion-authoring
+npx playwright install chromium
+ffmpeg -version
+montage -version
+```
+
+The root `postinstall` owns the nested Motion Canvas dependencies; do not run an
+undocumented second install. `animate` fails before startup with the exact
+`npm ci` recovery command when those dependencies are absent, generates the
+selected-scene adapter, and typechecks that generated adapter before Vite runs.
+
 ```bash
 npm run animate -- --scene matrix-transformations
 npm run animation:review -- --scene matrix-transformations
@@ -648,19 +663,31 @@ continues to come from the production scene and shared math helpers.
 - expected-versus-observed semantic assertions and compact trajectories;
 - production hard-gate findings, environment inputs, and an artifact ledger.
 
-The sampler waits for the requested frame's completed `Stage.render`, not an
-elapsed-time guess. Missing frames, unmeasurable geometry, failed exports,
+Production checkpoint capture waits for Motion Canvas's completed `Stage.render`; learner reduced-motion capture runs in a separate Chromium context with `prefers-reduced-motion: reduce`, seeks the real lesson player through each idea control, and records media mode, route, source, and run id in `packet.json`. Ordinary renderer frames cannot satisfy that evidence contract. Missing frames, unmeasurable geometry, failed exports,
 direction-dependent seeks, browser errors, and failed expectations are recorded
-as failures rather than omitted. The matrix pilot has no corresponding
-benchmark replica, so unsupported reference comparison is recorded explicitly
-instead of inventing evidence.
+as failures rather than omitted. The matrix pilot has no corresponding benchmark replica, so `--reference` fails before server startup or packet creation instead of producing an evidence-free pass.
 
 For a normal edit, `animation:iterate` runs typecheck plus only the authoring,
 timing, semantic-geometry, and hard-gate contracts before updating the packet.
-Use `--beat <id>` or `--checkpoint <id>` for a smaller capture set,
-`--reduced-motion` for static chapter evidence, and `--skip-video` while
+Use `--beat <id>` for a smaller capture set, or combine it with `--checkpoint <id>` for one checkpoint. Focused review sends the inclusive selected frame range to Motion Canvas, skips the full semantic sweep, records emitted-frame count and elapsed milliseconds, and is labelled non-approval.
+Use `--reduced-motion` for static chapter evidence, and `--skip-video` while
 debugging. Before approval, run the unfiltered review and the repository tier
 required by `AGENTS.md`; the focused loop never replaces package approval.
+
+
+Treat these as three separate facts:
+
+- **Server started:** Vite reported the explicit `127.0.0.1` URL and the health
+  probe reached that same host.
+- **Editor opened:** Chromium loaded the native Motion Canvas editor for the
+  selected production adapter.
+- **Browser workflow inspected:** a reviewer actually exercised selection,
+  timeline playback/scrubbing, scene-graph inspection, overlays, time-event
+  adjustment, presentation tuning, persistence, and HMR.
+
+A listening server or an existing PNG proves neither of the latter two. Packet
+file existence is artifact evidence only; visual inspection must be reported as
+a distinct human/browser action.
 
 The overlays, authoring adapter, capture API, and review routes are
 development-only. Ordinary playback, inline clips, production MP4 export, and

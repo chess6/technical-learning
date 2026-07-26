@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /** Deterministic, development-only review packet for a production scene. */
-import {spawn, spawnSync} from "node:child_process";
+import {spawnSync} from "node:child_process";
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -14,8 +13,12 @@ import {fileURLToPath} from "node:url";
 import {
   missingCaptureFailures,
   planCheckpointArtifacts,
+  reducedMotionEvidenceFailures,
   safeArtifactStem,
+  selectedRenderRange,
+  unsupportedReferenceDisposition,
 } from "./animation-review-plan.mjs";
+import {ensureReviewDevServer} from "./review-dev-server.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_OUT = join(ROOT, "artifacts", "animation-review");
@@ -61,6 +64,13 @@ function parseArgs(argv) {
   if (!Number.isInteger(options.stride) || options.stride < 1) {
     throw new Error("--stride must be a positive integer");
   }
+  if (options.checkpoint && !options.beat) {
+    throw new Error("--checkpoint requires --beat so the selection identifies one checkpoint");
+  }
+  if (options.reference) {
+    const reference = unsupportedReferenceDisposition(options.sceneId, []);
+    throw new Error("--reference requested, but " + reference.reason + "; no review packet was generated");
+  }
   return options;
 }
 
@@ -73,42 +83,6 @@ function printHelp() {
 
 Options: --beat <id>, --checkpoint <id>, --reduced-motion, --skip-video,
          --reference, --stride <frames>, --out <dir>, --port <n>`);
-}
-
-async function serverIsUp(port) {
-  try {
-    const response = await fetch(`http://127.0.0.1:${port}/export-harness.html`, {
-      signal: AbortSignal.timeout(1500),
-    });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function ensureDevServer(port) {
-  if (await serverIsUp(port)) return {stop() {}};
-  const child = spawn("npx", ["vite", "--port", String(port), "--strictPort"], {
-    cwd: ROOT,
-    stdio: "ignore",
-    detached: true,
-  });
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    await new Promise((resolveSleep) => setTimeout(resolveSleep, 500));
-    if (await serverIsUp(port)) {
-      return {
-        stop() {
-          try {
-            process.kill(-child.pid, "SIGTERM");
-          } catch {
-            child.kill("SIGTERM");
-          }
-        },
-      };
-    }
-  }
-  child.kill("SIGTERM");
-  throw new Error(`vite dev server did not come up on :${port}`);
 }
 
 function toolVersion(command, args) {
@@ -179,6 +153,7 @@ async function drainProductionRender(page, options, description, packetDir) {
   );
   if (checkpoints.length === 0) throw new Error("the selected beat/checkpoint matched no captures");
 
+  const renderRange = selectedRenderRange(checkpoints, description.fps);
   const frameRecords = planCheckpointArtifacts(
     packetDir,
     description.beats,
@@ -200,18 +175,21 @@ async function drainProductionRender(page, options, description, packetDir) {
     (item) => item.beatId === revealBeat && item.checkpointId === "final",
   )?.frame;
   const previewFramesDir = join(packetDir, ".preview-frames");
-  if (!options.skipVideo && !options.reducedMotionOnly) mkdirSync(previewFramesDir, {recursive: true});
+  const focused = Boolean(options.beat || options.checkpoint);
+  const shouldRenderPreview = !options.skipVideo && !options.reducedMotionOnly && !focused;
+  if (shouldRenderPreview) mkdirSync(previewFramesDir, {recursive: true});
 
   await page.evaluate(
-    ({sceneId, fps}) => {
-      window.__exportApi.start({sceneId, fps, resolutionScale: 0.5}).catch((error) => {
+    ({sceneId, fps, startFrame, endFrame}) => {
+      window.__exportApi.start({sceneId, fps, resolutionScale: 0.5, startFrame, endFrame}).catch((error) => {
         window.__exportStatus.state = "error";
         window.__exportStatus.error = error instanceof Error ? error.message : String(error);
       });
     },
-    {sceneId: options.sceneId, fps: description.fps},
+    {sceneId: options.sceneId, fps: description.fps, startFrame: renderRange.startFrame, endFrame: renderRange.endFrame},
   );
 
+  const startedAt = Date.now();
   let handled = 0;
   let previewWritten = 0;
   let lastFrameAt = Date.now();
@@ -229,7 +207,7 @@ async function drainProductionRender(page, options, description, packetDir) {
         writeFileSync(destination, bytes);
       }
       if (
-        !options.skipVideo && !options.reducedMotionOnly &&
+        !options.skipVideo && !options.reducedMotionOnly && !focused &&
         previewStart !== undefined && previewEnd !== undefined &&
         frame.frame >= previewStart && frame.frame <= previewEnd
       ) {
@@ -254,25 +232,105 @@ async function drainProductionRender(page, options, description, packetDir) {
       `renderer omitted ${missing.length} requested checkpoint frames: ${missing.join(", ")}`,
     );
   }
-  return {frameRecords, previewFramesDir, previewWritten, previewStart, previewEnd, handled};
+  return {
+    frameRecords, previewFramesDir, previewWritten, previewStart, previewEnd, handled,
+    range: renderRange, elapsedMs: Date.now() - startedAt, focused,
+  };
+}
+
+async function captureReducedMotionEvidence(browser, serverUrl, options, description, packetDir, browserErrors) {
+  const context = await browser.newContext({reducedMotion: "reduce"});
+  const page = await context.newPage();
+  page.on("console", (message) => {
+    if (message.type() === "error") browserErrors.push(`reduced-motion: ${message.text()}`);
+  });
+  page.on("pageerror", (error) => browserErrors.push(`reduced-motion: ${error.message}`));
+  await page.emulateMedia({reducedMotion: "reduce"});
+  const route = "/lesson/transformations";
+  const url = new URL(route, serverUrl).toString();
+  await page.goto(url);
+  const root = page.locator(`.guided-scene-player[data-scene-id="${options.sceneId}"]`).first();
+  await root.waitFor({state: "visible", timeout: 30_000});
+  await root.locator(".guided-scene-player__reduced-note").waitFor({state: "visible"});
+  const mediaQuery = "(prefers-reduced-motion: reduce)";
+  const mediaMatches = await page.evaluate((query) => matchMedia(query).matches, mediaQuery);
+  if (!mediaMatches) throw new Error("learner review page did not enter prefers-reduced-motion: reduce");
+
+  const required = description.reducedMotionFrames.filter((item) =>
+    !options.beat || item.beatId === options.beat,
+  );
+  const records = [];
+  const runId = "learner-reduced-motion";
+  for (const item of required) {
+    const beatIndex = description.beats.findIndex(({id}) => id === item.beatId);
+    const beat = description.beats[beatIndex];
+    if (!beat) throw new Error(`missing learner chapter for beat ${item.beatId}`);
+    const control = root.getByRole("button", {
+      name: `Idea ${beatIndex + 1}: ${beat.chapter.title}`,
+      exact: true,
+    });
+    await control.click();
+    await page.waitForFunction(
+      ({sceneId, title, idea}) => {
+        const player = document.querySelector(`.guided-scene-player[data-scene-id="${sceneId}"]`);
+        const active = player?.querySelector(`button[aria-label="${idea}"][aria-current="step"]`);
+        const stageTitle = player?.querySelector(".guided-scene-player__stage-title")?.textContent?.trim();
+        const canvas = player?.querySelector(".guided-scene-player__canvas canvas");
+        return Boolean(active && stageTitle === title && canvas instanceof HTMLCanvasElement && canvas.width > 0 && canvas.height > 0);
+      },
+      {sceneId: options.sceneId, title: beat.chapter.title, idea: `Idea ${beatIndex + 1}: ${beat.chapter.title}`},
+      {timeout: 15_000},
+    );
+    // The active chapter is published from the engine's frame event. Two browser
+    // frames let the corresponding Stage.render paint before Playwright reads pixels.
+    await page.evaluate(() => new Promise((resolveFrame) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolveFrame)),
+    ));
+    const target = join(
+      packetDir,
+      "reduced-motion",
+      `${safeArtifactStem(item.beatId)}--learner-chapter.png`,
+    );
+    await root.locator(".guided-scene-player__canvas canvas").screenshot({path: target});
+    records.push({
+      beatId: item.beatId,
+      chapterTitle: beat.chapter.title,
+      artifact: packetPath(packetDir, target),
+      captureSource: "learner-player",
+      route,
+      seek: {method: "idea-control", normalizedChapterOpeningFrame: item.frame},
+      browserMedia: {query: mediaQuery, requested: "reduce", matches: mediaMatches},
+      runId,
+    });
+  }
+  await context.close();
+  return {
+    records,
+    run: {runId, captureSource: "learner-player", route, browserMedia: {query: mediaQuery, requested: "reduce", matches: mediaMatches}},
+  };
 }
 
 function buildSummary(packet) {
   const failedAssertions = packet.analysis.assertions.filter(({pass}) => !pass);
   const prediction = packet.beats.find((beat) => beat.prediction);
+  const analysisSummary = packet.analysis.skipped
+    ? `- Semantic analysis: skipped (${packet.analysis.skipped})`
+    : `- Semantic samples: ${packet.analysis.sampledFrames}\n` +
+      `- Hard-gate findings: ${packet.analysis.hardGateFindings.length}\n` +
+      `- Failed BeatSpec assertions: ${failedAssertions.length}\n` +
+      `- Direct chapter seeks: ${packet.analysis.directSeeks.filter(({canvasMatch}) => canvasMatch).length}/` +
+      `${packet.analysis.directSeeks.length} deterministic`;
   return `# ${packet.sceneId} animation review
 
 - Scope: ${packet.scope}
-- Production frames rendered: ${packet.render.handledFrames}
-- Semantic samples: ${packet.analysis.sampledFrames}
+- Production frames rendered: ${packet.render.handledFrames} in ${packet.render.elapsedMs} ms
+- Selected production range: ${packet.render.selectedRange ? `${packet.render.selectedRange.startFrame}–${packet.render.selectedRange.endFrame}` : "skipped"}
+- Reduced-motion source: ${packet.reducedMotionRun.captureSource} (${packet.reducedMotionRun.browserMedia.query} matched: ${packet.reducedMotionRun.browserMedia.matches})
+${analysisSummary}
 - Checkpoint captures: ${packet.captures.length}
 - Reduced-motion chapter frames: ${packet.reducedMotion.length}
 - Prediction/reveal: ${prediction ? `${prediction.id} → ${prediction.prediction.revealBeat}` : "MISSING"}
-- Hard-gate findings: ${packet.analysis.hardGateFindings.length}
-- Failed BeatSpec assertions: ${failedAssertions.length}
-- Direct chapter seeks: ${packet.analysis.directSeeks.filter(({canvasMatch}) => canvasMatch).length}/${packet.analysis.directSeeks.length} deterministic
-- Benchmark comparison frames: ${packet.referenceComparisons.length === 0 ? "unsupported for this pilot (recorded explicitly)" : packet.referenceComparisons.length}
-- Status: ${packet.failures.length === 0 ? "PASS" : `FAIL (${packet.failures.length})`}
+- Status: ${packet.disposition}
 
 ## Artifacts
 
@@ -297,7 +355,7 @@ async function main() {
   } catch {
     throw new Error("@playwright/test is required");
   }
-  const server = await ensureDevServer(options.port);
+  const server = await ensureReviewDevServer({port: options.port, root: ROOT});
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
@@ -305,7 +363,7 @@ async function main() {
     page.on("console", (message) => {
       if (message.type() === "error") browserErrors.push(message.text());
     });
-    await page.goto(`http://127.0.0.1:${options.port}/export-harness.html`);
+    await page.goto(server.url);
     await page.waitForFunction(
       () => window.__exportReady === true && window.__animationReviewReady === true,
       null,
@@ -319,45 +377,56 @@ async function main() {
       throw new Error(`unknown beat "${options.beat}"`);
     }
 
-    console.log(`→ measuring ${options.sceneId} against its BeatSpec`);
-    const analysis = await page.evaluate(
-      ({sceneId, stride}) => window.__animationReviewApi.analyze(sceneId, stride),
-      {sceneId: options.sceneId, stride: options.stride},
-    );
-
-    // A fresh page guarantees the deterministic Renderer starts from a clean
-    // production project after the direct-seek analysis.
-    await page.reload();
-    await page.waitForFunction(() => window.__exportReady === true, null, {timeout: 30_000});
-    console.log("→ rendering production checkpoints and short preview source");
-    const render = await drainProductionRender(page, options, description, packetDir);
-
-    const reducedMotion = [];
-    for (const item of description.reducedMotionFrames) {
-      if (options.beat && item.beatId !== options.beat) continue;
-      const source = render.frameRecords.find(
-        (frame) => frame.beatId === item.beatId && frame.checkpointId === "opening",
-      );
-      if (!source) continue;
-      const target = join(
-        packetDir,
-        "reduced-motion",
-        `${safeArtifactStem(item.beatId)}--chapter-opening-f${String(item.frame).padStart(6, "0")}.png`,
-      );
-      copyFileSync(source.path, target);
-      reducedMotion.push({...item, artifact: packetPath(packetDir, target)});
+    let analysis;
+    let render;
+    const focusedSelection = Boolean(options.beat || options.checkpoint);
+    if (options.reducedMotionOnly) {
+      analysis = {
+        assertions: [], sampledFrames: 0, hardGateFindings: [], directSeeks: [], failures: [],
+        skipped: "reduced-motion-only packet exercises the learner player instead",
+      };
+      render = {
+        frameRecords: [], previewFramesDir: "", previewWritten: 0,
+        previewStart: null, previewEnd: null, handled: 0, elapsedMs: 0,
+        range: null, focused: true,
+      };
+    } else {
+      if (focusedSelection) {
+        analysis = {
+          assertions: [], sampledFrames: 0, hardGateFindings: [], directSeeks: [], failures: [],
+          skipped: "focused packet skips the full semantic sweep; run the unfiltered packet for approval",
+        };
+      } else {
+        console.log(`→ measuring ${options.sceneId} against its BeatSpec`);
+        analysis = await page.evaluate(
+          ({sceneId, stride}) => window.__animationReviewApi.analyze(sceneId, stride),
+          {sceneId: options.sceneId, stride: options.stride},
+        );
+        // Start the deterministic Renderer from a clean production project
+        // after the full direct-seek analysis.
+        await page.reload();
+        await page.waitForFunction(() => window.__exportReady === true, null, {timeout: 30_000});
+      }
+      console.log("→ rendering selected production checkpoint range");
+      render = await drainProductionRender(page, options, description, packetDir);
     }
 
-    const contactSheet = join(packetDir, "contact-sheet.png");
-    const contactError = createContactSheet(
-      render.frameRecords.map(({path}) => path),
-      contactSheet,
+    console.log("→ capturing learner-facing prefers-reduced-motion chapters");
+    const reducedRun = await captureReducedMotionEvidence(
+      browser, server.url, options, description, packetDir, browserErrors,
     );
+    const reducedMotion = reducedRun.records;
+
+    const contactSheet = join(packetDir, "contact-sheet.png");
+    const contactInputs = render.frameRecords.length > 0
+      ? render.frameRecords.map(({path}) => path)
+      : reducedMotion.map(({artifact}) => join(packetDir, artifact));
+    const contactError = createContactSheet(contactInputs, contactSheet);
     const preview = join(packetDir, "preview.mp4");
-    const previewError = options.skipVideo || options.reducedMotionOnly
+    const previewError = options.skipVideo || options.reducedMotionOnly || render.focused
       ? null
       : createPreview(render.previewFramesDir, preview, description.fps);
-    rmSync(render.previewFramesDir, {recursive: true, force: true});
+    if (render.previewFramesDir) rmSync(render.previewFramesDir, {recursive: true, force: true});
 
     const environment = {
       node: process.version,
@@ -377,21 +446,33 @@ async function main() {
       ),
     };
 
+    const expectedReduced = description.reducedMotionFrames.filter((item) => !options.beat || item.beatId === options.beat).length;
+    const reducedFailures = reducedMotionEvidenceFailures(reducedMotion, expectedReduced);
     const missingArtifacts = [
       !existsSync(contactSheet) ? "contact-sheet.png" : null,
-      !options.skipVideo && !options.reducedMotionOnly && !existsSync(preview) ? "preview.mp4" : null,
+      !options.skipVideo && !options.reducedMotionOnly && !render.focused && !existsSync(preview) ? "preview.mp4" : null,
+      ...reducedMotion.filter(({artifact}) => !existsSync(join(packetDir, artifact))).map(({artifact}) => artifact),
       ...render.frameRecords.filter(({path}) => !existsSync(path)).map(({path}) => packetPath(packetDir, path)),
     ].filter(Boolean);
     const failures = [
       ...analysis.failures,
+      ...reducedFailures,
       ...browserErrors.map((message) => `browser console: ${message}`),
       ...(contactError ? [contactError] : []),
       ...(previewError ? [previewError] : []),
       ...missingArtifacts.map((artifact) => `missing required artifact: ${artifact}`),
     ];
+    const disposition = failures.length > 0
+      ? `FAIL (${failures.length})`
+      : options.reducedMotionOnly
+        ? "EVIDENCE-ONLY (not an approval packet)"
+        : render.focused
+          ? "FOCUSED (not an approval packet)"
+          : "PASS";
     const packet = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       sceneId: options.sceneId,
+      disposition,
       scope: options.beat
         ? `beat:${options.beat}${options.checkpoint ? `/checkpoint:${options.checkpoint}` : ""}`
         : options.reducedMotionOnly ? "reduced-motion" : "full-pilot",
@@ -402,15 +483,19 @@ async function main() {
       })),
       reducedMotion,
       referenceComparisons: description.referenceComparisons,
-      referenceRequested: options.reference,
+      referenceEvidence: {requested: false, disposition: "not-requested", comparisons: description.referenceComparisons},
       preview: {
         artifact: "preview.mp4",
         startFrame: render.previewStart,
         endFrame: render.previewEnd,
         frames: render.previewWritten,
-        skipped: options.skipVideo || options.reducedMotionOnly,
+        skipped: options.skipVideo || options.reducedMotionOnly || render.focused,
       },
-      render: {handledFrames: render.handled, resolutionScale: 0.5},
+      render: {
+        runId: "production-renderer", handledFrames: render.handled,
+        elapsedMs: render.elapsedMs, selectedRange: render.range, resolutionScale: 0.5,
+      },
+      reducedMotionRun: reducedRun.run,
       analysis,
       environment: "environment.json",
       missingArtifacts,

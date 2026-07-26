@@ -56,6 +56,8 @@ declare global {
         sceneId: string;
         fps: number;
         resolutionScale: number;
+        startFrame?: number;
+        endFrame?: number;
       }): Promise<void>;
     };
   }
@@ -113,8 +115,10 @@ async function startExport(options: {
   sceneId: string;
   fps: number;
   resolutionScale: number;
+  startFrame?: number;
+  endFrame?: number;
 }): Promise<void> {
-  const { sceneId, fps, resolutionScale } = options;
+  const {sceneId, fps, resolutionScale, startFrame, endFrame} = options;
   const isBenchmark = sceneId.startsWith(BENCHMARK_PREFIX);
   const size = isBenchmark
     ? LAB_STAGE
@@ -153,7 +157,10 @@ async function startExport(options: {
     ...rendering,
     name: `guided-${sceneId}`,
     fps,
-    range: [0, Infinity],
+    range: [
+      startFrame === undefined ? 0 : startFrame / fps,
+      endFrame === undefined ? Infinity : endFrame / fps,
+    ],
     size: new Vector2(size.width, size.height),
     resolutionScale,
     exporter: { name: CanvasCaptureExporter.id, options: {} },

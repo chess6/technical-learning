@@ -4,6 +4,15 @@ Reproducible Motion Canvas → MP4 export for any registered guided scene.
 Exported video is an **additional mode**, not a replacement: the live player,
 checkpoints, explorations, and synchronized lesson content stay as they are.
 
+## Local tools
+
+Run the repository's normal `npm ci` first; it also installs the isolated
+`tools/motion-authoring` project. Browser-driven export/review requires
+Playwright Chromium (`npx playwright install chromium`). MP4 assembly requires
+FFmpeg. Review contact sheets require ImageMagick's `montage`. The commands fail
+or record an explicit missing-tool failure; file existence alone is not visual
+inspection.
+
 ## Commands
 
 ```bash

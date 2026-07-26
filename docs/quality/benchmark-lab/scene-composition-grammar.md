@@ -168,16 +168,19 @@ its poster under reduced motion. WebM is first with MP4 fallback.
 - All eight benchmark windows run through the comparison engine, and every
   deviation is classified as measured, accepted with rationale, runtime-blocked,
   or intentionally different. Replica-authored differences are not self-accepted.
-- Final approval: 1,529 unit tests, six Python tests, 151 browser tests, typecheck,
+- Final approval: 1,538 unit tests, six Python tests, 152 browser tests, typecheck,
   lint, and production build passed. The browser sweep covers every production
   hard gate, learner playback/chapter navigation/reduced motion, benchmark modes,
   and inline loading, fallback, offscreen pause, responsive layout, and reduced
   motion.
 - Ordinary H.264/yuv420p production exports at 960×540 and 30 fps completed for
   `matrix-transformations` (54.03 s), `elimination` (32.50 s), and
-  `red-black-encoding` (56.03 s). The matrix review packet independently passed
-  40 checkpoint captures, 10 reduced-motion frames, and 10/10 deterministic
-  chapter seeks with no hard or semantic failures.
+  `red-black-encoding` (56.03 s). The corrected matrix review packet passed
+  40 production checkpoints, 10/10 deterministic direct seeks, and 10 genuine
+  learner-player chapter captures from a distinct Chromium run whose
+  `(prefers-reduced-motion: reduce)` query matched. The packet has no hard,
+  semantic, capture, or provenance failures. This is automated artifact evidence,
+  not a claim that file existence constitutes visual inspection.
 
 ### Recommended migration batches for the remaining fourteen scenes
 

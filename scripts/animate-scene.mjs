@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { spawn } from "node:child_process";
+import {spawn, spawnSync} from "node:child_process";
+import {createRequire} from "node:module";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TOOL_ROOT = join(ROOT, "tools", "motion-authoring");
 const GENERATED = join(TOOL_ROOT, ".generated");
+const requireFromTool = createRequire(join(TOOL_ROOT, "package.json"));
 const sceneModules = JSON.parse(
   readFileSync(
     join(ROOT, "scripts", "animation-authoring-scenes.json"),
@@ -16,12 +18,13 @@ const sceneModules = JSON.parse(
 );
 
 function parseArgs(argv) {
-  const result = { scene: "", port: 9000, open: true };
+  const result = {scene: "", port: 9000, open: true, checkOnly: false};
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === "--scene") result.scene = argv[++index] ?? "";
     else if (argument === "--port") result.port = Number(argv[++index]);
     else if (argument === "--no-open") result.open = false;
+    else if (argument === "--check-only") result.checkOnly = true;
     else if (argument === "--list") {
       console.log(Object.keys(sceneModules).join("\n"));
       process.exit(0);
@@ -100,10 +103,44 @@ function writeSelectedProject(sceneId) {
   );
 }
 
+function resolveToolDependency(specifier) {
+  try {
+    return requireFromTool.resolve(specifier);
+  } catch {
+    throw new Error(
+      `Motion authoring dependencies are missing (${specifier}). ` +
+        `Run npm ci from ${ROOT}; the root postinstall installs ` +
+        "tools/motion-authoring.",
+    );
+  }
+}
+
+export function compileSelectedProject() {
+  const result = spawnSync(
+    "npm",
+    ["run", "typecheck", "--prefix", TOOL_ROOT, "--", "--pretty", "false"],
+    {cwd: ROOT, encoding: "utf8"},
+  );
+  if (result.status !== 0) {
+    const diagnostic = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+    throw new Error("Generated authoring project failed typecheck:\n" + diagnostic);
+  }
+}
+
+export function prepareSelectedProject(sceneId) {
+  resolveToolDependency("vite/package.json");
+  writeSelectedProject(sceneId);
+  compileSelectedProject();
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  writeSelectedProject(options.scene);
-  const vite = join(TOOL_ROOT, "node_modules", "vite", "bin", "vite.js");
+  prepareSelectedProject(options.scene);
+  if (options.checkOnly) {
+    console.log("Validated generated authoring project for " + options.scene);
+    return;
+  }
+  const vite = join(dirname(resolveToolDependency("vite/package.json")), "bin", "vite.js");
   const args = [
     vite,
     "--host",
@@ -126,9 +163,14 @@ function main() {
   });
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
 }
