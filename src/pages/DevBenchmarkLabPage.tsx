@@ -245,7 +245,10 @@ export function DevBenchmarkLabPage() {
   // --- capture ------------------------------------------------------------------------
   const capturePair = useCallback(async (label?: string) => {
     const replica = handleRef.current?.canvas;
-    if (!replica || !refMeta) return;
+    // Refusing loudly matters: a capture that quietly does nothing reports
+    // "captured" for evidence that was never written.
+    if (!replica) throw new Error("replica canvas is not mounted yet");
+    if (!refMeta) throw new Error("reference frames are not loaded yet");
     const f = handleRef.current!.currentFrame();
     const name = label ?? `${manifest.id}-f${String(f).padStart(4, "0")}`;
     const post = (suffix: string, dataUrl: string) =>
@@ -270,13 +273,22 @@ export function DevBenchmarkLabPage() {
   }, [manifest, refMeta]);
 
   const captureAllBeats = useCallback(async () => {
-    for (const beat of beats) {
-      const target = Math.round(((beat.start + beat.end) / 2) * REPLICA_FPS);
-      seekTo(target);
-      await new Promise((resolve) => setTimeout(resolve, 350));
-      await capturePair(`${manifest.id}-${beat.id}`);
+    let written = 0;
+    try {
+      for (const beat of beats) {
+        const target = Math.round(((beat.start + beat.end) / 2) * REPLICA_FPS);
+        seekTo(target);
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        await capturePair(`${manifest.id}-${beat.id}`);
+        written += 1;
+      }
+    } catch (error) {
+      setStatusLine(`capture failed after ${written} pair(s): ${String(error)}`);
+      return;
     }
-    setStatusLine("captured one pair per beat");
+    // The count is part of the message so a caller can tell a real sweep from
+    // a no-op that still said "done".
+    setStatusLine(`captured ${written} pairs across ${beats.length} beats`);
   }, [beats, capturePair, manifest.id, seekTo]);
 
   // --- current-beat findings ------------------------------------------------------------

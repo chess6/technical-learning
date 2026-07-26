@@ -255,8 +255,17 @@ async function main() {
   process.exit(exitCode);
 }
 
+/**
+ * Scene ids map to file names as-is, except that benchmark replicas are
+ * addressed as `benchmark:<id>` and a colon is a poor filename character off
+ * Linux.
+ */
+function fileStem(sceneId) {
+  return sceneId.replace(/:/g, "-");
+}
+
 async function exportScene(page, sceneId, options) {
-  const framesDir = join(options.out, `.frames-${sceneId}`);
+  const framesDir = join(options.out, `.frames-${fileStem(sceneId)}`);
   rmSync(framesDir, { recursive: true, force: true });
   mkdirSync(framesDir, { recursive: true });
   mkdirSync(options.out, { recursive: true });
@@ -340,7 +349,7 @@ async function exportScene(page, sceneId, options) {
   }
   console.log(`  ${written} frames total`);
 
-  const output = join(options.out, `${sceneId}.mp4`);
+  const output = join(options.out, `${fileStem(sceneId)}.mp4`);
   const ffmpegArgs = [
     "-y",
     "-framerate",

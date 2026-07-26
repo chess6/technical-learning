@@ -16,7 +16,11 @@
  * referenceWindows.json (+ locally fetched frames). No laboratory changes.
  */
 
-import referenceWindows from "./referenceWindows.json";
+// The window list stays JSON because scripts/fetch-benchmark-media.sh reads
+// the same file to download and slice the media — one source of truth for
+// what "the excerpt" means. The import attribute is required by Node's ESM
+// loader, which the Playwright specs run under.
+import referenceWindows from "./referenceWindows.json" with { type: "json" };
 
 /** Logical stage every replica draws on (matches the guided-scene safe frame). */
 export const LAB_STAGE = { width: 960, height: 540 } as const;

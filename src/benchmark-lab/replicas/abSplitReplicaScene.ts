@@ -159,7 +159,17 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
   rig.world.add(leafLayer);
   for (const token of keyTokens.values()) rig.world.add(token);
 
-  function makeBorder(spec: BorderSpec): LiveBorder {
+  /**
+   * Every live border, tagged with a key it contains.
+   *
+   * Borders have to follow the layout as well as the keys do: inserting 8 and
+   * 9 adds a leaf column, which shifts EVERY node sideways. Repositioning only
+   * the keys left the borders behind at the previous layout, so key tokens sat
+   * outside their own node outlines — caught by inspecting the exported MP4.
+   */
+  const liveBorders: { border: LiveBorder; sampleKey: number }[] = [];
+
+  function makeBorder(spec: BorderSpec, sampleKey?: number): LiveBorder {
     const violated = createSignal(0);
     const rect = new Rect({
       width: spec.width,
@@ -171,7 +181,30 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       opacity: 0,
     });
     borderLayer.add(rect);
-    return { rect, violated };
+    const border = { rect, violated };
+    if (sampleKey !== undefined) liveBorders.push({ border, sampleKey });
+    return border;
+  }
+
+  /** Tween every registered border onto the layout `stage` implies. */
+  function borderTweensFor(stage: AbNode, duration: number): ThreadGenerator[] {
+    const tweens: ThreadGenerator[] = [];
+    for (const { border, sampleKey } of liveBorders) {
+      if (border.rect.opacity() <= 0.01) continue;
+      let spec: BorderSpec;
+      try {
+        spec = borderFor(stage, sampleKey);
+      } catch {
+        // The key left this stage (it rose into a parent); the border that
+        // held it is no longer part of the tree and is left where it is.
+        continue;
+      }
+      tweens.push(
+        border.rect.position(new Vector2(spec.x, spec.y), duration, easeInOutCubic),
+        border.rect.width(spec.width, duration, easeInOutCubic),
+      );
+    }
+    return tweens;
   }
 
   // --- leaf squares --------------------------------------------------------------
@@ -223,10 +256,10 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
   const overflowStage = stageById("overflow");
   setEdges(overflowStage);
   yield* all(...syncLeafSquares(leafXsFor(overflowStage), false));
-  const bRoot = makeBorder(borderFor(overflowStage, 1));
-  const b0 = makeBorder(borderFor(overflowStage, 0));
-  const b2 = makeBorder(borderFor(overflowStage, 2));
-  const b4567 = makeBorder(borderFor(overflowStage, 4));
+  const bRoot = makeBorder(borderFor(overflowStage, 1), 1);
+  const b0 = makeBorder(borderFor(overflowStage, 0), 0);
+  const b2 = makeBorder(borderFor(overflowStage, 2), 2);
+  const b4567 = makeBorder(borderFor(overflowStage, 4), 4);
   bRoot.rect.opacity(1);
   b0.rect.opacity(1);
   b2.rect.opacity(1);
@@ -399,6 +432,10 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       }
     }
     tweens.push(...syncLeafSquares(leafXsFor(stage), true));
+    // Borders travel with their keys. Moving only the keys left node outlines
+    // stranded at the previous layout once an insert added a leaf column, so
+    // keys sat outside their own nodes.
+    tweens.push(...borderTweensFor(stage, duration));
     yield* all(...tweens);
     setEdges(stage);
   }
@@ -413,8 +450,8 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
     const leftSpec = borderFor(stage, leftKey);
     const rightSpec = borderFor(stage, rightKey);
     const centre = dying.rect.position();
-    const left = makeBorder({ ...leftSpec });
-    const right = makeBorder({ ...rightSpec });
+    const left = makeBorder({ ...leftSpec }, leftKey);
+    const right = makeBorder({ ...rightSpec }, rightKey);
     left.rect.position(centre);
     right.rect.position(centre);
     dying.rect.opacity(0);
@@ -573,7 +610,7 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       const grownTargets = keyPositions(grown);
       const rootSplit = splitBorders(bRoot, grown, 1, 7);
       const newRootSpec = borderFor(grown, 3);
-      const bNewRoot = makeBorder(newRootSpec);
+      const bNewRoot = makeBorder(newRootSpec, 3);
       yield* all(
         rootSplit,
         keyTokens.get(3)!.position(
