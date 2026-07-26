@@ -91,11 +91,15 @@ function assertSceneMathIsConsistent(): void {
     POINT_COORDS[0] * B1[1] + POINT_COORDS[1] * B2[1],
   ];
   if (!approximatelyEqualVector(rebuilt, POINT, 1e-9)) {
-    throw new Error("changeOfBasisScene: coordinates do not rebuild the point.");
+    throw new Error(
+      "changeOfBasisScene: coordinates do not rebuild the point.",
+    );
   }
   // The final beat's claim is that the description became diagonal.
   if (!isDiagonal(A_IN_EIGENBASIS, 1e-9)) {
-    throw new Error("changeOfBasisScene: the eigenbasis description is not diagonal.");
+    throw new Error(
+      "changeOfBasisScene: the eigenbasis description is not diagonal.",
+    );
   }
   // …and it is only legible as "each direction only stretches" if the two drawn
   // directions really are eigenvectors, each scaled by its diagonal entry.
@@ -110,7 +114,8 @@ function assertSceneMathIsConsistent(): void {
   }
 }
 
-const px = (v: MathVector2): Vector2 => new Vector2(v[0] * SCALE, -v[1] * SCALE);
+const px = (v: MathVector2): Vector2 =>
+  new Vector2(v[0] * SCALE, -v[1] * SCALE);
 const fmt = (n: number) => formatSceneNumber(n);
 const matrixText = (m: Matrix2x2): string =>
   `[ ${fmt(m[0][0])}  ${fmt(m[0][1])} ; ${fmt(m[1][0])}  ${fmt(m[1][1])} ]`;
@@ -130,10 +135,18 @@ function makeBasisGrid(
   firstColor: string,
   secondColor: string,
   extent = 3,
+  key?: string,
 ): Node {
-  const group = new Node({});
-  const line = (from: MathVector2, to: MathVector2, isAxis: boolean, color: string) =>
+  const group = new Node({ key });
+  let lineIndex = 0;
+  const line = (
+    from: MathVector2,
+    to: MathVector2,
+    isAxis: boolean,
+    color: string,
+  ) =>
     new Line({
+      key: key ? key + ":line:" + lineIndex++ : undefined,
       stroke: color,
       lineWidth: isAxis ? 2.5 : 1,
       opacity: isAxis ? 0.9 : 0.4,
@@ -173,11 +186,25 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   standardGrid.opacity(0.5);
   view.add(standardGrid);
 
-  const basisGrid = makeBasisGrid(B1, B2, ROLE.basis1, ROLE.basis2);
+  const basisGrid = makeBasisGrid(
+    B1,
+    B2,
+    ROLE.basis1,
+    ROLE.basis2,
+    3,
+    "semantic:change-basis:grid",
+  );
   basisGrid.opacity(0);
   view.add(basisGrid);
 
-  const eigenGrid = makeBasisGrid(EIGEN_1, EIGEN_2, ROLE.basis1, ROLE.basis2, 3);
+  const eigenGrid = makeBasisGrid(
+    EIGEN_1,
+    EIGEN_2,
+    ROLE.basis1,
+    ROLE.basis2,
+    3,
+    "semantic:change-basis:eigen-grid",
+  );
   eigenGrid.opacity(0);
   view.add(eigenGrid);
 
@@ -191,6 +218,7 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
     [m21(), m22()],
   ];
   const outline = new Line({
+    key: "semantic:change-basis:outline",
     stroke: ROLE.transformed,
     lineWidth: 3,
     closed: true,
@@ -208,11 +236,11 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   view.add(outline);
 
   // --- Basis vectors of B, shown when its grid is up (a co-equal pair) ---
-  const b1Arrow = makeArrow(ROLE.basis1, 5);
+  const b1Arrow = makeArrow(ROLE.basis1, 5, "semantic:change-basis:basis-1");
   b1Arrow.points([new Vector2(0, 0), px(B1)]);
   b1Arrow.opacity(0);
   view.add(b1Arrow);
-  const b2Arrow = makeArrow(ROLE.basis2, 5);
+  const b2Arrow = makeArrow(ROLE.basis2, 5, "semantic:change-basis:basis-2");
   b2Arrow.points([new Vector2(0, 0), px(B2)]);
   b2Arrow.opacity(0);
   view.add(b2Arrow);
@@ -223,14 +251,24 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
    * walk terminates exactly on p — the readout is the end of a construction.
    */
   const walkT = createSignal(0);
-  const walk1 = makeSegment(ROLE.basis1, 5);
+  const walk1 = makeSegment(
+    ROLE.basis1,
+    5,
+    false,
+    "semantic:change-basis:walk-1",
+  );
   walk1.points(() => [
     new Vector2(0, 0),
     px(scaleVector(B1, POINT_COORDS[0] * Math.min(1, walkT()))),
   ]);
   walk1.opacity(0);
   view.add(walk1);
-  const walk2 = makeSegment(ROLE.basis2, 5);
+  const walk2 = makeSegment(
+    ROLE.basis2,
+    5,
+    false,
+    "semantic:change-basis:walk-2",
+  );
   walk2.points(() => {
     const start = scaleVector(B1, POINT_COORDS[0]);
     const t = Math.max(0, walkT() - 1);
@@ -243,7 +281,11 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   // --- The eigenbasis, drawn only in the final beat. Both arrows ride the LIVE
   // matrix, so "this basis only gets stretched" is a fact of the picture. ---
   const eigenArrows = [EIGEN_1, EIGEN_2].map((dir, i) => {
-    const arrow = makeArrow(i === 0 ? ROLE.basis1 : ROLE.basis2, 6);
+    const arrow = makeArrow(
+      i === 0 ? ROLE.basis1 : ROLE.basis2,
+      6,
+      "semantic:change-basis:eigen-" + (i + 1),
+    );
     arrow.points(() => [
       new Vector2(0, 0),
       px(matrixVectorMultiply(liveMatrix(), scaleVector(dir, EIGEN_DRAW))),
@@ -275,7 +317,12 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   standardReadout.position(px(POINT).add(new Vector2(76, -26)));
   standardReadout.opacity(0);
   view.add(standardReadout);
-  const basisReadout = makeLabel("", ROLE.text, 30);
+  const basisReadout = makeLabel(
+    "",
+    ROLE.text,
+    30,
+    "semantic:change-basis:basis-readout",
+  );
   basisReadout.position(px(POINT).add(new Vector2(76, 22)));
   basisReadout.opacity(0);
   view.add(basisReadout);
@@ -309,7 +356,9 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
     *["one-arrow"]() {
       const b = beats("one-arrow");
       setTop("One arrow on the usual grid");
-      setCaption(`The point p sits here. Against the standard grid it reads (${fmt(POINT[0])}, ${fmt(POINT[1])}).`);
+      setCaption(
+        `The point p sits here. Against the standard grid it reads (${fmt(POINT[0])}, ${fmt(POINT[1])}).`,
+      );
       standardReadout.text(`(${fmt(POINT[0])}, ${fmt(POINT[1])})`);
       yield* standardReadout.opacity(1, b.readoutReveal!);
       yield* waitFor(b.hold!);
@@ -318,7 +367,9 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
     *["swap-grid"]() {
       const b = beats("swap-grid");
       setTop("Swap the grid, not the arrow");
-      setCaption("Lesson 1's basis gives a second grid. Watch the arrow — it does not move.");
+      setCaption(
+        "Lesson 1's basis gives a second grid. Watch the arrow — it does not move.",
+      );
       // Snap the honest note on with the grid so scrubbing here reads correctly.
       honestNote.opacity(1);
       yield* all(
@@ -340,7 +391,9 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       );
       basisReadout.text("[p]_B = ( ?, ? )");
       basisReadout.opacity(1);
-      setCaption("Predict: how many steps along b₁, and how many along b₂, land on p?");
+      setCaption(
+        "Predict: how many steps along b₁, and how many along b₂, land on p?",
+      );
       yield* waitFor(b.ask!);
       yield* waitFor(b.think!);
     },
@@ -358,29 +411,41 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       );
       setCaption("…then one step along b₂ — and the walk ends exactly on p.");
       yield* walkT(2, b.walk2!, easeInOutCubic);
-      basisReadout.text(`[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
+      basisReadout.text(
+        `[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`,
+      );
       yield* arrowDot.size(24, b.readout! / 2);
       yield* arrowDot.size(16, b.readout! / 2);
       yield* waitFor(b.hold!);
-      setCaption("Two readouts, one arrow. Nothing about the point changed — only the grid used to name it.");
+      setCaption(
+        "Two readouts, one arrow. Nothing about the point changed — only the grid used to name it.",
+      );
       yield* waitFor(b.hold2!);
     },
 
     *["hidden-subscript"]() {
       const b = beats("hidden-subscript");
       setTop("The subscript that was always there");
-      setCaption("So the first reading was never just a pair of numbers — it was the name in the standard basis.");
+      setCaption(
+        "So the first reading was never just a pair of numbers — it was the name in the standard basis.",
+      );
       standardReadout.text(`[p]_E = (${fmt(POINT[0])}, ${fmt(POINT[1])})`);
-      basisReadout.text(`[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
+      basisReadout.text(
+        `[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`,
+      );
       yield* waitFor(b.hold!);
-      setCaption("Every vector and every matrix since Lesson 2 has carried that hidden subscript.");
+      setCaption(
+        "Every vector and every matrix since Lesson 2 has carried that hidden subscript.",
+      );
       yield* waitFor(b.hold2!);
     },
 
     *["map-standard"]() {
       const b = beats("map-standard");
       setTop("A map, described in the standard basis");
-      setCaption("Now watch a map instead of a point. Here is its matrix in standard coordinates.");
+      setCaption(
+        "Now watch a map instead of a point. Here is its matrix in standard coordinates.",
+      );
       // Retire the point; the subject is the map now.
       standardReadout.opacity(0);
       basisReadout.opacity(0);
@@ -403,11 +468,23 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
     *["map-eigenbasis"]() {
       const b = beats("map-eigenbasis");
       setTop("The same deformation, described in another basis");
-      setCaption("Undo it, and lay a different basis underneath — these two directions.");
+      setCaption(
+        "Undo it, and lay a different basis underneath — these two directions.",
+      );
       // Return to the identity WITH the outline on screen, so the replay starts
       // from the same place the first run did.
       yield* all(
-        morphMatrixEntries(m11, m12, m21, m22, [[1, 0], [0, 1]], b.reset!),
+        morphMatrixEntries(
+          m11,
+          m12,
+          m21,
+          m22,
+          [
+            [1, 0],
+            [0, 1],
+          ],
+          b.reset!,
+        ),
         eigenGrid.opacity(0.55, b.reset!),
         eigenArrows[0]!.opacity(1, b.reset!),
         eigenArrows[1]!.opacity(1, b.reset!),
@@ -417,7 +494,9 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       // must not see the standard-basis matrix under a title announcing another.
       matrixReadout.text(`[A]_B = ${matrixText(A_IN_EIGENBASIS)}`);
       yield* waitFor(b.hold!);
-      setCaption("Now run exactly the same matrix again — identical motion, different description.");
+      setCaption(
+        "Now run exactly the same matrix again — identical motion, different description.",
+      );
       yield* morphMatrixEntries(m11, m12, m21, m22, A, b.replay!);
       yield* waitFor(b.hold2!);
       setCaption(
