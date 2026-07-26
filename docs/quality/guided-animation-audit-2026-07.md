@@ -9,8 +9,9 @@ and (c) the reference packs under `.reference-sources/packs/` (Sláma
 **Status: reopened for the exhaustive guided-animation redesign.** The July pass
 below remains the historical record of its narrower audit, but it is not evidence
 that the newer BeatSpec/authoring/review contract has been applied course-wide.
-Batch 1 (continuous-space scenes) is in progress on
-`guided-animation-batch-1-continuous-space`; no other batch is claimed.
+Batch 1 implementation and deterministic evidence are complete on
+`guided-animation-batch-1-continuous-space`; independent visual sign-off is
+still pending, and no other batch is claimed.
 
 Criteria: model-changing idea vs mere motion; object persistence across
 transformations; explanatory purpose of every visual change; invariants kept
@@ -195,7 +196,61 @@ segment is split into `case-empty` / `case-point` / `case-line`.
    label rename in place, or the first frame of a tween following a static hold.
    No unexplained teleport remains.
 
-## Completion ledger
+## Exhaustive redesign completion ledger
+
+This is the authoritative status for the newer course-wide redesign. “Review
+packet” means the contract-backed production-scene workflow, not the benchmark
+lab. “MP4 inspected” separates mechanical export/frame verification from actual
+visual inspection. The historical ledger below records a narrower July pass and
+does not promote pending scenes here.
+
+| Scene | Changes or justified no-change | Prediction or rationale | Visible invariant | `runSegment` | Chapters checked | Player checked | Review packet | MP4 inspected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `columns-rule-graphic` | Prior completed slice; no Batch 1 change | Existing `predict` | Derived `(a,b)` stays pinned | already | 5/5 historical | historical pass | prior completed evidence | historical July inspection |
+| `matrix-transformations` | Prior completed pilot; no Batch 1 change | Existing `predict-sample` | Coefficients stay pinned during travel | already | 10/10 historical | historical pass | contract-backed pilot PASS | historical July inspection |
+| `eigenvectors-invariant-directions` | Prior completed slice; no Batch 1 change | Existing `predict-reverse` | Eigenlines remain fixed | already | 12/12 historical | historical pass | prior completed evidence | historical July inspection |
+| `red-black-encoding` | Prior completed slice; no Batch 1 change | Existing `overflow` prediction | Black height remains readable | already | 11/11 historical | historical pass | prior completed evidence | historical July inspection |
+| `why-linear-algebra` | Added typed contract, semantic instrumentation, truthful geometry/stability gates; shortened the clipped translation caption | `predict-translation` | Origin anchor stays fixed through every map | measured | 10/10 | PASS: full 153-test E2E suite | PASS: 40/40 checkpoints + 10 genuine reduced-motion frames | exported 1486 frames; metadata PASS; visual sign-off pending |
+| `vectors-linear-combinations` | Added typed contract/instrumentation; explicitly retired the hidden dependent-walk helper to prevent a false teleport | `predict-coordinates` | Fixed p and reference grid | measured | 14/14 | PASS: full 153-test E2E suite | PASS: 56/56 checkpoints + 14 genuine reduced-motion frames | exported 1882 frames; metadata PASS; visual sign-off pending |
+| `matrix-composition` | Added typed contract and stable craft, basis, path, endpoint, comparison, and collapse identities; choreography already enacted R then A on persistent objects | `predict-order` | AR outline remains while RA is built | measured | 8/8 | PASS: full 153-test E2E suite | PASS: 32/32 checkpoints + 8 genuine reduced-motion frames | exported 1531 frames; metadata PASS; visual sign-off pending |
+| `determinant-area-scaling` | Added typed contract and stable region, basis, orientation, and live-readout identities; prior live-readout/sign correction retained | `predict-negative` | Region, determinant, and orientation share one live matrix | measured | 10/10 | PASS: full 153-test E2E suite | PASS: 40/40 checkpoints + 10 genuine reduced-motion frames | exported 1230 frames; metadata PASS; visual sign-off pending |
+| `change-of-basis` | Added typed contract and stable grid, basis, walk, outline, eigenvector, and readout identities; fixed p remains persistent | `predict-readout` | p never moves while its coordinates and basis change | measured | 7/7 | PASS: full 153-test E2E suite | PASS: 28/28 checkpoints + 7 genuine reduced-motion frames | exported 1260 frames; metadata PASS; visual sign-off pending |
+| `linear-systems` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `elimination` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `solution-sets` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `subspaces-rank` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `rank-nullity` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `eigenvectors-derivation` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `bst-lift-from-array` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+| `karatsuba-cross-terms` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+
+### Batch 1 evidence note
+
+All five full review packets are under `artifacts/animation-review-batch1/` and
+contain contract-derived chapter seeking, semantic movement/stability
+assertions, hard gates, genuine learner-route reduced-motion captures, contact
+sheets, and prediction-to-reveal previews. A focused single-checkpoint run
+requested one frame and the Motion Canvas renderer emitted only its inclusive
+two-frame range, so focused work does not render a full scene.
+
+The native editor was opened for each Batch 1 scene. Timeline controls, node
+inspection, all overlay controls, scene selection, and HMR were exercised with
+no browser errors. These scenes deliberately have no persisted presentation
+tuning profile; the editor says so instead of exposing no-op controls. The
+matrix pilot remains the proof of typed tuning and persistence.
+
+The five production MP4s were exported and frame-counted against declared
+timings. The Codex image-viewer bridge failed to initialize in this environment,
+so contact-sheet and full-MP4 visual inspection is explicitly **not claimed**.
+Batch 1 visual acceptance therefore remains pending an independent reviewer.
+
+### Development-only row
+
+| Scene | Status | Review packet | MP4 inspection |
+| --- | --- | --- | --- |
+| `transform-spike` | Development timing fixture only; not a production scene and not part of Batch 1 | unsupported by design | not required for production ledger |
+
+## Historical July completion ledger (superseded for exhaustive status)
 
 All 17 production scenes. "Player checked" = the chapter spec above passes for
 that scene; "Export" = MP4 frame count ÷ 30 fps against the declared total.

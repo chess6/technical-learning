@@ -602,7 +602,11 @@ Each item lists **priority · effort · pedagogical function · likely first ado
 ## 15. Development authoring and review loop
 
 The development workflow edits and judges the production Motion Canvas scene;
-it does not maintain a replica. The current pilot is `matrix-transformations`.
+it does not maintain a replica. Contract-backed authoring currently covers the
+`matrix-transformations` pilot and Batch 1: `why-linear-algebra`,
+`vectors-linear-combinations`, `matrix-composition`,
+`determinant-area-scaling`, and `change-of-basis`. Other scenes remain explicit
+pending work rather than silently receiving inferred motion contracts.
 
 Local prerequisites are explicit: Node/npm, Playwright Chromium, FFmpeg, and
 ImageMagick's `montage` command. Install from the repository root:
@@ -620,16 +624,18 @@ undocumented second install. `animate` fails before startup with the exact
 selected-scene adapter, and typechecks that generated adapter before Vite runs.
 
 ```bash
-npm run animate -- --scene matrix-transformations
-npm run animation:review -- --scene matrix-transformations
-npm run animation:iterate -- --scene matrix-transformations
+npm run animate -- --scene why-linear-algebra
+npm run animation:review -- --scene vectors-linear-combinations
+npm run animation:iterate -- --scene determinant-area-scaling
 ```
 
 `animate` opens the selected registered production module in the native Motion
 Canvas editor. Timeline scrubbing, time-event editing, node inspection,
 selected-range playback/rendering, snapshots, project variables, independent
-debug-overlay toggles, and typed presentation controls all stay in this isolated
-development project. Unknown and development-only scene IDs fail explicitly.
+debug-overlay toggles, and any typed presentation controls stay in this isolated
+development project. The matrix pilot has a persisted presentation profile;
+Batch 1 scenes intentionally expose inspection and overlays without inventing
+no-op tuning controls. Unknown and development-only scene IDs fail explicitly.
 Persisting a tuning change validates the complete typed presentation config
 before writing it; matrices, coordinates, determinants, and other mathematical
 truth are not editable controls.
@@ -648,11 +654,13 @@ in the contract. Add a tuning variable only to the typed constraints, persisted
 JSON, and namespaced project-variable map; its value must affect composition or
 pacing only, with production defaults independent of browser state.
 
-The pilot's typed `BeatSpec` is the compact authoring context. It names the
+Each registered typed `BeatSpec` is the compact authoring context. It names the
 pedagogical purpose, intent, focal semantic objects, prediction/reveal pair,
-expected changes and invariants, chapter, timing event, and four deterministic
-checkpoint anchors. Timing continues to come from `sceneTimings.ts`; geometry
-continues to come from the production scene and shared math helpers.
+expected changes, stable objects, visible invariant, chapter-opening seek,
+timing event, shared mathematical data, and four deterministic checkpoint
+anchors. Timing continues to come from `sceneTimings.ts`; geometry continues to
+come from the production scene and shared math helpers. Contracts never infer a
+mathematical motion claim from changing text or a node name.
 
 `animation:review` writes an ignored packet under
 `artifacts/animation-review/<scene>/` containing:
@@ -663,9 +671,11 @@ continues to come from the production scene and shared math helpers.
 - expected-versus-observed semantic assertions and compact trajectories;
 - production hard-gate findings, environment inputs, and an artifact ledger.
 
-Production checkpoint capture waits for Motion Canvas's completed `Stage.render`; learner reduced-motion capture runs in a separate Chromium context with `prefers-reduced-motion: reduce`, seeks the real lesson player through each idea control, and records media mode, route, source, and run id in `packet.json`. Ordinary renderer frames cannot satisfy that evidence contract. Missing frames, unmeasurable geometry, failed exports,
+Production checkpoint capture waits for Motion Canvas's completed `Stage.render`; learner reduced-motion capture runs in a separate Chromium context with `prefers-reduced-motion: reduce`, seeks the real lesson player through its timeline, and records media mode, route, source, and run id in `packet.json`. Ordinary renderer frames cannot satisfy that evidence contract. Missing frames, unmeasurable geometry, failed exports,
 direction-dependent seeks, browser errors, and failed expectations are recorded
-as failures rather than omitted. The matrix pilot has no corresponding benchmark replica, so `--reference` fails before server startup or packet creation instead of producing an evidence-free pass.
+as failures rather than omitted. None of the current contract-backed production
+scenes has a supported benchmark replica, so `--reference` fails before server
+startup or packet creation instead of producing an evidence-free pass.
 
 For a normal edit, `animation:iterate` runs typecheck plus only the authoring,
 timing, semantic-geometry, and hard-gate contracts before updating the packet.

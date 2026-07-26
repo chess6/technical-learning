@@ -30,7 +30,7 @@ plus the two watchdogs below.
 The authoring review preview is intentionally a different artifact:
 
 ```bash
-npm run animation:review -- --scene matrix-transformations
+npm run animation:review -- --scene why-linear-algebra
 ```
 
 It produces a low-resolution, short prediction-to-reveal excerpt plus labelled
