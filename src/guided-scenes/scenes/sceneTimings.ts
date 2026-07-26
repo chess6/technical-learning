@@ -552,6 +552,13 @@ export const SUBSPACES_RANK_SEGMENTS: readonly SceneSegment[] = [
     summary: "A copy of the cube is pushed through A and visibly flattens: the outputs fill only a plane.",
   },
   {
+    id: "columns",
+    title: "Where the plane comes from: the columns",
+    duration: 11,
+    summary:
+      "The columns are admitted one at a time: c₁ opens a line, c₂ points off it and the reach grows to a plane, and the dependent c₃ lands inside it — so the rank goes 1, 2, and then stays 2.",
+  },
+  {
     id: "colspace",
     title: "Name it: the column space",
     duration: 6,
@@ -1496,6 +1503,19 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   "subspaces-rank": {
     "two-panels": { hold: 1.2, in: 0.6, hold2: 1.5 },
     reach: { copy: 0.6, hold: 0.8, deform: 2.6, hold2: 2.4 },
+    columns: {
+      c1: 0.7,
+      line: 0.5,
+      hold: 1.4,
+      c2: 0.7,
+      plane: 0.9,
+      hold2: 1.8,
+      c3: 0.8,
+      hold3: 1.4,
+      pulseUp: 0.35,
+      pulseDown: 0.35,
+      hold4: 1.6,
+    },
     colspace: { plane: 0.5, hold: 1.6, hold2: 1.4 },
     crush: { hold: 1.2, travel: 2.6, up: 0.4, down: 0.4, hold2: 1.8 },
     nullspace: { hold: 1.6, hold2: 1.6 },

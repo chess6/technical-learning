@@ -177,6 +177,70 @@ export const rankNullityScene = makeScene2D(function* (view) {
   tally.position(new Vector2(LABEL_CENTER_X + 40, COLUMN_TOP + 3 * SLOT_GAP + 34));
   view.add(tally);
 
+  /* ---------------------------------------------------------------------
+   * The budget bar: n drawn as one fixed length, split in two.
+   *
+   * The ledger's total was already derived from the two counts, so it could not
+   * be written out of balance — but nothing on screen held the input dimension
+   * as an object in its own right. Once the tokens left the input stack, `n`
+   * survived only as the number after the equals sign, which makes
+   * rank + nullity = n an arithmetic coincidence rather than a structural fact.
+   *
+   * The bar is that fact drawn: ONE length, fixed at n, with the surviving part
+   * growing from the left and the crushed part from the right. When a token
+   * crosses the ledger, the boundary between them slides and the bar's length
+   * does not change — because there is no width in it for anything else to go.
+   *
+   * The two parts follow their own share signals, tweened alongside the token
+   * that is moving, so the boundary travels WITH the token instead of jumping a
+   * third of the bar the instant it lands.
+   * ------------------------------------------------------------------- */
+  const BUDGET_N = tokens.length;
+  const BUDGET_W = 420;
+  const BUDGET_X = LABEL_CENTER_X + 40;
+  const BUDGET_Y = 128;
+  const rankShare = createSignal(0);
+  const nullShare = createSignal(0);
+  const shareWidth = (share: number) => (BUDGET_W * share) / BUDGET_N;
+
+  view.add(
+    new Rect({
+      width: BUDGET_W + 8,
+      height: 30,
+      x: BUDGET_X,
+      y: BUDGET_Y,
+      radius: 9,
+      stroke: ROLE.original,
+      lineWidth: 2,
+      opacity: 0.8,
+    }),
+  );
+  view.add(
+    new Rect({
+      width: () => shareWidth(rankShare()),
+      height: 22,
+      x: () => BUDGET_X - BUDGET_W / 2 + shareWidth(rankShare()) / 2,
+      y: BUDGET_Y,
+      radius: 6,
+      fill: ROLE.basis1,
+      opacity: 0.8,
+    }),
+  );
+  view.add(
+    new Rect({
+      width: () => shareWidth(nullShare()),
+      height: 22,
+      x: () => BUDGET_X + BUDGET_W / 2 - shareWidth(nullShare()) / 2,
+      y: BUDGET_Y,
+      radius: 6,
+      fill: ROLE.result,
+      opacity: 0.8,
+    }),
+  );
+  const budgetLabel = makeLabel(`n = ${BUDGET_N}`, ROLE.original, 24);
+  budgetLabel.position(new Vector2(BUDGET_X - BUDGET_W / 2 - 42, BUDGET_Y));
+  view.add(budgetLabel);
+
   const shapeLabel = makeLabel("", ROLE.textMuted, 24);
   shapeLabel.position(new Vector2(STACK_X, COLUMN_TOP + 3 * SLOT_GAP + 34));
   view.add(shapeLabel);
@@ -203,6 +267,11 @@ export const rankNullityScene = makeScene2D(function* (view) {
   });
   view.add(honestNote);
 
+  /** Which column each token currently occupies, so a move knows what it vacates. */
+  const tokenColumn: ("stack" | "survived" | "crushed")[] = tokens.map(
+    () => "stack",
+  );
+
   /**
    * Move a token to a column slot, colouring it by its fate. The counters are
    * updated when the token ARRIVES, so the tally and the picture agree at every
@@ -216,11 +285,25 @@ export const rankNullityScene = makeScene2D(function* (view) {
   ): ThreadGenerator {
     const token = tokens[index]!;
     const survived = column === "survived";
+    const from = tokenColumn[index]!;
+    const leaving =
+      from === "survived" ? rankShare : from === "crushed" ? nullShare : null;
+    tokenColumn[index] = column;
     token.fill(survived ? ROLE.basis1 : ROLE.result);
-    yield* token.position(
-      columnSlot(survived ? SURVIVED_X : CRUSHED_X, slot),
-      duration,
-      easeInOutCubic,
+    const arriving = survived ? rankShare : nullShare;
+    // The bar's boundary travels WITH the token: the share it is leaving
+    // shrinks and the share it is joining grows over the same duration, so the
+    // budget is never drawn holding a token that is still in the air.
+    yield* all(
+      token.position(
+        columnSlot(survived ? SURVIVED_X : CRUSHED_X, slot),
+        duration,
+        easeInOutCubic,
+      ),
+      arriving(arriving() + 1, duration, easeInOutCubic),
+      ...(leaving && leaving !== arriving
+        ? [leaving(leaving() - 1, duration, easeInOutCubic)]
+        : []),
     );
     if (survived) survivedCount(survivedCount() + 1);
     else crushedCount(crushedCount() + 1);
@@ -234,15 +317,19 @@ export const rankNullityScene = makeScene2D(function* (view) {
       if (i < rank) {
         token.fill(ROLE.basis1);
         token.position(columnSlot(SURVIVED_X, s));
+        tokenColumn[i] = "survived";
         s += 1;
       } else {
         token.fill(ROLE.result);
         token.position(columnSlot(CRUSHED_X, c));
+        tokenColumn[i] = "crushed";
         c += 1;
       }
     });
     survivedCount(s);
     crushedCount(c);
+    rankShare(s);
+    nullShare(c);
   }
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
@@ -271,7 +358,13 @@ export const rankNullityScene = makeScene2D(function* (view) {
       setCaption("Two directions survive into the image…");
       survivedCount(0);
       crushedCount(0);
-      tokens.forEach((token, i) => token.position(stackSlot(i)));
+      rankShare(0);
+      nullShare(0);
+      tokens.forEach((token, i) => {
+        token.fill(ROLE.original);
+        token.position(stackSlot(i));
+        tokenColumn[i] = "stack";
+      });
       yield* post(0, "survived", 0, b.p0!);
       yield* post(1, "survived", 1, b.p1!);
       setCaption("…and the third is crushed to zero. Never both fates, never neither.");
@@ -283,7 +376,9 @@ export const rankNullityScene = makeScene2D(function* (view) {
       const b = beats("balance");
       setTop("The books balance");
       place(COUNT_TWO.rank);
-      setCaption("2 + 1 = 3. The total is n, the INPUT dimension — the number of directions the map was given.");
+      setCaption(
+        "The bar below is the budget n, filled from the left by what survived and from the right by what was crushed. It is full, with nothing between.",
+      );
       yield* all(
         survivedFrame.opacity(0.9, b.frames!),
         crushedFrame.opacity(0.9, b.frames!),
@@ -315,7 +410,9 @@ export const rankNullityScene = makeScene2D(function* (view) {
       yield* post(1, "crushed", 1, b.move!);
       survivedCount(COUNT_ONE.rank);
       crushedCount(COUNT_ONE.nullity);
-      setCaption("It crossed the ledger. 1 + 2 = 3: the split changed, the total could not.");
+      setCaption(
+        "It crossed the ledger, and the boundary in the bar slid with it. The split changed; the bar did not get longer.",
+      );
       yield* waitFor(b.hold2!);
     },
 
@@ -328,7 +425,9 @@ export const rankNullityScene = makeScene2D(function* (view) {
       ceilingBand.opacity(0.55);
       ceilingNote.opacity(1);
       yield* waitFor(b.hold!);
-      setCaption("The budget is still 3 — that is set by the inputs. Only the ceiling changed.");
+      setCaption(
+        "The bar is still the same length — the budget is set by the inputs. Only the ceiling on the left column changed.",
+      );
       yield* waitFor(b.hold2!);
     },
 

@@ -450,6 +450,19 @@
       "deform": "transition",
       "hold2": "hold"
     },
+    "columns": {
+      "c1": "transition",
+      "line": "transition",
+      "hold": "hold",
+      "c2": "transition",
+      "plane": "transition",
+      "hold2": "hold",
+      "c3": "transition",
+      "hold3": "hold",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold4": "hold"
+    },
     "colspace": {
       "plane": "transition",
       "hold": "hold",

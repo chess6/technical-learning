@@ -851,6 +851,9 @@ describe("Subspaces & Rank lesson (spine L8)", () => {
     expect(meta.majorSteps.map((s) => s.id)).toEqual([
       "two-panels",
       "reach",
+      // Span, independence, and rank are built from the columns themselves
+      // between flattening the cube and naming the plane it lands on.
+      "columns",
       "colspace",
       "crush",
       "nullspace",

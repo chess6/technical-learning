@@ -20,6 +20,7 @@ import {
   CUBE_EDGES,
   ISO_CUBE_CORNERS,
   ROLE,
+  makeArrow,
   makeIsometricAxes,
   makeLabel,
   makeOverlayLabel,
@@ -317,6 +318,83 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   outputOrigin.position(toIsometric([0, 0, 0], SCALE, RIGHT));
   view.add(outputOrigin);
 
+  /* ---------------------------------------------------------------------
+   * Building the column space out of the columns.
+   *
+   * The scene showed the image plane by flattening a cube, and then NAMED it
+   * "the span of A's columns" — but the columns were never drawn, so span,
+   * independence, and rank were three words attached to one picture rather
+   * than three things a learner could see relate.
+   *
+   * This apparatus adds the columns one at a time. The first opens a line. The
+   * second points off that line — a genuinely new direction — and the reachable
+   * set grows to a plane, taking the rank with it. The third is 2c₁ + 3c₂, so it
+   * lands INSIDE the plane it is offered to: nothing new is reached and the rank
+   * does not move. That is what "dependent" costs, shown rather than defined.
+   *
+   * Drawn at a common length: span depends only on direction, and the columns'
+   * true lengths differ by a factor of six here, which would push c₃ clean off
+   * the panel while leaving c₁ a stub. The caption states the dependency
+   * relation in full, so the arithmetic is not hidden by the drawing choice.
+   * ------------------------------------------------------------------- */
+  const ARROW_LEN = 1.5;
+  const columnOf = (m: Matrix, j: number): P3 =>
+    [m[0]![j]!, m[1]![j]!, m[2]![j]!] as P3;
+  // c₁ and c₂ are the co-equal pair that spans, so they take the pair roles.
+  // c₃ takes `selected` — the column currently under discussion — rather than
+  // `violation`: a dependent column breaks no rule, it simply buys nothing.
+  const COLUMN_ROLE = [ROLE.basis1, ROLE.basis2, ROLE.selected] as const;
+  // Hand-placed: the isometric projection foreshortens c₃ almost to the origin,
+  // so a proportional offset would print its label on the other two arrowheads.
+  const COLUMN_LABEL_OFFSET = [
+    new Vector2(20, 16),
+    new Vector2(-6, -20),
+    new Vector2(34, -18),
+  ] as const;
+  const columnArrows = [0, 1, 2].map((j) => {
+    const direction = scale3(unit3(columnOf(RANK_TWO, j)), ARROW_LEN);
+    const arrow = makeArrow(
+      COLUMN_ROLE[j]!,
+      5,
+      `semantic:subspaces:column-${j + 1}`,
+    );
+    arrow.points([
+      toIsometric([0, 0, 0], SCALE, RIGHT),
+      toIsometric(direction, SCALE, RIGHT),
+    ]);
+    arrow.opacity(0);
+    view.add(arrow);
+    const label = makeLabel(`c${["₁", "₂", "₃"][j]}`, COLUMN_ROLE[j]!, 26);
+    label.position(
+      toIsometric(direction, SCALE, RIGHT).add(COLUMN_LABEL_OFFSET[j]!),
+    );
+    label.opacity(0);
+    view.add(label);
+    return { arrow, label };
+  });
+
+  /** The span of the columns admitted so far, while it is still just a line. */
+  const spanLine = makeSegment(ROLE.basis1, 4, true);
+  {
+    const d = unit3(columnOf(RANK_TWO, 0));
+    spanLine.points([
+      toIsometric(scale3(d, -2), SCALE, RIGHT),
+      toIsometric(scale3(d, 2), SCALE, RIGHT),
+    ]);
+  }
+  spanLine.opacity(0);
+  view.add(spanLine);
+
+  /**
+   * What the columns admitted so far can reach, and the rank that follows.
+   * One string so the two can never be shown disagreeing.
+   */
+  const reachSoFar = createSignal("");
+  const reachReadout = makeLabel(() => reachSoFar(), ROLE.basis1, 23);
+  reachReadout.position(new Vector2(RIGHT.x, RIGHT.y + 150));
+  reachReadout.opacity(0);
+  view.add(reachReadout);
+
   const colLabel = makeLabel("Col(A)", ROLE.basis1, 28);
   colLabel.position(new Vector2(RIGHT.x + 6, RIGHT.y + 116));
   colLabel.opacity(0);
@@ -368,14 +446,58 @@ export const subspacesRankScene = makeScene2D(function* (view) {
       yield* waitFor(b.hold2!);
     },
 
+    *columns() {
+      const b = beats("columns");
+      setTop("Where the plane comes from: the columns");
+      setCaption("Admit the columns one at a time. First c₁ — on its own it opens a line.");
+      reachSoFar("reach: a line   ·   rank so far 1");
+      yield* all(
+        columnArrows[0]!.arrow.opacity(1, b.c1!),
+        columnArrows[0]!.label.opacity(1, b.c1!),
+        reachReadout.opacity(1, b.c1!),
+        cube.opacity(0.28, b.c1!),
+        imageCube.opacity(0.35, b.c1!),
+      );
+      yield* spanLine.opacity(0.8, b.line!);
+      yield* waitFor(b.hold!);
+
+      setCaption("Now c₂. It points OFF that line — a direction c₁ could never reach.");
+      yield* all(
+        columnArrows[1]!.arrow.opacity(1, b.c2!),
+        columnArrows[1]!.label.opacity(1, b.c2!),
+      );
+      setCaption("So the reachable set grows from a line to a plane, and the rank grows with it.");
+      reachSoFar("reach: a plane   ·   rank so far 2");
+      yield* all(imagePlane.opacity(0.22, b.plane!), spanLine.opacity(0, b.plane!));
+      yield* waitFor(b.hold2!);
+
+      setCaption("Third column: c₃ = 2c₁ + 3c₂. Watch whether it leaves the plane.");
+      yield* all(
+        columnArrows[2]!.arrow.opacity(1, b.c3!),
+        columnArrows[2]!.label.opacity(1, b.c3!),
+      );
+      yield* waitFor(b.hold3!);
+      setCaption(
+        "It lands inside. A dependent column reaches nothing new — three columns, still rank 2.",
+      );
+      yield* imagePlane.opacity(0.34, b.pulseUp!);
+      yield* imagePlane.opacity(0.22, b.pulseDown!);
+      yield* waitFor(b.hold4!);
+    },
+
     *colspace() {
       const b = beats("colspace");
       setTop("Name it: the column space");
       setCaption("That plane is the span of A's columns: every vector the map can produce.");
+      // The construction scaffolding retires now that the subspace it built has
+      // a name — the plane and its label are what the rest of the scene needs.
       yield* all(
-        imagePlane.opacity(0.22, b.plane!),
         colLabel.opacity(1, b.plane!),
-        cube.opacity(0.28, b.plane!),
+        reachReadout.opacity(0, b.plane!),
+        ...columnArrows.flatMap(({ arrow, label }) => [
+          arrow.opacity(0, b.plane!),
+          label.opacity(0, b.plane!),
+        ]),
       );
       yield* waitFor(b.hold!);
       setCaption("So 'is A x = b solvable?' is one question: is b in Col(A)?");

@@ -177,11 +177,12 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "subspaces-rank",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation for the column space, the null space, and rank, drawn as two labelled panels under an isometric projection. The left panel is the input space R three and the right is the output space R three. A copy of the unit cube appears in the output panel untouched and is then pushed through a rank two map, visibly flattening onto one plane, which is named the column space. Attention returns to the left panel, where a probe point travels a whole line of inputs while its image, computed through the same map, never leaves the output origin; that line is named the null space and is drawn in the input panel. The rank is counted, the learner predicts what a rank one map does to the null space, and then the plane is undeformed and re-deformed so the image collapses to a line while the null space grows to a plane.",
+      "Guided animation for the column space, the null space, and rank, drawn as two labelled panels under an isometric projection. The left panel is the input space R three and the right is the output space R three. A copy of the unit cube appears in the output panel untouched and is then pushed through a rank two map, visibly flattening onto one plane. The columns of the map are then admitted one at a time: the first opens a line, the second points off that line so the reachable set grows to a plane and the rank grows with it, and the third, which equals two times the first plus three times the second, lands inside that plane and changes neither the reach nor the rank. The plane is then named the column space. Attention returns to the left panel, where a probe point travels a whole line of inputs while its image, computed through the same map, never leaves the output origin; that line is named the null space and is drawn in the input panel. The rank is counted, the learner predicts what a rank one map does to the null space, and then the plane is undeformed and re-deformed so the image collapses to a line while the null space grows to a plane.",
     steps: SUBSPACES_RANK_STEPS,
     majorSteps: pickMajor(SUBSPACES_RANK_STEPS, [
       "two-panels",
       "reach",
+      "columns",
       "colspace",
       "crush",
       "nullspace",
