@@ -13,6 +13,7 @@ export const MATRIX_TRANSFORMATION_OBJECTS = {
   viewport: "presentation:viewport-world",
   staticGrid: "semantic:grid:static*",
   transformedGrid: "semantic:grid:transformed*",
+  origin: "semantic:matrix:origin",
   column1: "semantic:matrix:column-1",
   column2: "semantic:matrix:column-2",
   sample: "semantic:matrix:sample",

@@ -5,8 +5,14 @@ import {
   createSignal,
   easeInOutCubic,
   waitFor,
+  waitUntil,
+  useScene,
   type ThreadGenerator,
 } from "@motion-canvas/core";
+import {
+  MATRIX_TRANSFORMATION_TUNING,
+  type MatrixTransformationTuningKey,
+} from "../authoring/matrixTransformationTuning";
 import { MATRIX_LESSON_EXAMPLE } from "../../lessons/exampleData";
 import {
   lerpIdentityToMatrix,
@@ -71,6 +77,22 @@ const SCENE_ID = "matrix-transformations";
 export const matrixTransformationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
+  const variables = useScene().variables;
+  const tuning = (key: MatrixTransformationTuningKey) =>
+    variables.get(
+      `authoring.matrix-transformations.${key}`,
+      MATRIX_TRANSFORMATION_TUNING[key],
+    );
+  const cameraZoom = tuning("cameraZoom");
+  const ledgerX = tuning("ledgerX");
+  const ledgerY = tuning("ledgerY");
+  const ledgerWidth = tuning("ledgerWidth");
+  const labelOffsetX = tuning("labelOffsetX");
+  const labelOffsetY = tuning("labelOffsetY");
+  const motionDurationScale = tuning("motionDurationScale");
+  const motionDuration = (seconds: number) =>
+    seconds * motionDurationScale();
+
   const viewport = makeViewportRig();
   const world = viewport.world;
   view.add(world);
@@ -92,7 +114,11 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   tGrid.opacity(0);
   world.add(tGrid);
 
-  const origin = new Circle({ size: 14, fill: ROLE.text });
+  const origin = new Circle({
+    key: "semantic:matrix:origin",
+    size: 14,
+    fill: ROLE.text,
+  });
   world.add(origin);
 
   const e1Ghost = makeArrow(ROLE.dim, 3);
@@ -195,14 +221,16 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   const e1Label = makeAttachedLabel("e₁", () => px([ma(), mc()]), {
     color: ROLE.basis1,
     fontSize: 34,
-    offset: new Vector2(20, 28),
+    offset: () =>
+      new Vector2(20 + labelOffsetX(), 28 + labelOffsetY()),
     key: "semantic:matrix:column-1-label",
   });
   e1Label.opacity(0);
   const e2Label = makeAttachedLabel("e₂", () => px([mb(), md()]), {
     color: ROLE.basis2,
     fontSize: 34,
-    offset: new Vector2(-16, -32),
+    offset: () =>
+      new Vector2(-16 + labelOffsetX(), -32 + labelOffsetY()),
     key: "semantic:matrix:column-2-label",
   });
   e2Label.opacity(0);
@@ -232,11 +260,12 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       { id: "relation", label: "watch", value: "", color: ROLE.selected },
     ],
     {
-      position: new Vector2(-285, -190),
-      width: 360,
+      position: new Vector2(ledgerX(), ledgerY()),
+      width: ledgerWidth(),
       key: "semantic:matrix:ledger",
     },
   );
+  ledger.node.position(() => new Vector2(ledgerX(), ledgerY()));
   ledger.node.opacity(0);
   view.add(ledger.node);
   const caption = ledger.row("relation").value;
@@ -274,8 +303,8 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       setCaption("e₁=(1,0) · e₂=(0,1)");
       yield* all(
         ledger.node.opacity(1, b.establish!),
-        e1.end(1, b.establish!),
-        e2.end(1, b.establish!),
+        e1.end(1, motionDuration(b.establish!)),
+        e2.end(1, motionDuration(b.establish!)),
         e1Label.opacity(1, b.establish!),
         e2Label.opacity(1, b.establish!),
       );
@@ -305,12 +334,12 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
           ],
           b.focus!,
         ),
-        viewport.focusOn({ x: 70, y: 0 }, 1.12, b.focus!),
+        viewport.focusOn({ x: 70, y: 0 }, cameraZoom(), b.focus!),
       );
       yield* e1.lineWidth(9, b.columnUp!);
       yield* all(
-        ma(A[0][0], b.columnMove!, easeInOutCubic),
-        mc(A[1][0], b.columnMove!, easeInOutCubic),
+        ma(A[0][0], motionDuration(b.columnMove!), easeInOutCubic),
+        mc(A[1][0], motionDuration(b.columnMove!), easeInOutCubic),
       );
       e1Coords.text(`(${fmt(A[0][0])}, ${fmt(A[1][0])})`);
       e1Label.text("Ae₁");
@@ -333,12 +362,12 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
           ],
           b.focus!,
         ),
-        viewport.focusOn({ x: 30, y: -30 }, 1.12, b.focus!),
+        viewport.focusOn({ x: 30, y: -30 }, cameraZoom(), b.focus!),
       );
       yield* e2.lineWidth(9, b.columnUp!);
       yield* all(
-        mb(A[0][1], b.columnMove!, easeInOutCubic),
-        md(A[1][1], b.columnMove!, easeInOutCubic),
+        mb(A[0][1], motionDuration(b.columnMove!), easeInOutCubic),
+        md(A[1][1], motionDuration(b.columnMove!), easeInOutCubic),
       );
       e2Coords.text(`(${fmt(A[0][1])}, ${fmt(A[1][1])})`);
       e2Label.text("Ae₂");
@@ -369,7 +398,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         ),
         viewport.reset(b.focus!),
       );
-      yield* sample.end(1, b.draw!, easeInOutCubic);
+      yield* sample.end(1, motionDuration(b.draw!), easeInOutCubic);
       yield* all(
         comp1.opacity(0.85, b.componentsIn!),
         comp2.opacity(0.85, b.componentsIn!),
@@ -391,6 +420,8 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         e1Coords.opacity(0.9, b.evidenceIn!),
         e2Coords.opacity(0.9, b.evidenceIn!),
       );
+      // Zero-delay in ordinary playback; draggable in the native editor.
+      yield* waitUntil("matrix-transformations.predict-sample.think");
       yield* waitFor(b.think!);
     },
     *["transform-sample"]() {
@@ -407,7 +438,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       // …then carry x to Ax. Every bound node moves off the same signal: the
       // arrow, both dashed components, and the tip they meet at. The tip is
       // Ax by construction, so the drawing cannot drift from the claim.
-      yield* uninterruptedMotion(sampleT(1, b.carry!, easeInOutCubic));
+      yield* uninterruptedMotion(sampleT(1, motionDuration(b.carry!), easeInOutCubic));
       // Close the loop on the prediction with the actual landing point,
       // computed from the shared matrix helper rather than written by hand.
       const landed = matrixVectorMultiply(A, SAMPLE);
@@ -431,7 +462,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         probeImage.opacity(1, b.imageIn!),
         lineAnnotation.show(b.imageIn!),
       );
-      yield* probeImage.end(1, b.trace!, easeInOutCubic);
+      yield* probeImage.end(1, motionDuration(b.trace!), easeInOutCubic);
       setCaption("straightness preserved");
       yield* silentHold(b.hold!);
     },
@@ -497,16 +528,19 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         // Reset to the identity before each preset, as chapter0 does: morphing
         // one unrelated preset straight into another animates a transition that
         // means nothing.
-        yield* morphTo(IDENTITY, per * 0.18);
+        yield* morphTo(IDENTITY, motionDuration(per * 0.18));
         setCaption(name);
-        yield* morphTo(target, per * 0.52);
+        yield* morphTo(target, motionDuration(per * 0.52));
         yield* waitFor(per * 0.3);
       }
     },
     *summary() {
       const b = beats("summary");
       setCaption("A[e₁ e₂]=[Ae₁ Ae₂]");
-      yield* all(morphTo(A, b.restore!), sample.opacity(1, b.restore!));
+      yield* all(
+        morphTo(A, motionDuration(b.restore!)),
+        sample.opacity(1, motionDuration(b.restore!)),
+      );
       e1Label.text("Ae₁");
       e2Label.text("Ae₂");
       yield* silentHold(b.hold!);

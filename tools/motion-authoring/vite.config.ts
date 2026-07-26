@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
+import { tuningPersistencePlugin } from "./tuningPersistencePlugin";
 
 const require = createRequire(import.meta.url);
 const motionCanvas = require("@motion-canvas/vite-plugin")
@@ -13,6 +14,7 @@ const inspectorModulePath = fileURLToPath(
 
 export default defineConfig({
   plugins: [
+    tuningPersistencePlugin(),
     {
       name: "motion-authoring:editor-module-bridge",
       configureServer(server) {
