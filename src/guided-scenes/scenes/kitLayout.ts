@@ -12,6 +12,18 @@ export interface Point {
 }
 
 /**
+ * Integer-valued grid coordinates inside a symmetric half-extent. Fractional
+ * extents constrain line length; they must not shift every grid line by half a
+ * unit and silently omit the x/y axes.
+ */
+export function gridLineCoordinates(halfExtent: number): number[] {
+  if (!Number.isFinite(halfExtent) || halfExtent < 0) return [];
+  const start = Math.ceil(-halfExtent);
+  const end = Math.floor(halfExtent);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+/**
  * Positions for a vertical column of tokens laid top-to-bottom in the given
  * order. The benchmark evidence (Reducible's Huffman build) is that a greedy
  * frontier should be a fixed PLACE on screen: same x, evenly spaced rows,

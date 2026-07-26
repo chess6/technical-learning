@@ -16,6 +16,7 @@ import type { Vector2 as MathVector2, Matrix2x2 } from "../../math";
 import { matrixVectorMultiply } from "../../math";
 import type { GraphicRole, OpeningGraphic } from "../../lessons/openingGraphic";
 import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
+import { gridLineCoordinates } from "./kitLayout";
 import { ROLE } from "./semanticRoles";
 
 export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
@@ -382,7 +383,7 @@ export function makeOverlayLabel(
  */
 export function makeStaticGrid(halfExtent = GRID_HALF_EXTENT): Node {
   const group = new Node({});
-  for (let k = -halfExtent; k <= halfExtent; k += 1) {
+  for (const k of gridLineCoordinates(halfExtent)) {
     const isAxis = k === 0;
     group.add(
       new Line({
@@ -414,7 +415,7 @@ export function makeTransformedGrid(
   const group = new Node({});
   const project = (point: MathVector2): Vector2 =>
     toPixels(matrixVectorMultiply(matrixAt(), point));
-  for (let k = -halfExtent; k <= halfExtent; k += 1) {
+  for (const k of gridLineCoordinates(halfExtent)) {
     const isAxis = k === 0;
     group.add(
       new Line({

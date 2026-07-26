@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   columnLayout,
   distanceToLineThroughOrigin,
+  gridLineCoordinates,
   lerpHexColor,
   rigTransformForFocus,
   stableAscendingOrder,
@@ -9,6 +10,16 @@ import {
   writeInSchedule,
   writeInTotal,
 } from "../kitLayout";
+
+describe("gridLineCoordinates", () => {
+  it("keeps integer grid lines centred on zero for fractional extents", () => {
+    expect(gridLineCoordinates(2.5)).toEqual([-2, -1, 0, 1, 2]);
+  });
+
+  it("preserves integer boundary lines for integer extents", () => {
+    expect(gridLineCoordinates(2)).toEqual([-2, -1, 0, 1, 2]);
+  });
+});
 
 describe("columnLayout", () => {
   it("stacks rows top to bottom at a fixed x", () => {
