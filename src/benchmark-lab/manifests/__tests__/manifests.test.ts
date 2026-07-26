@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import referenceSources from "../../../../.reference-sources/manifest.json";
 import {
   BENCHMARK_MANIFESTS,
+  MAX_BENCHMARK_DURATION_SECONDS,
   benchmarkDuration,
   getBenchmarkManifest,
   getReferenceWindow,
@@ -66,7 +67,17 @@ describe("benchmark manifest registry", () => {
   it("maps reference times onto the replica timeline", () => {
     const eigen = getBenchmarkManifest("eigen-span-stretch");
     expect(toReplicaTime(eigen, 117.4)).toBeCloseTo(0, 5);
-    expect(benchmarkDuration(eigen)).toBeCloseTo(85.1, 5);
+    expect(benchmarkDuration(eigen)).toBeCloseTo(12.1, 5);
+  });
+
+  it("keeps every excerpt and the whole suite inside the render budget", () => {
+    const durations = BENCHMARK_MANIFESTS.map(benchmarkDuration);
+    expect(Math.max(...durations)).toBeLessThanOrEqual(
+      MAX_BENCHMARK_DURATION_SECONDS,
+    );
+    expect(
+      durations.reduce((total, duration) => total + duration, 0),
+    ).toBeLessThanOrEqual(50);
   });
 });
 
@@ -83,7 +94,7 @@ describe("validateBenchmarkManifest", () => {
 
   it("rejects beats that do not tile the window", () => {
     const bad = mutated((m) => {
-      m.beats[1] = { ...m.beats[1]!, refStart: m.beats[1]!.refStart + 1 };
+      m.beats[0] = { ...m.beats[0]!, refStart: m.beats[0]!.refStart + 1 };
     });
     expect(validateBenchmarkManifest(bad).join("\n")).toMatch(/must tile/);
   });

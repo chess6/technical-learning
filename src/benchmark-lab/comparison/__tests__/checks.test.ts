@@ -19,8 +19,8 @@ import { summarize, type BenchmarkRun, type FrameSample } from "../types";
 
 /**
  * Synthetic-fixture tests for every comparison calculation. The fixture
- * borrows the bfs-frontier window (0-40 s) so reference->replica time mapping
- * is the identity, and declares two beats, one tracked vector, one label.
+ * uses the current focused bfs-frontier source window and declares two beats,
+ * one tracked vector, and one label. Fixture frame times are replica-relative.
  */
 
 function fixtureManifest(): BenchmarkManifest {
@@ -43,8 +43,8 @@ function fixtureManifest(): BenchmarkManifest {
       {
         id: "b1",
         title: "one",
-        refStart: 0,
-        refEnd: 10,
+        refStart: 21.5,
+        refEnd: 31.5,
         purpose: "p",
         visibleObjects: ["vec"],
         text: { kind: "none" },
@@ -53,8 +53,8 @@ function fixtureManifest(): BenchmarkManifest {
       {
         id: "b2",
         title: "two",
-        refStart: 10,
-        refEnd: 40,
+        refStart: 31.5,
+        refEnd: 38.5,
         purpose: "p",
         visibleObjects: ["vec", "note"],
         text: { kind: "temporary-annotation" },
@@ -77,15 +77,15 @@ function fixtureManifest(): BenchmarkManifest {
       },
     ],
     events: [
-      { id: "e1", refTime: 2, description: "d", anchor: "transcript" },
-      { id: "e2", refTime: 8, description: "d", anchor: "transcript" },
+      { id: "e1", refTime: 23.5, description: "d", anchor: "transcript" },
+      { id: "e2", refTime: 29.5, description: "d", anchor: "transcript" },
     ],
     landmarks: [
       { id: "vec-at-rest", objectId: "vec", beatId: "b1", x: 100, y: 0 },
     ],
     invariants: [],
     transitions: [
-      { refTime: 10, kind: "cut", objects: ["vec"] },
+      { refTime: 31.5, kind: "cut", objects: ["vec"] },
     ],
     tolerances: {
       eventTimeSec: 0.5,
@@ -118,13 +118,13 @@ function fixtureRun(overrides: Partial<BenchmarkRun> = {}): BenchmarkRun {
     frameAt(0.5, { vec: sample(101, 0) }),
     frameAt(9.9, { vec: sample(102, 0) }),
     frameAt(10.5, { vec: sample(160, 0), note: sample(300, 100) }),
-    frameAt(39, { vec: sample(160, 0), note: sample(300, 100) }),
+    frameAt(16, { vec: sample(160, 0), note: sample(300, 100) }),
   ];
   return {
     benchmarkId: "bfs-frontier",
     fps: 30,
     stride: 3,
-    durationFrames: 1200,
+    durationFrames: 510,
     frames,
     events: { e1: 2.1, e2: 8.2 },
     beatEndSamples: {
@@ -271,7 +271,7 @@ describe("checkStageClipping", () => {
   it("flags content extending past the stage edge", () => {
     const run = fixtureRun();
     run.frames.push(
-      frameAt(20, { note: sample(460, 0, 1, { width: 100, height: 20 }) }),
+      frameAt(16, { note: sample(460, 0, 1, { width: 100, height: 20 }) }),
     );
     const result = checkStageClipping(fixtureManifest(), run).find(
       (r) => r.id === "clipping:note",
@@ -285,7 +285,7 @@ describe("checkTextOcclusion", () => {
   it("flags a label box covering a math object's anchor", () => {
     const run = fixtureRun();
     run.frames.push(
-      frameAt(20, {
+      frameAt(16, {
         note: sample(200, 0, 1, { width: 120, height: 40 }),
         vec: sample(210, 5, 1),
       }),
@@ -353,7 +353,7 @@ describe("checkOverruns / checkDuration / summarize", () => {
   });
   it("checks total duration against the excerpt window", () => {
     expect(checkDuration(fixtureManifest(), fixtureRun())[0]!.passed).toBe(true);
-    const short = fixtureRun({ durationFrames: 900 });
+    const short = fixtureRun({ durationFrames: 300 });
     expect(checkDuration(fixtureManifest(), short)[0]!.passed).toBe(false);
   });
   it("summarize splits hard failures from craft findings by dimension", () => {

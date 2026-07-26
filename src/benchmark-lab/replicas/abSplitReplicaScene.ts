@@ -651,5 +651,11 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
     },
   };
 
+  // This focused benchmark starts where the long prediction pause lands.
+  // Reconstruct that landing frame instantly; the retained beat then begins
+  // with the observed overlay retirement and the actual structural repair.
+  overlay.opacity(1);
+  pauseMarker.position(new Vector2(200, 190));
+
   yield* runReplicaBeats(manifest, bodies);
 });

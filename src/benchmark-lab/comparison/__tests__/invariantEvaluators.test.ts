@@ -67,39 +67,39 @@ describe("eigen evaluators", () => {
 
   it("tips-match-matrix compares farthest reach against A*v", () => {
     const run = emptyRun(manifest.id);
-    // |A*(1,-1)| = |(2,-2)| = 2.828 units -> 181 px; ihat -> 192 px;
-    // sneaky -> 181 px; knocked |(4,2)| -> 286.2 px.
-    run.frames = [
-      frameAt(4, { "vec-diag": sample(128, 128) }),
-      frameAt(22, { ihat: sample(192, 0) }),
-      frameAt(45, { "vec-sneaky": sample(-128, -128) }),
-      frameAt(79, { "vec-knocked": sample(256, -128) }),
-    ];
+    // |A*(1,-1)| = |(2,-2)| = 2.828 units -> about 181 px.
+    run.frames = [frameAt(4, { "vec-diag": sample(128, 128) })];
     expect(table["tips-match-matrix"]!(manifest, run).passed).toBe(true);
-    // Undershoot the i-hat stretch by 20%: fails.
-    run.frames[1] = frameAt(22, { ihat: sample(154, 0) });
+    // Undershoot the retained diagonal-vector stretch: fails.
+    run.frames[0] = frameAt(4, { "vec-diag": sample(100, 100) });
     const bad = table["tips-match-matrix"]!(manifest, run);
     expect(bad.passed).toBe(false);
-    expect(bad.message).toMatch(/does not match the matrix/);
+    expect(bad.message).toMatch(/misses A\*v/);
   });
 
   it("label-scale-prefix-truthful flags a premature 2x prefix", () => {
+    const extended = structuredClone(manifest);
+    extended.beats.push({
+      ...manifest.beats[0]!,
+      id: "sneaky-vector",
+      refStart: 158.5,
+      refEnd: 169,
+    });
     const run = emptyRun(manifest.id);
-    // sneaky-vector occupies replica [41.1, 51.6).
     run.frames = [
       frameAt(43, {
         "label-sneaky": sample(-80, -80, 1, { text: "2x[-1,1]" }),
         "vec-sneaky": sample(-64, -64),
       }),
     ];
-    expect(table["label-scale-prefix-truthful"]!(manifest, run).passed).toBe(false);
+    expect(table["label-scale-prefix-truthful"]!(extended, run).passed).toBe(false);
     run.frames = [
       frameAt(43, {
         "label-sneaky": sample(-80, -80, 1, { text: "2x[-1,1]" }),
         "vec-sneaky": sample(-128, -128),
       }),
     ];
-    expect(table["label-scale-prefix-truthful"]!(manifest, run).passed).toBe(true);
+    expect(table["label-scale-prefix-truthful"]!(extended, run).passed).toBe(true);
   });
 });
 
@@ -128,7 +128,7 @@ describe("huffman evaluators", () => {
   it("frontier-sorted catches an out-of-order column", () => {
     const run = emptyRun(manifest.id);
     run.beatEndSamples = {
-      "note-recursion": {
+      "merge-DE": {
         "leaf-A": sample(-338, -172, 1, { value: 0.17 }),
         "leaf-C": sample(-338, -84, 1, { value: 0.17 }),
         "token-DE": sample(-338, 4, 1, { value: 0.31 }),
@@ -136,19 +136,25 @@ describe("huffman evaluators", () => {
       },
     };
     expect(table["frontier-sorted"]!(manifest, run).passed).toBe(true);
-    run.beatEndSamples["note-recursion"]!["leaf-B"] = sample(-338, -20, 1, {
+    run.beatEndSamples["merge-DE"]!["leaf-B"] = sample(-338, -20, 1, {
       value: 0.35,
     });
     expect(table["frontier-sorted"]!(manifest, run).passed).toBe(false);
   });
 
   it("placed-subtrees-never-move flags drift after placement", () => {
+    const extended = structuredClone(manifest);
+    extended.invariants.push({
+      id: "placed-subtrees-never-move",
+      description: "fixture",
+      beats: ["merge-DE"],
+    });
     const run = emptyRun(manifest.id);
     run.frames = [
-      frameAt(22, { "leaf-D": sample(67, 197) }),
-      frameAt(24, { "leaf-D": sample(80, 197) }),
+      frameAt(6, { "leaf-D": sample(67, 197) }),
+      frameAt(8, { "leaf-D": sample(80, 197) }),
     ];
-    expect(table["placed-subtrees-never-move"]!(manifest, run).passed).toBe(false);
+    expect(table["placed-subtrees-never-move"]!(extended, run).passed).toBe(false);
   });
 });
 
@@ -174,19 +180,19 @@ describe("ab evaluators", () => {
 
   it("leaf-row-height-constant flags a drifting leaf row", () => {
     const run = emptyRun(manifest.id);
-    // more-inserts occupies replica [27.7, 41.6).
-    run.frames = [frameAt(30, { "leaf-row": sample(-280, 190) })];
+    // The focused split occupies replica [0, 7.3).
+    run.frames = [frameAt(2, { "leaf-row": sample(-280, 190) })];
     expect(table["leaf-row-height-constant"]!(manifest, run).passed).toBe(false);
-    run.frames = [frameAt(30, { "leaf-row": sample(-280, 175) })];
+    run.frames = [frameAt(2, { "leaf-row": sample(-280, 175) })];
     expect(table["leaf-row-height-constant"]!(manifest, run).passed).toBe(true);
   });
 
   it("keys-persist-through-split flags a fading key", () => {
     const run = emptyRun(manifest.id);
-    // split-rise occupies replica [11.6, 18.9).
+    // The focused split occupies replica [0, 7.3).
     run.frames = [
-      frameAt(12, { "key-5": sample(0, 87, 1) }),
-      frameAt(13, { "key-5": sample(0, 40, 0) }),
+      frameAt(1, { "key-5": sample(0, 87, 1) }),
+      frameAt(2, { "key-5": sample(0, 40, 0) }),
     ];
     expect(table["keys-persist-through-split"]!(manifest, run).passed).toBe(false);
   });
@@ -199,8 +205,8 @@ describe("bfs evaluators", () => {
   it("vertex-positions-frozen flags a moved vertex", () => {
     const run = emptyRun(manifest.id);
     run.frames = [
-      frameAt(25, { "vertex-0": sample(-288, -210) }),
-      frameAt(26, { "vertex-0": sample(-280, -210) }),
+      frameAt(3.5, { "vertex-0": sample(-288, -210) }),
+      frameAt(4.5, { "vertex-0": sample(-280, -210) }),
     ];
     expect(table["vertex-positions-frozen"]!(manifest, run).passed).toBe(false);
   });
@@ -208,7 +214,7 @@ describe("bfs evaluators", () => {
   it("numbers-match-bfs-order verifies displayed numbers", () => {
     const run = emptyRun(manifest.id);
     run.frames = [
-      frameAt(39, {
+      frameAt(16, {
         "vertex-0": sample(-288, -210, 1, { text: "0" }),
         "vertex-4": sample(-144, -130, 1, { text: "4" }),
       }),
@@ -221,8 +227,8 @@ describe("bfs evaluators", () => {
   it("done-never-regresses flags a green vertex reverting", () => {
     const run = emptyRun(manifest.id);
     run.frames = [
-      frameAt(26, { "vertex-0": sample(-288, -210, 1, { value: 2 }) }),
-      frameAt(28, { "vertex-0": sample(-288, -210, 1, { value: 1 }) }),
+      frameAt(4.5, { "vertex-0": sample(-288, -210, 1, { value: 2 }) }),
+      frameAt(6.5, { "vertex-0": sample(-288, -210, 1, { value: 1 }) }),
     ];
     expect(table["done-never-regresses"]!(manifest, run).passed).toBe(false);
   });
@@ -231,17 +237,17 @@ describe("bfs evaluators", () => {
     const run = emptyRun(manifest.id);
     const LINE_Y = -212 + 37 * 4;
     run.frames = [
-      frameAt(25, {
+      frameAt(3.5, {
         "vertex-0": sample(-288, -210, 1, { value: 1 }),
         tracer: sample(28, LINE_Y - 74),
       }),
-      frameAt(25.4, {
+      frameAt(3.9, {
         "vertex-0": sample(-288, -210, 1, { value: 2 }),
         tracer: sample(28, LINE_Y),
       }),
     ];
     expect(table["tracer-agrees-with-state"]!(manifest, run).passed).toBe(true);
-    run.frames[1] = frameAt(25.4, {
+    run.frames[1] = frameAt(3.9, {
       "vertex-0": sample(-288, -210, 1, { value: 2 }),
       tracer: sample(28, LINE_Y - 74),
     });

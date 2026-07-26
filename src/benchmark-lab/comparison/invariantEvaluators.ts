@@ -170,9 +170,11 @@ const eigenEvaluators: Record<string, InvariantEvaluator> = {
       ["vec-sneaky", SNEAKY_VECTOR, ["sneaky-vector"]],
       ["vec-knocked", KNOCKED_VECTOR, ["knocked-off"]],
     ];
+    const retainedBeats = new Set(manifest.beats.map((beat) => beat.id));
     let worstRatio = 0;
     let culprit = "";
     for (const [id, vector, beats] of cases) {
+      if (!beats.some((beat) => retainedBeats.has(beat))) continue;
       const image = matrixVectorMultiply(EIGEN_BENCH_MATRIX, [
         vector[0],
         vector[1],
@@ -225,15 +227,17 @@ const eigenEvaluators: Record<string, InvariantEvaluator> = {
 };
 
 const huffmanEvaluators: Record<string, InvariantEvaluator> = {
-  "parent-sum-conservation": (_manifest, run) => {
+  "parent-sum-conservation": (manifest, run) => {
     const last = run.frames[run.frames.length - 1];
     if (!last) return { passed: false, message: "no samples" };
+    const declared = new Set(manifest.objects.map((object) => object.id));
     const value = (id: string) => last.samples[id]?.value;
     const pairs: [string, string, string][] = [
       ["parent-DE", "leaf-D", "leaf-E"],
       ["parent-AC", "leaf-A", "leaf-C"],
     ];
     for (const [parent, a, b] of pairs) {
+      if (!declared.has(parent)) continue;
       const sum = (value(a) ?? 0) + (value(b) ?? 0);
       if (Math.abs((value(parent) ?? 0) - sum) > 1e-6) {
         return {
@@ -243,6 +247,12 @@ const huffmanEvaluators: Record<string, InvariantEvaluator> = {
           message: `${parent} displays ${value(parent)} but its children sum to ${sum.toFixed(2)}`,
         };
       }
+    }
+    if (!declared.has("root-065")) {
+      return {
+        passed: true,
+        message: "every retained parent displays the sum of its children",
+      };
     }
     const rootSum = (value("parent-DE") ?? 0) + (value("parent-AC") ?? 0);
     if (Math.abs((value("root-065") ?? 0) - rootSum) > 1e-6) {

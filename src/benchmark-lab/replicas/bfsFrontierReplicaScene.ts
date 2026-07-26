@@ -320,5 +320,14 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
     yield* waitFor(Math.max(0, PERIOD - cost));
   }
 
+  // The focused excerpt begins after the establishing build/write-in. Restore
+  // that landed state as the first frame, then spend the render budget on the
+  // synchronized algorithm transitions the benchmark exists to test.
+  intro.node.opacity(0);
+  for (const vertex of vertexNodes) vertex.scale(1);
+  for (const edge of edgeLines) edge.end(1);
+  titleWrite.complete();
+  for (const line of lineWrites) line.complete();
+
   yield* runReplicaBeats(manifest, bodies);
 });

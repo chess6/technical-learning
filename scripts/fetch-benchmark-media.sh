@@ -45,8 +45,30 @@ PY
   fi
 
   out="$MEDIA/frames/$bench"
-  if [[ -s "$out/meta.json" ]]; then
-    echo "== frames for $bench already extracted"
+  if [[ -s "$out/meta.json" ]] && python3 - "$out/meta.json" "$bench" "$vid" "$start" "$end" "$fps" <<'PY'
+import json, math, sys
+path, bench, vid, start, end, fps = sys.argv[1:]
+try:
+    meta = json.load(open(path))
+except (OSError, ValueError):
+    raise SystemExit(1)
+expected = {
+    "benchmarkId": bench,
+    "videoId": vid,
+    "start": float(start),
+    "end": float(end),
+    "frameFps": float(fps),
+}
+ok = all(
+    meta.get(key) == value
+    if not isinstance(value, float)
+    else math.isclose(float(meta.get(key, -1)), value)
+    for key, value in expected.items()
+)
+raise SystemExit(0 if ok else 1)
+PY
+  then
+    echo "== frames for $bench already match the focused window"
     continue
   fi
   echo "== extracting $bench [$start-$end] @ ${fps}fps"

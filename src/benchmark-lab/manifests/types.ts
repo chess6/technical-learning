@@ -28,6 +28,13 @@ export const LAB_STAGE = { width: 960, height: 540 } as const;
 /** Frames per second replicas are authored/rendered at. */
 export const REPLICA_FPS = 30;
 
+/**
+ * Hard render budget for one benchmark excerpt. The laboratory studies one
+ * complete causal sequence per source; longer lecture context belongs in the
+ * reference pack, not in every sampled/rendered run.
+ */
+export const MAX_BENCHMARK_DURATION_SECONDS = 20;
+
 export interface ReferenceWindow {
   benchmarkId: string;
   videoId: string;
@@ -279,6 +286,12 @@ export function validateBenchmarkManifest(manifest: BenchmarkManifest): string[]
   if (window.videoId !== manifest.source.videoId) {
     problems.push(
       `window videoId ${window.videoId} != source.videoId ${manifest.source.videoId}`,
+    );
+  }
+  const duration = window.end - window.start;
+  if (duration > MAX_BENCHMARK_DURATION_SECONDS) {
+    problems.push(
+      `excerpt is ${duration.toFixed(1)}s; maximum is ${MAX_BENCHMARK_DURATION_SECONDS}s`,
     );
   }
 
