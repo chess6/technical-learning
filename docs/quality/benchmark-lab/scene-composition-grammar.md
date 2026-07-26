@@ -1,17 +1,17 @@
-# A composable scene grammar — proposal
+# A composable scene grammar — production slice 1
 
-**Status: proposal, backed by benchmark evidence. Not a standard, and
-deliberately not a sequence anyone must follow.** It exists to give the later
-scene-system redesign a vocabulary and a set of primitives; nothing in the
-current authoring gates changes because of this document.
+**Status: production slice 1 shipped, backed by benchmark and production evidence.**
+The treatments are a vocabulary, not a required sequence or visual template.
+Objective correctness remains in the production hard gates; craft remains
+review evidence and author judgment.
 
 Evidence comes from two distinct layers: the eight **focused 7–17 second runtime reconstructions** in [README.md](README.md), and the wider committed source-pack analyses under `.reference-sources/packs/`. Only behaviors inside the current manifest windows are actively benchmarked. Camera reframing, prediction overlays, intertitles, graph build-in, and pseudocode write-in now each have a focused runtime window; wider lecture choreography remains source-study evidence only.
 
 ## The finding
 
-Every production guided scene composes the same way: a title band, a caption
-band, and geometry between them, re-set on nearly every beat. Across 18 scenes
-there are **261 caption assignments**; exactly one scene (the development spike)
+Before this slice, every production guided scene composed the same way: a title band, a caption
+band, and geometry between them, re-set on nearly every beat. Across the pre-slice inventory of 18 scenes
+there were **261 caption assignments**; exactly one scene (the development spike)
 has none, and 10 scenes carry both a persistent top label and a persistent
 caption.
 
@@ -46,17 +46,22 @@ laboratory watched it work.
 | **Silent visual hold** | The viewer needs time on an unchanged frame. | 3b1b's holds after every semantic step; the reference's explicit pause-and-ponder beats. |
 | **Narration over uninterrupted motion** | The motion is continuous and words would chop it. | The current 3b1b grid and special vector transform continuously while the fixed span and equation hold. |
 
-## The proposal
+## The grammar
 
 Replace "every beat sets a title and a caption" with **a beat that declares its
-job, and a composition that follows from it.** Concretely, a beat would carry:
+job, and a composition that follows from it.** The compact authoring contract carries the corresponding purpose, explicit
+intent, focal objects, expected change, invariant, checkpoint, and chapter
+metadata:
 
-```
+```ts
 beat = {
-  role:      establish | transform | compare | predict | reveal | verify | rest
-  subject:   the one object or relationship the beat is about
-  treatment: one or more of the ten above
-  camera:    static | reframe(target)
+  purpose,
+  intent: hold | text | emphasis | geometry | camera | transition,
+  focalObjects: [semanticObjectId],
+  expectedChanges,
+  expectedStableObjects,
+  prediction,
+  checkpoints,
 }
 ```
 
@@ -71,7 +76,7 @@ Three rules, and no fourth:
 
 What this is *not*: a required sequence of roles, a template, or a claim that
 captions are bad. Our checkpoints are a genuine advantage over the references —
-the reference animations pause and hope, and we can verify. The proposal is about the
+the reference animations pause and hope, and we can verify. The grammar is about the
 *frame*, not about dropping the pedagogy.
 
 ## Primitives motivated by the focused benchmarks and wider source study
@@ -91,49 +96,106 @@ Built during the laboratory work and now in the shared kit (`src/guided-scenes/s
 | `distanceToLineThroughOrigin` | The stays-on-span invariant, as a number a test can hold. |
 | `lerpHexColor` | A family gradient, so many arrows read as one object. |
 
-Still missing, in rough order of how much the excerpts leaned on them:
+## Remaining capabilities after production slice 1
 
-1. **Entry migration.** 3b1b's signature move: tip coordinates fly into the
-   matrix columns, λ flies into the diagonal, entries slide out to build the
-   characteristic polynomial. Algebra is never typed fresh — it is assembled
-   from pieces already on the plane. We have no primitive for "a copy of this
-   value travels into that slot", and it is the single biggest craft gap.
-2. **Morph-in-place equations.** One equation rearranged by moving its terms,
-   rather than swapping strings. Note the constraint already recorded in
-   `known-failure-modes.md` #8: `Txt.text(value, duration)` interpolates
-   character by character and renders scrambled words, so this needs real term
-   objects, not a text tween.
-3. **A split-screen panel primitive.** Two labelled spaces with their own
-   origins and a declared relationship, instead of each scene hand-placing
-   panels.
-4. **An intertitle / pause-overlay primitive.** The focused A/B prediction window now measures the treatment, but production still needs a reviewed reusable primitive.
-5. **A silent-hold beat type.** A hold is currently indistinguishable from a
-   beat whose body forgot to animate — which is exactly why the
-   missing-claimed-motion gate has to infer intent from beat names.
+1. **Entry migration.** Tip coordinates, matrix entries, and equation terms do
+   not yet travel into their algebraic slots. This remains the largest craft
+   gap because identity should persist from picture to symbol.
+2. **Morph-in-place equations.** Equations still change atomically. A future
+   primitive must move typed term objects; `Txt.text(value, duration)` is not a
+   substitute because it interpolates characters into unreadable strings.
+3. **Adaptive label placement.** Attached labels preserve identity, but their
+   offsets are still tuned per scene rather than solved against nearby ink and
+   trajectories.
 
-## Craft gaps to drive the redesign
+Split-screen panels, full-frame prediction/intertitle treatments, camera-style
+viewport reframing, explicit silent holds, temporary annotations, and
+uninterrupted-motion wrappers are no longer missing: they ship in
+`scenePresentation.ts` and are exercised by the three pilots.
 
-Measured or observed, none of them auto-failed, all of them real:
+## Production slice 1 result
 
-- **Caption dependence.** 261 caption assignments across 18 scenes. The
-  reference excerpts carry the same load with object labels, value readouts,
-  and placement.
-- **No entry migration anywhere.** Every equation in our scenes appears as
-  finished text. The references derive them from the picture.
-- **Camera is unused in production.** The focused A/B camera window now measures reframing, but no
-  production scene reframes yet, so arguments that are local are made at
-  full-frame scale with everything else still on screen competing.
-- **Uniform pacing.** Our beats are budgeted from a table; the references hold
-  after *every* semantic step and vary hold length by how much has just
-  changed. The focused reports no longer measure the longer A/B-tree insertion montage, so they provide no evidence for that pacing comparison.
-- **Label placement is per-scene and hand-tuned.** Six of the ten corrected
-  production defects were labels colliding under motion. Tip labels need a
-  placement helper that is aware of what else is on the frame, not a fixed
-  offset per call site.
-- **Layout rules differ from the references' in ways we chose but never
-  compared.** `ab-split`'s node centres sit up to ~60 px from the reference's
-  because our layout centres a parent between its first and last child and the
-  reference does not. Recorded as a deviation, not chased.
-- **Typography.** LaTeX serif versus our sans stack, present in every
-  comparison. A deliberate product choice, but it is the most visible single
-  difference in every paired frame.
+The first slice is deliberately three different compositions, not three uses of
+one template. Five formerly unmeasured treatments now have focused runtime
+windows: camera reframing, prediction/reveal, intertitle-to-scene, staggered
+diagram build-in, and pseudocode write-in. Together with the four causal core
+windows, the laboratory covers eight focused excerpts totalling 97.4 seconds;
+no window exceeds 17 seconds.
+
+### Presentation primitives introduced
+
+| Primitive | Production purpose |
+| --- | --- |
+| `makeAttachedLabel` | Keep a name attached to the mathematical object it identifies. |
+| `makeEquationLedger` | Keep equations or invariants visible while geometry changes. |
+| `makeTemporaryAnnotation` | Place one transient claim beside its evidence, then retire it. |
+| `makeSplitScreen` | Give two representations independent origins and an explicit relationship. |
+| `makeFullFrameTreatment` | Turn the canvas into a prediction or intertitle, not a crowded overlay. |
+| `makeViewportRig` | Reframe a local argument with a continuous world-group transform. |
+| `silentHold` | Make “nothing changes while the learner inspects” explicit. |
+| `uninterruptedMotion` | Preserve one continuous mathematical operation under narration. |
+| `makeBriefCaption` | Keep a caption available when it adds information, without making it the scaffold. |
+
+### Pilot compositions and generalized reference patterns
+
+| Pilot | Before | After | Generalized evidence, not copied choreography | Remaining craft difference |
+| --- | --- | --- | --- | --- |
+| `matrix-transformations` | Permanent title/caption scaffold around a grid and arrows. | Attached basis labels, persistent algebra ledger, full-frame prediction, temporary line annotation, viewport reframing, and silent geometric holds. | `eigen-span-stretch`: continuous grid/object identity with pinned algebra; `ab-prediction-reveal`: commit before reveal; `ab-camera-reframe`: isolate a local argument. | Matrix entries appear in the ledger rather than migrating from vector tips; label offsets remain tuned. |
+| `elimination` | Row operations, equations, and lines shared one caption-led frame. | Split algebra/geometry spaces, persistent row-operation ledger, full-frame fixed-point prediction, a temporary solution annotation, and uninterrupted row/line motion. | `bfs-frontier`: symbolic panel and diagram state advance from one transition; A/B prediction: freeze evidence before the operation. | Equation terms do not yet travel between rows; the scratch-row merge remains a scene-specific treatment. |
+| `red-black-encoding` | Tree repair was explained mainly through title/caption changes. | Split 2–3–4/red-black representations, persistent invariant ledger, full-frame overflow prediction, persistent keyed nodes, and explicit inspection holds. | `ab-split`: preserve key identity through structural repair; `huffman-merge`: tokens own their values while structure reorders; A/B prediction: question before repair. | No general graph-layout transition primitive yet; typography remains the product sans stack rather than the references’ serif math. |
+
+### Inline motion figures
+
+All three clips use the existing lesson-visual registry, not a new lesson block.
+Each is silent, muted, looping, `playsInline`, offscreen-paused, and replaced by
+its poster under reduced motion. WebM is first with MP4 fallback.
+
+| Clip | Duration | Nearby prose claim |
+| --- | ---: | --- |
+| `matrix-origin-fixed` | 4.0 s | A linear map moves the basis and lattice but cannot move the origin. |
+| `elimination-fixed-intersection` | 3.4 s | A row operation changes a constraint representation while preserving the common solution. |
+| `red-black-split-recolour` | 4.5 s | A 2–3–4 split and a red-black colour flip are the same structural repair in two encodings. |
+
+### Contracts and verification evidence
+
+- Explicit `hold | text | emphasis | geometry | camera | transition` intent now
+  drives the timing metadata; names do not infer motion. Geometry/camera claims
+  require continuous change on named semantic targets.
+- Production sampling retains line points, drawn fractions, unmeasurable nodes,
+  and direction-independent chapter seeks. Semantic contracts cover registered
+  grid/lattice coherence, matrix/geometry agreement, displayed coordinates, and
+  whole-plane cues.
+- All eight benchmark windows run through the comparison engine, and every
+  deviation is classified as measured, accepted with rationale, runtime-blocked,
+  or intentionally different. Replica-authored differences are not self-accepted.
+- Final approval: 1,529 unit tests, six Python tests, 151 browser tests, typecheck,
+  lint, and production build passed. The browser sweep covers every production
+  hard gate, learner playback/chapter navigation/reduced motion, benchmark modes,
+  and inline loading, fallback, offscreen pause, responsive layout, and reduced
+  motion.
+- Ordinary H.264/yuv420p production exports at 960×540 and 30 fps completed for
+  `matrix-transformations` (54.03 s), `elimination` (32.50 s), and
+  `red-black-encoding` (56.03 s). The matrix review packet independently passed
+  40 checkpoint captures, 10 reduced-motion frames, and 10/10 deterministic
+  chapter seeks with no hard or semantic failures.
+
+### Recommended migration batches for the remaining fourteen scenes
+
+1. **Continuous-space batch:** `why-linear-algebra`,
+   `vectors-linear-combinations`, `columns-rule-graphic`,
+   `determinant-area-scaling`, `eigenvectors-invariant-directions`, and
+   `eigenvectors-derivation`. Reuse identity continuity, attached labels,
+   viewport focus, and live grid contracts; build entry migration before the
+   eigen derivation.
+2. **Algebra/dual-representation batch:** `linear-systems`, `solution-sets`,
+   `matrix-composition`, `subspaces-rank`, `rank-nullity`, and
+   `change-of-basis`. Reuse split screens and ledgers, while keeping the two
+   coordinate spaces semantically distinct.
+3. **Algorithmic-structure batch:** `bst-lift-from-array` and
+   `karatsuba-cross-terms`. Reuse persistent tokens, structural identity, and
+   synchronized symbolic/diagram state; do not force a mathematical-grid
+   composition onto them.
+
+Each migration remains a separately claimed package. Start with its own
+`BeatSpec` and review packet, and choose treatments beat by beat rather than
+copying any of these three pilot compositions.

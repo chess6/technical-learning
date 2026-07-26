@@ -11,7 +11,7 @@ run is `e2e/guided-scene-hard-gates.spec.ts`. See
 
 | Package | Branch | Status | Scope |
 | --- | --- | --- | --- |
-| Guided-animation redesign · production slice 1 | `guided-animation-redesign-slice-1` | **IN PROGRESS** | Trustworthy changing-geometry and beat-intent contracts; focused missing-treatment benchmarks; composable presentation primitives; redesigns of `matrix-transformations`, `elimination`, and `red-black-encoding`; restrained inline motion figures |
+| Guided-animation redesign · production slice 1 | `guided-animation-redesign-slice-1` | **SHIPPED** | Trustworthy changing-geometry and beat-intent contracts; focused missing-treatment benchmarks; composable presentation primitives; redesigns of `matrix-transformations`, `elimination`, and `red-black-encoding`; restrained inline motion figures |
 
 ## Result
 
