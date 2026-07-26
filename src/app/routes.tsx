@@ -84,6 +84,16 @@ const devRoutes = import.meta.env.DEV
         },
       },
       {
+        // Production guided-scene hard gates (benchmark-derived validators).
+        path: "dev/scene-gates",
+        lazy: async () => {
+          const { DevSceneGatesPage } = await import(
+            "../pages/DevSceneGatesPage"
+          );
+          return { Component: DevSceneGatesPage };
+        },
+      },
+      {
         path: "dev/recovery",
         lazy: async () => {
           const { DevRecoveryPage } = await import("../pages/DevRecoveryPage");

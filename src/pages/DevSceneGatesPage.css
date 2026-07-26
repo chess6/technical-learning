@@ -1,0 +1,111 @@
+/* Development-only hard-gate runner. Utilitarian dev styling. */
+
+.scene-gates {
+  padding: 16px 20px 48px;
+  color: #e8ecf4;
+  background: #0b0e13;
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+.scene-gates header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.scene-gates h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.scene-gates__dev-tag {
+  background: #7a3d3d;
+  color: #ffd9d9;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.scene-gates button {
+  background: #161b24;
+  color: #e8ecf4;
+  border: 1px solid #2b3442;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.scene-gates button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.scene-gates__summary,
+.scene-gates__note,
+.scene-gates__timing {
+  color: #8b93a1;
+}
+
+.scene-gates__note {
+  margin: 8px 0 16px;
+}
+
+.scene-gates__results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.scene-gates__results > li {
+  border: 1px solid #2b3442;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.scene-gates__results > li[data-failing="true"] {
+  border-color: #7a3d3d;
+  background: rgba(224, 82, 82, 0.08);
+}
+
+.scene-gates__results h2 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.scene-gates__pass {
+  color: #58a06a;
+  margin: 0;
+}
+
+.scene-gates__results ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 3px;
+}
+
+.scene-gates__gate {
+  display: inline-block;
+  min-width: 150px;
+  color: #e05252;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Scenes render here while sampled; kept out of the layout and out of sight. */
+.scene-gates__host {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  width: 960px;
+  height: 540px;
+  pointer-events: none;
+}
