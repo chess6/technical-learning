@@ -7,7 +7,10 @@ import {
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
-import { OPENING_GRAPHIC, type OpeningGraphic } from "../../lessons/openingGraphic";
+import {
+  OPENING_GRAPHIC,
+  type OpeningGraphic,
+} from "../../lessons/openingGraphic";
 import {
   matrixVectorMultiply,
   requireMatrixExample,
@@ -65,11 +68,17 @@ const IDENTITY: Matrix2x2 = [
 
 // Display-scale the shared graphic so even a ×2 scale stays in the safe frame.
 const DISPLAY = 0.78;
-const scalePt = ([x, y]: MathVector2): MathVector2 => [x * DISPLAY, y * DISPLAY];
+const scalePt = ([x, y]: MathVector2): MathVector2 => [
+  x * DISPLAY,
+  y * DISPLAY,
+];
 const DISPLAY_GRAPHIC: OpeningGraphic = {
   ...OPENING_GRAPHIC,
   outline: OPENING_GRAPHIC.outline.map(scalePt),
-  parts: OPENING_GRAPHIC.parts.map((p) => ({ ...p, points: p.points.map(scalePt) })),
+  parts: OPENING_GRAPHIC.parts.map((p) => ({
+    ...p,
+    points: p.points.map(scalePt),
+  })),
 };
 const NOSE = OPENING_GRAPHIC.anchors.nose;
 const NOSE_PT = DISPLAY_GRAPHIC.outline[NOSE]!;
@@ -117,7 +126,9 @@ export const chapter0Scene = makeScene2D(function* (view) {
   });
   view.add(ghostCraft);
 
-  const craft = makeGraphicParts(matrix, DISPLAY_GRAPHIC);
+  const craft = makeGraphicParts(matrix, DISPLAY_GRAPHIC, {
+    key: "semantic:why:craft",
+  });
   view.add(craft);
 
   // The slide, as a travelling ghost. At slideT = 0 it sits exactly on the
@@ -126,6 +137,7 @@ export const chapter0Scene = makeScene2D(function* (view) {
   // faded in — the beat's caption described a motion the scene never ran.)
   const slideT = createSignal(0);
   const slidGhost = new Line({
+    key: "semantic:why:translation-ghost",
     stroke: ROLE.violation,
     lineWidth: 3,
     lineDash: [10, 8],
@@ -144,6 +156,7 @@ export const chapter0Scene = makeScene2D(function* (view) {
   // marked from `reveal` onward so the learner can check it themselves during
   // every preset, rather than being told at the end.
   const originRing = new Circle({
+    key: "semantic:why:origin-anchor",
     size: 40,
     stroke: ROLE.selected,
     lineWidth: 2,
@@ -151,7 +164,11 @@ export const chapter0Scene = makeScene2D(function* (view) {
     opacity: 0,
   });
   view.add(originRing);
-  const origin = new Circle({ size: 15, fill: ROLE.text });
+  const origin = new Circle({
+    key: "semantic:why:origin",
+    size: 15,
+    fill: ROLE.text,
+  });
   view.add(origin);
   const originNote = makeLabel("origin — watch it", ROLE.selected, 20);
   // Below the reach of a rotated basis label: at y = 64 the e₂ label swung
@@ -170,17 +187,21 @@ export const chapter0Scene = makeScene2D(function* (view) {
   view.add(e1Ghost);
   view.add(e2Ghost);
 
-  const e1 = makeArrow(ROLE.basis1, 6);
+  const e1 = makeArrow(ROLE.basis1, 6, "semantic:why:basis-1");
   e1.opacity(0).points(() => [new Vector2(0, 0), toPixels([ma(), mc()])]);
-  const e2 = makeArrow(ROLE.basis2, 6);
+  const e2 = makeArrow(ROLE.basis2, 6, "semantic:why:basis-2");
   e2.opacity(0).points(() => [new Vector2(0, 0), toPixels([mb(), md()])]);
   view.add(e1);
   view.add(e2);
 
   const e1Label = makeLabel("e₁", ROLE.basis1, 30);
-  e1Label.opacity(0).position(() => toPixels([ma(), mc()]).add(new Vector2(16, 16)));
+  e1Label
+    .opacity(0)
+    .position(() => toPixels([ma(), mc()]).add(new Vector2(16, 16)));
   const e2Label = makeLabel("e₂", ROLE.basis2, 30);
-  e2Label.opacity(0).position(() => toPixels([mb(), md()]).add(new Vector2(16, -6)));
+  e2Label
+    .opacity(0)
+    .position(() => toPixels([mb(), md()]).add(new Vector2(16, -6)));
   view.add(e1Label);
   view.add(e2Label);
 
@@ -215,6 +236,7 @@ export const chapter0Scene = makeScene2D(function* (view) {
     () => `A = [[${fmt(ma())}, ${fmt(mb())}], [${fmt(mc())}, ${fmt(md())}]]`,
     ROLE.text,
     40,
+    "semantic:why:matrix-readout",
   );
   matrixLabel.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(matrixLabel);
@@ -226,7 +248,9 @@ export const chapter0Scene = makeScene2D(function* (view) {
   const setCaption = (text: string) => caption.text(text);
 
   // Establishing frame (visible at t=0 / reduced motion): the craft is the subject.
-  setCaption("A small craft, drawn from its corner points, on a coordinate grid.");
+  setCaption(
+    "A small craft, drawn from its corner points, on a coordinate grid.",
+  );
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
 
@@ -239,7 +263,11 @@ export const chapter0Scene = makeScene2D(function* (view) {
    * preset: morphing one unrelated transformation straight into another
    * animates a transition that means nothing.
    */
-  function* preset(id: string, text: string, target: Matrix2x2): ThreadGenerator {
+  function* preset(
+    id: string,
+    text: string,
+    target: Matrix2x2,
+  ): ThreadGenerator {
     const b = beats(id);
     setCaption("Reset to the identity…");
     // The static "x" retires for the preset tour. Its ghost ring still marks
@@ -321,7 +349,9 @@ export const chapter0Scene = makeScene2D(function* (view) {
       const b = beats("projection");
       setCaption("Reset to the identity…");
       yield* all(tGrid.opacity(0.4, 0.3), morphTo(IDENTITY, b.reset!));
-      setCaption("Projection — the plane collapses onto a line; depth is lost.");
+      setCaption(
+        "Projection — the plane collapses onto a line; depth is lost.",
+      );
       yield* all(tGrid.opacity(0.85, 0.3), morphTo(M.projection, b.deform!));
       yield* nose.size(24, b.pulseUp!);
       yield* nose.size(17, b.pulseDown!);
@@ -343,7 +373,9 @@ export const chapter0Scene = makeScene2D(function* (view) {
     },
     *translation() {
       const b = beats("translation");
-      setCaption("Here is the move: slide the whole craft over — a translation.");
+      setCaption(
+        "Here is the move: slide the whole craft over — a translation.",
+      );
       // x is named again here: the whole beat is about whether the marked
       // vertex can be carried off the origin, so it needs its name back.
       slidGhost.opacity(0.9);
@@ -353,13 +385,20 @@ export const chapter0Scene = makeScene2D(function* (view) {
       // displaced, so the operation the caption names is the one on screen.
       yield* slideT(1, b.slide!, easeInOutCubic);
       yield* waitFor(b.hold!);
-      setCaption(
-        "No 2×2 matrix can follow it: A·0 = 0 pins the origin, so the craft is nailed there. Sliding needs more (later).",
+      setCaption("A·0 = 0 pins the origin. Matrices cannot slide the craft.");
+      yield* all(
+        origin.fill(ROLE.violation, b.originUp!),
+        origin.size(26, b.originUp!),
       );
-      yield* all(origin.fill(ROLE.violation, b.originUp!), origin.size(26, b.originUp!));
-      yield* all(origin.fill(ROLE.text, b.originDown!), origin.size(15, b.originDown!));
+      yield* all(
+        origin.fill(ROLE.text, b.originDown!),
+        origin.size(15, b.originDown!),
+      );
       yield* waitFor(b.hold2!);
-      yield* all(slidGhost.opacity(0, b.retire!), originNote.opacity(0, b.retire!));
+      yield* all(
+        slidGhost.opacity(0, b.retire!),
+        originNote.opacity(0, b.retire!),
+      );
     },
     *mystery() {
       const b = beats("mystery");

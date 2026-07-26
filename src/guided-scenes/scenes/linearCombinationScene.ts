@@ -63,8 +63,13 @@ const B_MATRIX: Matrix2x2 = [
  * The closing walk is only honest if v + w really is p — otherwise the two
  * arrows would land beside the point they claim to name.
  */
-if (Math.abs(V.x + W_IND.x - P.x) > 1e-9 || Math.abs(V.y + W_IND.y - P.y) > 1e-9) {
-  throw new Error("linearCombinationScene: v + w does not land on the target p.");
+if (
+  Math.abs(V.x + W_IND.x - P.x) > 1e-9 ||
+  Math.abs(V.y + W_IND.y - P.y) > 1e-9
+) {
+  throw new Error(
+    "linearCombinationScene: v + w does not land on the target p.",
+  );
 }
 
 const px = (v: Vector2): Vector2 => new Vector2(v.x * SCALE, -v.y * SCALE);
@@ -111,6 +116,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(spanRegion);
 
   const spanLine = new Line({
+    key: "semantic:vectors:span-line",
     stroke: ROLE.original,
     lineWidth: 4,
     lineDash: [10, 8],
@@ -120,9 +126,19 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(spanLine);
 
   // Component decomposition of v.
-  const compH = makeSegment(ROLE.basis1, 2.5, true);
+  const compH = makeSegment(
+    ROLE.basis1,
+    2.5,
+    true,
+    "semantic:vectors:component-1",
+  );
   compH.opacity(0).points(() => [new Vector2(0, 0), px(new Vector2(V.x, 0))]);
-  const compV = makeSegment(ROLE.basis2, 2.5, true);
+  const compV = makeSegment(
+    ROLE.basis2,
+    2.5,
+    true,
+    "semantic:vectors:component-2",
+  );
   compV.opacity(0).points(() => [px(new Vector2(V.x, 0)), px(V)]);
   view.add(compH);
   view.add(compV);
@@ -133,7 +149,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(wGhost);
 
   // Head-to-tail helper used by the dependent-inside beat (b·w from a·v's tip).
-  const wFromV = makeArrow(ROLE.basis2, 4);
+  const wFromV = makeArrow(ROLE.basis2, 4, "semantic:vectors:dependent-walk");
   wFromV
     .end(0)
     .points(() => [
@@ -143,11 +159,11 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(wFromV);
 
   // Primary arrows.
-  const vArrow = makeArrow(ROLE.basis1);
+  const vArrow = makeArrow(ROLE.basis1, 6, "semantic:vectors:v");
   vArrow.end(0).points(() => [new Vector2(0, 0), px(V)]);
-  const wArrow = makeArrow(ROLE.basis2);
+  const wArrow = makeArrow(ROLE.basis2, 6, "semantic:vectors:w");
   wArrow.end(0).points(() => [px(wTail()), px(wTail().add(wTip()))]);
-  const comboArrow = makeArrow(ROLE.result, 6);
+  const comboArrow = makeArrow(ROLE.result, 6, "semantic:vectors:sum");
   comboArrow
     .end(0)
     .points(() => [
@@ -184,12 +200,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(wLabel);
   view.add(pLabel);
 
-  const eq = makeOverlayLabel(
-    "",
-    ROLE.text,
-    42,
-    "semantic:readout:p-standard",
-  );
+  const eq = makeOverlayLabel("", ROLE.text, 42, "semantic:readout:p-standard");
   eq.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(eq);
 
@@ -229,7 +240,10 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       yield* all(caption.opacity(1, b.compH!), compH.opacity(1, b.compH!));
       yield* compV.opacity(1, b.compV!);
       yield* waitFor(b.hold!);
-      yield* all(compH.opacity(0.25, b.retire!), compV.opacity(0.25, b.retire!));
+      yield* all(
+        compH.opacity(0.25, b.retire!),
+        compV.opacity(0.25, b.retire!),
+      );
     },
     *["vector-w"]() {
       const b = beats("vector-w");
@@ -244,7 +258,9 @@ export const linearCombinationScene = makeScene2D(function* (view) {
     *addition() {
       const b = beats("addition");
       setEq("v + w   (head to tail)");
-      setCaption("Slide w so its tail sits on the tip of v — the same arrow, moved");
+      setCaption(
+        "Slide w so its tail sits on the tip of v — the same arrow, moved",
+      );
       // a = b = 1 for a clean sum. Instantaneous: nothing bound to these is
       // visible yet (comboArrow.end is 0), so there is nothing to snap.
       aCoef(1);
@@ -259,7 +275,10 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       yield* comboArrow.lineWidth(6, b.pulseDown!);
       yield* waitFor(b.hold!);
       // Send w home so every later beat starts from the same picture.
-      yield* all(wShift(0, b.retire!, easeInOutCubic), wGhost.opacity(0, b.retire!));
+      yield* all(
+        wShift(0, b.retire!, easeInOutCubic),
+        wGhost.opacity(0, b.retire!),
+      );
     },
     *scaling() {
       const b = beats("scaling");
@@ -366,6 +385,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       ); // (-1, 2)
       yield* waitFor(b.hold2!);
       yield* wFromV.end(0, b.retire!);
+      wFromV.opacity(0);
       comboArrow.stroke(ROLE.result);
     },
     *basis() {
@@ -412,7 +432,9 @@ export const linearCombinationScene = makeScene2D(function* (view) {
         wArrow.opacity(0.5, b.pIn!),
       );
       yield* waitFor(b.hold!);
-      setCaption("Now lay a different grid over it — the one built from v and w");
+      setCaption(
+        "Now lay a different grid over it — the one built from v and w",
+      );
       yield* all(
         bGrid.opacity(0.9, b.swap!),
         grid.opacity(0.22, b.swap!),
@@ -448,7 +470,9 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       // again; v + w = p, so the construction lands on the point by
       // construction rather than by a caption saying it does.
       yield* wShift(1, b.walk2!, easeInOutCubic);
-      setEq(`p in basis (v, w) = ( ${fmt(EX.coordinatesInBasis[0])}, ${fmt(EX.coordinatesInBasis[1])} )`);
+      setEq(
+        `p in basis (v, w) = ( ${fmt(EX.coordinatesInBasis[0])}, ${fmt(EX.coordinatesInBasis[1])} )`,
+      );
       yield* all(pDot.size(26, b.reveal! / 2), pDot.size(16, b.reveal! / 2));
       setCaption("p never moved — only its coordinates changed");
       yield* waitFor(b.hold!);
