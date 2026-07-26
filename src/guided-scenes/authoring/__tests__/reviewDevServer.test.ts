@@ -6,6 +6,7 @@ import {
   ensureReviewDevServer,
   reviewServerUrl,
   reviewViteArgs,
+  withReviewBrowser,
 } from "../../../../scripts/review-dev-server.mjs";
 
 function fakeChild() {
@@ -62,5 +63,31 @@ describe("animation review dev server", () => {
       }),
     ).rejects.toThrow(/exited with code 1[\s\S]*broken plugin/);
     expect(Date.now() - started).toBeLessThan(250);
+  });
+
+  it("stops the spawned server when Chromium launch fails", async () => {
+    const server = {stop: vi.fn()};
+    const launchError = new Error("chromium executable missing");
+    await expect(
+      withReviewBrowser(
+        server,
+        async () => {
+          throw launchError;
+        },
+        vi.fn(),
+      ),
+    ).rejects.toBe(launchError);
+    expect(server.stop).toHaveBeenCalledOnce();
+  });
+
+  it("stops the spawned server even when browser.close fails", async () => {
+    const closeError = new Error("browser close failed");
+    const browser = {close: vi.fn(async () => { throw closeError; })};
+    const server = {stop: vi.fn()};
+    await expect(
+      withReviewBrowser(server, async () => browser, async () => "reviewed"),
+    ).rejects.toBe(closeError);
+    expect(browser.close).toHaveBeenCalledOnce();
+    expect(server.stop).toHaveBeenCalledOnce();
   });
 });

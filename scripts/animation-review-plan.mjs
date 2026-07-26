@@ -46,12 +46,18 @@ export function selectedRenderRange(checkpoints, fps) {
   const frames = checkpoints.map(({frame}) => frame);
   const startFrame = Math.min(...frames);
   const endFrame = Math.max(...frames);
+  const requestedFrames = endFrame - startFrame + 1;
   return {
     startFrame,
     endFrame,
     startTime: startFrame / fps,
     endTime: endFrame / fps,
-    expectedFrames: endFrame - startFrame + 1,
+    requestedFrames,
+    // Motion Canvas Renderer handles an inclusive range normally, but its
+    // progression loop emits the following frame as well when from === to.
+    // Keep that implementation detail visible instead of calling the extra
+    // frame an accounting mismatch.
+    expectedHandledFrames: requestedFrames === 1 ? 2 : requestedFrames,
   };
 }
 

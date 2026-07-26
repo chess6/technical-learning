@@ -18,7 +18,10 @@ import {
   selectedRenderRange,
   unsupportedReferenceDisposition,
 } from "./animation-review-plan.mjs";
-import {ensureReviewDevServer} from "./review-dev-server.mjs";
+import {
+  ensureReviewDevServer,
+  withReviewBrowser,
+} from "./review-dev-server.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_OUT = join(ROOT, "artifacts", "animation-review");
@@ -226,6 +229,13 @@ async function drainProductionRender(page, options, description, packetDir) {
     await new Promise((resolveSleep) => setTimeout(resolveSleep, 100));
   }
 
+  if (handled !== renderRange.expectedHandledFrames) {
+    throw new Error(
+      `production renderer emitted  frames; expected ` +
+        ` for requested range ` +
+        `–`,
+    );
+  }
   const missing = missingCaptureFailures(frameRecords, existsSync);
   if (missing.length > 0) {
     throw new Error(
@@ -323,7 +333,7 @@ function buildSummary(packet) {
   return `# ${packet.sceneId} animation review
 
 - Scope: ${packet.scope}
-- Production frames rendered: ${packet.render.handledFrames} in ${packet.render.elapsedMs} ms
+- Production frames requested/emitted: ${packet.render.selectedRange?.requestedFrames ?? 0}/${packet.render.handledFrames} in ${packet.render.elapsedMs} ms
 - Selected production range: ${packet.render.selectedRange ? `${packet.render.selectedRange.startFrame}–${packet.render.selectedRange.endFrame}` : "skipped"}
 - Reduced-motion source: ${packet.reducedMotionRun.captureSource} (${packet.reducedMotionRun.browserMedia.query} matched: ${packet.reducedMotionRun.browserMedia.matches})
 ${analysisSummary}
@@ -356,8 +366,7 @@ async function main() {
     throw new Error("@playwright/test is required");
   }
   const server = await ensureReviewDevServer({port: options.port, root: ROOT});
-  const browser = await chromium.launch();
-  try {
+  await withReviewBrowser(server, () => chromium.launch(), async (browser) => {
     const page = await browser.newPage();
     const browserErrors = [];
     page.on("console", (message) => {
@@ -513,10 +522,7 @@ async function main() {
       for (const failure of failures) console.error(`  - ${failure}`);
       process.exitCode = 1;
     }
-  } finally {
-    await browser.close();
-    server.stop();
-  }
+  });
 }
 
 main().catch((error) => {

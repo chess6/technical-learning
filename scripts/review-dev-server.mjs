@@ -12,6 +12,20 @@ export function reviewViteArgs(port, host = REVIEW_HOST) {
   return ["vite", "--host", host, "--port", String(port), "--strictPort"];
 }
 
+export async function withReviewBrowser(server, launchBrowser, runReview) {
+  let browser;
+  try {
+    browser = await launchBrowser();
+    return await runReview(browser);
+  } finally {
+    try {
+      await browser?.close();
+    } finally {
+      server.stop();
+    }
+  }
+}
+
 async function probe(fetchImpl, url) {
   try {
     const response = await fetchImpl(url, {signal: AbortSignal.timeout(1500)});

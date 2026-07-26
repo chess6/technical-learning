@@ -53,9 +53,13 @@ describe("animation review packet plan", () => {
       endFrame: 674,
       startTime: 674 / 30,
       endTime: 674 / 30,
-      expectedFrames: 1,
+      requestedFrames: 1,
+      expectedHandledFrames: 2,
     });
-    expect(selectedRenderRange(checkpoints, 30).expectedFrames).toBe(675);
+    expect(selectedRenderRange(checkpoints, 30)).toMatchObject({
+      requestedFrames: 675,
+      expectedHandledFrames: 675,
+    });
   });
 
   it("makes an unsupported requested reference an explicit non-pass", () => {

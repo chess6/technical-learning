@@ -6,11 +6,11 @@ and (c) the reference packs under `.reference-sources/packs/` (Sláma
 (a,b)-trees, Reducible Huffman, Jazon Jiao BFS, 3Blue1Brown eigenvectors — see
 [engineering/reference-sources.md](../engineering/reference-sources.md)).
 
-**Status: closed.** Every one of the 17 production scenes has been through the
-full treatment and re-verified in the player and on an export. The ledger at the
-end of this document is the record; there is no open backlog. New scene work
-should re-run the criteria below rather than reading this document as a to-do
-list.
+**Status: reopened for the exhaustive guided-animation redesign.** The July pass
+below remains the historical record of its narrower audit, but it is not evidence
+that the newer BeatSpec/authoring/review contract has been applied course-wide.
+Batch 1 (continuous-space scenes) is in progress on
+`guided-animation-batch-1-continuous-space`; no other batch is claimed.
 
 Criteria: model-changing idea vs mere motion; object persistence across
 transformations; explanatory purpose of every visual change; invariants kept
