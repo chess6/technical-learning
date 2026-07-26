@@ -24,7 +24,7 @@
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 0.45rem;
-  background: var(--color-background);
+  background: var(--color-canvas);
 }
 
 .inline-motion-figure figcaption {

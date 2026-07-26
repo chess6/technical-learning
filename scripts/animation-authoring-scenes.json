@@ -1,0 +1,70 @@
+{
+  "why-linear-algebra": {
+    "module": "chapter0Scene",
+    "exportName": "chapter0Scene"
+  },
+  "vectors-linear-combinations": {
+    "module": "linearCombinationScene",
+    "exportName": "linearCombinationScene"
+  },
+  "matrix-transformations": {
+    "module": "matrixTransformationScene",
+    "exportName": "matrixTransformationScene"
+  },
+  "columns-rule-graphic": {
+    "module": "columnsRuleGraphicScene",
+    "exportName": "columnsRuleGraphicScene"
+  },
+  "linear-systems": {
+    "module": "linearSystemsScene",
+    "exportName": "linearSystemsScene"
+  },
+  "elimination": {
+    "module": "eliminationScene",
+    "exportName": "eliminationScene"
+  },
+  "solution-sets": {
+    "module": "solutionSetsScene",
+    "exportName": "solutionSetsScene"
+  },
+  "matrix-composition": {
+    "module": "matrixCompositionScene",
+    "exportName": "matrixCompositionScene"
+  },
+  "subspaces-rank": {
+    "module": "subspacesRankScene",
+    "exportName": "subspacesRankScene"
+  },
+  "rank-nullity": {
+    "module": "rankNullityScene",
+    "exportName": "rankNullityScene"
+  },
+  "change-of-basis": {
+    "module": "changeOfBasisScene",
+    "exportName": "changeOfBasisScene"
+  },
+  "determinant-area-scaling": {
+    "module": "determinantAreaScalingScene",
+    "exportName": "determinantAreaScalingScene"
+  },
+  "eigenvectors-invariant-directions": {
+    "module": "eigenvectorsInvariantDirectionsScene",
+    "exportName": "eigenvectorsInvariantDirectionsScene"
+  },
+  "eigenvectors-derivation": {
+    "module": "eigenvectorsDerivationScene",
+    "exportName": "eigenvectorsDerivationScene"
+  },
+  "karatsuba-cross-terms": {
+    "module": "karatsubaCrossTermsScene",
+    "exportName": "karatsubaCrossTermsScene"
+  },
+  "bst-lift-from-array": {
+    "module": "bstLiftScene",
+    "exportName": "bstLiftScene"
+  },
+  "red-black-encoding": {
+    "module": "redBlackEncodingScene",
+    "exportName": "redBlackEncodingScene"
+  }
+}

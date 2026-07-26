@@ -33,6 +33,7 @@ tmp-screenshots/
 
 # Rendered video exports (see docs/engineering/video-export.md)
 exports/
+artifacts/
 
 # Python tooling cache (scripts/)
 scripts/__pycache__/
