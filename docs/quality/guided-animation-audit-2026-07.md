@@ -293,6 +293,27 @@ transitions (no console errors), plus the chapter spec and the hard gates.
 Regression: `sceneTimings.test.ts` asserts the three beats keep a
 `fadeOut`/`resetHold`/`fadeIn` budget classified as transitions.
 
+### Algebra & dual-representations slice (2026-07)
+
+Six learner-facing lessons improved as complete learning experiences, judged on
+the bar in [Deferred until product maturity](#deferred-until-product-maturity) —
+the animation performs what its captions claim, the representations stay
+synchronized, and the player works. No review packets, MP4s, or BeatSpec
+migration; the scenes below are **not** promoted in the frozen ledger.
+
+| Lesson | Learner-visible change |
+| --- | --- |
+| `linear-systems` | The scene morphs its matrix and target through the whole trichotomy, but the algebra was typed into captions once, so from the first morph the symbols described a system no longer being drawn. A **live system card** now carries the equation view and the augmented matrix beside the picture, every entry a function of the same signals the geometry reads. It re-reads itself as the scene crosses spaces — equations tinted like their lines, then the same six numbers read down and tinted like their arrows. A **live verdict** from the shared `classifyLinearSystem2x2` makes the trichotomy watchable: the count changes as the lines touch, and again as `b` leaves the column line. The crossing dot is drawn only when the system has one. |
+| `elimination` | Choreography unchanged — it already enacts the row operation across equations, augmented matrix, and geometry with the intersection fixed. One fix: the prediction blanked the whole stage, so "will (2, −1) stay on the new second line?" was asked with none of its evidence visible. `makeFullFrameTreatment` gained a `banner` coverage; the apparatus now stays up. |
+| `solution-sets` | The `difference` beat needed no change (it already translates the one arrow with a ghost). Added a **parameter sweep**: one dot traverses the whole solution line off a single `t`, with particular / homogeneous / sum written beside it. `t = 1` lands on x₃, `t = 0` on xₚ, `t = −1` on x₂ — the points the learner already watched being built. |
+| `subspaces-rank` | The plane was named "the span of A's columns" with the columns never drawn. A **`columns` chapter** admits them one at a time: c₁ opens a line, c₂ points off it and the reach grows to a plane with the rank, and the dependent c₃ = 2c₁ + 3c₂ lands inside and changes nothing. A prediction sits between the relation and the reveal. |
+| `rank-nullity` | Once the tokens left the input stack, `n` survived only as the number after the equals sign. A **budget bar** draws it as one fixed length split in two, its boundary tweened alongside the moving token. Degrading the map slides the boundary; changing the map's shape does not change the length. |
+| `eigenvectors-derivation` | "Solve (A − λI)v = 0" was a caption over two answer lines fading in. Each root now has **its own chapter and is genuinely substituted back**: the shifted matrix is written out, the plane is carried to it, and a probe walks the line it kills while its image stays on the origin. The λ = 2 line was drawn along (1,−1) and labelled (−1,1) — the opposite ray, and the opposite orientation from the lesson prose; direction labels are now derived from the direction drawn. |
+
+Checks: full unit suite, typecheck, lint, production build, and the guided-scene
+chapter, hard-gate, and per-lesson Playwright specs. Every changed beat was also
+watched at 1× in the ordinary learner player.
+
 ### Batch 1 evidence note
 
 All five full review packets are under `artifacts/animation-review-batch1/` and

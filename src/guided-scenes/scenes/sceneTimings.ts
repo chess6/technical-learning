@@ -554,7 +554,7 @@ export const SUBSPACES_RANK_SEGMENTS: readonly SceneSegment[] = [
   {
     id: "columns",
     title: "Where the plane comes from: the columns",
-    duration: 11,
+    duration: 12.8,
     summary:
       "The columns are admitted one at a time: c₁ opens a line, c₂ points off it and the reach grows to a plane, and the dependent c₃ lands inside it — so the rank goes 1, 2, and then stays 2.",
   },
@@ -1511,6 +1511,9 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   "subspaces-rank": {
     "two-panels": { hold: 1.2, in: 0.6, hold2: 1.5 },
     reach: { copy: 0.6, hold: 0.8, deform: 2.6, hold2: 2.4 },
+    // `hold3` is real think time, not padding: it sits between "c₃ = 2c₁ + 3c₂"
+    // and c₃ being drawn, with both spanning columns and the plane on screen —
+    // everything the answer follows from.
     columns: {
       c1: 0.7,
       line: 0.5,
@@ -1518,8 +1521,8 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
       c2: 0.7,
       plane: 0.9,
       hold2: 1.8,
+      hold3: 3.2,
       c3: 0.8,
-      hold3: 1.4,
       pulseUp: 0.35,
       pulseDown: 0.35,
       hold4: 1.6,

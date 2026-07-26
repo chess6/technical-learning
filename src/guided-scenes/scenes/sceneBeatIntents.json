@@ -457,8 +457,8 @@
       "c2": "transition",
       "plane": "transition",
       "hold2": "hold",
-      "c3": "transition",
       "hold3": "hold",
+      "c3": "transition",
       "pulseUp": "emphasis",
       "pulseDown": "emphasis",
       "hold4": "hold"

@@ -471,12 +471,17 @@ export const subspacesRankScene = makeScene2D(function* (view) {
       yield* all(imagePlane.opacity(0.22, b.plane!), spanLine.opacity(0, b.plane!));
       yield* waitFor(b.hold2!);
 
-      setCaption("Third column: c₃ = 2c₁ + 3c₂. Watch whether it leaves the plane.");
+      // A real prediction, not a rhetorical one: both spanning columns and the
+      // plane they opened are on screen, and c₃ is given as a combination of
+      // them, so the answer follows from what the learner can see.
+      setCaption(
+        "The third column is c₃ = 2c₁ + 3c₂. Predict: does it reach somewhere new, or land inside the plane?",
+      );
+      yield* waitFor(b.hold3!);
       yield* all(
         columnArrows[2]!.arrow.opacity(1, b.c3!),
         columnArrows[2]!.label.opacity(1, b.c3!),
       );
-      yield* waitFor(b.hold3!);
       setCaption(
         "It lands inside. A dependent column reaches nothing new — three columns, still rank 2.",
       );
