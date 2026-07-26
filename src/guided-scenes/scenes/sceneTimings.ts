@@ -497,6 +497,13 @@ export const SOLUTION_SETS_SEGMENTS: readonly SceneSegment[] = [
     summary: "Sol(A, b) is that null line carried off the origin by one particular solution — affine, not through 0.",
   },
   {
+    id: "parameterize",
+    title: "Sweep the parameter: xₚ + t·d",
+    duration: 8.5,
+    summary:
+      "One point sweeps the whole solution line while the decomposition is written beside it: the particular part never moves, the homogeneous part is what varies, and their sum is always a solution.",
+  },
+  {
     id: "case-empty",
     title: "Case: empty",
     duration: 4,
@@ -1416,6 +1423,14 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     generate: { arrow: 0.8, dot: 0.5, up: 0.3, down: 0.3, hold: 2.5 },
     "null-line": { draw: 0.8, up: 0.35, down: 0.35, hold: 2.5 },
     translate: { offset: 0.7, line: 0.8, up: 0.35, down: 0.35, hold: 2.8 },
+    parameterize: {
+      panel: 0.6,
+      hold: 1.0,
+      forward: 1.9,
+      hold2: 1.2,
+      back: 2.2,
+      hold3: 1.0,
+    },
     "case-empty": { emphasisUp: 0.3, emphasisDown: 0.3, hold: 3.0 },
     "case-point": { up: 0.25, down: 0.25, hold: 3.0 },
     "case-line": { up: 0.25, down: 0.25, hold: 3.5 },

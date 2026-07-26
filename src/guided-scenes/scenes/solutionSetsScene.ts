@@ -5,6 +5,7 @@ import {
   createSignal,
   easeInOutCubic,
   waitFor,
+  type SignalValue,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
@@ -119,7 +120,7 @@ function clipLine(p: MathVector2, dir: MathVector2): [MathVector2, MathVector2] 
   ];
 }
 
-function makeTip(text: string, color: string): Txt {
+function makeTip(text: SignalValue<string>, color: string): Txt {
   return new Txt({
     text,
     fill: color,
@@ -251,6 +252,84 @@ export const solutionSetsScene = makeScene2D(function* (view) {
   pointMark.opacity(0);
   view.add(pointMark);
 
+  /* ---------------------------------------------------------------------
+   * The parameterization: xₚ + t·d, written and drawn at the same time.
+   *
+   * The geometry already showed the solution set as the null line carried off
+   * the origin, and the captions already claimed `Sol(A, b) = xₚ + Null(A)`.
+   * What was missing was the connection itself: nothing on screen let a learner
+   * see WHICH point of the set a given homogeneous vector produces, or that the
+   * particular part is the one thing that never varies.
+   *
+   * One dot now sweeps the whole line off a single parameter `t`, with the
+   * decomposition written beside it, every line a function of that same `t`.
+   * The sweep is chosen to land on solutions the scene already earned: `t = 1`
+   * is x₃, `t = −1` is x₂, and `t = 0` is xₚ itself — so the parameterization
+   * is seen to reproduce the points the learner watched being constructed,
+   * rather than introducing a fourth unrelated family.
+   * ------------------------------------------------------------------- */
+  const t = createSignal(0);
+  const sweepPoint = (): MathVector2 => [
+    XP[0] + t() * D[0],
+    XP[1] + t() * D[1],
+  ];
+
+  /** The homogeneous part, drawn from xₚ — the same role as Null(A) itself. */
+  const homogArrow = makeArrow(
+    ROLE.selected,
+    5,
+    "semantic:solution-sets:homogeneous-part",
+  );
+  homogArrow.points(() => [px(XP), px(sweepPoint())]);
+  homogArrow.opacity(0);
+  view.add(homogArrow);
+
+  const sweepDot = new Circle({
+    key: "semantic:solution-sets:sweep-point",
+    size: 22,
+    fill: ROLE.target,
+    stroke: ROLE.background,
+    lineWidth: 3,
+    opacity: 0,
+  });
+  sweepDot.position(() => px(sweepPoint()));
+  view.add(sweepDot);
+
+  const PANEL_X = -358;
+  const num = (n: number) => {
+    const r = Math.round(n * 100) / 100;
+    return (Object.is(r, -0) ? "0" : String(r)).replace("-", "−");
+  };
+  const pair = (p: MathVector2) => `(${num(p[0])}, ${num(p[1])})`;
+  const panelLine = (
+    text: SignalValue<string>,
+    color: string,
+    y: number,
+    size: number,
+  ): Txt => {
+    const node = makeTip(text, color);
+    node.fontSize(size);
+    node.position(new Vector2(PANEL_X, y));
+    node.opacity(0);
+    view.add(node);
+    return node;
+  };
+
+  const panelNodes = [
+    panelLine("particular — fixed", ROLE.textMuted, -104, 18),
+    panelLine(`xₚ = ${pair(XP)}`, ROLE.transformed, -78, 20),
+    panelLine("homogeneous — varies", ROLE.textMuted, -40, 18),
+    panelLine(() => `t = ${num(t())}`, ROLE.selected, -14, 20),
+    panelLine(
+      () => `t·d = ${pair([t() * D[0], t() * D[1]])}`,
+      ROLE.selected,
+      12,
+      20,
+    ),
+    panelLine("their sum — a solution", ROLE.textMuted, 50, 18),
+    panelLine(() => `x = ${pair(sweepPoint())}`, ROLE.target, 76, 20),
+  ];
+
   // --- Overlay title + caption (safe bands) ---
   const top = makeOverlayLabel("Solution sets: one solution plus the null space", ROLE.text, 34);
   top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
@@ -264,8 +343,21 @@ export const solutionSetsScene = makeScene2D(function* (view) {
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
 
+  /**
+   * Retire the sweep and its panel. The three closing cases are about the
+   * SHAPE of the solution set, and two of them (empty, a single point) have no
+   * parameter to sweep — leaving `t` on screen there would offer a knob that
+   * does not exist.
+   */
+  function hideParameterization(): void {
+    sweepDot.opacity(0);
+    homogArrow.opacity(0);
+    for (const node of panelNodes) node.opacity(0);
+  }
+
   /** Snap the whole picture to the "general case" configuration. */
   function showGeneralCase(): void {
+    hideParameterization();
     emptyMark.opacity(0);
     pointMark.opacity(0);
     nullLine.opacity(1);
@@ -352,6 +444,34 @@ export const solutionSetsScene = makeScene2D(function* (view) {
       yield* solLine.lineWidth(4, b.down!);
       yield* waitFor(b.hold!);
     },
+    *parameterize() {
+      const b = beats("parameterize");
+      setTop("Every solution is xₚ plus a homogeneous one");
+      setCaption(
+        "One dot, one number t. The particular part never moves; only t·d does.",
+      );
+      t(0);
+      yield* all(
+        sweepDot.opacity(1, b.panel!),
+        homogArrow.opacity(0.9, b.panel!),
+        ...panelNodes.map((node) => node.opacity(1, b.panel!)),
+      );
+      yield* waitFor(b.hold!);
+      // t = 1 lands exactly on x₃, the solution the learner watched being
+      // generated — so the formula reproduces a point they already have.
+      yield* t(1, b.forward!, easeInOutCubic);
+      setCaption("t = 1 lands on x₃ = (5, −1) — the point you generated earlier.");
+      yield* waitFor(b.hold2!);
+      // …and t = −1 lands on x₂, the OTHER solution the scene started from.
+      // The caption turns over here, at the boundary, so it never describes a
+      // landing the dot has already left.
+      setCaption("Run t back through 0 — where the dot is xₚ itself — and past it.");
+      yield* t(-1, b.back!, easeInOutCubic);
+      setCaption(
+        "t = −1 lands on x₂ = (1, 1), and t = 0 is xₚ itself. One formula, the whole set.",
+      );
+      yield* waitFor(b.hold3!);
+    },
     // The three cases are UNRELATED configurations of the same apparatus, so
     // each snaps to its own readable first frame (a tween between them would
     // animate a transition that means nothing) — and each is its own chapter,
@@ -360,6 +480,7 @@ export const solutionSetsScene = makeScene2D(function* (view) {
       const b = beats("case-empty");
       setTop("Case: empty");
       setCaption("Off the column space ⇒ no xₚ ⇒ Sol(A, b) = ∅ (Null(A) is unchanged)");
+      hideParameterization();
       solLine.opacity(0);
       offset.opacity(0);
       lblXp.opacity(0);
@@ -384,6 +505,7 @@ export const solutionSetsScene = makeScene2D(function* (view) {
       const b = beats("case-point");
       setTop("Case: a single point");
       setCaption("Trivial null space (independent columns) ⇒ exactly one solution point");
+      hideParameterization();
       emptyMark.opacity(0);
       nullLine.opacity(0);
       solLine.opacity(0);

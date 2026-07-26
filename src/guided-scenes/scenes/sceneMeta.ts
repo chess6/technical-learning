@@ -141,7 +141,7 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "solution-sets",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided animation for the structure of the solution set of a 2 by 2 linear system, drawn in solution space. Two solutions of the same consistent system are marked, and the arrow between them then slides bodily to the origin, leaving a ghost where it started, so the same difference is seen to be a solution of the homogeneous system. The learner predicts what adding that difference back to a solution does before a third solution appears. All such differences fill the null space, a line through the origin, and the full solution set is that null line translated by one particular solution. The three cases — empty, a single point, and a line — are then shown as three separate chapters.",
+      "Guided animation for the structure of the solution set of a 2 by 2 linear system, drawn in solution space. Two solutions of the same consistent system are marked, and the arrow between them then slides bodily to the origin, leaving a ghost where it started, so the same difference is seen to be a solution of the homogeneous system. The learner predicts what adding that difference back to a solution does before a third solution appears. All such differences fill the null space, a line through the origin, and the full solution set is that null line translated by one particular solution. A single point then sweeps that whole line off one parameter t, with the decomposition written beside it: the particular part never moves, the homogeneous part t times d is what varies, and their sum lands on the already-marked solutions at t equals one and t equals minus one. The three cases — empty, a single point, and a line — are then shown as three separate chapters.",
     steps: SOLUTION_SETS_STEPS,
     majorSteps: pickMajor(SOLUTION_SETS_STEPS, [
       "two-solutions",
@@ -150,6 +150,7 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "generate",
       "null-line",
       "translate",
+      "parameterize",
       "case-empty",
       "case-point",
       "case-line",

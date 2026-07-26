@@ -291,6 +291,26 @@
       "down": "emphasis",
       "hold": "hold"
     },
+    "parameterize": {
+      "panel": "transition",
+      "hold": "hold",
+      "forward": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:solution-sets:sweep-point",
+          "semantic:solution-sets:homogeneous-part"
+        ]
+      },
+      "hold2": "hold",
+      "back": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:solution-sets:sweep-point",
+          "semantic:solution-sets:homogeneous-part"
+        ]
+      },
+      "hold3": "hold"
+    },
     "case-empty": {
       "emphasisUp": "emphasis",
       "emphasisDown": "emphasis",
