@@ -7,6 +7,12 @@ The gates are in `src/guided-scenes/validation/hardGates.ts`; the permanent
 run is `e2e/guided-scene-hard-gates.spec.ts`. See
 [README.md](README.md) for what the laboratory is.
 
+## Package status
+
+| Package | Branch | Status | Scope |
+| --- | --- | --- | --- |
+| Guided-animation redesign · production slice 1 | `guided-animation-redesign-slice-1` | **IN PROGRESS** | Trustworthy changing-geometry and beat-intent contracts; focused missing-treatment benchmarks; composable presentation primitives; redesigns of `matrix-transformations`, `elimination`, and `red-black-encoding`; restrained inline motion figures |
+
 ## Result
 
 First full sweep: **23 findings across 8 of 18 scenes.** After the corrections
