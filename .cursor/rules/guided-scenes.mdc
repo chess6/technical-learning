@@ -22,6 +22,14 @@ Flip backends via `ACTIVE_BACKEND` in `src/guided-scenes/engine/index.ts` — do
 - Use `makeOverlayLabel()` at `LABEL_CENTER_X` + top/bottom label Y — never left-edge x for long `Txt` (half the string clips off-stage).
 - Keep generous `lineHeight` / `cachePadding` so ascent/descent are not cache-clipped.
 
+## Hard gates (benchmark-derived)
+
+Motion or label changes must keep `npx playwright test e2e/guided-scene-hard-gates.spec.ts`
+green: missing claimed motion, teleports, flicker, clipped/overprinted text,
+nondeterministic seeking, segment overruns, blank frames. Run the sweep at
+`/dev/scene-gates`; craft differences belong to the benchmark laboratory
+(`docs/quality/benchmark-lab/`), never to these gates.
+
 ## Player / autoplay
 
 - Autoplay once when ~≥55% visible; pause when off-screen/hidden; respect `prefers-reduced-motion`.

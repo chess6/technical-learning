@@ -27,6 +27,7 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Understand the code architecture / contracts | [engineering/architecture.md](engineering/architecture.md), [engineering/platform-contracts.md](engineering/platform-contracts.md) |
 | Ship a lesson/visualization change | complete [quality/lesson-correctness-checklist.md](quality/lesson-correctness-checklist.md) |
 | Study external animation references / transcripts without copying | [engineering/reference-sources.md](engineering/reference-sources.md) |
+| Benchmark our animation against expert references; run the scene hard gates | [quality/benchmark-lab/README.md](quality/benchmark-lab/README.md) |
 | Export a guided scene to video | [engineering/video-export.md](engineering/video-export.md) |
 | Understand a past decision | [engineering/decisions/](engineering/decisions/) |
 | Find historical milestones/experiments | [archive/](archive/) |

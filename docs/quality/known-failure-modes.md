@@ -87,6 +87,18 @@ overlay Y anchors in the stage **margin**, outside the teaching half-extent
 anchor them at the edge, never center-anchored on the tip. Prefer shorter copy over
 a wrap that crowds the geometry.
 
+**The collision is usually caused by the motion, not by the placement.** A label
+anchored to a moving tip sweeps an annulus, so two labels that never overlap in
+the frame you designed collide in the frame between: a basis label rotating onto
+a fixed vertex label, `λv` landing on `v` when λ ≈ 1, an arc label sharing a ray
+with the column it bisects, a peeled tile carrying its label onto a panel title.
+Check the whole sweep, not the end states — and when two labels must travel to
+one point (a merge), dissolve them *as* they arrive rather than parking them on
+top of each other. A live readout can also grow into a clip: budget for the
+**longest** string the formatter can produce, since a headline that wraps to two
+lines is anchored from its centre and loses the first line off the stage.
+`e2e/guided-scene-hard-gates.spec.ts` gates all of this.
+
 ## 7. A claimed operation shown as a pre-computed picture appearing
 
 **Hazard.** The caption names a motion — slide, travel, collapse, split, merge,
@@ -95,6 +107,13 @@ second object faded in where the first would have arrived, an already-deformed
 figure faded in, a snap, a pulse, or a tween that runs while the affected object
 is at opacity 0. The end state is right, so it survives review of the source and
 of the final frame; only the middle is missing, which is the part that teaches.
+
+The quietest instance is a tween that is **already at its target**: an overlay
+label created at full opacity and then faded in over 0.5 s, or a shape revealed
+that was never hidden. The code reads as animation, the beat budget is spent,
+and the frames are identical throughout. Two production scenes shipped this way
+until the missing-claimed-motion gate compared each segment's declared non-hold
+budget against the movement actually sampled in it.
 
 **Prevention.** Animate the object the caption names, from where it is to where
 it ends up, and leave a ghost so the "from" stays visible. Interpolate a matrix
