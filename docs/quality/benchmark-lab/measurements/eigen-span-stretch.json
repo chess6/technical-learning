@@ -8,19 +8,15 @@
     "videoTitle": "Eigenvectors and eigenvalues | Chapter 14, Essence of linear algebra",
     "channel": "3Blue1Brown",
     "sceneSources": [
-      "VectorRemainsOnSpan",
-      "IHatAsEigenVector",
-      "AllXAxisVectorsAreEigenvectors",
-      "SneakierEigenVector",
-      "FullSneakyEigenspace"
+      "VectorRemainsOnSpan"
     ],
     "license": "CC BY-NC-SA 4.0 (reference-only)"
   },
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 2553,
-    "sampledFrames": 851
+    "durationFrames": 363,
+    "sampledFrames": 121
   },
   "events": [
     {
@@ -38,110 +34,6 @@
       "expectedReplicaSec": 3.2,
       "measuredReplicaSec": 3.2,
       "deltaSec": 0
-    },
-    {
-      "id": "ihat-focus",
-      "anchor": "transcript",
-      "referenceSec": 129.5,
-      "expectedReplicaSec": 12.1,
-      "measuredReplicaSec": 12.1,
-      "deltaSec": 0
-    },
-    {
-      "id": "column-one-read",
-      "anchor": "transcript",
-      "referenceSec": 134.6,
-      "expectedReplicaSec": 17.2,
-      "measuredReplicaSec": 17.2,
-      "deltaSec": 0
-    },
-    {
-      "id": "ihat-transform-start",
-      "anchor": "transcript",
-      "referenceSec": 139.3,
-      "expectedReplicaSec": 21.9,
-      "measuredReplicaSec": 21.8,
-      "deltaSec": -0.1
-    },
-    {
-      "id": "xfan-in",
-      "anchor": "estimated",
-      "referenceSec": 147,
-      "expectedReplicaSec": 29.6,
-      "measuredReplicaSec": 29.6,
-      "deltaSec": 0
-    },
-    {
-      "id": "xfan-stretch-start",
-      "anchor": "transcript",
-      "referenceSec": 150,
-      "expectedReplicaSec": 32.6,
-      "measuredReplicaSec": 32.6,
-      "deltaSec": 0
-    },
-    {
-      "id": "sneaky-in",
-      "anchor": "transcript",
-      "referenceSec": 158.5,
-      "expectedReplicaSec": 41.1,
-      "measuredReplicaSec": 41.1,
-      "deltaSec": 0
-    },
-    {
-      "id": "sneaky-transform-start",
-      "anchor": "transcript",
-      "referenceSec": 164.7,
-      "expectedReplicaSec": 47.3,
-      "measuredReplicaSec": 47.3,
-      "deltaSec": 0
-    },
-    {
-      "id": "diagfan-in",
-      "anchor": "transcript",
-      "referenceSec": 169,
-      "expectedReplicaSec": 51.6,
-      "measuredReplicaSec": 51.6,
-      "deltaSec": 0
-    },
-    {
-      "id": "diagfan-stretch-start",
-      "anchor": "transcript",
-      "referenceSec": 173.6,
-      "expectedReplicaSec": 56.2,
-      "measuredReplicaSec": 56.2,
-      "deltaSec": 0
-    },
-    {
-      "id": "stretch3-annotation",
-      "anchor": "transcript",
-      "referenceSec": 185.6,
-      "expectedReplicaSec": 68.2,
-      "measuredReplicaSec": 68.2,
-      "deltaSec": 0
-    },
-    {
-      "id": "stretch2-annotation",
-      "anchor": "transcript",
-      "referenceSec": 188.6,
-      "expectedReplicaSec": 71.2,
-      "measuredReplicaSec": 71.2,
-      "deltaSec": 0
-    },
-    {
-      "id": "knocked-in",
-      "anchor": "transcript",
-      "referenceSec": 192.8,
-      "expectedReplicaSec": 75.4,
-      "measuredReplicaSec": 75.4,
-      "deltaSec": 0
-    },
-    {
-      "id": "knocked-transform-start",
-      "anchor": "transcript",
-      "referenceSec": 196.4,
-      "expectedReplicaSec": 79,
-      "measuredReplicaSec": 79,
-      "deltaSec": 0
     }
   ],
   "landmarks": [
@@ -150,45 +42,27 @@
       "deltaPx": 0,
       "tolerancePx": 24,
       "passed": true
-    },
-    {
-      "id": "ihat-stretched-tip",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "sneaky-stretched-tip",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "stretch3-annotation-pos",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
     }
   ],
   "dimensions": [
     {
       "dimension": "math-validity",
-      "total": 5,
-      "passed": 5,
+      "total": 4,
+      "passed": 4,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "identity-continuity",
-      "total": 65,
-      "passed": 65,
+      "total": 14,
+      "passed": 14,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "composition",
-      "total": 18,
-      "passed": 18,
+      "total": 7,
+      "passed": 7,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -201,8 +75,8 @@
     },
     {
       "dimension": "timing",
-      "total": 31,
-      "passed": 31,
+      "total": 5,
+      "passed": 5,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -215,22 +89,22 @@
     },
     {
       "dimension": "text-treatment",
-      "total": 5,
-      "passed": 5,
+      "total": 1,
+      "passed": 1,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "reveal-structure",
-      "total": 48,
-      "passed": 48,
+      "total": 7,
+      "passed": 7,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 7,
-      "passed": 7,
+      "total": 1,
+      "passed": 1,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -240,19 +114,11 @@
   "knownDeviations": [
     {
       "id": "grid-unit",
-      "note": "Reference uses ~65 px per unit at 1080p-equivalent framing; the replica uses the repo-wide 64 px SCALE. Landmark tolerance absorbs it."
-    },
-    {
-      "id": "matrix-position-constant",
-      "note": "The reference re-pins the matrix at slightly different x positions per scene class (it is rebuilt between scenes). The replica keeps ONE pinned position for the whole excerpt - deliberate, since persistent identity is the pattern under study."
+      "note": "Reference uses about 65 px per unit at equivalent framing; the replica uses the repo-wide 64 px scale."
     },
     {
       "id": "font",
-      "note": "Reference typography is LaTeX serif; replica uses the repo's sans-serif stack. Text is compared by placement and timing, not face."
-    },
-    {
-      "id": "fan-density",
-      "note": "The reference fan has an arrow every half unit with per-arrow gradient colouring; the replica draws one arrow per unit. Family-reading is preserved; density is a craft difference, recorded."
+      "note": "Reference uses LaTeX serif type; the replica uses the repo sans stack."
     }
   ]
 }

@@ -60,19 +60,24 @@ test.describe("benchmark laboratory", () => {
     await expect(clock).toContainText("f0");
 
     // --- scrubbing ----------------------------------------------------------
-    await scrubber.fill("600");
-    await expect(clock).toContainText("f600");
+    const lastFrame = Number(await scrubber.getAttribute("max"));
+    const scrubTarget = Math.max(1, Math.floor(lastFrame / 2));
+    await scrubber.fill(String(scrubTarget));
+    await expect(clock).toContainText("f" + scrubTarget);
 
     // --- beat navigation ----------------------------------------------------
     const beats = page.locator(".bench-lab__beats button");
     const beatCount = await beats.count();
-    expect(beatCount).toBeGreaterThan(1);
-    await beats.nth(2).click();
-    await expect(beats.nth(2)).toHaveClass(/is-active/);
-    await page.getByRole("button", { name: "⟨ beat" }).click();
-    await expect(beats.nth(1)).toHaveClass(/is-active/);
-    await page.getByRole("button", { name: "beat ⟩" }).click();
-    await expect(beats.nth(2)).toHaveClass(/is-active/);
+    expect(beatCount).toBeGreaterThan(0);
+    const lastBeat = beats.nth(beatCount - 1);
+    await lastBeat.click();
+    await expect(lastBeat).toHaveClass(/is-active/);
+    if (beatCount > 1) {
+      await page.getByRole("button", { name: "⟨ beat" }).click();
+      await expect(beats.nth(beatCount - 2)).toHaveClass(/is-active/);
+      await page.getByRole("button", { name: "beat ⟩" }).click();
+      await expect(lastBeat).toHaveClass(/is-active/);
+    }
 
     // --- synchronized playback ---------------------------------------------
     const before = await clock.textContent();

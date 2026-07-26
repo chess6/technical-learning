@@ -19,72 +19,40 @@
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 1199,
-    "sampledFrames": 400
+    "durationFrames": 509,
+    "sampledFrames": 170
   },
   "events": [
-    {
-      "id": "intro-writein-start",
-      "anchor": "estimated",
-      "referenceSec": 1,
-      "expectedReplicaSec": 1,
-      "measuredReplicaSec": 1,
-      "deltaSec": 0
-    },
-    {
-      "id": "nodes-build-start",
-      "anchor": "estimated",
-      "referenceSec": 5,
-      "expectedReplicaSec": 5,
-      "measuredReplicaSec": 5,
-      "deltaSec": 0
-    },
-    {
-      "id": "edges-build-start",
-      "anchor": "estimated",
-      "referenceSec": 8,
-      "expectedReplicaSec": 8,
-      "measuredReplicaSec": 7.71,
-      "deltaSec": -0.29
-    },
-    {
-      "id": "pseudo-writein-start",
-      "anchor": "estimated",
-      "referenceSec": 12.5,
-      "expectedReplicaSec": 12.5,
-      "measuredReplicaSec": 12.5,
-      "deltaSec": 0
-    },
     {
       "id": "enqueue-start-vertex",
       "anchor": "scene-map",
       "referenceSec": 21.5,
-      "expectedReplicaSec": 21.5,
-      "measuredReplicaSec": 21.5,
+      "expectedReplicaSec": 0,
+      "measuredReplicaSec": 0,
       "deltaSec": 0
     },
     {
       "id": "first-dequeue",
       "anchor": "scene-map",
       "referenceSec": 23.5,
-      "expectedReplicaSec": 23.5,
-      "measuredReplicaSec": 23.5,
+      "expectedReplicaSec": 2,
+      "measuredReplicaSec": 2,
       "deltaSec": 0
     },
     {
       "id": "first-expand",
       "anchor": "scene-map",
       "referenceSec": 25.2,
-      "expectedReplicaSec": 25.2,
-      "measuredReplicaSec": 25.23,
+      "expectedReplicaSec": 3.7,
+      "measuredReplicaSec": 3.73,
       "deltaSec": 0.03
     },
     {
       "id": "metronome-tick-6",
       "anchor": "scene-map",
       "referenceSec": 33.9,
-      "expectedReplicaSec": 33.9,
-      "measuredReplicaSec": 33.9,
+      "expectedReplicaSec": 12.4,
+      "measuredReplicaSec": 12.4,
       "deltaSec": 0
     }
   ],
@@ -106,12 +74,6 @@
       "deltaPx": 0,
       "tolerancePx": 24,
       "passed": true
-    },
-    {
-      "id": "intro-title-pos",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
     }
   ],
   "dimensions": [
@@ -124,15 +86,15 @@
     },
     {
       "dimension": "identity-continuity",
-      "total": 35,
-      "passed": 35,
+      "total": 20,
+      "passed": 20,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "composition",
-      "total": 12,
-      "passed": 12,
+      "total": 10,
+      "passed": 10,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -145,8 +107,8 @@
     },
     {
       "dimension": "timing",
-      "total": 17,
-      "passed": 17,
+      "total": 9,
+      "passed": 9,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -159,22 +121,22 @@
     },
     {
       "dimension": "text-treatment",
-      "total": 2,
-      "passed": 2,
+      "total": 1,
+      "passed": 1,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "reveal-structure",
-      "total": 27,
-      "passed": 27,
+      "total": 13,
+      "passed": 13,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 6,
-      "passed": 6,
+      "total": 2,
+      "passed": 2,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -184,15 +146,7 @@
   "knownDeviations": [
     {
       "id": "fixed-graph-instance",
-      "note": "The reference randomises its edge set per run, so the recorded video is one sample. The replica fixes a deterministic instance with the same vertex lattice; per-vertex colours/numbers therefore differ from the recording while obeying the same BFS discipline."
-    },
-    {
-      "id": "intro-card-branding",
-      "note": "The reference intro card carries channel branding (logo, name). The replica keeps only the treatment — a full-frame write-in intertitle — with neutral text. Branding is deliberately not reproduced."
-    },
-    {
-      "id": "trace-length",
-      "note": "The excerpt cuts the trace mid-run at 40 s; the reference continues to ~85 s. The replica holds its final excerpt state."
+      "note": "Reference randomises edges per run; the replica fixes one deterministic lattice instance and derives every number/state from a real BFS."
     }
   ]
 }

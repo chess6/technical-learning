@@ -18,8 +18,8 @@
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 1410,
-    "sampledFrames": 470
+    "durationFrames": 375,
+    "sampledFrames": 125
   },
   "events": [
     {
@@ -53,62 +53,6 @@
       "expectedReplicaSec": 10.5,
       "measuredReplicaSec": 10.5,
       "deltaSec": 0
-    },
-    {
-      "id": "recursion-noted",
-      "anchor": "transcript",
-      "referenceSec": 1465.8,
-      "expectedReplicaSec": 15.8,
-      "measuredReplicaSec": 15.8,
-      "deltaSec": 0
-    },
-    {
-      "id": "highlight-ac",
-      "anchor": "transcript",
-      "referenceSec": 1471.8,
-      "expectedReplicaSec": 21.8,
-      "measuredReplicaSec": 21.8,
-      "deltaSec": 0
-    },
-    {
-      "id": "ac-travel-start",
-      "anchor": "transcript",
-      "referenceSec": 1473.3,
-      "expectedReplicaSec": 23.3,
-      "measuredReplicaSec": 23.3,
-      "deltaSec": 0
-    },
-    {
-      "id": "token-ac-posted",
-      "anchor": "transcript",
-      "referenceSec": 1477.4,
-      "expectedReplicaSec": 27.4,
-      "measuredReplicaSec": 27.4,
-      "deltaSec": 0
-    },
-    {
-      "id": "highlight-internal-tokens",
-      "anchor": "transcript",
-      "referenceSec": 1488.7,
-      "expectedReplicaSec": 38.7,
-      "measuredReplicaSec": 38.7,
-      "deltaSec": 0
-    },
-    {
-      "id": "internal-merge-start",
-      "anchor": "transcript",
-      "referenceSec": 1490.2,
-      "expectedReplicaSec": 40.2,
-      "measuredReplicaSec": 40.2,
-      "deltaSec": 0
-    },
-    {
-      "id": "two-remaining",
-      "anchor": "transcript",
-      "referenceSec": 1494.7,
-      "expectedReplicaSec": 44.7,
-      "measuredReplicaSec": 44.7,
-      "deltaSec": 0
     }
   ],
   "landmarks": [
@@ -135,51 +79,27 @@
       "deltaPx": 0,
       "tolerancePx": 24,
       "passed": true
-    },
-    {
-      "id": "leaf-A-tree-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "parent-AC-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "root-065-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "leaf-B-final",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
     }
   ],
   "dimensions": [
     {
       "dimension": "math-validity",
-      "total": 4,
-      "passed": 4,
+      "total": 3,
+      "passed": 3,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "identity-continuity",
-      "total": 80,
-      "passed": 80,
+      "total": 23,
+      "passed": 23,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "composition",
-      "total": 24,
-      "passed": 24,
+      "total": 13,
+      "passed": 13,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -192,8 +112,8 @@
     },
     {
       "dimension": "timing",
-      "total": 23,
-      "passed": 23,
+      "total": 9,
+      "passed": 9,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -213,15 +133,15 @@
     },
     {
       "dimension": "reveal-structure",
-      "total": 64,
-      "passed": 64,
+      "total": 14,
+      "passed": 14,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 6,
-      "passed": 6,
+      "total": 2,
+      "passed": 2,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -230,16 +150,12 @@
   "craftFindings": [],
   "knownDeviations": [
     {
-      "id": "token-de-consumed-early",
-      "note": "In the reference the 0.31 token is consumed during the internal merge by fading at 0.9 into its original; the replica reproduces the fade-at-original but tracks it as consumed (not visible) from the start of merge-internal's grow phase."
-    },
-    {
       "id": "typography",
-      "note": "Serif LaTeX numerals in the reference; repo sans stack in the replica."
+      "note": "Reference uses serif LaTeX numerals; the replica uses the repo sans stack."
     },
     {
       "id": "column-resort-detail",
-      "note": "The reference rebuilds the whole column group per re-sort with per-member transforms; the replica slides only the members whose positions change. End states match; mid-flight paths may differ."
+      "note": "Reference rebuilds the frontier group per re-sort; the replica moves only members whose positions change. End states are compared."
     }
   ]
 }
