@@ -311,7 +311,7 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       setTop("One arrow on the usual grid");
       setCaption(`The point p sits here. Against the standard grid it reads (${fmt(POINT[0])}, ${fmt(POINT[1])}).`);
       standardReadout.text(`(${fmt(POINT[0])}, ${fmt(POINT[1])})`);
-      yield* standardReadout.opacity(1, b.pause!);
+      yield* standardReadout.opacity(1, b.readoutReveal!);
       yield* waitFor(b.hold!);
     },
 
@@ -335,8 +335,8 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       setTop("Predict: what does p read now?");
       setCaption("Both grid directions are lit, and p has not moved a pixel.");
       yield* all(
-        b1Arrow.lineWidth(8, b.pause!),
-        b2Arrow.lineWidth(8, b.pause!),
+        b1Arrow.lineWidth(8, b.basisEmphasis!),
+        b2Arrow.lineWidth(8, b.basisEmphasis!),
       );
       basisReadout.text("[p]_B = ( ?, ? )");
       basisReadout.opacity(1);
@@ -359,7 +359,8 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       setCaption("…then one step along b₂ — and the walk ends exactly on p.");
       yield* walkT(2, b.walk2!, easeInOutCubic);
       basisReadout.text(`[p]_B = (${fmt(POINT_COORDS[0])}, ${fmt(POINT_COORDS[1])})`);
-      yield* all(arrowDot.size(24, b.readout! / 2), arrowDot.size(16, b.readout! / 2));
+      yield* arrowDot.size(24, b.readout! / 2);
+      yield* arrowDot.size(16, b.readout! / 2);
       yield* waitFor(b.hold!);
       setCaption("Two readouts, one arrow. Nothing about the point changed — only the grid used to name it.");
       yield* waitFor(b.hold2!);

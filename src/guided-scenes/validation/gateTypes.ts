@@ -1,3 +1,5 @@
+import type { BeatIntent } from "../scenes/beatIntents";
+
 /**
  * Data model for the production guided-scene hard gates.
  *
@@ -72,17 +74,21 @@ export interface SceneSeekRecord {
   unmeasuredFromEnd?: UnmeasuredNodeSample[];
 }
 
+export interface SceneBeatWindow {
+  id: string;
+  intent: BeatIntent;
+  start: number;
+  end: number;
+  targets: readonly string[];
+}
+
 export interface SceneSegmentWindow {
   id: string;
   /** Segment bounds in seconds on the scene timeline. */
   start: number;
   end: number;
-  /**
-   * Seconds of this segment's declared beat budget that are NOT holds —
-   * i.e. time the scene's own timing data claims something is moving.
-   * Computed from SCENE_BEATS by `motionBudgetOf`.
-   */
-  motionBudget: number;
+  /** Explicit authored intent for every timed beat; names carry no semantics. */
+  beats: SceneBeatWindow[];
 }
 
 export interface SegmentOverrunRecord {
@@ -126,30 +132,6 @@ export const STAGE_BOUNDS = { halfWidth: 480, halfHeight: 270 } as const;
 
 /** Opacity above which a node counts as visible to the gates. */
 export const VISIBLE_OPACITY = 0.06;
-
-/** Beat names that declare a deliberate STATIC hold rather than motion. */
-const HOLD_BEAT_PATTERN = /^(hold|think|ask|wait|pause|linger|beat)\d*$/i;
-
-/** True when a beat name declares a hold (no motion claimed). */
-export function isHoldBeat(name: string): boolean {
-  return HOLD_BEAT_PATTERN.test(name);
-}
-
-/**
- * Seconds of a segment's beat budget that claim motion.
- *
- * The scene's own `SCENE_BEATS` entry is the source of truth: every beat that
- * is not a hold is time the author declared something would be moving. A
- * segment with a real motion budget that renders identical frames throughout
- * is claiming motion it never enacts.
- */
-export function motionBudgetOf(beats: Record<string, number>): number {
-  let total = 0;
-  for (const [name, seconds] of Object.entries(beats)) {
-    if (!isHoldBeat(name)) total += seconds;
-  }
-  return total;
-}
 
 export function isVisible(sample: NodeSample | undefined): sample is NodeSample {
   return !!sample && sample.opacity > VISIBLE_OPACITY;

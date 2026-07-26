@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  isHoldBeat,
   isNested,
-  motionBudgetOf,
   overlapArea,
   type NodeSample,
   type SceneFrameSample,
@@ -10,7 +8,7 @@ import {
 } from "../gateTypes";
 import {
   TELEPORT_PX_PER_FRAME,
-  checkClaimedMotion,
+  checkBeatIntents,
   checkNoEmptyFrames,
   checkNoFlicker,
   checkNoUnmeasuredGeometry,
@@ -90,22 +88,6 @@ function run(overrides: Partial<SceneGateRun> = {}): SceneGateRun {
 }
 
 describe("gate helpers", () => {
-  it("classifies hold beats but not motion beats", () => {
-    expect(isHoldBeat("hold")).toBe(true);
-    expect(isHoldBeat("hold2")).toBe(true);
-    expect(isHoldBeat("think")).toBe(true);
-    expect(isHoldBeat("ask")).toBe(true);
-    expect(isHoldBeat("morph")).toBe(false);
-    expect(isHoldBeat("slide")).toBe(false);
-    expect(isHoldBeat("holdout")).toBe(false);
-  });
-
-  it("counts only non-hold beats toward the motion budget", () => {
-    expect(motionBudgetOf({ hold: 2.9, originUp: 0.4, originDown: 0.4 })).toBeCloseTo(0.8);
-    expect(motionBudgetOf({ hold: 3, hold2: 2 })).toBe(0);
-    expect(motionBudgetOf({})).toBe(0);
-  });
-
   it("measures box overlap and skips nested pairs", () => {
     const a = text("a", "one", { x: 0, y: 0, width: 100, height: 40 });
     const b = text("b", "two", { x: 50, y: 0, width: 100, height: 40 });
@@ -428,91 +410,82 @@ describe("flicker gate", () => {
   });
 });
 
-describe("claimed-motion gate", () => {
-  const segments = [{ id: "morph", start: 0, end: 1, motionBudget: 2 }];
+describe("explicit beat-intent gate", () => {
+  const segment = (
+    intent: "hold" | "text" | "emphasis" | "geometry" | "camera" | "transition",
+    targets: readonly string[] = [],
+    beatId = "anything",
+  ) => [{
+    id: "concept",
+    start: 0,
+    end: 1,
+    beats: [{ id: beatId, intent, start: 0, end: 1, targets }],
+  }];
 
-  it("fails a motion segment whose frames never change", () => {
-    const findings = checkClaimedMotion(
-      run({
-        segments,
-        frames: [frame(0, [node("a")]), frame(1, [node("a")])],
-      }),
-    );
+  it("uses explicit intent rather than a suggestive beat name", () => {
+    const findings = checkBeatIntents(run({
+      segments: segment("geometry", ["math-object"], "hold"),
+      frames: [
+        frame(1, [node("math-object")]),
+        frame(2, [node("math-object")]),
+        frame(3, [node("math-object")]),
+      ],
+    }));
     expect(findings).toHaveLength(1);
-    expect(findings[0]!.gate).toBe("missing-claimed-motion");
-    expect(findings[0]!.segmentId).toBe("morph");
+    expect(findings[0]!.gate).toBe("beat-intent");
+    expect(findings[0]!.message).toMatch(/did not change geometry/);
   });
 
-  it("passes when something actually moves", () => {
-    expect(
-      checkClaimedMotion(
-        run({
-          segments,
-          frames: [frame(0, [node("a", { x: 0 })]), frame(1, [node("a", { x: 40 })])],
-        }),
-      ),
-    ).toEqual([]);
+  it("accepts continuous change of every named mathematical target", () => {
+    expect(checkBeatIntents(run({
+      segments: segment("geometry", ["math-object"]),
+      frames: [
+        frame(1, [node("math-object", { x: 0 })]),
+        frame(2, [node("math-object", { x: 10 })]),
+        frame(3, [node("math-object", { x: 20 })]),
+      ],
+    }))).toEqual([]);
   });
 
-  it("accepts an existing diagram fade as visible choreography", () => {
-    expect(
-      checkClaimedMotion(
-        run({
-          segments,
-          frames: [
-            frame(0, [node("a", { opacity: 0 })]),
-            frame(1, [node("a", { opacity: 1 })]),
-          ],
-        }),
-      ),
-    ).toEqual([]);
+  it("rejects a one-frame snap as non-continuous geometry", () => {
+    const findings = checkBeatIntents(run({
+      segments: segment("geometry", ["math-object"]),
+      frames: [
+        frame(1, [node("math-object", { x: 0 })]),
+        frame(2, [node("math-object", { x: 0 })]),
+        frame(3, [node("math-object", { x: 30 })]),
+        frame(4, [node("math-object", { x: 30 })]),
+      ],
+    }));
+    expect(findings.some((finding) => finding.message.includes("snap"))).toBe(true);
   });
 
-  it("accepts real geometry changes", () => {
-    expect(
-      checkClaimedMotion(
-        run({
-          segments,
-          frames: [
-            frame(0, [node("a", { width: 20 })]),
-            frame(1, [node("a", { width: 60 })]),
-          ],
-        }),
-      ),
-    ).toEqual([]);
+  it("does not let captions, opacity swaps, insertions, or unrelated motion satisfy geometry", () => {
+    const variants = [
+      [frame(1, [node("math-object"), text("caption", "old")]), frame(2, [node("math-object"), text("caption", "new")]), frame(3, [node("math-object"), text("caption", "newer")])],
+      [frame(1, [node("math-object", { opacity: 0.2 })]), frame(2, [node("math-object", { opacity: 0.8 })]), frame(3, [node("math-object", { opacity: 1 })])],
+      [frame(1, [node("math-object")]), frame(2, [node("math-object"), node("new")]), frame(3, [node("math-object"), node("new", { x: 20 })])],
+      [frame(1, [node("math-object"), node("other", { x: 0 })]), frame(2, [node("math-object"), node("other", { x: 10 })]), frame(3, [node("math-object"), node("other", { x: 20 })])],
+    ];
+    for (const frames of variants) {
+      expect(checkBeatIntents(run({
+        segments: segment("geometry", ["math-object"]),
+        frames,
+      }))).toHaveLength(1);
+    }
   });
 
-  it("does not let a caption-only rewrite satisfy claimed motion", () => {
-    const findings = checkClaimedMotion(
-      run({
-        segments,
-        frames: [frame(0, [text("caption", "old")]), frame(1, [text("caption", "new")])],
-      }),
-    );
+  it("fails a rendered tween inside an explicit hold even when it is named morph", () => {
+    const findings = checkBeatIntents(run({
+      segments: segment("hold", [], "morph"),
+      frames: [
+        frame(1, [node("a", { opacity: 0.2 })]),
+        frame(2, [node("a", { opacity: 0.6 })]),
+        frame(3, [node("a", { opacity: 1 })]),
+      ],
+    }));
     expect(findings).toHaveLength(1);
-    expect(findings[0]!.gate).toBe("missing-claimed-motion");
-  });
-
-  it("does not gate segments that only budget holds", () => {
-    expect(
-      checkClaimedMotion(
-        run({
-          segments: [{ id: "hold-only", start: 0, end: 1, motionBudget: 0 }],
-          frames: [frame(0, [node("a")]), frame(1, [node("a")])],
-        }),
-      ),
-    ).toEqual([]);
-  });
-
-  it("does not let a newly inserted object satisfy claimed motion", () => {
-    const findings = checkClaimedMotion(
-      run({
-        segments,
-        frames: [frame(0, [node("a")]), frame(1, [node("a"), node("b")])],
-      }),
-    );
-    expect(findings).toHaveLength(1);
-    expect(findings[0]!.gate).toBe("missing-claimed-motion");
+    expect(findings[0]!.message).toMatch(/declared hold/);
   });
 });
 
@@ -643,7 +616,7 @@ describe("gate-coverage gate", () => {
 
   it("fails a segmented scene with no seek records", () => {
     const findings = checkRunSampledScene(
-      run({ segments: [{ id: "s", start: 0, end: 1, motionBudget: 0 }] }),
+      run({ segments: [{ id: "s", start: 0, end: 1, beats: [] }] }),
     );
     expect(findings.some((f) => f.message.includes("seek-determinism"))).toBe(true);
   });
@@ -652,7 +625,7 @@ describe("gate-coverage gate", () => {
     expect(
       checkRunSampledScene(
         run({
-          segments: [{ id: "s", start: 0, end: 1, motionBudget: 0 }],
+          segments: [{ id: "s", start: 0, end: 1, beats: [] }],
           seekRecords: [
             {
               segmentId: "s",
@@ -684,7 +657,7 @@ describe("runSceneHardGates", () => {
             frame(0, [node("a", { x: 0 }), text("t", "caption", { y: -200 })]),
             frame(1, [node("a", { x: 20 }), text("t", "caption", { y: -200 })]),
           ],
-          segments: [{ id: "s", start: 0, end: 1, motionBudget: 1 }],
+          segments: [{ id: "s", start: 0, end: 1, beats: [] }],
           seekRecords: [
             {
               segmentId: "s",

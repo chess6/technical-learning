@@ -566,12 +566,12 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
     *weights() {
       const b = beats("weights");
       setCaption("Place-value weights: which two pieces share a column?");
-      yield* waitFor(b.pause!);
+      yield* waitFor(b.leadIn!);
       // Weights fade in by attaching each region's place value to its name.
       yield* all(
-        wLabelAC.text("100 AC", b.pause2!),
-        wLabelAD.text("10 AD", b.pause2!),
-        wLabelBC.text("10 BC", b.pause2!),
+        wLabelAC.text("100 AC", b.labelWrite!),
+        wLabelAD.text("10 AD", b.labelWrite!),
+        wLabelBC.text("10 BC", b.labelWrite!),
       );
       yield* waitFor(b.hold!);
     },

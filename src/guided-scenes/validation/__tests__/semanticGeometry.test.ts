@@ -54,7 +54,7 @@ function run(nodes: NodeSample[], segmentId = "math"): SceneGateRun {
     stride: 3,
     durationFrames: 60,
     frames: [frame(nodes)],
-    segments: [{ id: segmentId, start: 0, end: 2, motionBudget: 0 }],
+    segments: [{ id: segmentId, start: 0, end: 2, beats: [] }],
     seekRecords: [],
     overruns: [],
   };

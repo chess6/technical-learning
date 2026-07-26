@@ -7,12 +7,13 @@ import {
   type SceneGateFinding,
   type SceneGateRun,
 } from "./gateTypes";
+import { checkBeatIntents } from "./beatIntentGates";
 import {
   checkNoUnmeasuredGeometry,
   checkSemanticGeometry,
 } from "./semanticGates";
 
-export { checkNoUnmeasuredGeometry, checkSemanticGeometry };
+export { checkBeatIntents, checkNoUnmeasuredGeometry, checkSemanticGeometry };
 
 /**
  * Production hard gates for guided scenes.
@@ -96,12 +97,6 @@ export const FLICKER_WINDOW_SECONDS = 0.6;
  * back, with no animated shoulder on either side.
  */
 export const FLICKER_ABRUPT_OPACITY = 0.85;
-
-/** A segment claiming at least this much motion must actually move something. */
-export const MOTION_BUDGET_FLOOR_SECONDS = 0.5;
-
-/** Total movement below this over a whole segment counts as "nothing moved". */
-export const MOTION_FLOOR_PX = 2;
 
 function visibleNodes(frame: SceneFrameSample): NodeSample[] {
   return Object.values(frame.nodes).filter(isVisible);
@@ -450,72 +445,6 @@ export function checkSeekDeterminism(run: SceneGateRun): SceneGateFinding[] {
 }
 
 /**
- * Gate: a segment that budgets motion must move something.
- *
- * The scene's own `SCENE_BEATS` entry declares, per segment, how many seconds
- * are spent on non-hold beats. If a segment claims half a second or more of
- * motion and every sampled frame in it is identical, the animation is not
- * doing what its timing data says it does.
- */
-export function checkClaimedMotion(run: SceneGateRun): SceneGateFinding[] {
-  const findings: SceneGateFinding[] = [];
-  for (const segment of run.segments) {
-    if (segment.motionBudget < MOTION_BUDGET_FLOOR_SECONDS) continue;
-    const frames = run.frames.filter(
-      (f) => f.time >= segment.start - 1e-6 && f.time < segment.end - 1e-6,
-    );
-    if (frames.length < 2) continue;
-
-    let movement = 0;
-    for (let i = 1; i < frames.length; i += 1) {
-      const previous = frames[i - 1]!;
-      const current = frames[i]!;
-      for (const sample of visibleNodes(current)) {
-        const before = previous.nodes[sample.key];
-        // Captions changing and newly inserted objects merely appearing do not
-        // prove that the claimed mathematical operation was animated. A fade of
-        // an already-authored diagram node still counts as visible choreography;
-        // semantic contracts separately verify the mathematical geometry.
-        if (!before || sample.type === "Txt") continue;
-        movement += Math.abs(sample.opacity - before.opacity) * 10;
-        movement += Math.hypot(sample.x - before.x, sample.y - before.y);
-        movement += Math.abs(sample.width - before.width);
-        movement += Math.abs(sample.height - before.height);
-        if (sample.points && before.points) {
-          const count = Math.min(sample.points.length, before.points.length);
-          for (let point = 0; point < count; point += 1) {
-            movement += Math.hypot(
-              sample.points[point]!.x - before.points[point]!.x,
-              sample.points[point]!.y - before.points[point]!.y,
-            );
-          }
-        }
-        if (sample.drawnStart !== undefined && before.drawnStart !== undefined) {
-          movement += Math.abs(sample.drawnStart - before.drawnStart) * 100;
-        }
-        if (sample.drawnEnd !== undefined && before.drawnEnd !== undefined) {
-          movement += Math.abs(sample.drawnEnd - before.drawnEnd) * 100;
-        }
-      }
-    }
-
-    if (movement > MOTION_FLOOR_PX) continue;
-    findings.push({
-      gate: "missing-claimed-motion",
-      sceneId: run.sceneId,
-      segmentId: segment.id,
-      measured: Math.round(movement * 100) / 100,
-      limit: MOTION_FLOOR_PX,
-      message:
-        `segment "${segment.id}" budgets ${segment.motionBudget.toFixed(1)}s of ` +
-        `motion but nothing moves during it (total change ` +
-        `${movement.toFixed(2)}px) — claimed motion is missing`,
-    });
-  }
-  return findings;
-}
-
-/**
  * Gate: the run must actually have measured the scene.
  *
  * This exists because the first version of the runner sampled ZERO frames
@@ -596,7 +525,7 @@ export const SCENE_HARD_GATES = [
   checkRunSampledScene,
   checkNoUnmeasuredGeometry,
   checkSemanticGeometry,
-  checkClaimedMotion,
+  checkBeatIntents,
   checkNoTeleports,
   checkNoFlicker,
   checkTextWithinStage,

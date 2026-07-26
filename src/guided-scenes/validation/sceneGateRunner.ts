@@ -12,8 +12,9 @@ import {
   SCENE_SEGMENTS,
 } from "../scenes/sceneTimings";
 import { SEGMENT_OVERRUNS, resetSegmentOverruns } from "../scenes/sceneKit";
+import { intentWindowsForSegment } from "../scenes/beatIntents";
 import { hashCanvas, sampleSceneGraphDetailed } from "./sceneGraphSampler";
-import { motionBudgetOf, type SceneGateRun, type SceneSeekRecord } from "./gateTypes";
+import { type SceneGateRun, type SceneSeekRecord } from "./gateTypes";
 
 /**
  * Browser-side driver that mounts a production guided scene off-screen,
@@ -45,7 +46,12 @@ function segmentWindows(sceneId: string) {
       id: segment.id,
       start,
       end: cursor,
-      motionBudget: motionBudgetOf(beats[segment.id] ?? {}),
+      beats: intentWindowsForSegment(
+        sceneId,
+        segment,
+        start,
+        beats[segment.id] ?? {},
+      ),
     };
   });
 }

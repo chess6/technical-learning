@@ -14,7 +14,7 @@ import {
   type Matrix2x2,
   type Vector2 as MathVector2,
 } from "../../math";
-import { COLUMNS_RULE_GRAPHIC_SEGMENTS } from "./sceneTimings";
+import { COLUMNS_RULE_GRAPHIC_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   OVERLAY_CLEAR_HALF_EXTENT,
@@ -75,6 +75,7 @@ const DISPLAY_GRAPHIC: OpeningGraphic = {
 const MARKED = [1, 3, 8, 12];
 // The single demo vertex whose decomposition we construct (both coords nonzero).
 const DEMO = 1;
+const SCENE_ID = "columns-rule-graphic";
 
 const lerp = (from: number, to: number, t: number): number =>
   from + (to - from) * t;
@@ -260,53 +261,60 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
   matrixLabel.text("x = ?");
   caption.text("One vertex of the craft, and the basis it is measured against.");
 
+  const beats = (segmentId: string) => requireBeats(SCENE_ID, segmentId);
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *vertex() {
+      const b = beats("vertex");
       yield* all(
-        ghostCraft.opacity(1, 0.5),
-        craft.opacity(1, 0.5),
-        e1.opacity(1, 0.4),
-        e2.opacity(1, 0.4),
-        e1Label.opacity(1, 0.4),
-        e2Label.opacity(1, 0.4),
-        matrixLabel.opacity(1, 0.5),
-        caption.opacity(1, 0.5),
+        ghostCraft.opacity(1, b.establish!),
+        craft.opacity(1, b.establish!),
+        e1.opacity(1, b.establish!),
+        e2.opacity(1, b.establish!),
+        e1Label.opacity(1, b.establish!),
+        e2Label.opacity(1, b.establish!),
+        matrixLabel.opacity(1, b.establish!),
+        caption.opacity(1, b.establish!),
       );
-      yield* demoDot.opacity(1, 0.4);
+      yield* demoDot.opacity(1, b.vertexIn!);
       caption.text("Drop it onto the axes: that pair of readings is (a, b).");
-      yield* all(guideX.opacity(0.9, 0.5), guideY.opacity(0.9, 0.5));
-      yield* recipe.opacity(1, 0.4);
+      yield* all(guideX.opacity(0.9, b.guidesIn!), guideY.opacity(0.9, b.guidesIn!));
+      yield* recipe.opacity(1, b.recipeIn!);
+      yield* waitFor(b.hold!);
     },
 
     *decompose() {
+      const b = beats("decompose");
       matrixLabel.text("x = a·e₁");
       caption.text("Walk a steps along e₁…");
       // Hand the stage to the walk: the craft becomes context and the unit
       // basis arrows step back, so a·e₁ (shorter than e₁, since a < 1) is not
       // read as a second copy of e₁ lying on top of it.
       yield* all(
-        craft.opacity(0.3, 0.5),
-        ghostCraft.opacity(0.45, 0.5),
-        e1.opacity(0.35, 0.5),
-        e2.opacity(0.35, 0.5),
-        e1Label.opacity(0.35, 0.5),
-        e2Label.opacity(0.35, 0.5),
-        comp1.opacity(1, 0.4),
-        comp1Label.opacity(1, 0.4),
+        craft.opacity(0.3, b.focus!),
+        ghostCraft.opacity(0.45, b.focus!),
+        e1.opacity(0.35, b.focus!),
+        e2.opacity(0.35, b.focus!),
+        e1Label.opacity(0.35, b.focus!),
+        e2Label.opacity(0.35, b.focus!),
+        comp1.opacity(1, b.focus!),
+        comp1Label.opacity(1, b.focus!),
       );
-      yield* grow1(1, 1.4, easeInOutCubic);
+      yield* grow1(1, b.firstLeg!, easeInOutCubic);
 
       matrixLabel.text("x = a·e₁ + b·e₂");
       caption.text("…then b steps along e₂ — head to tail, ending on the vertex.");
-      yield* all(comp2.opacity(1, 0.3), comp2Label.opacity(1, 0.3));
-      yield* grow2(1, 1.4, easeInOutCubic);
+      yield* all(comp2.opacity(1, b.secondLegIn!), comp2Label.opacity(1, b.secondLegIn!));
+      yield* grow2(1, b.secondLeg!, easeInOutCubic);
       // The walk's endpoint IS the vertex (same matrix, same coordinates):
       // pulse the dot so the coincidence is read, not assumed.
-      yield* demoDot.size(30, 0.3);
-      yield* demoDot.size(18, 0.3);
+      yield* demoDot.size(30, b.landUp!);
+      yield* demoDot.size(18, b.landDown!);
+      yield* waitFor(b.hold!);
     },
 
     *predict() {
+      const b = beats("predict");
       matrixLabel.text("T(x) = a·T(e₁) + b·T(e₂)  →  where?");
       caption.text(
         "T moves e₁ and e₂ to the columns (2, 0) and (1, 1). The recipe (a, b) does not change. Predict where this walk now ends.",
@@ -314,20 +322,21 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
       // Bring the basis arrows back up: they are what is about to move, so the
       // prediction is made against the objects that will change.
       yield* all(
-        e1.opacity(1, 0.5),
-        e2.opacity(1, 0.5),
-        e1Label.opacity(1, 0.5),
-        e2Label.opacity(1, 0.5),
+        e1.opacity(1, b.basisIn!),
+        e2.opacity(1, b.basisIn!),
+        e1Label.opacity(1, b.basisIn!),
+        e2Label.opacity(1, b.basisIn!),
       );
-      // runSegment pads the rest of the beat: that silence is the think time.
+      yield* waitFor(b.think!);
     },
 
     *image() {
+      const b = beats("image");
       caption.text("Same two steps, now walked on the columns.");
       yield* all(
-        craft.opacity(0.85, 0.5),
-        ghostCraft.opacity(0.5, 0.5),
-        tGrid.opacity(0.8, 0.5),
+        craft.opacity(0.85, b.contextIn!),
+        ghostCraft.opacity(0.5, b.contextIn!),
+        tGrid.opacity(0.8, b.contextIn!),
       );
       e1Label.text("T(e₁)");
       e2Label.text("T(e₂)");
@@ -337,33 +346,36 @@ export const columnsRuleGraphicScene = makeScene2D(function* (view) {
       // arrows, both component arrows, the guides and every marked dot — is a
       // function of this matrix, so they all move together and the walk stays
       // exact on every frame.
-      yield* morphMatrixEntries(ma, mb, mc, md, A, 3.4);
+      yield* morphMatrixEntries(ma, mb, mc, md, A, b.transform!);
       // Resolve the prediction: the question mark set in `predict` must not
       // survive its own answer.
       matrixLabel.text("T(x) = a·T(e₁) + b·T(e₂)");
       caption.text("It lands on the moved vertex — the same (a, b), a new basis.");
-      yield* demoDot.size(28, 0.35);
-      yield* demoDot.size(18, 0.35);
+      yield* demoDot.size(28, b.landUp!);
+      yield* demoDot.size(18, b.landDown!);
+      yield* waitFor(b.hold!);
     },
 
     *["all-vertices"]() {
+      const b = beats("all-vertices");
       matrixLabel.text("every vertex: same columns, its own (a, b)");
       caption.text(
         "Each vertex walks its own recipe on the same two columns — which is why two columns move the whole craft.",
       );
       yield* all(
-        craft.opacity(1, 0.5),
-        guideX.opacity(0, 0.4),
-        guideY.opacity(0, 0.4),
-        ...markedDots.map((d) => d.opacity(1, 0.5)),
+        craft.opacity(1, b.focus!),
+        guideX.opacity(0, b.focus!),
+        guideY.opacity(0, b.focus!),
+        ...markedDots.map((d) => d.opacity(1, b.focus!)),
       );
       yield* all(
         ...otherWalks.flatMap(({ first, second }) => [
-          first.opacity(0.75, 0.6),
-          second.opacity(0.75, 0.6),
+          first.opacity(0.75, b.walksIn!),
+          second.opacity(0.75, b.walksIn!),
         ]),
       );
-      yield* waitFor(0.4);
+      yield* waitFor(b.settle!);
+      yield* waitFor(b.hold!);
     },
   };
 

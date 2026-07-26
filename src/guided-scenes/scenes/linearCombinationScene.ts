@@ -425,8 +425,8 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       const b = beats("predict-coordinates");
       setCaption("p has not moved, and both grid directions are on screen.");
       yield* all(
-        vArrow.lineWidth(8, b.pause!),
-        wArrow.lineWidth(8, b.pause!),
+        vArrow.lineWidth(8, b.basisEmphasis!),
+        wArrow.lineWidth(8, b.basisEmphasis!),
       );
       setEq("p in basis (v, w) = ( ?, ? )");
       setCaption(

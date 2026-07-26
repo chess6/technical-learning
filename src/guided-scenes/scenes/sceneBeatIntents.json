@@ -1,0 +1,920 @@
+{
+  "why-linear-algebra": {
+    "establish": {
+      "originUp": "emphasis",
+      "originDown": "emphasis",
+      "hold": "hold"
+    },
+    "reveal": {
+      "basisIn": "transition",
+      "vertexIn": "transition",
+      "hold": "hold"
+    },
+    "scale": {
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "rotation": {
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "reflection": {
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "shear": {
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "projection": {
+      "reset": "transition",
+      "deform": "transition",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold": "hold"
+    },
+    "predict-translation": {
+      "reset": "transition",
+      "ask": "text",
+      "think": "hold"
+    },
+    "translation": {
+      "slide": "transition",
+      "hold": "hold",
+      "originUp": "emphasis",
+      "originDown": "emphasis",
+      "hold2": "hold",
+      "retire": "transition"
+    },
+    "mystery": {
+      "deform": "transition",
+      "gridUp": "emphasis",
+      "emphUp": "emphasis",
+      "emphDown": "emphasis",
+      "hold": "hold"
+    }
+  },
+  "vectors-linear-combinations": {
+    "plane": {
+      "settle": "transition",
+      "hold": "hold"
+    },
+    "vector-v": {
+      "grow": "transition",
+      "hold": "hold"
+    },
+    "components": {
+      "compH": "transition",
+      "compV": "transition",
+      "hold": "hold",
+      "retire": "transition"
+    },
+    "vector-w": {
+      "grow": "transition",
+      "hold": "hold"
+    },
+    "addition": {
+      "slide": "transition",
+      "sum": "transition",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold": "hold",
+      "retire": "transition"
+    },
+    "scaling": {
+      "isolate": "transition",
+      "a2": "transition",
+      "aHalf": "transition",
+      "aNeg": "transition",
+      "hold": "hold",
+      "restore": "transition"
+    },
+    "combination": {
+      "focus": "emphasis",
+      "b1": "transition",
+      "move1": "transition",
+      "move2": "transition",
+      "move3": "transition",
+      "hold": "hold"
+    },
+    "span-plane": {
+      "reset": "transition",
+      "fill": "transition",
+      "hold": "hold",
+      "name": "text"
+    },
+    "dependent": {
+      "clear": "transition",
+      "collapse": "transition",
+      "focus": "emphasis",
+      "hold": "hold"
+    },
+    "dependent-inside": {
+      "setup": "emphasis",
+      "focus": "emphasis",
+      "grow": "transition",
+      "hold": "hold",
+      "move1": "transition",
+      "move2": "transition",
+      "hold2": "hold",
+      "retire": "transition"
+    },
+    "basis": {
+      "restore": "transition",
+      "focus": "emphasis",
+      "hold": "hold"
+    },
+    "read-standard": {
+      "pIn": "transition",
+      "hold": "hold",
+      "swap": "transition",
+      "hold2": "hold"
+    },
+    "predict-coordinates": {
+      "basisEmphasis": "emphasis",
+      "ask": "text",
+      "think": "hold"
+    },
+    "coordinates": {
+      "walk1": "transition",
+      "walk2": "transition",
+      "reveal": "text",
+      "hold": "hold"
+    }
+  },
+  "linear-systems": {
+    "equations": {
+      "textReveal": "text",
+      "hold": "hold"
+    },
+    "row": {
+      "lines": "transition",
+      "hold": "hold",
+      "dotIn": "transition",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold2": "hold"
+    },
+    "regroup": {
+      "fade": "transition",
+      "show": "transition",
+      "tag": "text",
+      "hold": "hold"
+    },
+    "predict-column": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "column": {
+      "arm": "transition",
+      "cx": "transition",
+      "arm2": "transition",
+      "cy": "transition",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold": "hold"
+    },
+    "unique": {
+      "clear": "transition",
+      "show": "transition",
+      "tag": "text",
+      "hold": "hold"
+    },
+    "infinite": {
+      "show": "transition",
+      "tag": "text",
+      "morph": "transition",
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis",
+      "hold": "hold"
+    },
+    "none": {
+      "toColumn": "transition",
+      "tag": "text",
+      "hold": "hold",
+      "slideB": "transition",
+      "hold2": "hold",
+      "toRow": "transition",
+      "tag2": "text",
+      "hold3": "hold"
+    },
+    "summary": {
+      "restore": "transition",
+      "hold": "hold"
+    }
+  },
+  "elimination": {
+    "setup": {
+      "panels": "transition",
+      "lines": "transition",
+      "dotIn": "transition",
+      "dotPulseUp": "emphasis",
+      "dotPulseDown": "emphasis"
+    },
+    "predict": {
+      "anchor": "transition",
+      "ask": "text",
+      "think": "hold"
+    },
+    "operation": {
+      "anchorUp": "emphasis",
+      "anchorDown": "emphasis",
+      "ghostReveal": "text",
+      "combine": "transition",
+      "landUp": "emphasis",
+      "landDown": "emphasis"
+    },
+    "triangular": {
+      "lineUp": "emphasis",
+      "lineDown": "emphasis",
+      "dotUp": "emphasis",
+      "dotDown": "emphasis"
+    },
+    "invariance": {
+      "dim": "emphasis",
+      "grow": "transition",
+      "shrink": "transition",
+      "restore": "transition"
+    },
+    "summary": {
+      "settleUp": "emphasis",
+      "settleDown": "emphasis"
+    }
+  },
+  "solution-sets": {
+    "two-solutions": {
+      "d1": "transition",
+      "d2": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "difference": {
+      "draw": "transition",
+      "hold": "hold",
+      "slide": "transition",
+      "label": "text",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold2": "hold"
+    },
+    "predict-generate": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "generate": {
+      "arrow": "transition",
+      "dot": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "null-line": {
+      "draw": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "translate": {
+      "offset": "transition",
+      "line": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "case-empty": {
+      "emphasisUp": "emphasis",
+      "emphasisDown": "emphasis",
+      "hold": "hold"
+    },
+    "case-point": {
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "case-line": {
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    }
+  },
+  "matrix-composition": {
+    "apply-b": {
+      "hold": "hold",
+      "morph": "transition",
+      "hold2": "hold"
+    },
+    "apply-a": {
+      "hold": "hold",
+      "morph": "transition",
+      "paths": "transition",
+      "hold2": "hold"
+    },
+    "one-map": {
+      "hold": "hold",
+      "morph": "transition",
+      "hold2": "hold"
+    },
+    "columns": {
+      "hold": "hold",
+      "hold2": "hold",
+      "focus": "emphasis",
+      "end2": "transition",
+      "hold3": "hold",
+      "unfocus": "emphasis",
+      "hold4": "hold"
+    },
+    "predict-order": {
+      "reset": "transition",
+      "ask": "text",
+      "think": "hold"
+    },
+    "order": {
+      "hold": "hold",
+      "morph": "transition",
+      "hold2": "hold"
+    },
+    "undo": {
+      "hold": "hold",
+      "toA": "transition",
+      "hold2": "hold",
+      "undo": "transition",
+      "hold3": "hold"
+    },
+    "no-undo": {
+      "hold": "hold",
+      "morph": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold2": "hold"
+    }
+  },
+  "determinant-area-scaling": {
+    "identity": {
+      "in": "transition",
+      "hold": "hold"
+    },
+    "basis": {
+      "focus": "emphasis",
+      "morph": "transition",
+      "hold": "hold"
+    },
+    "parallelogram": {
+      "ghost": "transition",
+      "hold": "hold"
+    },
+    "area": {
+      "focus": "emphasis",
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "expand": {
+      "focus": "emphasis",
+      "reset": "transition",
+      "x": "transition",
+      "hold": "hold",
+      "y": "transition",
+      "hold2": "hold"
+    },
+    "collapse": {
+      "focus": "emphasis",
+      "morph": "transition",
+      "hold": "hold"
+    },
+    "predict-negative": {
+      "focus": "emphasis",
+      "ask": "text",
+      "think": "hold"
+    },
+    "negative": {
+      "morph": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold"
+    },
+    "sign": {
+      "focus": "emphasis",
+      "hold": "hold"
+    },
+    "summary": {
+      "morph": "transition",
+      "hold": "hold"
+    }
+  },
+  "subspaces-rank": {
+    "two-panels": {
+      "hold": "hold",
+      "in": "transition",
+      "hold2": "hold"
+    },
+    "reach": {
+      "copy": "transition",
+      "hold": "hold",
+      "deform": "transition",
+      "hold2": "hold"
+    },
+    "colspace": {
+      "plane": "transition",
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "crush": {
+      "hold": "hold",
+      "travel": "transition",
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold2": "hold"
+    },
+    "nullspace": {
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "count": {
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "predict-rank-one": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "rank-one": {
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold",
+      "grow": "transition",
+      "hold2": "hold"
+    }
+  },
+  "rank-nullity": {
+    "budget": {
+      "count": "emphasis",
+      "hold": "hold"
+    },
+    "post": {
+      "p0": "transition",
+      "p1": "transition",
+      "p2": "transition",
+      "hold": "hold"
+    },
+    "balance": {
+      "frames": "transition",
+      "hold": "hold"
+    },
+    "predict-degrade": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "degrade": {
+      "hold": "hold",
+      "move": "transition",
+      "hold2": "hold"
+    },
+    "ceiling": {
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "forbidden": {
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold": "hold",
+      "hold2": "hold"
+    }
+  },
+  "change-of-basis": {
+    "one-arrow": {
+      "readoutReveal": "text",
+      "hold": "hold"
+    },
+    "swap-grid": {
+      "grid": "transition",
+      "hold": "hold"
+    },
+    "predict-readout": {
+      "basisEmphasis": "emphasis",
+      "ask": "text",
+      "think": "hold"
+    },
+    "new-readout": {
+      "walk1": "transition",
+      "walk2": "transition",
+      "readout": "text",
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "hidden-subscript": {
+      "hold": "hold",
+      "hold2": "hold"
+    },
+    "map-standard": {
+      "morph": "transition",
+      "hold": "hold"
+    },
+    "map-eigenbasis": {
+      "reset": "transition",
+      "hold": "hold",
+      "replay": "transition",
+      "hold2": "hold",
+      "hold3": "hold"
+    }
+  },
+  "eigenvectors-derivation": {
+    "recap": {
+      "in": "transition",
+      "hold": "hold"
+    },
+    "shift": {
+      "intro": "transition",
+      "grow": "transition",
+      "flashUp": "emphasis",
+      "flashDown": "emphasis",
+      "sub": "transition",
+      "walk": "transition",
+      "factor": "transition",
+      "originDown": "emphasis",
+      "hold": "hold"
+    },
+    "predict-collapse": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "charpoly": {
+      "clear": "transition",
+      "morph": "transition",
+      "off": "transition",
+      "back": "transition",
+      "hold": "hold"
+    },
+    "solveLambda": {
+      "morph": "transition",
+      "hold": "hold"
+    },
+    "solveV": {
+      "first": "transition",
+      "hold": "hold",
+      "second": "transition",
+      "hold2": "hold"
+    },
+    "interpret": {
+      "emphasisUp": "emphasis",
+      "emphasisDown": "emphasis",
+      "hold": "hold"
+    }
+  },
+  "karatsuba-cross-terms": {
+    "setup": {
+      "hold": "hold"
+    },
+    "foil": {
+      "in": "transition",
+      "hold": "hold"
+    },
+    "weights": {
+      "leadIn": "hold",
+      "labelWrite": "text",
+      "hold": "hold"
+    },
+    "share": {
+      "caption": "text",
+      "focus": "emphasis",
+      "up": "emphasis",
+      "down": "emphasis",
+      "merge": "transition",
+      "combine": "transition",
+      "hold": "hold"
+    },
+    "aux-rect": {
+      "in": "transition",
+      "hold": "hold"
+    },
+    "subtract": {
+      "ask": "text",
+      "think": "hold",
+      "peel": "transition",
+      "reveal": "text",
+      "hold": "hold"
+    },
+    "reassemble": {
+      "caption": "text",
+      "hold": "hold"
+    },
+    "carry-vs-width": {
+      "clear": "transition",
+      "show": "transition",
+      "hold": "hold",
+      "chip0": "transition",
+      "travel0": "transition",
+      "caption0": "text",
+      "hold0": "hold",
+      "chip1": "transition",
+      "travel1": "transition",
+      "caption1": "text",
+      "hold1": "hold",
+      "retire": "transition",
+      "caption2": "text",
+      "hold2": "hold"
+    },
+    "branch": {
+      "in": "transition",
+      "leaves": "transition",
+      "hold": "hold"
+    },
+    "exponent": {
+      "caption": "text",
+      "leafPulse": "emphasis",
+      "countUp": "emphasis",
+      "hold": "hold"
+    }
+  },
+  "bst-lift-from-array": {
+    "establish": {
+      "hold": "hold"
+    },
+    "probe-first": {
+      "ring": "emphasis",
+      "dim": "emphasis",
+      "hold": "hold"
+    },
+    "probe-rest": {
+      "ring1": "emphasis",
+      "gap1": "hold",
+      "ring2": "emphasis",
+      "gap2": "hold",
+      "hold": "hold"
+    },
+    "second-search": {
+      "reset": "transition",
+      "hold": "hold",
+      "ring": "emphasis",
+      "hold2": "hold"
+    },
+    "lift": {
+      "clear": "transition",
+      "lift": "transition",
+      "edges": "transition",
+      "hold": "hold"
+    },
+    "read-the-rule": {
+      "ruleReveal": "text",
+      "hold": "hold"
+    },
+    "interval-stays": {
+      "swap": "transition",
+      "label": "text",
+      "hold": "hold"
+    },
+    "cost-is-depth": {
+      "clear": "transition",
+      "walk": "transition",
+      "label": "text",
+      "hold": "hold"
+    },
+    "degenerate": {
+      "clear": "transition",
+      "insert": "transition",
+      "hold": "hold"
+    },
+    "predict-gap": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "the-gap": {
+      "costReveal": "text",
+      "hold": "hold"
+    }
+  },
+  "transform-spike": {
+    "identity": {
+      "hold": "hold"
+    },
+    "transform": {
+      "morph": "transition"
+    },
+    "result": {
+      "hold": "hold"
+    }
+  },
+  "columns-rule-graphic": {
+    "vertex": {
+      "establish": "transition",
+      "vertexIn": "transition",
+      "guidesIn": "transition",
+      "recipeIn": "text",
+      "hold": "hold"
+    },
+    "decompose": {
+      "focus": "emphasis",
+      "firstLeg": "transition",
+      "secondLegIn": "transition",
+      "secondLeg": "transition",
+      "landUp": "emphasis",
+      "landDown": "emphasis",
+      "hold": "hold"
+    },
+    "predict": {
+      "basisIn": "emphasis",
+      "think": "hold"
+    },
+    "image": {
+      "contextIn": "transition",
+      "transform": "transition",
+      "landUp": "emphasis",
+      "landDown": "emphasis",
+      "hold": "hold"
+    },
+    "all-vertices": {
+      "focus": "emphasis",
+      "walksIn": "transition",
+      "settle": "hold",
+      "hold": "hold"
+    }
+  },
+  "matrix-transformations": {
+    "identity": {
+      "establish": "transition",
+      "ghostsIn": "transition",
+      "hold": "hold"
+    },
+    "col1": {
+      "focus": "emphasis",
+      "columnUp": "emphasis",
+      "columnMove": "transition",
+      "readoutIn": "text",
+      "columnDown": "emphasis",
+      "hold": "hold"
+    },
+    "col2": {
+      "focus": "emphasis",
+      "columnUp": "emphasis",
+      "columnMove": "transition",
+      "readoutIn": "text",
+      "columnDown": "emphasis",
+      "hold": "hold"
+    },
+    "sample": {
+      "focus": "emphasis",
+      "draw": "transition",
+      "componentsIn": "transition",
+      "hold": "hold"
+    },
+    "predict-sample": {
+      "evidenceIn": "emphasis",
+      "think": "hold"
+    },
+    "transform-sample": {
+      "readoutsOut": "transition",
+      "ghostIn": "transition",
+      "carry": "transition",
+      "landUp": "emphasis",
+      "landDown": "emphasis",
+      "hold": "hold"
+    },
+    "grid": {
+      "gridIn": "transition",
+      "ghostLineIn": "transition",
+      "imageIn": "transition",
+      "trace": "transition",
+      "hold": "hold"
+    },
+    "compare": {
+      "ghostsIn": "transition",
+      "hold": "hold"
+    },
+    "presets": {
+      "retire": "transition",
+      "tour": "transition"
+    },
+    "summary": {
+      "restore": "transition",
+      "hold": "hold"
+    }
+  },
+  "eigenvectors-invariant-directions": {
+    "fan": {
+      "hold": "hold"
+    },
+    "apply": {
+      "ghostsIn": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "highlight": {
+      "focus": "emphasis",
+      "linesIn": "transition",
+      "arm": "transition",
+      "reveal": "transition",
+      "hold": "hold"
+    },
+    "equation": {
+      "leadIn": "hold",
+      "name": "text",
+      "hold": "hold"
+    },
+    "stretch": {
+      "clear": "transition",
+      "linesOut": "transition",
+      "linesIn": "transition",
+      "arm": "transition",
+      "reveal": "transition",
+      "hold": "hold"
+    },
+    "predict-reverse": {
+      "clear": "transition",
+      "arm": "transition",
+      "think": "hold"
+    },
+    "reverse": {
+      "reveal": "transition",
+      "hold": "hold"
+    },
+    "collapse": {
+      "clear": "transition",
+      "linesIn": "transition",
+      "arm": "transition",
+      "reveal": "transition",
+      "hold": "hold"
+    },
+    "scalar": {
+      "clear": "transition",
+      "establish": "transition",
+      "deform": "transition",
+      "linesIn": "transition",
+      "hold": "hold"
+    },
+    "defective": {
+      "linesOut": "transition",
+      "reset": "transition",
+      "deform": "transition",
+      "linesIn": "transition",
+      "focus": "emphasis",
+      "hold": "hold"
+    },
+    "rotation": {
+      "clear": "transition",
+      "reset": "transition",
+      "deform": "transition",
+      "hold": "hold"
+    },
+    "summary": {
+      "reset": "transition",
+      "deform": "transition",
+      "focus": "emphasis",
+      "hold": "hold"
+    }
+  },
+  "red-black-encoding": {
+    "establish": {
+      "hold": "hold"
+    },
+    "encode-2node": {
+      "ringIn": "transition",
+      "hold": "hold"
+    },
+    "encode-3node": {
+      "reposition": "transition",
+      "childIn": "transition",
+      "colourIn": "transition",
+      "hold": "hold"
+    },
+    "encode-4node": {
+      "reposition": "transition",
+      "childIn": "transition",
+      "colourIn": "transition",
+      "hold": "hold"
+    },
+    "read-off-r2": {
+      "hold": "hold"
+    },
+    "read-off-r3": {
+      "labelIn": "text",
+      "hold": "hold"
+    },
+    "overflow": {
+      "arrival": "transition",
+      "settle": "hold",
+      "think": "hold"
+    },
+    "split-is-recolour": {
+      "split": "transition",
+      "settle": "hold",
+      "insert": "transition",
+      "relationIn": "transition",
+      "hold": "hold"
+    },
+    "invariant-held": {
+      "labelIn": "text",
+      "hold": "hold"
+    },
+    "violation-moves-up": {
+      "markerIn": "transition",
+      "hold": "hold"
+    },
+    "root-split": {
+      "recolour": "transition",
+      "hold": "hold"
+    }
+  }
+}

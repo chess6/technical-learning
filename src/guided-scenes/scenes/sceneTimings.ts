@@ -1278,6 +1278,56 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     mystery: { deform: 1.2, gridUp: 0.4, emphUp: 0.5, emphDown: 0.5, hold: 2.1 },
   },
 
+  "columns-rule-graphic": {
+    vertex: { establish: 0.5, vertexIn: 0.4, guidesIn: 0.5, recipeIn: 0.4, hold: 3.6 },
+    decompose: { focus: 0.5, firstLeg: 1.4, secondLegIn: 0.3, secondLeg: 1.4, landUp: 0.3, landDown: 0.3, hold: 2.7 },
+    predict: { basisIn: 0.5, think: 4.9 },
+    image: { contextIn: 0.5, transform: 3.4, landUp: 0.35, landDown: 0.35, hold: 2.8 },
+    "all-vertices": { focus: 0.5, walksIn: 0.6, settle: 0.4, hold: 4.4 },
+  },
+
+  "matrix-transformations": {
+    identity: { establish: 0.8, ghostsIn: 0.5, hold: 2.1 },
+    col1: { focus: 0.4, columnUp: 0.35, columnMove: 1.3, readoutIn: 0.35, columnDown: 0.3, hold: 1.7 },
+    col2: { focus: 0.4, columnUp: 0.35, columnMove: 1.3, readoutIn: 0.35, columnDown: 0.3, hold: 1.7 },
+    sample: { focus: 0.4, draw: 1.0, componentsIn: 0.4, hold: 2.6 },
+    "predict-sample": { evidenceIn: 0.5, think: 4.9 },
+    "transform-sample": { readoutsOut: 0.3, ghostIn: 0.4, carry: 2.6, landUp: 0.35, landDown: 0.35, hold: 2.4 },
+    grid: { gridIn: 0.8, ghostLineIn: 0.4, imageIn: 0.2, trace: 1.1, hold: 2.9 },
+    compare: { ghostsIn: 0.6, hold: 2.3 },
+    presets: { retire: 0.3, tour: 12.6 },
+    summary: { restore: 1.2, hold: 2.2 },
+  },
+
+  "eigenvectors-invariant-directions": {
+    fan: { hold: 3.4 },
+    apply: { ghostsIn: 0.4, deform: 2.6, hold: 2.4 },
+    highlight: { focus: 0.4, linesIn: 0.45, arm: 0.4, reveal: 1.0, hold: 2.65 },
+    equation: { leadIn: 1.4, name: 0.1, hold: 2.4 },
+    stretch: { clear: 0.4, linesOut: 0.27, linesIn: 0.45, arm: 0.4, reveal: 1.5, hold: 1.88 },
+    "predict-reverse": { clear: 0.35, arm: 0.4, think: 4.65 },
+    reverse: { reveal: 1.8, hold: 2.6 },
+    collapse: { clear: 0.3, linesIn: 0.45, arm: 0.4, reveal: 1.7, hold: 1.55 },
+    scalar: { clear: 0.3, establish: 0.5, deform: 1.9, linesIn: 0.45, hold: 2.25 },
+    defective: { linesOut: 0.35, reset: 0.9, deform: 1.9, linesIn: 0.45, focus: 0.4, hold: 1.4 },
+    rotation: { clear: 0.4, reset: 0.9, deform: 2.1, hold: 2 },
+    summary: { reset: 0.8, deform: 1.6, focus: 0.45, hold: 1.55 },
+  },
+
+  "red-black-encoding": {
+    establish: { hold: 3.9 },
+    "encode-2node": { ringIn: 0.5, hold: 3.9 },
+    "encode-3node": { reposition: 0.6, childIn: 0.5, colourIn: 0.5, hold: 3.8 },
+    "encode-4node": { reposition: 0.5, childIn: 0.5, colourIn: 0.5, hold: 3.4 },
+    "read-off-r2": { hold: 4.9 },
+    "read-off-r3": { labelIn: 0.5, hold: 4.4 },
+    overflow: { arrival: 0.6, settle: 1.3, think: 3.0 },
+    "split-is-recolour": { split: 0.9, settle: 0.6, insert: 0.7, relationIn: 0.4, hold: 3.8 },
+    "invariant-held": { labelIn: 0.5, hold: 4.4 },
+    "violation-moves-up": { markerIn: 0.5, hold: 4.4 },
+    "root-split": { recolour: 0.6, hold: 4.8 },
+  },
+
   "vectors-linear-combinations": {
     plane: { settle: 0.6, hold: 1.5 },
     "vector-v": { grow: 1.4, hold: 1.3 },
@@ -1300,12 +1350,12 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     },
     basis: { restore: 1.2, focus: 0.35, hold: 2.2 },
     "read-standard": { pIn: 1.2, hold: 1.2, swap: 0.9, hold2: 1.6 },
-    "predict-coordinates": { pause: 0.6, ask: 0.4, think: 4.2 },
+    "predict-coordinates": { basisEmphasis: 0.6, ask: 0.4, think: 4.2 },
     coordinates: { walk1: 0.9, walk2: 0.9, reveal: 0.4, hold: 1.4 },
   },
 
   "linear-systems": {
-    equations: { pause: 0.5, hold: 3.2 },
+    equations: { textReveal: 0.5, hold: 3.2 },
     row: { lines: 0.6, hold: 1.0, dotIn: 0.4, pulseUp: 0.3, pulseDown: 0.3, hold2: 3.0 },
     regroup: { fade: 0.6, show: 0.35, tag: 0.2, hold: 3.3 },
     "predict-column": { ask: 0.4, think: 4.4 },
@@ -1366,7 +1416,7 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     generate: { arrow: 0.8, dot: 0.5, up: 0.3, down: 0.3, hold: 2.5 },
     "null-line": { draw: 0.8, up: 0.35, down: 0.35, hold: 2.5 },
     translate: { offset: 0.7, line: 0.8, up: 0.35, down: 0.35, hold: 2.8 },
-    "case-empty": { pause: 0.3, pause2: 0.3, hold: 3.0 },
+    "case-empty": { emphasisUp: 0.3, emphasisDown: 0.3, hold: 3.0 },
     "case-point": { up: 0.25, down: 0.25, hold: 3.0 },
     "case-line": { up: 0.25, down: 0.25, hold: 3.5 },
   },
@@ -1425,9 +1475,9 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   },
 
   "change-of-basis": {
-    "one-arrow": { pause: 0.6, hold: 1.6 },
+    "one-arrow": { readoutReveal: 0.6, hold: 1.6 },
     "swap-grid": { grid: 1.0, hold: 1.4 },
-    "predict-readout": { pause: 0.6, ask: 0.4, think: 4.2 },
+    "predict-readout": { basisEmphasis: 0.6, ask: 0.4, think: 4.2 },
     "new-readout": { walk1: 0.9, walk2: 0.9, readout: 0.4, hold: 1.6, hold2: 1.6 },
     "hidden-subscript": { hold: 2.0, hold2: 1.6 },
     "map-standard": { morph: 2.2, hold: 1.4 },
@@ -1451,13 +1501,13 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     charpoly: { clear: 0.5, morph: 1.6, off: 0.8, back: 1.0, hold: 1.4 },
     solveLambda: { morph: 1.2, hold: 3.0 },
     solveV: { first: 0.7, hold: 1.4, second: 0.7, hold2: 3.0 },
-    interpret: { pause: 0.5, pause2: 0.5, hold: 3.2 },
+    interpret: { emphasisUp: 0.5, emphasisDown: 0.5, hold: 3.2 },
   },
 
   "karatsuba-cross-terms": {
     setup: { hold: 3.7 },
     foil: { in: 0.6, hold: 4.1 },
-    weights: { pause: 0.4, pause2: 0.4, hold: 4.4 },
+    weights: { leadIn: 0.4, labelWrite: 0.4, hold: 4.4 },
     share: {
       caption: 0.4,
       focus: 0.5,
@@ -1496,12 +1546,12 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     "probe-rest": { ring1: 0.3, gap1: 0.5, ring2: 0.3, gap2: 0.5, hold: 3.0 },
     "second-search": { reset: 0.5, hold: 0.6, ring: 0.35, hold2: 3.0 },
     lift: { clear: 0.3, lift: 1.4, edges: 0.6, hold: 3.0 },
-    "read-the-rule": { pause: 0.5, hold: 4.0 },
+    "read-the-rule": { ruleReveal: 0.5, hold: 4.0 },
     "interval-stays": { swap: 0.4, label: 0.5, hold: 3.6 },
     "cost-is-depth": { clear: 0.3, walk: 1.95, label: 0.4, hold: 2.0 },
     degenerate: { clear: 0.4, insert: 4.4, hold: 3.0 },
     "predict-gap": { ask: 0.4, think: 4.4 },
-    "the-gap": { pause: 0.5, hold: 4.4 },
+    "the-gap": { costReveal: 0.5, hold: 4.4 },
   },
 
   "transform-spike": {
@@ -1524,12 +1574,7 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
  * here nor in {@link SCENE_BEATS} fails `sceneTimings.test.ts`, so a NEW scene
  * cannot quietly skip the budget gate.
  */
-export const SCENES_WITHOUT_DECLARED_BEATS: readonly string[] = [
-  "columns-rule-graphic",
-  "matrix-transformations",
-  "eigenvectors-invariant-directions",
-  "red-black-encoding",
-];
+export const SCENES_WITHOUT_DECLARED_BEATS: readonly string[] = [];
 
 /** Total animated time a segment body consumes (sum of its beat budgets). */
 export function sumBeats(beats: SegmentBeats | undefined): number {

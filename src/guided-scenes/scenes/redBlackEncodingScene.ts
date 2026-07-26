@@ -7,7 +7,7 @@ import {
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { RBT_FOUR_NODE } from "../../lessons/exampleData";
-import { RED_BLACK_SEGMENTS } from "./sceneTimings";
+import { RED_BLACK_SEGMENTS, requireBeats } from "./sceneTimings";
 import { ROLE, makeOverlayLabel, runSegment } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_TOP_Y } from "./safeFrame";
 
@@ -45,6 +45,7 @@ const RIGHT_X = 250;
 const CLUSTER_Y = 10;
 const NODE_R = 30;
 const CELL_W = 62;
+const SCENE_ID = "red-black-encoding";
 
 /** Slot for the i-th key inside the left panel's 2–3–4 box. */
 const cellX = (index: number, count: number): number =>
@@ -133,10 +134,6 @@ function makeSmallLabel(text: string, pos: Vector2, color: string): Txt {
 
 export const redBlackEncodingScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
-
-  const seconds = Object.fromEntries(
-    RED_BLACK_SEGMENTS.map((segment) => [segment.id, segment.duration]),
-  ) as Record<string, number>;
 
   const caption = makeOverlayLabel("", ROLE.textMuted, 25);
   caption.position(new Vector2(0, LABEL_BOTTOM_Y));
@@ -265,16 +262,20 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   panelLeft.opacity(1);
   panelRight.opacity(1);
 
+  const beats = (segmentId: string) => requireBeats(SCENE_ID, segmentId);
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *establish() {
-      yield* waitFor(seconds.establish!);
+      const b = beats("establish");
+      yield* waitFor(b.hold!);
     },
 
     *["encode-2node"]() {
       title.text("A 2-node is a lone black node");
       caption.text("One key, one black node. Nothing else to record.");
-      yield* show(clusterRing, true, 0.5);
-      yield* waitFor(seconds["encode-2node"]! - 0.5);
+      const b = beats("encode-2node");
+      yield* show(clusterRing, true, b.ringIn!);
+      yield* waitFor(b.hold!);
     },
 
     *["encode-3node"]() {
@@ -282,25 +283,27 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       caption.text(
         "Two keys is a 3-node. The extra key does not get its own level — it hangs off the black one, in red.",
       );
+      const b = beats("encode-3node");
       yield* all(
-        cells[1]!.position(new Vector2(cellX(1, 2), CLUSTER_Y), 0.6, easeInOutCubic),
-        cells[0]!.position(new Vector2(cellX(0, 2), CLUSTER_Y), 0.01),
+        cells[1]!.position(new Vector2(cellX(1, 2), CLUSTER_Y), b.reposition!, easeInOutCubic),
+        cells[0]!.position(new Vector2(cellX(0, 2), CLUSTER_Y), b.reposition!),
       );
-      yield* all(show(cells[0]!, true, 0.5), show(edgeLeft, true, 0.5));
-      yield* show(redLeft, true, 0.5);
-      yield* waitFor(seconds["encode-3node"]! - 1.6);
+      yield* all(show(cells[0]!, true, b.childIn!), show(edgeLeft, true, b.childIn!));
+      yield* show(redLeft, true, b.colourIn!);
+      yield* waitFor(b.hold!);
     },
 
     *["encode-4node"]() {
       title.text("Three keys, two reds");
       caption.text("A 4-node: the black representative and both of its extra keys.");
+      const b = beats("encode-4node");
       yield* all(
-        cells[0]!.position(new Vector2(cellX(0, 3), CLUSTER_Y), 0.5, easeInOutCubic),
-        cells[1]!.position(new Vector2(cellX(1, 3), CLUSTER_Y), 0.5, easeInOutCubic),
+        cells[0]!.position(new Vector2(cellX(0, 3), CLUSTER_Y), b.reposition!, easeInOutCubic),
+        cells[1]!.position(new Vector2(cellX(1, 3), CLUSTER_Y), b.reposition!, easeInOutCubic),
       );
-      yield* all(show(cells[2]!, true, 0.5), show(edgeRight, true, 0.5));
-      yield* show(redRight, true, 0.5);
-      yield* waitFor(seconds["encode-4node"]! - 1.5);
+      yield* all(show(cells[2]!, true, b.childIn!), show(edgeRight, true, b.childIn!));
+      yield* show(redRight, true, b.colourIn!);
+      yield* waitFor(b.hold!);
     },
 
     *["read-off-r2"]() {
@@ -308,7 +311,8 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       caption.text(
         "Every extra key hangs off a BLACK representative. A red under a red would be the same node, drawn wrong.",
       );
-      yield* waitFor(seconds["read-off-r2"]!);
+      const b = beats("read-off-r2");
+      yield* waitFor(b.hold!);
     },
 
     *["read-off-r3"]() {
@@ -316,20 +320,23 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       caption.text(
         "Reds add keys within a level; only blacks start a new one. So equal black heights means all 2–3–4 leaves are level.",
       );
-      yield* show(bhLabel, true, 0.5);
-      yield* waitFor(seconds["read-off-r3"]! - 0.5);
+      const b = beats("read-off-r3");
+      yield* show(bhLabel, true, b.labelIn!);
+      yield* waitFor(b.hold!);
     },
 
     *overflow() {
       title.text(`A fourth key — ${ARRIVING} — and no room`);
       caption.text("The node is full. In a 2–3–4 tree, a full node splits.");
-      yield* all(show(bhLabel, false, 0.3), show(arrivingCell, true, 0.6));
-      yield* waitFor(1.4);
+      const b = beats("overflow");
+      yield* all(show(bhLabel, false, b.arrival!), show(arrivingCell, true, b.arrival!));
+      yield* waitFor(b.settle!);
       // Prediction before the reveal: name what must stay fixed before seeing
-      // the repair. runSegment pads the rest of the segment as think time.
+      // the repair. The explicit think beat holds the completed question still.
       caption.text(
         `Predict: which key is promoted — and does the right panel MOVE, or RECOLOUR?`,
       );
+      yield* waitFor(b.think!);
     },
 
     *["split-is-recolour"]() {
@@ -340,15 +347,16 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       // Left: the box breaks in two with the middle key lifted out, while the
       // right panel enacts the SAME event as colour alone — one motion, two
       // views, and every node object keeps its identity.
+      const b = beats("split-is-recolour");
       yield* all(
-        cells[1]!.position(new Vector2(LEFT_X, CLUSTER_Y - 96), 0.9, easeInOutCubic),
-        cells[0]!.position(new Vector2(LEFT_X - 70, CLUSTER_Y + 52), 0.9, easeInOutCubic),
-        cells[2]!.position(new Vector2(LEFT_X + 70, CLUSTER_Y + 52), 0.9, easeInOutCubic),
-        paintTween(rep, true, 0.9),
-        paintTween(redLeft, false, 0.9),
-        paintTween(redRight, false, 0.9),
+        cells[1]!.position(new Vector2(LEFT_X, CLUSTER_Y - 96), b.split!, easeInOutCubic),
+        cells[0]!.position(new Vector2(LEFT_X - 70, CLUSTER_Y + 52), b.split!, easeInOutCubic),
+        cells[2]!.position(new Vector2(LEFT_X + 70, CLUSTER_Y + 52), b.split!, easeInOutCubic),
+        paintTween(rep, true, b.split!),
+        paintTween(redLeft, false, b.split!),
+        paintTween(redRight, false, b.split!),
       );
-      yield* waitFor(0.6);
+      yield* waitFor(b.settle!);
       // Close the loop: the arriving key finally fits — it slides into the
       // right-hand 2-node (left panel) and hangs off it in red (right panel).
       caption.text(
@@ -357,16 +365,17 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       yield* all(
         arrivingCell.position(
           new Vector2(LEFT_X + 70 - (CELL_W - 6) / 2 - 3, CLUSTER_Y + 52),
-          0.7,
+          b.insert!,
           easeInOutCubic,
         ),
         cells[2]!.position(
           new Vector2(LEFT_X + 70 + (CELL_W - 6) / 2 + 3, CLUSTER_Y + 52),
-          0.7,
+          b.insert!,
           easeInOutCubic,
         ),
       );
-      yield* all(show(edge35, true, 0.4), show(red35, true, 0.4));
+      yield* all(show(edge35, true, b.relationIn!), show(red35, true, b.relationIn!));
+      yield* waitFor(b.hold!);
     },
 
     *["invariant-held"]() {
@@ -375,7 +384,9 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
         "Count blacks downward: one on every path, exactly as before. The split changed colours, not counts.",
       );
       bhLabel.text("black height still 1 — the flip changed colours, not counts");
-      yield* show(bhLabel, true, 0.5);
+      const b = beats("invariant-held");
+      yield* show(bhLabel, true, b.labelIn!);
+      yield* waitFor(b.hold!);
     },
 
     *["violation-moves-up"]() {
@@ -383,8 +394,9 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
       caption.text(
         "The representative is red now — an extra key in its parent's node. If that parent is red too, the same repair runs one level higher.",
       );
-      yield* show(marker, true, 0.5);
-      yield* waitFor(seconds["violation-moves-up"]! - 0.5);
+      const b = beats("violation-moves-up");
+      yield* show(marker, true, b.markerIn!);
+      yield* waitFor(b.hold!);
     },
 
     *["root-split"]() {
@@ -393,8 +405,9 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
         "At the root there is nowhere to promote to: the root is simply forced black again, and every path gains one black node at once.",
       );
       bhLabel.text("black height 2 — on every path, at the same moment");
-      yield* all(paintTween(rep, false, 0.6), show(marker, false, 0.4));
-      yield* waitFor(seconds["root-split"]! - 0.6);
+      const b = beats("root-split");
+      yield* all(paintTween(rep, false, b.recolour!), show(marker, false, b.recolour!));
+      yield* waitFor(b.hold!);
     },
   };
 

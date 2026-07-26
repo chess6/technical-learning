@@ -26,6 +26,10 @@ import {
   toSteps,
 } from "../sceneTimings";
 import { SCENE_META, getSceneMeta } from "../sceneMeta";
+import {
+  SCENE_BEAT_INTENTS,
+  validateBeatIntentRegistry,
+} from "../beatIntents";
 
 /**
  * Timing, chapter, and prediction metadata — all pure data, so all checkable.
@@ -84,6 +88,26 @@ describe("scene timings (pure data)", () => {
         expect(declared && exempt, `${sceneId} is both declared and exempt`).toBe(
           false,
         );
+      }
+    });
+
+    it("classifies every timed beat explicitly and reserves holds for actual holds", () => {
+      expect(validateBeatIntentRegistry(SCENE_BEATS)).toEqual([]);
+      for (const [sceneId, segments] of Object.entries(SCENE_BEAT_INTENTS)) {
+        for (const [segmentId, intents] of Object.entries(segments)) {
+          for (const [beatId, spec] of Object.entries(intents)) {
+            expect(
+              beatId,
+              sceneId + "." + segmentId + ": pause is not an intent",
+            ).not.toMatch(/^pause\d*/i);
+            const intent = typeof spec === "string" ? spec : spec.intent;
+            if (beatId === "hold" || /^hold\d+/i.test(beatId)) {
+              expect(intent, sceneId + "." + segmentId + "." + beatId).toBe(
+                "hold",
+              );
+            }
+          }
+        }
       }
     });
 

@@ -13,7 +13,7 @@ import {
   matrixVectorMultiply,
   type Matrix2x2,
 } from "../../math";
-import { MATRIX_TRANSFORMATION_SEGMENTS } from "./sceneTimings";
+import { MATRIX_TRANSFORMATION_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   SCALE,
@@ -59,6 +59,7 @@ const SAMPLE = (MATRIX_LESSON_EXAMPLE.inputVector ?? [1.5, 0.5]) as [
 const px = (v: readonly [number, number]): Vector2 =>
   new Vector2(v[0] * SCALE, -v[1] * SCALE);
 const fmt = (n: number) => formatSceneNumber(n);
+const SCENE_ID = "matrix-transformations";
 
 export const matrixTransformationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
@@ -211,28 +212,29 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
   e1Ghost.opacity(0.35);
   e2Ghost.opacity(0.35);
 
-  const seconds = Object.fromEntries(
-    MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s.duration]),
-  ) as Record<string, number>;
-
   function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
     yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
   }
 
+  const beats = (segmentId: string) => requireBeats(SCENE_ID, segmentId);
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *identity() {
+      const b = beats("identity");
       setCaption("Identity: e₁ = (1,0), e₂ = (0,1)");
       yield* all(
-        matrixLabel.opacity(1, 0.4),
-        caption.opacity(1, 0.4),
-        e1.end(1, 0.8),
-        e2.end(1, 0.8),
-        e1Label.opacity(1, 0.4),
-        e2Label.opacity(1, 0.4),
+        matrixLabel.opacity(1, b.establish!),
+        caption.opacity(1, b.establish!),
+        e1.end(1, b.establish!),
+        e2.end(1, b.establish!),
+        e1Label.opacity(1, b.establish!),
+        e2Label.opacity(1, b.establish!),
       );
-      yield* all(e1Ghost.opacity(0.5, 0.5), e2Ghost.opacity(0.5, 0.5));
+      yield* all(e1Ghost.opacity(0.5, b.ghostsIn!), e2Ghost.opacity(0.5, b.ghostsIn!));
+      yield* waitFor(b.hold!);
     },
     *col1() {
+      const b = beats("col1");
       // Column → tip coordinates → Ae₁: identity preserved across the beat.
       setCaption("First column of A is exactly Ae₁ — and the grid shears with it");
       // The grid is VISIBLE (dim) while the column moves, so the deformation is
@@ -246,18 +248,20 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         { node: e2Label, opacity: 0.3 },
         { node: sample, opacity: 0.2 },
         { node: tGrid, opacity: 0.32 },
-      ]);
-      yield* e1.lineWidth(9, 0.35);
+      ], b.focus!);
+      yield* e1.lineWidth(9, b.columnUp!);
       yield* all(
-        ma(A[0][0], 1.3, easeInOutCubic),
-        mc(A[1][0], 1.3, easeInOutCubic),
+        ma(A[0][0], b.columnMove!, easeInOutCubic),
+        mc(A[1][0], b.columnMove!, easeInOutCubic),
       );
       e1Coords.text(`(${fmt(A[0][0])}, ${fmt(A[1][0])})`);
       e1Label.text("Ae₁");
-      yield* e1Coords.opacity(1, 0.35);
-      yield* e1.lineWidth(6, 0.3);
+      yield* e1Coords.opacity(1, b.readoutIn!);
+      yield* e1.lineWidth(6, b.columnDown!);
+      yield* waitFor(b.hold!);
     },
     *col2() {
+      const b = beats("col2");
       setCaption("Second column of A is exactly Ae₂");
       yield* focusOpacities([
         { node: e2, opacity: 1 },
@@ -266,18 +270,20 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         { node: e1Label, opacity: 0.35 },
         { node: e1Coords, opacity: 0.45 },
         { node: sample, opacity: 0.2 },
-      ]);
-      yield* e2.lineWidth(9, 0.35);
+      ], b.focus!);
+      yield* e2.lineWidth(9, b.columnUp!);
       yield* all(
-        mb(A[0][1], 1.3, easeInOutCubic),
-        md(A[1][1], 1.3, easeInOutCubic),
+        mb(A[0][1], b.columnMove!, easeInOutCubic),
+        md(A[1][1], b.columnMove!, easeInOutCubic),
       );
       e2Coords.text(`(${fmt(A[0][1])}, ${fmt(A[1][1])})`);
       e2Label.text("Ae₂");
-      yield* e2Coords.opacity(1, 0.35);
-      yield* e2.lineWidth(6, 0.3);
+      yield* e2Coords.opacity(1, b.readoutIn!);
+      yield* e2.lineWidth(6, b.columnDown!);
+      yield* waitFor(b.hold!);
     },
     *sample() {
+      const b = beats("sample");
       // sampleT is still 0, so this draws x where it actually is — BEFORE the
       // transformation reaches it. Its components are shown on the original
       // (ghost) basis, which is what the coefficients are read against.
@@ -294,11 +300,13 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         { node: e2Label, opacity: 0.5 },
         { node: e1Coords, opacity: 0 },
         { node: e2Coords, opacity: 0 },
-      ]);
-      yield* sample.end(1, 1.0, easeInOutCubic);
-      yield* all(comp1.opacity(0.85, 0.4), comp2.opacity(0.85, 0.4));
+      ], b.focus!);
+      yield* sample.end(1, b.draw!, easeInOutCubic);
+      yield* all(comp1.opacity(0.85, b.componentsIn!), comp2.opacity(0.85, b.componentsIn!));
+      yield* waitFor(b.hold!);
     },
     *["predict-sample"]() {
+      const b = beats("predict-sample");
       // A prediction is only real if the learner already holds every piece.
       // Both columns were derived two beats ago, so bring their tip readouts
       // back: (2, 0) and (1, 1) are exactly the data the answer is built from.
@@ -306,64 +314,71 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         `Both columns are known, and ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])} do not change. Where does x land?`,
       );
       yield* all(
-        e1.opacity(1, 0.5),
-        e2.opacity(1, 0.5),
-        e1Label.opacity(1, 0.5),
-        e2Label.opacity(1, 0.5),
-        e1Coords.opacity(0.9, 0.5),
-        e2Coords.opacity(0.9, 0.5),
+        e1.opacity(1, b.evidenceIn!),
+        e2.opacity(1, b.evidenceIn!),
+        e1Label.opacity(1, b.evidenceIn!),
+        e2Label.opacity(1, b.evidenceIn!),
+        e1Coords.opacity(0.9, b.evidenceIn!),
+        e2Coords.opacity(0.9, b.evidenceIn!),
       );
-      // runSegment pads the remaining ~5s: that silence is the think time.
+      yield* waitFor(b.think!);
     },
     *["transform-sample"]() {
+      const b = beats("transform-sample");
       setCaption("Hold the coefficients fixed and let A move the basis under them");
       // Retire the column readouts again so the travel owns the space.
-      yield* all(e1Coords.opacity(0, 0.3), e2Coords.opacity(0, 0.3));
+      yield* all(e1Coords.opacity(0, b.readoutsOut!), e2Coords.opacity(0, b.readoutsOut!));
       // Leave the starting position on screen so the travel has a reference…
-      yield* sampleGhost.opacity(0.45, 0.4);
+      yield* sampleGhost.opacity(0.45, b.ghostIn!);
       // …then carry x to Ax. Every bound node moves off the same signal: the
       // arrow, both dashed components, and the tip they meet at. The tip is
       // Ax by construction, so the drawing cannot drift from the claim.
-      yield* sampleT(1, 2.6, easeInOutCubic);
+      yield* sampleT(1, b.carry!, easeInOutCubic);
       // Close the loop on the prediction with the actual landing point,
       // computed from the shared matrix helper rather than written by hand.
       const landed = matrixVectorMultiply(A, SAMPLE);
       setCaption(
         `Same ${fmt(SAMPLE[0])} and ${fmt(SAMPLE[1])}, now on Ae₁ and Ae₂: Ax = (${fmt(landed[0])}, ${fmt(landed[1])}).`,
       );
-      yield* sample.lineWidth(8, 0.35);
-      yield* sample.lineWidth(5, 0.35);
+      yield* sample.lineWidth(8, b.landUp!);
+      yield* sample.lineWidth(5, b.landDown!);
+      yield* waitFor(b.hold!);
     },
     *grid() {
+      const b = beats("grid");
       setCaption("The whole grid followed the same rule — a line is still a line");
       yield* all(
-        tGrid.opacity(0.9, 0.8),
-        comp1.opacity(0.25, 0.5),
-        comp2.opacity(0.25, 0.5),
+        tGrid.opacity(0.9, b.gridIn!),
+        comp1.opacity(0.25, b.gridIn!),
+        comp2.opacity(0.25, b.gridIn!),
       );
       // Trace one original gridline and its image: straightness and
       // parallelism are read off the picture instead of being claimed.
-      yield* probeGhost.opacity(0.6, 0.4);
-      yield* probeImage.opacity(1, 0.2);
-      yield* probeImage.end(1, 1.1, easeInOutCubic);
+      yield* probeGhost.opacity(0.6, b.ghostLineIn!);
+      yield* probeImage.opacity(1, b.imageIn!);
+      yield* probeImage.end(1, b.trace!, easeInOutCubic);
       setCaption("Tilted and stretched — but still straight, and still through the same grid");
+      yield* waitFor(b.hold!);
     },
     *compare() {
+      const b = beats("compare");
       setCaption("Faint = original axes · bright = transformed basis");
-      yield* all(e1Ghost.opacity(0.7, 0.6), e2Ghost.opacity(0.7, 0.6));
+      yield* all(e1Ghost.opacity(0.7, b.ghostsIn!), e2Ghost.opacity(0.7, b.ghostsIn!));
+      yield* waitFor(b.hold!);
     },
     *presets() {
+      const b = beats("presets");
       // Retire the derivation annotations; the tour is about the rule holding
       // for other matrices, not about this one's columns.
       yield* all(
-        e1Coords.opacity(0, 0.3),
-        e2Coords.opacity(0, 0.3),
-        comp1.opacity(0, 0.3),
-        comp2.opacity(0, 0.3),
-        sampleGhost.opacity(0, 0.3),
-        probeGhost.opacity(0, 0.3),
-        probeImage.opacity(0, 0.3),
-        sample.opacity(0.3, 0.3),
+        e1Coords.opacity(0, b.retire!),
+        e2Coords.opacity(0, b.retire!),
+        comp1.opacity(0, b.retire!),
+        comp2.opacity(0, b.retire!),
+        sampleGhost.opacity(0, b.retire!),
+        probeGhost.opacity(0, b.retire!),
+        probeImage.opacity(0, b.retire!),
+        sample.opacity(0.3, b.retire!),
       );
       // One preset dropped (a second rank-1 example after the projection added
       // no new idea) to buy time: each remaining step now gets ~3.1s, above the
@@ -374,7 +389,7 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
         ["Reflection — the plane flips across the x-axis", [[1, 0], [0, -1]]],
         ["Projection — the plane flattens onto a line", [[1, 0], [0, 0]]],
       ];
-      const per = (seconds.presets - 0.3) / tour.length;
+      const per = b.tour! / tour.length;
       for (const [name, target] of tour) {
         // Reset to the identity before each preset, as chapter0 does: morphing
         // one unrelated preset straight into another animates a transition that
@@ -386,10 +401,12 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
       }
     },
     *summary() {
+      const b = beats("summary");
       setCaption("Two columns set where e₁, e₂ land — linearity carries the rest");
-      yield* all(morphTo(A, 1.2), sample.opacity(1, 0.6));
+      yield* all(morphTo(A, b.restore!), sample.opacity(1, b.restore!));
       e1Label.text("Ae₁");
       e2Label.text("Ae₂");
+      yield* waitFor(b.hold!);
     },
   };
 

@@ -337,7 +337,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       const b = beats("equations");
       setTop("A x = b");
       setCaption("x + 3y = −1     and     2x − y = 5");
-      yield* all(top.opacity(1, b.pause!), caption.opacity(1, b.pause!));
+      yield* all(top.opacity(1, b.textReveal!), caption.opacity(1, b.textReveal!));
       yield* waitFor(b.hold!);
     },
     *row() {
