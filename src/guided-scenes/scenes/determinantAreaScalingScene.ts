@@ -60,7 +60,8 @@ const SCENE_ID = "determinant-area-scaling";
 const A = DETERMINANT_LESSON_EXAMPLE.matrix as Matrix2x2;
 const EXPAND = requireMatrixExample("uniform-scale").matrix as Matrix2x2;
 const SINGULAR = requireMatrixExample("singular-collapse").matrix as Matrix2x2;
-const NEGATIVE = requireMatrixExample("determinant-negative").matrix as Matrix2x2;
+const NEGATIVE = requireMatrixExample("determinant-negative")
+  .matrix as Matrix2x2;
 
 /** Intermediate for successive area demo: stretch e₁ only. det = 2. */
 const X_STRETCH: Matrix2x2 = [
@@ -79,13 +80,19 @@ const IDENTITY: Matrix2x2 = [
  */
 function assertSceneMathIsConsistent(): void {
   if (determinant2x2(A) <= 0) {
-    throw new Error("determinantAreaScalingScene: the main example is not orientation-preserving.");
+    throw new Error(
+      "determinantAreaScalingScene: the main example is not orientation-preserving.",
+    );
   }
   if (Math.abs(determinant2x2(SINGULAR)) > 1e-9) {
-    throw new Error("determinantAreaScalingScene: the collapse example is not singular.");
+    throw new Error(
+      "determinantAreaScalingScene: the collapse example is not singular.",
+    );
   }
   if (determinant2x2(NEGATIVE) >= 0) {
-    throw new Error("determinantAreaScalingScene: the negative example does not have det < 0.");
+    throw new Error(
+      "determinantAreaScalingScene: the negative example does not have det < 0.",
+    );
   }
 }
 
@@ -124,7 +131,9 @@ function orientationArcPoints(
   for (let i = 0; i <= steps; i += 1) {
     const angle = from + (sweep * i) / steps;
     // Screen y grows downward, so the math-space angle is negated.
-    points.push(new Vector2(Math.cos(angle) * radius, -Math.sin(angle) * radius));
+    points.push(
+      new Vector2(Math.cos(angle) * radius, -Math.sin(angle) * radius),
+    );
   }
   return points;
 }
@@ -155,6 +164,7 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   view.add(ghostSquare);
 
   const square = new Line({
+    key: "semantic:determinant:region",
     stroke: ROLE.original,
     lineWidth: 3,
     closed: true,
@@ -166,6 +176,7 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
 
   // The orientation sweep: Ae₁ → Ae₂, the shortest signed way round.
   const orientArc = new Line({
+    key: "semantic:determinant:orientation",
     stroke: ROLE.selected,
     lineWidth: 4.5,
     endArrow: true,
@@ -200,10 +211,10 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   orientLabel.opacity(0);
   view.add(orientLabel);
 
-  const e1 = makeArrow(ROLE.basis1, 6);
+  const e1 = makeArrow(ROLE.basis1, 6, "semantic:determinant:basis-1");
   e1.points(() => [new Vector2(0, 0), px([ma(), mc()])]);
   e1.end(0);
-  const e2 = makeArrow(ROLE.basis2, 6);
+  const e2 = makeArrow(ROLE.basis2, 6, "semantic:determinant:basis-2");
   e2.points(() => [new Vector2(0, 0), px([mb(), md()])]);
   e2.end(0);
   view.add(e1);
@@ -218,7 +229,12 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   view.add(e1Label);
   view.add(e2Label);
 
-  const top = makeOverlayLabel("", ROLE.text, 40);
+  const top = makeOverlayLabel(
+    "",
+    ROLE.text,
+    40,
+    "semantic:determinant:readout",
+  );
   top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(top);
   const caption = makeOverlayLabel("", ROLE.textMuted, 32);
@@ -315,7 +331,10 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       const b = beats("parallelogram");
       setTop("Same square · new shape");
       setCaption("The unit square itself becomes this parallelogram");
-      yield* all(ghostSquare.opacity(0.22, b.ghost!), focusSquare(0.55, b.ghost!));
+      yield* all(
+        ghostSquare.opacity(0.22, b.ghost!),
+        focusSquare(0.55, b.ghost!),
+      );
       yield* waitFor(b.hold!);
     },
     *area() {
@@ -333,7 +352,10 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
       // Honesty: this is a digression to a diagonal map, not a factorization of A.
       setTop("Aside: a diagonal map");
       setCaption("Not the shear — a pure stretch, so area multiplies visibly");
-      yield* all(ghostSquare.opacity(0.18, b.focus!), focusSquare(0.55, b.focus!));
+      yield* all(
+        ghostSquare.opacity(0.18, b.focus!),
+        focusSquare(0.55, b.focus!),
+      );
       yield* morphTo(IDENTITY, b.reset!);
       e1Label.text("e₁");
       e2Label.text("e₂");
@@ -351,22 +373,30 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
     *collapse() {
       const b = beats("collapse");
       liveSignedArea();
-      setCaption("Drive the factor to zero — the parallelogram flattens, and the readout falls with it");
+      setCaption(
+        "Drive the factor to zero — the parallelogram flattens, and the readout falls with it",
+      );
       yield* focusSquare(0.55, b.focus!);
       yield* morphTo(SINGULAR, b.morph!);
       yield* waitFor(b.hold!);
     },
     *["predict-negative"]() {
       const b = beats("predict-negative");
-      setCaption("The factor reached 0. The columns are about to keep going — past each other.");
+      setCaption(
+        "The factor reached 0. The columns are about to keep going — past each other.",
+      );
       yield* focusOrientation(b.focus!);
       yield* waitFor(b.ask!);
-      setCaption("Predict: what can a NEGATIVE area factor mean? Watch the e₁ → e₂ sweep.");
+      setCaption(
+        "Predict: what can a NEGATIVE area factor mean? Watch the e₁ → e₂ sweep.",
+      );
       yield* waitFor(b.think!);
     },
     *negative() {
       const b = beats("negative");
-      setCaption("Past zero the sweep runs the other way round — orientation reverses");
+      setCaption(
+        "Past zero the sweep runs the other way round — orientation reverses",
+      );
       yield* morphTo(NEGATIVE, b.morph!);
       yield* orientArc.lineWidth(7, b.up!);
       yield* orientArc.lineWidth(4.5, b.down!);
