@@ -1,7 +1,7 @@
 /* @jsxImportSource preact */
 /* oxlint-disable react/only-export-components -- editor plugins intentionally co-locate hooks and Preact components. */
 
-import {signal} from "@preact/signals";
+import { signal } from "@preact/signals";
 import {
   Button,
   Field,
@@ -18,14 +18,11 @@ import {
   type PluginDrawFunction,
   type PluginTabProps,
 } from "@motion-canvas/ui";
-import {useState} from "preact/hooks";
-import type {Scene} from "@motion-canvas/core";
-import {sampleSceneGraphDetailed} from "../../../src/guided-scenes/validation/sceneGraphSampler";
+import { useState } from "preact/hooks";
+import type { Scene } from "@motion-canvas/core";
+import { sampleSceneGraphDetailed } from "../../../src/guided-scenes/validation/sceneGraphSampler";
+import selectedContract from "../.generated/selectedContract";
 import {
-  MATRIX_TRANSFORMATION_BEAT_CONTRACT,
-} from "../../../src/guided-scenes/authoring/matrixTransformationBeatSpec";
-import {
-  MATRIX_TRANSFORMATION_PROJECT_VARIABLES,
   MATRIX_TRANSFORMATION_TUNING,
   MATRIX_TRANSFORMATION_TUNING_CONSTRAINTS,
   MATRIX_TUNING_KEYS,
@@ -36,7 +33,7 @@ import {
   beatAtFrame,
   diagnoseOriginOnLattice,
   selectorMatches,
-  stableIdentityColor
+  stableIdentityColor,
 } from "../../../src/guided-scenes/authoring/debugOverlayMath";
 import {
   SAFE_HEIGHT,
@@ -74,7 +71,9 @@ const overlayToggles = signal<OverlayToggles>({
 const tuningValues = signal<MatrixTransformationTuning>({
   ...MATRIX_TRANSFORMATION_TUNING,
 });
-const trajectories = new Map<string, {x: number; y: number}[]>();
+const supportsPresentationTuning =
+  selectedContract.sceneId === "matrix-transformations";
+const trajectories = new Map<string, { x: number; y: number }[]>();
 let previousFrame = -1;
 
 function projectVariables(values: MatrixTransformationTuning) {
@@ -86,7 +85,7 @@ function projectVariables(values: MatrixTransformationTuning) {
   );
 }
 
-function TabButton({tab}: PluginTabProps) {
+function TabButton({ tab }: PluginTabProps) {
   return (
     <Tab title="Animation authoring" id="animation-authoring" tab={tab}>
       <Tune />
@@ -97,13 +96,14 @@ function TabButton({tab}: PluginTabProps) {
 function AuthoringPane() {
   const application = useApplication();
   const currentFrame = useCurrentFrame();
-  const [status, setStatus] = useState("Changes are preview-only until persisted.");
+  const [status, setStatus] = useState(
+    supportsPresentationTuning
+      ? "Changes are preview-only until persisted."
+      : "This scene has no editable presentation profile; overlays and inspection remain available.",
+  );
 
-  const updateTuning = (
-    key: MatrixTransformationTuningKey,
-    value: number,
-  ) => {
-    const next = {...tuningValues.value, [key]: value};
+  const updateTuning = (key: MatrixTransformationTuningKey, value: number) => {
+    const next = { ...tuningValues.value, [key]: value };
     tuningValues.value = next;
     application.player.setVariables(projectVariables(next));
     application.player.requestSeek(currentFrame);
@@ -114,10 +114,10 @@ function AuthoringPane() {
     setStatus("Persisting typed presentation config…");
     const response = await fetch("/__animation-authoring/tuning", {
       method: "POST",
-      headers: {"content-type": "application/json"},
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(tuningValues.value),
     });
-    const result = (await response.json()) as {ok: boolean; error?: string};
+    const result = (await response.json()) as { ok: boolean; error?: string };
     setStatus(
       result.ok
         ? "Persisted to matrixTransformationTuning.json."
@@ -144,25 +144,34 @@ function AuthoringPane() {
           </Field>
         ))}
       </FieldSet>
-      <FieldSet header="Presentation tuning">
-        {MATRIX_TUNING_KEYS.map((key) => {
-          const constraint = MATRIX_TRANSFORMATION_TUNING_CONSTRAINTS[key];
-          return (
-            <Field label={constraint.label} key={key}>
-              <NumberInput
-                value={tuningValues.value[key]}
-                min={constraint.min}
-                max={constraint.max}
-                step={constraint.step}
-                onChange={(value) => updateTuning(key, value)}
-              />
-            </Field>
-          );
-        })}
-      </FieldSet>
-      <Button main onClick={persist}>PERSIST PRESENTATION VALUES</Button>
+      {supportsPresentationTuning ? (
+        <>
+          <FieldSet header="Presentation tuning">
+            {MATRIX_TUNING_KEYS.map((key) => {
+              const constraint = MATRIX_TRANSFORMATION_TUNING_CONSTRAINTS[key];
+              return (
+                <Field label={constraint.label} key={key}>
+                  <NumberInput
+                    value={tuningValues.value[key]}
+                    min={constraint.min}
+                    max={constraint.max}
+                    step={constraint.step}
+                    onChange={(value) => updateTuning(key, value)}
+                  />
+                </Field>
+              );
+            })}
+          </FieldSet>
+          <Button main onClick={persist}>
+            PERSIST PRESENTATION VALUES
+          </Button>
+        </>
+      ) : null}
       <p>{status}</p>
-      <p>Matrices, coordinates, and other mathematical values are not editable here.</p>
+      <p>
+        Matrices, coordinates, and other mathematical values are not editable
+        here.
+      </p>
     </Pane>
   );
 }
@@ -185,28 +194,24 @@ function useOverlayDraw(): PluginDrawFunction {
   const scene = useCurrentScene();
   const frame = useCurrentFrame();
   const toggles = overlayToggles.value;
-  const activeBeat = beatAtFrame(
-    MATRIX_TRANSFORMATION_BEAT_CONTRACT,
-    frame,
-    30,
-  );
+  const activeBeat = beatAtFrame(selectedContract, frame, 30);
 
   return (context, matrix) => {
     if (!scene || !activeBeat) return;
     const snapshot = sampleSceneGraphDetailed(scene as Scene);
     const nodes = Object.values(snapshot.nodes).filter(
-      ({key, opacity}) =>
+      ({ key, opacity }) =>
         opacity > 0.06 &&
         (key.startsWith("semantic:") || key.startsWith("presentation:")),
     );
     const focal = new Set(
       nodes
-        .filter(({key}) =>
+        .filter(({ key }) =>
           activeBeat.focalObjects.some((selector) =>
             selectorMatches(selector, key),
           ),
         )
-        .map(({key}) => key),
+        .map(({ key }) => key),
     );
 
     if (frame < previousFrame) trajectories.clear();
@@ -215,8 +220,11 @@ function useOverlayDraw(): PluginDrawFunction {
       if (!focal.has(node.key)) continue;
       const path = trajectories.get(node.key) ?? [];
       const previous = path.at(-1);
-      if (!previous || Math.hypot(previous.x - node.x, previous.y - node.y) > 1) {
-        path.push({x: node.x, y: node.y});
+      if (
+        !previous ||
+        Math.hypot(previous.x - node.x, previous.y - node.y) > 1
+      ) {
+        path.push({ x: node.x, y: node.y });
         if (path.length > 160) path.shift();
       }
       trajectories.set(node.key, path);
@@ -230,7 +238,12 @@ function useOverlayDraw(): PluginDrawFunction {
     if (toggles.safeFrame) {
       context.strokeStyle = "rgba(255, 210, 90, 0.8)";
       context.setLineDash([8, 6]);
-      context.strokeRect(-SAFE_WIDTH / 2, -SAFE_HEIGHT / 2, SAFE_WIDTH, SAFE_HEIGHT);
+      context.strokeRect(
+        -SAFE_WIDTH / 2,
+        -SAFE_HEIGHT / 2,
+        SAFE_WIDTH,
+        SAFE_HEIGHT,
+      );
       context.setLineDash([]);
     }
 
@@ -292,16 +305,23 @@ function useOverlayDraw(): PluginDrawFunction {
     }
 
     if (toggles.diagnostics) {
-      const origin = snapshot.nodes["semantic:matrix:origin"];
-      const diagnostic = diagnoseOriginOnLattice(
-        {x: origin?.x ?? Number.NaN, y: origin?.y ?? Number.NaN},
-        {x: 0, y: 0},
-        SCALE,
+      const originId = selectedContract.semanticObjects.find(
+        (objectId) => objectId.endsWith(":origin") && !objectId.endsWith("*"),
       );
-      context.fillStyle = diagnostic.pass ? "#65e6a6" : "#ff5f6d";
-      diagnostic.message.split("\n").forEach((line, index) =>
-        context.fillText(line, -462, -248 + index * 15),
-      );
+      const origin = originId ? snapshot.nodes[originId] : undefined;
+      if (origin) {
+        const diagnostic = diagnoseOriginOnLattice(
+          { x: origin.x, y: origin.y },
+          { x: 0, y: 0 },
+          SCALE,
+        );
+        context.fillStyle = diagnostic.pass ? "#65e6a6" : "#ff5f6d";
+        diagnostic.message
+          .split("\n")
+          .forEach((line, index) =>
+            context.fillText(line, -462, -248 + index * 15),
+          );
+      }
     }
 
     if (toggles.beat) {
@@ -325,12 +345,5 @@ export default makeEditorPlugin({
       paneComponent: AuthoringPane,
     },
   ],
-  previewOverlay: {drawHook: useOverlayDraw},
-  settings: (settings) => ({
-    ...settings,
-    variables: {
-      ...settings.variables,
-      ...MATRIX_TRANSFORMATION_PROJECT_VARIABLES,
-    },
-  }),
+  previewOverlay: { drawHook: useOverlayDraw },
 });

@@ -1,11 +1,11 @@
-import {readFileSync} from "node:fs";
-import {resolve} from "node:path";
-import {describe, expect, it} from "vitest";
-import type {SceneBeatContract, ResolvedCheckpoint} from "../beatSpec";
-import {MATRIX_TRANSFORMATION_BEAT_CONTRACT} from "../matrixTransformationBeatSpec";
-import {analyzeReviewRun} from "../reviewAnalysis";
-import {resolveBeatCheckpoints} from "../beatSpec";
-import type {NodeSample, SceneGateRun} from "../../validation/gateTypes";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import type { SceneBeatContract, ResolvedCheckpoint } from "../beatSpec";
+import { MATRIX_TRANSFORMATION_BEAT_CONTRACT } from "../matrixTransformationBeatSpec";
+import { analyzeReviewRun } from "../reviewAnalysis";
+import { resolveBeatCheckpoints } from "../beatSpec";
+import type { NodeSample, SceneGateRun } from "../../validation/gateTypes";
 
 function node(key: string, x: number, text?: string): NodeSample {
   return {
@@ -16,7 +16,7 @@ function node(key: string, x: number, text?: string): NodeSample {
     width: 10,
     height: 10,
     opacity: 1,
-    ...(text ? {text, fontSize: 20} : {}),
+    ...(text ? { text, fontSize: 20 } : {}),
     ancestors: [],
   };
 }
@@ -24,14 +24,16 @@ function node(key: string, x: number, text?: string): NodeSample {
 const contract: SceneBeatContract = {
   sceneId: "fixture",
   semanticObjects: ["semantic:moving", "semantic:stable", "semantic:missing"],
+  mathData: { fixture: true },
   beats: [
     {
       id: "beat",
       purpose: "Prove the reducer reads geometry rather than labels.",
+      invariant: "The stable fixture remains fixed.",
       intent: "geometry",
       focalObjects: ["semantic:moving"],
       timingEvent: "fixture.beat",
-      chapter: {id: "beat", title: "Beat"},
+      chapter: { id: "beat", title: "Beat", seek: { kind: "segment-opening" } },
       checkpoints: [],
       expectedChanges: [
         {
@@ -70,7 +72,7 @@ function run(moving: NodeSample[]): SceneGateRun {
       },
       unmeasured: [],
     })),
-    segments: [{id: "beat", start: 0, end: 1, beats: []}],
+    segments: [{ id: "beat", start: 0, end: 1, beats: [] }],
     seekRecords: [
       {
         segmentId: "beat",
@@ -116,9 +118,9 @@ describe("animation review analysis", () => {
         }),
       ]),
     );
-    expect(result.trajectories[0]?.points.map(({x}) => x)).toEqual([0, 2, 4]);
+    expect(result.trajectories[0]?.points.map(({ x }) => x)).toEqual([0, 2, 4]);
     expect(result.directSeeks[0]).toEqual(
-      expect.objectContaining({canvasMatch: true, unmeasuredFromStart: 0}),
+      expect.objectContaining({ canvasMatch: true, unmeasuredFromStart: 0 }),
     );
   });
 
@@ -151,24 +153,31 @@ describe("animation review analysis", () => {
       node("semantic:moving", 4),
     ]);
     fixture.seekRecords[0]!.unmeasuredFromStart = [
-      {key: "semantic:bad-line", type: "Line", reason: "non-finite point"},
+      { key: "semantic:bad-line", type: "Line", reason: "non-finite point" },
     ];
     const result = analyzeReviewRun(
       contract,
-      [{...checkpoint, requiredObjects: ["semantic:missing"]}],
+      [{ ...checkpoint, requiredObjects: ["semantic:missing"] }],
       fixture,
     );
     expect(result.assertions).toContainEqual(
-      expect.objectContaining({property: "required", pass: false}),
+      expect.objectContaining({ property: "required", pass: false }),
     );
     expect(result.directSeeks[0]?.unmeasuredFromStart).toBe(1);
   });
 
   it("keeps all pilot artifact checkpoints stable and unique", () => {
-    const first = resolveBeatCheckpoints(MATRIX_TRANSFORMATION_BEAT_CONTRACT, 30);
-    const second = resolveBeatCheckpoints(MATRIX_TRANSFORMATION_BEAT_CONTRACT, 30);
-    const keys = first.map(({beatId, checkpointId, frame}) =>
-      `${beatId}--${checkpointId}--${frame}`,
+    const first = resolveBeatCheckpoints(
+      MATRIX_TRANSFORMATION_BEAT_CONTRACT,
+      30,
+    );
+    const second = resolveBeatCheckpoints(
+      MATRIX_TRANSFORMATION_BEAT_CONTRACT,
+      30,
+    );
+    const keys = first.map(
+      ({ beatId, checkpointId, frame }) =>
+        `${beatId}--${checkpointId}--${frame}`,
     );
     expect(first).toEqual(second);
     expect(new Set(keys).size).toBe(40);

@@ -1,5 +1,9 @@
-import type {NodeSample, SceneFrameSample, SceneGateRun} from "../validation/gateTypes";
-import {runSceneHardGates} from "../validation/hardGates";
+import type {
+  NodeSample,
+  SceneFrameSample,
+  SceneGateRun,
+} from "../validation/gateTypes";
+import { runSceneHardGates } from "../validation/hardGates";
 import type {
   BeatSpec,
   ObservableProperty,
@@ -62,7 +66,10 @@ function matches(selector: string, key: string): boolean {
     : key === selector;
 }
 
-function selectedNodes(frame: SceneFrameSample, selector: string): NodeSample[] {
+function selectedNodes(
+  frame: SceneFrameSample,
+  selector: string,
+): NodeSample[] {
   return Object.entries(frame.nodes)
     .filter(([key]) => matches(selector, key))
     .map(([, node]) => node);
@@ -93,37 +100,43 @@ function propertyDelta(
   if (property === "geometry" || property === "camera") {
     return geometryDelta(before, after);
   }
-  if (property === "opacity") return Math.abs(after.opacity - before.opacity) * 10;
+  if (property === "opacity")
+    return Math.abs(after.opacity - before.opacity) * 10;
   if (property === "text") return after.text === before.text ? 0 : 10;
   if (property === "presence") return 0;
   if (property === "style") return 0;
   if (property === "stable") {
     return geometryDelta(before, after);
   }
-  return geometryDelta(before, after) +
+  return (
+    geometryDelta(before, after) +
     Math.abs(after.opacity - before.opacity) * 10 +
-    (after.text === before.text ? 0 : 10);
-}
-
-function framesForBeat(run: SceneGateRun, beatId: string): SceneFrameSample[] {
-  const segment = run.segments.find(({id}) => id === beatId);
-  if (!segment) return [];
-  return run.frames.filter(
-    ({time}) => time >= segment.start && time < segment.end,
+    (after.text === before.text ? 0 : 10)
   );
 }
 
-function framesForAssertions(run: SceneGateRun, beat: BeatSpec): SceneFrameSample[] {
-  const segment = run.segments.find(({id}) => id === beat.id);
-  const landing = beat.checkpoints.find(({id}) => id === "landing");
+function framesForBeat(run: SceneGateRun, beatId: string): SceneFrameSample[] {
+  const segment = run.segments.find(({ id }) => id === beatId);
+  if (!segment) return [];
+  return run.frames.filter(
+    ({ time }) => time >= segment.start && time < segment.end,
+  );
+}
+
+function framesForAssertions(
+  run: SceneGateRun,
+  beat: BeatSpec,
+): SceneFrameSample[] {
+  const segment = run.segments.find(({ id }) => id === beat.id);
+  const landing = beat.checkpoints.find(({ id }) => id === "landing");
   if (!segment || landing?.anchor.kind !== "phase") {
     return framesForBeat(run, beat.id);
   }
   const phaseId = landing.anchor.phaseId;
-  const phase = segment.beats.find(({id}) => id === phaseId);
+  const phase = segment.beats.find(({ id }) => id === phaseId);
   if (!phase) return framesForBeat(run, beat.id);
   return run.frames.filter(
-    ({time}) => time >= phase.start && time < phase.end,
+    ({ time }) => time >= phase.start && time < phase.end,
   );
 }
 
@@ -155,9 +168,14 @@ function selectorDeltas(
   return values;
 }
 
-function observedPresence(frames: readonly SceneFrameSample[], selector: string): number[] {
-  return frames.map((frame) =>
-    selectedNodes(frame, selector).filter(({opacity}) => opacity > 0.06).length,
+function observedPresence(
+  frames: readonly SceneFrameSample[],
+  selector: string,
+): number[] {
+  return frames.map(
+    (frame) =>
+      selectedNodes(frame, selector).filter(({ opacity }) => opacity > 0.06)
+        .length,
   );
 }
 
@@ -212,12 +230,18 @@ function assertionForStable(
   };
 }
 
-function nearestFrame(run: SceneGateRun, frame: number): SceneFrameSample | undefined {
-  return run.frames.reduce<SceneFrameSample | undefined>((nearest, candidate) =>
-    !nearest || Math.abs(candidate.frame - frame) < Math.abs(nearest.frame - frame)
-      ? candidate
-      : nearest,
-  undefined);
+function nearestFrame(
+  run: SceneGateRun,
+  frame: number,
+): SceneFrameSample | undefined {
+  return run.frames.reduce<SceneFrameSample | undefined>(
+    (nearest, candidate) =>
+      !nearest ||
+      Math.abs(candidate.frame - frame) < Math.abs(nearest.frame - frame)
+        ? candidate
+        : nearest,
+    undefined,
+  );
 }
 
 function requiredAssertions(
@@ -241,31 +265,44 @@ function requiredAssertions(
   });
 }
 
-function trajectories(contract: SceneBeatContract, run: SceneGateRun): ReviewTrajectory[] {
+function trajectories(
+  contract: SceneBeatContract,
+  run: SceneGateRun,
+): ReviewTrajectory[] {
   return contract.beats.flatMap((beat) => {
     const frames = framesForBeat(run, beat.id);
     if (frames.length === 0) return [];
-    const selected = [frames[0]!, frames[Math.floor(frames.length / 2)]!, frames.at(-1)!];
+    const selected = [
+      frames[0]!,
+      frames[Math.floor(frames.length / 2)]!,
+      frames.at(-1)!,
+    ];
     return beat.focalObjects.flatMap((objectId) => {
-      const keys = new Set(selected.flatMap((frame) =>
-        Object.keys(frame.nodes).filter((key) => matches(objectId, key)),
-      ));
+      const keys = new Set(
+        selected.flatMap((frame) =>
+          Object.keys(frame.nodes).filter((key) => matches(objectId, key)),
+        ),
+      );
       return [...keys].map((nodeKey) => ({
         beatId: beat.id,
         objectId,
         nodeKey,
         points: selected.flatMap((frame) => {
           const node = frame.nodes[nodeKey];
-          return node ? [{
-            frame: frame.frame,
-            time: frame.time,
-            x: node.x,
-            y: node.y,
-            width: node.width,
-            height: node.height,
-            opacity: node.opacity,
-            ...(node.text === undefined ? {} : {text: node.text}),
-          }] : [];
+          return node
+            ? [
+                {
+                  frame: frame.frame,
+                  time: frame.time,
+                  x: node.x,
+                  y: node.y,
+                  width: node.width,
+                  height: node.height,
+                  opacity: node.opacity,
+                  ...(node.text === undefined ? {} : { text: node.text }),
+                },
+              ]
+            : [];
         }),
       }));
     });
@@ -280,13 +317,20 @@ export function analyzeReviewRun(
 ): CompactReviewAnalysis {
   const assertions = [
     ...contract.beats.flatMap((beat) => {
-      const frames = framesForAssertions(run, beat);
+      const landingFrames = framesForAssertions(run, beat);
+      const fullBeatFrames = framesForBeat(run, beat.id);
       return [
-        ...(beat.expectedChanges ?? []).map((change) =>
-          assertionForChange(beat, frames, change),
+        ...beat.expectedChanges.map((change) =>
+          assertionForChange(
+            beat,
+            change.property === "geometry" || change.property === "camera"
+              ? landingFrames
+              : fullBeatFrames,
+            change,
+          ),
         ),
-        ...(beat.expectedStableObjects ?? []).map((objectId) =>
-          assertionForStable(beat, frames, objectId),
+        ...beat.expectedStableObjects.map((objectId) =>
+          assertionForStable(beat, fullBeatFrames, objectId),
         ),
       ];
     }),
@@ -301,14 +345,19 @@ export function analyzeReviewRun(
     unmeasuredFromEnd: record.unmeasuredFromEnd?.length ?? 0,
   }));
   const failures = [
-    ...assertions.filter(({pass}) => !pass).map(
-      ({beatId, objectId, expectation, observed}) =>
-        `${beatId}: ${objectId} expected ${expectation}; observed ${observed}`,
-    ),
-    ...hardGateFindings.map(({message}) => message),
-    ...directSeeks.filter(({canvasMatch}) => !canvasMatch).map(
-      ({beatId}) => `${beatId}: direct seek produced direction-dependent canvas`,
-    ),
+    ...assertions
+      .filter(({ pass }) => !pass)
+      .map(
+        ({ beatId, objectId, expectation, observed }) =>
+          `${beatId}: ${objectId} expected ${expectation}; observed ${observed}`,
+      ),
+    ...hardGateFindings.map(({ message }) => message),
+    ...directSeeks
+      .filter(({ canvasMatch }) => !canvasMatch)
+      .map(
+        ({ beatId }) =>
+          `${beatId}: direct seek produced direction-dependent canvas`,
+      ),
   ];
   return {
     sceneId: run.sceneId,

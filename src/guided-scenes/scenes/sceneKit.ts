@@ -257,19 +257,23 @@ const GRAPHIC_ROLE_STROKE: Record<GraphicRole, string> = {
 export function makeGraphicParts(
   matrixAt: () => Matrix2x2,
   graphic: OpeningGraphic,
-  options: { ghost?: boolean; color?: string } = {},
+  options: { ghost?: boolean; color?: string; key?: string } = {},
 ): Node {
-  const group = new Node({});
+  const group = new Node({ key: options.key });
   const pointsOf = (part: OpeningGraphic["parts"][number]) => () =>
     part.points.map((v) => toPixels(matrixVectorMultiply(matrixAt(), v)));
 
-  for (const part of graphic.parts) {
+  for (const [partIndex, part] of graphic.parts.entries()) {
+    const partKey = options.key
+      ? options.key + ":part:" + partIndex
+      : undefined;
     const stroke = options.color ?? GRAPHIC_ROLE_STROKE[part.role];
     const isHull = part.role === "hull";
 
     if (options.ghost) {
       group.add(
         new Line({
+          key: partKey ? partKey + ":ghost" : undefined,
           stroke,
           lineWidth: 2,
           lineJoin: "round",
@@ -288,6 +292,7 @@ export function makeGraphicParts(
     if (part.closed) {
       group.add(
         new Line({
+          key: partKey ? partKey + ":fill" : undefined,
           fill: stroke,
           lineWidth: 0,
           closed: true,
@@ -298,6 +303,7 @@ export function makeGraphicParts(
     }
     group.add(
       new Line({
+        key: partKey ? partKey + ":stroke" : undefined,
         stroke,
         lineWidth: isHull ? 4 : part.closed ? 2.5 : 3,
         lineJoin: "round",

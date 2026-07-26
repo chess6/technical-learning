@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** Deterministic, development-only review packet for a production scene. */
-import {spawnSync} from "node:child_process";
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -8,8 +8,8 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import {dirname, join, relative, resolve} from "node:path";
-import {fileURLToPath} from "node:url";
+import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   missingCaptureFailures,
   planCheckpointArtifacts,
@@ -25,7 +25,12 @@ import {
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_OUT = join(ROOT, "artifacts", "animation-review");
-const PILOT_SCENE = "matrix-transformations";
+const REVIEW_SCENES = JSON.parse(
+  readFileSync(
+    join(ROOT, "scripts", "animation-authoring-scenes.json"),
+    "utf8",
+  ),
+);
 
 function parseArgs(argv) {
   const options = {
@@ -56,23 +61,41 @@ function parseArgs(argv) {
     } else throw new Error(`unknown argument: ${arg}`);
   }
   if (!options.sceneId) throw new Error("pass --scene <id>");
-  if (options.sceneId !== PILOT_SCENE) {
+  const selectedScene = REVIEW_SCENES[options.sceneId];
+  if (!selectedScene?.authoringContract || !selectedScene.lessonId) {
+    const supported = Object.entries(REVIEW_SCENES)
+      .filter(([, scene]) => scene.authoringContract && scene.lessonId)
+      .map(([sceneId]) => sceneId)
+      .join(", ");
     throw new Error(
-      `review workflow is piloted only for "${PILOT_SCENE}"; received "${options.sceneId}"`,
+      'scene "' +
+        options.sceneId +
+        '" has no review BeatSpec; supported scenes: ' +
+        supported,
     );
   }
-  if (!Number.isInteger(options.port) || options.port < 1 || options.port > 65535) {
+  if (
+    !Number.isInteger(options.port) ||
+    options.port < 1 ||
+    options.port > 65535
+  ) {
     throw new Error("--port must be an integer in [1, 65535]");
   }
   if (!Number.isInteger(options.stride) || options.stride < 1) {
     throw new Error("--stride must be a positive integer");
   }
   if (options.checkpoint && !options.beat) {
-    throw new Error("--checkpoint requires --beat so the selection identifies one checkpoint");
+    throw new Error(
+      "--checkpoint requires --beat so the selection identifies one checkpoint",
+    );
   }
   if (options.reference) {
     const reference = unsupportedReferenceDisposition(options.sceneId, []);
-    throw new Error("--reference requested, but " + reference.reason + "; no review packet was generated");
+    throw new Error(
+      "--reference requested, but " +
+        reference.reason +
+        "; no review packet was generated",
+    );
   }
   return options;
 }
@@ -80,28 +103,34 @@ function parseArgs(argv) {
 function printHelp() {
   console.log(`Create a deterministic production-scene review packet.
 
-  npm run animation:review -- --scene matrix-transformations
-  npm run animation:review -- --scene matrix-transformations --beat transform-sample
-  npm run animation:review -- --scene matrix-transformations --reduced-motion
+  npm run animation:review -- --scene why-linear-algebra
+  npm run animation:review -- --scene vectors-linear-combinations --beat addition
+  npm run animation:review -- --scene determinant-area-scaling --reduced-motion
 
 Options: --beat <id>, --checkpoint <id>, --reduced-motion, --skip-video,
          --reference, --stride <frames>, --out <dir>, --port <n>`);
 }
 
 function toolVersion(command, args) {
-  const result = spawnSync(command, args, {encoding: "utf8"});
+  const result = spawnSync(command, args, { encoding: "utf8" });
   if (result.status !== 0) return null;
   return (result.stdout || result.stderr).split("\n")[0].trim();
 }
 
 function gitValue(args) {
-  const result = spawnSync("git", args, {cwd: ROOT, encoding: "utf8"});
+  const result = spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
   return result.status === 0 ? result.stdout.trim() : null;
 }
 
 function packageVersion(name) {
-  const packageJson = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
-  return packageJson.dependencies?.[name] ?? packageJson.devDependencies?.[name] ?? null;
+  const packageJson = JSON.parse(
+    readFileSync(join(ROOT, "package.json"), "utf8"),
+  );
+  return (
+    packageJson.dependencies?.[name] ??
+    packageJson.devDependencies?.[name] ??
+    null
+  );
 }
 
 function packetPath(packetDir, path) {
@@ -117,17 +146,24 @@ function createContactSheet(framePaths, output) {
   const result = spawnSync(
     "montage",
     [
-      "-background", "#0b1020",
-      "-fill", "#f8fafc",
-      "-pointsize", "13",
-      "-label", "%t",
+      "-background",
+      "#0b1020",
+      "-fill",
+      "#f8fafc",
+      "-pointsize",
+      "13",
+      "-label",
+      "%t",
       ...framePaths,
-      "-thumbnail", "480x270",
-      "-tile", "4x",
-      "-geometry", "+8+26",
+      "-thumbnail",
+      "480x270",
+      "-tile",
+      "4x",
+      "-geometry",
+      "+8+26",
       output,
     ],
-    {stdio: "pipe"},
+    { stdio: "pipe" },
   );
   return result.status === 0
     ? null
@@ -138,11 +174,24 @@ function createPreview(framesDir, output, fps) {
   const result = spawnSync(
     "ffmpeg",
     [
-      "-y", "-framerate", String(fps), "-i", join(framesDir, "%06d.png"),
-      "-c:v", "libx264", "-preset", "medium", "-crf", "23",
-      "-pix_fmt", "yuv420p", "-movflags", "+faststart", output,
+      "-y",
+      "-framerate",
+      String(fps),
+      "-i",
+      join(framesDir, "%06d.png"),
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "23",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      output,
     ],
-    {stdio: "pipe"},
+    { stdio: "pipe" },
   );
   return result.status === 0
     ? null
@@ -150,11 +199,13 @@ function createPreview(framesDir, output, fps) {
 }
 
 async function drainProductionRender(page, options, description, packetDir) {
-  const checkpoints = description.checkpoints.filter((checkpoint) =>
-    (!options.beat || checkpoint.beatId === options.beat) &&
-    (!options.checkpoint || checkpoint.checkpointId === options.checkpoint),
+  const checkpoints = description.checkpoints.filter(
+    (checkpoint) =>
+      (!options.beat || checkpoint.beatId === options.beat) &&
+      (!options.checkpoint || checkpoint.checkpointId === options.checkpoint),
   );
-  if (checkpoints.length === 0) throw new Error("the selected beat/checkpoint matched no captures");
+  if (checkpoints.length === 0)
+    throw new Error("the selected beat/checkpoint matched no captures");
 
   const renderRange = selectedRenderRange(checkpoints, description.fps);
   const frameRecords = planCheckpointArtifacts(
@@ -179,17 +230,26 @@ async function drainProductionRender(page, options, description, packetDir) {
   )?.frame;
   const previewFramesDir = join(packetDir, ".preview-frames");
   const focused = Boolean(options.beat || options.checkpoint);
-  const shouldRenderPreview = !options.skipVideo && !options.reducedMotionOnly && !focused;
-  if (shouldRenderPreview) mkdirSync(previewFramesDir, {recursive: true});
+  const shouldRenderPreview =
+    !options.skipVideo && !options.reducedMotionOnly && !focused;
+  if (shouldRenderPreview) mkdirSync(previewFramesDir, { recursive: true });
 
   await page.evaluate(
-    ({sceneId, fps, startFrame, endFrame}) => {
-      window.__exportApi.start({sceneId, fps, resolutionScale: 0.5, startFrame, endFrame}).catch((error) => {
-        window.__exportStatus.state = "error";
-        window.__exportStatus.error = error instanceof Error ? error.message : String(error);
-      });
+    ({ sceneId, fps, startFrame, endFrame }) => {
+      window.__exportApi
+        .start({ sceneId, fps, resolutionScale: 0.5, startFrame, endFrame })
+        .catch((error) => {
+          window.__exportStatus.state = "error";
+          window.__exportStatus.error =
+            error instanceof Error ? error.message : String(error);
+        });
     },
-    {sceneId: options.sceneId, fps: description.fps, startFrame: renderRange.startFrame, endFrame: renderRange.endFrame},
+    {
+      sceneId: options.sceneId,
+      fps: description.fps,
+      startFrame: renderRange.startFrame,
+      endFrame: renderRange.endFrame,
+    },
   );
 
   const startedAt = Date.now();
@@ -205,23 +265,34 @@ async function drainProductionRender(page, options, description, packetDir) {
     for (const frame of result.frames) {
       handled += 1;
       lastFrameAt = Date.now();
-      const bytes = Buffer.from(frame.data.slice(frame.data.indexOf(",") + 1), "base64");
+      const bytes = Buffer.from(
+        frame.data.slice(frame.data.indexOf(",") + 1),
+        "base64",
+      );
       for (const destination of frameDestinations.get(frame.frame) ?? []) {
         writeFileSync(destination, bytes);
       }
       if (
-        !options.skipVideo && !options.reducedMotionOnly && !focused &&
-        previewStart !== undefined && previewEnd !== undefined &&
-        frame.frame >= previewStart && frame.frame <= previewEnd
+        !options.skipVideo &&
+        !options.reducedMotionOnly &&
+        !focused &&
+        previewStart !== undefined &&
+        previewEnd !== undefined &&
+        frame.frame >= previewStart &&
+        frame.frame <= previewEnd
       ) {
         writeFileSync(
-          join(previewFramesDir, `${String(previewWritten).padStart(6, "0")}.png`),
+          join(
+            previewFramesDir,
+            `${String(previewWritten).padStart(6, "0")}.png`,
+          ),
           bytes,
         );
         previewWritten += 1;
       }
     }
-    if (result.state === "error") throw new Error(`production render failed: ${result.error}`);
+    if (result.state === "error")
+      throw new Error(`production render failed: ${result.error}`);
     if (result.state === "done" && result.frames.length === 0) break;
     if (Date.now() - lastFrameAt > 90_000) {
       throw new Error(`production render stalled after ${handled} frames`);
@@ -243,92 +314,164 @@ async function drainProductionRender(page, options, description, packetDir) {
     );
   }
   return {
-    frameRecords, previewFramesDir, previewWritten, previewStart, previewEnd, handled,
-    range: renderRange, elapsedMs: Date.now() - startedAt, focused,
+    frameRecords,
+    previewFramesDir,
+    previewWritten,
+    previewStart,
+    previewEnd,
+    handled,
+    range: renderRange,
+    elapsedMs: Date.now() - startedAt,
+    focused,
   };
 }
 
-async function captureReducedMotionEvidence(browser, serverUrl, options, description, packetDir, browserErrors) {
-  const context = await browser.newContext({reducedMotion: "reduce"});
+async function captureReducedMotionEvidence(
+  browser,
+  serverUrl,
+  options,
+  description,
+  packetDir,
+  browserErrors,
+) {
+  const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
   page.on("console", (message) => {
-    if (message.type() === "error") browserErrors.push(`reduced-motion: ${message.text()}`);
+    if (message.type() === "error")
+      browserErrors.push(`reduced-motion: ${message.text()}`);
   });
-  page.on("pageerror", (error) => browserErrors.push(`reduced-motion: ${error.message}`));
-  await page.emulateMedia({reducedMotion: "reduce"});
-  const route = "/lesson/transformations";
+  page.on("pageerror", (error) =>
+    browserErrors.push(`reduced-motion: ${error.message}`),
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const lessonId = REVIEW_SCENES[options.sceneId].lessonId;
+  const route = "/lesson/" + lessonId;
   const url = new URL(route, serverUrl).toString();
   await page.goto(url);
-  const root = page.locator(`.guided-scene-player[data-scene-id="${options.sceneId}"]`).first();
-  await root.waitFor({state: "visible", timeout: 30_000});
-  await root.locator(".guided-scene-player__reduced-note").waitFor({state: "visible"});
+  const root = page
+    .locator(`.guided-scene-player[data-scene-id="${options.sceneId}"]`)
+    .first();
+  await root.waitFor({ state: "visible", timeout: 30_000 });
+  await root
+    .locator(".guided-scene-player__reduced-note")
+    .waitFor({ state: "visible" });
   const mediaQuery = "(prefers-reduced-motion: reduce)";
-  const mediaMatches = await page.evaluate((query) => matchMedia(query).matches, mediaQuery);
-  if (!mediaMatches) throw new Error("learner review page did not enter prefers-reduced-motion: reduce");
+  const mediaMatches = await page.evaluate(
+    (query) => matchMedia(query).matches,
+    mediaQuery,
+  );
+  if (!mediaMatches)
+    throw new Error(
+      "learner review page did not enter prefers-reduced-motion: reduce",
+    );
 
-  const required = description.reducedMotionFrames.filter((item) =>
-    !options.beat || item.beatId === options.beat,
+  const required = description.reducedMotionFrames.filter(
+    (item) => !options.beat || item.beatId === options.beat,
   );
   const records = [];
   const runId = "learner-reduced-motion";
   for (const item of required) {
-    const beatIndex = description.beats.findIndex(({id}) => id === item.beatId);
+    const beatIndex = description.beats.findIndex(
+      ({ id }) => id === item.beatId,
+    );
     const beat = description.beats[beatIndex];
-    if (!beat) throw new Error(`missing learner chapter for beat ${item.beatId}`);
+    if (!beat)
+      throw new Error(`missing learner chapter for beat ${item.beatId}`);
     const control = root.getByRole("button", {
       name: `Idea ${beatIndex + 1}: ${beat.chapter.title}`,
       exact: true,
     });
     await control.click();
     await page.waitForFunction(
-      ({sceneId, title, idea}) => {
-        const player = document.querySelector(`.guided-scene-player[data-scene-id="${sceneId}"]`);
-        const active = player?.querySelector(`button[aria-label="${idea}"][aria-current="step"]`);
-        const stageTitle = player?.querySelector(".guided-scene-player__stage-title")?.textContent?.trim();
-        const canvas = player?.querySelector(".guided-scene-player__canvas canvas");
-        return Boolean(active && stageTitle === title && canvas instanceof HTMLCanvasElement && canvas.width > 0 && canvas.height > 0);
+      ({ sceneId, title, idea }) => {
+        const player = document.querySelector(
+          `.guided-scene-player[data-scene-id="${sceneId}"]`,
+        );
+        const active = player?.querySelector(
+          `button[aria-label="${idea}"][aria-current="step"]`,
+        );
+        const stageTitle = player
+          ?.querySelector(".guided-scene-player__stage-title")
+          ?.textContent?.trim();
+        const canvas = player?.querySelector(
+          ".guided-scene-player__canvas canvas",
+        );
+        return Boolean(
+          active &&
+          stageTitle === title &&
+          canvas instanceof HTMLCanvasElement &&
+          canvas.width > 0 &&
+          canvas.height > 0,
+        );
       },
-      {sceneId: options.sceneId, title: beat.chapter.title, idea: `Idea ${beatIndex + 1}: ${beat.chapter.title}`},
-      {timeout: 15_000},
+      {
+        sceneId: options.sceneId,
+        title: beat.chapter.title,
+        idea: `Idea ${beatIndex + 1}: ${beat.chapter.title}`,
+      },
+      { timeout: 15_000 },
     );
     // The active chapter is published from the engine's frame event. Two browser
     // frames let the corresponding Stage.render paint before Playwright reads pixels.
-    await page.evaluate(() => new Promise((resolveFrame) =>
-      requestAnimationFrame(() => requestAnimationFrame(resolveFrame)),
-    ));
+    await page.evaluate(
+      () =>
+        new Promise((resolveFrame) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolveFrame)),
+        ),
+    );
     const target = join(
       packetDir,
       "reduced-motion",
       `${safeArtifactStem(item.beatId)}--learner-chapter.png`,
     );
-    await root.locator(".guided-scene-player__canvas canvas").screenshot({path: target});
+    await root
+      .locator(".guided-scene-player__canvas canvas")
+      .screenshot({ path: target });
     records.push({
       beatId: item.beatId,
       chapterTitle: beat.chapter.title,
       artifact: packetPath(packetDir, target),
       captureSource: "learner-player",
       route,
-      seek: {method: "idea-control", normalizedChapterOpeningFrame: item.frame},
-      browserMedia: {query: mediaQuery, requested: "reduce", matches: mediaMatches},
+      seek: {
+        method: "idea-control",
+        normalizedChapterOpeningFrame: item.frame,
+      },
+      browserMedia: {
+        query: mediaQuery,
+        requested: "reduce",
+        matches: mediaMatches,
+      },
       runId,
     });
   }
   await context.close();
   return {
     records,
-    run: {runId, captureSource: "learner-player", route, browserMedia: {query: mediaQuery, requested: "reduce", matches: mediaMatches}},
+    run: {
+      runId,
+      captureSource: "learner-player",
+      route,
+      browserMedia: {
+        query: mediaQuery,
+        requested: "reduce",
+        matches: mediaMatches,
+      },
+    },
   };
 }
 
 function buildSummary(packet) {
-  const failedAssertions = packet.analysis.assertions.filter(({pass}) => !pass);
+  const failedAssertions = packet.analysis.assertions.filter(
+    ({ pass }) => !pass,
+  );
   const prediction = packet.beats.find((beat) => beat.prediction);
   const analysisSummary = packet.analysis.skipped
     ? `- Semantic analysis: skipped (${packet.analysis.skipped})`
     : `- Semantic samples: ${packet.analysis.sampledFrames}\n` +
       `- Hard-gate findings: ${packet.analysis.hardGateFindings.length}\n` +
       `- Failed BeatSpec assertions: ${failedAssertions.length}\n` +
-      `- Direct chapter seeks: ${packet.analysis.directSeeks.filter(({canvasMatch}) => canvasMatch).length}/` +
+      `- Direct chapter seeks: ${packet.analysis.directSeeks.filter(({ canvasMatch }) => canvasMatch).length}/` +
       `${packet.analysis.directSeeks.length} deterministic`;
   return `# ${packet.sceneId} animation review
 
@@ -355,177 +498,260 @@ ${packet.failures.length ? `\n## Failures\n\n${packet.failures.map((failure) => 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const packetDir = join(options.out, options.sceneId);
-  rmSync(packetDir, {recursive: true, force: true});
-  mkdirSync(join(packetDir, "frames"), {recursive: true});
-  mkdirSync(join(packetDir, "reduced-motion"), {recursive: true});
+  rmSync(packetDir, { recursive: true, force: true });
+  mkdirSync(join(packetDir, "frames"), { recursive: true });
+  mkdirSync(join(packetDir, "reduced-motion"), { recursive: true });
 
   let chromium;
   try {
-    ({chromium} = await import("@playwright/test"));
+    ({ chromium } = await import("@playwright/test"));
   } catch {
     throw new Error("@playwright/test is required");
   }
-  const server = await ensureReviewDevServer({port: options.port, root: ROOT});
-  await withReviewBrowser(server, () => chromium.launch(), async (browser) => {
-    const page = await browser.newPage();
-    const browserErrors = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") browserErrors.push(message.text());
-    });
-    await page.goto(server.url);
-    await page.waitForFunction(
-      () => window.__exportReady === true && window.__animationReviewReady === true,
-      null,
-      {timeout: 30_000},
-    );
-    const description = await page.evaluate(
-      (sceneId) => window.__animationReviewApi.describe(sceneId),
-      options.sceneId,
-    );
-    if (options.beat && !description.beats.some(({id}) => id === options.beat)) {
-      throw new Error(`unknown beat "${options.beat}"`);
-    }
+  const server = await ensureReviewDevServer({
+    port: options.port,
+    root: ROOT,
+  });
+  await withReviewBrowser(
+    server,
+    () => chromium.launch(),
+    async (browser) => {
+      const page = await browser.newPage();
+      const browserErrors = [];
+      page.on("console", (message) => {
+        if (message.type() === "error") browserErrors.push(message.text());
+      });
+      await page.goto(server.url);
+      await page.waitForFunction(
+        () =>
+          window.__exportReady === true &&
+          window.__animationReviewReady === true,
+        null,
+        { timeout: 30_000 },
+      );
+      const description = await page.evaluate(
+        (sceneId) => window.__animationReviewApi.describe(sceneId),
+        options.sceneId,
+      );
+      if (
+        options.beat &&
+        !description.beats.some(({ id }) => id === options.beat)
+      ) {
+        throw new Error(`unknown beat "${options.beat}"`);
+      }
 
-    let analysis;
-    let render;
-    const focusedSelection = Boolean(options.beat || options.checkpoint);
-    if (options.reducedMotionOnly) {
-      analysis = {
-        assertions: [], sampledFrames: 0, hardGateFindings: [], directSeeks: [], failures: [],
-        skipped: "reduced-motion-only packet exercises the learner player instead",
-      };
-      render = {
-        frameRecords: [], previewFramesDir: "", previewWritten: 0,
-        previewStart: null, previewEnd: null, handled: 0, elapsedMs: 0,
-        range: null, focused: true,
-      };
-    } else {
-      if (focusedSelection) {
+      let analysis;
+      let render;
+      const focusedSelection = Boolean(options.beat || options.checkpoint);
+      if (options.reducedMotionOnly) {
         analysis = {
-          assertions: [], sampledFrames: 0, hardGateFindings: [], directSeeks: [], failures: [],
-          skipped: "focused packet skips the full semantic sweep; run the unfiltered packet for approval",
+          assertions: [],
+          sampledFrames: 0,
+          hardGateFindings: [],
+          directSeeks: [],
+          failures: [],
+          skipped:
+            "reduced-motion-only packet exercises the learner player instead",
+        };
+        render = {
+          frameRecords: [],
+          previewFramesDir: "",
+          previewWritten: 0,
+          previewStart: null,
+          previewEnd: null,
+          handled: 0,
+          elapsedMs: 0,
+          range: null,
+          focused: true,
         };
       } else {
-        console.log(`→ measuring ${options.sceneId} against its BeatSpec`);
-        analysis = await page.evaluate(
-          ({sceneId, stride}) => window.__animationReviewApi.analyze(sceneId, stride),
-          {sceneId: options.sceneId, stride: options.stride},
+        if (focusedSelection) {
+          analysis = {
+            assertions: [],
+            sampledFrames: 0,
+            hardGateFindings: [],
+            directSeeks: [],
+            failures: [],
+            skipped:
+              "focused packet skips the full semantic sweep; run the unfiltered packet for approval",
+          };
+        } else {
+          console.log(`→ measuring ${options.sceneId} against its BeatSpec`);
+          analysis = await page.evaluate(
+            ({ sceneId, stride }) =>
+              window.__animationReviewApi.analyze(sceneId, stride),
+            { sceneId: options.sceneId, stride: options.stride },
+          );
+          // Start the deterministic Renderer from a clean production project
+          // after the full direct-seek analysis.
+          await page.reload();
+          await page.waitForFunction(
+            () => window.__exportReady === true,
+            null,
+            { timeout: 30_000 },
+          );
+        }
+        console.log("→ rendering selected production checkpoint range");
+        render = await drainProductionRender(
+          page,
+          options,
+          description,
+          packetDir,
         );
-        // Start the deterministic Renderer from a clean production project
-        // after the full direct-seek analysis.
-        await page.reload();
-        await page.waitForFunction(() => window.__exportReady === true, null, {timeout: 30_000});
       }
-      console.log("→ rendering selected production checkpoint range");
-      render = await drainProductionRender(page, options, description, packetDir);
-    }
 
-    console.log("→ capturing learner-facing prefers-reduced-motion chapters");
-    const reducedRun = await captureReducedMotionEvidence(
-      browser, server.url, options, description, packetDir, browserErrors,
-    );
-    const reducedMotion = reducedRun.records;
+      console.log("→ capturing learner-facing prefers-reduced-motion chapters");
+      const reducedRun = await captureReducedMotionEvidence(
+        browser,
+        server.url,
+        options,
+        description,
+        packetDir,
+        browserErrors,
+      );
+      const reducedMotion = reducedRun.records;
 
-    const contactSheet = join(packetDir, "contact-sheet.png");
-    const contactInputs = render.frameRecords.length > 0
-      ? render.frameRecords.map(({path}) => path)
-      : reducedMotion.map(({artifact}) => join(packetDir, artifact));
-    const contactError = createContactSheet(contactInputs, contactSheet);
-    const preview = join(packetDir, "preview.mp4");
-    const previewError = options.skipVideo || options.reducedMotionOnly || render.focused
-      ? null
-      : createPreview(render.previewFramesDir, preview, description.fps);
-    if (render.previewFramesDir) rmSync(render.previewFramesDir, {recursive: true, force: true});
+      const contactSheet = join(packetDir, "contact-sheet.png");
+      const contactInputs =
+        render.frameRecords.length > 0
+          ? render.frameRecords.map(({ path }) => path)
+          : reducedMotion.map(({ artifact }) => join(packetDir, artifact));
+      const contactError = createContactSheet(contactInputs, contactSheet);
+      const preview = join(packetDir, "preview.mp4");
+      const previewError =
+        options.skipVideo || options.reducedMotionOnly || render.focused
+          ? null
+          : createPreview(render.previewFramesDir, preview, description.fps);
+      if (render.previewFramesDir)
+        rmSync(render.previewFramesDir, { recursive: true, force: true });
 
-    const environment = {
-      node: process.version,
-      platform: `${process.platform}-${process.arch}`,
-      commit: gitValue(["rev-parse", "HEAD"]),
-      workingTree: gitValue(["status", "--short"]) ? "dirty" : "clean",
-      motionCanvasCore: packageVersion("@motion-canvas/core"),
-      playwright: packageVersion("@playwright/test"),
-      chromium: await browser.version(),
-      ffmpeg: toolVersion("ffmpeg", ["-version"]),
-      imagemagick: toolVersion("montage", ["-version"]),
-      fps: description.fps,
-      resolutionScale: 0.5,
-      semanticStride: options.stride,
-      tuning: JSON.parse(
-        readFileSync(join(ROOT, "src/guided-scenes/authoring/matrixTransformationTuning.json"), "utf8"),
-      ),
-    };
+      const environment = {
+        node: process.version,
+        platform: `${process.platform}-${process.arch}`,
+        commit: gitValue(["rev-parse", "HEAD"]),
+        workingTree: gitValue(["status", "--short"]) ? "dirty" : "clean",
+        motionCanvasCore: packageVersion("@motion-canvas/core"),
+        playwright: packageVersion("@playwright/test"),
+        chromium: await browser.version(),
+        ffmpeg: toolVersion("ffmpeg", ["-version"]),
+        imagemagick: toolVersion("montage", ["-version"]),
+        fps: description.fps,
+        resolutionScale: 0.5,
+        semanticStride: options.stride,
+        tuning: REVIEW_SCENES[options.sceneId].tuningFile
+          ? JSON.parse(
+              readFileSync(
+                join(ROOT, REVIEW_SCENES[options.sceneId].tuningFile),
+                "utf8",
+              ),
+            )
+          : null,
+      };
 
-    const expectedReduced = description.reducedMotionFrames.filter((item) => !options.beat || item.beatId === options.beat).length;
-    const reducedFailures = reducedMotionEvidenceFailures(reducedMotion, expectedReduced);
-    const missingArtifacts = [
-      !existsSync(contactSheet) ? "contact-sheet.png" : null,
-      !options.skipVideo && !options.reducedMotionOnly && !render.focused && !existsSync(preview) ? "preview.mp4" : null,
-      ...reducedMotion.filter(({artifact}) => !existsSync(join(packetDir, artifact))).map(({artifact}) => artifact),
-      ...render.frameRecords.filter(({path}) => !existsSync(path)).map(({path}) => packetPath(packetDir, path)),
-    ].filter(Boolean);
-    const failures = [
-      ...analysis.failures,
-      ...reducedFailures,
-      ...browserErrors.map((message) => `browser console: ${message}`),
-      ...(contactError ? [contactError] : []),
-      ...(previewError ? [previewError] : []),
-      ...missingArtifacts.map((artifact) => `missing required artifact: ${artifact}`),
-    ];
-    const disposition = failures.length > 0
-      ? `FAIL (${failures.length})`
-      : options.reducedMotionOnly
-        ? "EVIDENCE-ONLY (not an approval packet)"
-        : render.focused
-          ? "FOCUSED (not an approval packet)"
-          : "PASS";
-    const packet = {
-      schemaVersion: 2,
-      sceneId: options.sceneId,
-      disposition,
-      scope: options.beat
-        ? `beat:${options.beat}${options.checkpoint ? `/checkpoint:${options.checkpoint}` : ""}`
-        : options.reducedMotionOnly ? "reduced-motion" : "full-pilot",
-      beats: description.beats,
-      captures: render.frameRecords.map(({path, ...record}) => ({
-        ...record,
-        artifact: packetPath(packetDir, path),
-      })),
-      reducedMotion,
-      referenceComparisons: description.referenceComparisons,
-      referenceEvidence: {requested: false, disposition: "not-requested", comparisons: description.referenceComparisons},
-      preview: {
-        artifact: "preview.mp4",
-        startFrame: render.previewStart,
-        endFrame: render.previewEnd,
-        frames: render.previewWritten,
-        skipped: options.skipVideo || options.reducedMotionOnly || render.focused,
-      },
-      render: {
-        runId: "production-renderer", handledFrames: render.handled,
-        elapsedMs: render.elapsedMs, selectedRange: render.range, resolutionScale: 0.5,
-      },
-      reducedMotionRun: reducedRun.run,
-      analysis,
-      environment: "environment.json",
-      missingArtifacts,
-      failures,
-    };
-    writeJson(join(packetDir, "analysis.json"), analysis);
-    writeJson(join(packetDir, "environment.json"), environment);
-    writeJson(join(packetDir, "packet.json"), packet);
-    writeFileSync(join(packetDir, "summary.md"), buildSummary(packet));
+      const expectedReduced = description.reducedMotionFrames.filter(
+        (item) => !options.beat || item.beatId === options.beat,
+      ).length;
+      const reducedFailures = reducedMotionEvidenceFailures(
+        reducedMotion,
+        expectedReduced,
+      );
+      const missingArtifacts = [
+        !existsSync(contactSheet) ? "contact-sheet.png" : null,
+        !options.skipVideo &&
+        !options.reducedMotionOnly &&
+        !render.focused &&
+        !existsSync(preview)
+          ? "preview.mp4"
+          : null,
+        ...reducedMotion
+          .filter(({ artifact }) => !existsSync(join(packetDir, artifact)))
+          .map(({ artifact }) => artifact),
+        ...render.frameRecords
+          .filter(({ path }) => !existsSync(path))
+          .map(({ path }) => packetPath(packetDir, path)),
+      ].filter(Boolean);
+      const failures = [
+        ...analysis.failures,
+        ...reducedFailures,
+        ...browserErrors.map((message) => `browser console: ${message}`),
+        ...(contactError ? [contactError] : []),
+        ...(previewError ? [previewError] : []),
+        ...missingArtifacts.map(
+          (artifact) => `missing required artifact: ${artifact}`,
+        ),
+      ];
+      const disposition =
+        failures.length > 0
+          ? `FAIL (${failures.length})`
+          : options.reducedMotionOnly
+            ? "EVIDENCE-ONLY (not an approval packet)"
+            : render.focused
+              ? "FOCUSED (not an approval packet)"
+              : "PASS";
+      const packet = {
+        schemaVersion: 2,
+        sceneId: options.sceneId,
+        disposition,
+        scope: options.beat
+          ? `beat:${options.beat}${options.checkpoint ? `/checkpoint:${options.checkpoint}` : ""}`
+          : options.reducedMotionOnly
+            ? "reduced-motion"
+            : "full-scene",
+        beats: description.beats,
+        mathData: description.mathData,
+        captures: render.frameRecords.map(({ path, ...record }) => ({
+          ...record,
+          artifact: packetPath(packetDir, path),
+        })),
+        reducedMotion,
+        referenceComparisons: description.referenceComparisons,
+        referenceEvidence: {
+          requested: false,
+          disposition: "not-requested",
+          comparisons: description.referenceComparisons,
+        },
+        preview: {
+          artifact: "preview.mp4",
+          startFrame: render.previewStart,
+          endFrame: render.previewEnd,
+          frames: render.previewWritten,
+          skipped:
+            options.skipVideo || options.reducedMotionOnly || render.focused,
+        },
+        render: {
+          runId: "production-renderer",
+          handledFrames: render.handled,
+          elapsedMs: render.elapsedMs,
+          selectedRange: render.range,
+          resolutionScale: 0.5,
+        },
+        reducedMotionRun: reducedRun.run,
+        analysis,
+        environment: "environment.json",
+        missingArtifacts,
+        failures,
+      };
+      writeJson(join(packetDir, "analysis.json"), analysis);
+      writeJson(join(packetDir, "environment.json"), environment);
+      writeJson(join(packetDir, "packet.json"), packet);
+      writeFileSync(join(packetDir, "summary.md"), buildSummary(packet));
 
-    console.log(`${failures.length === 0 ? "✓" : "✗"} ${join(packetDir, "summary.md")}`);
-    console.log(`  contact sheet: ${contactSheet}`);
-    if (!packet.preview.skipped) console.log(`  short preview: ${preview}`);
-    if (failures.length > 0) {
-      for (const failure of failures) console.error(`  - ${failure}`);
-      process.exitCode = 1;
-    }
-  });
+      console.log(
+        `${failures.length === 0 ? "✓" : "✗"} ${join(packetDir, "summary.md")}`,
+      );
+      console.log(`  contact sheet: ${contactSheet}`);
+      if (!packet.preview.skipped) console.log(`  short preview: ${preview}`);
+      if (failures.length > 0) {
+        for (const failure of failures) console.error(`  - ${failure}`);
+        process.exitCode = 1;
+      }
+    },
+  );
 }
 
 main().catch((error) => {
-  console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(
+    `error: ${error instanceof Error ? error.message : String(error)}`,
+  );
   process.exit(1);
 });

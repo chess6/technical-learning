@@ -1,4 +1,4 @@
-import {MATRIX_TRANSFORMATION_SEGMENTS} from "../scenes/sceneTimings";
+import { MATRIX_TRANSFORMATION_SEGMENTS } from "../scenes/sceneTimings";
 import type {
   BeatSpec,
   CheckpointSpec,
@@ -32,10 +32,26 @@ function checkpoints(
   requiredObjects: readonly SemanticObjectId[],
 ): readonly CheckpointSpec[] {
   return [
-    {id: "opening", anchor: {kind: "segment", position: "opening"}, requiredObjects},
-    {id: "midpoint", anchor: {kind: "segment", position: "midpoint"}, requiredObjects},
-    {id: "landing", anchor: {kind: "phase", phaseId: landingPhase, position: "end"}, requiredObjects},
-    {id: "final", anchor: {kind: "segment", position: "final"}, requiredObjects},
+    {
+      id: "opening",
+      anchor: { kind: "segment", position: "opening" },
+      requiredObjects,
+    },
+    {
+      id: "midpoint",
+      anchor: { kind: "segment", position: "midpoint" },
+      requiredObjects,
+    },
+    {
+      id: "landing",
+      anchor: { kind: "phase", phaseId: landingPhase, position: "end" },
+      requiredObjects,
+    },
+    {
+      id: "final",
+      anchor: { kind: "segment", position: "final" },
+      requiredObjects,
+    },
   ];
 }
 
@@ -58,7 +74,12 @@ function beat(
     id,
     purpose: segment.summary ?? segment.title,
     timingEvent: `${SCENE_ID}.${id}`,
-    chapter: {id, title: segment.title, summary: segment.summary},
+    chapter: {
+      id,
+      title: segment.title,
+      summary: segment.summary,
+      seek: { kind: "segment-opening" },
+    },
     ...config,
   };
 }
@@ -66,6 +87,13 @@ function beat(
 export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
   sceneId: SCENE_ID,
   semanticObjects: Object.values(MATRIX_TRANSFORMATION_OBJECTS),
+  mathData: {
+    matrix: [
+      [2, 1],
+      [0, 1],
+    ],
+    sampleVector: [1.5, 0.5],
+  },
   beats: [
     beat("identity", {
       intent: "geometry",
@@ -79,7 +107,11 @@ export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
       intent: "geometry",
       focalObjects: [O.column1, O.transformedGrid],
       invariant: "The second column remains e₂ while the first column moves.",
-      checkpoints: checkpoints("columnMove", [O.column1, O.column2, O.transformedGrid]),
+      checkpoints: checkpoints("columnMove", [
+        O.column1,
+        O.column2,
+        O.transformedGrid,
+      ]),
       expectedChanges: geometry(O.column1, O.transformedGrid),
       expectedStableObjects: [O.column2, O.staticGrid],
     }),
@@ -87,7 +119,11 @@ export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
       intent: "geometry",
       focalObjects: [O.column2, O.transformedGrid],
       invariant: "The first column remains Ae₁ while the second column moves.",
-      checkpoints: checkpoints("columnMove", [O.column1, O.column2, O.transformedGrid]),
+      checkpoints: checkpoints("columnMove", [
+        O.column1,
+        O.column2,
+        O.transformedGrid,
+      ]),
       expectedChanges: geometry(O.column2, O.transformedGrid),
       expectedStableObjects: [O.column1, O.staticGrid],
     }),
@@ -107,11 +143,21 @@ export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
         question: "Both columns are known. Where does x land?",
         revealBeat: "transform-sample",
       },
-      checkpoints: checkpoints("evidenceIn", [O.prediction, O.column1, O.column2, O.sample]),
+      checkpoints: checkpoints("evidenceIn", [
+        O.prediction,
+        O.column1,
+        O.column2,
+        O.sample,
+      ]),
       expectedChanges: [
-        {objectId: O.prediction, property: "opacity", expectation: "appear"},
+        { objectId: O.prediction, property: "opacity", expectation: "appear" },
       ],
-      expectedStableObjects: [O.column1, O.column2, O.sample, O.transformedGrid],
+      expectedStableObjects: [
+        O.column1,
+        O.column2,
+        O.sample,
+        O.transformedGrid,
+      ],
     }),
     beat("transform-sample", {
       intent: "geometry",
@@ -124,7 +170,8 @@ export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
     beat("grid", {
       intent: "geometry",
       focalObjects: [O.probeImage, O.transformedGrid],
-      invariant: "The origin remains fixed and the line image remains straight.",
+      invariant:
+        "The origin remains fixed and the line image remains straight.",
       checkpoints: checkpoints("trace", [O.probeImage, O.transformedGrid]),
       expectedChanges: geometry(O.probeImage),
       expectedStableObjects: [O.column1, O.column2, O.transformedGrid],
@@ -141,15 +188,24 @@ export const MATRIX_TRANSFORMATION_BEAT_CONTRACT: SceneBeatContract = {
       intent: "geometry",
       focalObjects: [O.column1, O.column2, O.transformedGrid],
       invariant: "Each preset starts from identity; the origin stays fixed.",
-      checkpoints: checkpoints("tour", [O.column1, O.column2, O.transformedGrid]),
+      checkpoints: checkpoints("tour", [
+        O.column1,
+        O.column2,
+        O.transformedGrid,
+      ]),
       expectedChanges: geometry(O.column1, O.column2, O.transformedGrid),
       expectedStableObjects: [O.staticGrid],
     }),
     beat("summary", {
       intent: "geometry",
       focalObjects: [O.column1, O.column2, O.transformedGrid],
-      invariant: "The final columns and grid agree with the shared lesson matrix A.",
-      checkpoints: checkpoints("restore", [O.column1, O.column2, O.transformedGrid]),
+      invariant:
+        "The final columns and grid agree with the shared lesson matrix A.",
+      checkpoints: checkpoints("restore", [
+        O.column1,
+        O.column2,
+        O.transformedGrid,
+      ]),
       expectedChanges: geometry(O.column1, O.column2, O.transformedGrid),
       expectedStableObjects: [O.staticGrid],
     }),

@@ -1,15 +1,22 @@
 {
   "why-linear-algebra": {
     "module": "chapter0Scene",
-    "exportName": "chapter0Scene"
+    "exportName": "chapter0Scene",
+    "lessonId": "why-linear-algebra",
+    "authoringContract": true
   },
   "vectors-linear-combinations": {
     "module": "linearCombinationScene",
-    "exportName": "linearCombinationScene"
+    "exportName": "linearCombinationScene",
+    "lessonId": "vectors",
+    "authoringContract": true
   },
   "matrix-transformations": {
     "module": "matrixTransformationScene",
-    "exportName": "matrixTransformationScene"
+    "exportName": "matrixTransformationScene",
+    "lessonId": "transformations",
+    "authoringContract": true,
+    "tuningFile": "src/guided-scenes/authoring/matrixTransformationTuning.json"
   },
   "columns-rule-graphic": {
     "module": "columnsRuleGraphicScene",
@@ -29,7 +36,9 @@
   },
   "matrix-composition": {
     "module": "matrixCompositionScene",
-    "exportName": "matrixCompositionScene"
+    "exportName": "matrixCompositionScene",
+    "lessonId": "matrix-composition",
+    "authoringContract": true
   },
   "subspaces-rank": {
     "module": "subspacesRankScene",
@@ -41,11 +50,15 @@
   },
   "change-of-basis": {
     "module": "changeOfBasisScene",
-    "exportName": "changeOfBasisScene"
+    "exportName": "changeOfBasisScene",
+    "lessonId": "change-of-basis",
+    "authoringContract": true
   },
   "determinant-area-scaling": {
     "module": "determinantAreaScalingScene",
-    "exportName": "determinantAreaScalingScene"
+    "exportName": "determinantAreaScalingScene",
+    "lessonId": "determinants",
+    "authoringContract": true
   },
   "eigenvectors-invariant-directions": {
     "module": "eigenvectorsInvariantDirectionsScene",
