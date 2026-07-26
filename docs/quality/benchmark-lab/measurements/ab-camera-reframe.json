@@ -1,5 +1,5 @@
 {
-  "benchmarkId": "ab-split",
+  "benchmarkId": "ab-camera-reframe",
   "source": {
     "repoSlug": "xiaoxiae-videos",
     "repoUrl": "https://github.com/xiaoxiae/videos",
@@ -9,62 +9,54 @@
     "channel": "Tom Slama (Tom S)",
     "sceneSources": [
       "Insertion",
-      "ABTree.bubble_insert",
-      "create_node"
+      "MovingCameraScene"
     ],
     "license": "GPL-3.0 (reference-only)"
   },
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 218,
-    "sampledFrames": 73
+    "durationFrames": 360,
+    "sampledFrames": 120
   },
   "events": [
     {
-      "id": "split-starts",
-      "anchor": "transcript",
-      "referenceSec": 312.6,
-      "expectedReplicaSec": 2,
-      "measuredReplicaSec": 2,
+      "id": "zoom-to-halves",
+      "anchor": "estimated",
+      "referenceSec": 342.2,
+      "expectedReplicaSec": 1.6,
+      "measuredReplicaSec": 1.6,
       "deltaSec": 0
     },
     {
-      "id": "middle-key-rises",
+      "id": "validity-annotated",
       "anchor": "estimated",
-      "referenceSec": 314,
-      "expectedReplicaSec": 3.4,
-      "measuredReplicaSec": 3.4,
+      "referenceSec": 346.6,
+      "expectedReplicaSec": 6,
+      "measuredReplicaSec": 6,
       "deltaSec": 0
     }
   ],
-  "landmarks": [
-    {
-      "id": "root-after-split",
-      "deltaPx": 12.2,
-      "tolerancePx": 26,
-      "passed": true
-    }
-  ],
+  "landmarks": [],
   "dimensions": [
     {
       "dimension": "math-validity",
-      "total": 4,
-      "passed": 4,
+      "total": 0,
+      "passed": 0,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "identity-continuity",
-      "total": 16,
-      "passed": 16,
+      "total": 10,
+      "passed": 10,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "composition",
-      "total": 9,
-      "passed": 9,
+      "total": 3,
+      "passed": 3,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -84,8 +76,8 @@
     },
     {
       "dimension": "camera",
-      "total": 0,
-      "passed": 0,
+      "total": 2,
+      "passed": 2,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -98,15 +90,15 @@
     },
     {
       "dimension": "reveal-structure",
-      "total": 8,
-      "passed": 8,
+      "total": 7,
+      "passed": 7,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 1,
-      "passed": 1,
+      "total": 3,
+      "passed": 3,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -115,14 +107,14 @@
   "craftFindings": [],
   "deviations": [
     {
-      "id": "layout-algorithm",
-      "classification": "measured finding",
-      "note": "Reference uses a hand-tuned parent-placement rule; the replica computes layout deterministically upward from the pinned leaf row."
+      "id": "group-transform-camera",
+      "classification": "blocked by runtime limitation",
+      "note": "The runtime has no scene camera object; the replica reframes a persistent world group."
     },
     {
-      "id": "typography",
+      "id": "diagram-simplification",
       "classification": "intentionally different for product semantics",
-      "note": "Reference uses serif LaTeX keys; the replica uses the repo sans stack."
+      "note": "The focused replica keeps only the selected nodes and enough context to measure the treatment."
     }
   ]
 }

@@ -135,37 +135,7 @@ export const huffmanMergeManifest: BenchmarkManifest = {
       anchor: "estimated",
     },
   ],
-  landmarks: [
-    {
-      id: "frontier-column",
-      objectId: "leaf-D",
-      beatId: "frontier",
-      x: -338,
-      y: -172,
-      note: "Top of the sorted column at the left of frame.",
-    },
-    {
-      id: "leaf-D-tree-slot",
-      objectId: "leaf-D",
-      beatId: "merge-DE",
-      x: 67,
-      y: 197,
-    },
-    {
-      id: "leaf-E-tree-slot",
-      objectId: "leaf-E",
-      beatId: "merge-DE",
-      x: 202,
-      y: 197,
-    },
-    {
-      id: "parent-DE-slot",
-      objectId: "parent-DE",
-      beatId: "merge-DE",
-      x: 135,
-      y: 67,
-    },
-  ],
+  landmarks: [],
   invariants: [
     {
       id: "parent-sum-conservation",
@@ -212,10 +182,13 @@ export const huffmanMergeManifest: BenchmarkManifest = {
   knownDeviations: [
     {
       id: "typography",
+      classification: "intentionally different for product semantics",
       note: "Reference uses serif LaTeX numerals; the replica uses the repo sans stack.",
     },
     {
       id: "column-resort-detail",
+      classification: "accepted with rationale",
+      rationale: "Persistent queue objects better preserve learner-visible identity; the landed order remains independently measured.",
       note:
         "Reference rebuilds the frontier group per re-sort; the replica moves " +
         "only members whose positions change. End states are compared.",

@@ -130,6 +130,11 @@ export const abSplitManifest: BenchmarkManifest = {
       x: -50,
       y: -8,
       note: "Reference-observed key-1 slot after the root widens.",
+      evidence: {
+        kind: "reference-frame",
+        refTime: 317.9,
+        note: "Measured from the landed reference keyframe, not the replica layout.",
+      },
     },
   ],
   invariants: [
@@ -178,12 +183,14 @@ export const abSplitManifest: BenchmarkManifest = {
   knownDeviations: [
     {
       id: "layout-algorithm",
+      classification: "measured finding",
       note:
         "Reference uses a hand-tuned parent-placement rule; the replica computes " +
         "layout deterministically upward from the pinned leaf row.",
     },
     {
       id: "typography",
+      classification: "intentionally different for product semantics",
       note: "Reference uses serif LaTeX keys; the replica uses the repo sans stack.",
     },
   ],

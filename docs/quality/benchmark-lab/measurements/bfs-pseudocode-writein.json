@@ -1,5 +1,5 @@
 {
-  "benchmarkId": "bfs-frontier",
+  "benchmarkId": "bfs-pseudocode-writein",
   "source": {
     "repoSlug": "manim-js",
     "repoUrl": "https://github.com/JazonJiao/Manim.js",
@@ -8,51 +8,25 @@
     "videoTitle": "Breadth-first search, visualized | Graph Algorithm 1",
     "channel": "Jazon Jiao",
     "sceneSources": [
-      "Graph01 (1_bfs.js)",
       "Graph_BFS",
       "Tracer",
-      "Node",
-      "Edge"
+      "TextWriteIn"
     ],
     "license": "none declared (reference-only)"
   },
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 509,
-    "sampledFrames": 170
+    "durationFrames": 270,
+    "sampledFrames": 90
   },
   "events": [
     {
-      "id": "enqueue-start-vertex",
-      "anchor": "scene-map",
-      "referenceSec": 21.5,
+      "id": "pseudo-writein-start",
+      "anchor": "estimated",
+      "referenceSec": 12.5,
       "expectedReplicaSec": 0,
       "measuredReplicaSec": 0,
-      "deltaSec": 0
-    },
-    {
-      "id": "first-dequeue",
-      "anchor": "scene-map",
-      "referenceSec": 23.5,
-      "expectedReplicaSec": 2,
-      "measuredReplicaSec": 2,
-      "deltaSec": 0
-    },
-    {
-      "id": "first-expand",
-      "anchor": "scene-map",
-      "referenceSec": 25.2,
-      "expectedReplicaSec": 3.7,
-      "measuredReplicaSec": 3.73,
-      "deltaSec": 0.03
-    },
-    {
-      "id": "metronome-tick-6",
-      "anchor": "scene-map",
-      "referenceSec": 33.9,
-      "expectedReplicaSec": 12.4,
-      "measuredReplicaSec": 12.4,
       "deltaSec": 0
     }
   ],
@@ -60,22 +34,22 @@
   "dimensions": [
     {
       "dimension": "math-validity",
-      "total": 4,
-      "passed": 4,
+      "total": 2,
+      "passed": 2,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "identity-continuity",
-      "total": 20,
-      "passed": 20,
+      "total": 8,
+      "passed": 8,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "composition",
-      "total": 7,
-      "passed": 7,
+      "total": 4,
+      "passed": 4,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -88,8 +62,8 @@
     },
     {
       "dimension": "timing",
-      "total": 9,
-      "passed": 9,
+      "total": 3,
+      "passed": 3,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -109,15 +83,15 @@
     },
     {
       "dimension": "reveal-structure",
-      "total": 13,
-      "passed": 13,
+      "total": 4,
+      "passed": 4,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 2,
-      "passed": 2,
+      "total": 1,
+      "passed": 1,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -126,9 +100,9 @@
   "craftFindings": [],
   "deviations": [
     {
-      "id": "fixed-graph-instance",
+      "id": "typography",
       "classification": "intentionally different for product semantics",
-      "note": "Reference randomises edges per run; the replica fixes one deterministic lattice instance and derives every number/state from a real BFS."
+      "note": "The replica uses the product sans stack and neutral pseudocode wording."
     }
   ]
 }

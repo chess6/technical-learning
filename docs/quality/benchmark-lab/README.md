@@ -41,17 +41,23 @@ lazy module graphs, from production bundles.
 
 ## The benchmarks
 
-One per curated reference pack. Timestamps are seconds in the source video;
+Four core causal windows cover every curated reference pack; four additional treatment windows close the presentation gaps. Timestamps are seconds in the source video;
 commits are the pins in `.reference-sources/manifest.json`, which every
 manifest re-asserts in a test so an analysis can never describe code that is
 no longer on disk.
 
-| Benchmark | Source | Repo @ commit | Excerpt | Chosen to test |
-| --- | --- | --- | --- | --- |
-| `eigen-span-stretch` | 3Blue1Brown, *Eigenvectors and eigenvalues* (`PFDu9oVAE-g`) | `3b1b/videos` @ `e317d6c5` | 117.4–129.5 s (12.1 s) | One complete continuous transform: the invariant span is drawn first, then grid, basis, and vector move together; pinned equation and no caption |
-| `huffman-merge` | Reducible, *Huffman Codes* (`B3y0RsVCyrw`) | `nipunramk/Reducible` @ `88f4f8f7` | 1450.0–1462.5 s (12.5 s) | One greedy merge: persistent leaves travel into tree slots, a summed parent is born, and its queue copy re-sorts |
-| `ab-split` | Tom Sláma, *(a,b)-trees* (`lifFgyB77zc`) | `xiaoxiae/videos` @ `f65794b0` | 310.6–317.9 s (7.3 s) | One structural repair: persistent key tokens split and rise while the leaf row stays pinned; violation colour retires |
-| `bfs-frontier` | Jazon Jiao, *BFS visualized* (`mVzsz8Actrc`) | `JazonJiao/Manim.js` @ `7cd0da52` | 21.5–38.5 s (17.0 s) | An established pseudocode/graph frame: tracer movement, graph state, edge pulse, and computed enqueue numbers share one transition |
+| Benchmark | Excerpt | Measured treatment |
+| --- | --- | --- |
+| `eigen-span-stretch` | 117.4–129.5 s (12.1 s) | Continuous grid/vector transform with pinned equation and invariant span |
+| `huffman-merge` | 1450.0–1462.5 s (12.5 s) | Persistent-token greedy merge and visible queue re-sort |
+| `ab-split` | 310.6–317.9 s (7.3 s) | Persistent-key structural repair with pinned leaf row |
+| `bfs-frontier` | 21.5–38.5 s (17.0 s) | Synchronized pseudocode tracer and graph-state transition |
+| `bfs-intertitle-build` | 0.0–12.5 s (12.5 s) | Full-frame intertitle into staggered node/edge build |
+| `bfs-pseudocode-writein` | 12.5–21.5 s (9.0 s) | Length-paced pseudocode write-in beside fixed geometry |
+| `ab-prediction-reveal` | 302.9–317.9 s (15.0 s) | Frozen full-frame prediction treatment followed by reveal |
+| `ab-camera-reframe` | 340.6–352.6 s (12.0 s) | Viewport reframe around a local proof and temporary annotation |
+
+The eight windows total 97.4 seconds. No single window exceeds 17 seconds; the five newly covered treatments live in 9–15 second windows, so the laboratory never restores the earlier 40–85 second replicas.
 
 Adding a benchmark is a manifest + a replica scene + a window in
 `referenceWindows.json` + locally fetched frames. No laboratory changes.
@@ -75,26 +81,20 @@ was copied.
 
 ## Measured result
 
-All four focused replicas currently have zero hard failures and zero *measured*
-craft findings. That does not mean zero visual difference: each report lists
-accepted deviations separately, and the current windows deliberately do not
-cover camera reframing, prediction overlays, intertitles, graph build-in, or
-pseudocode write-in. The residuals below describe only the focused 7–17 second
-windows:
+All eight focused replicas currently have zero hard failures and zero runtime-generated craft findings. That sentence is deliberately qualified: it describes only the checks the sampler ran. Every remaining difference is listed with one of four classifications — `measured finding`, `accepted with rationale`, `blocked by runtime limitation`, or `intentionally different for product semantics`. A manifest declaration cannot silently become accepted: the validator requires a separate rationale.
 
-| Benchmark | Checks passed | Worst event delta | Worst landmark delta | Declared deviations |
-| --- | --- | --- | --- | --- |
-| `eigen-span-stretch` | 39/39 | 0.00 s (2 events) | 0 px | 2 |
-| `huffman-merge` | 64/64 | 0.00 s (4 events) | 0 px | 2 |
-| `ab-split` | 44/44 | 0.00 s (2 events) | 12.2 px | 2 |
-| `bfs-frontier` | 59/59 | 0.03 s (4 events) | 0 px | 1 |
+| Benchmark | Checks | Worst event delta | Worst landmark delta | Classified deviations |
+| --- | ---: | ---: | ---: | ---: |
+| `eigen-span-stretch` | 39/39 | 0.00 s | 0 px | 2 |
+| `huffman-merge` | 60/60 | 0.00 s | — | 2 |
+| `ab-split` | 44/44 | 0.00 s | 12.2 px | 2 |
+| `bfs-frontier` | 56/56 | 0.03 s | — | 1 |
+| `bfs-intertitle-build` | 40/40 | 0.29 s | — | 2 |
+| `bfs-pseudocode-writein` | 23/23 | 0.00 s | — | 1 |
+| `ab-prediction-reveal` | 62/62 | 0.00 s | — | 2 |
+| `ab-camera-reframe` | 31/31 | 0.00 s | — | 2 |
 
-Event times anchored to narration are accurate to their transcript segment;
-times marked `estimated` were read from the reference frames. Where exact
-matching is intentionally not pursued, the manifest records an accepted
-deviation — layout rules, serif-versus-sans typography, or a randomised
-reference graph fixed to a deterministic instance. Reports never turn those
-declarations into an unqualified “zero differences” claim.
+Composition landmarks participate in grading only when they carry an explicit local reference-frame time. Replica-layout landmarks were removed; missing independent geometry is shown as missing evidence, never as a zero-pixel match. Events use scene-map or observed reference anchors, and paired reference/replica captures are produced for every beat.
 
 ## Where the measurements are not the truth
 

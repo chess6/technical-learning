@@ -11,7 +11,7 @@
     {
       "benchmarkId": "huffman-merge",
       "videoId": "B3y0RsVCyrw",
-      "start": 1450.0,
+      "start": 1450,
       "end": 1462.5,
       "frameFps": 15
     },
@@ -27,6 +27,34 @@
       "videoId": "mVzsz8Actrc",
       "start": 21.5,
       "end": 38.5,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "bfs-intertitle-build",
+      "videoId": "mVzsz8Actrc",
+      "start": 0,
+      "end": 12.5,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "bfs-pseudocode-writein",
+      "videoId": "mVzsz8Actrc",
+      "start": 12.5,
+      "end": 21.5,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "ab-prediction-reveal",
+      "videoId": "lifFgyB77zc",
+      "start": 302.9,
+      "end": 317.9,
+      "frameFps": 15
+    },
+    {
+      "benchmarkId": "ab-camera-reframe",
+      "videoId": "lifFgyB77zc",
+      "start": 340.6,
+      "end": 352.6,
       "frameFps": 15
     }
   ]

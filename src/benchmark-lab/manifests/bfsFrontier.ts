@@ -143,32 +143,7 @@ export const bfsFrontierManifest: BenchmarkManifest = {
       anchor: "scene-map",
     },
   ],
-  landmarks: [
-    {
-      id: "vertex-0-pos",
-      objectId: "vertex-0",
-      beatId: "init-enqueue",
-      x: -288,
-      y: -210,
-      note: "Start vertex at the top-left of the fixed lattice.",
-    },
-    {
-      id: "panel-title-pos",
-      objectId: "pseudo-title",
-      beatId: "init-enqueue",
-      x: 14,
-      y: -212,
-      note: "Left anchor of the panel title in the upper-right half.",
-    },
-    {
-      id: "panel-line1-pos",
-      objectId: "pseudo-lines",
-      beatId: "init-enqueue",
-      x: 40,
-      y: -175,
-      note: "Left anchor of the first pseudocode line.",
-    },
-  ],
+  landmarks: [],
   invariants: [
     {
       id: "vertex-positions-frozen",
@@ -209,6 +184,7 @@ export const bfsFrontierManifest: BenchmarkManifest = {
   knownDeviations: [
     {
       id: "fixed-graph-instance",
+      classification: "intentionally different for product semantics",
       note:
         "Reference randomises edges per run; the replica fixes one deterministic " +
         "lattice instance and derives every number/state from a real BFS.",

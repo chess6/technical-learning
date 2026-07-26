@@ -124,6 +124,11 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
       x: -90,
       y: -195,
       note: "Matrix remains pinned above-left of the origin.",
+      evidence: {
+        kind: "reference-frame",
+        refTime: 129.5,
+        note: "Measured from the landed frame of the local extracted reference window.",
+      },
     },
   ],
   invariants: [
@@ -172,12 +177,14 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
   knownDeviations: [
     {
       id: "grid-unit",
+      classification: "intentionally different for product semantics",
       note:
         "Reference uses about 65 px per unit at equivalent framing; the replica " +
         "uses the repo-wide 64 px scale.",
     },
     {
       id: "font",
+      classification: "intentionally different for product semantics",
       note: "Reference uses LaTeX serif type; the replica uses the repo sans stack.",
     },
   ],

@@ -5,7 +5,7 @@ deliberately not a sequence anyone must follow.** It exists to give the later
 scene-system redesign a vocabulary and a set of primitives; nothing in the
 current authoring gates changes because of this document.
 
-Evidence comes from two distinct layers: the four **focused 7–17 second runtime reconstructions** in [README.md](README.md), and the wider committed source-pack analyses under `.reference-sources/packs/`. Only behaviors inside the current manifest windows are actively benchmarked. Camera reframing, prediction overlays, intertitles, graph build-in, and pseudocode write-in are source-study evidence only; the shortened manifests declare every current camera static.
+Evidence comes from two distinct layers: the eight **focused 7–17 second runtime reconstructions** in [README.md](README.md), and the wider committed source-pack analyses under `.reference-sources/packs/`. Only behaviors inside the current manifest windows are actively benchmarked. Camera reframing, prediction overlays, intertitles, graph build-in, and pseudocode write-in now each have a focused runtime window; wider lecture choreography remains source-study evidence only.
 
 ## The finding
 
@@ -15,15 +15,15 @@ there are **261 caption assignments**; exactly one scene (the development spike)
 has none, and 10 scenes carry both a persistent top label and a persistent
 caption.
 
-None of the four expert excerpts is built that way, and **one of them shows no
+None of the focused expert excerpts is built that way, and **one of them shows no
 caption at all**:
 
 | Excerpt | How it carries meaning |
 | --- | --- |
 | `eigen-span-stretch` (3b1b, 117.4–129.5 s; current) | No title or caption. A pinned matrix, fixed span, moving grid, and vector carry the meaning through one continuous transform. |
 | `huffman-merge` (Reducible, 1450.0–1462.5 s; current) | No prose. Value readouts and the sorted frontier carry one complete greedy merge. |
-| `ab-split` (Sláma, 310.6–317.9 s; current) | One persistent section title and object labels during the split/rise repair. Camera reframing and the prediction overlay occur elsewhere in the wider source study and are not in this window. |
-| `bfs-frontier` (Jiao, 21.5–38.5 s; current) | The pseudocode panel is already established and acts as narrator while its tracer and graph state advance together. The intertitle, staggered build, and write-in occur before this window and are not currently benchmarked. |
+| `ab-split` (Sláma, 310.6–317.9 s; current) | One persistent section title and object labels during the split/rise repair. Separate 12–15 second windows now measure its camera reframe and prediction-to-reveal treatment. |
+| `bfs-frontier` (Jiao, 21.5–38.5 s; current) | The pseudocode panel is already established and acts as narrator while its tracer and graph state advance together. Separate 9–12.5 second windows now measure its intertitle, staggered build, and write-in. |
 
 The reference animations vary their presentation because different beats have
 different jobs. Our scenes vary the *words* in a fixed frame.
@@ -40,9 +40,9 @@ laboratory watched it work.
 | **Persistent equation** | Algebra and geometry must be co-visible so a change in one is seen in the other. | 3b1b's pinned matrix, held for the whole excerpt with its columns colour-bound to the basis. |
 | **Temporary annotation** | One fact needs saying *now*, beside the thing it is about, and then should go. | Wider 3b1b source-study evidence; the focused eigen window ends before these annotations. |
 | **Split-screen comparison** | Two spaces or two algorithms must not be implied to share one plane. | Production `subspaces-rank` plus the wider Huffman source study; the focused Huffman window does not include the contrast. |
-| **Full-frame question / intertitle** | The frame should stop being a diagram and become a prompt. | Wider source-pack evidence only: the A/B-tree pause overlay and BFS opening card are outside the focused runtime windows. |
+| **Full-frame question / intertitle** | The frame should stop being a diagram and become a prompt. | Focused runtime evidence: `ab-prediction-reveal` and `bfs-intertitle-build`. |
 | **Invariant ledger** | The claim is about a quantity that must not change while everything else does. | `rank-nullity`'s tally; the sorted frontier column, where "still sorted" is visible without a word. |
-| **Camera reframing** | The argument is local and the rest of the frame is currently noise. | Wider A/B-tree source-pack evidence only; every focused manifest currently declares a static camera. |
+| **Camera reframing** | The argument is local and the rest of the frame is currently noise. | Focused runtime evidence: `ab-camera-reframe` measures the continuous world-group reframe and landed focus. |
 | **Silent visual hold** | The viewer needs time on an unchanged frame. | 3b1b's holds after every semantic step; the reference's explicit pause-and-ponder beats. |
 | **Narration over uninterrupted motion** | The motion is continuous and words would chop it. | The current 3b1b grid and special vector transform continuously while the fixed span and equation hold. |
 
@@ -71,12 +71,12 @@ Three rules, and no fourth:
 
 What this is *not*: a required sequence of roles, a template, or a claim that
 captions are bad. Our checkpoints are a genuine advantage over the references —
-all four excerpts pause and hope, and we can verify. The proposal is about the
+the reference animations pause and hope, and we can verify. The proposal is about the
 *frame*, not about dropping the pedagogy.
 
 ## Primitives motivated by the focused benchmarks and wider source study
 
-Built during the laboratory work and now in the shared kit (`src/guided-scenes/scenes/kitMotion.ts`, with pure calculators in `kitLayout.ts`, unit-tested). The current focused windows actively exercise span geometry, persistent tokens, sorted layout, tracer/state synchronization, and pulses. `makeFocusRig`, `makeWriteInText`, `writeInSchedule`, `staggerTimes`, and family-gradient support came from the wider source study or earlier long replicas; because the current windows exclude those beats, their existence must not be described as current comparison coverage:
+Built during the laboratory work and now in the shared kit (`src/guided-scenes/scenes/kitMotion.ts`, with pure calculators in `kitLayout.ts`, unit-tested). The focused windows actively exercise span geometry, persistent tokens, sorted layout, tracer/state synchronization, pulses, reframing, write-in scheduling, and staggered onsets:
 
 | Primitive | The pattern it encodes |
 | --- | --- |
@@ -106,7 +106,7 @@ Still missing, in rough order of how much the excerpts leaned on them:
 3. **A split-screen panel primitive.** Two labelled spaces with their own
    origins and a declared relationship, instead of each scene hand-placing
    panels.
-4. **An intertitle / pause-overlay primitive.** The wider A/B-tree study motivates it, but the focused replica no longer contains the prediction beat; production would need a separately reviewed primitive.
+4. **An intertitle / pause-overlay primitive.** The focused A/B prediction window now measures the treatment, but production still needs a reviewed reusable primitive.
 5. **A silent-hold beat type.** A hold is currently indistinguishable from a
    beat whose body forgot to animate — which is exactly why the
    missing-claimed-motion gate has to infer intent from beat names.
@@ -120,8 +120,8 @@ Measured or observed, none of them auto-failed, all of them real:
   and placement.
 - **No entry migration anywhere.** Every equation in our scenes appears as
   finished text. The references derive them from the picture.
-- **Camera is unused in production.** The wider A/B-tree source study uses reframing, but no current focused benchmark measures it and no
-  production scene reframes at all, so arguments that are local are made at
+- **Camera is unused in production.** The focused A/B camera window now measures reframing, but no
+  production scene reframes yet, so arguments that are local are made at
   full-frame scale with everything else still on screen competing.
 - **Uniform pacing.** Our beats are budgeted from a table; the references hold
   after *every* semantic step and vary hold length by how much has just

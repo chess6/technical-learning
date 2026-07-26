@@ -514,11 +514,80 @@ const bfsEvaluators: Record<string, InvariantEvaluator> = {
   },
 };
 
+const bfsTreatmentEvaluators: Record<string, InvariantEvaluator> = {
+  "node-build-is-staggered": (_manifest, run) =>
+    checkStaggeredAppearance(run, "graph-node-first", "graph-node-last", "nodes"),
+  "edge-build-is-staggered": (_manifest, run) =>
+    checkStaggeredAppearance(run, "graph-edge-first", "graph-edge-last", "edges"),
+  "write-in-never-regresses": (_manifest, run) => {
+    let titleLength = 0;
+    let bodyLength = 0;
+    for (const frame of run.frames) {
+      const nextTitle = frame.samples["pseudo-title"]?.text?.length ?? 0;
+      const nextBody = frame.samples["pseudo-lines"]?.text?.length ?? 0;
+      if (nextTitle < titleLength || nextBody < bodyLength) {
+        return {
+          passed: false,
+          frame: frame.frame,
+          message: "pseudocode lost visible characters during write-in",
+        };
+      }
+      titleLength = nextTitle;
+      bodyLength = nextBody;
+    }
+    return { passed: true, message: "pseudocode only gains characters during write-in" };
+  },
+  "graph-fixed-during-write-in": (_manifest, run) => {
+    for (const id of ["graph-nodes", "graph-edges"]) {
+      const first = run.frames.find((frame) => isVisible(frame.samples[id]))?.samples[id];
+      if (!first) return { passed: false, message: `${id} was never visible` };
+      for (const frame of run.frames) {
+        const sample = frame.samples[id];
+        if (!isVisible(sample)) continue;
+        if (Math.hypot(sample.x - first.x, sample.y - first.y) > 1) {
+          return {
+            passed: false,
+            frame: frame.frame,
+            message: `${id} moved while pseudocode was writing`,
+          };
+        }
+      }
+    }
+    return { passed: true, message: "graph geometry stays fixed during write-in" };
+  },
+};
+
+function checkStaggeredAppearance(
+  run: BenchmarkRun,
+  firstId: string,
+  lastId: string,
+  label: string,
+): Omit<CheckResult, "id" | "dimension" | "severity"> {
+  const firstTime = run.frames.find((frame) => isVisible(frame.samples[firstId]))?.time;
+  const lastTime = run.frames.find((frame) => isVisible(frame.samples[lastId]))?.time;
+  if (firstTime === undefined || lastTime === undefined) {
+    return { passed: false, message: `first or last ${label} probe never appeared` };
+  }
+  const lead = lastTime - firstTime;
+  return {
+    passed: lead >= 0.5,
+    measured: Math.round(lead * 100) / 100,
+    tolerance: 0.5,
+    message:
+      lead >= 0.5
+        ? `${label} have staggered onsets (${lead.toFixed(2)}s first-to-last)`
+        : `${label} arrived together (only ${lead.toFixed(2)}s first-to-last)`,
+  };
+}
+
 export const INVARIANT_EVALUATORS: EvaluatorTable = {
   "eigen-span-stretch": eigenEvaluators,
   "huffman-merge": huffmanEvaluators,
   "ab-split": abEvaluators,
   "bfs-frontier": bfsEvaluators,
+  "bfs-intertitle-build": bfsTreatmentEvaluators,
+  "bfs-pseudocode-writein": bfsTreatmentEvaluators,
+  "ab-prediction-reveal": abEvaluators,
 };
 
 /** Run every declared invariant through its evaluator (missing = hard fail). */

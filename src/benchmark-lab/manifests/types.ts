@@ -181,6 +181,12 @@ export interface CompositionLandmark {
   /** Optional expected scale factor of the object (1 = authored size). */
   scale?: number;
   note?: string;
+  /** Independent observation anchor; replica-authored coordinates are invalid. */
+  evidence: {
+    kind: "reference-frame";
+    refTime: number;
+    note?: string;
+  };
 }
 
 /**
@@ -218,6 +224,20 @@ export interface BenchmarkTolerances {
   visibleOpacity: number;
 }
 
+export type DeviationClassification =
+  | "measured finding"
+  | "accepted with rationale"
+  | "blocked by runtime limitation"
+  | "intentionally different for product semantics";
+
+export interface BenchmarkDeviation {
+  id: string;
+  classification: DeviationClassification;
+  note: string;
+  /** Required whenever judgment accepts a measured difference. */
+  rationale?: string;
+}
+
 export interface BenchmarkManifest {
   id: string;
   title: string;
@@ -237,7 +257,7 @@ export interface BenchmarkManifest {
    * Where exact matching was impossible and why — kept in the manifest so the
    * comparison report can show intentional deviations beside measured ones.
    */
-  knownDeviations: { id: string; note: string }[];
+  knownDeviations: BenchmarkDeviation[];
 }
 
 /** The window record for a benchmark (from referenceWindows.json). */
@@ -357,6 +377,15 @@ export function validateBenchmarkManifest(manifest: BenchmarkManifest): string[]
     ) {
       problems.push(`landmark "${landmark.id}" lies off-stage`);
     }
+    if (landmark.evidence.kind !== "reference-frame") {
+      problems.push(`landmark "${landmark.id}" is not independently reference-anchored`);
+    }
+    if (
+      landmark.evidence.refTime < window.start - epsilon ||
+      landmark.evidence.refTime > window.end + epsilon
+    ) {
+      problems.push(`landmark "${landmark.id}" evidence is outside the window`);
+    }
   }
   for (const invariant of manifest.invariants) {
     for (const id of invariant.beats) {
@@ -376,6 +405,29 @@ export function validateBenchmarkManifest(manifest: BenchmarkManifest): string[]
       if (!objectIds.has(id)) {
         problems.push(`transition at ${transition.refTime} references unknown object "${id}"`);
       }
+    }
+  }
+
+  const deviationIds = new Set<string>();
+  const classifications = new Set<DeviationClassification>([
+    "measured finding",
+    "accepted with rationale",
+    "blocked by runtime limitation",
+    "intentionally different for product semantics",
+  ]);
+  for (const deviation of manifest.knownDeviations) {
+    if (deviationIds.has(deviation.id)) {
+      problems.push(`duplicate deviation id "${deviation.id}"`);
+    }
+    deviationIds.add(deviation.id);
+    if (!classifications.has(deviation.classification)) {
+      problems.push(`deviation "${deviation.id}" has unknown classification`);
+    }
+    if (
+      deviation.classification === "accepted with rationale" &&
+      !deviation.rationale?.trim()
+    ) {
+      problems.push(`accepted deviation "${deviation.id}" requires a rationale`);
     }
   }
 

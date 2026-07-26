@@ -16,6 +16,22 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./abSplitReplicaScene").then((m) => m.abSplitReplicaScene),
   "bfs-frontier": () =>
     import("./bfsFrontierReplicaScene").then((m) => m.bfsFrontierReplicaScene),
+  "bfs-intertitle-build": () =>
+    import("./bfsIntertitleBuildReplicaScene").then(
+      (m) => m.bfsIntertitleBuildReplicaScene,
+    ),
+  "bfs-pseudocode-writein": () =>
+    import("./bfsPseudocodeWriteinReplicaScene").then(
+      (m) => m.bfsPseudocodeWriteinReplicaScene,
+    ),
+  "ab-prediction-reveal": () =>
+    import("./abPredictionRevealReplicaScene").then(
+      (m) => m.abPredictionRevealReplicaScene,
+    ),
+  "ab-camera-reframe": () =>
+    import("./abCameraReframeReplicaScene").then(
+      (m) => m.abCameraReframeReplicaScene,
+    ),
 };
 
 export function getReplicaSceneDescription(benchmarkId: string): Promise<unknown> {

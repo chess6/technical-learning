@@ -232,7 +232,7 @@ export function DevBenchmarkLabPage() {
       setStatusLine(
         `${nextReport.hardFailures.length} hard failure(s), ` +
           `${nextReport.craftFindings.length} measured craft finding(s), ` +
-          `${manifest.knownDeviations.length} accepted deviation(s)`,
+          `${manifest.knownDeviations.length} classified deviation(s)`,
       );
       await postLabArtifact("/__benchmark-lab/report", {
         name: manifest.id,
@@ -589,11 +589,11 @@ export function DevBenchmarkLabPage() {
           />
           {report && manifest.knownDeviations.length > 0 && (
             <div className="bench-lab__findings">
-              <h3>Accepted deviations (declared, not measured craft passes)</h3>
+              <h3>Classified deviations (separate from runtime findings)</h3>
               <ul>
                 {manifest.knownDeviations.map((deviation) => (
                   <li key={deviation.id}>
-                    <strong>{deviation.id}</strong>: {deviation.note}
+                    <strong>{deviation.id}</strong> [{deviation.classification}]: {deviation.note}{" "}{deviation.rationale ?? ""}
                   </li>
                 ))}
               </ul>

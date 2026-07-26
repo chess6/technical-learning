@@ -14,7 +14,8 @@ import {
 } from "../../guided-scenes/scenes/kitMotion";
 import { writeInSchedule } from "../../guided-scenes/scenes/kitLayout";
 import { beginProbeRun, registerProbe } from "../probes/probeRegistry";
-import { bfsFrontierManifest as manifest } from "../manifests/bfsFrontier";
+import { bfsFrontierManifest } from "../manifests/bfsFrontier";
+import type { BenchmarkManifest } from "../manifests";
 import { makeEventLogger, runReplicaBeats } from "./replicaKit";
 import {
   BFS_COLORS as C,
@@ -35,7 +36,6 @@ import {
  * pulses fade; enqueue numbers accumulate as permanent residue.
  */
 
-const ID = manifest.id;
 const FONT = "'Source Sans 3', 'Segoe UI', system-ui, sans-serif";
 const NODE_RADIUS = 24;
 const PANEL_LEFT = 14;
@@ -43,7 +43,14 @@ const LINE_LEFT = 40;
 const TITLE_Y = -212;
 const LINE_HEIGHT = 37;
 
-export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
+export type BfsReplicaStartState = "empty" | "graph" | "ready";
+
+export function makeBfsTreatmentReplicaScene(
+  manifest: BenchmarkManifest,
+  startState: BfsReplicaStartState,
+) {
+  const ID = manifest.id;
+  return makeScene2D(function* (view) {
   view.fill("#05070a");
   beginProbeRun(ID);
   const logEvent = makeEventLogger(manifest);
@@ -152,6 +159,21 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
     const mid = points[0]!.add(points[points.length - 1]!).scale(0.5);
     return { x: mid.x, y: mid.y, opacity: Math.min(edge.opacity(), edge.end()) };
   });
+  const nodeBuildProbe = (index: number) => () => ({
+    x: vertexNodes[index]!.position().x,
+    y: vertexNodes[index]!.position().y,
+    opacity: Math.min(1, vertexNodes[index]!.scale().x),
+  });
+  const edgeBuildProbe = (index: number) => () => {
+    const edge = edgeLines[index]!;
+    const points = edge.parsedPoints();
+    const mid = points[0]!.add(points[points.length - 1]!).scale(0.5);
+    return { x: mid.x, y: mid.y, opacity: Math.min(edge.opacity(), edge.end()) };
+  };
+  registerProbe(ID, "graph-node-first", nodeBuildProbe(0));
+  registerProbe(ID, "graph-node-last", nodeBuildProbe(vertexNodes.length - 1));
+  registerProbe(ID, "graph-edge-first", edgeBuildProbe(0));
+  registerProbe(ID, "graph-edge-last", edgeBuildProbe(edgeLines.length - 1));
   registerProbe(ID, "pseudo-title", () => ({
     x: titleWrite.node.position().x,
     y: titleWrite.node.position().y,
@@ -320,14 +342,22 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
     yield* waitFor(Math.max(0, PERIOD - cost));
   }
 
-  // The focused excerpt begins after the establishing build/write-in. Restore
-  // that landed state as the first frame, then spend the render budget on the
-  // synchronized algorithm transitions the benchmark exists to test.
-  intro.node.opacity(0);
-  for (const vertex of vertexNodes) vertex.scale(1);
-  for (const edge of edgeLines) edge.end(1);
-  titleWrite.complete();
-  for (const line of lineWrites) line.complete();
+  // Restore only the state that precedes the selected focused window.
+  if (startState !== "empty") {
+    intro.node.opacity(0);
+    for (const vertex of vertexNodes) vertex.scale(1);
+    for (const edge of edgeLines) edge.end(1);
+  }
+  if (startState === "ready") {
+    titleWrite.complete();
+    for (const line of lineWrites) line.complete();
+  }
 
   yield* runReplicaBeats(manifest, bodies);
-});
+  });
+}
+
+export const bfsFrontierReplicaScene = makeBfsTreatmentReplicaScene(
+  bfsFrontierManifest,
+  "ready",
+);

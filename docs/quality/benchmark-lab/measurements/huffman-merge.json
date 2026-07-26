@@ -55,32 +55,7 @@
       "deltaSec": 0
     }
   ],
-  "landmarks": [
-    {
-      "id": "frontier-column",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "leaf-D-tree-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "leaf-E-tree-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    },
-    {
-      "id": "parent-DE-slot",
-      "deltaPx": 0,
-      "tolerancePx": 24,
-      "passed": true
-    }
-  ],
+  "landmarks": [],
   "dimensions": [
     {
       "dimension": "math-validity",
@@ -98,8 +73,8 @@
     },
     {
       "dimension": "composition",
-      "total": 13,
-      "passed": 13,
+      "total": 9,
+      "passed": 9,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -148,13 +123,16 @@
   ],
   "hardFailures": [],
   "craftFindings": [],
-  "acceptedDeviations": [
+  "deviations": [
     {
       "id": "typography",
+      "classification": "intentionally different for product semantics",
       "note": "Reference uses serif LaTeX numerals; the replica uses the repo sans stack."
     },
     {
       "id": "column-resort-detail",
+      "classification": "accepted with rationale",
+      "rationale": "Persistent queue objects better preserve learner-visible identity; the landed order remains independently measured.",
       "note": "Reference rebuilds the frontier group per re-sort; the replica moves only members whose positions change. End states are compared."
     }
   ]

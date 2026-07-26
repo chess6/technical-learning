@@ -77,7 +77,7 @@ describe("benchmark manifest registry", () => {
     );
     expect(
       durations.reduce((total, duration) => total + duration, 0),
-    ).toBeLessThanOrEqual(50);
+    ).toBeLessThanOrEqual(100);
   });
 });
 
@@ -113,6 +113,16 @@ describe("validateBenchmarkManifest", () => {
     expect(validateBenchmarkManifest(bad).join("\n")).toMatch(/off-stage/);
   });
 
+  it("rejects replica-authored landmark expectations", () => {
+    const bad = mutated((m) => {
+      m.landmarks[0]!.evidence.kind =
+        "replica-layout" as "reference-frame";
+    });
+    expect(validateBenchmarkManifest(bad).join("\n")).toMatch(
+      /not independently reference-anchored/,
+    );
+  });
+
   it("rejects events outside the excerpt window", () => {
     const bad = mutated((m) => {
       m.events[0] = { ...m.events[0]!, refTime: 5 };
@@ -125,6 +135,19 @@ describe("validateBenchmarkManifest", () => {
       m.objects[0]!.persistsAcross.push("no-such-beat");
     });
     expect(validateBenchmarkManifest(bad).join("\n")).toMatch(/unknown beat "no-such-beat"/);
+  });
+
+  it("rejects accepted deviations without a rationale", () => {
+    const bad = mutated((m) => {
+      m.knownDeviations = [
+        {
+          id: "self-accepted",
+          classification: "accepted with rationale",
+          note: "Replica-authored declaration.",
+        },
+      ];
+    });
+    expect(validateBenchmarkManifest(bad).join("\n")).toMatch(/requires a rationale/);
   });
 
   it("rejects non-positive tolerances", () => {

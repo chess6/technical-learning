@@ -82,7 +82,14 @@ function fixtureManifest(): BenchmarkManifest {
       { id: "e2", refTime: 29.5, description: "d", anchor: "transcript" },
     ],
     landmarks: [
-      { id: "vec-at-rest", objectId: "vec", beatId: "b1", x: 100, y: 0 },
+      {
+        id: "vec-at-rest",
+        objectId: "vec",
+        beatId: "b1",
+        x: 100,
+        y: 0,
+        evidence: { kind: "reference-frame", refTime: 29.5 },
+      },
     ],
     invariants: [],
     transitions: [
@@ -387,23 +394,27 @@ describe("checkOverruns / checkDuration / summarize", () => {
     expect(timing.total).toBe(2);
     expect(timing.passed).toBe(1);
   });
-  it("reports declared differences separately as accepted deviations", () => {
+  it("reports declared differences with their explicit classifications", () => {
     const manifest = fixtureManifest();
     manifest.knownDeviations = [
-      { id: "typography", note: "A deliberate typeface difference." },
+      {
+        id: "typography",
+        classification: "intentionally different for product semantics",
+        note: "A deliberate typeface difference.",
+      },
     ];
     const measurement = buildMeasurementReport(
       manifest,
       fixtureRun(),
       summarize(manifest.id, []),
     ) as {
-      acceptedDeviations?: { id: string; note: string }[];
+      deviations?: { id: string; classification: string; note: string }[];
       knownDeviations?: unknown;
       craftFindings: string[];
     };
 
     expect(measurement.craftFindings).toEqual([]);
-    expect(measurement.acceptedDeviations).toEqual(manifest.knownDeviations);
+    expect(measurement.deviations).toEqual(manifest.knownDeviations);
     expect(measurement).not.toHaveProperty("knownDeviations");
   });
 });

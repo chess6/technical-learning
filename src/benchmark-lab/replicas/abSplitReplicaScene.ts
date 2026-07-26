@@ -9,7 +9,8 @@ import {
 } from "@motion-canvas/core";
 import { makeFocusRig } from "../../guided-scenes/scenes/kitMotion";
 import { beginProbeRun, registerProbe } from "../probes/probeRegistry";
-import { abSplitManifest as manifest } from "../manifests/abSplit";
+import { abSplitManifest } from "../manifests/abSplit";
+import type { BenchmarkManifest } from "../manifests";
 import { makeEventLogger, runReplicaBeats } from "./replicaKit";
 import {
   AB_COLORS as C,
@@ -35,7 +36,6 @@ import {
  *    with everything else dimmed.
  */
 
-const ID = manifest.id;
 const FONT = "'Source Sans 3', 'Segoe UI', system-ui, sans-serif";
 const KEY_FONT = 34;
 const BORDER_H = 62;
@@ -97,7 +97,12 @@ function leafXsFor(stage: AbNode): number[] {
   return xs.sort((a, b) => a - b);
 }
 
-export const abSplitReplicaScene = makeScene2D(function* (view) {
+export function makeAbTreatmentReplicaScene(
+  manifest: BenchmarkManifest,
+  overlayAtStart: boolean,
+) {
+  const ID = manifest.id;
+  return makeScene2D(function* (view) {
   view.fill("#0a0d11");
   beginProbeRun(ID);
   const logEvent = makeEventLogger(manifest);
@@ -473,12 +478,16 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
   const bodies: Record<string, () => ThreadGenerator> = {
     // [299.0-310.6) frozen violating tree under the pause overlay.
     *"pause-prompt"() {
+      const beat = manifest.beats.find((candidate) => candidate.id === "pause-prompt")!;
+      const duration = beat.refEnd - beat.refStart;
       yield* waitFor(0.7);
-      logEvent("pause-begins"); // 0.7
+      logEvent("pause-begins");
       yield* overlay.opacity(1, 0.4);
-      // The overlay holds through the whole prompt (the reference keeps the
-      // pause bar up until the answer); it retires in the next beat.
-      yield* pauseMarker.position(new Vector2(200, 190), 10.2);
+      // The progress marker owns the remaining focused prompt window.
+      yield* pauseMarker.position(
+        new Vector2(200, 190),
+        Math.max(0.1, duration - 1.1),
+      );
     },
     // [310.6-317.9) split: the middle key rises.
     *"split-rise"() {
@@ -651,11 +660,16 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
     },
   };
 
-  // This focused benchmark starts where the long prediction pause lands.
-  // Reconstruct that landing frame instantly; the retained beat then begins
-  // with the observed overlay retirement and the actual structural repair.
-  overlay.opacity(1);
-  pauseMarker.position(new Vector2(200, 190));
+  if (overlayAtStart) {
+    overlay.opacity(1);
+    pauseMarker.position(new Vector2(200, 190));
+  }
 
   yield* runReplicaBeats(manifest, bodies);
-});
+  });
+}
+
+export const abSplitReplicaScene = makeAbTreatmentReplicaScene(
+  abSplitManifest,
+  true,
+);

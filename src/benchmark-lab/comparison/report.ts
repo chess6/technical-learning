@@ -43,7 +43,7 @@ export function runAllChecks(
 /**
  * Serializable measurement record for the committed evidence reports
  * (docs/quality/benchmark-lab/measurements/): every event delta, landmark
- * delta, and check outcome, plus the manifest's explicitly accepted deviations.
+ * delta, and check outcome, plus the manifest's explicitly classified deviations.
  */
 export function buildMeasurementReport(
   manifest: BenchmarkManifest,
@@ -86,6 +86,6 @@ export function buildMeasurementReport(
     dimensions: report.summaries,
     hardFailures: report.hardFailures.map((r) => r.message),
     craftFindings: report.craftFindings.map((r) => r.message),
-    acceptedDeviations: manifest.knownDeviations,
+    deviations: manifest.knownDeviations,
   };
 }

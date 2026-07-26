@@ -201,6 +201,31 @@ test.describe("benchmark laboratory", () => {
     expect(savedPosts).toBe(2);
   });
 
+  test("runs every new treatment window through the comparison engine", async ({
+    page,
+  }) => {
+    const errors = consoleErrors(page);
+    const treatmentIds = [
+      "bfs-intertitle-build",
+      "bfs-pseudocode-writein",
+      "ab-prediction-reveal",
+      "ab-camera-reframe",
+    ];
+    for (const id of treatmentIds) {
+      await page.goto(`${LAB}?benchmark=${id}`);
+      await waitForReplica(page);
+      await page.getByRole("button", { name: "Run checks" }).click();
+      await expect(page.locator(".bench-lab__status")).toContainText(
+        "0 hard failure(s)",
+        { timeout: 60_000 },
+      );
+      await expect(page.locator(".bench-lab__status")).toContainText(
+        "classified deviation(s)",
+      );
+    }
+    expect(errors).toEqual([]);
+  });
+
   test("offers every benchmark and never leaks into the learner surface", async ({
     page,
   }) => {

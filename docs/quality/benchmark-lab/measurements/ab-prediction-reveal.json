@@ -1,5 +1,5 @@
 {
-  "benchmarkId": "ab-split",
+  "benchmarkId": "ab-prediction-reveal",
   "source": {
     "repoSlug": "xiaoxiae-videos",
     "repoUrl": "https://github.com/xiaoxiae/videos",
@@ -8,56 +8,57 @@
     "videoTitle": "The Most Elegant Search Structure | (a,b)-trees",
     "channel": "Tom Slama (Tom S)",
     "sceneSources": [
+      "TransparentPause",
       "Insertion",
-      "ABTree.bubble_insert",
-      "create_node"
+      "ABTree.bubble_insert"
     ],
     "license": "GPL-3.0 (reference-only)"
   },
   "sampledAt": {
     "fps": 30,
     "stride": 3,
-    "durationFrames": 218,
-    "sampledFrames": 73
+    "durationFrames": 450,
+    "sampledFrames": 150
   },
   "events": [
+    {
+      "id": "pause-begins",
+      "anchor": "estimated",
+      "referenceSec": 303.6,
+      "expectedReplicaSec": 0.7,
+      "measuredReplicaSec": 0.7,
+      "deltaSec": 0
+    },
     {
       "id": "split-starts",
       "anchor": "transcript",
       "referenceSec": 312.6,
-      "expectedReplicaSec": 2,
-      "measuredReplicaSec": 2,
+      "expectedReplicaSec": 9.7,
+      "measuredReplicaSec": 9.7,
       "deltaSec": 0
     },
     {
       "id": "middle-key-rises",
       "anchor": "estimated",
       "referenceSec": 314,
-      "expectedReplicaSec": 3.4,
-      "measuredReplicaSec": 3.4,
+      "expectedReplicaSec": 11.1,
+      "measuredReplicaSec": 11.1,
       "deltaSec": 0
     }
   ],
-  "landmarks": [
-    {
-      "id": "root-after-split",
-      "deltaPx": 12.2,
-      "tolerancePx": 26,
-      "passed": true
-    }
-  ],
+  "landmarks": [],
   "dimensions": [
     {
       "dimension": "math-validity",
-      "total": 4,
-      "passed": 4,
+      "total": 3,
+      "passed": 3,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "identity-continuity",
-      "total": 16,
-      "passed": 16,
+      "total": 25,
+      "passed": 25,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -77,8 +78,8 @@
     },
     {
       "dimension": "timing",
-      "total": 5,
-      "passed": 5,
+      "total": 7,
+      "passed": 7,
       "hardFailures": 0,
       "craftFindings": 0
     },
@@ -98,15 +99,15 @@
     },
     {
       "dimension": "reveal-structure",
-      "total": 8,
-      "passed": 8,
+      "total": 15,
+      "passed": 15,
       "hardFailures": 0,
       "craftFindings": 0
     },
     {
       "dimension": "accessibility",
-      "total": 1,
-      "passed": 1,
+      "total": 2,
+      "passed": 2,
       "hardFailures": 0,
       "craftFindings": 0
     }
@@ -117,12 +118,12 @@
     {
       "id": "layout-algorithm",
       "classification": "measured finding",
-      "note": "Reference uses a hand-tuned parent-placement rule; the replica computes layout deterministically upward from the pinned leaf row."
+      "note": "The deterministic product layout centres parents differently from the hand-tuned reference layout."
     },
     {
       "id": "typography",
       "classification": "intentionally different for product semantics",
-      "note": "Reference uses serif LaTeX keys; the replica uses the repo sans stack."
+      "note": "The replica uses the product sans stack rather than reference LaTeX."
     }
   ]
 }

@@ -3,6 +3,10 @@ import { eigenSpanStretchManifest } from "./eigenSpanStretch";
 import { huffmanMergeManifest } from "./huffmanMerge";
 import { abSplitManifest } from "./abSplit";
 import { bfsFrontierManifest } from "./bfsFrontier";
+import { bfsIntertitleBuildManifest } from "./bfsIntertitleBuild";
+import { bfsPseudocodeWriteinManifest } from "./bfsPseudocodeWritein";
+import { abPredictionRevealManifest } from "./abPredictionReveal";
+import { abCameraReframeManifest } from "./abCameraReframe";
 
 /**
  * Registry of benchmark manifests — one per curated reference pack.
@@ -18,6 +22,10 @@ export const BENCHMARK_MANIFESTS: readonly BenchmarkManifest[] = [
   huffmanMergeManifest,
   abSplitManifest,
   bfsFrontierManifest,
+  bfsIntertitleBuildManifest,
+  bfsPseudocodeWriteinManifest,
+  abPredictionRevealManifest,
+  abCameraReframeManifest,
 ];
 
 export function getBenchmarkManifest(id: string): BenchmarkManifest {
