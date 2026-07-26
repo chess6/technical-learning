@@ -9,6 +9,7 @@ import {
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
 import {
+  classifyLinearSystem2x2,
   classifyRowConstraint,
   matrixColumn,
   matrixVectorMultiply,
@@ -20,6 +21,10 @@ import { SYSTEMS_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
   ROLE,
   focusOpacities,
+  formatCoordinatePair,
+  formatRowEquation,
+  formatSceneNumber,
+  formatSolutionCount,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -233,6 +238,164 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   targetLabel.opacity(0);
   view.add(targetLabel);
 
+  /* ---------------------------------------------------------------------
+   * The live system card: the equation view and the matrix view, both read
+   * off the SAME signals the geometry reads.
+   *
+   * The scene morphs its matrix and its target through the trichotomy, and the
+   * algebra used to be typed into captions once, at the top. From the first
+   * morph onward the symbols on screen described a system that was no longer
+   * being drawn — the learner had no way to see that "the columns became
+   * dependent" was a statement about these four numbers. Everything here is a
+   * function of `a11 … b2`, so equations, matrix, and picture cannot disagree.
+   *
+   * The card also carries object identity across the two representations. In
+   * the row picture the two equations wear the colours of their two LINES; in
+   * the column picture the same card re-reads itself down the columns, and the
+   * two entries wear the colours of the two ARROWS. Same nine numbers,
+   * regrouped — which is the lesson's whole thesis, shown rather than asserted.
+   * ------------------------------------------------------------------- */
+  const CARD_X = -330;
+  const cardTitle = makeLabel("", ROLE.textMuted, 20);
+  cardTitle.position(new Vector2(CARD_X, -140));
+  cardTitle.opacity(0);
+  view.add(cardTitle);
+
+  /** Row 1's equation, or column 1's coordinates — always basis1, like its line/arrow. */
+  const cardLine1 = makeLabel("", ROLE.basis1, 24);
+  cardLine1.position(new Vector2(CARD_X, -106));
+  cardLine1.opacity(0);
+  view.add(cardLine1);
+  const cardLine2 = makeLabel("", ROLE.basis2, 24);
+  cardLine2.position(new Vector2(CARD_X, -74));
+  cardLine2.opacity(0);
+  view.add(cardLine2);
+  /** `b` is the right-hand sides read across and the target read down: same numbers. */
+  const cardTarget = makeLabel(
+    () => `b = ${formatCoordinatePair(b1(), b2())}`,
+    ROLE.target,
+    24,
+  );
+  cardTarget.position(new Vector2(CARD_X, -42));
+  cardTarget.opacity(0);
+  view.add(cardTarget);
+
+  const matrixCaption = makeLabel("[ A | b ]", ROLE.textMuted, 20);
+  matrixCaption.position(new Vector2(CARD_X, -2));
+  matrixCaption.opacity(0);
+  view.add(matrixCaption);
+
+  /**
+   * The augmented matrix, one Txt per entry so each cell can take the colour of
+   * whichever grouping is currently on screen. A single string could not.
+   */
+  const CELL_X = [-64, -14, 44] as const;
+  const CELL_Y = [32, 64] as const;
+  const cellValue = [
+    [a11, a12, b1],
+    [a21, a22, b2],
+  ] as const;
+  const cells = CELL_Y.map((y, i) =>
+    CELL_X.map((x, j) => {
+      const cell = makeLabel(
+        () => formatSceneNumber(cellValue[i]![j]!()).replace("-", "−"),
+        ROLE.text,
+        26,
+      );
+      cell.position(new Vector2(CARD_X + x, y));
+      cell.opacity(0);
+      view.add(cell);
+      return cell;
+    }),
+  );
+  const cellNodes = cells.flat();
+  const augmentBar = new Line({
+    stroke: ROLE.textMuted,
+    lineWidth: 2,
+    opacity: 0,
+    points: [
+      new Vector2(CARD_X + 14, CELL_Y[0]! - 22),
+      new Vector2(CARD_X + 14, CELL_Y[1]! + 22),
+    ],
+  });
+  view.add(augmentBar);
+
+  /**
+   * The live verdict. Derived every frame from the SAME signals through the
+   * shared `classifyLinearSystem2x2`, so when the lines slide onto each other
+   * the count changes as they touch, and when `b` leaves the column line it
+   * changes again — the trichotomy becomes something the learner watches happen
+   * rather than something three captions assert in turn.
+   */
+  const verdictKind = () =>
+    classifyLinearSystem2x2(matrix(), [b1(), b2()]).kind;
+  const verdictCaption = makeLabel("solution count", ROLE.textMuted, 20);
+  verdictCaption.position(new Vector2(CARD_X, 106));
+  verdictCaption.opacity(0);
+  view.add(verdictCaption);
+  const verdict = makeLabel(
+    () => formatSolutionCount(verdictKind()),
+    ROLE.text,
+    24,
+  );
+  verdict.fill(() =>
+    verdictKind() === "none" ? ROLE.violation : ROLE.selected,
+  );
+  verdict.position(new Vector2(CARD_X, 138));
+  verdict.opacity(0);
+  view.add(verdict);
+
+  /** Every card node, for one fade in. */
+  const cardNodes = [
+    cardTitle,
+    cardLine1,
+    cardLine2,
+    cardTarget,
+    matrixCaption,
+    ...cellNodes,
+    augmentBar,
+    verdictCaption,
+    verdict,
+  ];
+
+  /**
+   * Re-read the card by rows or by columns.
+   *
+   * `"rows"`: each equation, tinted like the line it draws; the matrix tinted
+   * across, because a row IS an equation.
+   * `"columns"`: each column's coordinates, tinted like the arrow it draws; the
+   * matrix tinted down, because a column IS an arrow. `b` keeps the target hue
+   * in both readings — it is the thing being aimed at either way.
+   */
+  const readCardBy = (grouping: "rows" | "columns"): void => {
+    if (grouping === "rows") {
+      cardTitle.text("rows → equations");
+      cardLine1.text(() => formatRowEquation(a11(), a12(), b1()));
+      cardLine2.text(() => formatRowEquation(a21(), a22(), b2()));
+    } else {
+      cardTitle.text("columns → arrows");
+      cardLine1.text(() => `col₁ = ${formatCoordinatePair(a11(), a21())}`);
+      cardLine2.text(() => `col₂ = ${formatCoordinatePair(a12(), a22())}`);
+    }
+    for (const [i, row] of cells.entries()) {
+      for (const [j, cell] of row.entries()) {
+        if (j === 2) {
+          cell.fill(ROLE.target);
+        } else {
+          cell.fill(
+            grouping === "rows"
+              ? i === 0
+                ? ROLE.basis1
+                : ROLE.basis2
+              : j === 0
+                ? ROLE.basis1
+                : ROLE.basis2,
+          );
+        }
+      }
+    }
+  };
+
   // --- Overlay text ---
   // Both start hidden: the `equations` segment budgets 0.5s to fade them in,
   // and a label created at full opacity turns that tween into 0.5s of nothing
@@ -288,12 +451,20 @@ export const linearSystemsScene = makeScene2D(function* (view) {
     emphasis = 1,
     duration = 0.35,
     tag = 0.2,
+    /**
+     * The crossing point is only drawn when the system HAS one. Leaving the dot
+     * up through the dependent beats would mark a point that no longer solves
+     * anything, which is the defect the whole scene is about.
+     */
+    solution = 0,
   ): ThreadGenerator {
+    readCardBy("rows");
     yield* crossTo(
       COEFFICIENT_SPACE,
       [
         { node: line1, opacity: emphasis },
         { node: line2, opacity: emphasis },
+        { node: solutionDot, opacity: solution },
         { node: arrow1, opacity: 0 },
         { node: arrow2, opacity: 0 },
         { node: scaled1, opacity: 0 },
@@ -315,6 +486,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
     span = 0,
     tag = 0.2,
   ): ThreadGenerator {
+    readCardBy("columns");
     yield* crossTo(
       OUTPUT_SPACE,
       [
@@ -336,8 +508,17 @@ export const linearSystemsScene = makeScene2D(function* (view) {
     *equations() {
       const b = beats("equations");
       setTop("A x = b");
-      setCaption("x + 3y = −1     and     2x − y = 5");
-      yield* all(top.opacity(1, b.textReveal!), caption.opacity(1, b.textReveal!));
+      // The card carries the algebra from here to the last frame, so the caption
+      // says what to DO with it rather than restating the equations underneath.
+      readCardBy("rows");
+      setCaption(
+        "Six numbers on the left. Read them across for equations, or down for arrows.",
+      );
+      yield* all(
+        top.opacity(1, b.textReveal!),
+        caption.opacity(1, b.textReveal!),
+        ...cardNodes.map((node) => node.opacity(1, b.textReveal!)),
+      );
       yield* waitFor(b.hold!);
     },
     *row() {
@@ -368,7 +549,9 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         line1.opacity(0, b.fade!),
         line2.opacity(0, b.fade!),
       );
-      setCaption("x·(1, 2) + y·(3, −1) = (−1, 5) — columns and target live here");
+      // The card re-reads itself down the columns as this crossing happens: the
+      // two tinted equations become the two tinted column arrows.
+      setCaption("Same six numbers, read down instead of across — now they are arrows");
       // Establish the output-space frame only after the lines are fully gone.
       yield* showColumn(b.show!, 0, b.tag!);
       yield* waitFor(b.hold!);
@@ -411,7 +594,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         scaled2.opacity(0, b.clear!),
         comboDot.opacity(0, b.clear!),
       );
-      yield* showRow(0.6, b.show!, b.tag!);
+      yield* showRow(0.6, b.show!, b.tag!, 1);
       yield* waitFor(b.hold!);
     },
     *infinite() {
@@ -430,7 +613,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
         b2(EX.bInfinite[1], b.morph!, easeInOutCubic),
       );
       setCaption(
-        "They coincide — one line, so every point on it solves the system. The columns became dependent.",
+        "They coincide — one line, so every point on it solves the system. Watch the count on the card change as they touch.",
       );
       yield* line1.lineWidth(6, b.pulseUp!);
       yield* line1.lineWidth(4, b.pulseDown!);
@@ -445,7 +628,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       setCaption("In the output space: dependent columns span only this line, and b sits on it");
       yield* showColumn(b.toColumn!, 0.9, b.tag!);
       yield* waitFor(b.hold!);
-      setCaption("Now slide b off that line — watch it leave");
+      setCaption("Now slide b off that line — watch it leave, and watch the count follow");
       yield* all(
         b1(EX.bNone[0], b.slideB!, easeInOutCubic),
         b2(EX.bNone[1], b.slideB!, easeInOutCubic),

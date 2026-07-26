@@ -24,6 +24,76 @@ export function formatSceneNumber(n: number, digits = 2): string {
 }
 
 /**
+ * A coordinate pair as a scene reads it: `(1, 2)`, `(3, −1)`.
+ *
+ * The minus is the typographic U+2212, matching `formatRowEquation`: the two
+ * appear one line apart on the linear-systems card, and a hyphen beside a
+ * proper minus reads as two different symbols for the same thing.
+ */
+export function formatCoordinatePair(x: number, y: number): string {
+  const entry = (value: number) => formatSceneNumber(value).replace("-", "−");
+  return `(${entry(x)}, ${entry(y)})`;
+}
+
+/**
+ * One row of a 2-variable system as the equation a learner would write:
+ * `(1, 3, -1)` → `x + 3y = −1`.
+ *
+ * Why this is a function and not a caption string: the linear-systems scene
+ * MORPHS its matrix and target through the trichotomy, and the equations used
+ * to be typed once, so from the moment the lines slid onto each other the
+ * algebra on screen described a system that was no longer being drawn. Deriving
+ * the equation from the same four signals the geometry reads makes the two
+ * views incapable of disagreeing.
+ *
+ * A zero coefficient drops its term (`0x + 1y = 2` reads `y = 2`); an all-zero
+ * left-hand side keeps a literal `0` so `0 = 3` — the contradiction that IS the
+ * no-solution case — still reads as an equation.
+ */
+export function formatRowEquation(a: number, b: number, c: number): string {
+  const terms: string[] = [];
+  const coefficient = (value: number, symbol: string): string => {
+    const magnitude = Math.abs(value);
+    const digits = formatSceneNumber(magnitude);
+    return digits === "1" ? symbol : `${digits}${symbol}`;
+  };
+  const push = (value: number, symbol: string): void => {
+    if (Math.abs(value) < 5e-3) return;
+    const sign = value < 0 ? "−" : "+";
+    const term = coefficient(value, symbol);
+    terms.push(terms.length === 0 && sign === "+" ? term : `${sign} ${term}`);
+  };
+  push(a, "x");
+  push(b, "y");
+  const left = terms.length === 0 ? "0" : terms.join(" ");
+  // The leading term keeps its minus glued on: "−x + 3y", not "− x + 3y".
+  return `${left.replace(/^− /, "−")} = ${formatSceneNumber(c).replace("-", "−")}`;
+}
+
+/**
+ * The solution count in words, for a verdict driven by the shared
+ * `classifyLinearSystem2x2`. Taking the classification kind (rather than a
+ * string the scene chooses per beat) is the point: the words on screen are the
+ * classifier's answer about the numbers currently drawn.
+ *
+ * Deliberately terse — it sits under its own "solution count" label in a side
+ * panel, and the full sentences ("infinitely many solutions") ran past the
+ * stage edge, which the text-clipping hard gate catches.
+ */
+export function formatSolutionCount(
+  kind: "unique" | "infinite" | "none",
+): string {
+  switch (kind) {
+    case "unique":
+      return "exactly one";
+    case "infinite":
+      return "infinitely many";
+    case "none":
+      return "none";
+  }
+}
+
+/**
  * The rank–nullity ledger line. The total is the SUM of the two counts, never a
  * separately supplied number, so the ledger cannot be drawn out of balance.
  */

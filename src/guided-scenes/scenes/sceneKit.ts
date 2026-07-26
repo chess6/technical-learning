@@ -127,8 +127,11 @@ export function* runSegment(
 export {
   formatSceneNumber,
   formatAreaFactor,
+  formatCoordinatePair,
   formatLedgerTally,
+  formatRowEquation,
   formatSignedArea,
+  formatSolutionCount,
   orientationSweep,
   orientationWord,
   worstCaseComparisons,

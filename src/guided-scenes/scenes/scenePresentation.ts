@@ -233,24 +233,41 @@ export interface FullFrameTreatment {
   hide(duration?: number): ThreadGenerator;
 }
 
-/** Screen-fixed prediction or intertitle; never implies a required sequence. */
+/**
+ * Screen-fixed prediction or intertitle; never implies a required sequence.
+ *
+ * `coverage` decides whether the treatment takes the whole stage or a band
+ * across the top. Full coverage suits an intertitle, and suits a prediction
+ * whose answer the learner already holds in their head. It is WRONG for a
+ * prediction the learner is meant to reason from the picture — blanking the
+ * apparatus turns "will this point survive the operation?" into a guess.
+ * `"banner"` keeps the stage visible under a top strip, so the equations, the
+ * matrix, the lines, and the fixed point are all still there to reason from.
+ */
 export function makeFullFrameTreatment(
   text: SignalValue<string>,
   options: {
     kind: "prediction" | "intertitle";
     accent?: string;
     key?: string;
+    coverage?: "full" | "banner";
   },
 ): FullFrameTreatment {
   const accent = options.accent ?? ROLE.selected;
+  const banner = options.coverage === "banner";
   const node = new Node({
     key: options.key ?? `presentation:${options.kind}`,
     opacity: 0,
   });
+  // The banner strip sits above the top of a ±4-unit viewport and above the
+  // tallest symbolic panel, so it covers nothing a scene is teaching with.
+  const BANNER_HEIGHT = 78;
+  const BANNER_Y = -231;
   node.add(
     new Rect({
       width: 960,
-      height: 540,
+      height: banner ? BANNER_HEIGHT : 540,
+      y: banner ? BANNER_Y : 0,
       fill: "rgba(5, 8, 13, 0.94)",
     }),
   );
@@ -265,13 +282,15 @@ export function makeFullFrameTreatment(
     lineWidth: 7,
     fontFamily: FONT,
     fontWeight: 700,
-    fontSize: options.kind === "prediction" ? 42 : 48,
-    position: new Vector2(0, -10),
+    fontSize: banner ? 30 : options.kind === "prediction" ? 42 : 48,
+    position: new Vector2(0, banner ? BANNER_Y - 4 : -10),
   });
   const rule = new Line({
     stroke: accent,
     lineWidth: 5,
-    points: [new Vector2(-90, 62), new Vector2(90, 62)],
+    points: banner
+      ? [new Vector2(-90, BANNER_Y + 28), new Vector2(90, BANNER_Y + 28)]
+      : [new Vector2(-90, 62), new Vector2(90, 62)],
   });
   node.add(label);
   node.add(rule);

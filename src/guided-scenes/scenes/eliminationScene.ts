@@ -356,9 +356,16 @@ export const eliminationScene = makeScene2D(function* (view) {
   const setTop = (text: string) => operationReadout.text(text);
   const setCaption = (text: string) => invariantReadout.text(text);
 
+  // A banner, not a full frame. The question is answerable only from what is on
+  // screen — both equations, the augmented matrix, the two lines, and the point
+  // they cross at — so blanking the stage to ask it made it a guess.
   const prediction = makeFullFrameTreatment(
     "Will (2, −1) stay on the new second line?",
-    { kind: "prediction", key: "presentation:elimination:prediction" },
+    {
+      kind: "prediction",
+      key: "presentation:elimination:prediction",
+      coverage: "banner",
+    },
   );
   view.add(prediction.node);
 
@@ -408,7 +415,8 @@ export const eliminationScene = makeScene2D(function* (view) {
       );
       yield* all(
         solutionDot.size(18, b.ask!),
-        split.node.opacity(0, b.ask!),
+        // The apparatus stays up, only stepping back so the banner reads.
+        split.node.opacity(0.75, b.ask!),
         prediction.show(b.ask!),
       );
       setCaption("new R₂ still through (2,−1)?");

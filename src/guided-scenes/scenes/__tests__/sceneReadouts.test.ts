@@ -1,18 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAreaFactor,
+  formatCoordinatePair,
   formatLedgerTally,
+  formatRowEquation,
   formatSceneNumber,
   formatSignedArea,
+  formatSolutionCount,
   orientationSweep,
   orientationWord,
   worstCaseComparisons,
 } from "../sceneReadouts";
 import {
+  classifyLinearSystem2x2,
   determinant2x2,
   requireMatrixExample,
   type Matrix2x2,
 } from "../../../math";
+import { LINEAR_SYSTEM_EXAMPLE } from "../../../lessons/exampleData";
 
 /**
  * Readouts a scene DISPLAYS, checked against the mathematics they claim to
@@ -170,5 +175,73 @@ describe("worstCaseComparisons", () => {
     expect(worstCaseComparisons(2)).toBe(3);
     expect(worstCaseComparisons(6)).toBe(7);
     expect(worstCaseComparisons(0)).toBe(1);
+  });
+});
+
+/**
+ * The linear-systems card.
+ *
+ * The scene morphs its matrix and target through the whole trichotomy, and the
+ * algebra used to be typed into captions once. These formatters exist so the
+ * equations, the augmented matrix, and the solution count are all functions of
+ * the same signals the geometry reads, and therefore cannot go stale.
+ */
+describe("formatRowEquation", () => {
+  it("writes the row the way a learner would write the equation", () => {
+    expect(formatRowEquation(1, 3, -1)).toBe("x + 3y = −1");
+    expect(formatRowEquation(2, -1, 5)).toBe("2x − y = 5");
+    expect(formatRowEquation(1, 2, 3)).toBe("x + 2y = 3");
+    expect(formatRowEquation(2, 4, 6)).toBe("2x + 4y = 6");
+  });
+
+  it("drops a zero term and glues a leading minus to its coefficient", () => {
+    expect(formatRowEquation(0, 1, 2)).toBe("y = 2");
+    expect(formatRowEquation(3, 0, -6)).toBe("3x = −6");
+    expect(formatRowEquation(-1, 2, 0)).toBe("−x + 2y = 0");
+    expect(formatRowEquation(-2, -3, 4)).toBe("−2x − 3y = 4");
+  });
+
+  it("keeps a literal 0 on the left so a contradiction still reads as an equation", () => {
+    // `0 = 3` IS the no-solution case; printing " = 3" would hide it.
+    expect(formatRowEquation(0, 0, 3)).toBe("0 = 3");
+    expect(formatRowEquation(0, 0, 0)).toBe("0 = 0");
+  });
+});
+
+describe("formatCoordinatePair", () => {
+  it("reads a column or a target the way the scene labels it", () => {
+    expect(formatCoordinatePair(1, 2)).toBe("(1, 2)");
+    // The same typographic minus the row equations use, one line above.
+    expect(formatCoordinatePair(3, -1)).toBe("(3, −1)");
+    // No "-0" ever reaches the stage.
+    expect(formatCoordinatePair(-0, 5)).toBe("(0, 5)");
+  });
+});
+
+describe("formatSolutionCount", () => {
+  it("names each verdict the shared classifier can return", () => {
+    expect(formatSolutionCount("unique")).toBe("exactly one");
+    expect(formatSolutionCount("infinite")).toBe("infinitely many");
+    expect(formatSolutionCount("none")).toBe("none");
+  });
+
+  it("stays inside the side panel it is drawn in", () => {
+    // The panel is centred 330px left of stage centre on a 960px stage, so a
+    // 24px verdict has ~150px of half-width before the text-clipping hard gate
+    // fires. Full sentences did not fit.
+    const widest = (["unique", "infinite", "none"] as const)
+      .map(formatSolutionCount)
+      .reduce((a, b) => (a.length >= b.length ? a : b));
+    expect(widest.length).toBeLessThanOrEqual(16);
+  });
+
+  it("agrees with the classifier on the three systems the scene morphs through", () => {
+    const EX = LINEAR_SYSTEM_EXAMPLE;
+    const verdict = (a: Matrix2x2, b: readonly [number, number]) =>
+      formatSolutionCount(classifyLinearSystem2x2(a, [b[0], b[1]]).kind);
+
+    expect(verdict(EX.a, EX.b)).toBe("exactly one");
+    expect(verdict(EX.aDependent, EX.bInfinite)).toBe("infinitely many");
+    expect(verdict(EX.aDependent, EX.bNone)).toBe("none");
   });
 });
