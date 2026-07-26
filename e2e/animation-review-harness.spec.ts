@@ -84,4 +84,10 @@ test("dev review harness exposes all five Batch 1 contracts", async ({
       beats.every(({ chapter }) => chapter.seek.kind === "segment-opening"),
     ),
   ).toBe(true);
+  expect(
+    descriptions.every(
+      ({ durationFrames, checkpoints }) =>
+        durationFrames > Math.max(...checkpoints.map(({ frame }) => frame)),
+    ),
+  ).toBe(true);
 });

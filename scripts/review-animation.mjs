@@ -302,9 +302,9 @@ async function drainProductionRender(page, options, description, packetDir) {
 
   if (handled !== renderRange.expectedHandledFrames) {
     throw new Error(
-      `production renderer emitted  frames; expected ` +
-        ` for requested range ` +
-        `–`,
+      `production renderer emitted ${handled} frames; expected ` +
+        `${renderRange.expectedHandledFrames} for requested range ` +
+        `${renderRange.startFrame}–${renderRange.endFrame}`,
     );
   }
   const missing = missingCaptureFailures(frameRecords, existsSync);
@@ -360,10 +360,17 @@ async function captureReducedMotionEvidence(
     (query) => matchMedia(query).matches,
     mediaQuery,
   );
-  if (!mediaMatches)
+  if (!mediaMatches) {
     throw new Error(
       "learner review page did not enter prefers-reduced-motion: reduce",
     );
+  }
+
+  // The player can mount its shell before Motion Canvas publishes a duration.
+  // A chapter click in that interval is ignored by the engine, so wait for the
+  // timeline (state.canSeek) before seeking evidence frames.
+  const timeline = root.getByRole("slider", { name: "Animation timeline" });
+  await timeline.waitFor({ state: "visible", timeout: 30_000 });
 
   const required = description.reducedMotionFrames.filter(
     (item) => !options.beat || item.beatId === options.beat,
@@ -381,36 +388,60 @@ async function captureReducedMotionEvidence(
       name: `Idea ${beatIndex + 1}: ${beat.chapter.title}`,
       exact: true,
     });
-    await control.click();
-    await page.waitForFunction(
-      ({ sceneId, title, idea }) => {
-        const player = document.querySelector(
-          `.guided-scene-player[data-scene-id="${sceneId}"]`,
-        );
-        const active = player?.querySelector(
-          `button[aria-label="${idea}"][aria-current="step"]`,
-        );
-        const stageTitle = player
-          ?.querySelector(".guided-scene-player__stage-title")
-          ?.textContent?.trim();
-        const canvas = player?.querySelector(
-          ".guided-scene-player__canvas canvas",
-        );
-        return Boolean(
-          active &&
-          stageTitle === title &&
-          canvas instanceof HTMLCanvasElement &&
-          canvas.width > 0 &&
-          canvas.height > 0,
-        );
-      },
-      {
-        sceneId: options.sceneId,
-        title: beat.chapter.title,
-        idea: `Idea ${beatIndex + 1}: ${beat.chapter.title}`,
-      },
-      { timeout: 15_000 },
+    await control.waitFor({ state: "visible" });
+    const normalizedOpening = Math.min(
+      0.999,
+      item.frame / description.durationFrames + 0.002,
     );
+    const expectedIdea = `Idea ${beatIndex + 1}: ${beat.chapter.title}`;
+    const deadline = Date.now() + 30_000;
+    let observed;
+    while (Date.now() < deadline) {
+      await timeline.evaluate((element, value) => {
+        const setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          "value",
+        ).set;
+        setter.call(element, String(value));
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+      }, normalizedOpening);
+      await page.waitForTimeout(150);
+      observed = await root.evaluate(
+        (player, expected) => {
+          const canvas = player.querySelector(
+            ".guided-scene-player__canvas canvas",
+          );
+          const activeIdea = player
+            .querySelector('button[aria-current="step"]')
+            ?.getAttribute("aria-label");
+          const title = player
+            .querySelector(".guided-scene-player__stage-title")
+            ?.textContent?.trim();
+          const scrubber = player.querySelector(
+            ".guided-scene-player__scrubber input",
+          );
+          return {
+            title,
+            activeIdea,
+            progress:
+              scrubber instanceof HTMLInputElement ? scrubber.value : null,
+            landed:
+              activeIdea === expected.idea &&
+              title === expected.title &&
+              canvas instanceof HTMLCanvasElement &&
+              canvas.width > 0 &&
+              canvas.height > 0,
+          };
+        },
+        { idea: expectedIdea, title: beat.chapter.title },
+      );
+      if (observed.landed) break;
+    }
+    if (!observed?.landed) {
+      throw new Error(
+        `learner chapter seek did not land on ${expectedIdea}; observed ${JSON.stringify(observed)}`,
+      );
+    }
     // The active chapter is published from the engine's frame event. Two browser
     // frames let the corresponding Stage.render paint before Playwright reads pixels.
     await page.evaluate(
@@ -434,7 +465,8 @@ async function captureReducedMotionEvidence(
       captureSource: "learner-player",
       route,
       seek: {
-        method: "idea-control",
+        method: "learner-timeline-native-input",
+        normalizedProgress: normalizedOpening,
         normalizedChapterOpeningFrame: item.frame,
       },
       browserMedia: {

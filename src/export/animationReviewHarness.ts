@@ -11,6 +11,7 @@ const FPS = 30;
 
 export interface AnimationReviewDescription {
   sceneId: string;
+  durationFrames: number;
   fps: number;
   checkpoints: ReturnType<typeof resolveBeatCheckpoints>;
   beats: SceneBeatContract["beats"];
@@ -41,6 +42,7 @@ function describe(sceneId: string): AnimationReviewDescription {
   const checkpoints = resolveBeatCheckpoints(contract, FPS);
   return {
     sceneId,
+    durationFrames: Math.max(...checkpoints.map(({ frame }) => frame)) + 1,
     fps: FPS,
     checkpoints,
     beats: contract.beats,
