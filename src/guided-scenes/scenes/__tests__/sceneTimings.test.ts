@@ -397,6 +397,41 @@ describe("scene timings (pure data)", () => {
     });
   });
 
+  /**
+   * Regression for the one learner-visible defect Batch 1 left open: the three
+   * beats that begin a fresh trial used to rewrite the live matrix imperatively,
+   * so the craft and both basis arrows teleported from their previous state back
+   * to the identity in a single frame.
+   *
+   * The fix is a staged reset (`stagedReset` in sceneKit): fade the objects that
+   * read the live matrix out, rewrite the state while nothing is drawn, fade
+   * them back in. This asserts the budget that choreography needs still exists —
+   * if a later edit drops the fade and goes back to an instant `setMatrix`, the
+   * beat keys disappear and this fails.
+   */
+  it("stages every matrix-composition trial restart behind a fade", () => {
+    const TRIAL_RESTARTS = ["one-map", "predict-order", "undo"];
+    const beats = SCENE_BEATS["matrix-composition"]!;
+    const intents = SCENE_BEAT_INTENTS["matrix-composition"]!;
+
+    for (const segmentId of TRIAL_RESTARTS) {
+      const segment = beats[segmentId]!;
+      for (const phase of ["fadeOut", "resetHold", "fadeIn"] as const) {
+        expect(segment[phase], `${segmentId}.${phase}`).toBeGreaterThan(0);
+        // Never reclassified as a hold: the blank moment is the transition.
+        expect(intents[segmentId]![phase], `${segmentId}.${phase}`).toBe(
+          "transition",
+        );
+      }
+      // The state is rewritten while nothing is drawn, so the blank has to
+      // outlast a single frame at 30fps or the snap is still on screen.
+      expect(segment.resetHold!, `${segmentId}.resetHold`).toBeGreaterThan(1 / 30);
+    }
+
+    // The old snap-based `predict-order` budgeted a single `reset` beat.
+    expect(Object.keys(beats["predict-order"]!)).not.toContain("reset");
+  });
+
   it("matrix-transformations gives the sample its own travel beat and an unhurried tour", () => {
     const byId = Object.fromEntries(
       MATRIX_TRANSFORMATION_SEGMENTS.map((s) => [s.id, s]),

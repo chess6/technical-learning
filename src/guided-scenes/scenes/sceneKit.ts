@@ -171,6 +171,56 @@ export function* focusOpacities(
   );
 }
 
+export type StagedResetTiming = {
+  /** Fade the staged objects out. */
+  fadeOut: number;
+  /** Held blank while the state is rewritten. Long enough to read as a beat. */
+  resetHold: number;
+  /** Fade them back in, already in the new state. */
+  fadeIn: number;
+};
+
+/**
+ * Rewrite scene state behind a fade, so a new trial can begin without a
+ * single-frame geometry snap.
+ *
+ * The problem this solves: a beat that starts a fresh trial ("reset to the
+ * identity, then apply AR") has to put the plane back somewhere. Doing that
+ * imperatively teleports every object that reads the live state — one frame the
+ * craft is sheared and rotated, the next it is square. Tweening instead is
+ * worse: a continuous motion from AR back to I reads as *another linear map*,
+ * which is a false mathematical claim.
+ *
+ * The staged reset is the third option, and the only honest one: the objects
+ * fade out, the state is rewritten **while nothing is drawn**, and they fade
+ * back in already at the new state. Nothing jumps and nothing is portrayed as a
+ * transformation, because between the two visible states the screen is clear —
+ * the same punctuation a lesson uses when it wipes the board for a new example.
+ *
+ * Only stage objects the learner is *not* meant to be watching change. Anything
+ * whose motion is the point of the beat must be animated, never staged.
+ *
+ * Each target names the opacity it comes back at, so the same call can retire
+ * scaffolding (`opacity: 0`) and introduce the next beat's apparatus
+ * (`opacity: 1`) in the one blank moment, without either one snapping on.
+ */
+export function* stagedReset(
+  targets: readonly FocusOpacityTarget[],
+  rewriteState: () => void,
+  timing: StagedResetTiming,
+): ThreadGenerator {
+  yield* all(
+    ...targets.map(({ node }) => node.opacity(0, timing.fadeOut, easeInOutCubic)),
+  );
+  rewriteState();
+  yield* waitFor(timing.resetHold);
+  yield* all(
+    ...targets.map(({ node, opacity }) =>
+      node.opacity(opacity, timing.fadeIn, easeInOutCubic),
+    ),
+  );
+}
+
 /**
  * Morph a live 2×2 matrix (four entry signals) toward a target.
  * Shared so scenes do not reimplement entry-wise `all(...)` morphs.

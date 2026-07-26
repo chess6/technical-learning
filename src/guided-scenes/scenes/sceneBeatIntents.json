@@ -320,6 +320,9 @@
       "hold2": "hold"
     },
     "one-map": {
+      "fadeOut": "transition",
+      "resetHold": "transition",
+      "fadeIn": "transition",
       "hold": "hold",
       "morph": "transition",
       "hold2": "hold"
@@ -334,7 +337,9 @@
       "hold4": "hold"
     },
     "predict-order": {
-      "reset": "transition",
+      "fadeOut": "transition",
+      "resetHold": "transition",
+      "fadeIn": "transition",
       "ask": "text",
       "think": "hold"
     },
@@ -344,6 +349,9 @@
       "hold2": "hold"
     },
     "undo": {
+      "fadeOut": "transition",
+      "resetHold": "transition",
+      "fadeIn": "transition",
       "hold": "hold",
       "toA": "transition",
       "hold2": "hold",

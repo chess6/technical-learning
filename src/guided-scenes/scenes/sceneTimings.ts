@@ -726,8 +726,8 @@ export const MATRIX_COMPOSITION_SEGMENTS: readonly SceneSegment[] = [
   {
     id: "one-map",
     title: "One matrix does both",
-    duration: 6,
-    summary: "Reset to the identity and apply the single matrix AR: it lands in exactly the same place.",
+    duration: 6.5,
+    summary: "Clear the plane back to the identity, then apply the single matrix AR: it lands in exactly the same place.",
   },
   {
     id: "columns",
@@ -738,7 +738,7 @@ export const MATRIX_COMPOSITION_SEGMENTS: readonly SceneSegment[] = [
   {
     id: "predict-order",
     title: "Predict: does the order matter?",
-    duration: 5.5,
+    duration: 6,
     summary: "Shear first, then rotate. Decide whether the craft lands in the same place before the other order is built.",
   },
   {
@@ -750,8 +750,8 @@ export const MATRIX_COMPOSITION_SEGMENTS: readonly SceneSegment[] = [
   {
     id: "undo",
     title: "Undo it",
-    duration: 7,
-    summary: "Reset, apply A, then apply A⁻¹: every basis arrow returns exactly to where it started.",
+    duration: 8,
+    summary: "Clear the plane, apply A, then apply A⁻¹: every basis arrow returns exactly to where it started.",
   },
   {
     id: "no-undo",
@@ -1424,7 +1424,17 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   "matrix-composition": {
     "apply-b": { hold: 0.8, morph: 2.4, hold2: 1.5 },
     "apply-a": { hold: 0.6, morph: 2.6, paths: 0.7, hold2: 1.5 },
-    "one-map": { hold: 1.1, morph: 2.6, hold2: 2.0 },
+    // `fadeOut`/`resetHold`/`fadeIn` are the staged reset (see `stagedReset` in
+    // sceneKit): the plane returns to the identity while nothing is drawn, so
+    // starting a new trial neither teleports the craft nor claims a third map.
+    "one-map": {
+      fadeOut: 0.35,
+      resetHold: 0.3,
+      fadeIn: 0.4,
+      hold: 0.5,
+      morph: 2.6,
+      hold2: 2.0,
+    },
     columns: {
       hold: 0.5,
       hold2: 1.4,
@@ -1434,9 +1444,24 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
       unfocus: 0.3,
       hold4: 1.5,
     },
-    "predict-order": { reset: 0.6, ask: 0.4, think: 4.2 },
+    "predict-order": {
+      fadeOut: 0.35,
+      resetHold: 0.3,
+      fadeIn: 0.4,
+      ask: 0.6,
+      think: 4.2,
+    },
     order: { hold: 1.0, morph: 2.6, hold2: 2.5 },
-    undo: { hold: 0.8, toA: 1.6, hold2: 1.2, undo: 2.4, hold3: 0.8 },
+    undo: {
+      fadeOut: 0.35,
+      resetHold: 0.3,
+      fadeIn: 0.4,
+      hold: 0.5,
+      toA: 1.6,
+      hold2: 1.2,
+      undo: 2.4,
+      hold3: 0.8,
+    },
     "no-undo": { hold: 1.4, morph: 2.2, up: 0.35, down: 0.35, hold2: 1.6 },
   },
 

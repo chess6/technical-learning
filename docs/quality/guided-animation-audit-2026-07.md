@@ -6,12 +6,56 @@ and (c) the reference packs under `.reference-sources/packs/` (Sláma
 (a,b)-trees, Reducible Huffman, Jazon Jiao BFS, 3Blue1Brown eigenvectors — see
 [engineering/reference-sources.md](../engineering/reference-sources.md)).
 
-**Status: reopened for the exhaustive guided-animation redesign.** The July pass
-below remains the historical record of its narrower audit, but it is not evidence
-that the newer BeatSpec/authoring/review contract has been applied course-wide.
-Batch 1 implementation and deterministic evidence are complete on
+**Status: closed as an exhaustive programme; see
+[Deferred until product maturity](#deferred-until-product-maturity).** The July
+pass below remains the historical record of its narrower audit, and the Batch 1
+rows record what was actually built. The remaining scenes are **not** scheduled
+for the exhaustive treatment: the product is early-stage, and teaching quality
+in the learner-facing lessons outranks animation-production evidence. Batch 1
+implementation and deterministic evidence are complete on
 `guided-animation-batch-1-continuous-space`; independent visual sign-off is
-still pending, and no other batch is claimed.
+neither pending work nor a gate.
+
+## Deferred until product maturity
+
+The animation-production tooling built for this programme **stays in the repo and
+keeps working**, but it is **frozen and is no longer an acceptance gate** for any
+lesson change. It may be used opportunistically to diagnose a specific defect.
+Do not spend time repairing a deferred tool unless it blocks the learner-facing
+app, ordinary development, or the standard test/build workflow.
+
+Deferred (not scheduled; do not resume without an explicit product decision):
+
+- Per-scene MP4 export and inspection.
+- Contact sheets and approval packets.
+- Reference-frame comparisons.
+- Exhaustive semantic evidence and trajectory analysis.
+- Cross-beat automated discontinuity infrastructure.
+- Further `BeatSpec` migration undertaken solely for coverage.
+- Hidden-object evidence validation.
+- `--skip-video` approval-status refinements.
+- Exhaustive animation completion ledgers (the tables below are frozen history,
+  not a to-do list).
+- Separate reduced-motion screenshot packets.
+- Perfect frame-count determinism.
+- Native Motion Canvas editor refinements.
+- Debug-overlay and presentation-tuning polish.
+- Storyboard-approval infrastructure.
+- Benchmark-laboratory expansion.
+- Inline WebM/MP4 lesson clips.
+- Per-animation desktop/narrow-layout evidence runs.
+
+**What still gates a scene change.** A guided-scene edit is accepted on the
+ordinary learner-facing evidence: the animation visibly performs what its caption
+claims, captions/geometry/readouts stay synchronized, chapter seeking and reset
+and playback work in the real player, reduced motion still shows an establishing
+frame, and the repository tier from `AGENTS.md` passes. Basic reduced-motion
+behaviour must keep working; a separate evidence package for it is deferred.
+
+**PENDING rows below are not a backlog.** A scene marked `PENDING Batch 2` means
+"the exhaustive contract was never applied here", not "work is owed". Those
+scenes are improved as part of ordinary learner-facing lesson work, judged
+against the bar in the paragraph above.
 
 Criteria: model-changing idea vs mere motion; object persistence across
 transformations; explanatory purpose of every visual change; invariants kept
@@ -196,13 +240,14 @@ segment is split into `case-empty` / `case-point` / `case-line`.
    label rename in place, or the first frame of a tween following a static hold.
    No unexplained teleport remains.
 
-## Exhaustive redesign completion ledger
+## Exhaustive redesign completion ledger (frozen)
 
-This is the authoritative status for the newer course-wide redesign. “Review
+Frozen record of how far the course-wide redesign got before it was deferred. It
+is **not** a work queue — see
+[Deferred until product maturity](#deferred-until-product-maturity). “Review
 packet” means the contract-backed production-scene workflow, not the benchmark
 lab. “MP4 inspected” separates mechanical export/frame verification from actual
-visual inspection. The historical ledger below records a narrower July pass and
-does not promote pending scenes here.
+visual inspection.
 
 | Scene | Changes or justified no-change | Prediction or rationale | Visible invariant | `runSegment` | Chapters checked | Player checked | Review packet | MP4 inspected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -223,6 +268,30 @@ does not promote pending scenes here.
 | `eigenvectors-derivation` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
 | `bst-lift-from-array` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
 | `karatsuba-cross-terms` | **PENDING Batch 2** | pending | pending | historical only | pending redesign check | pending | pending | pending |
+
+### Closed after Batch 1
+
+`matrix-composition` — the one learner-visible defect Batch 1 left open. The
+three beats that begin a fresh trial (`one-map`, `predict-order`, `undo`) reset
+the live matrix to the identity, and did it imperatively: the craft, both basis
+arrows, and both arrow labels jumped from their previous state to the identity
+in a single frame. The teleport hard gate did not catch it because a reset moves
+most of the frame at once, which the gate correctly exempts as an authored cut.
+
+Fixed with a **staged reset** (`stagedReset` in `sceneKit.ts`): the objects that
+read the live matrix fade out, the state is rewritten while nothing is drawn, and
+they fade back in already at the identity. The dashed original craft, the grid,
+and the origin stay put through the blank, so the learner keeps a reference. The
+third option — tweening AR → I — was rejected: a continuous motion back to the
+identity reads as another linear map, which is false. The same blank now also
+retires the two-stage paths and introduces the dashed AR comparison outline, so
+neither snaps on. Captions name the move as staging ("a new trial, not another
+map") rather than describing it as a transformation.
+
+Verified in the ordinary learner player at 1× playback across all three
+transitions (no console errors), plus the chapter spec and the hard gates.
+Regression: `sceneTimings.test.ts` asserts the three beats keep a
+`fadeOut`/`resetHold`/`fadeIn` budget classified as transitions.
 
 ### Batch 1 evidence note
 

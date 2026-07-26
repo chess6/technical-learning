@@ -16,7 +16,7 @@ Read [docs/README.md](docs/README.md) first: it is the doc map.
 | Insight Stage 1–2 | [docs/authoring/insight-discovery-gate.md](docs/authoring/insight-discovery-gate.md) |
 | Mastery bar / evidence | [docs/authoring/mastery-standard.md](docs/authoring/mastery-standard.md) |
 | Change math or a visualization | [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md) + [docs/quality/known-failure-modes.md](docs/quality/known-failure-modes.md) |
-| Change a guided scene's motion or labels | also run the hard gates — [docs/quality/benchmark-lab/README.md](docs/quality/benchmark-lab/README.md) |
+| Change a guided scene's motion or labels | the hard gates still run (`e2e/guided-scene-hard-gates.spec.ts`) — [docs/quality/benchmark-lab/README.md](docs/quality/benchmark-lab/README.md). Review packets, MP4 evidence, and BeatSpec migration are **deferred**: [audit § Deferred until product maturity](docs/quality/guided-animation-audit-2026-07.md#deferred-until-product-maturity) |
 | Code architecture / contracts | [docs/engineering/architecture.md](docs/engineering/architecture.md) |
 | A per-lesson artifact (brief/contract/plan) | under `docs/courses/<course>/lessons/<lesson>/` — never a loose `docs/insight-*.md` |
 | Layering / scope / commit rules | `.cursor/rules/` (project-core, lesson-design, math-visualization-correctness, course-authoring, auto-commit) |

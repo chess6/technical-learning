@@ -34,6 +34,9 @@ import {
   makeStaticGrid,
   morphMatrixEntries,
   runSegment,
+  stagedReset,
+  type FocusOpacityTarget,
+  type StagedResetTiming,
 } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
 
@@ -310,6 +313,25 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
 
+  /**
+   * The three beats that begin a fresh trial share one staging budget. Reading
+   * it through a named helper keeps the three call sites from drifting apart.
+   */
+  const staging = (b: Record<string, number>): StagedResetTiming => ({
+    fadeOut: b.fadeOut!,
+    resetHold: b.resetHold!,
+    fadeIn: b.fadeIn!,
+  });
+
+  /** Everything that reads the live matrix and must not be seen to teleport. */
+  const liveMatrixObjects: readonly FocusOpacityTarget[] = [
+    { node: craft, opacity: 1 },
+    { node: e1, opacity: 1 },
+    { node: e2, opacity: 1 },
+    { node: e1Label, opacity: 1 },
+    { node: e2Label, opacity: 1 },
+  ];
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *["apply-b"]() {
       const b = beats("apply-b");
@@ -344,13 +366,16 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
       const b = beats("one-map");
       setTop("One matrix does both");
       setCaption(
-        "Reset to the identity, then apply a SINGLE matrix — AR — in one motion.",
+        "Clear the plane and set it back to the identity — a new trial, not another map.",
       );
-      // Snap-then-morph, so the reset reads under scrubbing rather than as a
-      // long tween the learner might mistake for a third transformation. This is
-      // the documented rule: return to an intelligible baseline (the identity)
-      // before applying an unrelated map.
-      setMatrix(IDENTITY);
+      // Staged reset, not a snap and not a tween. Snapping teleports every
+      // object that reads the live matrix; tweening AR → I would read as a
+      // third transformation, which is false. Fading out, rewriting the state
+      // while nothing is drawn, and fading back in says "new trial" instead.
+      yield* stagedReset(liveMatrixObjects, () => setMatrix(IDENTITY), staging(b));
+      setCaption(
+        "Now apply a SINGLE matrix — AR — in one motion. Watch where it lands.",
+      );
       yield* waitFor(b.hold!);
       yield* morphMatrixEntries(m11, m12, m21, m22, AR, b.morph!);
       setCaption(
@@ -398,18 +423,28 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
     *["predict-order"]() {
       const b = beats("predict-order");
       setTop("Predict: does the order matter?");
-      // Keep AR's landing place on screen as a dashed outline — the prediction
-      // is about whether the OTHER order reaches it, so it must stay visible.
-      otherOrder.opacity(1);
-      path1.opacity(0);
-      path2.opacity(0);
-      end1.opacity(0);
-      end2.opacity(0);
-      setMatrix(IDENTITY);
+      setCaption("Clear the plane again, and keep a record of where AR landed.");
+      // One staged blank does three jobs at once: the live matrix goes back to
+      // the identity unseen, the two-stage paths and their endpoints retire, and
+      // AR's landing place comes back as a dashed outline. Doing any of them
+      // imperatively would be a snap; tweening the reset would claim a map.
+      yield* stagedReset(
+        [
+          ...liveMatrixObjects,
+          // Kept on screen for the whole prediction: it is what the learner is
+          // being asked to compare the other order against.
+          { node: otherOrder, opacity: 1 },
+          { node: path1, opacity: 0 },
+          { node: path2, opacity: 0 },
+          { node: end1, opacity: 0 },
+          { node: end2, opacity: 0 },
+        ],
+        () => setMatrix(IDENTITY),
+        staging(b),
+      );
       setCaption(
         "The dashed outline is where R-then-A landed. Now do it the other way: A first, then R.",
       );
-      yield* waitFor(b.reset!);
       yield* waitFor(b.ask!);
       setCaption(
         "Predict: does the craft land back on that dashed outline, or somewhere else?",
@@ -432,12 +467,17 @@ export const matrixCompositionScene = makeScene2D(function* (view) {
     *undo() {
       const b = beats("undo");
       setTop("Undo it");
-      setCaption("Reset to the identity, then apply A on its own.");
-      otherOrder.opacity(0);
-      // Reset to the baseline and then WATCH A being applied, rather than
-      // snapping the craft from RA straight onto A's image — a snap between two
-      // unrelated states says nothing, and the undo only reads if the do was seen.
-      setMatrix(IDENTITY);
+      setCaption("Clear the plane once more. This time only A is applied.");
+      // Same staged blank: the comparison outline retires and the plane goes
+      // back to the identity while nothing is drawn, so the learner watches A
+      // being applied from a baseline rather than seeing the craft jump off RA.
+      // The undo only reads if the do was seen.
+      yield* stagedReset(
+        [...liveMatrixObjects, { node: otherOrder, opacity: 0 }],
+        () => setMatrix(IDENTITY),
+        staging(b),
+      );
+      setCaption("Apply A on its own, and watch where each basis arrow goes.");
       yield* waitFor(b.hold!);
       yield* morphMatrixEntries(m11, m12, m21, m22, A, b.toA!);
       setCaption("Is there a map that puts every point back?");

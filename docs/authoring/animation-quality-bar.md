@@ -601,6 +601,15 @@ Each item lists **priority · effort · pedagogical function · likely first ado
 
 ## 15. Development authoring and review loop
 
+> **Frozen (2026-07).** Everything in this section is **available but optional**.
+> The review packet, MP4 export, contact sheets, reference comparison, and
+> BeatSpec migration are **no longer acceptance gates** — see
+> [quality/guided-animation-audit-2026-07.md § Deferred until product maturity](../quality/guided-animation-audit-2026-07.md#deferred-until-product-maturity).
+> Reach for these tools when they help diagnose a concrete defect; do not run
+> them to produce evidence, and do not repair them unless they block the
+> learner-facing app, ordinary development, or the standard test/build workflow.
+> Sections 1–14 above (the quality bar itself) still apply to every scene change.
+
 The development workflow edits and judges the production Motion Canvas scene;
 it does not maintain a replica. Contract-backed authoring currently covers the
 `matrix-transformations` pilot and Batch 1: `why-linear-algebra`,
