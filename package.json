@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "animate": "node scripts/animate-scene.mjs",
+    "animation:review": "node scripts/review-animation.mjs",
+    "animation:iterate": "node scripts/iterate-animation.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",

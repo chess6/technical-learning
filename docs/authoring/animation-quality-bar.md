@@ -599,7 +599,81 @@ Each item lists **priority · effort · pedagogical function · likely first ado
 
 ---
 
-## 15. Risks, anti-patterns, and non-goals
+## 15. Development authoring and review loop
+
+The development workflow edits and judges the production Motion Canvas scene;
+it does not maintain a replica. The current pilot is `matrix-transformations`.
+
+```bash
+npm run animate -- --scene matrix-transformations
+npm run animation:review -- --scene matrix-transformations
+npm run animation:iterate -- --scene matrix-transformations
+```
+
+`animate` opens the selected registered production module in the native Motion
+Canvas editor. Timeline scrubbing, time-event editing, node inspection,
+selected-range playback/rendering, snapshots, project variables, independent
+debug-overlay toggles, and typed presentation controls all stay in this isolated
+development project. Unknown and development-only scene IDs fail explicitly.
+Persisting a tuning change validates the complete typed presentation config
+before writing it; matrices, coordinates, determinants, and other mathematical
+truth are not editable controls.
+
+Use the native editor to author one production scene and tune its presentation;
+use the benchmark laboratory only to compare a reusable treatment with supported
+reference evidence; use the learner player to accept page integration, chapter
+navigation, responsive layout, and reduced motion. A laboratory replica is never
+production-scene evidence.
+
+To add or update a `BeatSpec`, register each stable `semantic:*` or
+`presentation:*` selector in the scene contract, apply the same key to the live
+Motion Canvas node, declare the change property and invariant, and anchor the
+checkpoint to an existing segment or phase. Add timing in `sceneTimings.ts`, not
+in the contract. Add a tuning variable only to the typed constraints, persisted
+JSON, and namespaced project-variable map; its value must affect composition or
+pacing only, with production defaults independent of browser state.
+
+The pilot's typed `BeatSpec` is the compact authoring context. It names the
+pedagogical purpose, intent, focal semantic objects, prediction/reveal pair,
+expected changes and invariants, chapter, timing event, and four deterministic
+checkpoint anchors. Timing continues to come from `sceneTimings.ts`; geometry
+continues to come from the production scene and shared math helpers.
+
+`animation:review` writes an ignored packet under
+`artifacts/animation-review/<scene>/` containing:
+
+- opening, midpoint, landing, and final rendered frames grouped by beat;
+- direct chapter-seek evidence and reduced-motion chapter frames;
+- a labelled contact sheet and a short low-resolution prediction-to-reveal MP4;
+- expected-versus-observed semantic assertions and compact trajectories;
+- production hard-gate findings, environment inputs, and an artifact ledger.
+
+The sampler waits for the requested frame's completed `Stage.render`, not an
+elapsed-time guess. Missing frames, unmeasurable geometry, failed exports,
+direction-dependent seeks, browser errors, and failed expectations are recorded
+as failures rather than omitted. The matrix pilot has no corresponding
+benchmark replica, so unsupported reference comparison is recorded explicitly
+instead of inventing evidence.
+
+For a normal edit, `animation:iterate` runs typecheck plus only the authoring,
+timing, semantic-geometry, and hard-gate contracts before updating the packet.
+Use `--beat <id>` or `--checkpoint <id>` for a smaller capture set,
+`--reduced-motion` for static chapter evidence, and `--skip-video` while
+debugging. Before approval, run the unfiltered review and the repository tier
+required by `AGENTS.md`; the focused loop never replaces package approval.
+
+The overlays, authoring adapter, capture API, and review routes are
+development-only. Ordinary playback, inline clips, production MP4 export, and
+the learner bundle never enable them. Generated packet and export directories are
+Git-ignored. An implementation agent should begin with `summary.md`, then open
+only failed assertions in `analysis.json` and the named checkpoint images; the
+full scene graph is deliberately absent. The same checkpoint/export path can
+later render short inline WebM/MP4 clips, but clip registration and learner
+behavior remain a separate production slice.
+
+---
+
+## 16. Risks, anti-patterns, and non-goals
 
 - Do **not** turn 3b1b style into the acceptance criterion.
 - Do **not** copy transcript wording, animation code, distinctive sequences, or
@@ -615,7 +689,7 @@ Every recommended technique names its pedagogical purpose and its misuse risk.
 
 ---
 
-## 16. References studied
+## 17. References studied
 
 Studied for explanatory craft only; nothing is copied.
 

@@ -27,6 +27,7 @@ import { SCENE_META, getSceneMeta } from "../guided-scenes/scenes/sceneMeta";
 import { buildLabProject } from "../benchmark-lab/runtime/labPlayer";
 import { listReplicaIds } from "../benchmark-lab/replicas/replicaScenes";
 import { LAB_STAGE } from "../benchmark-lab/manifests";
+import { installAnimationReviewHarness } from "./animationReviewHarness";
 
 /**
  * Benchmark replicas are exportable through the same harness under a
@@ -176,4 +177,5 @@ window.__exportApi = {
   ],
   start: startExport,
 };
+installAnimationReviewHarness();
 window.__exportReady = true;

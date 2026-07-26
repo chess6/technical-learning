@@ -253,9 +253,9 @@ export const matrixTransformationScene = makeScene2D(function* (view) {
     [
       {
         id: "matrix",
-        label: "map",
+        label: "",
         value: () =>
-          `A = [[${fmt(ma())}, ${fmt(mb())}], [${fmt(mc())}, ${fmt(md())}]]`,
+          `A=[[${fmt(ma())},${fmt(mb())}],[${fmt(mc())},${fmt(md())}]]`,
       },
       { id: "relation", label: "watch", value: "", color: ROLE.selected },
     ],

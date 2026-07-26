@@ -56,10 +56,6 @@ function segmentWindows(sceneId: string) {
   });
 }
 
-async function nextTask(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 0));
-}
-
 /**
  * Mount `sceneId`, sample it, and tear everything down again.
  *
@@ -93,8 +89,9 @@ export async function runSceneGateSampling(
   container.appendChild(canvas);
 
   let durationFrames = 0;
-  let currentFrame = 0;
-  const frameListeners = new Set<(frame: number) => void>();
+  let renderedFrame = -1;
+  const renderListeners = new Set<(frame: number) => void>();
+  const durationListeners = new Set<(duration: number) => void>();
 
   const unsubscribers = [
     player.onRender.subscribe(async () => {
@@ -102,22 +99,21 @@ export async function runSceneGateSampling(
         player.playback.currentScene,
         player.playback.previousScene,
       );
+      renderedFrame = player.playback.frame;
+      for (const listener of renderListeners) listener(renderedFrame);
     }),
     player.onDurationChanged.subscribe((value) => {
       durationFrames = value;
-    }),
-    player.onFrameChanged.subscribe((value) => {
-      currentFrame = value;
-      for (const listener of frameListeners) listener(value);
+      for (const listener of durationListeners) listener(value);
     }),
   ];
 
   await player.configure(settings);
   player.togglePlayback(false);
 
-  const waitForFrame = (target: number): Promise<void> =>
+  const waitForRenderedFrame = (target: number): Promise<void> =>
     new Promise((resolve, reject) => {
-      if (currentFrame === target) {
+      if (renderedFrame === target) {
         resolve();
         return;
       }
@@ -132,9 +128,9 @@ export async function runSceneGateSampling(
       };
       const cleanup = () => {
         clearTimeout(timer);
-        frameListeners.delete(listener);
+        renderListeners.delete(listener);
       };
-      frameListeners.add(listener);
+      renderListeners.add(listener);
     });
 
   /**
@@ -143,23 +139,34 @@ export async function runSceneGateSampling(
    * frames — and a gate run over zero frames reports "no findings", which is
    * a pass for a scene nobody looked at. Block until the duration is real.
    */
-  const waitForDuration = async (): Promise<void> => {
-    const deadline = Date.now() + 10_000;
-    while (durationFrames <= 0) {
-      if (Date.now() > deadline) {
-        throw new Error(`${sceneId}: duration never became known`);
+  const waitForDuration = (): Promise<void> =>
+    new Promise((resolve, reject) => {
+      if (durationFrames > 0) {
+        resolve();
+        return;
       }
-      await nextTask();
-    }
-  };
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error(`${sceneId}: duration never became known`));
+      }, 10_000);
+      const listener = (duration: number) => {
+        if (duration <= 0) return;
+        cleanup();
+        resolve();
+      };
+      const cleanup = () => {
+        clearTimeout(timer);
+        durationListeners.delete(listener);
+      };
+      durationListeners.add(listener);
+    });
 
   const seekAndSettle = async (frame: number): Promise<void> => {
     const clamped = Math.max(0, Math.min(frame, Math.max(0, durationFrames - 1)));
+    if (renderedFrame === clamped) return;
+    const rendered = waitForRenderedFrame(clamped);
     player.requestSeek(clamped);
-    await waitForFrame(clamped);
-    // Let the render subscription flush to the canvas before measuring.
-    await nextTask();
-    await nextTask();
+    await rendered;
   };
 
   const snapshot = () => sampleSceneGraphDetailed(player.playback.currentScene);

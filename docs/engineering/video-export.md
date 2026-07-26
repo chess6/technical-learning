@@ -18,6 +18,17 @@ Options: `--fps <n>` (default 30), `--scale <n>` resolution multiplier of the
 `exports/`, Git-ignored), `--port <n>`, `--keep-frames`, repeatable `--scene`,
 plus the two watchdogs below.
 
+The authoring review preview is intentionally a different artifact:
+
+```bash
+npm run animation:review -- --scene matrix-transformations
+```
+
+It produces a low-resolution, short prediction-to-reveal excerpt plus labelled
+checkpoint evidence under `artifacts/animation-review/`. It is optimized for a
+fast review loop and is not a shareable production export. Use `export:scene`
+for final MP4 inspection and delivery.
+
 **The run cannot hang.** A renderer that throws before reaching its own error
 path (bad scene module, WebGL failure) is caught and reported rather than
 leaving the drain loop spinning, and two independent timeouts bound every
