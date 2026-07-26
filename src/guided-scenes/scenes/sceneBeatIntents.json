@@ -598,13 +598,38 @@
       "morph": "transition",
       "hold": "hold"
     },
-    "solveV": {
-      "first": "transition",
+    "solveV3": {
+      "shift": "transition",
+      "reveal": "transition",
       "hold": "hold",
-      "second": "transition",
+      "probeIn": "transition",
+      "travel": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:eigen-derivation:probe-1"
+        ]
+      },
+      "up": "emphasis",
+      "down": "emphasis",
+      "hold2": "hold"
+    },
+    "solveV2": {
+      "shift": "transition",
+      "reveal": "transition",
+      "hold": "hold",
+      "probeIn": "transition",
+      "travel": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:eigen-derivation:probe-2"
+        ]
+      },
+      "up": "emphasis",
+      "down": "emphasis",
       "hold2": "hold"
     },
     "interpret": {
+      "restore": "transition",
       "emphasisUp": "emphasis",
       "emphasisDown": "emphasis",
       "hold": "hold"

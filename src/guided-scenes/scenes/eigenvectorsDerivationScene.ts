@@ -24,6 +24,7 @@ import {
   ROLE,
   SCALE,
   OVERLAY_CLEAR_HALF_EXTENT,
+  formatDirectionRatio,
   makeArrow,
   makeLabel,
   makeOverlayLabel,
@@ -39,10 +40,13 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
  *
  * Explicitly exploits asymmetric eigendirections:
  *   λ=3 → (1,0)  (coordinate axis)
- *   λ=2 → (−1,1) (off-axis line)
+ *   λ=2 → (1,−1) (off-axis line)
  * so learners do not conclude eigenvectors are always axes.
  *
- * All numbers from eigenDerivation2x2 — never reimplemented here.
+ * All numbers from eigenDerivation2x2 — never reimplemented here, and every
+ * direction LABEL is derived from the direction actually drawn: the λ=2 line
+ * used to be drawn along (1,−1) and labelled (−1,1), the opposite ray, which
+ * also disagreed with the lesson prose.
  */
 
 const SCENE_ID = "eigenvectors-derivation";
@@ -80,7 +84,40 @@ const DIR_2: MathV =
   STEP_2?.eigenspace.kind === "line" ? STEP_2.eigenspace.basis : [-1, 1];
 
 const LAMBDA_3 = DERIVATION.lambdas.find((l) => Math.abs(l - 3) < 1e-8) ?? 3;
+const LAMBDA_2 = DERIVATION.lambdas.find((l) => Math.abs(l - 2) < 1e-8) ?? 2;
 const SHIFTED_3 = matrixShift(A, LAMBDA_3);
+const SHIFTED_2 = matrixShift(A, LAMBDA_2);
+
+/**
+ * Correctness guard (single source of truth). The two solve beats claim that
+ * each shifted matrix sends its whole drawn line to the origin; if the shared
+ * example ever changes so that is false, the scene must fail rather than
+ * animate a probe whose image quietly drifts off zero.
+ */
+function assertSceneMathIsConsistent(): void {
+  for (const [lambda, shifted, direction] of [
+    [LAMBDA_3, SHIFTED_3, DIR_3],
+    [LAMBDA_2, SHIFTED_2, DIR_2],
+  ] as const) {
+    const image = matrixVectorMultiply(shifted, scaleVector(direction, 1.7));
+    if (Math.hypot(image[0], image[1]) > 1e-9) {
+      throw new Error(
+        `eigenvectorsDerivationScene: (A − ${lambda}I) does not kill its drawn direction.`,
+      );
+    }
+    if (Math.abs(determinant2x2(shifted)) > 1e-9) {
+      throw new Error(
+        `eigenvectorsDerivationScene: A − ${lambda}I is not singular.`,
+      );
+    }
+  }
+}
+
+/** `[a b ; c d]` for a shifted matrix written beside its beat. */
+function matrixText(m: Matrix2x2): string {
+  const e = (n: number) => fmt(n).replace("-", "−");
+  return `[ ${e(m[0][0])}  ${e(m[0][1])} ;  ${e(m[1][0])}  ${e(m[1][1])} ]`;
+}
 
 function tipLabelOffset(dir: MathV, pixels = 36): Vector2 {
   const [dx, dy] = stabilizeDirection(dir);
@@ -89,6 +126,7 @@ function tipLabelOffset(dir: MathV, pixels = 36): Vector2 {
 }
 
 export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
+  assertSceneMathIsConsistent();
   view.fill(ROLE.background);
 
   // Live matrix signals — start as A, morph to A−λI during the shift beat.
@@ -216,7 +254,47 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   arrow2.opacity(0);
   view.add(arrow2);
 
-  const label3 = makeLabel("λ=3 · (1,0)", ROLE.basis1, 28);
+  /* ---------------------------------------------------------------------
+   * The solve apparatus: one probe per eigenspace.
+   *
+   * "Solve (A − λI)v = 0" used to be a caption over two lines that faded in —
+   * the answers, not the solving. Each root is now substituted back: the plane
+   * is carried to A − λI, the shifted matrix is written out, and a probe
+   * travels the line while its image, computed through that SAME live matrix,
+   * stays on the origin. The eigenspace is what the shifted map kills, watched
+   * rather than asserted.
+   * ------------------------------------------------------------------- */
+  function makeProbe(direction: MathV, color: string, key: string) {
+    const t = createSignal(-1);
+    const at = (): MathV => scaleVector(direction, t() * 1.7);
+    const dot = new Circle({ key, size: 20, fill: color, opacity: 0 });
+    dot.position(() => px(at()));
+    view.add(dot);
+    const image = new Circle({
+      size: 20,
+      fill: color,
+      stroke: ROLE.background,
+      lineWidth: 3,
+      opacity: 0,
+    });
+    image.position(() => px(matrixVectorMultiply(matrix(), at())));
+    view.add(image);
+    return { t, dot, image };
+  }
+  const probe3 = makeProbe(DIR_3, ROLE.basis1, "semantic:eigen-derivation:probe-1");
+  const probe2 = makeProbe(DIR_2, ROLE.basis2, "semantic:eigen-derivation:probe-2");
+
+  /** The shifted matrix, written out beside the beat that uses it. */
+  const shiftedNote = makeLabel("", ROLE.textMuted, 26);
+  shiftedNote.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y + 44));
+  shiftedNote.opacity(0);
+  view.add(shiftedNote);
+
+  const label3 = makeLabel(
+    `λ=${fmt(LAMBDA_3)} · ${formatDirectionRatio([DIR_3[0], DIR_3[1]])}`,
+    ROLE.basis1,
+    28,
+  );
   // Grow upward away from the horizontal tip.
   label3.offset([0, 1]);
   label3.position(() =>
@@ -225,7 +303,11 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   label3.opacity(0);
   view.add(label3);
 
-  const label2 = makeLabel("λ=2 · (−1,1)", ROLE.basis2, 28);
+  const label2 = makeLabel(
+    `λ=${fmt(LAMBDA_2)} · ${formatDirectionRatio([DIR_2[0], DIR_2[1]])}`,
+    ROLE.basis2,
+    28,
+  );
   // Grow away from the off-axis tip (left edge anchored).
   label2.offset([-1, 0]);
   label2.position(() =>
@@ -278,6 +360,66 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   }
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
+
+  /** Fade every probe out. Each solve beat re-introduces only its own. */
+  const retireProbes = (duration: number): ThreadGenerator[] =>
+    [probe3, probe2].flatMap((probe) => [
+      probe.dot.opacity(0, duration),
+      probe.image.opacity(0, duration),
+    ]);
+
+  /** One root, solved. See the `solveV3` / `solveV2` bodies. */
+  function* solveEigenspace(
+    segmentId: string,
+    spec: {
+      lambda: number;
+      shifted: Matrix2x2;
+      line: Line;
+      arrow: Line;
+      label: ReturnType<typeof makeLabel>;
+      probe: ReturnType<typeof makeProbe>;
+      note: string;
+    },
+  ): ThreadGenerator {
+    const b = beats(segmentId);
+    const lambda = fmt(spec.lambda);
+    setTop(`Solve (A − ${lambda}I)v = 0`);
+    setCaption(`Substitute λ = ${lambda} back, and carry the plane to A − ${lambda}I.`);
+    shiftedNote.text(`A − ${lambda}I = ${matrixText(spec.shifted)}`);
+    yield* all(
+      morphTo(spec.shifted, b.shift!),
+      shiftedNote.opacity(1, b.shift!),
+      vArrow.opacity(0, b.shift!),
+      square.opacity(0, b.shift!),
+      // Retire whichever probe belongs to the OTHER root. Its image is a
+      // function of the live matrix, so left up it would drift away from the
+      // origin under this beat's shifted matrix and read as a second claim.
+      ...retireProbes(b.shift!),
+    );
+    setCaption("It is singular — so some whole line has to be sent to the origin.");
+    yield* all(
+      spec.line.opacity(1, b.reveal!),
+      spec.arrow.opacity(1, b.reveal!),
+      spec.label.opacity(1, b.reveal!),
+    );
+    yield* waitFor(b.hold!);
+    spec.probe.t(-1);
+    yield* all(
+      spec.probe.dot.opacity(1, b.probeIn!),
+      spec.probe.image.opacity(1, b.probeIn!),
+    );
+    setCaption("Walk a probe along that line and watch its image.");
+    // The image is computed through the SAME live matrix as everything else,
+    // so "it never leaves the origin" is a consequence, not a parked dot.
+    yield* spec.probe.t(1, b.travel!, easeInOutCubic);
+    setCaption(
+      `Its image never left the origin: every v on this line solves (A − ${lambda}I)v = 0.`,
+    );
+    yield* origin.size(26, b.up!);
+    yield* origin.size(14, b.down!);
+    setCaption(`That line IS the eigenspace for λ = ${lambda}. ${spec.note}`);
+    yield* waitFor(b.hold2!);
+  }
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *recap() {
@@ -397,32 +539,52 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
       yield* waitFor(b.hold!);
     },
 
-    *solveV() {
-      const b = beats("solveV");
-      setTop("Solve (A − λI)v = 0");
-      setCaption(
-        "λ=3 keeps the x-axis; λ=2 is the off-axis line through (−1,1)",
-      );
-      yield* all(
-        vArrow.opacity(0, b.first!),
-        line3.opacity(1, b.first!),
-        arrow3.opacity(1, b.first!),
-        label3.opacity(1, b.first!),
-      );
-      yield* waitFor(b.hold!);
-      yield* all(
-        line2.opacity(1, b.second!),
-        arrow2.opacity(1, b.second!),
-        label2.opacity(1, b.second!),
-      );
-      yield* waitFor(b.hold2!);
+    /**
+     * Substitute a root back and solve for its eigenspace, by watching the
+     * shifted matrix kill a whole line.
+     *
+     * Shared by both roots so the two are demonstrably the SAME procedure run
+     * twice — which is the point of the step, and what a hand-written second
+     * copy would quietly stop guaranteeing.
+     */
+    *["solveV3"]() {
+      yield* solveEigenspace("solveV3", {
+        lambda: LAMBDA_3,
+        shifted: SHIFTED_3,
+        line: line3,
+        arrow: arrow3,
+        label: label3,
+        probe: probe3,
+        note: "It is a coordinate axis.",
+      });
+    },
+
+    *["solveV2"]() {
+      yield* solveEigenspace("solveV2", {
+        lambda: LAMBDA_2,
+        shifted: SHIFTED_2,
+        line: line2,
+        arrow: arrow2,
+        label: label2,
+        probe: probe2,
+        note: "A different λ, a different shifted matrix, a line off the axes.",
+      });
     },
 
     *interpret() {
       const b = beats("interpret");
       setTop("Interpret geometrically");
+      setCaption("Put A back, and keep both lines on screen.");
+      // Return the plane to A: the scene should close on the matrix it is
+      // about, not on the last shifted one it borrowed.
+      yield* all(
+        morphTo(A, b.restore!),
+        shiftedNote.opacity(0, b.restore!),
+        ...retireProbes(b.restore!),
+      );
       setCaption(
-        "λ=3 stretches along (1,0); λ=2 along (−1,1) — two different lines",
+        `λ=${fmt(LAMBDA_3)} stretches along ${formatDirectionRatio([DIR_3[0], DIR_3[1]])}; ` +
+          `λ=${fmt(LAMBDA_2)} along ${formatDirectionRatio([DIR_2[0], DIR_2[1]])} — two different lines`,
       );
       // Pulse the off-axis direction so the asymmetry is the takeaway.
       yield* all(arrow2.lineWidth(9, b.emphasisUp!), label2.fontSize(34, b.emphasisUp!));

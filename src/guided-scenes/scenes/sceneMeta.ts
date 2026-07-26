@@ -309,7 +309,7 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
     id: "eigenvectors-derivation",
     size: SCENE_SIZE,
     ariaLabel:
-      "Guided derivation computing eigenvalues and eigenvectors: from Av equals lambda v, lambda v is drawn and shown to land on Av, and the difference walks to the origin, giving A minus lambda I times v equals zero. The learner is then asked what that forces about the shifted matrix's area scale before the unit square is shown collapsing, which motivates the characteristic equation. Lambda is solved for, and the two eigenspaces are drawn as a distinctly coloured pair of directions, deliberately asymmetric so eigenvectors are not read as always being axes.",
+      "Guided derivation computing eigenvalues and eigenvectors: from Av equals lambda v, lambda v is drawn and shown to land on Av, and the difference walks to the origin, giving A minus lambda I times v equals zero. The learner is then asked what that forces about the shifted matrix's area scale before the unit square is shown collapsing, which motivates the characteristic equation. Lambda is solved for, and then each root is substituted back and solved in its own chapter: the shifted matrix is written out, the plane is carried to it, and a probe walks the line that matrix kills while its image, computed through the same live matrix, stays on the origin — so the eigenspace is watched being found rather than revealed. The two eigenspaces are drawn as a distinctly coloured pair of directions, deliberately asymmetric so eigenvectors are not read as always being axes, and each direction label is derived from the direction actually drawn.",
     steps: EIGEN_DERIVATION_STEPS,
     majorSteps: pickMajor(EIGEN_DERIVATION_STEPS, [
       "recap",
@@ -317,7 +317,8 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "predict-collapse",
       "charpoly",
       "solveLambda",
-      "solveV",
+      "solveV3",
+      "solveV2",
       "interpret",
     ]),
   },

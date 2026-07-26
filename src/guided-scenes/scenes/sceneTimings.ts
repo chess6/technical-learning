@@ -983,15 +983,23 @@ export const EIGEN_DERIVATION_SEGMENTS: readonly SceneSegment[] = [
     summary: "The characteristic polynomial's roots are the only possible eigenvalues.",
   },
   {
-    id: "solveV",
-    title: "Solve the eigenspaces",
-    duration: 6,
-    summary: "Substitute each λ back and solve for the direction it stretches.",
+    id: "solveV3",
+    title: "Solve (A − 3I)v = 0",
+    duration: 10,
+    summary:
+      "Substitute the first root back. A − 3I is written out, and a probe travels the line it kills while its image stays pinned to the origin — that line is the eigenspace.",
+  },
+  {
+    id: "solveV2",
+    title: "Solve (A − 2I)v = 0",
+    duration: 10,
+    summary:
+      "The same substitution for the second root gives a different shifted matrix and a different killed line — off the axes, so eigenvectors are not always axes.",
   },
   {
     id: "interpret",
     title: "Interpret geometrically",
-    duration: 4.5,
+    duration: 6,
     summary: "Each eigenspace is an invariant line; λ is the stretch factor along it.",
   },
 ];
@@ -1560,8 +1568,35 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     "predict-collapse": { ask: 0.4, think: 4.4 },
     charpoly: { clear: 0.5, morph: 1.6, off: 0.8, back: 1.0, hold: 1.4 },
     solveLambda: { morph: 1.2, hold: 3.0 },
-    solveV: { first: 0.7, hold: 1.4, second: 0.7, hold2: 3.0 },
-    interpret: { emphasisUp: 0.5, emphasisDown: 0.5, hold: 3.2 },
+    // Each root is substituted back and SOLVED: the shifted matrix is written
+    // out, the plane is carried to it, and a probe travels the line it kills
+    // while its image — through that same live matrix — stays on the origin.
+    solveV3: {
+      shift: 1.3,
+      reveal: 0.6,
+      hold: 1.3,
+      probeIn: 0.4,
+      travel: 2.6,
+      up: 0.35,
+      down: 0.35,
+      hold2: 2.6,
+    },
+    solveV2: {
+      shift: 1.3,
+      reveal: 0.6,
+      hold: 1.3,
+      probeIn: 0.4,
+      travel: 2.6,
+      up: 0.35,
+      down: 0.35,
+      hold2: 2.6,
+    },
+    interpret: {
+      restore: 1.2,
+      emphasisUp: 0.5,
+      emphasisDown: 0.5,
+      hold: 3.6,
+    },
   },
 
   "karatsuba-cross-terms": {

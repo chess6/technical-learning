@@ -375,12 +375,24 @@ describe("scene timings (pure data)", () => {
       "predict-collapse",
       "charpoly",
       "solveLambda",
-      "solveV",
+      // Each root is substituted back and SOLVED in its own chapter, so the
+      // second eigenspace is reachable by name rather than buried in one beat
+      // that faded both answers in.
+      "solveV3",
+      "solveV2",
       "interpret",
     ]);
     const ids = EIGEN_DERIVATION_SEGMENTS.map((s) => s.id);
     // The prediction only works AFTER (A − λI)v = 0 has been earned.
     expect(ids.indexOf("shift")).toBeLessThan(ids.indexOf("predict-collapse"));
+    // Substituting a root back only makes sense once the roots exist.
+    expect(ids.indexOf("solveLambda")).toBeLessThan(ids.indexOf("solveV3"));
+    // Each solve beat carries a probe travel plus room to inspect the landing.
+    for (const id of ["solveV3", "solveV2"]) {
+      const segment = EIGEN_DERIVATION_SEGMENTS.find((s) => s.id === id)!;
+      expect(segment.duration, id).toBeGreaterThanOrEqual(9);
+      expect(SCENE_BEATS["eigenvectors-derivation"]![id]!.travel!).toBeGreaterThanOrEqual(2);
+    }
   });
 
   describe("elimination", () => {

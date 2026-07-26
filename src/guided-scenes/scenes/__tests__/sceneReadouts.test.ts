@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatAreaFactor,
   formatCoordinatePair,
+  formatDirectionRatio,
   formatLedgerTally,
   formatRowEquation,
   formatSceneNumber,
@@ -14,10 +15,14 @@ import {
 import {
   classifyLinearSystem2x2,
   determinant2x2,
+  eigenDerivation2x2,
   requireMatrixExample,
   type Matrix2x2,
 } from "../../../math";
-import { LINEAR_SYSTEM_EXAMPLE } from "../../../lessons/exampleData";
+import {
+  EIGEN_LESSON_EXAMPLE,
+  LINEAR_SYSTEM_EXAMPLE,
+} from "../../../lessons/exampleData";
 
 /**
  * Readouts a scene DISPLAYS, checked against the mathematics they claim to
@@ -243,5 +248,40 @@ describe("formatSolutionCount", () => {
     expect(verdict(EX.a, EX.b)).toBe("exactly one");
     expect(verdict(EX.aDependent, EX.bInfinite)).toBe("infinitely many");
     expect(verdict(EX.aDependent, EX.bNone)).toBe("none");
+  });
+});
+
+describe("formatDirectionRatio", () => {
+  it("names the drawn direction by the simplest integer pair on the SAME ray", () => {
+    const invSqrt2 = 1 / Math.SQRT2;
+    expect(formatDirectionRatio([invSqrt2, -invSqrt2])).toBe("(1, −1)");
+    expect(formatDirectionRatio([1, -0])).toBe("(1, 0)");
+    expect(formatDirectionRatio([0, 1])).toBe("(0, 1)");
+    expect(formatDirectionRatio([-2, 4])).toBe("(−1, 2)");
+  });
+
+  it("keeps the sign, so a label can never name the opposite ray", () => {
+    // The derivation scene drew its λ = 2 eigenvector pointing down-right and
+    // labelled it (−1,1) — a real eigenvector, but not the one on screen, and
+    // not the orientation the lesson prose uses.
+    const invSqrt2 = 1 / Math.SQRT2;
+    expect(formatDirectionRatio([invSqrt2, -invSqrt2])).not.toBe("(−1, 1)");
+    expect(formatDirectionRatio([-invSqrt2, invSqrt2])).toBe("(−1, 1)");
+  });
+
+  it("agrees with the eigenspace the shared derivation returns", () => {
+    const derivation = eigenDerivation2x2(EIGEN_LESSON_EXAMPLE.matrix as Matrix2x2);
+    const labelFor = (lambda: number) => {
+      const step = derivation.steps.find((s) => Math.abs(s.lambda - lambda) < 1e-9)!;
+      const basis = (step.eigenspace as { basis: readonly [number, number] }).basis;
+      return formatDirectionRatio(basis);
+    };
+    expect(labelFor(3)).toBe("(1, 0)");
+    // The lesson prose orients this eigenvector as (1, −1); the label must too.
+    expect(labelFor(2)).toBe("(1, −1)");
+  });
+
+  it("falls back to the components when no small integer pair fits", () => {
+    expect(formatDirectionRatio([1, Math.PI])).toBe("(1, 3.14)");
   });
 });

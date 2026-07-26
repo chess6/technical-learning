@@ -128,6 +128,7 @@ export {
   formatSceneNumber,
   formatAreaFactor,
   formatCoordinatePair,
+  formatDirectionRatio,
   formatLedgerTally,
   formatRowEquation,
   formatSignedArea,

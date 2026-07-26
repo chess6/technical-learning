@@ -71,6 +71,43 @@ export function formatRowEquation(a: number, b: number, c: number): string {
 }
 
 /**
+ * A direction named by the simplest integer pair on the SAME ray, e.g. the
+ * drawn unit vector `(0.707, −0.707)` reads `(1, −1)`.
+ *
+ * Sign is preserved deliberately. The eigenvector-derivation scene drew its
+ * λ = 2 direction pointing down-right and labelled it `(−1,1)` — the opposite
+ * ray. Both are eigenvectors, but the label named a vector that was not the one
+ * on screen, and it disagreed with the lesson prose, which orients that
+ * eigenvector as `(1,−1)`. Deriving the label from the drawn direction makes
+ * that disagreement impossible.
+ *
+ * Falls back to rounded components when no small integer pair fits (the drawn
+ * direction always comes from a shared eigen/nullspace helper, so this is the
+ * unusual case, not the normal one).
+ */
+export function formatDirectionRatio(
+  direction: readonly [number, number],
+  epsilon = 1e-6,
+): string {
+  const [x, y] = direction;
+  const magnitudes = [Math.abs(x), Math.abs(y)].filter((m) => m > epsilon);
+  if (magnitudes.length === 0) return formatCoordinatePair(0, 0);
+  const smallest = Math.min(...magnitudes);
+  const scaled: [number, number] = [x / smallest, y / smallest];
+  const rounded: [number, number] = [
+    Math.round(scaled[0]),
+    Math.round(scaled[1]),
+  ];
+  const isIntegral =
+    Math.abs(scaled[0] - rounded[0]) < 1e-6 &&
+    Math.abs(scaled[1] - rounded[1]) < 1e-6 &&
+    Math.max(Math.abs(rounded[0]), Math.abs(rounded[1])) <= 20;
+  return isIntegral
+    ? formatCoordinatePair(rounded[0], rounded[1])
+    : formatCoordinatePair(x, y);
+}
+
+/**
  * The solution count in words, for a verdict driven by the shared
  * `classifyLinearSystem2x2`. Taking the classification kind (rather than a
  * string the scene chooses per beat) is the point: the words on screen are the
