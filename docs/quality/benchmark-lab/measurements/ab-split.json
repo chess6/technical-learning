@@ -113,7 +113,7 @@
   ],
   "hardFailures": [],
   "craftFindings": [],
-  "knownDeviations": [
+  "acceptedDeviations": [
     {
       "id": "layout-algorithm",
       "note": "Reference uses a hand-tuned parent-placement rule; the replica computes layout deterministically upward from the pinned leaf row."

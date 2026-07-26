@@ -111,7 +111,7 @@
   ],
   "hardFailures": [],
   "craftFindings": [],
-  "knownDeviations": [
+  "acceptedDeviations": [
     {
       "id": "grid-unit",
       "note": "Reference uses about 65 px per unit at equivalent framing; the replica uses the repo-wide 64 px scale."

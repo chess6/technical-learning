@@ -148,7 +148,7 @@
   ],
   "hardFailures": [],
   "craftFindings": [],
-  "knownDeviations": [
+  "acceptedDeviations": [
     {
       "id": "typography",
       "note": "Reference uses serif LaTeX numerals; the replica uses the repo sans stack."

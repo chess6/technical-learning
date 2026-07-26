@@ -308,8 +308,10 @@ export function makeGraphicParts(
 export function makeArrow(
   color: string,
   width = 6,
+  key?: string,
 ): Line {
   return new Line({
+    key,
     stroke: color,
     lineWidth: width,
     endArrow: true,
@@ -333,8 +335,10 @@ export function makeLabel(
   text: SignalValue<string>,
   color: string = ROLE.text,
   fontSize = 44,
+  key?: string,
 ): Txt {
   return new Txt({
+    key,
     text,
     fill: color,
     stroke: ROLE.background,
@@ -357,8 +361,10 @@ export function makeOverlayLabel(
   text: SignalValue<string>,
   color: string = ROLE.text,
   fontSize = 40,
+  key?: string,
 ): Txt {
   return new Txt({
+    key,
     text,
     fill: color,
     stroke: ROLE.background,
@@ -378,25 +384,47 @@ export function makeOverlayLabel(
 }
 
 /**
- * A static background grid + axes covering the given half-extent (in units).
+ * A static background grid + axes covering the given half-extents (in units).
  * Purely decorative reference frame; transformed grids are built per-scene.
  */
-export function makeStaticGrid(halfExtent = GRID_HALF_EXTENT): Node {
-  const group = new Node({});
-  for (const k of gridLineCoordinates(halfExtent)) {
+export interface GridHalfExtents {
+  x: number;
+  y: number;
+}
+
+function resolveGridHalfExtents(
+  halfExtent: number | GridHalfExtents,
+): GridHalfExtents {
+  return typeof halfExtent === "number"
+    ? { x: halfExtent, y: halfExtent }
+    : halfExtent;
+}
+
+export function makeStaticGrid(
+  halfExtent: number | GridHalfExtents = GRID_HALF_EXTENT,
+): Node {
+  const { x: xHalfExtent, y: yHalfExtent } =
+    resolveGridHalfExtents(halfExtent);
+  const group = new Node({ key: "semantic:grid:static" });
+  for (const k of gridLineCoordinates(xHalfExtent)) {
     const isAxis = k === 0;
     group.add(
       new Line({
+        key: `semantic:grid:static:x:${k}`,
         stroke: isAxis ? ROLE.axis : ROLE.grid,
         lineWidth: isAxis ? 2 : 1,
-        points: [toPixels([k, -halfExtent]), toPixels([k, halfExtent])],
+        points: [toPixels([k, -yHalfExtent]), toPixels([k, yHalfExtent])],
       }),
     );
+  }
+  for (const k of gridLineCoordinates(yHalfExtent)) {
+    const isAxis = k === 0;
     group.add(
       new Line({
+        key: `semantic:grid:static:y:${k}`,
         stroke: isAxis ? ROLE.axis : ROLE.grid,
         lineWidth: isAxis ? 2 : 1,
-        points: [toPixels([-halfExtent, k]), toPixels([halfExtent, k])],
+        points: [toPixels([-xHalfExtent, k]), toPixels([xHalfExtent, k])],
       }),
     );
   }
@@ -409,26 +437,33 @@ export function makeStaticGrid(halfExtent = GRID_HALF_EXTENT): Node {
  */
 export function makeTransformedGrid(
   matrixAt: () => Matrix2x2,
-  halfExtent = GRID_HALF_EXTENT,
+  halfExtent: number | GridHalfExtents = GRID_HALF_EXTENT,
   color = ROLE.gridTransformed,
 ): Node {
-  const group = new Node({});
+  const { x: xHalfExtent, y: yHalfExtent } =
+    resolveGridHalfExtents(halfExtent);
+  const group = new Node({ key: "semantic:grid:transformed" });
   const project = (point: MathVector2): Vector2 =>
     toPixels(matrixVectorMultiply(matrixAt(), point));
-  for (const k of gridLineCoordinates(halfExtent)) {
+  for (const k of gridLineCoordinates(xHalfExtent)) {
     const isAxis = k === 0;
     group.add(
       new Line({
+        key: `semantic:grid:transformed:x:${k}`,
         stroke: isAxis ? ROLE.axis : color,
         lineWidth: isAxis ? 2.5 : 1.25,
-        points: () => [project([k, -halfExtent]), project([k, halfExtent])],
+        points: () => [project([k, -yHalfExtent]), project([k, yHalfExtent])],
       }),
     );
+  }
+  for (const k of gridLineCoordinates(yHalfExtent)) {
+    const isAxis = k === 0;
     group.add(
       new Line({
+        key: `semantic:grid:transformed:y:${k}`,
         stroke: isAxis ? ROLE.axis : color,
         lineWidth: isAxis ? 2.5 : 1.25,
-        points: () => [project([-halfExtent, k]), project([halfExtent, k])],
+        points: () => [project([-xHalfExtent, k]), project([xHalfExtent, k])],
       }),
     );
   }

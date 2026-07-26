@@ -425,8 +425,8 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
         "λ=3 stretches along (1,0); λ=2 along (−1,1) — two different lines",
       );
       // Pulse the off-axis direction so the asymmetry is the takeaway.
-      yield* all(arrow2.lineWidth(9, b.up!), label2.fontSize(34, b.up!));
-      yield* all(arrow2.lineWidth(5, b.down!), label2.fontSize(30, b.down!));
+      yield* all(arrow2.lineWidth(9, b.pause!), label2.fontSize(34, b.pause!));
+      yield* all(arrow2.lineWidth(5, b.pause2!), label2.fontSize(30, b.pause2!));
       yield* waitFor(b.hold!);
     },
   };

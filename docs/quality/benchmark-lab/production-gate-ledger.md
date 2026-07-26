@@ -19,6 +19,10 @@ unexamined: `columns-rule-graphic`, `solution-sets`, `matrix-composition`,
 `matrix-transformations`, `transform-spike`, `bst-lift-from-array`,
 `red-black-encoding`.
 
+A later correction sweep tightened what “measured” and “motion” mean. It found one visible empty `Line` placeholder in `linear-systems` and nine segments whose only changes were captions, readouts, label scale, or line thickness. The empty line was removed. Those nine beat budgets are now named as holds/pauses, so a caption-only climax or newly inserted object no longer clears `missing-claimed-motion`; an already-authored non-text diagram fade may still count as choreography, while semantic contracts verify the mathematical operation itself.
+
+The same pass promoted line endpoints, drawn fractions, and measurement failures into the sample model. Visible unmeasurable nodes now fail closed. Scene-specific semantic contracts cover static and transformed axes/integer lattices, the displayed `p=(4,1)` arrow/readout agreement in both coordinate scenes, and the whole-plane span cue. The `p` grids now extend past x=4, and the bounded span parallelogram is replaced by a full-bleed plane cue.
+
 ## Corrected defects
 
 | # | Scene | Gate | Defect | Correction |
@@ -42,7 +46,7 @@ because a gate that cries wolf gets switched off:
 | Symptom | Truth | Gate correction |
 | --- | --- | --- |
 | Every caption "extends 460 px past the stage edge" | Measurements were rebased on the view's bounding-box centre, which unions descendants — any scene with geometry off one edge shifted wholesale (192 px in `determinant-area-scaling`). | Rebase on the view's local origin carried into world space. |
-| `NaN` movement in `linear-systems` | An empty `Line` has a non-finite box; one poisoned every distance. | Non-finite boxes are dropped and counted, never silently folded in. |
+| Empty `Line` geometry in `linear-systems` | The placeholder had no finite box and was visible by opacity even though it drew nothing. | Measurement failures now carry key, type, opacity, and reason into every frame/seek record; visible failures are hard findings. The useless placeholder was removed. |
 | A stacked title and subtitle "overlap by 62%" | Text boxes carry leading; the glyphs were 8 px apart. | Vertical comparison uses an em-box band derived from `fontSize`, and requires genuine interpenetration rather than contact. |
 | `"x"` and `"Ax"` overlapping 50 px apart | A one-glyph label at 28 px measures 81 px wide. | Ink width is bounded by character count × font size. |
 | Eight "flickers" in `eigenvectors-invariant-directions` and `linear-systems` | Smooth crossfades (0.9 → 0.72 → 0.06 → 0 → 0.09 → 0.48 → 0.9) that dip below the visibility threshold — correct practice. | A flicker requires a hard cut out *and* a hard cut back, with no animated shoulder. |
@@ -54,7 +58,7 @@ frame shows it.
 
 ## Regression coverage
 
-- `src/guided-scenes/validation/__tests__/hardGates.test.ts` — 44 tests; every
+- `src/guided-scenes/validation/__tests__/hardGates.test.ts` plus `semanticGeometry.test.ts` — 54 tests; every
   gate has both a case that fires it and a case that must not, most built from
   the real measured geometry of the scene that produced the false positive.
 - `src/guided-scenes/scenes/__tests__/sceneReadouts.test.ts` — pins the signed
@@ -65,10 +69,9 @@ frame shows it.
 - `src/guided-scenes/scenes/__tests__/kitLayout.test.ts` — the pure layout and
   pacing calculators behind the new motion primitives.
 
-## A note on what these gates deliberately do not check
+## A note on scope
 
-Nothing here fails on composition, pacing, typography, camera choice, or
-explanatory rhythm. Those are author judgment, they are where the reference
+Semantic geometry contracts now fail objective mathematical mismatches for the explicitly registered grids, coordinate readouts, and whole-plane cue. They are not a universal proof of every scene's mathematics; new mathematical diagram families need their own contract. Nothing here fails on composition, pacing, typography, camera choice, or explanatory rhythm. Those are author judgment, they are where the reference
 animations are genuinely better than ours, and they are recorded as evidence in
 [scene-composition-grammar.md](scene-composition-grammar.md). A gate that fails
 on taste is a gate someone will route around.

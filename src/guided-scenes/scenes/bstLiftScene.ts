@@ -330,8 +330,8 @@ export const bstLiftScene = makeScene2D(function* (view) {
         "A comparison that sent you left had to discard everything larger. That is the ordering condition.",
       );
       yield* all(
-        ruleLeft.opacity(1, b.labels!, easeInOutCubic),
-        ruleRight.opacity(1, b.labels!, easeInOutCubic),
+        ruleLeft.opacity(1, b.pause!, easeInOutCubic),
+        ruleRight.opacity(1, b.pause!, easeInOutCubic),
       );
       yield* waitFor(b.hold!);
     },
@@ -367,7 +367,7 @@ export const bstLiftScene = makeScene2D(function* (view) {
         yield* ring(key, true, perRing);
         yield* waitFor(perRing);
       }
-      yield* costLabel.opacity(1, b.label!, easeInOutCubic);
+      yield* costLabel.opacity(1, b.pause!, easeInOutCubic);
       yield* waitFor(b.hold!);
     },
 

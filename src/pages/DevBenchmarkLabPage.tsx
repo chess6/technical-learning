@@ -19,9 +19,11 @@ import {
 import { readProbeEvents, readProbeSamples } from "../benchmark-lab/probes/probeRegistry";
 import {
   mountLabPlayer,
+  waitForFrame,
   type LabPlayerHandle,
 } from "../benchmark-lab/runtime/labPlayer";
 import { sampleBenchmark } from "../benchmark-lab/comparison/sampler";
+import { postLabArtifact } from "../benchmark-lab/runtime/artifactRequests";
 import { runAllChecks } from "../benchmark-lab/comparison/report";
 import { buildMeasurementReport } from "../benchmark-lab/comparison/report";
 import type { CheckResult, ComparisonReport } from "../benchmark-lab/comparison/types";
@@ -215,7 +217,9 @@ export function DevBenchmarkLabPage() {
     const handle = handleRef.current;
     if (!handle) return;
     handle.pause();
+    handle.setSpeed(1);
     setPlaying(false);
+    setSpeed(1);
     setCheckProgress("sampling…");
     try {
       const run = await sampleBenchmark(manifest, handle, {
@@ -226,15 +230,13 @@ export function DevBenchmarkLabPage() {
       setMeasuredEvents(run.events);
       setCheckProgress(null);
       setStatusLine(
-        `${nextReport.hardFailures.length} hard failure(s), ${nextReport.craftFindings.length} craft finding(s)`,
+        `${nextReport.hardFailures.length} hard failure(s), ` +
+          `${nextReport.craftFindings.length} measured craft finding(s), ` +
+          `${manifest.knownDeviations.length} accepted deviation(s)`,
       );
-      await fetch("/__benchmark-lab/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: manifest.id,
-          report: buildMeasurementReport(manifest, run, nextReport),
-        }),
+      await postLabArtifact("/__benchmark-lab/report", {
+        name: manifest.id,
+        report: buildMeasurementReport(manifest, run, nextReport),
       });
     } catch (error) {
       setCheckProgress(null);
@@ -252,10 +254,9 @@ export function DevBenchmarkLabPage() {
     const f = handleRef.current!.currentFrame();
     const name = label ?? `${manifest.id}-f${String(f).padStart(4, "0")}`;
     const post = (suffix: string, dataUrl: string) =>
-      fetch("/__benchmark-lab/capture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: `${name}-${suffix}`, dataUrl }),
+      postLabArtifact("/__benchmark-lab/capture", {
+        name: `${name}-${suffix}`,
+        dataUrl,
       });
     // Replica frame straight off the canvas.
     await post("replica", replica.toDataURL("image/png"));
@@ -272,13 +273,26 @@ export function DevBenchmarkLabPage() {
     setStatusLine(`captured pair "${name}"`);
   }, [manifest, refMeta]);
 
+  const captureCurrentPair = useCallback(async () => {
+    try {
+      await capturePair();
+    } catch (error) {
+      setStatusLine(`capture failed: ${String(error)}`);
+    }
+  }, [capturePair]);
+
   const captureAllBeats = useCallback(async () => {
+    const handle = handleRef.current;
+    if (!handle) {
+      setStatusLine("capture failed: replica canvas is not mounted yet");
+      return;
+    }
     let written = 0;
     try {
       for (const beat of beats) {
         const target = Math.round(((beat.start + beat.end) / 2) * REPLICA_FPS);
-        seekTo(target);
-        await new Promise((resolve) => setTimeout(resolve, 350));
+        handle.seekToFrame(target);
+        await waitForFrame(handle, target);
         await capturePair(`${manifest.id}-${beat.id}`);
         written += 1;
       }
@@ -289,7 +303,7 @@ export function DevBenchmarkLabPage() {
     // The count is part of the message so a caller can tell a real sweep from
     // a no-op that still said "done".
     setStatusLine(`captured ${written} pairs across ${beats.length} beats`);
-  }, [beats, capturePair, manifest.id, seekTo]);
+  }, [beats, capturePair, manifest.id]);
 
   // --- current-beat findings ------------------------------------------------------------
   const currentFindings: CheckResult[] = useMemo(() => {
@@ -508,7 +522,7 @@ export function DevBenchmarkLabPage() {
         <button onClick={runChecks} disabled={!ready || checkProgress !== null}>
           {checkProgress ?? "Run checks"}
         </button>
-        <button onClick={() => capturePair()} disabled={!ready || mediaMissing}>
+        <button onClick={captureCurrentPair} disabled={!ready || mediaMissing}>
           Capture pair
         </button>
         <button onClick={captureAllBeats} disabled={!ready || mediaMissing}>
@@ -573,6 +587,18 @@ export function DevBenchmarkLabPage() {
             findings={globalFindings}
             empty={report ? "none" : ""}
           />
+          {report && manifest.knownDeviations.length > 0 && (
+            <div className="bench-lab__findings">
+              <h3>Accepted deviations (declared, not measured craft passes)</h3>
+              <ul>
+                {manifest.knownDeviations.map((deviation) => (
+                  <li key={deviation.id}>
+                    <strong>{deviation.id}</strong>: {deviation.note}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </div>

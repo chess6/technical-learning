@@ -48,10 +48,10 @@ no longer on disk.
 
 | Benchmark | Source | Repo @ commit | Excerpt | Chosen to test |
 | --- | --- | --- | --- | --- |
-| `eigen-span-stretch` | 3Blue1Brown, *Eigenvectors and eigenvalues* (`PFDu9oVAE-g`) | `3b1b/videos` @ `e317d6c5` | 117.4–202.5 s | Continuous geometric transformation; span anchors drawn before motion; gradient fans as one family; a label riding a tip as identity's receipt; **no titles or captions** |
-| `huffman-merge` | Reducible, *Huffman Codes* (`B3y0RsVCyrw`) | `nipunramk/Reducible` @ `88f4f8f7` | 1450–1497 s | Algorithm/tree choreography; persistent objects across structural change; parents born at the merge; the queue-token/tree-node double identity |
-| `ab-split` | Tom Sláma, *(a,b)-trees* (`lifFgyB77zc`) | `xiaoxiae/videos` @ `f65794b0` | 299–366 s | Keys that travel and never fade; a pinned leaf row with growth at the root; **camera reframing**; a full-frame pause prompt; one reserved violation colour |
-| `bfs-frontier` | Jazon Jiao, *BFS visualized* (`mVzsz8Actrc`) | `JazonJiao/Manim.js` @ `7cd0da52` | 0–40 s | **No narration at all**: an intertitle, staggered build-in, a pseudocode panel paced by text length, and a tracer driven by the same transition that mutates the graph |
+| `eigen-span-stretch` | 3Blue1Brown, *Eigenvectors and eigenvalues* (`PFDu9oVAE-g`) | `3b1b/videos` @ `e317d6c5` | 117.4–129.5 s (12.1 s) | One complete continuous transform: the invariant span is drawn first, then grid, basis, and vector move together; pinned equation and no caption |
+| `huffman-merge` | Reducible, *Huffman Codes* (`B3y0RsVCyrw`) | `nipunramk/Reducible` @ `88f4f8f7` | 1450.0–1462.5 s (12.5 s) | One greedy merge: persistent leaves travel into tree slots, a summed parent is born, and its queue copy re-sorts |
+| `ab-split` | Tom Sláma, *(a,b)-trees* (`lifFgyB77zc`) | `xiaoxiae/videos` @ `f65794b0` | 310.6–317.9 s (7.3 s) | One structural repair: persistent key tokens split and rise while the leaf row stays pinned; violation colour retires |
+| `bfs-frontier` | Jazon Jiao, *BFS visualized* (`mVzsz8Actrc`) | `JazonJiao/Manim.js` @ `7cd0da52` | 21.5–38.5 s (17.0 s) | An established pseudocode/graph frame: tracer movement, graph state, edge pulse, and computed enqueue numbers share one transition |
 
 Adding a benchmark is a manifest + a replica scene + a window in
 `referenceWindows.json` + locally fetched frames. No laboratory changes.
@@ -75,28 +75,30 @@ was copied.
 
 ## Measured result
 
-All four replicas currently pass every dimension with no craft findings
-outstanding. The residuals are the honest measure of how close the kit gets:
+All four focused replicas currently have zero hard failures and zero *measured*
+craft findings. That does not mean zero visual difference: each report lists
+accepted deviations separately, and the current windows deliberately do not
+cover camera reframing, prediction overlays, intertitles, graph build-in, or
+pseudocode write-in. The residuals below describe only the focused 7–17 second
+windows:
 
 | Benchmark | Checks passed | Worst event delta | Worst landmark delta | Declared deviations |
 | --- | --- | --- | --- | --- |
-| `eigen-span-stretch` | 179/179 | 0.10 s (15 events) | 0 px | 4 |
-| `huffman-merge` | 201/201 | 0.00 s (11 events) | 0 px | 3 |
-| `ab-split` | 152/152 | 0.70 s (11 events) | 12.2 px | 5 |
-| `bfs-frontier` | 103/103 | 0.29 s (8 events) | 0 px | 3 |
+| `eigen-span-stretch` | 39/39 | 0.00 s (2 events) | 0 px | 2 |
+| `huffman-merge` | 64/64 | 0.00 s (4 events) | 0 px | 2 |
+| `ab-split` | 44/44 | 0.00 s (2 events) | 12.2 px | 2 |
+| `bfs-frontier` | 59/59 | 0.03 s (4 events) | 0 px | 1 |
 
 Event times anchored to narration are accurate to their transcript segment;
-times marked `estimated` in a manifest were read off the reference frames, and
-`ab-split`'s 0.70 s worst case sits in its un-narrated batch-insert montage,
-which has no spoken anchor to align to. Where exact matching was impossible the
-manifest says so in `knownDeviations` — different layout rules, LaTeX serif
-versus the repo's sans stack, a randomised reference graph fixed to a
-deterministic instance, and a camera reframed by group transform because the
-runtime has no camera rig.
+times marked `estimated` were read from the reference frames. Where exact
+matching is intentionally not pursued, the manifest records an accepted
+deviation — layout rules, serif-versus-sans typography, or a randomised
+reference graph fixed to a deterministic instance. Reports never turn those
+declarations into an unqualified “zero differences” claim.
 
 ## Where the measurements are not the truth
 
-Three measurement traps cost real time here, and each is now encoded in the
+Four measurement traps cost real time here, and each is now encoded in the
 gates rather than in anyone's memory:
 
 1. **A text node's box is not its ink.** It carries line leading, padding, and
@@ -112,3 +114,14 @@ gates rather than in anyone's memory:
    dutifully reported "no findings". `checkRunSampledScene` now makes an empty
    run a failure, because "clean" and "never looked at" must never print the
    same.
+4. **A node that failed measurement must remain observable.** The sampler
+   carries the key, type, opacity, and failure reason into sampled frames and
+   seek records. A visible unmeasurable node is a hard failure; a title or
+   caption cannot hide a malformed mathematical line.
+
+Production gates also include explicit semantic geometry contracts for the
+scenes that promise Cartesian or transformed grids, displayed coordinate/arrow
+agreement, and a whole-plane span. These contracts check axes at zero, integer
+lattice families and shared intersections, the two displayed `p=(4,1)` arrows,
+and the full-bleed whole-plane cue. They are intentionally narrower than a
+general theorem prover, but they would reject the original half-shifted grid.

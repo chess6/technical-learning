@@ -135,8 +135,6 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   const combo = (): MathVector2 => matrixVectorMultiply(matrix(), [cx(), cy()]);
 
   // --- Static reference grid + axes (subdued) ---
-  const grid = new Line({ points: [], stroke: ROLE.grid, lineWidth: 1 });
-  view.add(grid);
   for (let k = -EXT; k <= EXT; k += 1) {
     const isAxis = k === 0;
     view.add(
@@ -339,7 +337,7 @@ export const linearSystemsScene = makeScene2D(function* (view) {
       const b = beats("equations");
       setTop("A x = b");
       setCaption("x + 3y = −1     and     2x − y = 5");
-      yield* all(top.opacity(1, b.in!), caption.opacity(1, b.in!));
+      yield* all(top.opacity(1, b.pause!), caption.opacity(1, b.pause!));
       yield* waitFor(b.hold!);
     },
     *row() {

@@ -143,7 +143,7 @@
   ],
   "hardFailures": [],
   "craftFindings": [],
-  "knownDeviations": [
+  "acceptedDeviations": [
     {
       "id": "fixed-graph-instance",
       "note": "Reference randomises edges per run; the replica fixes one deterministic lattice instance and derives every number/state from a real BFS."

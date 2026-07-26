@@ -1,4 +1,4 @@
-import { Circle, Line, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Line, Rect, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -73,7 +73,7 @@ const fmt = (n: number) => formatSceneNumber(n, 1);
 export const linearCombinationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
+  const grid = makeStaticGrid({ x: 4.25, y: OVERLAY_CLEAR_HALF_EXTENT });
   grid.opacity(0.55);
   view.add(grid);
 
@@ -101,18 +101,12 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   // Reachable-set overlays (built first so arrows draw on top). Both wear the
   // same "reachable" role — they are the same idea in two cases, and are told
   // apart by shape (filled region vs dashed line), not by hue.
-  const spanRegion = new Line({
-    closed: true,
+  const spanRegion = new Rect({
+    key: "semantic:span:whole-plane",
+    width: 1200,
+    height: 800,
     fill: ROLE.original,
-    stroke: ROLE.original,
-    lineWidth: 1.5,
     opacity: 0,
-    points: () => {
-      const r = 1.1;
-      const a = px(V.scale(r).add(wTip().scale(r)));
-      const b = px(V.scale(r).sub(wTip().scale(r)));
-      return [a, b, a.scale(-1), b.scale(-1)];
-    },
   });
   view.add(spanRegion);
 
@@ -165,7 +159,7 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(wArrow);
 
   // Fixed target point p (the object under discussion in the coordinate arc).
-  const pArrow = makeArrow(ROLE.selected, 6);
+  const pArrow = makeArrow(ROLE.selected, 6, "semantic:vector:p");
   pArrow.end(0).points(() => [new Vector2(0, 0), px(P)]);
   view.add(pArrow);
   const pDot = new Circle({ size: 16, fill: ROLE.selected, opacity: 0 });
@@ -190,7 +184,12 @@ export const linearCombinationScene = makeScene2D(function* (view) {
   view.add(wLabel);
   view.add(pLabel);
 
-  const eq = makeOverlayLabel("", ROLE.text, 42);
+  const eq = makeOverlayLabel(
+    "",
+    ROLE.text,
+    42,
+    "semantic:readout:p-standard",
+  );
   eq.opacity(0).position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
   view.add(eq);
 
@@ -426,8 +425,8 @@ export const linearCombinationScene = makeScene2D(function* (view) {
       const b = beats("predict-coordinates");
       setCaption("p has not moved, and both grid directions are on screen.");
       yield* all(
-        vArrow.lineWidth(8, b.emphasize!),
-        wArrow.lineWidth(8, b.emphasize!),
+        vArrow.lineWidth(8, b.pause!),
+        wArrow.lineWidth(8, b.pause!),
       );
       setEq("p in basis (v, w) = ( ?, ? )");
       setCaption(

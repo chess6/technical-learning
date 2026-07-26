@@ -1,6 +1,6 @@
 import { BBox, Vector2, endScene, startScene, type Scene } from "@motion-canvas/core";
 import type { Node } from "@motion-canvas/2d";
-import type { NodeSample } from "./gateTypes";
+import type { NodeSample, UnmeasuredNodeSample } from "./gateTypes";
 
 /**
  * Generic Motion Canvas scene-graph sampler.
@@ -35,7 +35,7 @@ interface WalkContext {
   originX: number;
   originY: number;
   /** Nodes whose geometry could not be measured (never silently ignored). */
-  unmeasured: string[];
+  unmeasured: UnmeasuredNodeSample[];
 }
 
 function worldBox(node: Node): BBox {
@@ -90,35 +90,96 @@ function readFontSize(node: Node): number | undefined {
 }
 
 function isFiniteBox(box: BBox): boolean {
-  return (
-    Number.isFinite(box.x) &&
-    Number.isFinite(box.y) &&
-    Number.isFinite(box.width) &&
-    Number.isFinite(box.height)
-  );
+  return Number.isFinite(box.x) && Number.isFinite(box.y) && Number.isFinite(box.width) && Number.isFinite(box.height);
+}
+
+function reasonOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function recordUnmeasured(
+  context: WalkContext,
+  node: Node,
+  type: string,
+  opacity: number | undefined,
+  reason: string,
+): void {
+  context.unmeasured.push({
+    key: node.key,
+    type,
+    ...(opacity === undefined ? {} : { opacity }),
+    reason,
+  });
+}
+
+function readLineGeometry(
+  node: Node,
+  originX: number,
+  originY: number,
+): Pick<NodeSample, "points" | "drawnStart" | "drawnEnd"> {
+  const candidate = node as unknown as {
+    parsedPoints?: () => Vector2[];
+    start?: () => unknown;
+    end?: () => unknown;
+  };
+  if (typeof candidate.parsedPoints !== "function") return {};
+  const localPoints = candidate.parsedPoints();
+  if (localPoints.length < 2) {
+    throw new Error("line has fewer than two measurable points");
+  }
+  const matrix = node.localToWorld();
+  const points = localPoints.map((point) => {
+    const world = point.transformAsPoint(matrix);
+    return { x: world.x - originX, y: world.y - originY };
+  });
+  if (points.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) {
+    throw new Error("line contains a non-finite point");
+  }
+  const start = candidate.start?.();
+  const end = candidate.end?.();
+  return {
+    points,
+    ...(typeof start === "number" && Number.isFinite(start) ? { drawnStart: start } : {}),
+    ...(typeof end === "number" && Number.isFinite(end) ? { drawnEnd: end } : {}),
+  };
 }
 
 function walk(node: Node, context: WalkContext): void {
   const type = node.constructor.name;
   const isText = type === "Txt";
-  let box: BBox;
-  let opacity: number;
+  let opacity: number | undefined;
   try {
-    box = isText ? textInkBox(node) : worldBox(node);
     opacity = node.absoluteOpacity();
-  } catch {
-    context.unmeasured.push(node.key);
-    return;
+    if (!Number.isFinite(opacity)) {
+      recordUnmeasured(context, node, type, undefined, "non-finite opacity");
+      opacity = undefined;
+    }
+  } catch (error) {
+    recordUnmeasured(context, node, type, undefined, "opacity: " + reasonOf(error));
   }
 
-  // A non-finite box means the node has no geometry this frame (an empty
-  // Line, a zero-length path). Recording it would poison every distance the
-  // gates compute with NaN, so it is dropped — and counted, never hidden.
-  if (!isFiniteBox(box) || !Number.isFinite(opacity)) {
-    context.unmeasured.push(node.key);
-  } else {
+  let box: BBox | undefined;
+  try {
+    box = isText ? textInkBox(node) : worldBox(node);
+    if (!isFiniteBox(box)) {
+      recordUnmeasured(context, node, type, opacity, "non-finite geometry");
+      box = undefined;
+    }
+  } catch (error) {
+    recordUnmeasured(context, node, type, opacity, "geometry: " + reasonOf(error));
+  }
+
+  if (box && opacity !== undefined) {
     const text = isText ? readText(node) : undefined;
     const fontSize = isText ? readFontSize(node) : undefined;
+    let lineGeometry: Pick<NodeSample, "points" | "drawnStart" | "drawnEnd"> = {};
+    if (type === "Line") {
+      try {
+        lineGeometry = readLineGeometry(node, context.originX, context.originY);
+      } catch (error) {
+        recordUnmeasured(context, node, type, opacity, reasonOf(error));
+      }
+    }
     context.out[node.key] = {
       key: node.key,
       type,
@@ -130,11 +191,10 @@ function walk(node: Node, context: WalkContext): void {
       ...(text === undefined ? {} : { text }),
       ...(fontSize === undefined ? {} : { fontSize }),
       ancestors: [...context.ancestors],
+      ...lineGeometry,
     };
   }
 
-  // Txt's leaves are the ink already folded into the box above; walking them
-  // would duplicate the same text and collide with its own parent.
   if (isText) return;
 
   context.ancestors.push(node.key);
@@ -147,7 +207,7 @@ function walk(node: Node, context: WalkContext): void {
 export interface SceneGraphSnapshot {
   nodes: Record<string, NodeSample>;
   /** Keys whose geometry could not be measured this frame. */
-  unmeasured: string[];
+  unmeasured: UnmeasuredNodeSample[];
 }
 
 /**

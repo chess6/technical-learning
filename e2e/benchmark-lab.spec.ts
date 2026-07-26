@@ -32,13 +32,23 @@ async function waitForReplica(page: Page): Promise<void> {
   });
 }
 
-/**
- * Whether the git-ignored reference media has been fetched locally. Its
- * absence is reported, never silently tolerated: a laboratory run that
- * quietly skips the reference half proves nothing.
- */
-async function hasReferenceMedia(page: Page): Promise<boolean> {
-  return !(await page.locator(".bench-lab__media-warning").isVisible());
+/** A valid 1×1 PNG lets capture coverage run without git-ignored local media. */
+const REFERENCE_PIXEL = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
+
+async function mockReferenceMedia(page: Page): Promise<void> {
+  await page.route("**/benchmark-media/frames/**", async (route) => {
+    if (route.request().url().endsWith("/meta.json")) {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ frameFps: 15, frameCount: 300 }),
+      });
+      return;
+    }
+    await route.fulfill({ contentType: "image/png", body: REFERENCE_PIXEL });
+  });
 }
 
 test.describe("benchmark laboratory", () => {
@@ -115,6 +125,14 @@ test.describe("benchmark laboratory", () => {
     await expect(page.locator(".bench-lab__timeline-tick").first()).toBeVisible();
     await expect(page.locator(".bench-lab__purpose")).not.toBeEmpty();
 
+    // --- actual comparison run ---------------------------------------------
+    await page.getByRole("button", { name: "Run checks" }).click();
+    await expect(page.locator(".bench-lab__status")).toContainText(
+      "0 hard failure(s)",
+      { timeout: 60_000 },
+    );
+    await expect(page.locator(".bench-lab__dimensions tbody tr").first()).toBeVisible();
+
     expect(errors).toEqual([]);
   });
 
@@ -147,20 +165,40 @@ test.describe("benchmark laboratory", () => {
     expect(errors).toEqual([]);
   });
 
-  test("captures a paired comparison frame", async ({ page }) => {
+  test("reports capture failures and only claims success after both writes", async ({
+    page,
+  }) => {
+    await mockReferenceMedia(page);
+    let rejectedPosts = 0;
+    await page.route("**/__benchmark-lab/capture", async (route) => {
+      rejectedPosts += 1;
+      await route.fulfill({ status: 500, body: "simulated write failure" });
+    });
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(LAB);
     await waitForReplica(page);
 
-    test.skip(
-      !(await hasReferenceMedia(page)),
-      "reference media not fetched — run scripts/fetch-benchmark-media.sh",
+    await page.getByRole("button", { name: "Capture pair", exact: true }).click();
+    await expect(page.locator(".bench-lab__status")).toContainText(
+      "capture failed",
+      { timeout: 30_000 },
     );
+    expect(rejectedPosts).toBe(1);
 
+    await page.unroute("**/__benchmark-lab/capture");
+    let savedPosts = 0;
+    await page.route("**/__benchmark-lab/capture", async (route) => {
+      savedPosts += 1;
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ saved: `/tmp/pair-${savedPosts}.png` }),
+      });
+    });
     await page.getByRole("button", { name: "Capture pair", exact: true }).click();
     await expect(page.locator(".bench-lab__status")).toContainText("captured pair", {
       timeout: 30_000,
     });
+    expect(savedPosts).toBe(2);
   });
 
   test("offers every benchmark and never leaks into the learner surface", async ({

@@ -166,7 +166,10 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   assertSceneMathIsConsistent();
   view.fill(ROLE.background);
 
-  const standardGrid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
+  const standardGrid = makeStaticGrid({
+    x: 4.25,
+    y: OVERLAY_CLEAR_HALF_EXTENT,
+  });
   standardGrid.opacity(0.5);
   view.add(standardGrid);
 
@@ -254,7 +257,7 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
   view.add(origin);
 
   // --- THE arrow. Its position is written here and NOWHERE else. ---
-  const arrow = makeArrow(ROLE.selected, 6);
+  const arrow = makeArrow(ROLE.selected, 6, "semantic:vector:p");
   arrow.points([new Vector2(0, 0), px(POINT)]);
   view.add(arrow);
   const arrowDot = new Circle({ size: 16, fill: ROLE.selected });
@@ -263,7 +266,12 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
 
   // --- Readouts. Neither wears a role hue: they are two NAMES for one point,
   // not two objects, and are told apart by their basis subscript. ---
-  const standardReadout = makeLabel("", ROLE.textMuted, 30);
+  const standardReadout = makeLabel(
+    "",
+    ROLE.textMuted,
+    30,
+    "semantic:readout:p-standard",
+  );
   standardReadout.position(px(POINT).add(new Vector2(76, -26)));
   standardReadout.opacity(0);
   view.add(standardReadout);
@@ -303,7 +311,7 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       setTop("One arrow on the usual grid");
       setCaption(`The point p sits here. Against the standard grid it reads (${fmt(POINT[0])}, ${fmt(POINT[1])}).`);
       standardReadout.text(`(${fmt(POINT[0])}, ${fmt(POINT[1])})`);
-      yield* standardReadout.opacity(1, b.readout!);
+      yield* standardReadout.opacity(1, b.pause!);
       yield* waitFor(b.hold!);
     },
 
@@ -327,8 +335,8 @@ export const changeOfBasisScene = makeScene2D(function* (view) {
       setTop("Predict: what does p read now?");
       setCaption("Both grid directions are lit, and p has not moved a pixel.");
       yield* all(
-        b1Arrow.lineWidth(8, b.emphasize!),
-        b2Arrow.lineWidth(8, b.emphasize!),
+        b1Arrow.lineWidth(8, b.pause!),
+        b2Arrow.lineWidth(8, b.pause!),
       );
       basisReadout.text("[p]_B = ( ?, ? )");
       basisReadout.opacity(1);

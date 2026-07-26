@@ -1300,12 +1300,12 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     },
     basis: { restore: 1.2, focus: 0.35, hold: 2.2 },
     "read-standard": { pIn: 1.2, hold: 1.2, swap: 0.9, hold2: 1.6 },
-    "predict-coordinates": { emphasize: 0.6, ask: 0.4, think: 4.2 },
+    "predict-coordinates": { pause: 0.6, ask: 0.4, think: 4.2 },
     coordinates: { walk1: 0.9, walk2: 0.9, reveal: 0.4, hold: 1.4 },
   },
 
   "linear-systems": {
-    equations: { in: 0.5, hold: 3.2 },
+    equations: { pause: 0.5, hold: 3.2 },
     row: { lines: 0.6, hold: 1.0, dotIn: 0.4, pulseUp: 0.3, pulseDown: 0.3, hold2: 3.0 },
     regroup: { fade: 0.6, show: 0.35, tag: 0.2, hold: 3.3 },
     "predict-column": { ask: 0.4, think: 4.4 },
@@ -1366,7 +1366,7 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     generate: { arrow: 0.8, dot: 0.5, up: 0.3, down: 0.3, hold: 2.5 },
     "null-line": { draw: 0.8, up: 0.35, down: 0.35, hold: 2.5 },
     translate: { offset: 0.7, line: 0.8, up: 0.35, down: 0.35, hold: 2.8 },
-    "case-empty": { up: 0.3, down: 0.3, hold: 3.0 },
+    "case-empty": { pause: 0.3, pause2: 0.3, hold: 3.0 },
     "case-point": { up: 0.25, down: 0.25, hold: 3.0 },
     "case-line": { up: 0.25, down: 0.25, hold: 3.5 },
   },
@@ -1425,9 +1425,9 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   },
 
   "change-of-basis": {
-    "one-arrow": { readout: 0.6, hold: 1.6 },
+    "one-arrow": { pause: 0.6, hold: 1.6 },
     "swap-grid": { grid: 1.0, hold: 1.4 },
-    "predict-readout": { emphasize: 0.6, ask: 0.4, think: 4.2 },
+    "predict-readout": { pause: 0.6, ask: 0.4, think: 4.2 },
     "new-readout": { walk1: 0.9, walk2: 0.9, readout: 0.4, hold: 1.6, hold2: 1.6 },
     "hidden-subscript": { hold: 2.0, hold2: 1.6 },
     "map-standard": { morph: 2.2, hold: 1.4 },
@@ -1451,13 +1451,13 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     charpoly: { clear: 0.5, morph: 1.6, off: 0.8, back: 1.0, hold: 1.4 },
     solveLambda: { morph: 1.2, hold: 3.0 },
     solveV: { first: 0.7, hold: 1.4, second: 0.7, hold2: 3.0 },
-    interpret: { up: 0.5, down: 0.5, hold: 3.2 },
+    interpret: { pause: 0.5, pause2: 0.5, hold: 3.2 },
   },
 
   "karatsuba-cross-terms": {
     setup: { hold: 3.7 },
     foil: { in: 0.6, hold: 4.1 },
-    weights: { caption: 0.4, weights: 0.4, hold: 4.4 },
+    weights: { pause: 0.4, pause2: 0.4, hold: 4.4 },
     share: {
       caption: 0.4,
       focus: 0.5,
@@ -1496,12 +1496,12 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     "probe-rest": { ring1: 0.3, gap1: 0.5, ring2: 0.3, gap2: 0.5, hold: 3.0 },
     "second-search": { reset: 0.5, hold: 0.6, ring: 0.35, hold2: 3.0 },
     lift: { clear: 0.3, lift: 1.4, edges: 0.6, hold: 3.0 },
-    "read-the-rule": { labels: 0.5, hold: 4.0 },
+    "read-the-rule": { pause: 0.5, hold: 4.0 },
     "interval-stays": { swap: 0.4, label: 0.5, hold: 3.6 },
     "cost-is-depth": { clear: 0.3, walk: 1.95, label: 0.4, hold: 2.0 },
     degenerate: { clear: 0.4, insert: 4.4, hold: 3.0 },
     "predict-gap": { ask: 0.4, think: 4.4 },
-    "the-gap": { label: 0.5, hold: 4.4 },
+    "the-gap": { pause: 0.5, hold: 4.4 },
   },
 
   "transform-spike": {

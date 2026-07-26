@@ -15,6 +15,7 @@ import {
   checkStageClipping,
   checkTextOcclusion,
 } from "../checks";
+import { buildMeasurementReport } from "../report";
 import { summarize, type BenchmarkRun, type FrameSample } from "../types";
 
 /**
@@ -385,5 +386,24 @@ describe("checkOverruns / checkDuration / summarize", () => {
     const timing = report.summaries.find((s) => s.dimension === "timing")!;
     expect(timing.total).toBe(2);
     expect(timing.passed).toBe(1);
+  });
+  it("reports declared differences separately as accepted deviations", () => {
+    const manifest = fixtureManifest();
+    manifest.knownDeviations = [
+      { id: "typography", note: "A deliberate typeface difference." },
+    ];
+    const measurement = buildMeasurementReport(
+      manifest,
+      fixtureRun(),
+      summarize(manifest.id, []),
+    ) as {
+      acceptedDeviations?: { id: string; note: string }[];
+      knownDeviations?: unknown;
+      craftFindings: string[];
+    };
+
+    expect(measurement.craftFindings).toEqual([]);
+    expect(measurement.acceptedDeviations).toEqual(manifest.knownDeviations);
+    expect(measurement).not.toHaveProperty("knownDeviations");
   });
 });

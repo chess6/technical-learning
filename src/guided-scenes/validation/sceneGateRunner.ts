@@ -12,7 +12,7 @@ import {
   SCENE_SEGMENTS,
 } from "../scenes/sceneTimings";
 import { SEGMENT_OVERRUNS, resetSegmentOverruns } from "../scenes/sceneKit";
-import { hashCanvas, sampleSceneGraph } from "./sceneGraphSampler";
+import { hashCanvas, sampleSceneGraphDetailed } from "./sceneGraphSampler";
 import { motionBudgetOf, type SceneGateRun, type SceneSeekRecord } from "./gateTypes";
 
 /**
@@ -156,7 +156,7 @@ export async function runSceneGateSampling(
     await nextTask();
   };
 
-  const snapshot = () => sampleSceneGraph(player.playback.currentScene);
+  const snapshot = () => sampleSceneGraphDetailed(player.playback.currentScene);
 
   try {
     await waitForDuration();
@@ -166,7 +166,8 @@ export async function runSceneGateSampling(
     const frames: SceneGateRun["frames"] = [];
     for (let frame = 0, i = 0; frame < durationFrames; frame += stride, i += 1) {
       await seekAndSettle(frame);
-      frames.push({ frame, time: frame / fps, nodes: snapshot() });
+      const sampled = snapshot();
+      frames.push({ frame, time: frame / fps, ...sampled });
       options.onProgress?.(i + 1, total);
     }
 
@@ -181,18 +182,20 @@ export async function runSceneGateSampling(
       await seekAndSettle(0);
       await seekAndSettle(midpoint);
       const hashFromStart = hashCanvas(canvas);
-      const nodesFromStart = snapshot();
+      const fromStart = snapshot();
       await seekAndSettle(durationFrames - 1);
       await seekAndSettle(midpoint);
       const hashFromEnd = hashCanvas(canvas);
-      const nodesFromEnd = snapshot();
+      const fromEnd = snapshot();
       seekRecords.push({
         segmentId: segment.id,
         frame: midpoint,
         hashFromStart,
         hashFromEnd,
-        nodesFromStart,
-        nodesFromEnd,
+        nodesFromStart: fromStart.nodes,
+        nodesFromEnd: fromEnd.nodes,
+        unmeasuredFromStart: fromStart.unmeasured,
+        unmeasuredFromEnd: fromEnd.unmeasured,
       });
     }
 

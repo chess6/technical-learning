@@ -9,12 +9,11 @@ import {
   type SceneGateRun,
 } from "../gateTypes";
 import {
-  DISCRETE_CHANGE_PX,
-  MOTION_FLOOR_PX,
   TELEPORT_PX_PER_FRAME,
   checkClaimedMotion,
   checkNoEmptyFrames,
   checkNoFlicker,
+  checkNoUnmeasuredGeometry,
   checkNoOverruns,
   checkNoTeleports,
   checkRunSampledScene,
@@ -72,6 +71,7 @@ function frame(
     frame: index * stride,
     time: (index * stride) / fps,
     nodes: Object.fromEntries(nodes.map((n) => [n.key, n])),
+    unmeasured: [],
   };
 }
 
@@ -454,22 +454,43 @@ describe("claimed-motion gate", () => {
     ).toEqual([]);
   });
 
-  it("accepts fades, resizes, and text changes as motion", () => {
-    for (const changed of [
-      node("a", { opacity: 0.4 }),
-      node("a", { width: 60 }),
-      { ...node("a"), type: "Txt", text: "new" } as NodeSample,
-    ]) {
-      const before =
-        changed.type === "Txt"
-          ? ({ ...node("a"), type: "Txt", text: "old" } as NodeSample)
-          : node("a");
-      expect(
-        checkClaimedMotion(
-          run({ segments, frames: [frame(0, [before]), frame(1, [changed])] }),
-        ),
-      ).toEqual([]);
-    }
+  it("accepts an existing diagram fade as visible choreography", () => {
+    expect(
+      checkClaimedMotion(
+        run({
+          segments,
+          frames: [
+            frame(0, [node("a", { opacity: 0 })]),
+            frame(1, [node("a", { opacity: 1 })]),
+          ],
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("accepts real geometry changes", () => {
+    expect(
+      checkClaimedMotion(
+        run({
+          segments,
+          frames: [
+            frame(0, [node("a", { width: 20 })]),
+            frame(1, [node("a", { width: 60 })]),
+          ],
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("does not let a caption-only rewrite satisfy claimed motion", () => {
+    const findings = checkClaimedMotion(
+      run({
+        segments,
+        frames: [frame(0, [text("caption", "old")]), frame(1, [text("caption", "new")])],
+      }),
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.gate).toBe("missing-claimed-motion");
   });
 
   it("does not gate segments that only budget holds", () => {
@@ -483,19 +504,46 @@ describe("claimed-motion gate", () => {
     ).toEqual([]);
   });
 
-  it("counts an object appearing as motion", () => {
-    expect(
-      checkClaimedMotion(
-        run({
-          segments,
-          frames: [frame(0, [node("a")]), frame(1, [node("a"), node("b")])],
-        }),
-      ),
-    ).toEqual([]);
+  it("does not let a newly inserted object satisfy claimed motion", () => {
+    const findings = checkClaimedMotion(
+      run({
+        segments,
+        frames: [frame(0, [node("a")]), frame(1, [node("a"), node("b")])],
+      }),
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.gate).toBe("missing-claimed-motion");
+  });
+});
+
+describe("geometry-measurement coverage gate", () => {
+  it("fails a visible mathematical node whose geometry could not be measured", () => {
+    const badFrame = frame(0, [text("caption", "still visible")]);
+    badFrame.unmeasured = [
+      {
+        key: "bad-line",
+        type: "Line",
+        opacity: 1,
+        reason: "line contains a non-finite point",
+      },
+    ];
+    const findings = checkNoUnmeasuredGeometry(run({ frames: [badFrame] }));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.gate).toBe("unmeasured-geometry");
+    expect(findings[0]!.nodeKey).toBe("bad-line");
   });
 
-  it("keeps one discrete change clear of the nothing-moved threshold", () => {
-    expect(DISCRETE_CHANGE_PX).toBeGreaterThan(MOTION_FLOOR_PX);
+  it("ignores an unmeasurable node that is definitely hidden", () => {
+    const hiddenFrame = frame(0, [text("caption", "still visible")]);
+    hiddenFrame.unmeasured = [
+      {
+        key: "hidden-line",
+        type: "Line",
+        opacity: 0,
+        reason: "line has fewer than two measurable points",
+      },
+    ];
+    expect(checkNoUnmeasuredGeometry(run({ frames: [hiddenFrame] }))).toEqual([]);
   });
 });
 
@@ -583,7 +631,7 @@ describe("gate-coverage gate", () => {
 
   it("fails a run whose frames contain no nodes", () => {
     const findings = checkRunSampledScene(
-      run({ frames: [{ frame: 0, time: 0, nodes: {} }] }),
+      run({ frames: [{ frame: 0, time: 0, nodes: {}, unmeasured: [] }] }),
     );
     expect(findings.some((f) => f.message.includes("zero nodes"))).toBe(true);
   });

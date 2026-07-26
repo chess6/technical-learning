@@ -376,8 +376,8 @@ export const solutionSetsScene = makeScene2D(function* (view) {
       pointMark.opacity(0);
       emptyMark.opacity(1);
       nullLine.opacity(1);
-      yield* emptyMark.scale(1.12, b.up!);
-      yield* emptyMark.scale(1, b.down!);
+      yield* emptyMark.scale(1.12, b.pause!);
+      yield* emptyMark.scale(1, b.pause2!);
       yield* waitFor(b.hold!);
     },
     *["case-point"]() {

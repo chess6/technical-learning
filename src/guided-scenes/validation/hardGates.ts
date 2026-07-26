@@ -7,6 +7,12 @@ import {
   type SceneGateFinding,
   type SceneGateRun,
 } from "./gateTypes";
+import {
+  checkNoUnmeasuredGeometry,
+  checkSemanticGeometry,
+} from "./semanticGates";
+
+export { checkNoUnmeasuredGeometry, checkSemanticGeometry };
 
 /**
  * Production hard gates for guided scenes.
@@ -96,14 +102,6 @@ export const MOTION_BUDGET_FLOOR_SECONDS = 0.5;
 
 /** Total movement below this over a whole segment counts as "nothing moved". */
 export const MOTION_FLOOR_PX = 2;
-
-/**
- * What one discrete change (an object appearing, a string being rewritten)
- * contributes to a segment's measured movement. Deliberately well clear of
- * {@link MOTION_FLOOR_PX}: a single such change IS the segment enacting
- * something, so it must never land on the threshold.
- */
-export const DISCRETE_CHANGE_PX = 8;
 
 function visibleNodes(frame: SceneFrameSample): NodeSample[] {
   return Object.values(frame.nodes).filter(isVisible);
@@ -474,16 +472,30 @@ export function checkClaimedMotion(run: SceneGateRun): SceneGateFinding[] {
       const current = frames[i]!;
       for (const sample of visibleNodes(current)) {
         const before = previous.nodes[sample.key];
-        if (!before) {
-          // An object appearing IS a change the segment enacted.
-          movement += DISCRETE_CHANGE_PX;
-          continue;
-        }
-        movement += Math.hypot(sample.x - before.x, sample.y - before.y);
+        // Captions changing and newly inserted objects merely appearing do not
+        // prove that the claimed mathematical operation was animated. A fade of
+        // an already-authored diagram node still counts as visible choreography;
+        // semantic contracts separately verify the mathematical geometry.
+        if (!before || sample.type === "Txt") continue;
         movement += Math.abs(sample.opacity - before.opacity) * 10;
+        movement += Math.hypot(sample.x - before.x, sample.y - before.y);
         movement += Math.abs(sample.width - before.width);
         movement += Math.abs(sample.height - before.height);
-        if (sample.text !== before.text) movement += DISCRETE_CHANGE_PX;
+        if (sample.points && before.points) {
+          const count = Math.min(sample.points.length, before.points.length);
+          for (let point = 0; point < count; point += 1) {
+            movement += Math.hypot(
+              sample.points[point]!.x - before.points[point]!.x,
+              sample.points[point]!.y - before.points[point]!.y,
+            );
+          }
+        }
+        if (sample.drawnStart !== undefined && before.drawnStart !== undefined) {
+          movement += Math.abs(sample.drawnStart - before.drawnStart) * 100;
+        }
+        if (sample.drawnEnd !== undefined && before.drawnEnd !== undefined) {
+          movement += Math.abs(sample.drawnEnd - before.drawnEnd) * 100;
+        }
       }
     }
 
@@ -582,6 +594,8 @@ export function checkNoOverruns(run: SceneGateRun): SceneGateFinding[] {
 /** Every gate, in reporting order. Coverage first: it validates the rest. */
 export const SCENE_HARD_GATES = [
   checkRunSampledScene,
+  checkNoUnmeasuredGeometry,
+  checkSemanticGeometry,
   checkClaimedMotion,
   checkNoTeleports,
   checkNoFlicker,

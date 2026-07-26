@@ -37,6 +37,18 @@ export interface NodeSample {
   fontSize?: number;
   /** Keys of every ancestor, root first — lets gates skip nested pairs. */
   ancestors: string[];
+  /** Parsed Line points in stage coordinates, when the node is a line/polygon. */
+  points?: { x: number; y: number }[];
+  /** Visible fraction of a Curve, so a line growing in place counts as geometry motion. */
+  drawnStart?: number;
+  drawnEnd?: number;
+}
+
+export interface UnmeasuredNodeSample {
+  key: string;
+  type: string;
+  opacity?: number;
+  reason: string;
 }
 
 export interface SceneFrameSample {
@@ -44,6 +56,8 @@ export interface SceneFrameSample {
   /** Seconds at the authored frame rate. */
   time: number;
   nodes: Record<string, NodeSample>;
+  /** Nodes the sampler saw but could not measure; never silently discarded. */
+  unmeasured: UnmeasuredNodeSample[];
 }
 
 /** A frame reached from two directions, to prove seeking is deterministic. */
@@ -54,6 +68,8 @@ export interface SceneSeekRecord {
   hashFromEnd: string;
   nodesFromStart: Record<string, NodeSample>;
   nodesFromEnd: Record<string, NodeSample>;
+  unmeasuredFromStart?: UnmeasuredNodeSample[];
+  unmeasuredFromEnd?: UnmeasuredNodeSample[];
 }
 
 export interface SceneSegmentWindow {
