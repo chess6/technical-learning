@@ -74,6 +74,16 @@ const devRoutes = import.meta.env.DEV
         },
       },
       {
+        // Animation benchmark laboratory (reference vs replica comparison).
+        path: "dev/benchmark-lab",
+        lazy: async () => {
+          const { DevBenchmarkLabPage } = await import(
+            "../pages/DevBenchmarkLabPage"
+          );
+          return { Component: DevBenchmarkLabPage };
+        },
+      },
+      {
         path: "dev/recovery",
         lazy: async () => {
           const { DevRecoveryPage } = await import("../pages/DevRecoveryPage");

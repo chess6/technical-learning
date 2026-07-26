@@ -131,6 +131,12 @@ export interface TrackedObjectSpec {
    * (e.g. re-parented tokens at an intentional cut).
    */
   maxStepPx?: number;
+  /**
+   * True for objects that deliberately extend past the frame edge (span
+   * lines, full-screen grids — the reference bleeds them off-frame on
+   * purpose). Exempts the object from the stage-clipping hard gate.
+   */
+  fullBleed?: boolean;
 }
 
 /**

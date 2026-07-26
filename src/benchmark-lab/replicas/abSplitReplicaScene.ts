@@ -263,7 +263,9 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
     fontFamily: FONT,
     fontSize: 30,
     fill: C.annotation,
-    position: new Vector2(-49, 78),
+    // In the clear band between node levels — the occlusion gate rejected a
+    // first placement that covered the level-2 key row.
+    position: new Vector2(-49, 42),
     opacity: 0,
   });
   rig.world.add(validityNote);
@@ -322,12 +324,13 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
     });
   };
   // Node probes anchor on a representative persistent key of the node.
+  // Tracked at key 1, the persistent token the manifest names.
   registerProbe(ID, "root-node", () => {
     const token = keyTokens.get(1)!;
     return {
-      x: bRoot.rect.position().x,
-      y: bRoot.rect.position().y,
-      opacity: Math.max(bRoot.rect.opacity(), token.opacity()),
+      x: token.position().x,
+      y: token.position().y,
+      opacity: token.opacity(),
     };
   });
   registerProbe(ID, "new-root", () => {
@@ -436,12 +439,14 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       yield* waitFor(0.7);
       logEvent("pause-begins"); // 0.7
       yield* overlay.opacity(1, 0.4);
-      yield* pauseMarker.position(new Vector2(200, 190), 9.6);
-      yield* overlay.opacity(0, 0.5);
+      // The overlay holds through the whole prompt (the reference keeps the
+      // pause bar up until the answer); it retires in the next beat.
+      yield* pauseMarker.position(new Vector2(200, 190), 10.2);
     },
     // [310.6-317.9) split: the middle key rises.
     *"split-rise"() {
-      yield* waitFor(2.0);
+      yield* overlay.opacity(0, 0.4);
+      yield* waitFor(1.6);
       logEvent("split-starts"); // 2.0
       const afterSplit = stageById("after-split");
       // Halves pull apart while keys 4 / 6,7 ride along.
@@ -520,7 +525,7 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       );
       yield* keyRed.get(8)!(0, 0.3);
       yield* moveKeysToStage(after8, 0.6);
-      yield* waitFor(1.65);
+      yield* waitFor(1.45);
       logEvent("insert-9-overflow"); // 5.3
       const after9 = stageById("after-inserts");
       const targets9 = keyPositions(after9);
@@ -540,7 +545,7 @@ export const abSplitReplicaScene = makeScene2D(function* (view) {
       b67!.violated(1);
       for (const key of [6, 7, 8, 9]) keyRed.get(key)!(1);
       yield* moveKeysToStage(after9, 0.5);
-      yield* waitFor(1.05);
+      yield* waitFor(0.85);
       logEvent("cascade-split"); // 7.8
       const cascade = stageById("cascade");
       const cascadeTargets = keyPositions(cascade);

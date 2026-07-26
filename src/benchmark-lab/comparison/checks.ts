@@ -315,6 +315,7 @@ export function checkStageClipping(
   const halfW = LAB_STAGE.width / 2;
   const halfH = LAB_STAGE.height / 2;
   for (const object of manifest.objects) {
+    if (object.fullBleed) continue;
     let worst = 0;
     let worstFrame: number | undefined;
     for (const frame of run.frames) {

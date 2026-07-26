@@ -1,0 +1,229 @@
+{
+  "benchmarkId": "ab-split",
+  "source": {
+    "repoSlug": "xiaoxiae-videos",
+    "repoUrl": "https://github.com/xiaoxiae/videos",
+    "inspectedCommit": "f65794b0dfc81b225364ea776feac8326599cdaa",
+    "videoId": "lifFgyB77zc",
+    "videoTitle": "The Most Elegant Search Structure | (a,b)-trees",
+    "channel": "Tom Slama (Tom S)",
+    "sceneSources": [
+      "Insertion",
+      "ABTree.bubble_insert",
+      "TransparentPause",
+      "create_node"
+    ],
+    "license": "GPL-3.0 (reference-only)"
+  },
+  "sampledAt": {
+    "fps": 30,
+    "stride": 3,
+    "durationFrames": 2010,
+    "sampledFrames": 670
+  },
+  "events": [
+    {
+      "id": "pause-begins",
+      "anchor": "transcript",
+      "referenceSec": 299.7,
+      "expectedReplicaSec": 0.7,
+      "measuredReplicaSec": 0.7,
+      "deltaSec": 0
+    },
+    {
+      "id": "split-starts",
+      "anchor": "transcript",
+      "referenceSec": 312.6,
+      "expectedReplicaSec": 13.6,
+      "measuredReplicaSec": 13.6,
+      "deltaSec": 0
+    },
+    {
+      "id": "middle-key-rises",
+      "anchor": "estimated",
+      "referenceSec": 314,
+      "expectedReplicaSec": 15,
+      "measuredReplicaSec": 15,
+      "deltaSec": 0
+    },
+    {
+      "id": "cascade-rule-stated",
+      "anchor": "transcript",
+      "referenceSec": 317.9,
+      "expectedReplicaSec": 18.9,
+      "measuredReplicaSec": 18.9,
+      "deltaSec": 0
+    },
+    {
+      "id": "insert-8",
+      "anchor": "estimated",
+      "referenceSec": 328.5,
+      "expectedReplicaSec": 29.5,
+      "measuredReplicaSec": 29.5,
+      "deltaSec": 0
+    },
+    {
+      "id": "insert-9-overflow",
+      "anchor": "estimated",
+      "referenceSec": 332,
+      "expectedReplicaSec": 33,
+      "measuredReplicaSec": 33,
+      "deltaSec": 0
+    },
+    {
+      "id": "cascade-split",
+      "anchor": "estimated",
+      "referenceSec": 334.5,
+      "expectedReplicaSec": 35.5,
+      "measuredReplicaSec": 35.6,
+      "deltaSec": 0.1
+    },
+    {
+      "id": "root-splits-up",
+      "anchor": "estimated",
+      "referenceSec": 337,
+      "expectedReplicaSec": 38,
+      "measuredReplicaSec": 38.7,
+      "deltaSec": 0.7
+    },
+    {
+      "id": "zoom-to-halves",
+      "anchor": "transcript",
+      "referenceSec": 342.2,
+      "expectedReplicaSec": 43.2,
+      "measuredReplicaSec": 43.2,
+      "deltaSec": 0
+    },
+    {
+      "id": "validity-annotated",
+      "anchor": "transcript",
+      "referenceSec": 346.6,
+      "expectedReplicaSec": 47.6,
+      "measuredReplicaSec": 47.6,
+      "deltaSec": 0
+    },
+    {
+      "id": "reframe-root",
+      "anchor": "transcript",
+      "referenceSec": 357,
+      "expectedReplicaSec": 58,
+      "measuredReplicaSec": 58,
+      "deltaSec": 0
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "title-pos",
+      "deltaPx": 8,
+      "tolerancePx": 26,
+      "passed": true
+    },
+    {
+      "id": "root-before-growth",
+      "deltaPx": 12.2,
+      "tolerancePx": 26,
+      "passed": true
+    },
+    {
+      "id": "new-root-after-growth",
+      "deltaPx": 0,
+      "tolerancePx": 26,
+      "passed": true
+    },
+    {
+      "id": "leaf-row-pinned",
+      "deltaPx": 0,
+      "tolerancePx": 26,
+      "passed": true
+    }
+  ],
+  "dimensions": [
+    {
+      "dimension": "math-validity",
+      "total": 4,
+      "passed": 4,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "identity-continuity",
+      "total": 55,
+      "passed": 55,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "composition",
+      "total": 18,
+      "passed": 18,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "synchronization",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "timing",
+      "total": 23,
+      "passed": 23,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "camera",
+      "total": 2,
+      "passed": 2,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "text-treatment",
+      "total": 3,
+      "passed": 3,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "reveal-structure",
+      "total": 41,
+      "passed": 41,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "accessibility",
+      "total": 6,
+      "passed": 6,
+      "hardFailures": 0,
+      "craftFindings": 0
+    }
+  ],
+  "hardFailures": [],
+  "craftFindings": [],
+  "knownDeviations": [
+    {
+      "id": "layout-algorithm",
+      "note": "The reference positions parents by its own hand-tuned rule (parents are not always centred between first and last child). The replica computes layout deterministically from the leaf row; node centres differ from the recording by up to ~60 px at the grown stage. Recorded as a craft delta, not chased pixel by pixel."
+    },
+    {
+      "id": "insert-timing-estimated",
+      "note": "The batch-insert montage (8, 9) has no narration anchors; its event times were read off the reference frames to ~0.5 s."
+    },
+    {
+      "id": "typography",
+      "note": "Serif LaTeX keys in the reference; repo sans stack in the replica."
+    },
+    {
+      "id": "camera-implementation",
+      "note": "The reference uses a moving camera; the replica reframes by scaling and translating the world group (the runtime has no camera rig). Framing targets and timing match; interpolation curve may differ."
+    },
+    {
+      "id": "search-descent-elided",
+      "note": "The reference briefly shows the sped-up search descent for inserts 8 and 9; the replica drops the keys directly into the target node. The descent belongs to an earlier beat outside this excerpt."
+    }
+  ]
+}

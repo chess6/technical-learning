@@ -1,0 +1,198 @@
+{
+  "benchmarkId": "bfs-frontier",
+  "source": {
+    "repoSlug": "manim-js",
+    "repoUrl": "https://github.com/JazonJiao/Manim.js",
+    "inspectedCommit": "7cd0da52fab9300c48e05d71bc655151a52d8a79",
+    "videoId": "mVzsz8Actrc",
+    "videoTitle": "Breadth-first search, visualized | Graph Algorithm 1",
+    "channel": "Jazon Jiao",
+    "sceneSources": [
+      "Graph01 (1_bfs.js)",
+      "Graph_BFS",
+      "Tracer",
+      "Node",
+      "Edge"
+    ],
+    "license": "none declared (reference-only)"
+  },
+  "sampledAt": {
+    "fps": 30,
+    "stride": 3,
+    "durationFrames": 1199,
+    "sampledFrames": 400
+  },
+  "events": [
+    {
+      "id": "intro-writein-start",
+      "anchor": "estimated",
+      "referenceSec": 1,
+      "expectedReplicaSec": 1,
+      "measuredReplicaSec": 1,
+      "deltaSec": 0
+    },
+    {
+      "id": "nodes-build-start",
+      "anchor": "estimated",
+      "referenceSec": 5,
+      "expectedReplicaSec": 5,
+      "measuredReplicaSec": 5,
+      "deltaSec": 0
+    },
+    {
+      "id": "edges-build-start",
+      "anchor": "estimated",
+      "referenceSec": 8,
+      "expectedReplicaSec": 8,
+      "measuredReplicaSec": 7.71,
+      "deltaSec": -0.29
+    },
+    {
+      "id": "pseudo-writein-start",
+      "anchor": "estimated",
+      "referenceSec": 12.5,
+      "expectedReplicaSec": 12.5,
+      "measuredReplicaSec": 12.5,
+      "deltaSec": 0
+    },
+    {
+      "id": "enqueue-start-vertex",
+      "anchor": "scene-map",
+      "referenceSec": 21.5,
+      "expectedReplicaSec": 21.5,
+      "measuredReplicaSec": 21.5,
+      "deltaSec": 0
+    },
+    {
+      "id": "first-dequeue",
+      "anchor": "scene-map",
+      "referenceSec": 23.5,
+      "expectedReplicaSec": 23.5,
+      "measuredReplicaSec": 23.5,
+      "deltaSec": 0
+    },
+    {
+      "id": "first-expand",
+      "anchor": "scene-map",
+      "referenceSec": 25.2,
+      "expectedReplicaSec": 25.2,
+      "measuredReplicaSec": 25.23,
+      "deltaSec": 0.03
+    },
+    {
+      "id": "metronome-tick-6",
+      "anchor": "scene-map",
+      "referenceSec": 33.9,
+      "expectedReplicaSec": 33.9,
+      "measuredReplicaSec": 33.9,
+      "deltaSec": 0
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "vertex-0-pos",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "panel-title-pos",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "panel-line1-pos",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "intro-title-pos",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    }
+  ],
+  "dimensions": [
+    {
+      "dimension": "math-validity",
+      "total": 4,
+      "passed": 4,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "identity-continuity",
+      "total": 35,
+      "passed": 35,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "composition",
+      "total": 12,
+      "passed": 12,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "synchronization",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "timing",
+      "total": 17,
+      "passed": 17,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "camera",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "text-treatment",
+      "total": 2,
+      "passed": 2,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "reveal-structure",
+      "total": 27,
+      "passed": 27,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "accessibility",
+      "total": 6,
+      "passed": 6,
+      "hardFailures": 0,
+      "craftFindings": 0
+    }
+  ],
+  "hardFailures": [],
+  "craftFindings": [],
+  "knownDeviations": [
+    {
+      "id": "fixed-graph-instance",
+      "note": "The reference randomises its edge set per run, so the recorded video is one sample. The replica fixes a deterministic instance with the same vertex lattice; per-vertex colours/numbers therefore differ from the recording while obeying the same BFS discipline."
+    },
+    {
+      "id": "intro-card-branding",
+      "note": "The reference intro card carries channel branding (logo, name). The replica keeps only the treatment — a full-frame write-in intertitle — with neutral text. Branding is deliberately not reproduced."
+    },
+    {
+      "id": "trace-length",
+      "note": "The excerpt cuts the trace mid-run at 40 s; the reference continues to ~85 s. The replica holds its final excerpt state."
+    }
+  ]
+}

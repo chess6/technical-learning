@@ -103,6 +103,13 @@ export interface WriteInText {
   write(duration: number): ThreadGenerator;
   /** Reveal instantly (reduced-motion / cuts). */
   complete(): void;
+  /**
+   * The currently visible string, read from the underlying signal. Probes and
+   * tests MUST use this instead of node.text(): evaluating a reactive Txt
+   * outside the scene context makes Txt spawn its TxtLeaf children where
+   * useScene() is unavailable ("The scene is not available…").
+   */
+  current(): string;
 }
 
 /**
@@ -114,16 +121,18 @@ export function makeWriteInText(
   props: ConstructorParameters<typeof Txt>[0] = {},
 ): WriteInText {
   const visible = createSignal(0);
+  const current = () => full.slice(0, Math.round(visible() * full.length));
   const node = new Txt({
     fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
     ...props,
-    text: () => full.slice(0, Math.round(visible() * full.length)),
+    text: current,
   });
   return {
     node,
     write: (duration: number) =>
       visible(1, duration, (t) => t) as unknown as ThreadGenerator,
     complete: () => visible(1),
+    current,
   };
 }
 

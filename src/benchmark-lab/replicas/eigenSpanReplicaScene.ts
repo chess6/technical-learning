@@ -203,7 +203,9 @@ export const eigenSpanReplicaScene = makeScene2D(function* (view) {
 
   // --- sneaky label + prefix -------------------------------------------------
   const labelGroup = new Node({ opacity: 0 });
-  const labelOffset = new Vector2(-56, -18);
+  // Offset chosen so the label box NEVER covers the tip while it travels —
+  // the laboratory's occlusion gate caught the original (-56, -18) placement.
+  const labelOffset = new Vector2(-88, -34);
   labelGroup.position(() => image(SNEAKY_VECTOR).add(labelOffset));
   const prefixOpacity = createSignal(() => Math.max(0, Math.min(1, (p() - 0.5) * 4)));
   const labelBox = new Rect({
@@ -270,7 +272,9 @@ export const eigenSpanReplicaScene = makeScene2D(function* (view) {
     fontSize: 28,
     fontWeight: 600,
     fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif",
-    position: new Vector2(150, -110),
+    // Above the counterexample's whole travel path; the occlusion gate
+    // rejected the first placement at (150, -110), which the tip crossed.
+    position: new Vector2(150, -170),
     opacity: 0,
   });
   view.add(textStretch3);
@@ -356,14 +360,17 @@ export const eigenSpanReplicaScene = makeScene2D(function* (view) {
       yield* waitFor(1.4);
       logEvent("diag-transform-start"); // 3.2
       yield* p(1, 2.4, easeInOutCubic);
-      yield* waitFor(6.3);
-      // Hard cut back to rest (matches the reference's sub-scene reset).
+      yield* waitFor(4.5);
+      // 10.1: hard cut back to rest, exactly where the manifest declares it.
+      // The vector and its span STAY VISIBLE through the beat's end — the
+      // reference re-establishes the resting state, it does not clear it.
       p(0);
-      vecDiag.opacity(0);
-      spanDiag.opacity(0);
     },
     // [129.5-146.3) i-hat stretches by three; column one is the receipt.
     *"ihat-stretch"() {
+      // The previous beat's subject retires at the boundary, not before.
+      vecDiag.opacity(0);
+      spanDiag.opacity(0);
       logEvent("ihat-focus"); // 0.0
       yield* ihat.lineWidth(7, 0.3);
       yield* waitFor(0.7);
@@ -376,27 +383,26 @@ export const eigenSpanReplicaScene = makeScene2D(function* (view) {
       yield* waitFor(2.6);
       logEvent("ihat-transform-start"); // 9.8
       yield* p(1, 3.0, easeInOutCubic);
-      yield* waitFor(3.0);
-      // Reset for the family beat (intentional cut, declared in the manifest).
-      p(0);
-      ihat.lineWidth(5.5);
-      ihat.opacity(0);
+      // Stretched state holds to the boundary; the next beat cuts.
     },
     // [146.3-158.5) every x-axis vector stretches by three.
     *"xaxis-family"() {
+      // Declared cut at the boundary: reset the plane, retire i-hat.
+      p(0);
+      ihat.lineWidth(5.5);
+      ihat.opacity(0);
       yield* waitFor(0.7);
       logEvent("xfan-in"); // 0.7
       yield* fanXGroup.opacity(1, 0.9);
       yield* waitFor(2.1);
       logEvent("xfan-stretch-start"); // 3.7
       yield* p(1, 2.5, easeInOutCubic);
-      yield* waitFor(5.5);
-      p(0);
-      fanXGroup.opacity(0);
-      spanX.opacity(0);
     },
     // [158.5-169.0) the sneaky (-1,1) vector; label rides the tip.
     *"sneaky-vector"() {
+      p(0);
+      fanXGroup.opacity(0);
+      spanX.opacity(0);
       logEvent("sneaky-in"); // 0.0
       yield* all(
         ihat.opacity(1, 0.4),
@@ -407,26 +413,24 @@ export const eigenSpanReplicaScene = makeScene2D(function* (view) {
       yield* waitFor(5.0);
       logEvent("sneaky-transform-start"); // 6.2
       yield* p(1, 2.6, easeInOutCubic);
-      yield* waitFor(1.4);
+    },
+    // [169.0-179.8) the whole diagonal family stretches by two.
+    *"diagonal-family"() {
       p(0);
       vecSneaky.opacity(0);
       labelGroup.opacity(0);
       ihat.opacity(0);
-    },
-    // [169.0-179.8) the whole diagonal family stretches by two.
-    *"diagonal-family"() {
       logEvent("diagfan-in"); // 0.0
       yield* fanDiagGroup.opacity(1, 0.9);
       yield* waitFor(3.7);
       logEvent("diagfan-stretch-start"); // 4.6
       yield* p(1, 2.4, easeInOutCubic);
-      yield* waitFor(3.5);
-      p(0);
-      spanDiag.opacity(0);
-      jhat.opacity(0);
     },
     // [179.8-192.8) both families at rest, annotated; matrix retires.
     *"recap-both-fans"() {
+      p(0);
+      spanDiag.opacity(0);
+      jhat.opacity(0);
       yield* all(fanXGroup.opacity(1, 0.7), matrixPanel.opacity(0, 0.7));
       yield* waitFor(5.1);
       logEvent("stretch3-annotation"); // 5.8

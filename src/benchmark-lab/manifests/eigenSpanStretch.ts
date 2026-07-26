@@ -277,6 +277,7 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
         "transform and shared by the opening vector and the sneaky vector.",
       persistsAcross: ["stay-on-span", "sneaky-vector", "diagonal-family"],
       maxStepPx: 2,
+      fullBleed: true,
     },
     {
       id: "span-x",
@@ -284,6 +285,7 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
       description: "The x-axis span line highlighted while i-hat stretches.",
       persistsAcross: ["ihat-stretch", "xaxis-family"],
       maxStepPx: 2,
+      fullBleed: true,
     },
     {
       id: "fan-x",
@@ -340,6 +342,7 @@ export const eigenSpanStretchManifest: BenchmarkManifest = {
       description: "Faded span line of the counterexample vector; never moves.",
       persistsAcross: ["knocked-off"],
       maxStepPx: 2,
+      fullBleed: true,
     },
     {
       id: "label-knocked",

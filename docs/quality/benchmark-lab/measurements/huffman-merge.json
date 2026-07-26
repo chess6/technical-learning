@@ -1,0 +1,245 @@
+{
+  "benchmarkId": "huffman-merge",
+  "source": {
+    "repoSlug": "reducible",
+    "repoUrl": "https://github.com/nipunramk/Reducible",
+    "inspectedCommit": "88f4f8f7da11443b4e995bf0c71683c55e2cf17b",
+    "videoId": "B3y0RsVCyrw",
+    "videoTitle": "Huffman Codes: An Information Theory Perspective",
+    "channel": "Reducible",
+    "sceneSources": [
+      "HuffmanCodesProbDist",
+      "make_huffman_tree",
+      "animate_huffman_step",
+      "transform_heap"
+    ],
+    "license": "none declared (reference-only)"
+  },
+  "sampledAt": {
+    "fps": 30,
+    "stride": 3,
+    "durationFrames": 1410,
+    "sampledFrames": 470
+  },
+  "events": [
+    {
+      "id": "highlight-two-lowest",
+      "anchor": "transcript",
+      "referenceSec": 1454.7,
+      "expectedReplicaSec": 4.7,
+      "measuredReplicaSec": 4.7,
+      "deltaSec": 0
+    },
+    {
+      "id": "de-travel-start",
+      "anchor": "transcript",
+      "referenceSec": 1456.2,
+      "expectedReplicaSec": 6.2,
+      "measuredReplicaSec": 6.2,
+      "deltaSec": 0
+    },
+    {
+      "id": "parent-de-born",
+      "anchor": "transcript",
+      "referenceSec": 1458.3,
+      "expectedReplicaSec": 8.3,
+      "measuredReplicaSec": 8.3,
+      "deltaSec": 0
+    },
+    {
+      "id": "token-de-posted",
+      "anchor": "estimated",
+      "referenceSec": 1460.5,
+      "expectedReplicaSec": 10.5,
+      "measuredReplicaSec": 10.5,
+      "deltaSec": 0
+    },
+    {
+      "id": "recursion-noted",
+      "anchor": "transcript",
+      "referenceSec": 1465.8,
+      "expectedReplicaSec": 15.8,
+      "measuredReplicaSec": 15.8,
+      "deltaSec": 0
+    },
+    {
+      "id": "highlight-ac",
+      "anchor": "transcript",
+      "referenceSec": 1471.8,
+      "expectedReplicaSec": 21.8,
+      "measuredReplicaSec": 21.8,
+      "deltaSec": 0
+    },
+    {
+      "id": "ac-travel-start",
+      "anchor": "transcript",
+      "referenceSec": 1473.3,
+      "expectedReplicaSec": 23.3,
+      "measuredReplicaSec": 23.3,
+      "deltaSec": 0
+    },
+    {
+      "id": "token-ac-posted",
+      "anchor": "transcript",
+      "referenceSec": 1477.4,
+      "expectedReplicaSec": 27.4,
+      "measuredReplicaSec": 27.4,
+      "deltaSec": 0
+    },
+    {
+      "id": "highlight-internal-tokens",
+      "anchor": "transcript",
+      "referenceSec": 1488.7,
+      "expectedReplicaSec": 38.7,
+      "measuredReplicaSec": 38.7,
+      "deltaSec": 0
+    },
+    {
+      "id": "internal-merge-start",
+      "anchor": "transcript",
+      "referenceSec": 1490.2,
+      "expectedReplicaSec": 40.2,
+      "measuredReplicaSec": 40.2,
+      "deltaSec": 0
+    },
+    {
+      "id": "two-remaining",
+      "anchor": "transcript",
+      "referenceSec": 1494.7,
+      "expectedReplicaSec": 44.7,
+      "measuredReplicaSec": 44.7,
+      "deltaSec": 0
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "frontier-column",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "leaf-D-tree-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "leaf-E-tree-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "parent-DE-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "leaf-A-tree-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "parent-AC-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "root-065-slot",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    },
+    {
+      "id": "leaf-B-final",
+      "deltaPx": 0,
+      "tolerancePx": 24,
+      "passed": true
+    }
+  ],
+  "dimensions": [
+    {
+      "dimension": "math-validity",
+      "total": 4,
+      "passed": 4,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "identity-continuity",
+      "total": 80,
+      "passed": 80,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "composition",
+      "total": 24,
+      "passed": 24,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "synchronization",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "timing",
+      "total": 23,
+      "passed": 23,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "camera",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "text-treatment",
+      "total": 0,
+      "passed": 0,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "reveal-structure",
+      "total": 64,
+      "passed": 64,
+      "hardFailures": 0,
+      "craftFindings": 0
+    },
+    {
+      "dimension": "accessibility",
+      "total": 6,
+      "passed": 6,
+      "hardFailures": 0,
+      "craftFindings": 0
+    }
+  ],
+  "hardFailures": [],
+  "craftFindings": [],
+  "knownDeviations": [
+    {
+      "id": "token-de-consumed-early",
+      "note": "In the reference the 0.31 token is consumed during the internal merge by fading at 0.9 into its original; the replica reproduces the fade-at-original but tracks it as consumed (not visible) from the start of merge-internal's grow phase."
+    },
+    {
+      "id": "typography",
+      "note": "Serif LaTeX numerals in the reference; repo sans stack in the replica."
+    },
+    {
+      "id": "column-resort-detail",
+      "note": "The reference rebuilds the whole column group per re-sort with per-member transforms; the replica slides only the members whose positions change. End states match; mid-flight paths may differ."
+    }
+  ]
+}

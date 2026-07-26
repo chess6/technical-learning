@@ -136,7 +136,7 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
     opacity: intro.node.opacity(),
     width: 460,
     height: 50,
-    text: intro.node.text(),
+    text: intro.current(),
   }));
   registerProbe(ID, "graph-nodes", () => {
     const anchor = vertexNodes[9]!;
@@ -155,18 +155,18 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
   registerProbe(ID, "pseudo-title", () => ({
     x: titleWrite.node.position().x,
     y: titleWrite.node.position().y,
-    opacity: titleWrite.node.text().length > 0 ? 1 : 0,
+    opacity: titleWrite.current().length > 0 ? 1 : 0,
     width: 300,
     height: 34,
-    text: titleWrite.node.text(),
+    text: titleWrite.current(),
   }));
   registerProbe(ID, "pseudo-lines", () => ({
     x: lineWrites[0]!.node.position().x,
     y: lineWrites[0]!.node.position().y,
-    opacity: lineWrites[0]!.node.text().length > 0 ? 1 : 0,
+    opacity: lineWrites[0]!.current().length > 0 ? 1 : 0,
     width: 430,
     height: LINE_HEIGHT * 5,
-    text: lineWrites.map((w) => w.node.text()).join("\n"),
+    text: lineWrites.map((w) => w.current()).join("\n"),
   }));
   registerProbe(ID, "tracer", () => ({
     x: tracer.node.position().x,
@@ -228,11 +228,11 @@ export const bfsFrontierReplicaScene = makeScene2D(function* (view) {
       yield* waitFor(1.0);
       logEvent("intro-writein-start"); // 1.0
       yield* intro.write(2.6);
-      yield* waitFor(1.2);
-      intro.node.opacity(0); // hard cut, as observed
+      // The card holds to the boundary; the cut is the next beat's first act.
     },
     // [5-12.5) the graph draws itself in.
     *"graph-build"() {
+      intro.node.opacity(0); // hard cut at the declared boundary
       logEvent("nodes-build-start"); // 5.0 absolute
       const nodePops: ThreadGenerator[] = [];
       for (const [i, circle] of vertexNodes.entries()) {

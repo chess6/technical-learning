@@ -24,6 +24,15 @@ import {
 } from "@motion-canvas/core";
 import { buildGuidedProject } from "../guided-scenes/engine/MotionCanvasEngine";
 import { SCENE_META, getSceneMeta } from "../guided-scenes/scenes/sceneMeta";
+import { buildLabProject } from "../benchmark-lab/runtime/labPlayer";
+import { listReplicaIds } from "../benchmark-lab/replicas/replicaScenes";
+import { LAB_STAGE } from "../benchmark-lab/manifests";
+
+/**
+ * Benchmark replicas are exportable through the same harness under a
+ * "benchmark:" id prefix (dev-only page; replicas never enter SCENE_META).
+ */
+const BENCHMARK_PREFIX = "benchmark:";
 
 type QueuedFrame = { frame: number; data: string };
 
@@ -105,14 +114,21 @@ async function startExport(options: {
   resolutionScale: number;
 }): Promise<void> {
   const { sceneId, fps, resolutionScale } = options;
-  const meta = getSceneMeta(sceneId);
+  const isBenchmark = sceneId.startsWith(BENCHMARK_PREFIX);
+  const size = isBenchmark
+    ? LAB_STAGE
+    : getSceneMeta(sceneId).size;
   status.state = "rendering";
   status.error = null;
   status.handledFrames = 0;
 
   let project: Project;
   try {
-    project = await buildGuidedProject(sceneId, [capturePlugin()]);
+    project = isBenchmark
+      ? await buildLabProject(sceneId.slice(BENCHMARK_PREFIX.length), [
+          capturePlugin(),
+        ])
+      : await buildGuidedProject(sceneId, [capturePlugin()]);
   } catch (error) {
     status.state = "error";
     status.error = error instanceof Error ? error.message : String(error);
@@ -137,7 +153,7 @@ async function startExport(options: {
     name: `guided-${sceneId}`,
     fps,
     range: [0, Infinity],
-    size: new Vector2(meta.size.width, meta.size.height),
+    size: new Vector2(size.width, size.height),
     resolutionScale,
     exporter: { name: CanvasCaptureExporter.id, options: {} },
   };
@@ -154,7 +170,10 @@ async function startExport(options: {
 }
 
 window.__exportApi = {
-  listScenes: () => Object.keys(SCENE_META),
+  listScenes: () => [
+    ...Object.keys(SCENE_META),
+    ...listReplicaIds().map((id) => `${BENCHMARK_PREFIX}${id}`),
+  ],
   start: startExport,
 };
 window.__exportReady = true;
