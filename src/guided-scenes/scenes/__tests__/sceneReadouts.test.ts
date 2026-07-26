@@ -61,6 +61,18 @@ describe("determinant readouts", () => {
     expect(formatSignedArea(6)).toContain("orientation kept");
     expect(formatSignedArea(-6)).toContain("orientation reversed");
     expect(formatSignedArea(0)).toContain("flattened");
+    expect(formatSignedArea(-6)).toContain("det(A) ≈ -6");
+  });
+
+  it("stays short enough for one line of the overlay band", () => {
+    // The headline is rendered at 40px in an 800px band, where it wraps at
+    // roughly 43 characters — and a wrapped headline anchored on LABEL_TOP_Y
+    // loses its first line off the top of the stage. The longest reading the
+    // scene can produce must therefore fit on one line.
+    const longest = [-12.34, -0.01, 0, 6, 12.34]
+      .map((value) => formatSignedArea(value))
+      .reduce((a, b) => (a.length >= b.length ? a : b));
+    expect(longest.length).toBeLessThanOrEqual(42);
   });
 
   it("never prints a negative zero", () => {

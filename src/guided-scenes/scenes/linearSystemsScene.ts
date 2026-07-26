@@ -228,16 +228,24 @@ export const linearSystemsScene = makeScene2D(function* (view) {
   targetArrow.opacity(0);
   view.add(targetArrow);
   const targetLabel = makeLabel("b", ROLE.target, 34);
-  targetLabel.position(() => px([b1(), b2()]).add(new Vector2(20, -14)));
+  // Below-right of the tip, not above it: b points up into the band where the
+  // persistent space tag sits, and an above-tip label printed "b" onto
+  // "output space — columns combine to reach b" (text-overlap hard gate).
+  targetLabel.position(() => px([b1(), b2()]).add(new Vector2(22, 20)));
   targetLabel.opacity(0);
   view.add(targetLabel);
 
   // --- Overlay text ---
+  // Both start hidden: the `equations` segment budgets 0.5s to fade them in,
+  // and a label created at full opacity turns that tween into 0.5s of nothing
+  // (caught by the missing-claimed-motion gate).
   const top = makeOverlayLabel("", ROLE.text, 38);
   top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
+  top.opacity(0);
   view.add(top);
   const caption = makeOverlayLabel("", ROLE.textMuted, 30);
   caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
+  caption.opacity(0);
   view.add(caption);
   // A persistent tag naming WHICH space we are in — the row and column pictures
   // live in different spaces (coefficient vs output), and must never be implied

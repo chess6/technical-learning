@@ -236,9 +236,11 @@ export const subspacesRankScene = makeScene2D(function* (view) {
   rightTitle.position(new Vector2(RIGHT.x, RIGHT.y - 148));
   view.add(rightTitle);
 
-  // The arrow between panels IS the map.
+  // The arrow between panels IS the map. Hidden until `two-panels` reveals it
+  // — its 0.6s fade-in is only real if it starts from nothing.
   const mapArrow = makeSegment(ROLE.textMuted, 2.5, true);
   mapArrow.points([new Vector2(-70, 24), new Vector2(70, 24)]);
+  mapArrow.opacity(0);
   view.add(mapArrow);
   const mapLabel = makeLabel("A", ROLE.text, 30);
   mapLabel.position(new Vector2(0, -6));
@@ -246,6 +248,7 @@ export const subspacesRankScene = makeScene2D(function* (view) {
 
   // --- Persistent objects (created once; only revealed or deformed) ---
   const cube = makeCube(null, LEFT, ROLE.original, 3);
+  cube.opacity(0);
   view.add(cube);
 
   // The output cube is the SAME cube, drawn in the output panel and carried by

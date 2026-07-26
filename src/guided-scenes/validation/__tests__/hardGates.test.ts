@@ -280,6 +280,38 @@ describe("text-overlap gate", () => {
     ).toEqual([]);
   });
 
+  it("bounds ink width by font size, so padded short labels do not collide", () => {
+    // Real measured geometry from why-linear-algebra: the boxes of "x" and
+    // "Ax" overlap because a one-glyph label at 28px measures 81px wide; the
+    // glyphs themselves are 50px apart and plainly separate.
+    expect(
+      checkTextOverlap(
+        run({
+          frames: heldFrames([
+            text("x", "x", { x: 53, y: -7, width: 81, height: 60, fontSize: 28 }),
+            text("ax", "Ax", { x: 102, y: -9, width: 97, height: 60, fontSize: 28 }),
+          ]),
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("still catches a label swinging onto a note", () => {
+    // Real measured geometry from why-linear-algebra: during the presets the
+    // e₂ label rotates down onto the persistent origin note.
+    const findings = checkTextOverlap(
+      run({
+        frames: heldFrames([
+          text("note", "origin — watch it", {
+            x: 0, y: 64, width: 203, height: 60, fontSize: 20,
+          }),
+          text("e2", "e₂", { x: 16, y: 47, width: 106, height: 60, fontSize: 30 }),
+        ]),
+      }),
+    );
+    expect(findings).toHaveLength(1);
+  });
+
   it("allows adjacent labels that merely touch", () => {
     expect(
       checkTextOverlap(

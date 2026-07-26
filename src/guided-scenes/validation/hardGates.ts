@@ -200,13 +200,14 @@ export function checkTextOverlap(run: SceneGateRun): SceneGateFinding[] {
         const b = texts[j]!;
         if (isNested(a, b)) continue;
 
-        // Horizontal ink is measured accurately; require real horizontal
-        // containment of the narrower text.
+        // Require real horizontal containment of the narrower text.
+        const widthA = glyphWidth(a);
+        const widthB = glyphWidth(b);
         const dx =
-          Math.min(a.x + a.width / 2, b.x + b.width / 2) -
-          Math.max(a.x - a.width / 2, b.x - b.width / 2);
+          Math.min(a.x + widthA / 2, b.x + widthB / 2) -
+          Math.max(a.x - widthA / 2, b.x - widthB / 2);
         if (dx <= 0) continue;
-        const horizontalFraction = dx / Math.min(a.width, b.width);
+        const horizontalFraction = dx / Math.min(widthA, widthB);
         if (horizontalFraction < TEXT_OVERLAP_AXIS_FRACTION) continue;
 
         // Vertically, compare glyph bands derived from font size.
@@ -260,6 +261,21 @@ export function checkTextOverlap(run: SceneGateRun): SceneGateFinding[] {
     }
   }
   return findings;
+}
+
+/**
+ * Average glyph advance as a fraction of the font size, for the repo's sans
+ * stack. Used to bound ink width the same way {@link GLYPH_BAND_EM} bounds
+ * ink height: a short label's box is padded far wider than its glyph (a
+ * single "x" at 28px measures 81px wide), while a long string's box is
+ * accurate — so the smaller of the two is the honest figure.
+ */
+export const GLYPH_ADVANCE_EM = 0.62;
+
+function glyphWidth(sample: NodeSample): number {
+  if (!sample.fontSize || !sample.text) return sample.width;
+  const characters = Math.max(1, sample.text.trim().length);
+  return Math.min(sample.width, characters * sample.fontSize * GLYPH_ADVANCE_EM);
 }
 
 /**

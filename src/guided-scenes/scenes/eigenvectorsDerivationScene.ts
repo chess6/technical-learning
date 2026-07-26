@@ -152,8 +152,11 @@ export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
   view.add(lambdaVArrow);
 
   const lambdaVLabel = makeLabel("λv", ROLE.selected, 34);
+  // Clear of v's label, which sits at (+16, +16) from ITS tip: λv and v run
+  // along the same direction and their tips coincide whenever λ ≈ 1, which
+  // printed "λv" under "v" for the whole recap beat (text-overlap hard gate).
   lambdaVLabel.position(() =>
-    px(scaleVector(vDir, lambdaVLen())).add(new Vector2(12, 30)),
+    px(scaleVector(vDir, lambdaVLen())).add(new Vector2(12, 64)),
   );
   lambdaVLabel.opacity(0);
   view.add(lambdaVLabel);

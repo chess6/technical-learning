@@ -594,16 +594,19 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
       // out while a third label faded in elsewhere made "the middle collapses"
       // a caption; this makes it a motion.
       const mergePoint = combinedMid.position();
+      // They dissolve AS they arrive, and the combined term rises in their
+      // place. Letting them land still legible left "10 AD" and "10 BC"
+      // printed on top of each other for half a second — one unreadable blob
+      // at the very moment the merge is supposed to be read (text-overlap
+      // hard gate).
       yield* all(
         wLabelAD.position(mergePoint, b.merge!, easeInOutCubic),
         wLabelBC.position(mergePoint, b.merge!, easeInOutCubic),
-        wLabelAD.opacity(0.25, b.merge!),
-        wLabelBC.opacity(0.25, b.merge!),
+        wLabelAD.opacity(0, b.merge!),
+        wLabelBC.opacity(0, b.merge!),
+        combinedMid.opacity(1, b.merge!),
       );
       yield* all(
-        wLabelAD.opacity(0, b.combine!),
-        wLabelBC.opacity(0, b.combine!),
-        combinedMid.opacity(1, b.combine!),
         formula.tex("100\\,AC + 10(AD+BC) + BD", b.combine!),
       );
       yield* waitFor(b.hold!);
@@ -638,11 +641,16 @@ export const karatsubaCrossTermsScene = makeScene2D(function* (view) {
       yield* waitFor(b.think!);
       // PEEL: the two corner tiles slide out of the rectangle rather than
       // dimming in place, so "peel off the corners" is the motion on screen.
+      // AC peels sideways rather than diagonally: (-58, -54) parked its label
+      // on top of the panel title, printing "AC" over "Auxiliary (A+B)×(C+D)"
+      // for the rest of the beat (text-overlap hard gate).
+      const AC_PEEL = new Vector2(-96, -16);
+      const BD_PEEL = new Vector2(58, 54);
       yield* all(
-        auxAc.position(new Vector2(-58, -54), b.peel!, easeInOutCubic),
-        auxBd.position(new Vector2(58, 54), b.peel!, easeInOutCubic),
-        auxLabelAC.position(auxLabelAC.position().add(new Vector2(-58, -54)), b.peel!, easeInOutCubic),
-        auxLabelBD.position(auxLabelBD.position().add(new Vector2(58, 54)), b.peel!, easeInOutCubic),
+        auxAc.position(AC_PEEL, b.peel!, easeInOutCubic),
+        auxBd.position(BD_PEEL, b.peel!, easeInOutCubic),
+        auxLabelAC.position(auxLabelAC.position().add(AC_PEEL), b.peel!, easeInOutCubic),
+        auxLabelBD.position(auxLabelBD.position().add(BD_PEEL), b.peel!, easeInOutCubic),
         auxAc.opacity(0.15, b.peel!),
         auxBd.opacity(0.15, b.peel!),
         auxLabelAC.opacity(0.3, b.peel!),

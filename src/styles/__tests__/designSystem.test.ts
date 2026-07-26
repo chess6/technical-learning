@@ -196,6 +196,12 @@ describe("design system — no hardcoded colors outside the token file", () => {
     // The theme control previews BOTH presentations at once, so by definition it
     // cannot express the inactive one through the active theme's tokens.
     ["src/components/layout/ThemeToggle.css", "theme preview swatches"],
+    // Development-only diagnostic surfaces (dev route tree only, dropped from
+    // production bundles). They deliberately sit OUTSIDE the learner theme:
+    // dressing an instrument panel in product tokens would make it read as
+    // product UI, and their colours must stay fixed while a theme moves.
+    ["src/pages/DevBenchmarkLabPage.css", "dev-only benchmark laboratory"],
+    ["src/pages/DevSceneGatesPage.css", "dev-only hard-gate runner"],
   ]);
 
   it("component CSS uses tokens, not raw hex", () => {

@@ -154,7 +154,11 @@ export const chapter0Scene = makeScene2D(function* (view) {
   const origin = new Circle({ size: 15, fill: ROLE.text });
   view.add(origin);
   const originNote = makeLabel("origin — watch it", ROLE.selected, 20);
-  originNote.position(new Vector2(0, 64));
+  // Below the reach of a rotated basis label: at y = 64 the e₂ label swung
+  // down onto this note during the rotation and shear presets and the two
+  // strings printed over each other (text-overlap hard gate). The basis
+  // arrows are one unit long, so 96px clears them.
+  originNote.position(new Vector2(0, 100));
   originNote.opacity(0);
   view.add(originNote);
 
@@ -195,7 +199,9 @@ export const chapter0Scene = makeScene2D(function* (view) {
   view.add(nose);
 
   const xLabel = makeLabel("x", ROLE.original, 28);
-  xLabel.opacity(0).position(toPixels(NOSE_PT).add(new Vector2(-24, -6)));
+  // Further up-left of the marked vertex: at (-24, -6) the sweeping e₁ label
+  // caught it during the rotation preset (text-overlap hard gate).
+  xLabel.opacity(0).position(toPixels(NOSE_PT).add(new Vector2(-34, -30)));
   view.add(xLabel);
 
   const axLabel = makeLabel("Ax", ROLE.selected, 28);
@@ -236,7 +242,16 @@ export const chapter0Scene = makeScene2D(function* (view) {
   function* preset(id: string, text: string, target: Matrix2x2): ThreadGenerator {
     const b = beats(id);
     setCaption("Reset to the identity…");
-    yield* all(tGrid.opacity(0.4, 0.3), morphTo(IDENTITY, b.reset!));
+    // The static "x" retires for the preset tour. Its ghost ring still marks
+    // where the vertex started, and "Ax" still names the one that moves — but
+    // the basis labels sweep the whole annulus around the origin during the
+    // rotation preset and printed "e₁" over "x" there (text-overlap hard
+    // gate). One label per moving thing, which is the point of these beats.
+    yield* all(
+      tGrid.opacity(0.4, 0.3),
+      xLabel.opacity(0, 0.3),
+      morphTo(IDENTITY, b.reset!),
+    );
     setCaption(text);
     yield* all(tGrid.opacity(0.85, 0.3), morphTo(target, b.deform!));
     yield* waitFor(b.hold!);
@@ -329,7 +344,10 @@ export const chapter0Scene = makeScene2D(function* (view) {
     *translation() {
       const b = beats("translation");
       setCaption("Here is the move: slide the whole craft over — a translation.");
+      // x is named again here: the whole beat is about whether the marked
+      // vertex can be carried off the origin, so it needs its name back.
       slidGhost.opacity(0.9);
+      xLabel.opacity(1);
       slideT(0);
       // The ghost STARTS on the craft and travels. Nothing is faded in already
       // displaced, so the operation the caption names is the one on screen.

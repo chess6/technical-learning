@@ -37,13 +37,18 @@ export function formatAreaFactor(determinant: number): string {
 }
 
 /**
- * The signed determinant headline: magnitude AND sign, plus the word for what
- * the sign currently means, so a paused frame is self-describing.
+ * The signed determinant headline: the signed value plus the word for what
+ * its sign currently means, so a paused frame is self-describing.
+ *
+ * It deliberately does NOT also print `|det| ≈ …`. That term restated the
+ * digits already on screen, and it pushed the reversed-orientation reading
+ * ("det(A) ≈ -0.01 · |det| ≈ 0.01 · orientation reversed") past the overlay
+ * band's width, wrapping the headline to two lines and clipping the first one
+ * off the top of the stage — found by the text-clipping hard gate.
  */
 export function formatSignedArea(determinant: number): string {
-  const magnitude = formatSceneNumber(Math.abs(determinant));
   const signed = formatSceneNumber(determinant);
-  return `det(A) ≈ ${signed} · |det| ≈ ${magnitude} · ${orientationWord(determinant)}`;
+  return `det(A) ≈ ${signed} · ${orientationWord(determinant)}`;
 }
 
 /** What the sign of the determinant says about orientation. */

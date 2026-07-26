@@ -42,6 +42,10 @@ async function runGates(page: Page, sceneId: string): Promise<GateFinding[]> {
 }
 
 test.describe("guided-scene hard gates", () => {
+  // Sampling a scene means seeking and rendering every few frames across its
+  // whole timeline, which is far slower than a normal interaction test.
+  test.describe.configure({ timeout: 180_000 });
+
   for (const sceneId of SCENE_IDS) {
     test(`${sceneId} passes every hard gate`, async ({ page }) => {
       const consoleErrors: string[] = [];

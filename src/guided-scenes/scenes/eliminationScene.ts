@@ -367,12 +367,17 @@ export const eliminationScene = makeScene2D(function* (view) {
       // Enact the addition: the ghost row slides up onto R2 and fades as R2 (and
       // its line) interpolate to R2 + (−2·R1). One progress signal drives the
       // whole row, so equations, matrix, and line move as one state.
+      // The ghost dissolves over the FIRST half of its travel, so it is gone
+      // before it reaches R2's row. Fading across the whole move left two
+      // matrix rows printed on top of each other for the last stretch of the
+      // slide (text-overlap hard gate) — the merge is still the motion, but
+      // the frame never shows two readings of R2 at once.
       yield* all(
         progress(1, b.combine, easeInOutCubic),
         ghostRow.y(MAT2_Y, b.combine, easeInOutCubic),
         ghostTag.y(MAT2_Y, b.combine, easeInOutCubic),
-        ghostRow.opacity(0, b.combine),
-        ghostTag.opacity(0, b.combine),
+        ghostRow.opacity(0, b.combine * 0.5),
+        ghostTag.opacity(0, b.combine * 0.5),
       );
       setCaption("…the line swings, but it still passes through (2, −1). The point held.");
       // Land pulse on the fixed dot.

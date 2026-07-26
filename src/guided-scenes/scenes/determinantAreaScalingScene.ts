@@ -177,11 +177,24 @@ export const determinantAreaScalingScene = makeScene2D(function* (view) {
   const orientLabel = makeLabel("e₁ → e₂", ROLE.selected, 22);
   // Ride the arc's MIDPOINT. Parked at a fixed point above the origin the label
   // drifted away from the thing it names as the columns moved.
+  // It rides INSIDE the arc. Outside it (ARC_RADIUS + 26) it shared the ray
+  // with whichever column the arc's midpoint pointed along, printing
+  // "e₁ → e₂" under "e₁" or "e₂" whenever the columns closed up — the arrow
+  // tips, and so their labels, are always further out than the arc itself.
   orientLabel.position(() => {
-    const sweep = orientationSweep(matrix());
-    if (sweep === null) return new Vector2(0, -ARC_RADIUS - 26);
-    const mid = Math.atan2(matrix()[1][0], matrix()[0][0]) + sweep / 2;
-    const r = ARC_RADIUS + 26;
+    const m = matrix();
+    const sweep = orientationSweep(m);
+    // Always comfortably inside the SHORTER column, so the label can never
+    // reach the arrow tips — and so their labels, which ride those tips.
+    // Outside the arc it shared a ray with whichever column the midpoint
+    // pointed along and printed "e₁ → e₂" under "e₁" (text-overlap gate).
+    const shortestColumn = Math.min(
+      px([m[0][0], m[1][0]]).magnitude,
+      px([m[0][1], m[1][1]]).magnitude,
+    );
+    const r = Math.max(18, Math.min(ARC_RADIUS - 26, shortestColumn * 0.5));
+    if (sweep === null) return new Vector2(0, -r);
+    const mid = Math.atan2(m[1][0], m[0][0]) + sweep / 2;
     return new Vector2(Math.cos(mid) * r, -Math.sin(mid) * r);
   });
   orientLabel.opacity(0);
