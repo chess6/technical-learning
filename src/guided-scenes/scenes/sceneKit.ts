@@ -19,7 +19,12 @@ import { GRID_HALF_EXTENT, SAFE_WIDTH, SCALE } from "./safeFrame";
 import { gridLineCoordinates } from "./kitLayout";
 import { ROLE } from "./semanticRoles";
 
-export { SCALE, SCENE_SIZE, SAFE_MARGIN, OVERLAY_CLEAR_HALF_EXTENT } from "./safeFrame";
+export {
+  SCALE,
+  SCENE_SIZE,
+  SAFE_MARGIN,
+  OVERLAY_CLEAR_HALF_EXTENT,
+} from "./safeFrame";
 
 /**
  * Shared building blocks for the guided lesson scenes.
@@ -305,11 +310,7 @@ export function makeGraphicParts(
   return group;
 }
 
-export function makeArrow(
-  color: string,
-  width = 6,
-  key?: string,
-): Line {
+export function makeArrow(color: string, width = 6, key?: string): Line {
   return new Line({
     key,
     stroke: color,
@@ -321,8 +322,14 @@ export function makeArrow(
   });
 }
 
-export function makeSegment(color: string, width = 3.5, dash = false): Line {
+export function makeSegment(
+  color: string,
+  width = 3.5,
+  dash = false,
+  key?: string,
+): Line {
   return new Line({
+    key,
     stroke: color,
     lineWidth: width,
     lineDash: dash ? [10, 10] : [],
@@ -403,8 +410,7 @@ function resolveGridHalfExtents(
 export function makeStaticGrid(
   halfExtent: number | GridHalfExtents = GRID_HALF_EXTENT,
 ): Node {
-  const { x: xHalfExtent, y: yHalfExtent } =
-    resolveGridHalfExtents(halfExtent);
+  const { x: xHalfExtent, y: yHalfExtent } = resolveGridHalfExtents(halfExtent);
   const group = new Node({ key: "semantic:grid:static" });
   for (const k of gridLineCoordinates(xHalfExtent)) {
     const isAxis = k === 0;
@@ -440,8 +446,7 @@ export function makeTransformedGrid(
   halfExtent: number | GridHalfExtents = GRID_HALF_EXTENT,
   color = ROLE.gridTransformed,
 ): Node {
-  const { x: xHalfExtent, y: yHalfExtent } =
-    resolveGridHalfExtents(halfExtent);
+  const { x: xHalfExtent, y: yHalfExtent } = resolveGridHalfExtents(halfExtent);
   const group = new Node({ key: "semantic:grid:transformed" });
   const project = (point: MathVector2): Vector2 =>
     toPixels(matrixVectorMultiply(matrixAt(), point));
@@ -504,9 +509,18 @@ export function toIsometric(
 
 /** The 12 edges of the unit cube, as index pairs into `UNIT_CUBE`-style corners. */
 export const CUBE_EDGES: readonly (readonly [number, number])[] = [
-  [0, 1], [1, 3], [3, 2], [2, 0], // bottom face (z = 0)
-  [4, 5], [5, 7], [7, 6], [6, 4], // top face (z = 1)
-  [0, 4], [1, 5], [2, 6], [3, 7], // verticals
+  [0, 1],
+  [1, 3],
+  [3, 2],
+  [2, 0], // bottom face (z = 0)
+  [4, 5],
+  [5, 7],
+  [7, 6],
+  [6, 4], // top face (z = 1)
+  [0, 4],
+  [1, 5],
+  [2, 6],
+  [3, 7], // verticals
 ];
 
 /**
@@ -514,10 +528,17 @@ export const CUBE_EDGES: readonly (readonly [number, number])[] = [
  * Deliberately local rather than reusing `UNIT_CUBE` from src/math, whose corner
  * ORDER is its own contract; an edge list is only valid against a fixed order.
  */
-export const ISO_CUBE_CORNERS: readonly (readonly [number, number, number])[] = [
-  [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],
-  [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1],
-];
+export const ISO_CUBE_CORNERS: readonly (readonly [number, number, number])[] =
+  [
+    [0, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [1, 1, 0],
+    [0, 0, 1],
+    [1, 0, 1],
+    [0, 1, 1],
+    [1, 1, 1],
+  ];
 
 /** Short 3-D axis indicators for an isometric panel. */
 export function makeIsometricAxes(
@@ -537,7 +558,10 @@ export function makeIsometricAxes(
         stroke: ROLE.axis,
         lineWidth: 1.5,
         opacity: 0.75,
-        points: [toIsometric([0, 0, 0], scale, origin), toIsometric(axis, scale, origin)],
+        points: [
+          toIsometric([0, 0, 0], scale, origin),
+          toIsometric(axis, scale, origin),
+        ],
       }),
     );
   }

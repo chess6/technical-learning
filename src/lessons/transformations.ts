@@ -36,7 +36,10 @@ export const transformationsLesson: LessonDefinition = {
     { kind: "section", sectionId: "not-linear" },
     { kind: "explore", tocLabel: "Transform the plane" },
     { kind: "practice" },
-    { kind: "summary", heading: "The columns are where the basis vectors land" },
+    {
+      kind: "summary",
+      heading: "The columns are where the basis vectors land",
+    },
   ],
   formalBlocks: [
     {
@@ -124,9 +127,11 @@ export const transformationsLesson: LessonDefinition = {
       id: "grid",
       title: "Linearity carries the grid",
       body: "Because $\\mathbf{v} = x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2$ uniquely, linearity forces $A\\mathbf{v} = x\\,(A\\mathbf{e}_1) + y\\,(A\\mathbf{e}_2)$: the map acts on each basis piece and re-adds the results. The whole grid deforms into a scaled, sheared lattice while lines stay straight and evenly spaced. This strongly suggests the images of the two basis vectors are what matter — a *consequence* of unique coordinates we will derive next, not a rule to memorize yet.",
-      equation: "A(x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2) = x\\,A\\mathbf{e}_1 + y\\,A\\mathbf{e}_2",
+      equation:
+        "A(x\\,\\mathbf{e}_1 + y\\,\\mathbf{e}_2) = x\\,A\\mathbf{e}_1 + y\\,A\\mathbf{e}_2",
       observation:
-        "The identity-to-$A$ frames you scrub are an educational visual transition, not a matrix factorization.",
+        "In the short figure, keep your eye on the centre dot while the basis and lattice move: a linear map deforms the plane but cannot move the origin. The identity-to-$A$ frames are an educational transition, not a matrix factorization.",
+      visualId: "matrix-origin-fixed",
       layers: [
         {
           kind: "connection",
@@ -223,8 +228,7 @@ export const transformationsLesson: LessonDefinition = {
       id: "t-classify",
       type: "multiple-choice",
       tier: "check",
-      prompt:
-        "Which of these is a *linear* transformation?",
+      prompt: "Which of these is a *linear* transformation?",
       choices: [
         "A translation $\\mathbf{x} \\mapsto \\mathbf{x} + (1, 0)$",
         "A uniform scaling $\\mathbf{x} \\mapsto 2\\mathbf{x}$",

@@ -11,6 +11,8 @@ import {
 import {
   geometryContractsForScene,
   type GridGeometryContract,
+  type LineIntersectionGeometryContract,
+  type MatrixGridGeometryContract,
   type SceneGeometryContract,
 } from "./semanticGeometryContracts";
 
@@ -65,19 +67,6 @@ function matchingGridLines(
   );
 }
 
-function representativeGridFrame(
-  run: SceneGateRun,
-  contract: GridGeometryContract,
-): SceneFrameSample | undefined {
-  return run.frames.reduce<SceneFrameSample | undefined>((best, frame) => {
-    if (!best) return frame;
-    return matchingGridLines(frame, contract).length >
-      matchingGridLines(best, contract).length
-      ? frame
-      : best;
-  }, undefined);
-}
-
 function gridFinding(
   run: SceneGateRun,
   contract: GridGeometryContract,
@@ -98,22 +87,13 @@ function gridFinding(
   };
 }
 
-function checkGridContract(
+function checkGridFrame(
   run: SceneGateRun,
   contract: GridGeometryContract,
+  frame: SceneFrameSample,
 ): SceneGateFinding[] {
-  const frame = representativeGridFrame(run, contract);
-  const lines = frame ? matchingGridLines(frame, contract) : [];
-  if (!frame || lines.length === 0) {
-    return [
-      gridFinding(
-        run,
-        contract,
-        frame,
-        "no measurable grid lines were visible",
-      ),
-    ];
-  }
+  const lines = matchingGridLines(frame, contract);
+  if (lines.length === 0) return [];
 
   const byKey = new Map(lines.map((line) => [line.key, line]));
   const xAxisKey = `${contract.prefix}:y:0`;
@@ -182,24 +162,23 @@ function checkGridContract(
     y: (xOrigin.y + yOrigin.y) / 2,
   };
 
-  const basis1 = contract.coordinateScalePx
-    ? { x: contract.coordinateScalePx, y: 0 }
-    : scale(
-        {
-          x: xAxis.points[xAxis.points.length - 1]!.x - xAxis.points[0]!.x,
-          y: xAxis.points[xAxis.points.length - 1]!.y - xAxis.points[0]!.y,
-        },
-        1 / (2 * contract.xHalfExtent),
-      );
-  const basis2 = contract.coordinateScalePx
-    ? { x: 0, y: -contract.coordinateScalePx }
-    : scale(
-        {
-          x: yAxis.points[yAxis.points.length - 1]!.x - yAxis.points[0]!.x,
-          y: yAxis.points[yAxis.points.length - 1]!.y - yAxis.points[0]!.y,
-        },
-        1 / (2 * contract.yHalfExtent),
-      );
+  // Infer the displayed lattice basis from its axes. This keeps the contract
+  // valid under an authored viewport reframe while still checking every family
+  // line, integer coordinate, and shared origin in world space.
+  const basis1 = scale(
+    {
+      x: xAxis.points[xAxis.points.length - 1]!.x - xAxis.points[0]!.x,
+      y: xAxis.points[xAxis.points.length - 1]!.y - xAxis.points[0]!.y,
+    },
+    1 / (2 * contract.xHalfExtent),
+  );
+  const basis2 = scale(
+    {
+      x: yAxis.points[yAxis.points.length - 1]!.x - yAxis.points[0]!.x,
+      y: yAxis.points[yAxis.points.length - 1]!.y - yAxis.points[0]!.y,
+    },
+    1 / (2 * contract.yHalfExtent),
+  );
 
   for (const coordinate of gridLineCoordinates(contract.xHalfExtent)) {
     const vertical = byKey.get(`${contract.prefix}:x:${coordinate}`);
@@ -270,6 +249,47 @@ function checkGridContract(
   return findings;
 }
 
+function checkGridContract(
+  run: SceneGateRun,
+  contract: GridGeometryContract,
+): SceneGateFinding[] {
+  const seekFrames: SceneFrameSample[] = run.seekRecords.flatMap((record) => [
+    {
+      frame: record.frame,
+      time: 0,
+      nodes: record.nodesFromStart,
+      unmeasured: record.unmeasuredFromStart ?? [],
+    },
+    {
+      frame: record.frame,
+      time: 0,
+      nodes: record.nodesFromEnd,
+      unmeasured: record.unmeasuredFromEnd ?? [],
+    },
+  ]);
+  const frames = [...run.frames, ...seekFrames].filter(
+    (frame) => matchingGridLines(frame, contract).length > 0,
+  );
+  if (frames.length === 0) {
+    return [
+      gridFinding(
+        run,
+        contract,
+        undefined,
+        "no measurable grid lines were visible",
+      ),
+    ];
+  }
+  const firstFinding = new Map<string, SceneGateFinding>();
+  for (const frame of frames) {
+    for (const finding of checkGridFrame(run, contract, frame)) {
+      const identity = `${finding.nodeKey ?? "scene"}\0${finding.message}`;
+      if (!firstFinding.has(identity)) firstFinding.set(identity, finding);
+    }
+  }
+  return [...firstFinding.values()];
+}
+
 function framesInSegments(
   run: SceneGateRun,
   segmentIds: readonly string[],
@@ -295,6 +315,319 @@ function parseDisplayedPair(
   return [Number(match[1]), Number(match[2])];
 }
 
+function parseDisplayedMatrix(
+  text: string | undefined,
+): readonly [readonly [number, number], readonly [number, number]] | undefined {
+  const normalized = text?.replaceAll("−", "-");
+  const match = normalized?.match(
+    /\[\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]\s*,\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]\]/,
+  );
+  if (!match) return undefined;
+  return [
+    [Number(match[1]), Number(match[2])],
+    [Number(match[3]), Number(match[4])],
+  ];
+}
+
+function vectorBetween(
+  points: readonly Point[] | undefined,
+): Point | undefined {
+  if (!points || points.length < 2) return undefined;
+  return {
+    x: points[points.length - 1]!.x - points[0]!.x,
+    y: points[points.length - 1]!.y - points[0]!.y,
+  };
+}
+
+function contractFinding(
+  run: SceneGateRun,
+  id: string,
+  message: string,
+  frame?: SceneFrameSample,
+  nodeKey?: string,
+  measured?: number,
+): SceneGateFinding {
+  return {
+    gate: "semantic-geometry",
+    sceneId: run.sceneId,
+    segmentId: id,
+    frame: frame?.frame,
+    nodeKey,
+    measured,
+    limit: GEOMETRY_TOLERANCE_PX,
+    message: `${id}: ${message}`,
+  };
+}
+
+function checkMatrixGridContract(
+  run: SceneGateRun,
+  contract: MatrixGridGeometryContract,
+): SceneGateFinding[] {
+  const frames = run.frames.filter((frame) => {
+    const readout = frame.nodes[contract.matrixReadoutKey];
+    return (
+      isVisible(readout) &&
+      Object.values(frame.nodes).some(
+        (node) => isVisible(node) && node.key.startsWith(`${contract.prefix}:`),
+      )
+    );
+  });
+  if (frames.length === 0) {
+    return [
+      contractFinding(
+        run,
+        contract.id,
+        "no frame exposed both the live matrix readout and transformed grid",
+      ),
+    ];
+  }
+
+  const findings: SceneGateFinding[] = [];
+  const states = new Set<string>();
+  for (const frame of frames) {
+    const readout = frame.nodes[contract.matrixReadoutKey];
+    const matrix = parseDisplayedMatrix(readout?.text);
+    if (!matrix) {
+      findings.push(
+        contractFinding(
+          run,
+          contract.id,
+          "live matrix readout could not be parsed",
+          frame,
+          contract.matrixReadoutKey,
+        ),
+      );
+      continue;
+    }
+    states.add(
+      matrix
+        .flat()
+        .map((n) => n.toFixed(2))
+        .join(","),
+    );
+    const xAxis = frame.nodes[`${contract.prefix}:y:0`];
+    const yAxis = frame.nodes[`${contract.prefix}:x:0`];
+    const xVector = vectorBetween(xAxis?.points);
+    const yVector = vectorBetween(yAxis?.points);
+    const xOrigin = xAxis?.points ? midpoint(xAxis.points) : undefined;
+    const yOrigin = yAxis?.points ? midpoint(yAxis.points) : undefined;
+    if (!xVector || !yVector || !xOrigin || !yOrigin) {
+      findings.push(
+        contractFinding(
+          run,
+          contract.id,
+          "transformed axes were not measurable",
+          frame,
+        ),
+      );
+      continue;
+    }
+    const originError = distance(xOrigin, yOrigin);
+    if (originError > GEOMETRY_TOLERANCE_PX) {
+      findings.push(
+        contractFinding(
+          run,
+          contract.id,
+          "transformed axes do not share the live origin",
+          frame,
+          xAxis.key,
+          originError,
+        ),
+      );
+    }
+    const observed = [
+      scale(xVector, 1 / (2 * contract.xHalfExtent)),
+      scale(yVector, 1 / (2 * contract.yHalfExtent)),
+    ] as const;
+    const expected = [
+      {
+        x: matrix[0][0] * contract.coordinateScalePx,
+        y: -matrix[1][0] * contract.coordinateScalePx,
+      },
+      {
+        x: matrix[0][1] * contract.coordinateScalePx,
+        y: -matrix[1][1] * contract.coordinateScalePx,
+      },
+    ] as const;
+    const denominator = expected.reduce(
+      (sum, vector) => sum + vector.x ** 2 + vector.y ** 2,
+      0,
+    );
+    const viewportScale =
+      denominator > 1e-9
+        ? expected.reduce(
+            (sum, vector, index) =>
+              sum +
+              vector.x * observed[index]!.x +
+              vector.y * observed[index]!.y,
+            0,
+          ) / denominator
+        : 1;
+    expected.forEach((vector, index) => {
+      const error = distance(observed[index]!, scale(vector, viewportScale));
+      if (error > GEOMETRY_TOLERANCE_PX) {
+        findings.push(
+          contractFinding(
+            run,
+            contract.id,
+            `grid basis ${index + 1} disagrees with the displayed matrix column`,
+            frame,
+            index === 0 ? xAxis.key : yAxis.key,
+            error,
+          ),
+        );
+      }
+      const column = frame.nodes[contract.columnKeys[index]!];
+      const columnVector = vectorBetween(column?.points);
+      if (!columnVector) {
+        findings.push(
+          contractFinding(
+            run,
+            contract.id,
+            `matrix column object ${index + 1} was not measurable`,
+            frame,
+            contract.columnKeys[index],
+          ),
+        );
+      } else {
+        const columnError = distance(columnVector, observed[index]!);
+        if (columnError > GEOMETRY_TOLERANCE_PX) {
+          findings.push(
+            contractFinding(
+              run,
+              contract.id,
+              `matrix column ${index + 1} disagrees with the transformed lattice`,
+              frame,
+              contract.columnKeys[index],
+              columnError,
+            ),
+          );
+        }
+      }
+    });
+
+    const determinant =
+      matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+    const cross = Math.abs(
+      observed[0].x * observed[1].y - observed[0].y * observed[1].x,
+    );
+    const maxBasisLength = Math.max(
+      Math.hypot(observed[0].x, observed[0].y),
+      Math.hypot(observed[1].x, observed[1].y),
+      1,
+    );
+    const normalizedArea = cross / maxBasisLength ** 2;
+    // The on-canvas readout is rounded while the underlying matrix is live.
+    // A displayed zero may therefore represent <0.05 during a tween; require
+    // collapse within that display precision, then enforce exact rank at holds.
+    if (Math.abs(determinant) < 1e-6 && normalizedArea > 0.06) {
+      findings.push(
+        contractFinding(
+          run,
+          contract.id,
+          "singular matrix did not collapse the lattice to lower dimension",
+          frame,
+          contract.prefix,
+          normalizedArea,
+        ),
+      );
+    }
+  }
+
+  if (states.size < 3) {
+    findings.push(
+      contractFinding(
+        run,
+        contract.id,
+        "fewer than three distinct live transformation states were validated",
+      ),
+    );
+  }
+  const lastReadout = [...run.frames]
+    .reverse()
+    .map((frame) => frame.nodes[contract.matrixReadoutKey])
+    .find(isVisible);
+  const finalMatrix = parseDisplayedMatrix(lastReadout?.text);
+  if (
+    !finalMatrix ||
+    finalMatrix.some((row, i) =>
+      row.some((value, j) => value !== contract.expectedFinalMatrix[i]![j]),
+    )
+  ) {
+    findings.push(
+      contractFinding(
+        run,
+        contract.id,
+        "final displayed matrix does not match shared lesson data",
+        undefined,
+        contract.matrixReadoutKey,
+      ),
+    );
+  }
+  const firstByIdentity = new Map<string, SceneGateFinding>();
+  for (const finding of findings) {
+    const identity = `${finding.nodeKey ?? "scene"}\0${finding.message}`;
+    if (!firstByIdentity.has(identity)) firstByIdentity.set(identity, finding);
+  }
+  return [...firstByIdentity.values()];
+}
+
+function distanceToInfiniteLine(point: Point, line: readonly Point[]): number {
+  if (line.length < 2) return Number.POSITIVE_INFINITY;
+  const a = line[0]!;
+  const b = line[line.length - 1]!;
+  const length = distance(a, b);
+  if (length < 1e-9) return distance(point, a);
+  return (
+    Math.abs((b.x - a.x) * (a.y - point.y) - (a.x - point.x) * (b.y - a.y)) /
+    length
+  );
+}
+
+function checkLineIntersectionContract(
+  run: SceneGateRun,
+  contract: LineIntersectionGeometryContract,
+): SceneGateFinding[] {
+  const frames = framesInSegments(run, contract.segmentIds).filter(
+    (frame) =>
+      isVisible(frame.nodes[contract.movingLineKey]) &&
+      isVisible(frame.nodes[contract.fixedPointKey]),
+  );
+  if (frames.length < 2) {
+    return [
+      contractFinding(
+        run,
+        contract.id,
+        "moving constraint and fixed solution were not jointly measurable",
+      ),
+    ];
+  }
+  const failing = frames.find((frame) => {
+    const line = frame.nodes[contract.movingLineKey]!;
+    const point = frame.nodes[contract.fixedPointKey]!;
+    return (
+      !line.points ||
+      distanceToInfiniteLine({ x: point.x, y: point.y }, line.points) >
+        GEOMETRY_TOLERANCE_PX
+    );
+  });
+  if (!failing) return [];
+  const line = failing.nodes[contract.movingLineKey]!;
+  const point = failing.nodes[contract.fixedPointKey]!;
+  return [
+    contractFinding(
+      run,
+      contract.id,
+      "row-operation line left the claimed fixed solution",
+      failing,
+      contract.movingLineKey,
+      line.points
+        ? distanceToInfiniteLine({ x: point.x, y: point.y }, line.points)
+        : Number.POSITIVE_INFINITY,
+    ),
+  ];
+}
+
 /** Validate axes/lattices and explicit displayed-value/geometry promises. */
 export function checkSemanticGeometry(
   run: SceneGateRun,
@@ -306,6 +639,14 @@ export function checkSemanticGeometry(
   for (const contract of contracts) {
     if (contract.kind === "grid") {
       findings.push(...checkGridContract(run, contract));
+      continue;
+    }
+    if (contract.kind === "matrix-grid") {
+      findings.push(...checkMatrixGridContract(run, contract));
+      continue;
+    }
+    if (contract.kind === "line-intersection") {
+      findings.push(...checkLineIntersectionContract(run, contract));
       continue;
     }
 

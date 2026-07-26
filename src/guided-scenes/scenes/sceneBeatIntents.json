@@ -224,7 +224,12 @@
       "anchorUp": "emphasis",
       "anchorDown": "emphasis",
       "ghostReveal": "text",
-      "combine": "transition",
+      "combine": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:elimination:row-2-line"
+        ]
+      },
       "landUp": "emphasis",
       "landDown": "emphasis"
     },
@@ -734,29 +739,67 @@
   },
   "matrix-transformations": {
     "identity": {
-      "establish": "transition",
+      "establish": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:column-1",
+          "semantic:matrix:column-2"
+        ]
+      },
       "ghostsIn": "transition",
       "hold": "hold"
     },
     "col1": {
-      "focus": "emphasis",
+      "focus": {
+        "intent": "camera",
+        "targets": [
+          "presentation:viewport-world"
+        ]
+      },
       "columnUp": "emphasis",
-      "columnMove": "transition",
+      "columnMove": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:column-1",
+          "semantic:grid:transformed*"
+        ]
+      },
       "readoutIn": "text",
       "columnDown": "emphasis",
       "hold": "hold"
     },
     "col2": {
-      "focus": "emphasis",
+      "focus": {
+        "intent": "camera",
+        "targets": [
+          "presentation:viewport-world"
+        ]
+      },
       "columnUp": "emphasis",
-      "columnMove": "transition",
+      "columnMove": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:column-2",
+          "semantic:grid:transformed*"
+        ]
+      },
       "readoutIn": "text",
       "columnDown": "emphasis",
       "hold": "hold"
     },
     "sample": {
-      "focus": "emphasis",
-      "draw": "transition",
+      "focus": {
+        "intent": "camera",
+        "targets": [
+          "presentation:viewport-world"
+        ]
+      },
+      "draw": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:sample"
+        ]
+      },
       "componentsIn": "transition",
       "hold": "hold"
     },
@@ -767,7 +810,12 @@
     "transform-sample": {
       "readoutsOut": "transition",
       "ghostIn": "transition",
-      "carry": "transition",
+      "carry": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:sample"
+        ]
+      },
       "landUp": "emphasis",
       "landDown": "emphasis",
       "hold": "hold"
@@ -776,7 +824,12 @@
       "gridIn": "transition",
       "ghostLineIn": "transition",
       "imageIn": "transition",
-      "trace": "transition",
+      "trace": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:probe-image"
+        ]
+      },
       "hold": "hold"
     },
     "compare": {
@@ -785,10 +838,24 @@
     },
     "presets": {
       "retire": "transition",
-      "tour": "transition"
+      "tour": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:column-1",
+          "semantic:matrix:column-2",
+          "semantic:grid:transformed*"
+        ]
+      }
     },
     "summary": {
-      "restore": "transition",
+      "restore": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:matrix:column-1",
+          "semantic:matrix:column-2",
+          "semantic:grid:transformed*"
+        ]
+      },
       "hold": "hold"
     }
   },
@@ -874,13 +941,25 @@
       "hold": "hold"
     },
     "encode-3node": {
-      "reposition": "transition",
+      "reposition": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:red-black:key-cell:20",
+          "semantic:red-black:key-cell:30"
+        ]
+      },
       "childIn": "transition",
       "colourIn": "transition",
       "hold": "hold"
     },
     "encode-4node": {
-      "reposition": "transition",
+      "reposition": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:red-black:key-cell:20",
+          "semantic:red-black:key-cell:30"
+        ]
+      },
       "childIn": "transition",
       "colourIn": "transition",
       "hold": "hold"
@@ -894,13 +973,26 @@
     },
     "overflow": {
       "arrival": "transition",
-      "settle": "hold",
+      "settle": "transition",
       "think": "hold"
     },
     "split-is-recolour": {
-      "split": "transition",
+      "split": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:red-black:key-cell:20",
+          "semantic:red-black:key-cell:30",
+          "semantic:red-black:key-cell:40"
+        ]
+      },
       "settle": "hold",
-      "insert": "transition",
+      "insert": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:red-black:key-cell:35",
+          "semantic:red-black:key-cell:40"
+        ]
+      },
       "relationIn": "transition",
       "hold": "hold"
     },

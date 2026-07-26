@@ -262,3 +262,219 @@ describe("whole-plane geometry contract", () => {
     ).toEqual([]);
   });
 });
+
+describe("live matrix-grid contracts", () => {
+  const contract: SceneGeometryContract = {
+    kind: "matrix-grid",
+    id: "matrix-grid-live-state",
+    prefix: "semantic:grid:transformed",
+    matrixReadoutKey: "semantic:matrix:ledger:row:matrix:value",
+    columnKeys: ["semantic:matrix:column-1", "semantic:matrix:column-2"],
+    xHalfExtent: 2,
+    yHalfExtent: 2,
+    coordinateScalePx: SCALE,
+    expectedFinalMatrix: [
+      [2, 1],
+      [0, 1],
+    ],
+  };
+
+  function stateNodes(
+    matrix: readonly [readonly [number, number], readonly [number, number]],
+    observed = matrix,
+  ): NodeSample[] {
+    const prefix = "semantic:grid:transformed";
+    const basis1 = { x: observed[0][0] * SCALE, y: -observed[1][0] * SCALE };
+    const basis2 = { x: observed[0][1] * SCALE, y: -observed[1][1] * SCALE };
+    const plus = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) => ({
+      x: a.x + b.x,
+      y: a.y + b.y,
+    });
+    const times = (a: { x: number; y: number }, amount: number) => ({
+      x: a.x * amount,
+      y: a.y * amount,
+    });
+    const nodes: NodeSample[] = [];
+    for (const coordinate of [-2, -1, 0, 1, 2]) {
+      const verticalOffset = times(basis1, coordinate);
+      const horizontalOffset = times(basis2, coordinate);
+      nodes.push(
+        line(`${prefix}:x:${coordinate}`, [
+          plus(verticalOffset, times(basis2, -2)),
+          plus(verticalOffset, times(basis2, 2)),
+        ]),
+        line(`${prefix}:y:${coordinate}`, [
+          plus(horizontalOffset, times(basis1, -2)),
+          plus(horizontalOffset, times(basis1, 2)),
+        ]),
+      );
+    }
+    nodes.push(
+      line("semantic:matrix:column-1", [{ x: 0, y: 0 }, basis1]),
+      line("semantic:matrix:column-2", [{ x: 0, y: 0 }, basis2]),
+      node("semantic:matrix:ledger:row:matrix:value", {
+        type: "Txt",
+        text: `A = [[${matrix[0][0]}, ${matrix[0][1]}], [${matrix[1][0]}, ${matrix[1][1]}]]`,
+      }),
+    );
+    return nodes;
+  }
+
+  function matrixRun(states: NodeSample[][]): SceneGateRun {
+    return {
+      ...run([]),
+      frames: states.map((nodes, index) => ({
+        ...frame(nodes),
+        frame: index * 15,
+        time: index * 0.5,
+      })),
+    };
+  }
+
+  it("checks establishing, intermediate, singular, and landing states against the live readout", () => {
+    const fixture = matrixRun([
+      stateNodes([
+        [1, 0],
+        [0, 1],
+      ]),
+      stateNodes([
+        [1.5, 0.5],
+        [0, 1],
+      ]),
+      stateNodes([
+        [1, 0],
+        [0, 0],
+      ]),
+      stateNodes([
+        [2, 1],
+        [0, 1],
+      ]),
+    ]);
+    expect(checkSemanticGeometry(fixture, [contract])).toEqual([]);
+  });
+
+  it("rejects geometry that disagrees with a displayed matrix", () => {
+    const fixture = matrixRun([
+      stateNodes([
+        [1, 0],
+        [0, 1],
+      ]),
+      stateNodes(
+        [
+          [2, 1],
+          [0, 1],
+        ],
+        [
+          [1, 0],
+          [0, 1],
+        ],
+      ),
+      stateNodes([
+        [1, 0],
+        [0, 0],
+      ]),
+      stateNodes([
+        [2, 1],
+        [0, 1],
+      ]),
+    ]);
+    expect(
+      checkSemanticGeometry(fixture, [contract]).some((finding) =>
+        finding.message.includes("displayed matrix column"),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a singular readout whose lattice remains two-dimensional", () => {
+    const fixture = matrixRun([
+      stateNodes([
+        [1, 0],
+        [0, 1],
+      ]),
+      stateNodes(
+        [
+          [1, 0],
+          [0, 0],
+        ],
+        [
+          [1, 0],
+          [0, 0.5],
+        ],
+      ),
+      stateNodes([
+        [1.5, 0.5],
+        [0, 1],
+      ]),
+      stateNodes([
+        [2, 1],
+        [0, 1],
+      ]),
+    ]);
+    expect(
+      checkSemanticGeometry(fixture, [contract]).some((finding) =>
+        finding.message.includes("collapse"),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("fixed-intersection contracts", () => {
+  const contract: SceneGeometryContract = {
+    kind: "line-intersection",
+    id: "row-operation-fixed-intersection",
+    movingLineKey: "semantic:elimination:row-2-line",
+    fixedPointKey: "semantic:elimination:solution",
+    segmentIds: ["operation"],
+  };
+
+  it("accepts a constraint pivoting continuously through the fixed solution", () => {
+    const frames = [
+      line("semantic:elimination:row-2-line", [
+        { x: -40, y: 0 },
+        { x: 40, y: 0 },
+      ]),
+      line("semantic:elimination:row-2-line", [
+        { x: -40, y: -40 },
+        { x: 40, y: 40 },
+      ]),
+    ].map((moving, index) => ({
+      ...frame([
+        moving,
+        node("semantic:elimination:solution", { type: "Circle", x: 0, y: 0 }),
+      ]),
+      frame: index * 15,
+      time: index * 0.5,
+    }));
+    const fixture = { ...run([], "operation"), frames };
+    expect(checkSemanticGeometry(fixture, [contract])).toEqual([]);
+  });
+
+  it("rejects a moving constraint that leaves the claimed solution", () => {
+    const frames = [
+      line("semantic:elimination:row-2-line", [
+        { x: -40, y: 0 },
+        { x: 40, y: 0 },
+      ]),
+      line("semantic:elimination:row-2-line", [
+        { x: -40, y: 15 },
+        { x: 40, y: 15 },
+      ]),
+    ].map((moving, index) => ({
+      ...frame([
+        moving,
+        node("semantic:elimination:solution", { type: "Circle", x: 0, y: 0 }),
+      ]),
+      frame: index * 15,
+      time: index * 0.5,
+    }));
+    const fixture = { ...run([], "operation"), frames };
+    expect(
+      checkSemanticGeometry(fixture, [contract]).some((finding) =>
+        finding.message.includes("left the claimed fixed solution"),
+      ),
+    ).toBe(true);
+  });
+});

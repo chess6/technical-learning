@@ -3,13 +3,17 @@ import {
   Vector2,
   all,
   easeInOutCubic,
-  waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { RBT_FOUR_NODE } from "../../lessons/exampleData";
 import { RED_BLACK_SEGMENTS, requireBeats } from "./sceneTimings";
-import { ROLE, makeOverlayLabel, runSegment } from "./sceneKit";
-import { LABEL_BOTTOM_Y, LABEL_TOP_Y } from "./safeFrame";
+import { ROLE, runSegment } from "./sceneKit";
+import {
+  makeEquationLedger,
+  makeFullFrameTreatment,
+  makeSplitScreen,
+  silentHold,
+} from "./scenePresentation";
 
 /**
  * Watch scene for Red–Black Trees: **one cluster, two panels**.
@@ -40,9 +44,9 @@ const KEYS = RBT_FOUR_NODE.keys; // [20, 30, 40]
 const ARRIVING = RBT_FOUR_NODE.arriving; // 35
 const PROMOTED = RBT_FOUR_NODE.promoted; // 30
 
-const LEFT_X = -240;
-const RIGHT_X = 250;
-const CLUSTER_Y = 10;
+const LEFT_X = 0;
+const RIGHT_X = 0;
+const CLUSTER_Y = -20;
 const NODE_R = 30;
 const CELL_W = 62;
 const SCENE_ID = "red-black-encoding";
@@ -52,7 +56,11 @@ const cellX = (index: number, count: number): number =>
   LEFT_X + (index - (count - 1) / 2) * CELL_W;
 
 function makeKeyCell(key: number, pos: Vector2): Node {
-  const group = new Node({ position: pos, opacity: 0 });
+  const group = new Node({
+    key: `semantic:red-black:key-cell:${key}`,
+    position: pos,
+    opacity: 0,
+  });
   group.add(
     new Rect({
       width: CELL_W - 6,
@@ -76,7 +84,11 @@ function makeKeyCell(key: number, pos: Vector2): Node {
 }
 
 function makeCircleNode(key: number, pos: Vector2, red: boolean): Node {
-  const group = new Node({ position: pos, opacity: 0 });
+  const group = new Node({
+    key: `semantic:red-black:binary-node:${key}`,
+    position: pos,
+    opacity: 0,
+  });
   group.add(
     new Circle({
       width: NODE_R * 2,
@@ -135,10 +147,37 @@ function makeSmallLabel(text: string, pos: Vector2, color: string): Txt {
 export const redBlackEncodingScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
-  const caption = makeOverlayLabel("", ROLE.textMuted, 25);
-  caption.position(new Vector2(0, LABEL_BOTTOM_Y));
-  const title = makeOverlayLabel("", ROLE.text, 28);
-  title.position(new Vector2(0, LABEL_TOP_Y));
+  const split = makeSplitScreen({
+    gap: 42,
+    leftKey: "semantic:red-black:multiway-panel",
+    rightKey: "semantic:red-black:binary-panel",
+  });
+  view.add(split.node);
+
+  const ledger = makeEquationLedger(
+    [
+      { id: "state", label: "state", value: "one key" },
+      { id: "encoding", label: "encoding", value: "black representative" },
+      { id: "invariant", label: "invariant", value: "", color: ROLE.selected },
+    ],
+    {
+      position: new Vector2(0, 205),
+      width: 560,
+      rowHeight: 30,
+      key: "semantic:red-black:ledger",
+    },
+  );
+  view.add(ledger.node);
+  const title = ledger.row("state").value;
+  const caption = ledger.row("encoding").value;
+  const bhLabel = ledger.row("invariant").value;
+  bhLabel.opacity(0);
+
+  const prediction = makeFullFrameTreatment(
+    `Which key rises? Does the binary tree move—or recolour?`,
+    { kind: "prediction", key: "presentation:red-black:prediction" },
+  );
+  view.add(prediction.node);
 
   // Panel labels sit high enough that the promoted key's lift during the
   // split (to CLUSTER_Y − 96) never runs into them.
@@ -165,7 +204,11 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   );
 
   // ---- right panel: black representative + up to two red children ---------
-  const rep = makeCircleNode(KEYS[1]!, new Vector2(RIGHT_X, CLUSTER_Y - 46), false);
+  const rep = makeCircleNode(
+    KEYS[1]!,
+    new Vector2(RIGHT_X, CLUSTER_Y - 46),
+    false,
+  );
   const redLeft = makeCircleNode(
     KEYS[0]!,
     new Vector2(RIGHT_X - 78, CLUSTER_Y + 62),
@@ -221,41 +264,33 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
     opacity: 0,
   });
 
-  const bhLabel = makeSmallLabel(
-    "black height 1 — the reds add keys, not levels",
-    new Vector2(0, LABEL_BOTTOM_Y - 48),
-    ROLE.selected,
-  );
   const marker = makeSmallLabel(
     "▲ the break is now here",
     new Vector2(RIGHT_X, CLUSTER_Y - 118),
     ROLE.transformed,
   );
 
-  view.add(edgeLeft);
-  view.add(edgeRight);
-  view.add(edge35);
-  view.add(clusterRing);
-  view.add(red35);
-  for (const cell of cells) view.add(cell);
-  view.add(arrivingCell);
-  view.add(rep);
-  view.add(redLeft);
-  view.add(redRight);
-  view.add(panelLeft);
-  view.add(panelRight);
-  view.add(bhLabel);
-  view.add(marker);
-  view.add(caption);
-  view.add(title);
+  split.right.add(edgeLeft);
+  split.right.add(edgeRight);
+  split.right.add(edge35);
+  split.right.add(clusterRing);
+  split.right.add(red35);
+  for (const cell of cells) split.left.add(cell);
+  split.left.add(arrivingCell);
+  split.right.add(rep);
+  split.right.add(redLeft);
+  split.right.add(redRight);
+  split.left.add(panelLeft);
+  split.right.add(panelRight);
+  split.right.add(marker);
 
   function* show(node: Node, on: boolean, duration = 0.5) {
     yield* node.opacity(on ? 1 : 0, duration, easeInOutCubic);
   }
 
-  // Establishing frame, correct at t = 0: one key on each side.
-  title.text("A node with one key");
-  caption.text("The left panel is the 2–3–4 node. The right is how it is stored.");
+  // Establishing frame: one key and its binary representative.
+  title.text("one key");
+  caption.text("one black representative");
   cells[1]!.opacity(1);
   cells[1]!.position(new Vector2(LEFT_X, CLUSTER_Y));
   rep.opacity(1);
@@ -267,101 +302,120 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
   const bodies: Record<string, () => ThreadGenerator> = {
     *establish() {
       const b = beats("establish");
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["encode-2node"]() {
-      title.text("A 2-node is a lone black node");
-      caption.text("One key, one black node. Nothing else to record.");
+      title.text("2-node");
+      caption.text("one key ↔ black node");
       const b = beats("encode-2node");
       yield* show(clusterRing, true, b.ringIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["encode-3node"]() {
-      title.text("A second key hangs off in red");
-      caption.text(
-        "Two keys is a 3-node. The extra key does not get its own level — it hangs off the black one, in red.",
-      );
+      title.text("3-node");
+      caption.text("extra key ↔ red child");
       const b = beats("encode-3node");
       yield* all(
-        cells[1]!.position(new Vector2(cellX(1, 2), CLUSTER_Y), b.reposition!, easeInOutCubic),
+        cells[1]!.position(
+          new Vector2(cellX(1, 2), CLUSTER_Y),
+          b.reposition!,
+          easeInOutCubic,
+        ),
         cells[0]!.position(new Vector2(cellX(0, 2), CLUSTER_Y), b.reposition!),
       );
-      yield* all(show(cells[0]!, true, b.childIn!), show(edgeLeft, true, b.childIn!));
+      yield* all(
+        show(cells[0]!, true, b.childIn!),
+        show(edgeLeft, true, b.childIn!),
+      );
       yield* show(redLeft, true, b.colourIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["encode-4node"]() {
-      title.text("Three keys, two reds");
-      caption.text("A 4-node: the black representative and both of its extra keys.");
+      title.text("4-node");
+      caption.text("two extra keys ↔ two reds");
       const b = beats("encode-4node");
       yield* all(
-        cells[0]!.position(new Vector2(cellX(0, 3), CLUSTER_Y), b.reposition!, easeInOutCubic),
-        cells[1]!.position(new Vector2(cellX(1, 3), CLUSTER_Y), b.reposition!, easeInOutCubic),
+        cells[0]!.position(
+          new Vector2(cellX(0, 3), CLUSTER_Y),
+          b.reposition!,
+          easeInOutCubic,
+        ),
+        cells[1]!.position(
+          new Vector2(cellX(1, 3), CLUSTER_Y),
+          b.reposition!,
+          easeInOutCubic,
+        ),
       );
-      yield* all(show(cells[2]!, true, b.childIn!), show(edgeRight, true, b.childIn!));
+      yield* all(
+        show(cells[2]!, true, b.childIn!),
+        show(edgeRight, true, b.childIn!),
+      );
       yield* show(redRight, true, b.colourIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["read-off-r2"]() {
-      title.text("“No two reds” was never an axiom");
-      caption.text(
-        "Every extra key hangs off a BLACK representative. A red under a red would be the same node, drawn wrong.",
-      );
+      title.text("red means same multiway node");
+      caption.text("red-under-red would merge levels");
       const b = beats("read-off-r2");
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["read-off-r3"]() {
-      title.text("Counting black nodes counts levels");
-      caption.text(
-        "Reds add keys within a level; only blacks start a new one. So equal black heights means all 2–3–4 leaves are level.",
-      );
+      title.text("black counts levels");
+      caption.text("reds add keys, not height");
+      bhLabel.text("black height=1");
       const b = beats("read-off-r3");
       yield* show(bhLabel, true, b.labelIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *overflow() {
-      title.text(`A fourth key — ${ARRIVING} — and no room`);
-      caption.text("The node is full. In a 2–3–4 tree, a full node splits.");
+      title.text(`overflow: +${ARRIVING}`);
+      caption.text("full node must split");
       const b = beats("overflow");
-      yield* all(show(bhLabel, false, b.arrival!), show(arrivingCell, true, b.arrival!));
-      yield* waitFor(b.settle!);
-      // Prediction before the reveal: name what must stay fixed before seeing
-      // the repair. The explicit think beat holds the completed question still.
-      caption.text(
-        `Predict: which key is promoted — and does the right panel MOVE, or RECOLOUR?`,
+      yield* all(
+        show(bhLabel, false, b.arrival!),
+        show(arrivingCell, true, b.arrival!),
       );
-      yield* waitFor(b.think!);
+      yield* split.node.opacity(0, b.settle! * 0.25);
+      yield* prediction.show(b.settle! * 0.25);
+      yield* silentHold(b.settle! * 0.5);
+      yield* silentHold(b.think!);
     },
 
     *["split-is-recolour"]() {
-      title.text("The split IS the colour flip");
-      caption.text(
-        `${PROMOTED} is promoted into the parent; the other two become their own 2-nodes. On the right, nothing moves — the colours flip.`,
-      );
-      // Left: the box breaks in two with the middle key lifted out, while the
-      // right panel enacts the SAME event as colour alone — one motion, two
-      // views, and every node object keeps its identity.
+      title.text(`promote ${PROMOTED}`);
+      caption.text("split ↔ colour flip");
       const b = beats("split-is-recolour");
+      yield* prediction.hide(b.split! * 0.2);
+      yield* split.node.opacity(1, b.split! * 0.2);
+      const revealMotion = b.split! * 0.6;
       yield* all(
-        cells[1]!.position(new Vector2(LEFT_X, CLUSTER_Y - 96), b.split!, easeInOutCubic),
-        cells[0]!.position(new Vector2(LEFT_X - 70, CLUSTER_Y + 52), b.split!, easeInOutCubic),
-        cells[2]!.position(new Vector2(LEFT_X + 70, CLUSTER_Y + 52), b.split!, easeInOutCubic),
-        paintTween(rep, true, b.split!),
-        paintTween(redLeft, false, b.split!),
-        paintTween(redRight, false, b.split!),
+        cells[1]!.position(
+          new Vector2(LEFT_X, CLUSTER_Y - 96),
+          revealMotion,
+          easeInOutCubic,
+        ),
+        cells[0]!.position(
+          new Vector2(LEFT_X - 70, CLUSTER_Y + 52),
+          revealMotion,
+          easeInOutCubic,
+        ),
+        cells[2]!.position(
+          new Vector2(LEFT_X + 70, CLUSTER_Y + 52),
+          revealMotion,
+          easeInOutCubic,
+        ),
+        paintTween(rep, true, revealMotion),
+        paintTween(redLeft, false, revealMotion),
+        paintTween(redRight, false, revealMotion),
       );
-      yield* waitFor(b.settle!);
-      // Close the loop: the arriving key finally fits — it slides into the
-      // right-hand 2-node (left panel) and hangs off it in red (right panel).
-      caption.text(
-        `And ${ARRIVING} finally fits: into the ${KEYS[2]} node — as a red child, same rule as before.`,
-      );
+      yield* silentHold(b.settle!);
+      caption.text(`${ARRIVING} joins ${KEYS[2]} as red`);
       yield* all(
         arrivingCell.position(
           new Vector2(LEFT_X + 70 - (CELL_W - 6) / 2 - 3, CLUSTER_Y + 52),
@@ -374,40 +428,40 @@ export const redBlackEncodingScene = makeScene2D(function* (view) {
           easeInOutCubic,
         ),
       );
-      yield* all(show(edge35, true, b.relationIn!), show(red35, true, b.relationIn!));
-      yield* waitFor(b.hold!);
+      yield* all(
+        show(edge35, true, b.relationIn!),
+        show(red35, true, b.relationIn!),
+      );
+      yield* silentHold(b.hold!);
     },
 
     *["invariant-held"]() {
-      title.text("What the flip conserved");
-      caption.text(
-        "Count blacks downward: one on every path, exactly as before. The split changed colours, not counts.",
-      );
-      bhLabel.text("black height still 1 — the flip changed colours, not counts");
+      title.text("split complete");
+      caption.text("colours changed · count did not");
+      bhLabel.text("black height still 1");
       const b = beats("invariant-held");
       yield* show(bhLabel, true, b.labelIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["violation-moves-up"]() {
-      title.text("The break moved up one level");
-      caption.text(
-        "The representative is red now — an extra key in its parent's node. If that parent is red too, the same repair runs one level higher.",
-      );
+      title.text("repair moves upward");
+      caption.text("red representative joins parent");
       const b = beats("violation-moves-up");
       yield* show(marker, true, b.markerIn!);
-      yield* waitFor(b.hold!);
+      yield* silentHold(b.hold!);
     },
 
     *["root-split"]() {
-      title.text("Unless there is no parent left");
-      caption.text(
-        "At the root there is nowhere to promote to: the root is simply forced black again, and every path gains one black node at once.",
-      );
-      bhLabel.text("black height 2 — on every path, at the same moment");
+      title.text("root has no parent");
+      caption.text("force root black");
+      bhLabel.text("black height=2 on every path");
       const b = beats("root-split");
-      yield* all(paintTween(rep, false, b.recolour!), show(marker, false, b.recolour!));
-      yield* waitFor(b.hold!);
+      yield* all(
+        paintTween(rep, false, b.recolour!),
+        show(marker, false, b.recolour!),
+      );
+      yield* silentHold(b.hold!);
     },
   };
 

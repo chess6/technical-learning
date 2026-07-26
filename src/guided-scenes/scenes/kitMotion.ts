@@ -70,6 +70,7 @@ export function makeFocusRig(): FocusRig {
   const focus = createSignal<Point>({ x: 0, y: 0 });
   const scale = createSignal(1);
   const world = new Node({
+    key: "presentation:viewport-world",
     position: () => {
       const t = rigTransformForFocus(focus(), scale());
       return new Vector2(t.x, t.y);
@@ -159,7 +160,11 @@ export function makeTracerArrow(color: string = ROLE.selected): TracerArrow {
   });
   function* pointTo(position: Point, duration: number): ThreadGenerator {
     yield* all(
-      node.position(new Vector2(position.x, position.y), duration, easeInOutCubic),
+      node.position(
+        new Vector2(position.x, position.y),
+        duration,
+        easeInOutCubic,
+      ),
       node.opacity(1, Math.min(duration, 0.3)),
     );
   }

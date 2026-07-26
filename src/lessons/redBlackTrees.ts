@@ -89,7 +89,8 @@ export const redBlackTreesLesson: LessonDefinition = {
       title: "Overflow, split, promote — in binary",
       body: "A 2–3–4 tree has exactly one event: a node overflows, so it **splits**, promoting its middle key into its parent and leaving two smaller nodes behind. Watch that happen on the encoded side and it is not a rearrangement at all — it is a **colour flip**. The two red children turn black, becoming their own 2-nodes, one level down; the black representative turns red, because it is now the promoted key, an extra key in its parent's node. No pointer moves. The split *is* the recolour. And because a red node adds a key without adding a black level, the new key can always be inserted red without breaking the equal-black-height rule — it can only ever break the no-two-reds rule, which is a drawing problem, not a structural one.",
       observation:
-        "This is why a red-red pair is not a five-key node. It is a legal node drawn illegally — and a rotation redraws it, without changing how many keys it holds.",
+        "In the short figure, match the promoted middle key on the left to the colour flip on the right. One structural event is being drawn two ways.",
+      visualId: "red-black-split-recolour",
       layers: [
         {
           kind: "why",

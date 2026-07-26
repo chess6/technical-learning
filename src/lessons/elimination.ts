@@ -116,7 +116,8 @@ export const eliminationLesson: LessonDefinition = {
       equation:
         "R_i \\leftrightarrow R_j \\qquad R_i \\to k\\,R_i\\ (k \\neq 0) \\qquad R_i \\to R_i + k\\,R_j",
       observation:
-        "Reversibility is the license. A move you can undo cannot have thrown away or invented a solution.",
+        "Reversibility is the license. In the short figure, inspect the highlighted crossing while the second constraint pivots: the row changes, but the shared solution does not.",
+      visualId: "elimination-fixed-intersection",
     },
     {
       id: "illegal-moves",
@@ -269,8 +270,7 @@ export const eliminationLesson: LessonDefinition = {
             prompt:
               "After $R_2 \\to R_2 - 2\\,R_1$, what is the new coefficient of $y$ in $R_2$?",
             expected: -7,
-            explanation:
-              "The $y$-coefficient becomes $-1 - 2\\cdot 3 = -7$.",
+            explanation: "The $y$-coefficient becomes $-1 - 2\\cdot 3 = -7$.",
           },
           {
             kind: "numeric",
@@ -280,8 +280,7 @@ export const eliminationLesson: LessonDefinition = {
           },
           {
             kind: "numeric",
-            prompt:
-              "Back-substitute into $R_1$ ($x + 3y = -1$). What is $x$?",
+            prompt: "Back-substitute into $R_1$ ($x + 3y = -1$). What is $x$?",
             expected: 2,
             explanation: "$x = -1 - 3(-1) = 2$, so $(x, y) = (2, -1)$.",
           },

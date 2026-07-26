@@ -11,7 +11,10 @@ import { EigenClipStage } from "../components/lesson/EigenClipStage";
 import { LessonSummary } from "../components/lesson/LessonSummary";
 import { WorkedExamplePanel } from "../components/lesson/WorkedExamplePanel";
 import { DepthLayerList } from "../components/lesson/DepthLayer";
-import { getLessonVisual } from "../components/lesson/lessonVisuals";
+import {
+  getLessonVisual,
+  isInlineMotionVisual,
+} from "../components/lesson/lessonVisuals";
 import { MisconceptionCallout } from "../components/lesson/MisconceptionCallout";
 import { EigenSolutionDiagram } from "../components/lesson/solutionVisuals/EigenSolutionDiagram";
 import { LessonLayout } from "../components/layout/LessonLayout";
@@ -43,18 +46,27 @@ export function LessonPage() {
 
   const Explorer = getExplorer(lesson.explorationId);
 
-  const renderSection = (section: (typeof lesson.sections)[number]) => (
-    <div key={section.id} className="lesson-section">
-      <ExplanationBlock
-        title={section.title}
-        body={section.body}
-        observation={section.observation}
-      />
-      {section.equation && <EquationBlock tex={section.equation} />}
-      <DepthLayerList layers={section.layers} />
-      {section.visualId && getLessonVisual(section.visualId)}
-    </div>
-  );
+  const renderSection = (section: (typeof lesson.sections)[number]) => {
+    const visual = section.visualId ? getLessonVisual(section.visualId) : null;
+    const inlineMotion = isInlineMotionVisual(section.visualId);
+    return (
+      <div
+        key={section.id}
+        className={`lesson-section${inlineMotion ? " lesson-section--with-motion" : ""}`}
+      >
+        <div className="lesson-section__copy">
+          <ExplanationBlock
+            title={section.title}
+            body={section.body}
+            observation={section.observation}
+          />
+          {section.equation && <EquationBlock tex={section.equation} />}
+          <DepthLayerList layers={section.layers} />
+        </div>
+        {visual}
+      </div>
+    );
+  };
 
   const sectionsById = new Map(
     lesson.sections.map((section) => [section.id, renderSection(section)]),
@@ -101,7 +113,9 @@ export function LessonPage() {
     .reverse()
     .find((id): id is string => id !== undefined);
   const calloutsRideOnWorkedId =
-    !hasCombinedWorkedBlock && callouts.length > 0 ? lastPlacedWorkedId : undefined;
+    !hasCombinedWorkedBlock && callouts.length > 0
+      ? lastPlacedWorkedId
+      : undefined;
 
   const workedById = new Map(
     (lesson.workedExamples ?? []).map((example, index) => [

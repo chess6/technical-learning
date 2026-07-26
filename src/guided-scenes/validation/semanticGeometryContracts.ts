@@ -1,4 +1,7 @@
-import { LINEAR_COMBINATION_EXAMPLE } from "../../lessons/exampleData";
+import {
+  LINEAR_COMBINATION_EXAMPLE,
+  MATRIX_LESSON_EXAMPLE,
+} from "../../lessons/exampleData";
 import { SCALE } from "../scenes/safeFrame";
 
 export interface GridGeometryContract {
@@ -21,6 +24,29 @@ export interface VectorReadoutGeometryContract {
   coordinateScalePx: number;
 }
 
+export interface MatrixGridGeometryContract {
+  kind: "matrix-grid";
+  id: string;
+  prefix: string;
+  matrixReadoutKey: string;
+  columnKeys: readonly [string, string];
+  xHalfExtent: number;
+  yHalfExtent: number;
+  coordinateScalePx: number;
+  expectedFinalMatrix: readonly [
+    readonly [number, number],
+    readonly [number, number],
+  ];
+}
+
+export interface LineIntersectionGeometryContract {
+  kind: "line-intersection";
+  id: string;
+  movingLineKey: string;
+  fixedPointKey: string;
+  segmentIds: readonly string[];
+}
+
 export interface FullPlaneGeometryContract {
   kind: "full-plane";
   id: string;
@@ -32,6 +58,8 @@ export interface FullPlaneGeometryContract {
 
 export type SceneGeometryContract =
   | GridGeometryContract
+  | MatrixGridGeometryContract
+  | LineIntersectionGeometryContract
   | VectorReadoutGeometryContract
   | FullPlaneGeometryContract;
 
@@ -84,6 +112,30 @@ export function geometryContractsForScene(
   const contracts: SceneGeometryContract[] = [];
   if (STATIC_GRID_SCENES.has(sceneId)) contracts.push(STATIC_GRID);
   if (TRANSFORMED_GRID_SCENES.has(sceneId)) contracts.push(TRANSFORMED_GRID);
+
+  if (sceneId === "matrix-transformations") {
+    contracts.push({
+      kind: "matrix-grid",
+      id: "matrix-grid-live-state",
+      prefix: "semantic:grid:transformed",
+      matrixReadoutKey: "semantic:matrix:ledger:row:matrix:value",
+      columnKeys: ["semantic:matrix:column-1", "semantic:matrix:column-2"],
+      xHalfExtent: 2.5,
+      yHalfExtent: 2.5,
+      coordinateScalePx: SCALE,
+      expectedFinalMatrix: MATRIX_LESSON_EXAMPLE.matrix,
+    });
+  }
+
+  if (sceneId === "elimination") {
+    contracts.push({
+      kind: "line-intersection",
+      id: "row-operation-fixed-intersection",
+      movingLineKey: "semantic:elimination:row-2-line",
+      fixedPointKey: "semantic:elimination:solution",
+      segmentIds: ["operation"],
+    });
+  }
 
   if (sceneId === "vectors-linear-combinations") {
     contracts.push(

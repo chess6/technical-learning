@@ -12,7 +12,32 @@ const LAZY_VISUALS: Record<string, ComponentType> = {
       default: m.LinearityComparison,
     })),
   ),
+  "matrix-origin-fixed": lazy(() =>
+    import("./InlineMotionFigure").then((m) => ({
+      default: m.MatrixOriginMotionFigure,
+    })),
+  ),
+  "elimination-fixed-intersection": lazy(() =>
+    import("./InlineMotionFigure").then((m) => ({
+      default: m.EliminationIntersectionMotionFigure,
+    })),
+  ),
+  "red-black-split-recolour": lazy(() =>
+    import("./InlineMotionFigure").then((m) => ({
+      default: m.RedBlackRepairMotionFigure,
+    })),
+  ),
 };
+
+const INLINE_MOTION_VISUALS = new Set([
+  "matrix-origin-fixed",
+  "elimination-fixed-intersection",
+  "red-black-split-recolour",
+]);
+
+export function isInlineMotionVisual(visualId: string | undefined): boolean {
+  return visualId !== undefined && INLINE_MOTION_VISUALS.has(visualId);
+}
 
 export function getLessonVisual(visualId: string): ReactElement | null {
   const Visual = LAZY_VISUALS[visualId];

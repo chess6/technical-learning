@@ -4,7 +4,6 @@ import {
   all,
   createSignal,
   easeInOutCubic,
-  waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
@@ -17,14 +16,15 @@ import {
   type Vector2 as MathVector2,
 } from "../../math";
 import { ELIMINATION_BEATS, ELIMINATION_SEGMENTS } from "./sceneTimings";
+import { ROLE, formatSceneNumber, makeSegment, runSegment } from "./sceneKit";
 import {
-  ROLE,
-  formatSceneNumber,
-  makeOverlayLabel,
-  makeSegment,
-  runSegment,
-} from "./sceneKit";
-import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
+  makeEquationLedger,
+  makeFullFrameTreatment,
+  makeSplitScreen,
+  makeTemporaryAnnotation,
+  silentHold,
+  uninterruptedMotion,
+} from "./scenePresentation";
 
 /**
  * "Elimination" Watch scene — one row operation as reversible constraint
@@ -60,7 +60,7 @@ const EX = LINEAR_SYSTEM_EXAMPLE;
 
 // Right-hand viewport: a bordered mini-plane so the lines never collide with the
 // symbolic panels on the left.
-const BOX_CX = 250;
+const BOX_CX = 0;
 const BOX_SCALE = 46;
 const BOX_EXT = 4;
 const lpx = (p: MathVector2): Vector2 =>
@@ -139,6 +139,15 @@ function makeMono(size: number, color: string): Txt {
 export const eliminationScene = makeScene2D(function* (view) {
   view.fill(ROLE.background);
 
+  const split = makeSplitScreen({
+    gap: 38,
+    leftKey: "semantic:elimination:symbolic-panel",
+    rightKey: "semantic:elimination:geometry-panel",
+  });
+  view.add(split.node);
+  const symbolic = split.left;
+  const geometry = split.right;
+
   // Derive the system, the operation, and the result row from shared math — the
   // scene never hardcodes (2,−1,5)→(0,−7,7) (correctness: single source of truth).
   const startSys = augmentedFromSystem(EX.a, EX.b);
@@ -177,10 +186,10 @@ export const eliminationScene = makeScene2D(function* (view) {
     lineWidth: 2,
     radius: 8,
   });
-  view.add(box);
+  geometry.add(box);
   for (let k = -BOX_EXT; k <= BOX_EXT; k += 1) {
     const isAxis = k === 0;
-    view.add(
+    geometry.add(
       new Line({
         stroke: isAxis ? ROLE.axis : ROLE.grid,
         lineWidth: isAxis ? 2 : 1,
@@ -188,7 +197,7 @@ export const eliminationScene = makeScene2D(function* (view) {
         points: [lpx([k, -BOX_EXT]), lpx([k, BOX_EXT])],
       }),
     );
-    view.add(
+    geometry.add(
       new Line({
         stroke: isAxis ? ROLE.axis : ROLE.grid,
         lineWidth: isAxis ? 2 : 1,
@@ -198,26 +207,41 @@ export const eliminationScene = makeScene2D(function* (view) {
     );
   }
 
-  const line1 = makeSegment(ROLE.basis1, 4);
+  const line1 = makeSegment(
+    ROLE.basis1,
+    4,
+    false,
+    "semantic:elimination:row-1-line",
+  );
   line1.points(() => {
     const seg = rowLineBoxPoints(a11(), a12(), b1(), BOX_EXT);
     return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
   });
   line1.opacity(0);
-  view.add(line1);
+  geometry.add(line1);
 
-  const line2 = makeSegment(ROLE.basis2, 4);
+  const line2 = makeSegment(
+    ROLE.basis2,
+    4,
+    false,
+    "semantic:elimination:row-2-line",
+  );
   line2.points(() => {
     const seg = rowLineBoxPoints(a21(), a22(), b2(), BOX_EXT);
     return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
   });
   line2.opacity(0);
-  view.add(line2);
+  geometry.add(line2);
 
   // Fixed solution dot — stays put the whole scene (the invariant).
-  const solutionDot = new Circle({ size: 18, fill: ROLE.selected, opacity: 0 });
+  const solutionDot = new Circle({
+    key: "semantic:elimination:solution",
+    size: 18,
+    fill: ROLE.selected,
+    opacity: 0,
+  });
   solutionDot.position(lpx([EX.solution[0], EX.solution[1]]));
-  view.add(solutionDot);
+  geometry.add(solutionDot);
   const solutionLabel = new Txt({
     text: `(${fmt(EX.solution[0])}, ${fmt(EX.solution[1])})`,
     fill: ROLE.selected,
@@ -229,12 +253,14 @@ export const eliminationScene = makeScene2D(function* (view) {
   });
   // Below the dot, not to its right: at +64px the label ran past the viewport
   // border and out of the safe frame, where CSS scaling can clip it.
-  solutionLabel.position(lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(-4, 30)));
+  solutionLabel.position(
+    lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(-4, 30)),
+  );
   solutionLabel.opacity(0);
-  view.add(solutionLabel);
+  geometry.add(solutionLabel);
 
   // --- Left symbolic column: equations + augmented matrix ---
-  const LEFT_X = -280;
+  const LEFT_X = -18;
   const eqHeading = new Txt({
     text: "Equations",
     fill: ROLE.textMuted,
@@ -245,18 +271,18 @@ export const eliminationScene = makeScene2D(function* (view) {
     textAlign: "left",
   });
   eqHeading.opacity(0);
-  view.add(eqHeading);
+  symbolic.add(eqHeading);
 
   const eq1 = makeMono(30, ROLE.basis1);
   eq1.text(() => equationString(a11(), a12(), b1()));
   eq1.position(new Vector2(LEFT_X, -110));
   eq1.opacity(0);
-  view.add(eq1);
+  symbolic.add(eq1);
   const eq2 = makeMono(30, ROLE.basis2);
   eq2.text(() => equationString(a21(), a22(), b2()));
   eq2.position(new Vector2(LEFT_X, -70));
   eq2.opacity(0);
-  view.add(eq2);
+  symbolic.add(eq2);
 
   const matHeading = new Txt({
     text: "Augmented matrix  [A | b]",
@@ -268,19 +294,19 @@ export const eliminationScene = makeScene2D(function* (view) {
     textAlign: "left",
   });
   matHeading.opacity(0);
-  view.add(matHeading);
+  symbolic.add(matHeading);
 
   const mat1 = makeMono(28, ROLE.basis1);
   mat1.text(() => matrixRowString(a11(), a12(), b1()));
   mat1.position(new Vector2(LEFT_X, 52));
   mat1.opacity(0);
-  view.add(mat1);
+  symbolic.add(mat1);
   const MAT2_Y = 90;
   const mat2 = makeMono(28, ROLE.basis2);
   mat2.text(() => matrixRowString(a21(), a22(), b2()));
   mat2.position(new Vector2(LEFT_X, MAT2_Y));
   mat2.opacity(0);
-  view.add(mat2);
+  symbolic.add(mat2);
 
   // The scaled term −2·R1 shown as its OWN row (in R1's colour, so its origin is
   // unmistakable) below R2, plus a small "+ (−2)·R1" tag. During the operation
@@ -291,7 +317,7 @@ export const eliminationScene = makeScene2D(function* (view) {
   ghostRow.text(matrixRowString(scaledR1[0], scaledR1[1], scaledR1[2]));
   ghostRow.position(new Vector2(LEFT_X, GHOST_START_Y));
   ghostRow.opacity(0);
-  view.add(ghostRow);
+  symbolic.add(ghostRow);
   const ghostTag = new Txt({
     text: `add  ${fmt(op.factor)}·R1`,
     fill: ROLE.basis1,
@@ -302,18 +328,47 @@ export const eliminationScene = makeScene2D(function* (view) {
     textAlign: "left",
   });
   ghostTag.opacity(0);
-  view.add(ghostTag);
+  symbolic.add(ghostTag);
 
-  // --- Overlay title + caption (safe bands) ---
-  const top = makeOverlayLabel("Elimination: rewrite, don't recompute", ROLE.text, 36);
-  top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
-  view.add(top);
-  const caption = makeOverlayLabel("", ROLE.textMuted, 28);
-  caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
-  view.add(caption);
+  // A persistent invariant ledger replaces the title/caption bands. The
+  // synchronized symbolic and geometric panels carry the explanation.
+  const ledger = makeEquationLedger(
+    [
+      { id: "operation", label: "operation", value: "R₂ → R₂ − 2R₁" },
+      {
+        id: "invariant",
+        label: "invariant",
+        value: "same intersection",
+        color: ROLE.selected,
+      },
+    ],
+    {
+      position: new Vector2(0, 210),
+      width: 470,
+      rowHeight: 32,
+      key: "semantic:elimination:ledger",
+    },
+  );
+  ledger.node.opacity(0);
+  view.add(ledger.node);
+  const operationReadout = ledger.row("operation").value;
+  const invariantReadout = ledger.row("invariant").value;
+  const setTop = (text: string) => operationReadout.text(text);
+  const setCaption = (text: string) => invariantReadout.text(text);
 
-  const setTop = (t: string) => top.text(t);
-  const setCaption = (t: string) => caption.text(t);
+  const prediction = makeFullFrameTreatment(
+    "Will (2, −1) stay on the new second line?",
+    { kind: "prediction", key: "presentation:elimination:prediction" },
+  );
+  view.add(prediction.node);
+
+  const fixedPoint = makeTemporaryAnnotation(
+    "fixed",
+    lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(42, -24)),
+    () => lpx([EX.solution[0], EX.solution[1]]),
+    { key: "presentation:elimination:fixed-point" },
+  );
+  geometry.add(fixedPoint.node);
 
   // Every animated yield reads its duration from the pure ELIMINATION_BEATS
   // budget; runSegment then pads each body up to its segment's declared length,
@@ -323,7 +378,8 @@ export const eliminationScene = makeScene2D(function* (view) {
   const bodies: Record<string, () => ThreadGenerator> = {
     *setup() {
       const b = B.setup!;
-      setCaption("The same system, three ways: equations, matrix, and two lines");
+      setTop("equations ↔ [A|b]");
+      setCaption("same two constraints");
       yield* all(
         eqHeading.opacity(0.9, b.panels),
         matHeading.opacity(0.9, b.panels),
@@ -331,76 +387,80 @@ export const eliminationScene = makeScene2D(function* (view) {
         eq2.opacity(1, b.panels),
         mat1.opacity(1, b.panels),
         mat2.opacity(1, b.panels),
+        ledger.node.opacity(1, b.panels),
       );
       yield* all(line1.opacity(1, b.lines), line2.opacity(1, b.lines));
-      yield* solutionDot.opacity(1, b.dotIn);
-      yield* all(solutionLabel.opacity(1, b.dotPulseUp), solutionDot.size(28, b.dotPulseUp));
+      yield* all(solutionDot.opacity(1, b.dotIn), fixedPoint.show(b.dotIn));
+      yield* all(
+        solutionLabel.opacity(1, b.dotPulseUp),
+        solutionDot.size(28, b.dotPulseUp),
+      );
       yield* solutionDot.size(18, b.dotPulseDown);
-      setCaption("The two lines cross once, at (2, −1) — that point is the solution");
+      setCaption("intersection=(2,−1)");
     },
     *predict() {
       const b = B.predict!;
-      setTop("Before the operation runs");
-      setCaption(
-        "(2, −1) satisfies R1 and it satisfies R2. The new R2 will be R2 − 2·R1.",
-      );
+      setTop("R₂ → R₂ − 2R₁");
+      setCaption("(2,−1) satisfies R₁ and R₂");
       yield* all(
         solutionDot.size(28, b.anchor!),
         solutionLabel.opacity(1, b.anchor!),
       );
-      yield* solutionDot.size(18, b.ask!);
-      setCaption(
-        "Predict: is (2, −1) still on the second line after the swap — and must it be?",
+      yield* all(
+        solutionDot.size(18, b.ask!),
+        split.node.opacity(0, b.ask!),
+        prediction.show(b.ask!),
       );
-      yield* waitFor(b.think!);
+      setCaption("new R₂ still through (2,−1)?");
+      yield* silentHold(b.think!);
     },
     *operation() {
       const b = B.operation!;
-      setTop("One row operation:  R2 → R2 − 2·R1");
-      setCaption("Take −2 · R1 and add it, entry by entry, to R2 …");
-      // Anchor the eye on the fixed point before the pivot.
-      yield* all(solutionDot.size(26, b.anchorUp), solutionLabel.opacity(1, b.anchorUp));
-      yield* solutionDot.size(18, b.anchorDown);
-      // Reveal the scaled −2·R1 term as its own row below the matrix.
-      yield* all(ghostRow.opacity(0.9, b.ghostReveal), ghostTag.opacity(0.9, b.ghostReveal));
-      setCaption("Slide it up onto R2 — the x-column cancels and the line pivots.");
-      // Enact the addition: the ghost row slides up onto R2 and fades as R2 (and
-      // its line) interpolate to R2 + (−2·R1). One progress signal drives the
-      // whole row, so equations, matrix, and line move as one state.
-      // The ghost dissolves over the FIRST half of its travel, so it is gone
-      // before it reaches R2's row. Fading across the whole move left two
-      // matrix rows printed on top of each other for the last stretch of the
-      // slide (text-overlap hard gate) — the merge is still the motion, but
-      // the frame never shows two readings of R2 at once.
+      setTop("R₂ → R₂ − 2R₁");
+      setCaption("add −2R₁ entrywise");
       yield* all(
+        prediction.hide(b.anchorUp),
+        split.node.opacity(1, b.anchorUp),
+        solutionDot.size(26, b.anchorUp),
+        solutionLabel.opacity(1, b.anchorUp),
+      );
+      yield* solutionDot.size(18, b.anchorDown);
+      yield* all(
+        ghostRow.opacity(0.9, b.ghostReveal),
+        ghostTag.opacity(0.9, b.ghostReveal),
+      );
+      setCaption("x cancels · line pivots");
+      yield* uninterruptedMotion(
         progress(1, b.combine, easeInOutCubic),
         ghostRow.y(MAT2_Y, b.combine, easeInOutCubic),
         ghostTag.y(MAT2_Y, b.combine, easeInOutCubic),
         ghostRow.opacity(0, b.combine * 0.5),
         ghostTag.opacity(0, b.combine * 0.5),
       );
-      setCaption("…the line swings, but it still passes through (2, −1). The point held.");
-      // Land pulse on the fixed dot.
+      setCaption("intersection unchanged");
       yield* solutionDot.size(26, b.landUp);
       yield* solutionDot.size(18, b.landDown);
     },
     *triangular() {
       const b = B.triangular!;
-      setTop("Now it's triangular");
-      setCaption("R2 is now −7y = 7 ⇒ y = −1, with no x left");
+      setTop("triangular system");
+      setCaption("−7y=7 ⇒ y=−1");
       yield* line2.lineWidth(6, b.lineUp);
       yield* line2.lineWidth(4, b.lineDown);
-      setCaption("Back-substitute into R1: x + 3(−1) = −1 ⇒ x = 2. Solution (2, −1).");
-      yield* all(solutionDot.size(28, b.dotUp), solutionLabel.scale(1.15, b.dotUp));
-      yield* all(solutionDot.size(18, b.dotDown), solutionLabel.scale(1, b.dotDown));
+      setCaption("x+3(−1)=−1 ⇒ x=2");
+      yield* all(
+        solutionDot.size(28, b.dotUp),
+        solutionLabel.scale(1.15, b.dotUp),
+      );
+      yield* all(
+        solutionDot.size(18, b.dotDown),
+        solutionLabel.scale(1, b.dotDown),
+      );
     },
     *invariance() {
       const b = B.invariance!;
-      setTop("Why the crossing can't move");
-      setCaption(
-        "The new R2 is R2 − 2·R1. Any point on both old lines satisfies it too — and back.",
-      );
-      // Dim R1, brighten the fixed dot + new R2 to make the shared point the focus.
+      setTop("R₂−2R₁ is equivalent");
+      setCaption("common point stays common");
       yield* all(line1.opacity(0.45, b.dim), solutionDot.opacity(1, b.dim));
       yield* solutionDot.size(30, b.grow);
       yield* solutionDot.size(18, b.shrink);
@@ -408,13 +468,16 @@ export const eliminationScene = makeScene2D(function* (view) {
     },
     *summary() {
       const b = B.summary!;
-      setTop("Same solutions, easier system");
-      setCaption(
-        "Elimination replaces the constraints with equivalent ones — the solution set is untouched",
+      setTop("easier rows · same solution");
+      setCaption("solution set untouched");
+      yield* all(
+        solutionLabel.scale(1.08, b.settleUp),
+        solutionDot.size(24, b.settleUp),
       );
-      // A final gentle emphasis on the solution that never moved.
-      yield* all(solutionLabel.scale(1.08, b.settleUp), solutionDot.size(24, b.settleUp));
-      yield* all(solutionLabel.scale(1, b.settleDown), solutionDot.size(18, b.settleDown));
+      yield* all(
+        solutionLabel.scale(1, b.settleDown),
+        solutionDot.size(18, b.settleDown),
+      );
     },
   };
 
