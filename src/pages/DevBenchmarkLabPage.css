@@ -394,3 +394,211 @@
   color: #5a6170;
   margin: 0;
 }
+
+/* ===================================================================
+   Elimination animation design experiment (mode=design).
+
+   A video-like comparison surface: one large 16:9 viewport with every
+   control OUTSIDE it, so nothing the lab needs sits inside the frame the
+   candidates are being judged on.
+   =================================================================== */
+
+.design-lab {
+  --design-lab-max: 76rem;
+}
+
+.bench-lab__mode-link {
+  color: #9fc7ff;
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid #2b3a4a;
+  border-radius: 4px;
+  padding: 3px 9px;
+}
+
+.bench-lab__mode-link:hover {
+  background: #16202c;
+}
+
+.design-lab__candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 8px;
+  max-width: var(--design-lab-max);
+  margin: 0 auto 12px;
+}
+
+.design-lab__candidates button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 10px 12px;
+  background: #121822;
+  border: 1px solid #222d3b;
+  border-radius: 8px;
+  color: #c9d3e2;
+  cursor: pointer;
+}
+
+.design-lab__candidates button.is-active {
+  border-color: #4d7fb8;
+  background: #16202d;
+  color: #eef3fa;
+}
+
+.design-lab__candidate-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.design-lab__candidate-strap {
+  font-size: 12px;
+  color: #8b97a8;
+  line-height: 1.35;
+}
+
+/* The viewport itself: 16:9, most of the content width, capped so the
+   mathematics stays a comfortable reading size on a wide desktop. */
+.design-lab__viewport {
+  position: relative;
+  width: 100%;
+  max-width: var(--design-lab-max);
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  background: #0b0e13;
+  border: 1px solid #1d2733;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.design-lab__viewport[data-ready="false"]::after {
+  content: "building clip…";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #64708090;
+  font-size: 13px;
+}
+
+.design-lab__stage,
+.design-lab__stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.design-lab__safe {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.design-lab__safe rect {
+  fill: none;
+  stroke: #48e0b0;
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+  opacity: 0.6;
+}
+
+/* Theater: the clip breaks out of the app shell's reading measure and fills the
+   window, for judging it as a clip. Deliberately scoped to this dev route —
+   the learner-facing player's size is not touched by this experiment. */
+.design-lab--theater .design-lab__viewport {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  max-width: none;
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  background: #05070b;
+  display: grid;
+  place-items: center;
+}
+
+.design-lab--theater .design-lab__stage {
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: min(100vh, calc(100vw * 9 / 16));
+}
+
+.design-lab--theater .design-lab__transport {
+  position: fixed;
+  z-index: 41;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: #0d1219e6;
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: min(64rem, 92vw);
+}
+
+.design-lab__transport,
+.design-lab__beats {
+  max-width: var(--design-lab-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.design-lab__transport {
+  margin-top: 10px;
+}
+
+.design-lab__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #8b97a8;
+}
+
+.design-lab__thesis {
+  max-width: var(--design-lab-max);
+  margin: 18px auto 0;
+  background: #10151d;
+  border: 1px solid #1d2733;
+  border-radius: 10px;
+  padding: 14px 18px 18px;
+}
+
+.design-lab__thesis h2 {
+  font-size: 14px;
+  margin: 0 0 10px;
+  color: #dbe4f0;
+}
+
+.design-lab__thesis dl {
+  display: grid;
+  grid-template-columns: minmax(9rem, 12rem) 1fr;
+  gap: 6px 18px;
+  margin: 0;
+}
+
+.design-lab__thesis dt {
+  color: #7f8b9c;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.design-lab__thesis dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #c4cede;
+}
+
+@media (max-width: 60rem) {
+  .design-lab__thesis dl {
+    grid-template-columns: 1fr;
+    gap: 2px 0;
+  }
+  .design-lab__thesis dt {
+    margin-top: 8px;
+  }
+}

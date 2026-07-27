@@ -30,13 +30,35 @@ const VERSIONS: Versions = {
   vitePlugin: null,
 };
 
+/**
+ * How a mounted clip resolves its scene description.
+ *
+ * `benchmark` is the original path — a replica keyed by benchmark id. `design`
+ * is the elimination design experiment: candidate clips that have no reference
+ * to compare against, so they are deliberately NOT in the replica registry
+ * (whose ids are checked against the benchmark manifests).
+ */
+export type LabSceneKind = "benchmark" | "design";
+
+async function resolveSceneDescription(
+  kind: LabSceneKind,
+  id: string,
+): Promise<unknown> {
+  if (kind === "benchmark") return getReplicaSceneDescription(id);
+  const { getCandidateSceneDescription } = await import(
+    "../experiments/eliminationCandidates"
+  );
+  return getCandidateSceneDescription(id);
+}
+
 export async function buildLabProject(
   benchmarkId: string,
   plugins: Project["plugins"] = [],
+  kind: LabSceneKind = "benchmark",
 ): Promise<Project> {
-  const name = `benchmark-${benchmarkId}`;
+  const name = `${kind}-${benchmarkId}`;
   const description = {
-    ...((await getReplicaSceneDescription(benchmarkId)) as object),
+    ...((await resolveSceneDescription(kind, benchmarkId)) as object),
     name,
   } as unknown as FullSceneDescription;
   description.onReplaced ??= new ValueDispatcher(description);
@@ -75,8 +97,9 @@ export interface LabPlayerHandle {
 export async function mountLabPlayer(
   benchmarkId: string,
   container: HTMLElement,
+  kind: LabSceneKind = "benchmark",
 ): Promise<LabPlayerHandle> {
-  const project = await buildLabProject(benchmarkId);
+  const project = await buildLabProject(benchmarkId, [], kind);
   const stage = new Stage();
   const player = new Player(project);
 

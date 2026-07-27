@@ -125,3 +125,56 @@ agreement, and a whole-plane span. These contracts check axes at zero, integer
 lattice families and shared intersections, the two displayed `p=(4,1)` arrows,
 and the full-bleed whole-plane cue. They are intentionally narrower than a
 general theorem prover, but they would reject the original half-shifted grid.
+
+## Design experiments (`?mode=design`)
+
+The laboratory's second job. A **design experiment** is several complete,
+playable candidate clips for ONE lesson, shown in a large 16:9 viewport with the
+transport and the design thesis outside the frame. There is no reference to
+diff against and no check run: candidates are competing hypotheses about how to
+teach something, and scoring them against each other automatically would be a
+category error. Open it at `/dev/benchmark-lab?mode=design`; the candidate is in
+the URL, so one can be linked.
+
+Candidates live under `src/benchmark-lab/experiments/` and are deliberately NOT
+in the replica registry, whose ids are checked against the benchmark manifests.
+They share the production `runSegment`, so a beat body that outgrows its
+declared length logs an overrun the browser spec fails on.
+
+### Elimination — reference evidence (2026-07)
+
+Watched in the laboratory before implementing: `eigen-span-stretch`
+(3Blue1Brown, chapter 14), `bfs-pseudocode-writein` and `bfs-intertitle-build`
+(Jazon Jiao), `ab-prediction-reveal` and `ab-split` (Tom Sláma). Principles
+extracted — as principles, not choreography:
+
+- **One serif face for the whole frame.** Matrices, row labels, numerals, and
+  even intertitles are the same mathematical type. Nothing is set in a UI font.
+- **Symbols wear the colour of the geometry they denote.** 3b1b's matrix entries
+  are coloured by column to match the basis arrows, so the algebra and the
+  picture are one object seen twice.
+- **Two or three hues, each carrying one meaning**, on near-black, with
+  everything else monochrome. Sláma reserves red for the rule that is broken.
+- **Intertitles are thin italic labels with a rule**, not chrome — and the frame
+  at `t = 0` is already readable.
+- **Text builds in place**; it is not cross-faded and never interpolated.
+- **Most of the frame is empty.** One focal cluster at a time.
+- **A prediction is a held frame with the evidence still on screen.**
+
+### What the production `elimination` scene does against that bar
+
+Recorded here because it is what the experiment is trying to beat:
+
+1. **Coefficients tick continuously.** R₂'s three numbers are interpolated from
+   their old values to their new ones, so for ~2.6 s the frame shows
+   `1.87x − 1.38y = 5.13` — an equation nobody wrote.
+2. **The origin of the result entries is never shown.** `2−2=0`, `−1−6=−7`,
+   `5−(−2)=7` do not appear; a scratch row slides up and the digits change.
+3. **The augmented matrix is a monospaced string** built from `[`, `|`, `]`
+   characters. It cannot align, and an entry has no identity.
+4. **Everything is set in the product sans/mono stack**, with no italic
+   variables and hyphens for minus signs.
+5. **A permanent three-panel dashboard**, whose ledger overlaps the geometry
+   viewport, and whose panel borders read as UI rather than as mathematics.
+6. **Row labels and headings are ~22 px on a 960-px stage** — small at embedded
+   player size.

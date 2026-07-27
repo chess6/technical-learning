@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { BENCHMARK_MANIFESTS } from "../src/benchmark-lab/manifests";
+import { ELIMINATION_CANDIDATES } from "../src/benchmark-lab/experiments/eliminationCandidates";
 
 /**
  * The animation benchmark laboratory, exercised the way an author uses it.
@@ -244,3 +245,111 @@ test.describe("benchmark laboratory", () => {
 function land(width: number): number {
   return width + 1;
 }
+
+/**
+ * The elimination animation design experiment.
+ *
+ * Not a replica comparison: three candidate clips with no reference, judged
+ * against each other. What this pins is the experiment's runtime — that every
+ * candidate actually builds and paints in the real Motion Canvas runtime, that
+ * selection is linkable and switches the mounted clip, that the chapter buttons
+ * seek inside the clip, and that no candidate logs a beat overrun (which is how
+ * a body that outgrew its declared beat would show up).
+ */
+test.describe("elimination design experiment", () => {
+  test.describe.configure({ timeout: 180_000 });
+
+  const DESIGN = `${LAB}?mode=design`;
+
+  async function waitForCandidate(page: Page): Promise<void> {
+    await expect(page.locator(".design-lab__viewport")).toHaveAttribute(
+      "data-ready",
+      "true",
+      { timeout: 60_000 },
+    );
+    await expect(page.locator(".design-lab__stage canvas")).toBeVisible();
+  }
+
+  test("builds and plays every candidate, and switches between them", async ({
+    page,
+  }) => {
+    const errors = consoleErrors(page);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(DESIGN);
+    await waitForCandidate(page);
+
+    // Every candidate is offered, none is pre-declared the winner.
+    const tabs = page.getByRole("tab");
+    await expect(tabs).toHaveCount(ELIMINATION_CANDIDATES.length);
+    for (const candidate of ELIMINATION_CANDIDATES) {
+      await expect(
+        page.getByRole("tab", { name: new RegExp(candidate.title) }),
+      ).toBeVisible();
+    }
+
+    for (const candidate of ELIMINATION_CANDIDATES) {
+      await page.getByRole("tab", { name: new RegExp(candidate.title) }).click();
+      await waitForCandidate(page);
+      // Selection is linkable, so a reviewer can send one candidate.
+      expect(page.url()).toContain(`candidate=${candidate.id}`);
+      // Its own beats drive the chapter buttons.
+      await expect(page.locator(".design-lab__beats button")).toHaveCount(
+        candidate.beats.length,
+      );
+      // The thesis names the obstacle rather than leaving the clip unexplained.
+      await expect(page.locator(".design-lab__thesis")).toContainText(
+        candidate.title,
+      );
+
+      // Seek to the last beat and confirm the transport followed.
+      const finalBeat = candidate.beats.at(-1)!;
+      await page.locator(".design-lab__beats button").last().click();
+      await expect(page.locator(".bench-lab__clock")).toContainText(
+        `${Math.floor(finalBeat.at)}`,
+        { timeout: 15_000 },
+      );
+    }
+
+    // Playback runs in the real runtime.
+    await page.getByRole("button", { name: "Restart" }).click();
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+    await page.waitForTimeout(1200);
+    await page.getByRole("button", { name: "Pause" }).click();
+
+    // A beat body that outgrew its declared length logs a console error.
+    expect(errors.filter((e) => /overran/.test(e))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("stays inspectable at a narrow laptop width", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 860 });
+    await page.goto(`${DESIGN}&candidate=pivot`);
+    await waitForCandidate(page);
+
+    const box = await page.locator(".design-lab__viewport").boundingBox();
+    expect(box!.width).toBeGreaterThan(600);
+    // 16:9 is the point of the viewport; a squashed clip is not a clip.
+    expect(box!.height / box!.width).toBeCloseTo(9 / 16, 1);
+
+    const overflows = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(overflows).toBe(false);
+  });
+
+  test("theater mode fills the window and keeps the transport outside the frame", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${DESIGN}&candidate=longhand`);
+    await waitForCandidate(page);
+    await page.getByText("theater", { exact: true }).click();
+
+    const stage = await page.locator(".design-lab__stage").boundingBox();
+    expect(stage!.width).toBeGreaterThan(1200);
+    const transport = await page.locator(".design-lab__transport").boundingBox();
+    // The controls sit below the clip's own safe frame, never inside it.
+    expect(transport!.y).toBeGreaterThan(stage!.y + stage!.height * 0.8);
+  });
+});

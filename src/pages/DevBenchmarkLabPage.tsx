@@ -5,7 +5,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  ELIMINATION_CANDIDATES,
+  getEliminationCandidate,
+} from "../benchmark-lab/experiments/eliminationCandidates";
 import {
   BENCHMARK_MANIFESTS,
   LAB_STAGE,
@@ -59,7 +63,22 @@ function refFrameUrl(benchmarkId: string, index: number): string {
   return `${referenceFramesUrl(benchmarkId)}/${String(index).padStart(5, "0")}.jpg`;
 }
 
+/**
+ * The lab has two jobs. `benchmark` compares a replica against a pinned
+ * reference excerpt (the original purpose). `design` runs the elimination
+ * animation design experiment: candidate clips with no reference, shown in a
+ * large video-like viewport so they can be judged as clips rather than as
+ * diffs. The mode lives in the URL so a candidate is linkable.
+ */
 export function DevBenchmarkLabPage() {
+  const [params] = useSearchParams();
+  if (params.get("mode") === "design") {
+    return <DesignExperiment />;
+  }
+  return <BenchmarkComparison />;
+}
+
+function BenchmarkComparison() {
   const [params, setParams] = useSearchParams();
   const benchmarkId = params.get("benchmark") ?? BENCHMARK_MANIFESTS[0]!.id;
   const manifest = useMemo(() => getBenchmarkManifest(benchmarkId), [benchmarkId]);
@@ -350,6 +369,9 @@ export function DevBenchmarkLabPage() {
       <header className="bench-lab__header">
         <h1>Animation benchmark laboratory</h1>
         <span className="bench-lab__dev-tag">dev-only</span>
+        <Link className="bench-lab__mode-link" to="/dev/benchmark-lab?mode=design">
+          Elimination design experiment →
+        </Link>
         <select
           value={benchmarkId}
           onChange={(e) => setParams({ benchmark: e.target.value })}
@@ -601,6 +623,224 @@ export function DevBenchmarkLabPage() {
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The elimination animation design experiment.
+ *
+ * Three candidate clips for one lesson, in a large 16:9 viewport with the
+ * transport and the design thesis OUTSIDE the frame, so nothing competes with
+ * the mathematics inside it. There is no reference panel and no check run:
+ * these are hypotheses to compare, not replicas to score, and the page says so
+ * rather than reusing controls that would imply a verdict.
+ */
+function DesignExperiment() {
+  const [params, setParams] = useSearchParams();
+  const candidateId = params.get("candidate") ?? ELIMINATION_CANDIDATES[0]!.id;
+  const candidate = useMemo(
+    () => getEliminationCandidate(candidateId),
+    [candidateId],
+  );
+  const durationFrames = Math.round(candidate.durationSeconds * REPLICA_FPS);
+
+  const host = useRef<HTMLDivElement | null>(null);
+  const handleRef = useRef<LabPlayerHandle | null>(null);
+  const [ready, setReady] = useState(false);
+  const [frame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [theater, setTheater] = useState(false);
+  const [safeFrame, setSafeFrame] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    let mounted: LabPlayerHandle | null = null;
+    setReady(false);
+    setFrame(0);
+    setPlaying(false);
+    (async () => {
+      if (!host.current) return;
+      const handle = await mountLabPlayer(candidateId, host.current, "design");
+      if (cancelled) {
+        handle.dispose();
+        return;
+      }
+      mounted = handle;
+      handleRef.current = handle;
+      handle.onFrame(setFrame);
+      handle.seekToFrame(0);
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+      mounted?.dispose();
+      handleRef.current = null;
+    };
+  }, [candidateId]);
+
+  const seekTo = useCallback(
+    (target: number) => {
+      handleRef.current?.seekToFrame(
+        Math.max(0, Math.min(durationFrames - 1, Math.round(target))),
+      );
+    },
+    [durationFrames],
+  );
+
+  const togglePlay = useCallback(() => {
+    const handle = handleRef.current;
+    if (!handle) return;
+    if (playing) {
+      handle.pause();
+      setPlaying(false);
+    } else {
+      handle.play();
+      setPlaying(true);
+    }
+  }, [playing]);
+
+  const selectCandidate = (id: string) => {
+    setParams({ mode: "design", candidate: id });
+  };
+
+  const currentTime = frame / REPLICA_FPS;
+  const activeBeat =
+    [...candidate.beats].reverse().find((beat) => currentTime >= beat.at) ??
+    candidate.beats[0]!;
+
+  return (
+    <div className={`bench-lab design-lab ${theater ? "design-lab--theater" : ""}`}>
+      <header className="bench-lab__header">
+        <h1>Elimination — animation design experiment</h1>
+        <span className="bench-lab__dev-tag">dev-only</span>
+        <Link className="bench-lab__mode-link" to="/dev/benchmark-lab">
+          ← Benchmark comparison
+        </Link>
+        <span className="bench-lab__source">
+          three candidates · same system · no winner declared
+        </span>
+      </header>
+
+      <div className="design-lab__candidates" role="tablist" aria-label="Candidate">
+        {ELIMINATION_CANDIDATES.map((c) => (
+          <button
+            key={c.id}
+            role="tab"
+            aria-selected={c.id === candidateId}
+            className={c.id === candidateId ? "is-active" : ""}
+            onClick={() => selectCandidate(c.id)}
+          >
+            <span className="design-lab__candidate-title">{c.title}</span>
+            <span className="design-lab__candidate-strap">{c.strapline}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="design-lab__viewport" data-ready={ready}>
+        <div ref={host} className="design-lab__stage" />
+        {safeFrame && (
+          <svg
+            className="design-lab__safe"
+            viewBox={`0 0 ${LAB_STAGE.width} ${LAB_STAGE.height}`}
+            aria-hidden="true"
+          >
+            <rect
+              x={80}
+              y={80}
+              width={LAB_STAGE.width - 160}
+              height={LAB_STAGE.height - 160}
+            />
+          </svg>
+        )}
+      </div>
+
+      <div className="bench-lab__transport design-lab__transport">
+        <button onClick={togglePlay} disabled={!ready}>
+          {playing ? "Pause" : "Play"}
+        </button>
+        <button onClick={() => seekTo(0)} disabled={!ready}>
+          Restart
+        </button>
+        <button onClick={() => seekTo(frame - 1)} disabled={!ready} aria-label="Step back">
+          ⟨ frame
+        </button>
+        <button onClick={() => seekTo(frame + 1)} disabled={!ready} aria-label="Step forward">
+          frame ⟩
+        </button>
+        <select
+          value={speed}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setSpeed(value);
+            handleRef.current?.setSpeed(value);
+          }}
+          aria-label="Playback speed"
+        >
+          {SPEEDS.map((s) => (
+            <option key={s} value={s}>
+              {s}×
+            </option>
+          ))}
+        </select>
+        <input
+          className="bench-lab__scrubber"
+          type="range"
+          min={0}
+          max={durationFrames - 1}
+          value={frame}
+          onChange={(e) => seekTo(Number(e.target.value))}
+          aria-label="Timeline scrubber"
+        />
+        <span className="bench-lab__clock">
+          {currentTime.toFixed(2)}s / {candidate.durationSeconds.toFixed(0)}s
+        </span>
+        <label className="design-lab__toggle">
+          <input
+            type="checkbox"
+            checked={theater}
+            onChange={(e) => setTheater(e.target.checked)}
+          />
+          theater
+        </label>
+        <label className="design-lab__toggle">
+          <input
+            type="checkbox"
+            checked={safeFrame}
+            onChange={(e) => setSafeFrame(e.target.checked)}
+          />
+          safe frame
+        </label>
+      </div>
+
+      <div className="bench-lab__beats design-lab__beats">
+        {candidate.beats.map((beat) => (
+          <button
+            key={beat.id}
+            className={beat.id === activeBeat.id ? "is-active" : ""}
+            onClick={() => seekTo(beat.at * REPLICA_FPS + 1)}
+          >
+            {beat.title}
+          </button>
+        ))}
+      </div>
+
+      <section className="design-lab__thesis">
+        <h2>{candidate.title} — design thesis</h2>
+        <dl>
+          <dt>Obstacle it targets</dt>
+          <dd>{candidate.obstacle}</dd>
+          <dt>Leading representation</dt>
+          <dd>{candidate.leadRepresentation}</dd>
+          <dt>Continuously visible</dt>
+          <dd>{candidate.persistent}</dd>
+          <dt>Attention</dt>
+          <dd>{candidate.attention}</dd>
+          <dt>Why it is not a restyling</dt>
+          <dd>{candidate.distinctBecause}</dd>
+        </dl>
+      </section>
     </div>
   );
 }
