@@ -155,9 +155,13 @@ export function integerDirection(
     direction[0] / smallest,
     direction[1] / smallest,
   ];
+  // `Math.round(-0)` is `-0`, and a stabilized axis direction really does carry
+  // one: `(1, 0)` arrives as `(1, -0)`. Every caller formats through
+  // `texNumber`, which guards it — but a helper whose whole job is "the
+  // simplest integer pair" should not hand back a negative zero.
   const rounded: [number, number] = [
-    Math.round(scaled[0]),
-    Math.round(scaled[1]),
+    Math.round(scaled[0]) + 0,
+    Math.round(scaled[1]) + 0,
   ];
   const integral =
     Math.abs(scaled[0] - rounded[0]) < 1e-6 &&

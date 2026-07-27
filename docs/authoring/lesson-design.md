@@ -55,6 +55,14 @@ Available blocks (all optional, any order, repeatable):
 - **Watch** — a guided **Motion Canvas** sequence; reveal **one conceptual change
   at a time**; synchronize geometry, notation, highlighting, prose. See
   [Motion Canvas responsibilities](#motion-canvas-responsibilities).
+- **Visual** — the guided clip standing on its own, with sections placed
+  separately. A `visual` block may name a `sceneId`, which places **that** clip
+  rather than the lesson's own — for a lesson whose mathematics genuinely needs
+  a second animation somewhere specific. Use it only when the extra clip answers
+  a question the others do not (`eigenvectors` runs three: what survives, why
+  the eigenvalues are roots of a determinant, and how to compute them). There is
+  no expectation that a lesson has more than one clip, and no expectation that
+  it has only one — author what the concept needs.
 - **Section** — one explanation section (prose + optional inline figure), placed
   where it belongs; interleave with formal statements and examples.
 - **Formal statement** — a definition / proposition / theorem / corollary, dropped

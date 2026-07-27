@@ -245,6 +245,10 @@ describe("scene timings (pure data)", () => {
         reveal: "reverse",
       },
       "eigenvectors-derivation": { predict: "predict", reveal: "determinant" },
+      "eigenvectors-characteristic-equation": {
+        predict: "predict",
+        reveal: "firstZero",
+      },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },

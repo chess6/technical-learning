@@ -205,8 +205,11 @@ export type FormalBlock = {
  * than being a general textbook DSL.
  *
  * - `watch` renders the guided visual beside ALL sections (combined slot).
- * - `visual` renders the guided visual on its own (sections placed separately
- *   via `section`).
+ * - `visual` renders a guided visual on its own (sections placed separately
+ *   via `section`). With no `sceneId` it renders the lesson's own
+ *   `guidedSceneId`; with one, it renders that scene instead, so a lesson may
+ *   place a second clip where the mathematics needs it. This is an option, not
+ *   an expectation — most lessons want exactly one.
  * - `section` renders one lesson section by id (prose + optional inline figure).
  * - `formal` renders one FormalBlock by id.
  * - `worked` renders all worked examples + callouts, or one worked example by id.
@@ -250,7 +253,7 @@ export type AuthoredBlockLabels = {
 export type RouteBlock =
   | ({ kind: "motivate" } & AuthoredBlockLabels)
   | ({ kind: "watch" } & AuthoredBlockLabels)
-  | ({ kind: "visual" } & AuthoredBlockLabels)
+  | ({ kind: "visual"; sceneId?: string } & AuthoredBlockLabels)
   | { kind: "section"; sectionId: string }
   | { kind: "formal"; formalId: string }
   | ({ kind: "check"; checkpointId?: string } & AuthoredBlockLabels)

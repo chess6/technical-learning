@@ -66,6 +66,45 @@ describe("lesson wiring for all registered lessons", () => {
     expect(getSceneMeta(primary.guidedSceneId!).id).toBe("eigenvectors-derivation");
   });
 
+  /**
+   * The eigenvectors lesson runs three clips, each doing a different job:
+   * the introduction shows THAT some directions survive, the bridge shows WHY
+   * the eigenvalues are the roots of a determinant, and the worked example
+   * shows HOW to compute them. This is an option the route schema offers, not
+   * a pattern other lessons are expected to follow.
+   */
+  it("places the characteristic-equation bridge beside the theorem it explains", () => {
+    const lesson = getLessonById("eigenvectors")!;
+    const route = lesson.route!;
+    const placed = route.filter(
+      (block) => block.kind === "visual" && block.sceneId,
+    );
+    expect(placed).toHaveLength(1);
+    const bridge = placed[0]!;
+    if (bridge.kind !== "visual") throw new Error("unreachable");
+    expect(bridge.sceneId).toBe("eigenvectors-characteristic-equation");
+    expect(hasGuidedScene(bridge.sceneId!)).toBe(true);
+    // A placed clip is announced by its own heading; without one, two players
+    // on the page would carry the same accessible name.
+    expect(bridge.heading).toBeTruthy();
+
+    const theorem = route.findIndex(
+      (block) => block.kind === "formal" && block.formalId === "thm-characteristic",
+    );
+    const worked = route.findIndex(
+      (block) =>
+        block.kind === "worked" && block.workedId === "eigen-compute-distinct",
+    );
+    const bridgeAt = route.indexOf(bridge);
+    // After the statement it justifies, before the calculation that uses it.
+    expect(theorem).toBeGreaterThanOrEqual(0);
+    expect(bridgeAt).toBeGreaterThan(theorem);
+    expect(bridgeAt).toBeLessThan(worked);
+
+    // The lesson's own top-of-page clip is still the introduction.
+    expect(lesson.guidedSceneId).toBe("eigenvectors-invariant-directions");
+  });
+
   it("Lesson 4 worked computation is a clean ordered equation sequence", () => {
     const lesson = getLessonById("eigenvectors")!;
     const primary = lesson.workedExamples![0]!;

@@ -5,6 +5,7 @@ import {
   SPIKE_SEGMENTS,
   DETERMINANT_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
+  EIGEN_CHARACTERISTIC_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   CHAPTER0_SEGMENTS,
@@ -57,6 +58,7 @@ const SPIKE_STEPS = toSteps(SPIKE_SEGMENTS);
 const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
+const EIGEN_CHARACTERISTIC_STEPS = toSteps(EIGEN_CHARACTERISTIC_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -309,6 +311,21 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "defective",
       "rotation",
       "summary",
+    ]),
+  },
+  "eigenvectors-characteristic-equation": {
+    id: "eigenvectors-characteristic-equation",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided bridge showing why the eigenvalues are the roots of the characteristic determinant. Lambda is a dial. Subtracting lambda down the diagonal gives a whole family of maps, A minus lambda I, and the plane deforms under whichever member the dial selects while the graph of the determinant against lambda is traced by the same sweep. As lambda reaches two the curve touches the axis and the grid flattens onto a line at the same instant: the line the whole plane lands on is the image, and the different line of inputs sent to the origin is the kernel, each named for the space it lives in, with a probe walking the kernel while its image stays on the origin. Between the crossings the plane is not flat. At lambda equals three the curve touches zero again and the kernel and image swap places. Only then is the traced curve named as a quadratic whose roots are the eigenvalues, and back under A both eigendirections share the frame, each stretched by its own eigenvalue.",
+    steps: EIGEN_CHARACTERISTIC_STEPS,
+    majorSteps: pickMajor(EIGEN_CHARACTERISTIC_STEPS, [
+      "family",
+      "sweep",
+      "predict",
+      "firstZero",
+      "secondZero",
+      "roots",
     ]),
   },
   "eigenvectors-derivation": {

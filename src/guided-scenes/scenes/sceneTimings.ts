@@ -1284,6 +1284,51 @@ export const RED_BLACK_SEGMENTS: readonly SceneSegment[] = [
  * ======================================================================== */
 
 /** Every registered scene id → its ordered segments. */
+/**
+ * The characteristic-equation bridge — λ as a dial, `det(A − λI)` as a curve.
+ *
+ * Short on purpose: it sits beside the theorem between two longer clips and
+ * owns exactly one idea, so every beat is either the sweep or a crossing.
+ */
+export const EIGEN_CHARACTERISTIC_SEGMENTS: readonly SceneSegment[] = [
+  {
+    id: "family",
+    title: "A whole family of maps",
+    duration: 7,
+    summary: "λ is subtracted down the diagonal, and the plane is carried to A − λI at λ = 0 — which is A itself.",
+  },
+  {
+    id: "sweep",
+    title: "Turn the dial",
+    duration: 6,
+    summary: "One quantity moves. The grid, the matrix readout and the determinant curve are all functions of λ.",
+  },
+  {
+    id: "predict",
+    title: "Predict: what happens when it hits zero?",
+    duration: 5.5,
+    summary: "The dial holds with the determinant positive but shrinking. Decide what the plane will do at the crossing before it gets there.",
+  },
+  {
+    id: "firstZero",
+    title: "The determinant reaches zero",
+    duration: 8.5,
+    summary: "The curve touches the axis and the grid flattens at the same instant; the image line and the kernel are named apart.",
+  },
+  {
+    id: "secondZero",
+    title: "And again, further along",
+    duration: 9,
+    summary: "A second crossing, where kernel and image swap places — the plane is not singular between them.",
+  },
+  {
+    id: "roots",
+    title: "The equation that predicts them",
+    duration: 7.5,
+    summary: "The traced curve is a quadratic, named only after both crossings have been watched; back under A both eigenlines share the frame.",
+  },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1299,6 +1344,7 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "change-of-basis": CHANGE_OF_BASIS_SEGMENTS,
   "eigenvectors-invariant-directions": EIGENVECTOR_SEGMENTS,
   "eigenvectors-derivation": EIGEN_DERIVATION_SEGMENTS,
+  "eigenvectors-characteristic-equation": EIGEN_CHARACTERISTIC_SEGMENTS,
   "karatsuba-cross-terms": KARATSUBA_SEGMENTS,
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
   "red-black-encoding": RED_BLACK_SEGMENTS,
@@ -1665,6 +1711,37 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
       both: 0.5,
       hold2: 2.0,
     },
+  },
+
+  "eigenvectors-characteristic-equation": {
+    family: { caption: 0.4, matrix: 0.5, carry: 1.6, panels: 0.5, hold: 1.6 },
+    sweep: { caption: 0.4, turn: 3.6, hold: 1.2 },
+    // Nothing moves while the question stands: every readout the answer follows
+    // from is already on screen and stays there.
+    predict: { ask: 0.5, think: 4.4 },
+    // The caption asks prospectively while the dial is still travelling, and
+    // only names the value once it has landed.
+    firstZero: {
+      ask: 0.35,
+      travel: 1.5,
+      name: 0.35,
+      mark: 0.4,
+      lines: 0.5,
+      walk: 2.0,
+      hold: 1.4,
+    },
+    secondZero: {
+      clear: 0.4,
+      ask: 0.35,
+      travel: 1.5,
+      land: 1.2,
+      name: 0.35,
+      mark: 0.4,
+      lines: 0.5,
+      walk: 1.8,
+      hold: 1.2,
+    },
+    roots: { caption: 0.4, swap: 0.5, restore: 2.2, close: 0.4, hold: 2.0 },
   },
 
   "karatsuba-cross-terms": {

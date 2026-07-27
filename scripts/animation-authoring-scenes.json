@@ -64,6 +64,11 @@
     "module": "eigenvectorsInvariantDirectionsScene",
     "exportName": "eigenvectorsInvariantDirectionsScene"
   },
+  "eigenvectors-characteristic-equation": {
+    "module": "eigenvectorsCharacteristicEquationScene",
+    "exportName": "eigenvectorsCharacteristicEquationScene",
+    "lessonId": "eigenvectors"
+  },
   "eigenvectors-derivation": {
     "module": "eigenvectorsDerivationScene",
     "exportName": "eigenvectorsDerivationScene"

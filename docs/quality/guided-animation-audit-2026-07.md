@@ -360,6 +360,57 @@ The production scene is registered in the design lab as the `shipped` candidate
 of the `eigen` experiment, reading its chapters from the production timing
 registry so the lab cannot drift from the lesson.
 
+### The characteristic-equation bridge (2026-07)
+
+The lab's other candidate, **Knob**, was cut to its one idea and shipped as a
+new scene, `eigenvectors-characteristic-equation`, placed in the eigenvectors
+route immediately after `thm-characteristic` and before the worked example.
+
+It answers the step a learner most often takes on trust: why the eigenvalues
+should be the roots of a determinant at all. λ is a dial, `A − λI` is presented
+as a whole family of maps, the plane deforms under whichever member the dial
+selects, and the graph of `det(A − λI)` is traced by the same sweep — so the
+eigenvalues are found rather than computed. The polynomial is named last, as the
+equation that predicts crossings the learner has already watched happen. The
+opening fan and the per-root eigenspace solves were dropped: they belong to the
+clips either side of it.
+
+Three clips, three jobs — and no course-wide rule follows from it:
+
+| Clip | Question it answers |
+| --- | --- |
+| `eigenvectors-invariant-directions` | Do any directions survive `A`? |
+| `eigenvectors-characteristic-equation` | Why are the eigenvalues roots of `det(A − λI)`? |
+| `eigenvectors-derivation` | How is the calculation written down? |
+
+A route block may now name a scene — `{ kind: "visual", sceneId }` — so a lesson
+can place a clip where its mathematics belongs rather than only at the top. A
+block that names a scene renders **that** scene or nothing: falling back to the
+lesson's own clip would quietly put the wrong animation under an authored
+heading. This is an option the schema offers, not an expectation; most lessons
+still want exactly one animation.
+
+Fixed while building it, each caught by a gate or by watching it:
+
+- resetting λ for the closing frame moved the whole grid in one frame. The dial
+  now turns back to λ = 0 — which selects `A` itself — so the plane travels
+  continuously to the map the lesson started with.
+- the traced determinant curve was a visible one-point line before the sweep
+  began. Its opacity now ramps off the same signal that draws it.
+- the λ readout hung off the right end of the dial track and ran past the stage
+  edge; it sits under the track instead.
+- the closing frame labelled both eigendirections "kernel", but at λ = 0 the map
+  is `A`, which is invertible and whose kernel is `{0}`. Each line now carries
+  two names and shows the right one for the map on screen.
+
+`eigenDerivationData` and `eigenDerivationScript` gained the production-side
+regressions they had been missing: kernel-versus-image separation at both roots
+and the swap between them, `det` vanishing at the eigenvalues **and nowhere
+else** in the swept range, the cancellation terms resolving to `Av` and `λv`,
+the morph fragments genuinely shared between consecutive lines, the collapse
+witness never preceding its statement, and a budgeted `write`/`witness` window
+for every line the chain writes.
+
 ### Batch 1 evidence note
 
 All five full review packets are under `artifacts/animation-review-batch1/` and

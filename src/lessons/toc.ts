@@ -89,6 +89,10 @@ export function getBlockAnchorId(block: RouteBlock, index: number): string {
         : `check-${index}`;
     case "practice":
       return `practice-${index}`;
+    case "visual":
+      // A lesson may place more than one clip, so the scene names the anchor
+      // when there is one; the lesson's own visual keeps the positional id.
+      return block.sceneId ? `visual-${block.sceneId}` : `visual-${index}`;
     default:
       return `${block.kind}-${index}`;
   }

@@ -647,6 +647,96 @@
       "hold3": "hold"
     }
   },
+  "eigenvectors-characteristic-equation": {
+    "family": {
+      "caption": "text",
+      "matrix": "text",
+      "carry": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:plane"
+        ]
+      },
+      "panels": "transition",
+      "hold": "hold"
+    },
+    "sweep": {
+      "caption": "text",
+      "turn": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:playhead",
+          "semantic:characteristic:knob"
+        ]
+      },
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "firstZero": {
+      "ask": "text",
+      "travel": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:playhead",
+          "semantic:characteristic:knob"
+        ]
+      },
+      "name": "text",
+      "mark": "emphasis",
+      "lines": "transition",
+      "walk": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:probe-1"
+        ]
+      },
+      "hold": "hold"
+    },
+    "secondZero": {
+      "clear": "transition",
+      "ask": "text",
+      "travel": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:playhead",
+          "semantic:characteristic:knob"
+        ]
+      },
+      "land": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:playhead",
+          "semantic:characteristic:knob"
+        ]
+      },
+      "name": "text",
+      "mark": "emphasis",
+      "lines": "transition",
+      "walk": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:probe-0"
+        ]
+      },
+      "hold": "hold"
+    },
+    "roots": {
+      "caption": "text",
+      "swap": "transition",
+      "restore": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:characteristic:plane",
+          "semantic:characteristic:playhead"
+        ]
+      },
+      "close": "text",
+      "hold": "hold"
+    }
+  },
   "eigenvectors-derivation": {
     "defining": {
       "open": "transition",

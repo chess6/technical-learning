@@ -39,6 +39,8 @@ const SCENE_ROUTES: { scene: string; route: string }[] = [
   { scene: "rank-nullity", route: "/lesson/rank-nullity" },
   { scene: "change-of-basis", route: "/lesson/change-of-basis" },
   { scene: "eigenvectors-invariant-directions", route: "/lesson/eigenvectors" },
+  // A clip placed by a `visual` route block, mid-lesson beside its theorem.
+  { scene: "eigenvectors-characteristic-equation", route: "/lesson/eigenvectors" },
   // Worked-example scenes: reached through the lesson that embeds them.
   { scene: "eigenvectors-derivation", route: "/lesson/eigenvectors" },
   { scene: "columns-rule-graphic", route: "/lesson/transformations" },

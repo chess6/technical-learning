@@ -44,6 +44,10 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./eigenvectorsInvariantDirectionsScene").then(
       (m) => m.eigenvectorsInvariantDirectionsScene,
     ),
+  "eigenvectors-characteristic-equation": () =>
+    import("./eigenvectorsCharacteristicEquationScene").then(
+      (m) => m.eigenvectorsCharacteristicEquationScene,
+    ),
   "eigenvectors-derivation": () =>
     import("./eigenvectorsDerivationScene").then(
       (m) => m.eigenvectorsDerivationScene,

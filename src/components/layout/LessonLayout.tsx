@@ -28,6 +28,12 @@ type LessonLayoutProps = {
   /** Individual sections by id (used by `section` route blocks). */
   sectionsById?: Map<string, ReactNode>;
   visualization?: ReactNode;
+  /**
+   * Additional guided clips a route may place by scene id, for a lesson whose
+   * mathematics genuinely needs a second one somewhere other than the top.
+   * Optional: a lesson with a single clip supplies nothing here.
+   */
+  visualsBySceneId?: Map<string, ReactNode>;
   /** The lesson's default checkpoint (used by a `check` block with no id). */
   checkpoint?: ReactNode;
   /** Extra checkpoints by id (used by `check` blocks that name a `checkpointId`). */
@@ -154,6 +160,7 @@ export function LessonLayout({
   explanation,
   sectionsById,
   visualization,
+  visualsBySceneId,
   checkpoint,
   checkpointsById,
   workedExamples,
@@ -305,10 +312,24 @@ export function LessonLayout({
       default: {
         // motivate | watch | visual | check | explore | summary — all headless
         // unless the lesson authored a content-specific heading.
+        // A `visual` block naming a scene renders THAT scene or nothing —
+        // never the lesson's own clip. Falling back would quietly put the wrong
+        // animation where the route asked for a specific one.
+        const placedVisual =
+          block.kind === "visual" && block.sceneId
+            ? visualsBySceneId?.get(block.sceneId) ?? null
+            : visualContent;
         const contentByKind: Partial<Record<RouteBlock["kind"], ReactNode>> = {
           motivate: motivation,
           watch: watchContent,
-          visual: visualContent,
+          visual:
+            block.kind === "visual" && block.sceneId && placedVisual ? (
+              <div className="lesson-layout__viz lesson-layout__viz--standalone">
+                {placedVisual}
+              </div>
+            ) : (
+              placedVisual
+            ),
           check: block.kind === "check" && block.checkpointId
             ? checkpointsById?.get(block.checkpointId)
             : checkpoint,

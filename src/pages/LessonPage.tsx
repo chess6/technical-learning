@@ -1,5 +1,5 @@
 import { Navigate, useParams } from "react-router-dom";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { EquationBlock } from "../components/lesson/EquationBlock";
 import { ExercisePanel } from "../components/lesson/ExercisePanel";
 import { ExplanationBlock } from "../components/lesson/ExplanationBlock";
@@ -145,6 +145,35 @@ export function LessonPage() {
       ]),
   );
 
+  /**
+   * Clips a route places by scene id, rather than the lesson's own top-of-page
+   * one. A lesson only needs this when a second animation belongs somewhere
+   * specific — the eigenvectors bridge sits beside the characteristic-equation
+   * theorem, because that is the statement it explains.
+   */
+  const visualsBySceneId = new Map(
+    (lesson.route ?? []).flatMap((block) =>
+      block.kind === "visual" && block.sceneId
+        ? ([
+            [
+              block.sceneId,
+              <GuidedScenePlayer
+                key={`${lesson.id}:${block.sceneId}:${resetToken}`}
+                sceneId={block.sceneId}
+                // Its OWN factory: `createEngine` is bound to the lesson's
+                // guidedSceneId, so sharing it would mount the top-of-page clip
+                // here under a different heading.
+                createEngine={getGuidedSceneFactory(block.sceneId)}
+                // The block's own heading, so two clips on one page never
+                // announce themselves with the same accessible name.
+                title={`Guided animation: ${block.heading ?? lesson.title}`}
+              />,
+            ],
+          ] as [string, ReactNode][])
+        : [],
+    ),
+  );
+
   const allExercises = lesson.exercises ?? [];
   const renderExercises = (exerciseIds?: string[]) => {
     const subset = exerciseIds
@@ -192,6 +221,7 @@ export function LessonPage() {
         )
       }
       checkpointsById={checkpointsById}
+      visualsBySceneId={visualsBySceneId}
       workedExamples={
         (lesson.workedExamples && lesson.workedExamples.length > 0) ||
         (lesson.callouts && lesson.callouts.length > 0) ? (
