@@ -229,6 +229,29 @@ that root's null direction is drawn there, because `A − 2I` kills exactly one 
 the two eigenlines. Both directions share a frame only after the plane has
 returned to `A`, where each is scaled by its own λ — true of both at once.
 
+Corrections after review, all of them things only visible in playback:
+
+- **Knob: kernel and image are different lines, and both are on screen.** At
+  λ = 2 the shifted map is `(x, y) ↦ (x + y, 0)`, so the kernel is `y = −x` and
+  the image is `y = 0` — and at λ = 3 they swap. Each is now named for the space
+  it lives in, a probe walks the kernel while its image sits on the origin, and
+  the image line is only labelled where the map is genuinely singular (at
+  λ = 2.6 the determinant is −0.24 and nothing has collapsed).
+- **Chain: the cancellation compares `Av` with `λv`**, not `v` with `λv`, whose
+  difference is `(λ − 1)v` and is not zero. `Av` is computed through `A`, and a
+  subtraction arrow anchored at its tip travels by `−λv` to reach the origin.
+- **Chain: the factoring is a persistent-symbol transformation.** Each new line
+  is born carrying the previous line's LaTeX and morphs as it descends a slot,
+  so the minus and the `= 0` are literally the same fragments.
+- **Chain: the determinant witness never precedes its written statement.** The
+  unit square is brought up at rest under "A − λI is not invertible" and only
+  collapses after `det(A − λI) = 0` is written.
+
+The scene-state regressions are on the tables the scenes read — `KNOB_BEATS` and
+`CHAIN_SCRIPT` in `eigenSceneScript.ts` — so kernel/image visibility, the active
+eigendirection per shifted matrix, the cancellation quantities, and the
+witness-after-statement ordering all fail a unit test rather than only an eye.
+
 The lab now holds several experiments; `?experiment=` selects one and the chosen
 playback speed survives switching candidates *and* experiments, so two clips are
 never compared at different speeds.

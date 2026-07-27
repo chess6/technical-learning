@@ -10,6 +10,7 @@ import {
 import {
   applyMatrixToUnitSquare,
   determinant2x2,
+  matrixVectorMultiply,
   type Matrix2x2,
   type Vector2 as MathVector2,
 } from "../../../math";
@@ -20,6 +21,7 @@ import {
   assertEigenDataIsConsistent,
   lerpIdentityTo,
 } from "../eigenExperimentData";
+import { CHAIN_SCRIPT } from "../eigenSceneScript";
 import { texNumber, texRoman } from "../texFormat";
 import { runCandidateBeats } from "../candidateKit";
 
@@ -116,24 +118,60 @@ export const eigenChainScene = makeScene2D(function* (view) {
    * a reading weight so the newest is the focus without anything being lost.
    */
   const lines: Latex[] = [];
+  const slotY = (index: number) => CHAIN_TOP + index * CHAIN_GAP;
+
+  const stepBack = (duration: number): ThreadGenerator[] =>
+    lines
+      .slice(0, -1)
+      .map((earlier) => earlier.opacity(0.42, duration) as ThreadGenerator);
+
   const writeLine = function* (
     body: string,
     duration: number,
     options: { fill?: string; size?: number } = {},
   ): ThreadGenerator {
     const node = tex(body, options.size ?? CHAIN_SIZE, options.fill ?? INK);
-    node.position(new Vector2(CHAIN_X, CHAIN_TOP + lines.length * CHAIN_GAP));
+    node.position(new Vector2(CHAIN_X, slotY(lines.length)));
     node.offset([-1, 0]);
     node.opacity(0);
     view.add(node);
     lines.push(node);
+    yield* all(node.opacity(1, duration), ...stepBack(duration));
+  };
+
+  /**
+   * Write the next line by TRANSFORMING the one above it.
+   *
+   * The new node is born carrying the previous line's exact LaTeX, at the
+   * previous line's position, and then descends a slot while its `{{ }}`
+   * fragments morph into the next form. So `Av − λv = 0` really does become
+   * `(A − λI)v = 0`: the same A, the same minus, the same λ and the same v
+   * travel into their new places, one v is consumed, and the brackets and I
+   * arrive. Fading in an unrelated complete equation would teach that the step
+   * is a substitution rather than a factorization.
+   */
+  const morphLine = function* (
+    fromTex: string,
+    toTex: string,
+    duration: number,
+    options: { fill?: string } = {},
+  ): ThreadGenerator {
+    const node = tex(fromTex, CHAIN_SIZE, options.fill ?? INK);
+    node.position(new Vector2(CHAIN_X, slotY(lines.length - 1)));
+    node.offset([-1, 0]);
+    node.opacity(0);
+    view.add(node);
+    lines.push(node);
+    yield* node.opacity(1, duration * 0.3);
     yield* all(
-      node.opacity(1, duration),
-      ...lines
-        .slice(0, -1)
-        .map((earlier) => earlier.opacity(0.42, duration) as ThreadGenerator),
+      node.position(new Vector2(CHAIN_X, slotY(lines.length - 1)), duration),
+      node.tex(toTex, duration) as ThreadGenerator,
+      ...stepBack(duration),
     );
   };
+
+  /** The declared LaTeX for a scripted line, so the scene cannot drift from it. */
+  const scripted = (index: number): string => CHAIN_SCRIPT[index]!.tex;
 
   /** A short reason set to the right of the line it justifies. */
   /**
@@ -206,10 +244,19 @@ export const eigenChainScene = makeScene2D(function* (view) {
   witnessCaption.opacity(0);
   witness.add(witnessCaption);
 
-  /** The vector the argument is about, and its image. */
-  const V: MathVector2 = STEPS[0]!.direction;
-  const vLen = createSignal(1.9);
-  const lambdaShown = createSignal(STEPS[0]!.lambda);
+  /**
+   * The vector the generic argument is about.
+   *
+   * The OFF-AXIS eigenpair, for two reasons: an eigenvector along the x-axis
+   * makes every arrow in the witness collinear with the axis and reads as
+   * "eigenvectors are axes", and its λ is the larger one, which pushes Av past
+   * the panel edge. Length is set so Av — which is λ times as long — still
+   * fits inside the panel.
+   */
+  const RUNNING = STEPS[1]!;
+  const V: MathVector2 = RUNNING.direction;
+  const vLen = createSignal(1.6);
+  const lambdaShown = createSignal(RUNNING.lambda);
   const vArrow = new Line({
     stroke: COOL,
     lineWidth: 4,
@@ -226,32 +273,73 @@ export const eigenChainScene = makeScene2D(function* (view) {
   vLabel.opacity(0);
   witness.add(vLabel);
 
-  /** λv, drawn along the same ray, so `Av = λv` is one picture. */
-  const lvArrow = new Line({
+  /**
+   * `Av`, computed THROUGH A rather than assumed. The cancellation witness has
+   * to compare Av with λv — comparing v with λv would show a difference of
+   * (λ − 1)v, which is not zero and is not what the line says.
+   */
+  const av = (): MathVector2 =>
+    matrixVectorMultiply(A, [V[0] * vLen(), V[1] * vLen()]);
+  const avArrow = new Line({
     stroke: HOT,
-    lineWidth: 4,
+    lineWidth: 5,
     endArrow: true,
     arrowSize: 12,
     opacity: 0,
-    points: () => [
-      wpx([0, 0]),
-      wpx([V[0] * vLen() * lambdaShown(), V[1] * vLen() * lambdaShown()]),
-    ],
+    points: () => [wpx([0, 0]), wpx(av())],
+  });
+  witness.add(avArrow);
+  const avLabel = tex("A\\mathbf{v}", 26, HOT);
+  avLabel.position(() => wpx(av()).add(new Vector2(44, 6)));
+  avLabel.opacity(0);
+  witness.add(avLabel);
+
+  /** λv, drawn on the same ray. For an eigenvector it lands exactly on Av. */
+  const lv = (): MathVector2 => [
+    V[0] * vLen() * lambdaShown(),
+    V[1] * vLen() * lambdaShown(),
+  ];
+  const lvArrow = new Line({
+    stroke: COOL,
+    lineWidth: 3,
+    lineDash: [9, 7],
+    endArrow: true,
+    arrowSize: 10,
+    opacity: 0,
+    points: () => [wpx([0, 0]), wpx(lv())],
   });
   witness.add(lvArrow);
-  const lvLabel = tex("A\\mathbf{v} = \\lambda\\mathbf{v}", 26, HOT);
-  lvLabel.position(() =>
-    wpx([
-      V[0] * vLen() * lambdaShown(),
-      V[1] * vLen() * lambdaShown(),
-    ]).add(new Vector2(78, -18)),
-  );
+  const lvLabel = tex("\\lambda\\mathbf{v}", 26, COOL);
+  lvLabel.position(() => wpx(lv()).add(new Vector2(-30, 34)));
   lvLabel.opacity(0);
   witness.add(lvLabel);
 
+  /**
+   * `Av − λv`, anchored at Av's tip and travelling by −λv. Its head reaches the
+   * origin exactly, because the difference is zero — the subtraction is enacted
+   * rather than asserted.
+   */
+  const subProgress = createSignal(0);
+  const subArrow = new Line({
+    stroke: INK,
+    lineWidth: 3,
+    lineDash: [8, 6],
+    endArrow: true,
+    arrowSize: 11,
+    opacity: 0,
+    points: () => {
+      const tip = wpx(av());
+      const back = wpx([-lv()[0] * subProgress(), -lv()[1] * subProgress()]).sub(
+        wpx([0, 0]),
+      );
+      return [tip, tip.add(back)];
+    },
+  });
+  witness.add(subArrow);
+
   /** The shifted map's action on the unit square: the singular witness. */
   const squashT = createSignal(0);
-  const squashMatrix = createSignal<Matrix2x2>(STEPS[0]!.shifted);
+  const squashMatrix = createSignal<Matrix2x2>(STEPS[1]!.shifted);
   const square = new Line({
     closed: true,
     fill: HOT,
@@ -300,43 +388,59 @@ export const eigenChainScene = makeScene2D(function* (view) {
   const bodies: Record<string, () => ThreadGenerator> = {
     *defining() {
       yield* all(given.opacity(1, 0.5), witness.opacity(1, 0.5));
-      yield* writeLine(`A\\mathbf{v} = \\lambda\\mathbf{v}`, 0.5);
+      yield* writeLine(scripted(0), 0.5);
       yield* all(vArrow.opacity(1, 0.5), vLabel.opacity(1, 0.5));
-      yield* all(lvArrow.opacity(1, 0.5), lvLabel.opacity(1, 0.5));
+      // Av is computed through A and lands beyond v on the same ray; λv is then
+      // drawn on top of it, and the two coincide. That coincidence is the
+      // definition, and it is what the next beat cancels.
+      yield* all(avArrow.opacity(1, 0.5), avLabel.opacity(1, 0.5));
       witnessCaption.tex(texRoman("A only scales this one"));
-      yield* witnessCaption.opacity(1, 0.4);
+      yield* all(
+        lvArrow.opacity(1, 0.5),
+        lvLabel.opacity(1, 0.5),
+        witnessCaption.opacity(1, 0.4),
+      );
       yield* because(texRoman("definition"), 0.35);
-      yield* waitFor(1.4);
+      yield* waitFor(1.0);
     },
 
     *gather() {
-      yield* writeLine(`A\\mathbf{v} - \\lambda\\mathbf{v} = \\mathbf{0}`, 0.5);
+      yield* morphLine(scripted(0), scripted(1), 0.9);
       yield* because(
         `${texRoman("subtract ")}\\lambda\\mathbf{v}${texRoman(" from both sides")}`,
-        0.35,
+        0.3,
       );
-      witnessCaption.tex(texRoman("the two arrows cancel"));
-      // The two arrows lie on one ray, so their difference really is zero.
+      // The witness compares Av with λv — not v with λv, whose difference is
+      // (λ − 1)v and is not zero. The subtraction is walked: an arrow anchored
+      // at Av's tip travels by −λv and reaches the origin exactly.
+      witnessCaption.tex("A\\mathbf{v} - \\lambda\\mathbf{v} = \\mathbf{0}");
       yield* all(
-        lvArrow.opacity(0.25, 0.7),
-        vArrow.opacity(0.25, 0.7),
-        vLabel.opacity(0.25, 0.7),
-        lvLabel.opacity(0, 0.7),
+        subArrow.opacity(1, 0.4),
+        vArrow.opacity(0.22, 0.4),
+        vLabel.opacity(0.22, 0.4),
       );
-      yield* originDot.size(24, 0.4);
-      yield* originDot.size(11, 0.35);
-      yield* waitFor(1.4);
+      yield* subProgress(1, 1.5, easeInOutCubic);
+      yield* originDot.size(26, 0.35);
+      yield* originDot.size(11, 0.3);
+      yield* waitFor(0.6);
     },
 
     *factor() {
-      // The factoring is the move: v is pulled out of two terms into one.
-      yield* writeLine(`(A - \\lambda I)\\mathbf{v} = \\mathbf{0}`, 0.6, {
-        fill: COOL,
-      });
-      yield* because(texRoman("factor v out — I makes the shapes match"), 0.35);
+      // The factoring is a real symbol move: A, −, λ and one v travel into the
+      // bracket, the second v is consumed, and I arrives.
+      yield* morphLine(scripted(1), scripted(2), 1.0, { fill: COOL });
+      yield* because(texRoman("factor v out — I makes the shapes match"), 0.3);
       witnessCaption.tex(texRoman("one map now, not two"));
-      yield* all(vArrow.opacity(0.9, 0.5), vLabel.opacity(0.9, 0.5), lvArrow.opacity(0, 0.5));
-      yield* waitFor(2.2);
+      yield* all(
+        vArrow.opacity(0.9, 0.5),
+        vLabel.opacity(0.9, 0.5),
+        avArrow.opacity(0, 0.5),
+        avLabel.opacity(0, 0.5),
+        lvArrow.opacity(0, 0.5),
+        lvLabel.opacity(0, 0.5),
+        subArrow.opacity(0, 0.5),
+      );
+      yield* waitFor(1.6);
     },
 
     *nonzero() {
@@ -352,27 +456,33 @@ export const eigenChainScene = makeScene2D(function* (view) {
     },
 
     *singular() {
-      yield* writeLine(`A - \\lambda I${texRoman(" is not invertible")}`, 0.5);
+      yield* writeLine(scripted(4), 0.5);
       yield* because(
         texRoman("an invertible map sends only 0 to 0, and v is not 0"),
         0.35,
       );
+      // Deliberately NO collapse here. The square is only brought up at rest:
+      // demonstrating the flattening before the determinant line is written
+      // would show the consequence ahead of the claim it belongs to.
       witnessCaption.tex(texRoman("so it cannot be undone"));
-      // The unit square flattens: what "crushes" looks like.
-      squashMatrix(STEPS[0]!.shifted);
-      yield* square.opacity(0.3, 0.4);
-      yield* squashT(1, 1.6, easeInOutCubic);
-      yield* waitFor(1.2);
+      squashMatrix(RUNNING.shifted);
+      squashT(0);
+      yield* all(square.opacity(0.3, 0.5), vArrow.opacity(0.3, 0.5));
+      yield* waitFor(1.6);
     },
 
     *determinant() {
-      yield* writeLine(`\\det(A - \\lambda I) = 0`, 0.6, { fill: HOT });
-      yield* because(texRoman("flattened area is zero area"), 0.35);
+      // The condition is stated FIRST, and the witness then demonstrates it.
+      yield* writeLine(scripted(5), 0.6, { fill: HOT });
+      yield* because(texRoman("flattened area is zero area"), 0.3);
+      witnessCaption.tex(texRoman("watch the unit square"));
+      yield* witnessCaption.opacity(1, 0.3);
+      yield* squashT(1, 1.6, easeInOutCubic);
       witnessCaption.tex(
-        `${texRoman("area factor ")} = ${texNumber(determinant2x2(STEPS[0]!.shifted))}`,
+        `${texRoman("area factor ")} = ${texNumber(determinant2x2(RUNNING.shifted))}`,
       );
-      yield* witnessCaption.opacity(1, 0.4);
-      yield* waitFor(2.4);
+      yield* witnessCaption.opacity(1, 0.35);
+      yield* waitFor(1.0);
     },
 
     *expand() {

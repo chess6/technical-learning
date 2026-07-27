@@ -36,17 +36,20 @@ export const EIGEN_CANDIDATES: readonly DesignCandidate[] = [
       "One quantity moves at a time. During the sweep only λ changes, and everything the frame shows is a function of it.",
     distinctBecause:
       "It is the only candidate with a function graph, and the only one where λ is continuous. Its argument runs backwards from the usual one: the collapse is found first, and the polynomial is named afterwards as the equation that predicts where it happens.",
-    durationSeconds: 52,
+    durationSeconds: 54,
     beats: [
       { id: "fan", title: "Most directions turn", at: 0 },
       { id: "eigenlines", title: "Two do not", at: 6 },
       { id: "shift", title: "Subtract λ from the diagonal", at: 12 },
       { id: "sweep", title: "Turn the dial", at: 18 },
+      // Each collapse beat names the IMAGE — the line the plane lands on —
+      // before the kernel beat names the inputs that died. They are different
+      // lines, and the clip says which is which.
       { id: "firstZero", title: "λ = 2: the plane collapses", at: 25 },
       { id: "kernel1", title: "What died at λ = 2", at: 30.5 },
       { id: "secondZero", title: "λ = 3: it collapses again", at: 36 },
-      { id: "kernel2", title: "What died at λ = 3", at: 41 },
-      { id: "polynomial", title: "The equation that predicts the zeros", at: 45.5 },
+      { id: "kernel2", title: "What died at λ = 3", at: 42 },
+      { id: "polynomial", title: "The equation that predicts the zeros", at: 47 },
     ],
   },
   {

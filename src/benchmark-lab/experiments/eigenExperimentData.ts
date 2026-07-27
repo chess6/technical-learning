@@ -1,4 +1,5 @@
 import {
+  columnSpaceBasis,
   determinant2x2,
   eigenDerivation2x2,
   matrixShift,
@@ -36,8 +37,21 @@ export interface EigenStep {
   lambda: number;
   /** `A − λI`, from the shared helper. */
   shifted: Matrix2x2;
-  /** The eigenspace's direction, stabilized so the drawn arrow has one sign. */
+  /**
+   * The KERNEL's direction — the inputs `A − λI` sends to the origin, which is
+   * the eigenspace. Stabilized so the drawn arrow has one sign.
+   */
   direction: MathVector2;
+  /**
+   * The IMAGE's direction — the line the whole plane collapses onto.
+   *
+   * A different line from the kernel, and the distinction is the correction
+   * this experiment had to make. At λ = 2 the shifted map is
+   * `(x, y) ↦ (x + y, 0)`: the kernel is `y = −x` and the image is `y = 0`. A
+   * clip that draws both without naming which is which shows two unrelated
+   * lines and looks like it is contradicting itself.
+   */
+  imageDirection: MathVector2;
 }
 
 export const STEPS: readonly EigenStep[] = LAMBDAS.map((lambda) => {
@@ -51,10 +65,22 @@ export const STEPS: readonly EigenStep[] = LAMBDAS.map((lambda) => {
   if (!unit) {
     throw new Error(`eigenExperimentData: λ = ${lambda} has a degenerate basis.`);
   }
+  const shifted = matrixShift(A, lambda);
+  const image = columnSpaceBasis(shifted as unknown as number[][]).basis;
+  if (image.length !== 1) {
+    throw new Error(
+      `eigenExperimentData: A − ${lambda}I should have a 1-dimensional image.`,
+    );
+  }
+  const imageUnit = normalizeVector([image[0]![0]!, image[0]![1]!]);
+  if (!imageUnit) {
+    throw new Error(`eigenExperimentData: λ = ${lambda} has a degenerate image.`);
+  }
   return {
     lambda,
-    shifted: matrixShift(A, lambda),
+    shifted,
     direction: stabilizeDirection(unit),
+    imageDirection: stabilizeDirection(imageUnit),
   };
 });
 
@@ -143,6 +169,32 @@ export function assertEigenDataIsConsistent(): void {
     ];
     if (Math.hypot(image[0] - expected[0], image[1] - expected[1]) > 1e-9) {
       throw new Error(`eigenExperimentData: A does not scale by ${step.lambda}.`);
+    }
+  }
+  for (const step of STEPS) {
+    // The image really is what the plane lands on: every basis vector's image
+    // must lie along it.
+    for (const probe of [[1, 0], [0, 1]] as const) {
+      const image = matrixVectorMultiply(step.shifted, probe);
+      if (Math.hypot(image[0], image[1]) > 1e-9) {
+        const cross =
+          image[0] * step.imageDirection[1] - image[1] * step.imageDirection[0];
+        if (Math.abs(cross) > 1e-9) {
+          throw new Error(
+            `eigenExperimentData: an image of A − ${step.lambda}I leaves its image line.`,
+          );
+        }
+      }
+    }
+    // …and it is NOT the kernel. If it were, a clip could draw one line and be
+    // right by accident; because it is not, the two must be named apart.
+    const kernelVsImage =
+      step.direction[0] * step.imageDirection[1] -
+      step.direction[1] * step.imageDirection[0];
+    if (Math.abs(kernelVsImage) < 1e-9) {
+      throw new Error(
+        `eigenExperimentData: kernel and image coincide at λ = ${step.lambda}.`,
+      );
     }
   }
   // The two eigendirections must be genuinely different lines, and one of them

@@ -21,6 +21,7 @@ import {
   staysOnItsLine,
 } from "../eigenExperimentData";
 import { ACCENT, INK, INK_FAINT, INK_MUTED, STAGE_BG, makeTex, texNumber, texRoman } from "../mathType";
+import { knobBeat } from "../eigenSceneScript";
 import { runCandidateBeats } from "../candidateKit";
 
 /**
@@ -44,10 +45,21 @@ import { runCandidateBeats } from "../candidateKit";
  * on itself" is only convincing if the rest of the space is visibly not doing
  * that.
  *
- * Correctness: while a root is being examined, ONLY that root's null direction
- * is drawn. A − 2I kills exactly one of the two eigenlines, and showing both
- * there would imply it kills both. Both come back only after the plane returns
- * to A.
+ * Correctness, and the two things this clip has to keep apart:
+ *
+ *  - While a root is being examined, ONLY that root's kernel is drawn. A − 2I
+ *    kills exactly one of the two eigenlines; showing both would imply it kills
+ *    both. They share a frame only after the plane returns to A.
+ *  - The KERNEL and the IMAGE are different lines, and both are on screen at
+ *    the collapse. At λ = 2 the shifted map is `(x, y) ↦ (x + y, 0)`: the
+ *    kernel is `y = −x` (the inputs that die, drawn in input coordinates) and
+ *    the image is `y = 0` (where the whole plane lands, which is what the
+ *    collapsed grid IS). Unlabelled, they read as the clip contradicting
+ *    itself, so each is named for the space it lives in and a probe walks the
+ *    kernel while its image sits still on the origin.
+ *
+ * Which of them is on screen in each beat is declared in `eigenSceneScript`
+ * rather than decided inline, so the separation is testable.
  */
 
 const S = 58;
@@ -178,12 +190,20 @@ export const eigenKnobScene = makeScene2D(function* (view) {
       ],
     });
     gridGroup.add(line);
-    /** A probe on that line, and its image — which never leaves the origin. */
+    /**
+     * A probe that WALKS the kernel while its image sits still on the origin.
+     * `probeT` is per-step so one root's walk cannot drive the other's.
+     */
+    const probeT = createSignal(-1);
+    const at = (): MathVector2 => [
+      step.direction[0] * probeT() * 2.4,
+      step.direction[1] * probeT() * 2.4,
+    ];
     const probe = new Circle({
       size: 16,
       fill: index === 0 ? ACCENT.rowOne : ACCENT.rowTwo,
       opacity: 0,
-      position: px([step.direction[0] * 2.1, step.direction[1] * 2.1]),
+      position: () => px(at()),
     });
     gridGroup.add(probe);
     const dot = new Circle({
@@ -192,21 +212,48 @@ export const eigenKnobScene = makeScene2D(function* (view) {
       stroke: STAGE_BG,
       lineWidth: 3,
       opacity: 0,
-      position: () => mapped([step.direction[0] * 2.1, step.direction[1] * 2.1]),
+      position: () => mapped(at()),
     });
     gridGroup.add(dot);
+
+    /**
+     * The IMAGE line: where the whole plane lands. A different line from the
+     * kernel, in the output space, and drawn in a different weight and colour
+     * so the two are never taken for one claim.
+     */
+    const imageLine = new Line({
+      stroke: ACCENT.target,
+      lineWidth: 6,
+      opacity: 0,
+      points: [
+        px([step.imageDirection[0] * -4, step.imageDirection[1] * -4]),
+        px([step.imageDirection[0] * 4, step.imageDirection[1] * 4]),
+      ],
+    });
+    gridGroup.add(imageLine);
+    const imageLabel = makeTex(
+      `${texRoman("image: all of ")}\\mathbb{R}^2${texRoman(" lands here")}`,
+      24,
+      { fill: ACCENT.target, opacity: 0 },
+    );
+    imageLabel.position(
+      px([step.imageDirection[0] * 2.4, step.imageDirection[1] * 2.4]).add(
+        new Vector2(index === 0 ? 128 : 30, index === 0 ? 26 : -26),
+      ),
+    );
+    view.add(imageLabel);
     const label = makeTex(
-      `\\lambda = ${texNumber(step.lambda)}`,
-      30,
+      `${texRoman("kernel: ")}\\lambda = ${texNumber(step.lambda)}`,
+      26,
       { fill: index === 0 ? ACCENT.rowOne : ACCENT.rowTwo, opacity: 0 },
     );
     label.position(
       px([step.direction[0] * 2.6, step.direction[1] * 2.6]).add(
-        new Vector2(index === 0 ? 8 : 54, index === 0 ? -30 : 8),
+        new Vector2(index === 0 ? 10 : 96, index === 0 ? -32 : 20),
       ),
     );
     view.add(label);
-    return { line, dot, probe, label, step };
+    return { line, dot, probe, probeT, label, imageLine, imageLabel, step };
   });
 
   const origin = new Circle({ size: 12, fill: INK, position: px([0, 0]) });
@@ -359,6 +406,35 @@ export const eigenKnobScene = makeScene2D(function* (view) {
   polynomial.position(new Vector2(-196, -206));
   view.add(polynomial);
 
+  /**
+   * Bring the stage to a beat's declared state.
+   *
+   * Every kernel/image visibility change goes through here, reading
+   * `eigenSceneScript`, so "only one kernel at a time" and "the image is named
+   * whenever it is on screen" are properties of a table a test can check rather
+   * than of nine hand-written opacity calls.
+   */
+  const stageFor = function* (
+    beatId: string,
+    duration: number,
+  ): ThreadGenerator {
+    const state = knobBeat(beatId);
+    yield* all(
+      ...eigenLines.flatMap((entry, index) => {
+        const kernelOn = state.kernelOf === index || (state.underA && index < 2 && state.imageOf === null && beatId === "polynomial");
+        const imageOn = state.imageOf === index;
+        return [
+          entry.line.opacity(kernelOn ? 0.95 : 0, duration),
+          entry.label.opacity(kernelOn ? 1 : 0, duration),
+          entry.probe.opacity(state.kernelOf === index ? 1 : 0, duration),
+          entry.dot.opacity(state.kernelOf === index ? 1 : 0, duration),
+          entry.imageLine.opacity(imageOn ? 0.85 : 0, duration),
+          entry.imageLabel.opacity(imageOn ? 1 : 0, duration),
+        ] as ThreadGenerator[];
+      }),
+    );
+  };
+
   const bodies: Record<string, () => ThreadGenerator> = {
     *fan() {
       caption.tex(texRoman("A acts on every direction at once"));
@@ -434,32 +510,32 @@ export const eigenKnobScene = makeScene2D(function* (view) {
         zeroMarks[1]!.mark.opacity(1, 0.4),
         zeroMarks[1]!.label.opacity(1, 0.4),
       );
-      yield* waitFor(1.9);
+      // Name what the flattened grid IS before naming what died: the image is
+      // the line on screen, and it is not the eigenspace.
+      yield* stageFor("firstZero", 0.5);
+      yield* waitFor(1.2);
     },
 
     *kernel1() {
-      // ONLY this root's null direction. A − 2I kills exactly one eigenline;
-      // drawing both here would say it kills both.
+      // ONLY this root's kernel. A − 2I kills exactly one eigenline; drawing
+      // both here would say it kills both.
       yield* say(
-        texRoman("one whole line was sent to the origin — that is the eigenspace"),
+        texRoman("a different line — the inputs that were sent to the origin"),
         0.35,
       );
-      yield* all(
-        eigenLines[1]!.line.opacity(0.9, 0.5),
-        eigenLines[1]!.probe.opacity(1, 0.5),
-        eigenLines[1]!.dot.opacity(1, 0.5),
-        eigenLines[1]!.label.opacity(1, 0.5),
-      );
-      yield* waitFor(2.6);
-      yield* all(
-        eigenLines[1]!.line.opacity(0, 0.4),
-        eigenLines[1]!.probe.opacity(0, 0.4),
-        eigenLines[1]!.dot.opacity(0, 0.4),
-        eigenLines[1]!.label.opacity(0, 0.4),
-      );
+      eigenLines[1]!.probeT(-1);
+      yield* stageFor("kernel1", 0.5);
+      yield* waitFor(0.6);
+      // The probe walks the kernel; its image does not move off the origin.
+      yield* eigenLines[1]!.probeT(1, 2.0, easeInOutCubic);
+      yield* waitFor(1.0);
     },
 
     *secondZero() {
+      // The image line is named only once the map IS singular. At λ = 2.6 the
+      // determinant is −0.24 and the plane is still two-dimensional; labelling
+      // an image line there would claim a collapse that has not happened.
+      yield* stageFor("sweep", 0.4);
       yield* say(texRoman("keep turning"), 0.35);
       yield* all(lambda(2.6, 1.6, easeInOutCubic), traceTo(2.6, 1.6, easeInOutCubic));
       yield* say(
@@ -474,18 +550,19 @@ export const eigenKnobScene = makeScene2D(function* (view) {
         zeroMarks[0]!.mark.opacity(1, 0.4),
         zeroMarks[0]!.label.opacity(1, 0.4),
       );
-      yield* waitFor(1.1);
+      yield* stageFor("secondZero", 0.5);
+      yield* waitFor(1.0);
     },
 
     *kernel2() {
-      yield* say(texRoman("a different line dies this time"), 0.35);
-      yield* all(
-        eigenLines[0]!.line.opacity(0.9, 0.5),
-        eigenLines[0]!.probe.opacity(1, 0.5),
-        eigenLines[0]!.dot.opacity(1, 0.5),
-        eigenLines[0]!.label.opacity(1, 0.5),
-      );
-      yield* waitFor(2.2);
+      // The pair swaps over: at λ = 3 the kernel is the line that WAS the image
+      // at λ = 2, and vice versa. Naming both spaces is what keeps that legible
+      // rather than looking like the clip changed its mind.
+      yield* say(texRoman("kernel and image have swapped places"), 0.35);
+      eigenLines[0]!.probeT(-1);
+      yield* stageFor("kernel2", 0.5);
+      yield* eigenLines[0]!.probeT(1, 1.8, easeInOutCubic);
+      yield* waitFor(0.8);
     },
 
     *polynomial() {
@@ -507,12 +584,15 @@ export const eigenKnobScene = makeScene2D(function* (view) {
       // under A each is scaled by its own λ, which is true of both at once.
       lambda(0);
       applyT(0);
+      // Under A there is no collapse, so no image line — and both eigenlines
+      // may share the frame, because A scales each by its own λ.
+      yield* stageFor("polynomial", 0.5);
       yield* all(
         showA(1, 1.4, easeInOutCubic),
-        eigenLines[1]!.line.opacity(0.9, 0.7),
+        eigenLines[0]!.line.opacity(0.95, 0.7),
+        eigenLines[0]!.label.opacity(1, 0.7),
+        eigenLines[1]!.line.opacity(0.95, 0.7),
         eigenLines[1]!.label.opacity(1, 0.7),
-        eigenLines[0]!.probe.opacity(0, 0.5),
-        eigenLines[0]!.dot.opacity(0, 0.5),
         dial.opacity(0.25, 0.7),
       );
       yield* say(
