@@ -98,7 +98,19 @@ export function* runSegment(
   label?: string,
 ): ThreadGenerator {
   const start = readTimelineTime();
-  yield* body();
+  try {
+    yield* body();
+  } catch (error) {
+    // Without the label, a scene that throws mid-body surfaces as a bare
+    // "not iterable" with a post-transform line number and no way to tell
+    // WHICH segment produced it.
+    throw new Error(
+      `guided-scene segment "${label ?? "<unlabelled>"}" threw: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
   const measured = readTimelineTime() - start;
   const remaining = duration - measured;
   if (remaining > 1e-6) {

@@ -308,11 +308,57 @@ migration; the scenes below are **not** promoted in the frozen ledger.
 | `solution-sets` | The `difference` beat needed no change (it already translates the one arrow with a ghost). Added a **parameter sweep**: one dot traverses the whole solution line off a single `t`, with particular / homogeneous / sum written beside it. `t = 1` lands on x₃, `t = 0` on xₚ, `t = −1` on x₂ — the points the learner already watched being built. |
 | `subspaces-rank` | The plane was named "the span of A's columns" with the columns never drawn. A **`columns` chapter** admits them one at a time: c₁ opens a line, c₂ points off it and the reach grows to a plane with the rank, and the dependent c₃ = 2c₁ + 3c₂ lands inside and changes nothing. A prediction sits between the relation and the reveal. |
 | `rank-nullity` | Once the tokens left the input stack, `n` survived only as the number after the equals sign. A **budget bar** draws it as one fixed length split in two, its boundary tweened alongside the moving token. Degrading the map slides the boundary; changing the map's shape does not change the length. |
-| `eigenvectors-derivation` | "Solve (A − λI)v = 0" was a caption over two answer lines fading in. Each root now has **its own chapter and is genuinely substituted back**: the shifted matrix is written out, the plane is carried to it, and a probe walks the line it kills while its image stays on the origin. The λ = 2 line was drawn along (1,−1) and labelled (−1,1) — the opposite ray, and the opposite orientation from the lesson prose; direction labels are now derived from the direction drawn. |
+| `eigenvectors-derivation` | *(superseded — see the next section; kept for the record.)* "Solve (A − λI)v = 0" was a caption over two answer lines fading in. Each root now has **its own chapter and is genuinely substituted back**: the shifted matrix is written out, the plane is carried to it, and a probe walks the line it kills while its image stays on the origin. The λ = 2 line was drawn along (1,−1) and labelled (−1,1) — the opposite ray, and the opposite orientation from the lesson prose; direction labels are now derived from the direction drawn. |
 
 Checks: full unit suite, typecheck, lint, production build, and the guided-scene
 chapter, hard-gate, and per-lesson Playwright specs. Every changed beat was also
 watched at 1× in the ordinary learner player.
+
+### `eigenvectors-derivation` replaced by the Chain treatment (2026-07)
+
+The worked-example clip above was superseded. The lab's **Chain** candidate was
+promoted into `eigenvectors-derivation` wholesale: the derivation is now written
+out as a chain of equivalences on a page, each line produced by transforming the
+line above it, none ever cleared, so the closing frame is the whole argument. A
+witness panel beside the chain shows the one geometric fact licensing the line
+being written.
+
+This replaces the **worked example**, not the introduction. `eigenvectors-invariant-directions`
+still opens the lesson and still teaches what an eigenvector is; the derivation
+clip now assumes that and teaches the reproducible symbolic procedure. The two
+clips have different jobs, and no course-wide "one animation per lesson" rule is
+implied by either.
+
+What the promotion carried across from the lab corrections:
+
+- the cancellation witness compares **Av with λv**, resolved through
+  `resolveCancellationTerm` so the picture cannot drift from the declared terms;
+- `Av − λv = 0 → (A − λI)v = 0` is a genuine persistent-symbol transformation —
+  the minus and the `= 0` are literally the same LaTeX fragments;
+- the singular demonstration is attached to the line that **states**
+  `det(A − λI) = 0`, so it can never precede its own claim;
+- each root is substituted back one at a time, because `A − λI` kills exactly one
+  of the two eigendirections; both share the frame only under `A` itself.
+
+Two defects found while promoting it, and fixed:
+
+- the flattened unit square lands exactly on the image line `y = 0`, i.e. on the
+  drawn axis, so at a hairline weight the collapse read as "the square vanished".
+  The stroke now thickens as it squashes and the readout names the surviving line.
+- a beat that writes two lines was spending the second line's time inside the
+  window the intent table calls a hold, and a morph was spending 1.3× its
+  declared `write`. Each chain line now takes its **own** declared
+  `write`/`witness` pair, and a line with no budgeted window throws at render
+  time rather than quietly borrowing the hold.
+
+`eigenvectors-derivation` also left the `standard-grid` semantic-geometry
+contract: the promoted clip is a written page whose witness is a sketch panel,
+not a coordinate plane a learner reads positions off. Its mathematics is held by
+the `eigenDerivationData` assertions and its named semantic nodes instead.
+
+The production scene is registered in the design lab as the `shipped` candidate
+of the `eigen` experiment, reading its chapters from the production timing
+registry so the lab cannot drift from the lesson.
 
 ### Batch 1 evidence note
 

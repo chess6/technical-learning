@@ -92,8 +92,21 @@ export async function runSceneGateSampling(
   let renderedFrame = -1;
   const renderListeners = new Set<(frame: number) => void>();
   const durationListeners = new Set<(duration: number) => void>();
+  /**
+   * A scene that throws mid-generator never reports a duration, and the only
+   * symptom used to be "duration never became known" ten seconds later — which
+   * says nothing about the actual defect. Motion Canvas routes the exception to
+   * the project logger, so keep the first one and put it in the thrown message.
+   */
+  let sceneFailure: string | null = null;
 
   const unsubscribers = [
+    project.logger.onLogged.subscribe((payload) => {
+      if (payload.level !== "error" || sceneFailure) return;
+      sceneFailure = payload.stack
+        ? `${payload.message}\n${payload.stack}`
+        : payload.message;
+    }),
     player.onRender.subscribe(async () => {
       await stage.render(
         player.playback.currentScene,
@@ -147,7 +160,13 @@ export async function runSceneGateSampling(
       }
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error(`${sceneId}: duration never became known`));
+        reject(
+          new Error(
+            sceneFailure
+              ? `${sceneId}: the scene threw before reporting a duration — ${sceneFailure}`
+              : `${sceneId}: duration never became known`,
+          ),
+        );
       }, 10_000);
       const listener = (duration: number) => {
         if (duration <= 0) return;

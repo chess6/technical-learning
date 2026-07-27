@@ -989,54 +989,64 @@ export const EIGENVECTOR_SEGMENTS: readonly SceneSegment[] = [
  */
 export const EIGEN_DERIVATION_SEGMENTS: readonly SceneSegment[] = [
   {
-    id: "recap",
+    id: "defining",
     title: "Av = λv",
-    duration: 4,
-    summary: "The defining equation: the matrix acts like a pure stretch on v.",
-  },
-  {
-    id: "shift",
-    title: "(A − λI)v = 0",
-    duration: 5.5,
-    summary: "Move both terms to one side — v must be sent to zero by the shifted matrix.",
-  },
-  {
-    id: "predict-collapse",
-    title: "Predict: what must A − λI do?",
-    duration: 5.5,
-    summary: "A nonzero v is sent to zero. Recall Lesson 3 and decide what that forces about the shifted matrix's area scale.",
-  },
-  {
-    id: "charpoly",
-    title: "det(A − λI) = 0",
-    duration: 5.5,
-    summary: "A nonzero v dies only if the shifted matrix collapses the plane: determinant zero.",
-  },
-  {
-    id: "solveLambda",
-    title: "Solve for λ",
-    duration: 4.5,
-    summary: "The characteristic polynomial's roots are the only possible eigenvalues.",
-  },
-  {
-    id: "solveV3",
-    title: "Solve (A − 3I)v = 0",
-    duration: 10,
-    summary:
-      "Substitute the first root back. A − 3I is written out, and a probe travels the line it kills while its image stays pinned to the origin — that line is the eigenspace.",
-  },
-  {
-    id: "solveV2",
-    title: "Solve (A − 2I)v = 0",
-    duration: 10,
-    summary:
-      "The same substitution for the second root gives a different shifted matrix and a different killed line — off the axes, so eigenvectors are not always axes.",
-  },
-  {
-    id: "interpret",
-    title: "Interpret geometrically",
     duration: 6,
-    summary: "Each eigenspace is an invariant line; λ is the stretch factor along it.",
+    summary: "The definition, with a witness: A only scales this direction, so Av and λv land on the same point.",
+  },
+  {
+    id: "gather",
+    title: "Move λv across",
+    duration: 6.5,
+    summary: "The same two terms stay put while the equals sign becomes a minus — and Av − λv is walked to the origin.",
+  },
+  {
+    id: "factor",
+    title: "Factor out v",
+    duration: 6,
+    summary: "The minus and the zero are the same symbols; Av becomes (A and λv becomes λI)v. One map now, not two.",
+  },
+  {
+    id: "nonzero",
+    title: "v is not zero",
+    duration: 5,
+    summary: "Without it every λ would qualify, and the equation would say nothing.",
+  },
+  {
+    id: "singular",
+    title: "So A − λI is not invertible",
+    duration: 5.5,
+    summary: "An invertible map sends only 0 to 0, and v is not 0 — so the shifted map cannot be undone.",
+  },
+  {
+    id: "predict",
+    title: "Predict: what must the determinant be?",
+    duration: 5.5,
+    summary: "The page holds. A nonzero v is sent to zero by A − λI — decide what that forces about its determinant before the line is written.",
+  },
+  {
+    id: "determinant",
+    title: "det(A − λI) = 0",
+    duration: 7,
+    summary: "The condition is written first; only then does the unit square flatten, so the demonstration follows the claim it demonstrates.",
+  },
+  {
+    id: "expand",
+    title: "Compute it from the entries",
+    duration: 6.5,
+    summary: "λ is subtracted down the diagonal and the 2×2 determinant is expanded into the characteristic polynomial.",
+  },
+  {
+    id: "roots",
+    title: "Two eigenvalues",
+    duration: 4.5,
+    summary: "The polynomial's roots are the only λ that can work.",
+  },
+  {
+    id: "eigenspaces",
+    title: "Substitute each back",
+    duration: 9,
+    summary: "Each root is put back into (A − λI)v = 0 and its eigenspace read off — one line at a time, because A − λI kills exactly one of them.",
   },
 ];
 
@@ -1627,49 +1637,33 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   },
 
   "eigenvectors-derivation": {
-    recap: { in: 0.6, hold: 3.2 },
-    shift: {
-      intro: 0.8,
-      grow: 1.0,
-      flashUp: 0.22,
-      flashDown: 0.22,
-      sub: 0.3,
-      walk: 1.0,
-      factor: 0.7,
-      originDown: 0.25,
-      hold: 0.7,
-    },
-    "predict-collapse": { ask: 0.4, think: 4.4 },
-    charpoly: { clear: 0.5, morph: 1.6, off: 0.8, back: 1.0, hold: 1.4 },
-    solveLambda: { morph: 1.2, hold: 3.0 },
-    // Each root is substituted back and SOLVED: the shifted matrix is written
-    // out, the plane is carried to it, and a probe travels the line it kills
-    // while its image — through that same live matrix — stays on the origin.
-    solveV3: {
-      shift: 1.3,
-      reveal: 0.6,
-      hold: 1.3,
-      probeIn: 0.4,
-      travel: 2.6,
-      up: 0.35,
-      down: 0.35,
-      hold2: 2.6,
-    },
-    solveV2: {
-      shift: 1.3,
-      reveal: 0.6,
-      hold: 1.3,
-      probeIn: 0.4,
-      travel: 2.6,
-      up: 0.35,
-      down: 0.35,
-      hold2: 2.6,
-    },
-    interpret: {
-      restore: 1.2,
-      emphasisUp: 0.5,
-      emphasisDown: 0.5,
-      hold: 3.6,
+    defining: { open: 0.5, write: 0.5, witness: 0.5, hold: 1.0, reason: 0.35, },
+    // `walk` is the cancellation: Av − λv travelling to the origin.
+    // A morph shares its window between the fade-in and the transformation, so
+    // the two morphing beats budget a wider `write` than the plain ones.
+    gather: { write: 1.4, witness: 0.4, hold: 0.6, reason: 0.3, walk: 1.5, pulseUp: 0.35, pulseDown: 0.3 },
+    factor: { write: 1.5, witness: 0.5, hold: 0.6, reason: 0.3, hold2: 1.8 },
+    nonzero: { write: 0.5, witness: 0.4, hold: 0.6, reason: 0.3, hold2: 1.8 },
+    singular: { write: 0.5, witness: 0.5, hold: 0.8, reason: 0.35, hold2: 2.2 },
+    // Every line the answer follows from is on the page and stays there; the
+    // beat adds nothing but the question and the silence to think in.
+    predict: { ask: 0.5, think: 4.4 },
+    // `squash` runs AFTER the line is written and the square is brought up, so
+    // the singular demonstration can never precede its own statement.
+    determinant: { write: 0.6, witness: 0.4, hold: 0.7, reason: 0.3, squash: 1.6, readout: 0.4, hold2: 2.4 },
+    // Two lines, so two write/witness pairs: the second must not be spent
+    // inside the window the intent table calls a hold.
+    expand: { write: 0.6, witness: 0.4, write2: 0.6, witness2: 0.4, hold: 0.5, reason: 0.3, hold2: 2.2 },
+    roots: { write: 0.5, witness: 0.4, hold: 0.6, reason: 0.3, hold2: 2.0 },
+    eigenspaces: {
+      write: 0.5,
+      witness: 0.5,
+      write2: 0.5,
+      witness2: 0.5,
+      hold: 1.4,
+      reason: 0.6,
+      both: 0.5,
+      hold2: 2.0,
     },
   },
 

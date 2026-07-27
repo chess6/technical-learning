@@ -1,4 +1,7 @@
 import type { DesignCandidate } from "./eliminationCandidates";
+import {
+  EIGEN_DERIVATION_SEGMENTS,
+} from "../../guided-scenes/scenes/sceneTimings";
 
 /**
  * The eigenvector-derivation design experiment.
@@ -21,6 +24,24 @@ import type { DesignCandidate } from "./eliminationCandidates";
  */
 
 export const EIGEN_CANDIDATES: readonly DesignCandidate[] = [
+  {
+    id: "shipped",
+    title: "Shipped · Chain",
+    strapline:
+      "The promoted worked-example clip: the derivation written out, line by line, with a witness beside it.",
+    obstacle:
+      "A learner who has watched the geometry still cannot reproduce the argument on paper. The shipped clip teaches the reproducible symbolic procedure and assumes the phenomenon is already understood.",
+    leadRepresentation:
+      "Algebra leads and stays; a small witness panel shows the one geometric fact licensing the line being written.",
+    persistent:
+      "Every line of the chain, and the matrix A pinned beside it. Nothing is cleared, so the closing frame is the whole derivation.",
+    attention:
+      "The newest line is the only one at full strength; earlier lines step back but stay legible.",
+    distinctBecause:
+      "This is the production clip, not a hypothesis — it is registered here so it can be compared against the candidates it came from in the same viewport.",
+    durationSeconds: 0,
+    beats: [],
+  },
   {
     id: "knob",
     title: "A · Knob",
@@ -87,10 +108,25 @@ export function getEigenCandidate(id: string): DesignCandidate {
   if (!candidate) {
     throw new Error(`Unknown eigen candidate: "${id}"`);
   }
-  return candidate;
+  if (candidate.beats.length > 0) return candidate;
+  // The shipped clip reads its chapters from the production timing registry, so
+  // the lab's beat buttons cannot drift from the learner-facing scene.
+  let at = 0;
+  const beats = EIGEN_DERIVATION_SEGMENTS.map((segment) => {
+    const beat = { id: segment.id, title: segment.title, at };
+    at += segment.duration;
+    return beat;
+  });
+  return { ...candidate, beats, durationSeconds: at };
 }
 
 const SCENE_LOADERS: Record<string, () => Promise<unknown>> = {
+  // The PRODUCTION scene module, not a copy of it: a lab entry that drifted
+  // from what learners see would be worse than no entry.
+  shipped: () =>
+    import("../../guided-scenes/scenes/eigenvectorsDerivationScene").then(
+      (m) => m.eigenvectorsDerivationScene,
+    ),
   knob: () => import("./scenes/eigenKnobScene").then((m) => m.eigenKnobScene),
   chain: () => import("./scenes/eigenChainScene").then((m) => m.eigenChainScene),
 };

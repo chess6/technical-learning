@@ -87,7 +87,10 @@ const STATIC_GRID_SCENES = new Set([
   "matrix-composition",
   "determinant-area-scaling",
   "eigenvectors-invariant-directions",
-  "eigenvectors-derivation",
+  // NOT `eigenvectors-derivation`: the promoted worked-example clip is a written
+  // page whose witness is a small sketch panel, not a coordinate plane a learner
+  // reads positions off. Its mathematics is held instead by the eigen-derivation
+  // data assertions and its named semantic nodes.
 ]);
 
 const TRANSFORMED_GRID_SCENES = new Set([

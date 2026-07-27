@@ -648,71 +648,91 @@
     }
   },
   "eigenvectors-derivation": {
-    "recap": {
-      "in": "transition",
-      "hold": "hold"
+    "defining": {
+      "open": "transition",
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text"
     },
-    "shift": {
-      "intro": "transition",
-      "grow": "transition",
-      "flashUp": "emphasis",
-      "flashDown": "emphasis",
-      "sub": "transition",
-      "walk": "transition",
-      "factor": "transition",
-      "originDown": "emphasis",
-      "hold": "hold"
+    "gather": {
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "walk": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:eigen-derivation:cancellation"
+        ]
+      },
+      "pulseUp": "emphasis",
+      "pulseDown": "emphasis"
     },
-    "predict-collapse": {
+    "factor": {
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "hold2": "hold"
+    },
+    "nonzero": {
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "hold2": "hold"
+    },
+    "singular": {
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "hold2": "hold"
+    },
+    "predict": {
       "ask": "text",
       "think": "hold"
     },
-    "charpoly": {
-      "clear": "transition",
-      "morph": "transition",
-      "off": "transition",
-      "back": "transition",
-      "hold": "hold"
-    },
-    "solveLambda": {
-      "morph": "transition",
-      "hold": "hold"
-    },
-    "solveV3": {
-      "shift": "transition",
-      "reveal": "transition",
+    "determinant": {
+      "write": "text",
+      "witness": "transition",
       "hold": "hold",
-      "probeIn": "transition",
-      "travel": {
+      "reason": "text",
+      "squash": {
         "intent": "geometry",
         "targets": [
-          "semantic:eigen-derivation:probe-1"
+          "semantic:eigen-derivation:unit-square"
         ]
       },
-      "up": "emphasis",
-      "down": "emphasis",
+      "readout": "text",
       "hold2": "hold"
     },
-    "solveV2": {
-      "shift": "transition",
-      "reveal": "transition",
+    "expand": {
+      "write": "text",
+      "witness": "transition",
+      "write2": "text",
+      "witness2": "transition",
       "hold": "hold",
-      "probeIn": "transition",
-      "travel": {
-        "intent": "geometry",
-        "targets": [
-          "semantic:eigen-derivation:probe-2"
-        ]
-      },
-      "up": "emphasis",
-      "down": "emphasis",
+      "reason": "text",
       "hold2": "hold"
     },
-    "interpret": {
-      "restore": "transition",
-      "emphasisUp": "emphasis",
-      "emphasisDown": "emphasis",
-      "hold": "hold"
+    "roots": {
+      "write": "text",
+      "witness": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "hold2": "hold"
+    },
+    "eigenspaces": {
+      "write": "text",
+      "witness": "transition",
+      "write2": "text",
+      "witness2": "transition",
+      "hold": "hold",
+      "reason": "text",
+      "both": "transition",
+      "hold2": "hold"
     }
   },
   "karatsuba-cross-terms": {

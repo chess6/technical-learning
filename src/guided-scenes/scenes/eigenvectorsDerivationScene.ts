@@ -1,4 +1,4 @@
-import { Circle, Latex, Line, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Latex, Line, Node, Rect, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -7,589 +7,684 @@ import {
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
-import { EIGEN_LESSON_EXAMPLE } from "../../lessons/exampleData";
 import {
   applyMatrixToUnitSquare,
   determinant2x2,
-  eigenDerivation2x2,
-  matrixShift,
   matrixVectorMultiply,
-  scaleVector,
-  stabilizeDirection,
   type Matrix2x2,
-  type Vector2 as MathV,
+  type Vector2 as MathVector2,
 } from "../../math";
-import { EIGEN_DERIVATION_SEGMENTS, requireBeats } from "./sceneTimings";
 import {
-  ROLE,
-  SCALE,
-  OVERLAY_CLEAR_HALF_EXTENT,
-  formatDirectionRatio,
-  makeArrow,
-  makeLabel,
-  makeOverlayLabel,
-  makeStaticGrid,
-  morphMatrixEntries,
-  runSegment,
-} from "./sceneKit";
-import { LABEL_BOTTOM_Y, LABEL_CENTER_X, LABEL_TOP_Y } from "./safeFrame";
+  A,
+  STEPS,
+  assertEigenDerivationDataIsConsistent,
+  lerpIdentityTo,
+  texNumber,
+} from "./eigenDerivationData";
+import {
+  CANCELLATION_TERMS,
+  CHAIN_SCRIPT,
+  chainLinesFor,
+  resolveCancellationTerm,
+  type ChainWitness,
+} from "./eigenDerivationScript";
+import { EIGEN_DERIVATION_SEGMENTS, requireBeats } from "./sceneTimings";
+import { runSegment } from "./sceneKit";
 
 /**
- * Lesson 4 derivation ladder: compute eigenvalues/eigenvectors for
- * A = [[3,1],[0,2]] with synchronized geometry.
+ * Lesson 11's worked-calculation clip — the derivation written out as a chain.
  *
- * Explicitly exploits asymmetric eigendirections:
- *   λ=3 → (1,0)  (coordinate axis)
- *   λ=2 → (1,−1) (off-axis line)
- * so learners do not conclude eigenvectors are always axes.
+ * Promoted from the laboratory's "Chain" candidate (see the benchmark-lab
+ * README). It sits in the worked example, AFTER the introductory clip has shown
+ * what an eigenvector is and after the characteristic-equation bridge has shown
+ * why the eigenvalues are the roots of `det(A − λI)`. It therefore assumes the
+ * phenomenon is understood and teaches the reproducible symbolic procedure.
  *
- * All numbers from eigenDerivation2x2 — never reimplemented here, and every
- * direction LABEL is derived from the direction actually drawn: the λ=2 line
- * used to be drawn along (1,−1) and labelled (−1,1), the opposite ray, which
- * also disagreed with the lesson prose.
+ * Design thesis: a learner who has watched the geometry still cannot reproduce
+ * the argument on paper. Each step — moving λv across, factoring out v,
+ * insisting v ≠ 0, concluding the determinant vanishes — is a separate
+ * inference, and a clip that keeps them implicit teaches a result rather than a
+ * method. So the algebra leads and STAYS: the chain builds downward, nothing is
+ * ever cleared, and the closing frame is a derivation the learner could copy.
+ * Beside it, a witness shows the one geometric fact licensing the line being
+ * written.
+ *
+ * The clip runs on a PAGE rather than in a void. Mathematical animation is
+ * almost always light-on-black; a warm near-white ground with dark serif ink is
+ * how the subject is actually read, and at embedded-player size it holds fine
+ * strokes and small type better. That treatment is chosen for this lesson and
+ * is not a course-wide commitment.
+ *
+ * Three properties are held by `eigenDerivationScript`, which this file
+ * CONSUMES rather than merely agrees with:
+ *
+ *  - every line's LaTeX is `CHAIN_SCRIPT[i].tex`;
+ *  - the witness is dispatched on `CHAIN_SCRIPT[i].witness`, so the singular
+ *    demonstration can only run in the beat whose line states the determinant
+ *    condition — never in the beat before it;
+ *  - the cancellation compares whatever `resolveCancellationTerm` returns for
+ *    the declared terms, which is `Av` and `λv` — not `v` and `λv`, whose
+ *    difference is `(λ − 1)v` and is not zero.
  */
 
 const SCENE_ID = "eigenvectors-derivation";
 
-const A = EIGEN_LESSON_EXAMPLE.matrix as Matrix2x2;
-const DERIVATION = eigenDerivation2x2(A);
+/* --------------------------------------------------------------- the page */
+const PAPER = "#f4f1ea";
+const PAPER_RULE = "#ded8ca";
+const INK = "#1c1f26";
+const INK_SOFT = "#5c6472";
+/** Two accents only, each carrying one meaning, both legible on paper. */
+const HOT = "#a8324a";
+const COOL = "#1f5f8b";
 
-const px = (v: readonly [number, number]): Vector2 =>
-  new Vector2(v[0] * SCALE, -v[1] * SCALE);
-
-const fmt = (n: number): string => {
-  const r = Math.round(n * 100) / 100;
-  return Object.is(r, -0) ? "0" : String(r);
-};
-
-function squarePoints(m: Matrix2x2): Vector2[] {
-  return applyMatrixToUnitSquare(m).map((p) => px(p));
-}
-
-function lineEnds(dir: MathV, extent = 2.2): [Vector2, Vector2] {
-  const u = stabilizeDirection(dir);
-  return [px(scaleVector(u, -extent)), px(scaleVector(u, extent))];
-}
-
-/** Pick the step for a given λ from the shared derivation spine. */
-function stepFor(lambda: number) {
-  return DERIVATION.steps.find((s) => Math.abs(s.lambda - lambda) < 1e-8);
-}
-
-const STEP_3 = stepFor(3);
-const STEP_2 = stepFor(2);
-const DIR_3: MathV =
-  STEP_3?.eigenspace.kind === "line" ? STEP_3.eigenspace.basis : [1, 0];
-const DIR_2: MathV =
-  STEP_2?.eigenspace.kind === "line" ? STEP_2.eigenspace.basis : [-1, 1];
-
-const LAMBDA_3 = DERIVATION.lambdas.find((l) => Math.abs(l - 3) < 1e-8) ?? 3;
-const LAMBDA_2 = DERIVATION.lambdas.find((l) => Math.abs(l - 2) < 1e-8) ?? 2;
-const SHIFTED_3 = matrixShift(A, LAMBDA_3);
-const SHIFTED_2 = matrixShift(A, LAMBDA_2);
-
+const CHAIN_X = -424;
+const CHAIN_TOP = -206;
 /**
- * Correctness guard (single source of truth). The two solve beats claim that
- * each shifted matrix sends its whole drawn line to the origin; if the shared
- * example ever changes so that is false, the scene must fail rather than
- * animate a probe whose image quietly drifts off zero.
+ * Eleven lines have to fit, because none of them is ever cleared — that is the
+ * clip's whole promise. The gap and the sizes are set by that constraint.
  */
-function assertSceneMathIsConsistent(): void {
-  for (const [lambda, shifted, direction] of [
-    [LAMBDA_3, SHIFTED_3, DIR_3],
-    [LAMBDA_2, SHIFTED_2, DIR_2],
-  ] as const) {
-    const image = matrixVectorMultiply(shifted, scaleVector(direction, 1.7));
-    if (Math.hypot(image[0], image[1]) > 1e-9) {
-      throw new Error(
-        `eigenvectorsDerivationScene: (A − ${lambda}I) does not kill its drawn direction.`,
-      );
-    }
-    if (Math.abs(determinant2x2(shifted)) > 1e-9) {
-      throw new Error(
-        `eigenvectorsDerivationScene: A − ${lambda}I is not singular.`,
-      );
-    }
-  }
-}
+const CHAIN_GAP = 42;
+const CHAIN_SIZE = 32;
+const CHAIN_SMALL = 26;
 
-/** `[a b ; c d]` for a shifted matrix written beside its beat. */
-function matrixText(m: Matrix2x2): string {
-  const e = (n: number) => fmt(n).replace("-", "−");
-  return `[ ${e(m[0][0])}  ${e(m[0][1])} ;  ${e(m[1][0])}  ${e(m[1][1])} ]`;
-}
+const WITNESS = new Vector2(296, 6);
+const WITNESS_SCALE = 40;
+const wpx = (p: MathVector2): Vector2 =>
+  new Vector2(WITNESS.x + p[0] * WITNESS_SCALE, WITNESS.y - p[1] * WITNESS_SCALE);
 
-function tipLabelOffset(dir: MathV, pixels = 36): Vector2 {
-  const [dx, dy] = stabilizeDirection(dir);
-  // Screen-space perpendicular to the drawn arrow (math → screen flips y).
-  return new Vector2(-dy * pixels, -dx * pixels);
+function tex(
+  value: Parameters<typeof Latex.prototype.tex>[0] | (() => string),
+  size: number,
+  fill: string = INK,
+): Latex {
+  return new Latex({ tex: value as never, fontSize: size, fill });
 }
 
 export const eigenvectorsDerivationScene = makeScene2D(function* (view) {
-  assertSceneMathIsConsistent();
-  view.fill(ROLE.background);
-
-  // Live matrix signals — start as A, morph to A−λI during the shift beat.
-  const ma = createSignal(A[0][0]);
-  const mb = createSignal(A[0][1]);
-  const mc = createSignal(A[1][0]);
-  const md = createSignal(A[1][1]);
-  const matrix = (): Matrix2x2 => [
-    [ma(), mb()],
-    [mc(), md()],
-  ];
-
-  const grid = makeStaticGrid(OVERLAY_CLEAR_HALF_EXTENT);
-  grid.opacity(0.5);
-  view.add(grid);
-
-  const origin = new Circle({ size: 14, fill: ROLE.text, opacity: 1 });
-  view.add(origin);
-
-  // Candidate eigenvector along λ=3 direction (axis) for the shift demo.
-  const vScale = createSignal(1.35);
-  const vDir: MathV = DIR_3;
-  const vArrow = makeArrow(ROLE.original, 6);
-  vArrow.points(() => {
-    const tip = scaleVector(vDir, vScale());
-    return [new Vector2(0, 0), px(tip)];
-  });
-  view.add(vArrow);
-
-  const AvArrow = makeArrow(ROLE.transformed, 6);
-  AvArrow.points(() => {
-    const tip = scaleVector(vDir, vScale());
-    const image = matrixVectorMultiply(matrix(), tip);
-    return [new Vector2(0, 0), px(image)];
-  });
-  AvArrow.opacity(0);
-  view.add(AvArrow);
-
-  const vLabel = makeLabel("v", ROLE.original, 36);
-  vLabel.position(() => px(scaleVector(vDir, vScale())).add(new Vector2(16, 16)));
-  view.add(vLabel);
-
-  const AvLabel = makeLabel("Av", ROLE.transformed, 36);
-  AvLabel.position(() => {
-    const tip = scaleVector(vDir, vScale());
-    return px(matrixVectorMultiply(matrix(), tip)).add(new Vector2(16, -12));
-  });
-  AvLabel.opacity(0);
-  view.add(AvLabel);
-
-  // λv construction for the shift beat. λv is simply the input v scaled by λ;
-  // for an eigendirection it lands exactly on Av, so (A − λI)v = Av − λv = 0.
-  // lambdaVLen is the λv arrow length in math units along vDir.
-  const lambdaVLen = createSignal(0);
-  const lambdaVArrow = makeArrow(ROLE.selected, 6);
-  lambdaVArrow.points(() => [
-    new Vector2(0, 0),
-    px(scaleVector(vDir, lambdaVLen())),
-  ]);
-  lambdaVArrow.opacity(0);
-  view.add(lambdaVArrow);
-
-  const lambdaVLabel = makeLabel("λv", ROLE.selected, 34);
-  // Clear of v's label, which sits at (+16, +16) from ITS tip: λv and v run
-  // along the same direction and their tips coincide whenever λ ≈ 1, which
-  // printed "λv" under "v" for the whole recap beat (text-overlap hard gate).
-  lambdaVLabel.position(() =>
-    px(scaleVector(vDir, lambdaVLen())).add(new Vector2(12, 64)),
-  );
-  lambdaVLabel.opacity(0);
-  view.add(lambdaVLabel);
-
-  // Subtraction arrow: −λv anchored at the tip of Av. As subProgress goes
-  // 0→1 its head walks from the tip of Av back to the origin, because
-  // Av − λv = 0 for the eigendirection. This is the geometric "why".
-  const subProgress = createSignal(0);
-  const subArrow = makeArrow(ROLE.selected, 4);
-  subArrow.lineDash([10, 8]);
-  subArrow.points(() => {
-    const avTip = px(matrixVectorMultiply(matrix(), scaleVector(vDir, vScale())));
-    const minusLambdaV = px(scaleVector(vDir, -LAMBDA_3 * vScale())).scale(
-      subProgress(),
-    );
-    return [avTip, avTip.add(minusLambdaV)];
-  });
-  subArrow.opacity(0);
-  view.add(subArrow);
-
-  // Unit-square / parallelogram for the charpoly collapse beat.
-  const square = new Line({
-    stroke: ROLE.original,
-    lineWidth: 3,
-    closed: true,
-    fill: ROLE.original,
-    opacity: 0,
-    points: () => squarePoints(matrix()),
-  });
-  view.add(square);
-
-  // Eigenspace lines — drawn in interpret / solveV.
-  const line3 = new Line({
-    stroke: ROLE.basis1,
-    lineWidth: 3,
-    lineDash: [12, 8],
-    opacity: 0,
-    points: () => lineEnds(DIR_3),
-  });
-  const line2 = new Line({
-    stroke: ROLE.basis2,
-    lineWidth: 3,
-    lineDash: [12, 8],
-    opacity: 0,
-    points: () => lineEnds(DIR_2),
-  });
-  view.add(line3);
-  view.add(line2);
-
-  const arrow3 = makeArrow(ROLE.basis1, 5);
-  arrow3.points(() => [new Vector2(0, 0), px(scaleVector(DIR_3, 1.7))]);
-  arrow3.opacity(0);
-  view.add(arrow3);
-
-  const arrow2 = makeArrow(ROLE.basis2, 5);
-  arrow2.points(() => [new Vector2(0, 0), px(scaleVector(DIR_2, 1.7))]);
-  arrow2.opacity(0);
-  view.add(arrow2);
-
-  /* ---------------------------------------------------------------------
-   * The solve apparatus: one probe per eigenspace.
-   *
-   * "Solve (A − λI)v = 0" used to be a caption over two lines that faded in —
-   * the answers, not the solving. Each root is now substituted back: the plane
-   * is carried to A − λI, the shifted matrix is written out, and a probe
-   * travels the line while its image, computed through that SAME live matrix,
-   * stays on the origin. The eigenspace is what the shifted map kills, watched
-   * rather than asserted.
-   * ------------------------------------------------------------------- */
-  function makeProbe(direction: MathV, color: string, key: string) {
-    const t = createSignal(-1);
-    const at = (): MathV => scaleVector(direction, t() * 1.7);
-    const dot = new Circle({ key, size: 20, fill: color, opacity: 0 });
-    dot.position(() => px(at()));
-    view.add(dot);
-    const image = new Circle({
-      size: 20,
-      fill: color,
-      stroke: ROLE.background,
-      lineWidth: 3,
-      opacity: 0,
-    });
-    image.position(() => px(matrixVectorMultiply(matrix(), at())));
-    view.add(image);
-    return { t, dot, image };
-  }
-  const probe3 = makeProbe(DIR_3, ROLE.basis1, "semantic:eigen-derivation:probe-1");
-  const probe2 = makeProbe(DIR_2, ROLE.basis2, "semantic:eigen-derivation:probe-2");
-
-  /** The shifted matrix, written out beside the beat that uses it. */
-  const shiftedNote = makeLabel("", ROLE.textMuted, 26);
-  shiftedNote.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y + 44));
-  shiftedNote.opacity(0);
-  view.add(shiftedNote);
-
-  const label3 = makeLabel(
-    `λ=${fmt(LAMBDA_3)} · ${formatDirectionRatio([DIR_3[0], DIR_3[1]])}`,
-    ROLE.basis1,
-    28,
-  );
-  // Grow upward away from the horizontal tip.
-  label3.offset([0, 1]);
-  label3.position(() =>
-    px(scaleVector(DIR_3, 1.7)).add(tipLabelOffset(DIR_3, 28)),
-  );
-  label3.opacity(0);
-  view.add(label3);
-
-  const label2 = makeLabel(
-    `λ=${fmt(LAMBDA_2)} · ${formatDirectionRatio([DIR_2[0], DIR_2[1]])}`,
-    ROLE.basis2,
-    28,
-  );
-  // Grow away from the off-axis tip (left edge anchored).
-  label2.offset([-1, 0]);
-  label2.position(() =>
-    px(scaleVector(DIR_2, 1.7)).add(tipLabelOffset(DIR_2, 48)),
-  );
-  label2.opacity(0);
-  view.add(label2);
-
-  const top = makeOverlayLabel("", ROLE.text, 40);
-  top.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
-  view.add(top);
-
-  // --- Equation-transition pilot (Av = λv → (A − λI)v = 0) ---------------
-  // A single lesson-specific KaTeX/MathJax morph. `{{ }}` marks the fragments
-  // Motion Canvas should keep identical across states; the rest fades in/out.
-  // The morph is honest: we subtract λv from *both* sides, then factor v —
-  // no "magical transposition" across the equals sign.
-  const EQ_AV = String.raw`{{A\mathbf{v}}}`;
-  const EQ_LV = String.raw`{{\lambda\mathbf{v}}}`;
-  const EQ_START = String.raw`${EQ_AV}{{=}}${EQ_LV}`;
-  const EQ_SUBTRACT = String.raw`${EQ_AV}{{-}}${EQ_LV}{{=}}${EQ_LV}{{-}}${EQ_LV}`;
-  const EQ_ZERO = String.raw`${EQ_AV}{{-}}${EQ_LV}{{=}}{{\mathbf{0}}}`;
-  const EQ_FACTORED = String.raw`{{(A-\lambda I)\mathbf{v}}}{{=}}{{\mathbf{0}}}`;
-
-  const eqTex = new Latex({
-    tex: EQ_START,
-    fill: ROLE.text,
-    fontSize: 44,
-    opacity: 0,
-  });
-  eqTex.position(new Vector2(LABEL_CENTER_X, LABEL_TOP_Y));
-  view.add(eqTex);
-  const caption = makeOverlayLabel("", ROLE.textMuted, 30);
-  caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
-  view.add(caption);
-
-  const setTop = (text: string) => top.text(text);
-  const setCaption = (text: string) => caption.text(text);
-
-  // Establishing frame.
-  setTop("Computing eigenvectors");
-  setCaption("Same A you just watched — now derive λ and the directions");
-  top.opacity(1);
-  caption.opacity(1);
-  vArrow.opacity(1);
-  vLabel.opacity(1);
-
-  function* morphTo(target: Matrix2x2, dur: number): ThreadGenerator {
-    yield* morphMatrixEntries(ma, mb, mc, md, target, dur);
-  }
+  assertEigenDerivationDataIsConsistent();
+  view.fill(PAPER);
 
   const beats = (id: string) => requireBeats(SCENE_ID, id);
 
-  /** Fade every probe out. Each solve beat re-introduces only its own. */
-  const retireProbes = (duration: number): ThreadGenerator[] =>
-    [probe3, probe2].flatMap((probe) => [
-      probe.dot.opacity(0, duration),
-      probe.image.opacity(0, duration),
-    ]);
-
-  /** One root, solved. See the `solveV3` / `solveV2` bodies. */
-  function* solveEigenspace(
-    segmentId: string,
-    spec: {
-      lambda: number;
-      shifted: Matrix2x2;
-      line: Line;
-      arrow: Line;
-      label: ReturnType<typeof makeLabel>;
-      probe: ReturnType<typeof makeProbe>;
-      note: string;
-    },
-  ): ThreadGenerator {
-    const b = beats(segmentId);
-    const lambda = fmt(spec.lambda);
-    setTop(`Solve (A − ${lambda}I)v = 0`);
-    setCaption(`Substitute λ = ${lambda} back, and carry the plane to A − ${lambda}I.`);
-    shiftedNote.text(`A − ${lambda}I = ${matrixText(spec.shifted)}`);
-    yield* all(
-      morphTo(spec.shifted, b.shift!),
-      shiftedNote.opacity(1, b.shift!),
-      vArrow.opacity(0, b.shift!),
-      square.opacity(0, b.shift!),
-      // Retire whichever probe belongs to the OTHER root. Its image is a
-      // function of the live matrix, so left up it would drift away from the
-      // origin under this beat's shifted matrix and read as a second claim.
-      ...retireProbes(b.shift!),
+  // A faint ruled margin: the frame reads as a worked page, not a slide.
+  view.add(
+    new Line({
+      stroke: HOT,
+      lineWidth: 1.5,
+      opacity: 0.28,
+      points: [new Vector2(-452, -270), new Vector2(-452, 270)],
+    }),
+  );
+  for (let y = CHAIN_TOP; y <= 232; y += CHAIN_GAP) {
+    view.add(
+      new Line({
+        stroke: PAPER_RULE,
+        lineWidth: 1,
+        points: [new Vector2(-464, y + 18), new Vector2(96, y + 18)],
+      }),
     );
-    setCaption("It is singular — so some whole line has to be sent to the origin.");
-    yield* all(
-      spec.line.opacity(1, b.reveal!),
-      spec.arrow.opacity(1, b.reveal!),
-      spec.label.opacity(1, b.reveal!),
-    );
-    yield* waitFor(b.hold!);
-    spec.probe.t(-1);
-    yield* all(
-      spec.probe.dot.opacity(1, b.probeIn!),
-      spec.probe.image.opacity(1, b.probeIn!),
-    );
-    setCaption("Walk a probe along that line and watch its image.");
-    // The image is computed through the SAME live matrix as everything else,
-    // so "it never leaves the origin" is a consequence, not a parked dot.
-    yield* spec.probe.t(1, b.travel!, easeInOutCubic);
-    setCaption(
-      `Its image never left the origin: every v on this line solves (A − ${lambda}I)v = 0.`,
-    );
-    yield* origin.size(26, b.up!);
-    yield* origin.size(14, b.down!);
-    setCaption(`That line IS the eigenspace for λ = ${lambda}. ${spec.note}`);
-    yield* waitFor(b.hold2!);
   }
 
+  /** A pinned at the top of the page: the object the whole argument is about. */
+  const given = tex(
+    `A = \\begin{bmatrix} ${texNumber(A[0][0])} & ${texNumber(A[0][1])} \\\\ ${texNumber(A[1][0])} & ${texNumber(A[1][1])} \\end{bmatrix}`,
+    34,
+  );
+  given.position(new Vector2(296, -224));
+  given.opacity(0);
+  view.add(given);
+
+  /* ------------------------------------------------------------- the chain */
+  const lines: Latex[] = [];
+  const slotY = (index: number) => CHAIN_TOP + index * CHAIN_GAP;
+  const stepBack = (duration: number): ThreadGenerator[] =>
+    lines
+      .slice(0, -1)
+      .map((earlier) => earlier.opacity(0.42, duration) as ThreadGenerator);
+
+  const sizeFor = (index: number) =>
+    CHAIN_SCRIPT[index]!.small ? CHAIN_SMALL : CHAIN_SIZE;
+
+  /** Write the scripted line at `index`, fresh. */
+  const writeLine = function* (
+    index: number,
+    duration: number,
+    fill: string = INK,
+  ): ThreadGenerator {
+    const node = tex(CHAIN_SCRIPT[index]!.tex, sizeFor(index), fill);
+    node.position(new Vector2(CHAIN_X, slotY(lines.length)));
+    node.offset([-1, 0]);
+    node.opacity(0);
+    view.add(node);
+    lines.push(node);
+    yield* all(node.opacity(1, duration), ...stepBack(duration));
+  };
+
+  /**
+   * Write the scripted line at `index` by TRANSFORMING the one above it.
+   *
+   * The node is born carrying the previous line's exact LaTeX, at the previous
+   * line's position, and then descends a slot while its `{{ }}` fragments morph
+   * into the next form. So `Av − λv = 0` really becomes `(A − λI)v = 0`: the
+   * minus and the `= 0` are the same fragments, and the two terms rearrange.
+   * Fading in an unrelated complete equation would teach that the step is a
+   * substitution rather than a factorization.
+   */
+  const morphLine = function* (
+    index: number,
+    duration: number,
+    fill: string = INK,
+  ): ThreadGenerator {
+    const node = tex(CHAIN_SCRIPT[index - 1]!.tex, sizeFor(index), fill);
+    node.position(new Vector2(CHAIN_X, slotY(lines.length - 1)));
+    node.offset([-1, 0]);
+    node.opacity(0);
+    view.add(node);
+    lines.push(node);
+    // The fade-in and the morph SHARE the declared write window. Spending
+    // `duration` on each would push the witness that follows into the beat's
+    // declared hold, which the beat-intent gate reads as motion during a hold.
+    const settle = duration * 0.3;
+    const travel = duration - settle;
+    yield* node.opacity(1, settle);
+    yield* all(
+      node.position(new Vector2(CHAIN_X, slotY(lines.length - 1)), travel),
+      node.tex(CHAIN_SCRIPT[index]!.tex, travel) as ThreadGenerator,
+      ...stepBack(travel),
+    );
+  };
+
+  /** A running "why" at the foot of the page. One reason at a time. */
+  const reason = tex("", 24, INK_SOFT);
+  reason.position(new Vector2(CHAIN_X, 252));
+  reason.offset([-1, 0]);
+  reason.opacity(0);
+  view.add(reason);
+  const because = function* (body: string, duration: number): ThreadGenerator {
+    reason.tex(body);
+    yield* reason.opacity(1, duration);
+  };
+
+  /* ----------------------------------------------------------- the witness */
+  const witness = new Node({ opacity: 0 });
+  view.add(witness);
+  witness.add(
+    new Rect({
+      width: 336,
+      height: 336,
+      x: WITNESS.x,
+      y: WITNESS.y,
+      radius: 10,
+      fill: "#ffffff",
+      stroke: PAPER_RULE,
+      lineWidth: 1.5,
+    }),
+  );
+  for (let k = -3; k <= 3; k += 1) {
+    const isAxis = k === 0;
+    witness.add(
+      new Line({
+        stroke: isAxis ? INK_SOFT : PAPER_RULE,
+        lineWidth: isAxis ? 1.5 : 1,
+        points: [wpx([k, -3.6]), wpx([k, 3.6])],
+      }),
+    );
+    witness.add(
+      new Line({
+        stroke: isAxis ? INK_SOFT : PAPER_RULE,
+        lineWidth: isAxis ? 1.5 : 1,
+        points: [wpx([-3.6, k]), wpx([3.6, k])],
+      }),
+    );
+  }
+
+  const witnessCaption = tex("", 22, INK_SOFT);
+  witnessCaption.position(new Vector2(WITNESS.x, WITNESS.y + 196));
+  witnessCaption.opacity(0);
+  witness.add(witnessCaption);
+
+  /**
+   * The running example is the OFF-AXIS eigenpair: an eigenvector along the
+   * x-axis makes every arrow in the witness collinear with the axis and reads
+   * as "eigenvectors are axes", and its λ is the larger one, which pushes Av
+   * past the panel edge.
+   */
+  const RUNNING = STEPS[1]!;
+  const V: MathVector2 = RUNNING.direction;
+  const vLen = createSignal(1.6);
+  const lambdaShown = createSignal(RUNNING.lambda);
+
+  const cancellationContext = () => ({
+    v: [V[0] * vLen(), V[1] * vLen()] as const,
+    av: matrixVectorMultiply(A, [V[0] * vLen(), V[1] * vLen()]),
+    lambda: lambdaShown(),
+  });
+  /** Both witness arrows are resolved from the declared cancellation terms. */
+  const av = (): MathVector2 =>
+    resolveCancellationTerm(
+      CANCELLATION_TERMS.minuend,
+      cancellationContext(),
+    ) as MathVector2;
+  const lv = (): MathVector2 =>
+    resolveCancellationTerm(
+      CANCELLATION_TERMS.subtrahend,
+      cancellationContext(),
+    ) as MathVector2;
+
+  const vArrow = new Line({
+    stroke: COOL,
+    lineWidth: 4,
+    endArrow: true,
+    arrowSize: 12,
+    opacity: 0,
+    points: () => [wpx([0, 0]), wpx([V[0] * vLen(), V[1] * vLen()])],
+  });
+  witness.add(vArrow);
+  const vLabel = tex("\\mathbf{v}", 28, COOL);
+  vLabel.position(() =>
+    wpx([V[0] * vLen(), V[1] * vLen()]).add(new Vector2(-4, 26)),
+  );
+  vLabel.opacity(0);
+  witness.add(vLabel);
+
+  const avArrow = new Line({
+    stroke: HOT,
+    lineWidth: 5,
+    endArrow: true,
+    arrowSize: 12,
+    opacity: 0,
+    points: () => [wpx([0, 0]), wpx(av())],
+  });
+  witness.add(avArrow);
+  const avLabel = tex("A\\mathbf{v}", 26, HOT);
+  avLabel.position(() => wpx(av()).add(new Vector2(44, 6)));
+  avLabel.opacity(0);
+  witness.add(avLabel);
+
+  const lvArrow = new Line({
+    stroke: COOL,
+    lineWidth: 3,
+    lineDash: [9, 7],
+    endArrow: true,
+    arrowSize: 10,
+    opacity: 0,
+    points: () => [wpx([0, 0]), wpx(lv())],
+  });
+  witness.add(lvArrow);
+  const lvLabel = tex("\\lambda\\mathbf{v}", 26, COOL);
+  lvLabel.position(() => wpx(lv()).add(new Vector2(-30, 34)));
+  lvLabel.opacity(0);
+  witness.add(lvLabel);
+
+  /**
+   * `Av − λv`, anchored at Av's tip and travelling by `−λv`. Its head reaches
+   * the origin exactly, because the difference is zero.
+   */
+  const subProgress = createSignal(0);
+  const subArrow = new Line({
+    key: "semantic:eigen-derivation:cancellation",
+    stroke: INK,
+    lineWidth: 3,
+    lineDash: [8, 6],
+    endArrow: true,
+    arrowSize: 11,
+    opacity: 0,
+    points: () => {
+      const tip = wpx(av());
+      const back = wpx([-lv()[0] * subProgress(), -lv()[1] * subProgress()]).sub(
+        wpx([0, 0]),
+      );
+      return [tip, tip.add(back)];
+    },
+  });
+  witness.add(subArrow);
+
+  /**
+   * The shifted map's action on the unit square: the singular witness.
+   *
+   * The flattened square is drawn HEAVILY on purpose. At the running λ the
+   * image line is `y = 0`, so the collapsed square lands exactly on the drawn
+   * axis; at a hairline weight it reads as "the square vanished" rather than
+   * "the square was flattened onto a line", which is the opposite of the point.
+   * The stroke thickens as it squashes so the end state is an unmistakable bar
+   * lying along the axis.
+   */
+  const squashT = createSignal(0);
+  const square = new Line({
+    key: "semantic:eigen-derivation:unit-square",
+    closed: true,
+    fill: HOT,
+    stroke: HOT,
+    lineWidth: () => 2 + 5 * squashT(),
+    opacity: 0,
+    points: () =>
+      applyMatrixToUnitSquare(
+        lerpIdentityTo(RUNNING.shifted as Matrix2x2, squashT()),
+      ).map((p) => wpx(p)),
+  });
+  witness.add(square);
+
+  /** A symbolic aside, for what will not fit in the chain's line height. */
+  const aside = new Node({ opacity: 0 });
+  view.add(aside);
+  aside.add(
+    new Rect({
+      x: WITNESS.x,
+      y: WITNESS.y - 6,
+      width: 320,
+      height: 108,
+      radius: 8,
+      fill: "#ffffff",
+    }),
+  );
+  const shiftedInWitness = tex(
+    `A - \\lambda I = \\begin{bmatrix} ${texNumber(A[0][0])} - \\lambda & ${texNumber(A[0][1])} \\\\ ${texNumber(A[1][0])} & ${texNumber(A[1][1])} - \\lambda \\end{bmatrix}`,
+    26,
+    INK,
+  );
+  shiftedInWitness.position(new Vector2(WITNESS.x, WITNESS.y - 6));
+  aside.add(shiftedInWitness);
+
+  /** The eigendirection being solved for — one at a time, never both. */
+  const eigenArrows = STEPS.map((step, index) => {
+    const arrow = new Line({
+      stroke: index === 0 ? COOL : HOT,
+      lineWidth: 4,
+      endArrow: true,
+      arrowSize: 12,
+      opacity: 0,
+      points: () => [
+        wpx([0, 0]),
+        wpx([step.direction[0] * 2.2, step.direction[1] * 2.2]),
+      ],
+    });
+    witness.add(arrow);
+    const label = tex(
+      `\\lambda = ${texNumber(step.lambda)}`,
+      26,
+      index === 0 ? COOL : HOT,
+    );
+    label.position(
+      wpx([step.direction[0] * 2.2, step.direction[1] * 2.2]).add(
+        new Vector2(index === 0 ? 4 : 10, index === 0 ? -26 : 28),
+      ),
+    );
+    label.opacity(0);
+    witness.add(label);
+    return { arrow, label, step };
+  });
+
+  const originDot = new Circle({ size: 11, fill: INK, position: wpx([0, 0]) });
+  witness.add(originDot);
+
+  /**
+   * Bring the witness to the state a scripted line declares.
+   *
+   * Dispatching on `CHAIN_SCRIPT[i].witness` is what makes the ordering
+   * property real: `collapse` is declared on the line that STATES
+   * `det(A − λI) = 0`, so the flattening cannot run in the beat before it
+   * without editing the script — which fails a test.
+   */
+  const showWitness = function* (
+    kind: ChainWitness,
+    duration: number,
+  ): ThreadGenerator {
+    switch (kind) {
+      case "scale":
+        witnessCaption.tex("\\text{A only scales this one}");
+        yield* all(
+          vArrow.opacity(1, duration),
+          vLabel.opacity(1, duration),
+          avArrow.opacity(1, duration),
+          avLabel.opacity(1, duration),
+          lvArrow.opacity(1, duration),
+          lvLabel.opacity(1, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "cancel":
+        witnessCaption.tex("A\\mathbf{v} - \\lambda\\mathbf{v} = \\mathbf{0}");
+        yield* all(
+          subArrow.opacity(1, duration),
+          vArrow.opacity(0.22, duration),
+          vLabel.opacity(0.22, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "one-map":
+        witnessCaption.tex("\\text{one map now, not two}");
+        yield* all(
+          vArrow.opacity(0.9, duration),
+          vLabel.opacity(0.9, duration),
+          avArrow.opacity(0, duration),
+          avLabel.opacity(0, duration),
+          lvArrow.opacity(0, duration),
+          lvLabel.opacity(0, duration),
+          subArrow.opacity(0, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "nonzero":
+        witnessCaption.tex("\\text{a direction, not the origin}");
+        yield* all(
+          vArrow.opacity(0.9, duration),
+          vLabel.opacity(1, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "collapse":
+        // The demonstration. Reached only from the line that states the
+        // condition, because that is the line the script attaches it to.
+        witnessCaption.tex("\\text{watch the unit square}");
+        squashT(0);
+        yield* all(
+          square.opacity(0.3, duration),
+          vArrow.opacity(0.3, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "shifted-matrix":
+        // The caption belongs to the collapse that has just finished; leaving
+        // it under the aside would caption the wrong picture.
+        witnessCaption.tex("\\text{the entries it is computed from}");
+        yield* all(
+          square.opacity(0, duration),
+          aside.opacity(1, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      case "roots":
+        witnessCaption.tex(
+          "\\text{two }\\lambda\\text{ to substitute back}",
+        );
+        yield* all(aside.opacity(0, duration), witnessCaption.opacity(1, duration));
+        return;
+      case "eigenspace-0":
+      case "eigenspace-1": {
+        const index = kind === "eigenspace-0" ? 0 : 1;
+        const other = index === 0 ? 1 : 0;
+        witnessCaption.tex(
+          `A - ${texNumber(STEPS[index]!.lambda)}I\\text{ kills this line}`,
+        );
+        // Only this root's eigendirection: A − λI kills exactly one of the two
+        // lines, so showing both here would say it kills both.
+        yield* all(
+          vArrow.opacity(0, duration),
+          vLabel.opacity(0, duration),
+          aside.opacity(0, duration),
+          eigenArrows[other]!.arrow.opacity(0, duration),
+          eigenArrows[other]!.label.opacity(0, duration),
+          eigenArrows[index]!.arrow.opacity(1, duration),
+          eigenArrows[index]!.label.opacity(1, duration),
+          witnessCaption.opacity(1, duration),
+        );
+        return;
+      }
+      default: {
+        const unknown: never = kind;
+        throw new Error(`eigenvectorsDerivationScene: unknown witness ${unknown}`);
+      }
+    }
+  };
+
+  /**
+   * Write every line a segment owns, with its declared witness.
+   *
+   * Each line gets its OWN declared pair of windows — `write`/`witness` for the
+   * first, `write2`/`witness2` for the second — because a beat that writes two
+   * lines out of one pair spends the second line's time inside the window the
+   * intent table calls a hold. Missing windows throw rather than defaulting, so
+   * adding a line to `CHAIN_SCRIPT` without budgeting for it fails at render
+   * time instead of quietly stealing the hold.
+   */
+  const runChainBeat = function* (beat: string): ThreadGenerator {
+    const b = beats(beat);
+    const window = (name: string): number => {
+      const value = b[name];
+      if (typeof value !== "number") {
+        throw new Error(
+          `eigenvectorsDerivationScene: ${SCENE_ID}.${beat} writes a line with no declared "${name}" window.`,
+        );
+      }
+      return value;
+    };
+    for (const [ordinal, line] of chainLinesFor(beat).entries()) {
+      const suffix = ordinal === 0 ? "" : String(ordinal + 1);
+      const index = CHAIN_SCRIPT.indexOf(line);
+      if (line.morphsFromPrevious) {
+        yield* morphLine(
+          index,
+          window(`write${suffix}`),
+          line.witness === "one-map" ? COOL : INK,
+        );
+      } else {
+        yield* writeLine(
+          index,
+          window(`write${suffix}`),
+          line.witness === "collapse" || line.witness === "roots" ? HOT : INK,
+        );
+      }
+      yield* showWitness(line.witness, window(`witness${suffix}`));
+    }
+    yield* waitFor(window("hold"));
+  };
+
   const bodies: Record<string, () => ThreadGenerator> = {
-    *recap() {
-      const b = beats("recap");
-      setCaption("Directions A only scales — they stay on their line");
-      // Establishing "Computing eigenvectors" title yields to the live equation.
-      eqTex.tex(EQ_START);
-      yield* all(
-        top.opacity(0, b.in!),
-        eqTex.opacity(1, b.in!),
-        AvArrow.opacity(1, b.in!),
-        AvLabel.opacity(1, b.in!),
-      );
-      yield* waitFor(b.hold!);
+    *defining() {
+      const b = beats("defining");
+      yield* all(given.opacity(1, b.open!), witness.opacity(1, b.open!));
+      yield* runChainBeat("defining");
+      yield* because("\\text{definition}", b.reason!);
     },
 
-    *shift() {
-      const b = beats("shift");
-      // Make the algebra geometric: (A − λI)v = Av − λv, and for an
-      // eigendirection Av and λv coincide, so the difference is the zero
-      // vector. The Latex morph and the arrows move together. We keep the
-      // matrix as A here — the charpoly beat is where A actually morphs.
-      setCaption("Subtract λv from both sides of Av = λv");
-      // Introduce λv (geometry) alongside subtracting λv from both sides
-      // (equation). Both sides gain −λv: honest, not a jump across "=".
-      lambdaVLen(vScale());
-      yield* all(
-        lambdaVArrow.opacity(1, b.intro!),
-        lambdaVLabel.opacity(1, b.intro!),
-        eqTex.tex(EQ_SUBTRACT, b.intro!),
+    *gather() {
+      const b = beats("gather");
+      yield* runChainBeat("gather");
+      yield* because(
+        "\\text{subtract }\\lambda\\mathbf{v}\\text{ from both sides}",
+        b.reason!,
       );
-      setCaption("λv is the input v scaled by λ — it lands on Av");
-      yield* lambdaVLen(LAMBDA_3 * vScale(), b.grow!, easeInOutCubic);
-      // Flash to show λv and Av are the same arrow for this direction.
-      yield* all(
-        lambdaVArrow.lineWidth(9, b.flashUp!),
-        AvArrow.lineWidth(9, b.flashUp!),
-      );
-      yield* all(
-        lambdaVArrow.lineWidth(6, b.flashDown!),
-        AvArrow.lineWidth(6, b.flashDown!),
-      );
-      // Right side λv − λv → 0, mirrored by the tip walking to the origin.
-      setCaption("The right side λv − λv is 0; the tip walks to the origin");
-      yield* all(
-        subArrow.opacity(1, b.sub!),
-        lambdaVLabel.opacity(0, b.sub!),
-        eqTex.tex(EQ_ZERO, b.sub!),
-      );
+      // The subtraction is WALKED: Av − λv reaches the origin exactly.
       yield* subProgress(1, b.walk!, easeInOutCubic);
-      // Factor v out of Av − λv.
-      setCaption("Factor v: (A − λI)v = 0 for this direction");
-      yield* all(eqTex.tex(EQ_FACTORED, b.factor!), origin.size(24, b.factor!));
-      yield* origin.size(14, b.originDown!);
-      yield* waitFor(b.hold!);
+      yield* originDot.size(26, b.pulseUp!);
+      yield* originDot.size(11, b.pulseDown!);
     },
 
-    *["predict-collapse"]() {
-      const b = beats("predict-collapse");
-      setCaption(
-        "v is NOT the zero vector — and yet A − λI sends it to the origin.",
+    *factor() {
+      const b = beats("factor");
+      yield* runChainBeat("factor");
+      yield* because(
+        "\\text{factor }\\mathbf{v}\\text{ out — }I\\text{ makes the shapes match}",
+        b.reason!,
       );
-      yield* waitFor(b.ask!);
-      setCaption(
-        "Predict, from Lesson 3: what must the area scale of A − λI be for that to be possible?",
+      yield* waitFor(b.hold2!);
+    },
+
+    *nonzero() {
+      const b = beats("nonzero");
+      yield* runChainBeat("nonzero");
+      yield* because(
+        "\\text{otherwise every }\\lambda\\text{ would qualify, and none would mean anything}",
+        b.reason!,
+      );
+      yield* waitFor(b.hold2!);
+    },
+
+    *singular() {
+      const b = beats("singular");
+      // No collapse here: the script attaches the demonstration to the NEXT
+      // line, the one that states the determinant condition.
+      yield* runChainBeat("singular");
+      yield* because(
+        "\\text{an invertible map sends only }\\mathbf{0}\\text{ to }\\mathbf{0}",
+        b.reason!,
+      );
+      yield* waitFor(b.hold2!);
+    },
+
+    *predict() {
+      const b = beats("predict");
+      // Nothing moves: every line the answer follows from is already written
+      // and stays written, which is what makes this answerable rather than a
+      // guess. Only the question at the foot of the page changes.
+      yield* because(
+        "\\text{a nonzero }\\mathbf{v}\\text{ is sent to }\\mathbf{0}\\text{ — what must }\\det(A - \\lambda I)\\text{ be?}",
+        b.ask!,
       );
       yield* waitFor(b.think!);
     },
 
-    *charpoly() {
-      const b = beats("charpoly");
-      // Now motivate WHEN a nonzero v can collapse: only if the matrix
-      // A − λI itself flattens the plane (zero area scale). This is where
-      // we actually morph A → A − λI and watch the unit square collapse.
-      setTop("det(A − λI) = 0");
-      setCaption("A nonzero v can only die if A − λI flattens area to nothing");
-      // Hand the equation label back to the plain-text top; the pilot morph
-      // is done. Clear the vector-subtraction construction and bring up the
-      // unit square under the current matrix (still A) so collapse is visible.
+    *determinant() {
+      const b = beats("determinant");
+      // The condition is stated first; `showWitness("collapse")` then brings up
+      // the square, and only after that does it flatten.
+      yield* runChainBeat("determinant");
+      yield* because("\\text{flattened area is zero area}", b.reason!);
       yield* all(
-        eqTex.opacity(0, b.clear!),
-        top.opacity(1, b.clear!),
-        subArrow.opacity(0, b.clear!),
-        lambdaVArrow.opacity(0, b.clear!),
-        AvArrow.opacity(0, b.clear!),
-        AvLabel.opacity(0, b.clear!),
-        vArrow.opacity(0.25, b.clear!),
-        vLabel.opacity(0, b.clear!),
-        square.opacity(0.45, b.clear!),
+        squashT(1, b.squash!, easeInOutCubic),
+        square.opacity(0.85, b.squash!),
       );
-      // Morph A → A − λI: the unit square collapses onto a line (area → 0).
-      // The headline is bound to the LIVE matrix, so it falls with the shape
-      // rather than being stamped on before and after the morph.
-      top.text(() => `det(A − λI) ≈ ${fmt(determinant2x2(matrix()))}`);
-      setCaption("A − λI squashes the whole plane onto a line — area scale 0");
-      yield* morphTo(SHIFTED_3, b.morph!);
-      // Nudge slightly off and back to show flatness holds exactly at this λ.
-      const slightlyOff: Matrix2x2 = [
-        [SHIFTED_3[0][0] + 0.4, SHIFTED_3[0][1]],
-        [SHIFTED_3[1][0], SHIFTED_3[1][1] + 0.4],
-      ];
-      setCaption("Nudge λ off and the square puffs back up — flat happens exactly at this λ");
-      yield* morphTo(slightlyOff, b.off!);
-      yield* morphTo(SHIFTED_3, b.back!);
-      yield* waitFor(b.hold!);
+      witnessCaption.tex(
+        `\\text{area factor } = ${texNumber(determinant2x2(RUNNING.shifted as Matrix2x2))}\\text{ — one line left}`,
+      );
+      yield* witnessCaption.opacity(1, b.readout!);
+      yield* waitFor(b.hold2!);
     },
 
-    *solveLambda() {
-      const b = beats("solveLambda");
-      setCaption("Solve λ² − (tr)λ + det = 0 for this A");
-      const { b: coefB, c } = DERIVATION.charPoly.coefficients;
-      setTop(`λ² ${coefB >= 0 ? "+" : ""}${fmt(coefB)}λ ${c >= 0 ? "+" : ""}${fmt(c)} = 0`);
-      yield* all(square.opacity(0, b.morph!), morphTo(A, b.morph!));
-      const sorted = [...DERIVATION.lambdas].sort((x, y) => y - x);
-      setCaption(`Roots: λ = ${sorted.map(fmt).join(", ")}`);
-      setTop(`λ = ${sorted.map(fmt).join(" and ")}`);
-      yield* waitFor(b.hold!);
+    *expand() {
+      const b = beats("expand");
+      yield* runChainBeat("expand");
+      yield* because(
+        "\\text{subtract }\\lambda\\text{ down the diagonal}",
+        b.reason!,
+      );
+      yield* waitFor(b.hold2!);
     },
 
-    /**
-     * Substitute a root back and solve for its eigenspace, by watching the
-     * shifted matrix kill a whole line.
-     *
-     * Shared by both roots so the two are demonstrably the SAME procedure run
-     * twice — which is the point of the step, and what a hand-written second
-     * copy would quietly stop guaranteeing.
-     */
-    *["solveV3"]() {
-      yield* solveEigenspace("solveV3", {
-        lambda: LAMBDA_3,
-        shifted: SHIFTED_3,
-        line: line3,
-        arrow: arrow3,
-        label: label3,
-        probe: probe3,
-        note: "It is a coordinate axis.",
-      });
+    *roots() {
+      const b = beats("roots");
+      yield* runChainBeat("roots");
+      yield* because("\\text{the two roots}", b.reason!);
+      yield* waitFor(b.hold2!);
     },
 
-    *["solveV2"]() {
-      yield* solveEigenspace("solveV2", {
-        lambda: LAMBDA_2,
-        shifted: SHIFTED_2,
-        line: line2,
-        arrow: arrow2,
-        label: label2,
-        probe: probe2,
-        note: "A different λ, a different shifted matrix, a line off the axes.",
-      });
-    },
-
-    *interpret() {
-      const b = beats("interpret");
-      setTop("Interpret geometrically");
-      setCaption("Put A back, and keep both lines on screen.");
-      // Return the plane to A: the scene should close on the matrix it is
-      // about, not on the last shifted one it borrowed.
+    *eigenspaces() {
+      const b = beats("eigenspaces");
+      yield* runChainBeat("eigenspaces");
+      yield* because(
+        "\\text{substitute each root back and solve}",
+        b.reason!,
+      );
+      // Back under A, both lines belong together: each is scaled by its own λ,
+      // which is true of both at once.
+      witnessCaption.tex("\\text{under }A\\text{: each keeps its line}");
       yield* all(
-        morphTo(A, b.restore!),
-        shiftedNote.opacity(0, b.restore!),
-        ...retireProbes(b.restore!),
+        eigenArrows[0]!.arrow.opacity(1, b.both!),
+        eigenArrows[0]!.label.opacity(1, b.both!),
+        witnessCaption.opacity(1, b.both!),
       );
-      setCaption(
-        `λ=${fmt(LAMBDA_3)} stretches along ${formatDirectionRatio([DIR_3[0], DIR_3[1]])}; ` +
-          `λ=${fmt(LAMBDA_2)} along ${formatDirectionRatio([DIR_2[0], DIR_2[1]])} — two different lines`,
-      );
-      // Pulse the off-axis direction so the asymmetry is the takeaway.
-      yield* all(arrow2.lineWidth(9, b.emphasisUp!), label2.fontSize(34, b.emphasisUp!));
-      yield* all(arrow2.lineWidth(5, b.emphasisDown!), label2.fontSize(30, b.emphasisDown!));
-      yield* waitFor(b.hold!);
+      yield* waitFor(b.hold2!);
     },
   };
 

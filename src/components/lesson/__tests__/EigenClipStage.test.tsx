@@ -25,26 +25,29 @@ describe("playback beats semantic map", () => {
   it("aligns derivation scene ids with major ladder rungs", () => {
     const beats = getPlaybackBeats("eigenvectors-derivation");
     expect(beats?.map((beat) => beat.id)).toEqual([
-      "recap",
-      "shift",
-      "charpoly",
-      "solveLambda",
-      "solveV",
-      "interpret",
+      "defining",
+      "gather",
+      "factor",
+      "nonzero",
+      "singular",
+      "predict",
+      "determinant",
+      "expand",
+      "roots",
+      "eigenspaces",
     ]);
   });
 
   it("maps algebraic steps without a 3D analog to the nearest meaningful state", () => {
-    const nearest = resolveThreeDStep(
-      "eigenvectors-derivation",
-      "solveLambda",
-    );
+    // `expand` is pure algebra — the polynomial — so the 3D view holds the
+    // last state that had a spatial meaning: the shifted map's collapse.
+    const nearest = resolveThreeDStep("eigenvectors-derivation", "expand");
     expect(nearest?.threeD).toBe("shift-collapse");
-    expect(nearest?.id).toBe("charpoly");
+    expect(nearest?.id).toBe("determinant");
   });
 
   it("keeps invariant-line interpretation for Av = λv", () => {
-    const step = resolveThreeDStep("eigenvectors-derivation", "recap");
+    const step = resolveThreeDStep("eigenvectors-derivation", "defining");
     expect(step?.threeD).toBe("invariant-line");
   });
 
@@ -183,61 +186,61 @@ describe("EigenClipStage", () => {
       inlineNav.closest('[data-testid="eigen-clip-inline"]'),
     ).toBeTruthy();
 
-    const inlineShift = inlineNav.querySelector(
-      '[data-step-id="shift"] button',
+    const inlineFactor = inlineNav.querySelector(
+      '[data-step-id="factor"] button',
     ) as HTMLButtonElement | null;
-    expect(inlineShift).toBeTruthy();
+    expect(inlineFactor).toBeTruthy();
     await act(async () => {
-      fireEvent.click(inlineShift!);
+      fireEvent.click(inlineFactor!);
     });
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("shift");
+      ).toBe("factor");
     });
     expect(
       inlineNav
-        .querySelector('[data-step-id="shift"]')
+        .querySelector('[data-step-id="factor"]')
         ?.getAttribute("data-active"),
     ).toBe("true");
 
     // Return to the first beat so the modal assertions below are unchanged.
-    const inlineRecap = screen
+    const inlineDefining = screen
       .getByTestId("derivation-step-nav")
-      .querySelector('[data-step-id="recap"] button') as HTMLButtonElement;
+      .querySelector('[data-step-id="defining"] button') as HTMLButtonElement;
     await act(async () => {
-      fireEvent.click(inlineRecap);
+      fireEvent.click(inlineDefining);
     });
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("recap");
+      ).toBe("defining");
     });
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("eigen-expand-clip"));
     });
     const modal = await screen.findByTestId("eigen-clip-modal");
-    expect(modal.getAttribute("data-major-step")).toBe("recap");
+    expect(modal.getAttribute("data-major-step")).toBe("defining");
     // Single renderer, single nav: the inline one unmounts while expanded.
     expect(screen.getAllByTestId("derivation-step-nav")).toHaveLength(1);
 
-    const shift = modal.querySelector(
-      '[data-step-id="shift"] button',
+    const factor = modal.querySelector(
+      '[data-step-id="factor"] button',
     ) as HTMLButtonElement | null;
-    expect(shift).toBeTruthy();
+    expect(factor).toBeTruthy();
     await act(async () => {
-      fireEvent.click(shift!);
+      fireEvent.click(factor!);
     });
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-modal").getAttribute("data-major-step"),
-      ).toBe("shift");
+      ).toBe("factor");
     });
     // Nav is playback metadata: the selected beat is marked active. No captions.
     expect(
       modal
-        .querySelector('[data-step-id="shift"]')
+        .querySelector('[data-step-id="factor"]')
         ?.getAttribute("data-active"),
     ).toBe("true");
 
@@ -247,7 +250,7 @@ describe("EigenClipStage", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("eigen-clip-stage").getAttribute("data-major-step"),
-      ).toBe("shift");
+      ).toBe("factor");
     });
     // Back inline: the nav is still there and still marks the active beat.
     const navAfterClose = screen.getByTestId("derivation-step-nav");
@@ -256,7 +259,7 @@ describe("EigenClipStage", () => {
     ).toBeTruthy();
     expect(
       navAfterClose
-        .querySelector('[data-step-id="shift"]')
+        .querySelector('[data-step-id="factor"]')
         ?.getAttribute("data-active"),
     ).toBe("true");
   });
@@ -296,7 +299,7 @@ describe("Eigen3DExtension fallback", () => {
     render(
       <Eigen3DExtension
         sceneId="eigenvectors-derivation"
-        position={{ majorStepId: "recap" }}
+        position={{ majorStepId: "defining" }}
         forceUnavailable
       />,
     );
@@ -308,7 +311,7 @@ describe("Eigen3DExtension fallback", () => {
     render(
       <Eigen3DExtension
         sceneId="eigenvectors-derivation"
-        position={{ majorStepId: "recap" }}
+        position={{ majorStepId: "defining" }}
       />,
     );
     const fallback = screen.queryByTestId("eigen-3d-fallback");

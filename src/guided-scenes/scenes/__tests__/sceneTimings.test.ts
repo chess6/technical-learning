@@ -244,10 +244,7 @@ describe("scene timings (pure data)", () => {
         predict: "predict-reverse",
         reveal: "reverse",
       },
-      "eigenvectors-derivation": {
-        predict: "predict-collapse",
-        reveal: "charpoly",
-      },
+      "eigenvectors-derivation": { predict: "predict", reveal: "determinant" },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },
@@ -365,34 +362,43 @@ describe("scene timings (pure data)", () => {
     ]);
   });
 
-  it("eigenvectors-derivation reaches every ladder rung and predicts the collapse", () => {
+  /**
+   * The worked-calculation clip: the derivation written as a chain of
+   * equivalences, promoted from the laboratory. Its ladder is the argument, in
+   * the order a learner would write it.
+   */
+  it("eigenvectors-derivation walks the whole chain in argument order", () => {
     const majorIds = getSceneMeta("eigenvectors-derivation").majorSteps.map(
       (step) => step.id,
     );
     expect(majorIds).toEqual([
-      "recap",
-      "shift",
-      "predict-collapse",
-      "charpoly",
-      "solveLambda",
-      // Each root is substituted back and SOLVED in its own chapter, so the
-      // second eigenspace is reachable by name rather than buried in one beat
-      // that faded both answers in.
-      "solveV3",
-      "solveV2",
-      "interpret",
+      "defining",
+      "gather",
+      "factor",
+      "nonzero",
+      "singular",
+      "predict",
+      "determinant",
+      "expand",
+      "roots",
+      "eigenspaces",
     ]);
     const ids = EIGEN_DERIVATION_SEGMENTS.map((s) => s.id);
-    // The prediction only works AFTER (A − λI)v = 0 has been earned.
-    expect(ids.indexOf("shift")).toBeLessThan(ids.indexOf("predict-collapse"));
+    // Each inference depends on the one before it, so the order IS the proof.
+    expect(ids.indexOf("gather")).toBeLessThan(ids.indexOf("factor"));
+    expect(ids.indexOf("factor")).toBeLessThan(ids.indexOf("nonzero"));
+    expect(ids.indexOf("nonzero")).toBeLessThan(ids.indexOf("singular"));
+    // The prediction is answerable only once v ≠ 0 and singularity are both on
+    // the page, and it is resolved by the line that states the determinant.
+    expect(ids.indexOf("singular")).toBeLessThan(ids.indexOf("predict"));
+    expect(ids.indexOf("predict")).toBeLessThan(ids.indexOf("determinant"));
     // Substituting a root back only makes sense once the roots exist.
-    expect(ids.indexOf("solveLambda")).toBeLessThan(ids.indexOf("solveV3"));
-    // Each solve beat carries a probe travel plus room to inspect the landing.
-    for (const id of ["solveV3", "solveV2"]) {
-      const segment = EIGEN_DERIVATION_SEGMENTS.find((s) => s.id === id)!;
-      expect(segment.duration, id).toBeGreaterThanOrEqual(9);
-      expect(SCENE_BEATS["eigenvectors-derivation"]![id]!.travel!).toBeGreaterThanOrEqual(2);
-    }
+    expect(ids.indexOf("roots")).toBeLessThan(ids.indexOf("eigenspaces"));
+    // Two eigenspaces are solved one at a time in one beat, so it needs room.
+    const eigenspaces = EIGEN_DERIVATION_SEGMENTS.find(
+      (s) => s.id === "eigenspaces",
+    )!;
+    expect(eigenspaces.duration).toBeGreaterThanOrEqual(8);
   });
 
   describe("elimination", () => {

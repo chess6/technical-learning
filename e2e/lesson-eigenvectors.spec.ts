@@ -45,14 +45,16 @@ test("Eigenvectors loads, guided scene plays, worked computation, explorer, and 
   await expect(page.getByTestId("worked-example-eigen-compute-distinct")).toBeVisible();
   await expect(page.getByTestId("misconception-callout").first()).toBeVisible();
 
-  // Derivation scene idea dots expose ladder rung titles.
+  // Derivation scene idea dots expose ladder rung titles. The clip is the
+  // written chain, so the rung named here is the one that states the
+  // determinant condition — the pivot of the whole argument.
   const worked = page.getByRole("region", { name: "Worked examples" });
-  const ideaDot = worked.locator(".guided-scene-player__idea-dot").nth(2);
+  const ideaDot = worked.locator(".guided-scene-player__idea-dot").nth(6);
   if (await ideaDot.count()) {
     await ideaDot.click();
     await expect(
       worked.locator(".guided-scene-player__stage-title"),
-    ).toContainText(/det\(A|char|λ|lambda|Solve/i);
+    ).toContainText(/det\(A/i);
   }
 
   const explore = page.getByRole("region", {

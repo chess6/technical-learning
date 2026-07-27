@@ -30,39 +30,63 @@ export type PlaybackBeat = {
 
 const DERIVATION_SCENE_BEATS: readonly PlaybackBeat[] = [
   {
-    id: "recap",
+    id: "defining",
     equation: "A\\mathbf{v}=\\lambda\\mathbf{v}",
     label: "Av = λv",
     threeD: "invariant-line",
   },
   {
-    id: "shift",
+    id: "gather",
+    equation: "A\\mathbf{v}-\\lambda\\mathbf{v}=\\mathbf{0}",
+    label: "Av − λv = 0",
+    threeD: "invariant-line",
+  },
+  {
+    id: "factor",
     equation: "(A-\\lambda I)\\mathbf{v}=\\mathbf{0}",
     label: "(A − λI)v = 0",
     threeD: "shift-collapse",
   },
   {
-    id: "charpoly",
+    id: "nonzero",
+    equation: "\\mathbf{v}\\neq\\mathbf{0}",
+    label: "v is not zero",
+    threeD: "shift-collapse",
+  },
+  {
+    id: "singular",
+    equation: "A-\\lambda I\\text{ not invertible}",
+    label: "A − λI is not invertible",
+    threeD: "shift-collapse",
+  },
+  {
+    id: "predict",
+    equation: "\\det(A-\\lambda I)=?",
+    label: "Predict the determinant",
+    threeD: "shift-collapse",
+  },
+  {
+    id: "determinant",
     equation: "\\det(A-\\lambda I)=0",
     label: "det(A − λI) = 0",
     threeD: "shift-collapse",
   },
   {
-    id: "solveLambda",
+    id: "expand",
     equation: "\\lambda^2-(\\mathrm{tr}\\,A)\\lambda+\\det A=0",
-    label: "Solve for λ",
+    label: "Compute it from the entries",
     threeD: "nearest",
   },
   {
-    id: "solveV",
+    id: "roots",
+    equation: "\\lambda=3,\\;2",
+    label: "Two eigenvalues",
+    threeD: "nearest",
+  },
+  {
+    id: "eigenspaces",
     equation: "(A-\\lambda I)\\mathbf{v}=\\mathbf{0}",
-    label: "Solve the eigenspaces",
-    threeD: "nearest",
-  },
-  {
-    id: "interpret",
-    equation: "A\\mathbf{v}=\\lambda\\mathbf{v}",
-    label: "Interpret geometrically",
+    label: "Substitute each back",
     threeD: "invariant-line",
   },
 ];

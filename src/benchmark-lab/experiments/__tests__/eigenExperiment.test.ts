@@ -166,8 +166,15 @@ describe("the deforming plane", () => {
 });
 
 describe("eigen candidate registry", () => {
-  it("offers two candidates and declares no winner", () => {
-    expect(EIGEN_CANDIDATES.map((c) => c.id)).toEqual(["knob", "chain"]);
+  it("offers the shipped clip and two candidates, and declares no winner", () => {
+    // `shipped` is the production scene registered for side-by-side viewing,
+    // not a third hypothesis — it is listed first so the lab opens on what
+    // learners actually see.
+    expect(EIGEN_CANDIDATES.map((c) => c.id)).toEqual([
+      "shipped",
+      "knob",
+      "chain",
+    ]);
     for (const candidate of EIGEN_CANDIDATES) {
       expect(candidate.obstacle.length).toBeGreaterThan(60);
       expect(candidate.distinctBecause.length).toBeGreaterThan(60);
@@ -180,7 +187,10 @@ describe("eigen candidate registry", () => {
   });
 
   it("gives every candidate ordered beats inside its duration", () => {
-    for (const candidate of EIGEN_CANDIDATES) {
+    // Resolved, not raw: the shipped entry derives its chapters from the
+    // production timing registry so the lab cannot drift from the lesson.
+    for (const raw of EIGEN_CANDIDATES) {
+      const candidate = getEigenCandidate(raw.id);
       expect(candidate.beats.length, candidate.id).toBeGreaterThanOrEqual(6);
       expect(candidate.beats[0]!.at, candidate.id).toBe(0);
       for (let i = 1; i < candidate.beats.length; i += 1) {
