@@ -1,4 +1,4 @@
-import { Circle, Latex, Line, Node, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Line, Node, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
@@ -468,6 +468,3 @@ export const longhandScene = makeScene2D(function* (view) {
 
   yield* runCandidateBeats("longhand", bodies);
 });
-
-/** Re-exported so the registry's beat list and the scene cannot disagree. */
-export type { Latex };

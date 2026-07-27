@@ -421,7 +421,7 @@ describe("scene timings (pure data)", () => {
       // Every result entry is computed before any of it is drawn as a line.
       expect(ids.indexOf("subtract")).toBeLessThan(ids.indexOf("plane"));
       expect(ids.indexOf("promote")).toBeLessThan(ids.indexOf("pivot"));
-      expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(53);
+      expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(53.3);
     });
 
     it("gives the three-column subtraction the most time of any beat", () => {

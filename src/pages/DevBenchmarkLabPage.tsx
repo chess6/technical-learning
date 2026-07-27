@@ -654,6 +654,16 @@ function DesignExperiment() {
   const [theater, setTheater] = useState(false);
   const [safeFrame, setSafeFrame] = useState(false);
 
+  /**
+   * A freshly mounted player always starts at 1×, and the mount effect must not
+   * re-run when the speed changes — so the chosen speed is carried in a ref and
+   * re-applied after every mount. Without this, switching candidates left the
+   * control reading 2× while the clip ran at 1×, which is the worst kind of
+   * comparison bug: the two clips are no longer being watched the same way.
+   */
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
+
   useEffect(() => {
     let cancelled = false;
     let mounted: LabPlayerHandle | null = null;
@@ -670,6 +680,7 @@ function DesignExperiment() {
       mounted = handle;
       handleRef.current = handle;
       handle.onFrame(setFrame);
+      handle.setSpeed(speedRef.current);
       handle.seekToFrame(0);
       setReady(true);
     })();

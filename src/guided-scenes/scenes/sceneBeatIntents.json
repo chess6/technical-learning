@@ -315,6 +315,7 @@
           "semantic:elimination:row-2-line"
         ]
       },
+      "relabel": "text",
       "settle": "emphasis",
       "emphasis": "emphasis",
       "hold": "hold"

@@ -330,6 +330,34 @@ test.describe("elimination design experiment", () => {
     expect(errors).toEqual([]);
   });
 
+  test("keeps the chosen playback speed when the candidate changes", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(`${DESIGN}&candidate=longhand`);
+    await waitForCandidate(page);
+
+    const speed = page.getByLabel("Playback speed");
+    await speed.selectOption("2");
+    await page.getByRole("tab", { name: titlePattern("B · Pivot") }).click();
+    await waitForCandidate(page);
+
+    // The control still reads 2×…
+    await expect(speed).toHaveValue("2");
+
+    // …and so does the ENGINE. A freshly mounted player starts at 1×, so a
+    // control that merely remembers the number would leave the two clips being
+    // watched at different speeds — the one thing a comparison lab must not do.
+    const clock = page.locator(".bench-lab__clock");
+    await page.getByRole("button", { name: "Restart" }).click();
+    await page.getByRole("button", { name: "Play" }).click();
+    await page.waitForTimeout(1500);
+    await page.getByRole("button", { name: "Pause" }).click();
+    const elapsed = Number((await clock.textContent())!.match(/([\d.]+)s/)![1]);
+    // 1.5s of wall clock at 2× is ~3s of clip; at 1× it would be ~1.5s.
+    expect(elapsed).toBeGreaterThan(2.2);
+  });
+
   test("stays inspectable at a narrow laptop width", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 860 });
     await page.goto(`${DESIGN}&candidate=pivot`);

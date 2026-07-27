@@ -7,17 +7,23 @@ import {
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
-import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
+import type { AugmentedRow } from "../../math";
 import {
-  applyRowOperation,
-  augmentedFromSystem,
-  eliminationStepToClearX,
-  satisfiesSystem,
-  solveLinearSystem2x2,
-  systemMatrix,
-  type AugmentedRow,
-  type Vector2 as MathVector2,
-} from "../../math";
+  ELIMINATION_COLUMNS as COLUMNS,
+  ELIMINATION_FACTOR as FACTOR,
+  ELIMINATION_MULTIPLIER as MULTIPLIER,
+  ELIMINATION_SOLUTION as SOLUTION,
+  NEW_R2,
+  R1,
+  R2,
+  SCALED_R1,
+  assertEliminationMathIsConsistent,
+  displayedEquation,
+  displayedRow,
+  rowAtAlpha,
+  texEquation as equation,
+  texNumber as num,
+} from "./eliminationRows";
 import { ELIMINATION_BEATS, ELIMINATION_SEGMENTS } from "./sceneTimings";
 import { ROLE, runSegment } from "./sceneKit";
 
@@ -65,65 +71,6 @@ import { ROLE, runSegment } from "./sceneKit";
  */
 
 const SCENE_ID = "elimination";
-const EX = LINEAR_SYSTEM_EXAMPLE;
-
-const START = augmentedFromSystem(EX.a, EX.b);
-const STEP = eliminationStepToClearX(START);
-if (!STEP || STEP.kind !== "add") {
-  throw new Error("eliminationScene: expected an add row-operation to clear x.");
-}
-const END = applyRowOperation(START, STEP);
-
-const R1: AugmentedRow = START.rows[0];
-const R2: AugmentedRow = START.rows[1];
-const NEW_R2: AugmentedRow = END.rows[1];
-/** −2; the clip says "subtract 2·R₁", so it shows the magnitude. */
-const FACTOR = STEP.factor;
-const MULTIPLIER = Math.abs(FACTOR);
-const SCALED_R1: AugmentedRow = [
-  MULTIPLIER * R1[0],
-  MULTIPLIER * R1[1],
-  MULTIPLIER * R1[2],
-];
-const SOLUTION: MathVector2 =
-  solveLinearSystem2x2(systemMatrix(START), EX.b) ?? [2, -1];
-
-/** One column of the longhand subtraction, with both operands and the result. */
-const COLUMNS = ([0, 1, 2] as const).map((index) => ({
-  minuend: R2[index]!,
-  subtrahend: SCALED_R1[index]!,
-  result: NEW_R2[index]!,
-  isTarget: index === 0,
-}));
-
-function assertSceneMathIsConsistent(): void {
-  if (!satisfiesSystem(START, SOLUTION) || !satisfiesSystem(END, SOLUTION)) {
-    throw new Error("eliminationScene: the row operation moved the solution.");
-  }
-  for (const [index, column] of COLUMNS.entries()) {
-    if (Math.abs(column.minuend - column.subtrahend - column.result) > 1e-9) {
-      throw new Error(`eliminationScene: column ${index} does not subtract.`);
-    }
-  }
-  if (Math.abs(NEW_R2[0]) > 1e-9) {
-    throw new Error("eliminationScene: the leading entry was not eliminated.");
-  }
-  if (Math.abs(rowAtAlpha(FACTOR)[0]) > 1e-9) {
-    throw new Error("eliminationScene: the sweep does not reach the new row.");
-  }
-}
-
-/**
- * The constraints reachable from R₂ by adding a multiple of R₁. Every member
- * passes through the solution, which is what licenses the continuous sweep.
- */
-function rowAtAlpha(alpha: number): AugmentedRow {
-  return [
-    R2[0] + alpha * R1[0],
-    R2[1] + alpha * R1[1],
-    R2[2] + alpha * R1[2],
-  ];
-}
 
 /* ------------------------------------------------------------ typography */
 
@@ -146,30 +93,6 @@ function tex(
   key?: string,
 ): Latex {
   return new Latex({ key, tex: value as never, fontSize: size, fill });
-}
-
-/** A number as a frame shows it: real minus, never `-0`. */
-function num(value: number): string {
-  const rounded = Math.round(value * 1000) / 1000;
-  return String(Object.is(rounded, -0) ? 0 : rounded);
-}
-
-/** `x + 3y = -1` — the way a person writes the row. */
-function equation(row: AugmentedRow): string {
-  const parts: string[] = [];
-  const push = (value: number, symbol: string) => {
-    if (Math.abs(value) < 1e-9) return;
-    const magnitude = Math.abs(value);
-    const body = magnitude === 1 ? symbol : `${num(magnitude)}${symbol}`;
-    parts.push(
-      parts.length === 0
-        ? `${value < 0 ? "-" : ""}${body}`
-        : `${value < 0 ? "-" : "+"} ${body}`,
-    );
-  };
-  push(row[0], "x");
-  push(row[1], "y");
-  return `${parts.length > 0 ? parts.join(" ") : "0"} = ${num(row[2])}`;
 }
 
 /* --------------------------------------------------------------- layout */
@@ -238,7 +161,7 @@ function clipLine(row: AugmentedRow): [Vector2, Vector2] {
 }
 
 export const eliminationScene = makeScene2D(function* (view) {
-  assertSceneMathIsConsistent();
+  assertEliminationMathIsConsistent();
   view.fill(ROLE.background);
 
   const B = ELIMINATION_BEATS;
@@ -516,9 +439,22 @@ export const eliminationScene = makeScene2D(function* (view) {
   });
   view.add(ghostLine2);
 
+  /**
+   * Which of the two writable rows the label is currently naming.
+   *
+   * Deliberately NOT `alpha`. The line's motion is continuous and honest, but
+   * the algebra is not: the sweep passes through rows like `1.5x − 2.5y = 3`,
+   * which are true constraints nobody writes. The label reads a whole stop
+   * through `displayedEquation`, which throws on anything in between — so
+   * wiring it back to the tween fails loudly instead of ticking.
+   */
+  const labelStop = createSignal(0);
+
   /** The equation rides at the line's end: it is the line's name, not a panel. */
-  const lineLabel2 = tex(() => equation(rowAtAlpha(alpha())), 32, ROLE.basis2);
-  lineLabel2.position(() => clipLine(rowAtAlpha(alpha()))[1].add(new Vector2(84, -22)));
+  const lineLabel2 = tex(() => displayedEquation(labelStop()), 32, ROLE.basis2);
+  lineLabel2.position(() =>
+    clipLine(displayedRow(labelStop()))[1].add(new Vector2(84, -22)),
+  );
   lineLabel2.opacity(0);
   view.add(lineLabel2);
 
@@ -870,14 +806,21 @@ export const eliminationScene = makeScene2D(function* (view) {
 
     *pivot() {
       const b = B.pivot!;
+      // The label goes down with the banner: while the line is between two
+      // writable rows there is no equation to show, and showing the one it has
+      // left would name a line it is no longer on.
       yield* all(
         banner.opacity(0, b.ghost!),
         bannerText.opacity(0, b.ghost!),
         ghostLine2.opacity(0.5, b.ghost!),
+        lineLabel2.opacity(0, b.ghost!),
       );
-      // The sweep walks the pencil R₂ + α·R₁. Its label is re-typeset at the
-      // whole stop, never interpolated into digits nobody wrote.
+      // The sweep walks the pencil R₂ + α·R₁ — continuous geometry, and every
+      // intermediate is a real constraint through the crossing.
       yield* alpha(FACTOR, b.sweep!, easeInOutCubic);
+      // Landed. NOW the exact final equation is written, at its stop.
+      labelStop(1);
+      yield* lineLabel2.opacity(1, b.relabel!);
       note.tex("\\text{horizontal — its equation has no } x \\text{ left}");
       yield* all(note.opacity(1, b.settle!), line2.lineWidth(8, b.settle!));
       yield* line2.lineWidth(5, b.emphasis!);

@@ -4,7 +4,6 @@ import {
   expectChaptersMatchMetadata,
   gotoChapter,
   ideaChip,
-  ideaChips,
 } from "./helpers/guidedScene";
 
 function collectConsoleErrors(page: Page): string[] {
@@ -62,11 +61,11 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
   // Pause so seeking to specific ideas is stable (not chased by playback).
   await scene.getByRole("button", { name: "Pause" }).click();
 
-  // Step-marker alignment: exactly the five ELIMINATION_SEGMENTS major ideas,
-  // in order. The idea chips are derived from the same timing metadata that
-  // drives the scrubber, so this pins scrubber/idea/segment alignment.
-  // The beats this lesson must offer, addressed by NAME — the ordinals shift
-  // whenever a beat is inserted, and this spec has no opinion about numbering.
+  // Step-marker alignment: the idea chips come from the same timing metadata
+  // that drives the scrubber, so `expectChaptersMatchMetadata` pins the count
+  // and these titles pin the beats the lesson must offer. Addressed by NAME —
+  // the ordinals shift whenever a beat is inserted, and this spec has no
+  // opinion about numbering.
   const ideaTitles = [
     "The same rows, packed",
     "The entry we want to kill",

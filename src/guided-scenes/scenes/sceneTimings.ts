@@ -471,7 +471,7 @@ export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
   {
     id: "pivot",
     title: "The line pivots about the crossing",
-    duration: 5.5,
+    duration: 5.8,
     summary: "R2's line rotates through the constraints the operation can reach and lands horizontal — a line whose equation no longer mentions x.",
   },
   {
@@ -1478,7 +1478,9 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     promote: { fade: 0.4, travel: 0.9, settle: 0.4, hold: 1.1 },
     plane: { reframe: 1.0, grid: 0.5, lines: 0.6, dot: 0.4, dotUp: 0.3, dotDown: 0.3, hold: 1.6 },
     predict: { ask: 0.5, think: 4.4 },
-    pivot: { ghost: 0.4, sweep: 2.6, settle: 0.5, emphasis: 0.4, hold: 1.4 },
+    // `relabel` is where the exact final equation is written. The label is
+    // down for `sweep`: between two writable rows there is nothing to show.
+    pivot: { ghost: 0.4, sweep: 2.6, relabel: 0.4, settle: 0.4, emphasis: 0.3, hold: 1.3 },
     // Each reveal gets its own declared beat: a `hold` that animates inside it
     // is a hold in name only, and the beat-intent gate says so.
     read: {
