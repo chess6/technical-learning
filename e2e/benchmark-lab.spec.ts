@@ -1,6 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 import { BENCHMARK_MANIFESTS } from "../src/benchmark-lab/manifests";
-import { ELIMINATION_CANDIDATES } from "../src/benchmark-lab/experiments/eliminationCandidates";
+import {
+  ELIMINATION_CANDIDATES,
+  getEliminationCandidate,
+} from "../src/benchmark-lab/experiments/eliminationCandidates";
 
 /**
  * The animation benchmark laboratory, exercised the way an author uses it.
@@ -261,6 +264,10 @@ test.describe("elimination design experiment", () => {
 
   const DESIGN = `${LAB}?mode=design`;
 
+  /** Candidate titles contain regex metacharacters (`·`, `+`). */
+  const titlePattern = (title: string) =>
+    new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+
   async function waitForCandidate(page: Page): Promise<void> {
     await expect(page.locator(".design-lab__viewport")).toHaveAttribute(
       "data-ready",
@@ -283,18 +290,19 @@ test.describe("elimination design experiment", () => {
     await expect(tabs).toHaveCount(ELIMINATION_CANDIDATES.length);
     for (const candidate of ELIMINATION_CANDIDATES) {
       await expect(
-        page.getByRole("tab", { name: new RegExp(candidate.title) }),
+        page.getByRole("tab", { name: titlePattern(candidate.title) }),
       ).toBeVisible();
     }
 
     for (const candidate of ELIMINATION_CANDIDATES) {
-      await page.getByRole("tab", { name: new RegExp(candidate.title) }).click();
+      await page.getByRole("tab", { name: titlePattern(candidate.title) }).click();
       await waitForCandidate(page);
       // Selection is linkable, so a reviewer can send one candidate.
       expect(page.url()).toContain(`candidate=${candidate.id}`);
-      // Its own beats drive the chapter buttons.
+      // Its own beats drive the chapter buttons. The shipped clip resolves
+      // them from the production timing registry, so ask the resolver.
       await expect(page.locator(".design-lab__beats button")).toHaveCount(
-        candidate.beats.length,
+        getEliminationCandidate(candidate.id).beats.length,
       );
       // The thesis names the obstacle rather than leaving the clip unexplained.
       await expect(page.locator(".design-lab__thesis")).toContainText(
@@ -302,7 +310,7 @@ test.describe("elimination design experiment", () => {
       );
 
       // Seek to the last beat and confirm the transport followed.
-      const finalBeat = candidate.beats.at(-1)!;
+      const finalBeat = getEliminationCandidate(candidate.id).beats.at(-1)!;
       await page.locator(".design-lab__beats button").last().click();
       await expect(page.locator(".bench-lab__clock")).toContainText(
         `${Math.floor(finalBeat.at)}`,

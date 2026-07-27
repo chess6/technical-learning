@@ -14,6 +14,8 @@
  *    wrote, and it is what the production scene currently shows).
  */
 
+import { ELIMINATION_SEGMENTS } from "../../guided-scenes/scenes/sceneTimings";
+
 export interface CandidateBeat {
   id: string;
   title: string;
@@ -42,6 +44,24 @@ export interface EliminationCandidate {
 }
 
 export const ELIMINATION_CANDIDATES: readonly EliminationCandidate[] = [
+  {
+    id: "shipped",
+    title: "Shipped · A + B",
+    strapline:
+      "The accepted combination: A's longhand arithmetic, then B's pivot about the crossing.",
+    obstacle:
+      "Both of the obstacles A and B target, in the order a learner meets them: first \"where did −7 come from?\", answered by doing the subtraction on the row itself, and only then \"what did that do, and why was it allowed?\", answered by rotating the constraint about a crossing that never moves.",
+    leadRepresentation:
+      "The augmented matrix leads the first half and the plane leads the second, with a camera-style reframe between them. The matrix does not disappear at the handover — it parks, keeping the eliminated system and a faint record of R₂'s original entries readable while the geometry runs.",
+    persistent:
+      "R₁, which never moves because it is the tool; the matrix, which parks rather than cutting away; and from the reframe onward the crossing at (2, −1).",
+    attention:
+      "One focal cluster per beat: the working while the arithmetic runs, then the single rotating line with everything else still.",
+    distinctBecause:
+      "This is the production clip, not a hypothesis — it is registered here so it can be compared against the candidates it came from in the same viewport.",
+    durationSeconds: 53,
+    beats: [],
+  },
   {
     id: "longhand",
     title: "A · Longhand",
@@ -131,10 +151,25 @@ export function getEliminationCandidate(id: string): EliminationCandidate {
   if (!candidate) {
     throw new Error(`Unknown elimination candidate: "${id}"`);
   }
-  return candidate;
+  if (candidate.beats.length > 0) return candidate;
+  // The shipped clip reads its chapters from the production timing registry, so
+  // the lab's beat buttons cannot drift from the learner-facing scene.
+  let at = 0;
+  const beats = ELIMINATION_SEGMENTS.map((segment) => {
+    const beat = { id: segment.id, title: segment.title, at };
+    at += segment.duration;
+    return beat;
+  });
+  return { ...candidate, beats, durationSeconds: at };
 }
 
 const SCENE_LOADERS: Record<string, () => Promise<unknown>> = {
+  // The shipped clip is the PRODUCTION scene module, not a copy of it: a lab
+  // entry that drifted from what learners see would be worse than no entry.
+  shipped: () =>
+    import("../../guided-scenes/scenes/eliminationScene").then(
+      (m) => m.eliminationScene,
+    ),
   longhand: () =>
     import("./scenes/longhandScene").then((m) => m.longhandScene),
   pivot: () => import("./scenes/pivotScene").then((m) => m.pivotScene),

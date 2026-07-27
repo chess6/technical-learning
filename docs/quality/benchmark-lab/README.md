@@ -178,3 +178,27 @@ Recorded here because it is what the experiment is trying to beat:
    viewport, and whose panel borders read as UI rather than as mathematics.
 6. **Row labels and headings are ~22 px on a 960-px stage** — small at embedded
    player size.
+
+### Elimination — outcome (2026-07)
+
+Accepted: **A + B**, and it is now the production `elimination` scene. The
+combined clip runs A's arithmetic spine and then B's geometric payoff, with two
+changes asked for on review: R₂'s entries **leave the bracket themselves**,
+dimming everything else and leaving a translucent record of the row in the slot
+they vacate, rather than a duplicate being made in a working area (and the
+column guide lines are gone); and the matrix **parks rather than cutting away**
+at the handover, so the geometry half can still be read against the rows —
+including R₂'s original entries, kept as a faint record. Neither half opens on
+an intertitle.
+
+C ("Search") was not taken forward. Elimination is a basic topic, and a basic
+topic does not need every implicit step explained: why *that* multiplier is
+better left as an exercise for the reader than spent screen time on.
+
+The three candidates stay registered in the lab as the design record, alongside
+the shipped clip — which loads the **production scene module itself**, not a
+copy, so a lab entry cannot drift from what learners see.
+
+The serif/near-black treatment is accepted **for this lesson**. Whether it
+becomes the course-wide animation language is still open, and is not decided by
+this experiment.

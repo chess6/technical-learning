@@ -409,40 +409,76 @@ export const SYSTEMS_SEGMENTS: readonly SceneSegment[] = [
  */
 export const ELIMINATION_SEGMENTS: readonly SceneSegment[] = [
   {
-    id: "setup",
-    title: "One system, three views",
+    id: "system",
+    title: "Two equations",
+    duration: 4,
+    summary: "The running system, written as two equations.",
+  },
+  {
+    id: "matrix",
+    title: "The same rows, packed",
+    duration: 4,
+    summary: "The six numbers become an augmented matrix, so a whole equation is one row and one move.",
+  },
+  {
+    id: "aim",
+    title: "The entry we want to kill",
+    duration: 3.5,
+    summary: "The pivot in R1 and the leading entry of R2 are marked: the operation exists to turn that 2 into a 0.",
+  },
+  {
+    id: "detach",
+    title: "Take R2 out to work on it",
+    duration: 3.5,
+    summary: "R2 itself drops out of the bracket, leaving a translucent record of where it was, so the working is done on the row rather than on a copy of it.",
+  },
+  {
+    id: "scale",
+    title: "Bring a copy of R1 under it",
+    duration: 3.5,
+    summary: "R1 stays put — it is the tool — while a copy of it lands beneath R2 under a subtraction rule.",
+  },
+  {
+    id: "double",
+    title: "Double the copy",
+    duration: 3,
+    summary: "Each entry of the copy is replaced by twice itself, because R2's leading entry is twice R1's.",
+  },
+  {
+    id: "subtract",
+    title: "Subtract, column by column",
+    duration: 7.5,
+    summary: "2 − 2 = 0, then −1 − 6 = −7, then 5 − (−2) = 7 — each result computed where its two operands are, with the cancellation held longest.",
+  },
+  {
+    id: "promote",
+    title: "Return the row to the matrix",
+    duration: 3,
+    summary: "The computed row travels back into the slot R2 left, and the translucent record resolves into it.",
+  },
+  {
+    id: "plane",
+    title: "What those rows have been all along",
     duration: 5,
-    summary: "The same system as equations, as an augmented matrix, and as two lines that cross at (2, −1).",
+    summary: "The frame reframes: the matrix keeps its place while the two original constraints appear as lines crossing at (2, −1).",
   },
   {
     id: "predict",
-    title: "Predict: what can the operation not move?",
+    title: "Predict: can the crossing move?",
     duration: 5.5,
-    summary: "Both equations hold at the crossing. Work out what that forces about R2 − 2·R1 before the line swings.",
+    summary: "The old rows, the new row, and the crossing are all on screen. Decide whether the rewritten constraint still passes through it.",
   },
   {
-    id: "operation",
-    title: "R2 → R2 − 2·R1",
-    duration: 7,
-    summary: "The scaled −2·R1 row slides up onto R2 while all three views interpolate as one state — and the crossing holds.",
+    id: "pivot",
+    title: "The line pivots about the crossing",
+    duration: 5.5,
+    summary: "R2's line rotates through the constraints the operation can reach and lands horizontal — a line whose equation no longer mentions x.",
   },
   {
-    id: "triangular",
-    title: "Triangular: read off y, back-substitute",
-    duration: 6,
-    summary: "With x gone from R2, y is read directly and back-substitution recovers x.",
-  },
-  {
-    id: "invariance",
-    title: "The crossing never moved",
+    id: "read",
+    title: "Read y, then x",
     duration: 5,
-    summary: "Any point on both old lines satisfies the new one, and back — so the solution set is untouched.",
-  },
-  {
-    id: "summary",
-    title: "Same solutions, easier system",
-    duration: 4,
-    summary: "Elimination rewrites the constraints into easier ones with exactly the same solutions.",
+    summary: "The horizontal row gives y directly, and back-substitution into R1 recovers x: the same (2, −1) the lines always crossed at.",
   },
 ];
 
@@ -1406,21 +1442,54 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
   },
 
   elimination: {
-    setup: { panels: 0.5, lines: 0.5, dotIn: 0.4, dotPulseUp: 0.4, dotPulseDown: 0.3 },
-    predict: { anchor: 0.4, ask: 0.4, think: 4.2 },
-    // operation: pulse the fixed point, reveal the scaled −2·R1 term, then slide
-    // it into R2 while the row (and its line) interpolate to the result.
-    operation: {
-      anchorUp: 0.3,
-      anchorDown: 0.3,
-      ghostReveal: 0.6,
-      combine: 2.6,
-      landUp: 0.3,
-      landDown: 0.3,
+    system: { first: 0.6, gap: 0.5, second: 0.6, hold: 2.0 },
+    // The equations do not cross-fade into the matrix: they retire, and the
+    // matrix is built where they were, so the six numbers stay the subject.
+    matrix: { retire: 0.5, brackets: 0.5, entries: 0.7, labels: 0.4, hold: 1.6 },
+    aim: { pivot: 0.4, target: 0.4, note: 0.4, hold: 2.0 },
+    // R2 travels; a translucent record of it stays in the bracket. Nothing is
+    // duplicated, so the row being worked on is the row itself.
+    detach: { dim: 0.5, drop: 1.0, ghost: 0.4, hold: 1.4 },
+    scale: { copy: 1.0, minus: 0.4, rule: 0.5, hold: 1.4 },
+    double: { tag: 0.35, e0: 0.4, e1: 0.4, e2: 0.4, tagOut: 0.35, hold: 0.9 },
+    // Three columns, each lit in turn; the cancelling column is held longest
+    // because it is the one the whole operation exists to produce.
+    subtract: {
+      c0Focus: 0.3,
+      c0Show: 0.25,
+      c0Wait: 0.75,
+      c0Result: 0.3,
+      c0Cancel: 0.35,
+      c0Settle: 0.3,
+      c0Clear: 0.25,
+      c1Focus: 0.3,
+      c1Show: 0.25,
+      c1Wait: 0.5,
+      c1Result: 0.3,
+      c1Clear: 0.25,
+      c2Focus: 0.3,
+      c2Show: 0.25,
+      c2Wait: 0.5,
+      c2Result: 0.3,
+      c2Clear: 0.25,
+      restore: 0.3,
+      hold: 1.4,
     },
-    triangular: { lineUp: 0.3, lineDown: 0.3, dotUp: 0.35, dotDown: 0.35 },
-    invariance: { dim: 0.4, grow: 0.35, shrink: 0.35, restore: 0.4 },
-    summary: { settleUp: 0.2, settleDown: 0.2 },
+    promote: { fade: 0.4, travel: 0.9, settle: 0.4, hold: 1.1 },
+    plane: { reframe: 1.0, grid: 0.5, lines: 0.6, dot: 0.4, dotUp: 0.3, dotDown: 0.3, hold: 1.6 },
+    predict: { ask: 0.5, think: 4.4 },
+    pivot: { ghost: 0.4, sweep: 2.6, settle: 0.5, emphasis: 0.4, hold: 1.4 },
+    // Each reveal gets its own declared beat: a `hold` that animates inside it
+    // is a hold in name only, and the beat-intent gate says so.
+    read: {
+      yOut: 0.5,
+      hold: 0.9,
+      xOut: 0.4,
+      hold2: 0.9,
+      back: 0.5,
+      settle: 0.3,
+      hold3: 1.3,
+    },
   },
 
   "solution-sets": {

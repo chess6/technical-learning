@@ -133,7 +133,10 @@ export function geometryContractsForScene(
       id: "row-operation-fixed-intersection",
       movingLineKey: "semantic:elimination:row-2-line",
       fixedPointKey: "semantic:elimination:solution",
-      segmentIds: ["operation"],
+      // The pivot IS the line-intersection invariance: the moving constraint
+      // walks the pencil through the solution, so the contract now covers the
+      // beat where the motion actually happens.
+      segmentIds: ["pivot"],
     });
   }
 

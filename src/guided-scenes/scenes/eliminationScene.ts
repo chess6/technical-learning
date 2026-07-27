@@ -1,491 +1,901 @@
-import { Circle, Line, Rect, Txt, makeScene2D } from "@motion-canvas/2d";
+import { Circle, Latex, Line, Node, Rect, makeScene2D } from "@motion-canvas/2d";
 import {
   Vector2,
   all,
   createSignal,
   easeInOutCubic,
+  waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
 import { LINEAR_SYSTEM_EXAMPLE } from "../../lessons/exampleData";
 import {
   applyRowOperation,
   augmentedFromSystem,
-  classifyRowConstraint,
   eliminationStepToClearX,
-  lerp,
+  satisfiesSystem,
+  solveLinearSystem2x2,
+  systemMatrix,
+  type AugmentedRow,
   type Vector2 as MathVector2,
 } from "../../math";
 import { ELIMINATION_BEATS, ELIMINATION_SEGMENTS } from "./sceneTimings";
-import { ROLE, formatSceneNumber, makeSegment, runSegment } from "./sceneKit";
-import {
-  makeEquationLedger,
-  makeFullFrameTreatment,
-  makeSplitScreen,
-  makeTemporaryAnnotation,
-  silentHold,
-  uninterruptedMotion,
-} from "./scenePresentation";
+import { ROLE, runSegment } from "./sceneKit";
 
 /**
- * "Elimination" Watch scene — one row operation as reversible constraint
- * manipulation, in three synchronized views:
+ * "Elimination" Watch scene — one row operation, done longhand and then watched
+ * happen to the picture.
  *
- *   1. the written equations (left, top),
- *   2. the augmented matrix [A | b] (left, bottom),
- *   3. the two constraint lines in a bordered viewport (right).
+ * This composition came out of the animation design experiment in
+ * `src/benchmark-lab/experiments/` (see the benchmark-lab README): three
+ * candidate clips were built and compared, and the accepted direction is the
+ * arithmetic spine of "Longhand" followed by the geometric payoff of "Pivot".
  *
- * The system, the row operation, and the resulting row are ALL derived from the
- * shared `src/math` elimination helpers — nothing is hardcoded here:
+ * The two halves answer the two different questions a learner has:
  *
- *   const start = augmentedFromSystem(EX.a, EX.b);   // Lesson 3's system
- *   const op    = eliminationStepToClearX(start);    // R2 → R2 − 2·R1
- *   const end   = applyRowOperation(start, op);       // R2 becomes (0, −7, 7)
+ *  1. **Where do the new numbers come from?** R₂ itself drops out of the
+ *     bracket — leaving a translucent record of where it was, so the working is
+ *     done ON the row rather than on a duplicate — a copy of R₁ lands beneath
+ *     it, is doubled, and the three columns are subtracted one at a time. The
+ *     computed row then travels back into the slot R₂ left.
+ *  2. **What did that do, and why was it allowed?** The frame reframes, the two
+ *     original constraints appear as lines crossing at (2, −1), and the new row
+ *     is reached by rotating R₂'s line about that crossing until it is
+ *     horizontal. A horizontal line is exactly one whose equation has no x left,
+ *     which is what "eliminate x" means geometrically.
  *
- * Row 2 is then driven by a SINGLE progress signal that interpolates the whole
- * row from `start.rows[1]` to `end.rows[1]`, so the equations, the augmented
- * matrix, and the line all read one consistent mathematical state at every
- * frame (they cannot drift apart, and they follow the shared example if it
- * changes). The change added to R2 is −2·R1, which VANISHES at the solution
- * ((−2)(1·2 + 3·(−1) − (−1)) = 0), so every intermediate row still passes
- * through (2, −1): the orange line pivots about the fixed dot. To make the
- * *combination* legible (rather than numbers silently ticking down), the scaled
- * −2·R1 term is shown as its own row and slid up INTO R2 as the row
- * interpolates — the addition R2 + (−2·R1) is enacted, not merely implied.
+ * Two rules the previous version broke, and this one does not:
  *
- * All "is this row a line?" decisions go through the shared classifyRowConstraint
- * (a zero row is never drawn as a false line); no linear algebra is reimplemented.
+ *  - **No coefficient is ever interpolated.** The old scene tweened R₂'s three
+ *    numbers from their old values to their new ones, so for ~2.6 s the frame
+ *    read `1.87x − 1.38y = 5.13` — an equation nobody wrote. Every number here
+ *    is typeset once, in place.
+ *  - **The augmented matrix is a real one**, with drawn brackets, an
+ *    augmentation rule, and one addressable node per entry — not a monospaced
+ *    string of `[`, `|`, `]` characters, which cannot align and whose entries
+ *    have no identity.
+ *
+ * The line sweep IS mathematically honest: every intermediate is `R₂ + α·R₁`
+ * for some α between 0 and −2, which is itself a legal row operation's result,
+ * so every intermediate line is a real constraint through the solution. The
+ * equation label is re-typeset at whole stops, never interpolated.
+ *
+ * All numbers come from `src/math`: the system, the operation, its factor, the
+ * scaled row, and the result. `assertSceneMathIsConsistent` re-checks the
+ * relationships the choreography depends on before a frame renders.
  */
 
+const SCENE_ID = "elimination";
 const EX = LINEAR_SYSTEM_EXAMPLE;
 
-// Right-hand viewport: a bordered mini-plane so the lines never collide with the
-// symbolic panels on the left.
-const BOX_CX = 0;
-const BOX_SCALE = 46;
-const BOX_EXT = 4;
-const lpx = (p: MathVector2): Vector2 =>
-  new Vector2(BOX_CX + p[0] * BOX_SCALE, -p[1] * BOX_SCALE);
+const START = augmentedFromSystem(EX.a, EX.b);
+const STEP = eliminationStepToClearX(START);
+if (!STEP || STEP.kind !== "add") {
+  throw new Error("eliminationScene: expected an add row-operation to clear x.");
+}
+const END = applyRowOperation(START, STEP);
 
-const fmt = (n: number): string => formatSceneNumber(n).replace("-", "−");
+const R1: AugmentedRow = START.rows[0];
+const R2: AugmentedRow = START.rows[1];
+const NEW_R2: AugmentedRow = END.rows[1];
+/** −2; the clip says "subtract 2·R₁", so it shows the magnitude. */
+const FACTOR = STEP.factor;
+const MULTIPLIER = Math.abs(FACTOR);
+const SCALED_R1: AugmentedRow = [
+  MULTIPLIER * R1[0],
+  MULTIPLIER * R1[1],
+  MULTIPLIER * R1[2],
+];
+const SOLUTION: MathVector2 =
+  solveLinearSystem2x2(systemMatrix(START), EX.b) ?? [2, -1];
 
-/** The segment of `a x + b y = c` clipped to the ±ext box, or null if not a line. */
-function rowLineBoxPoints(
-  a: number,
-  b: number,
-  c: number,
-  ext: number,
-): [MathVector2, MathVector2] | null {
-  if (classifyRowConstraint(a, b, c).kind !== "line") return null;
-  const pts: MathVector2[] = [];
-  const inRange = (t: number) => t >= -ext - 1e-6 && t <= ext + 1e-6;
+/** One column of the longhand subtraction, with both operands and the result. */
+const COLUMNS = ([0, 1, 2] as const).map((index) => ({
+  minuend: R2[index]!,
+  subtrahend: SCALED_R1[index]!,
+  result: NEW_R2[index]!,
+  isTarget: index === 0,
+}));
+
+function assertSceneMathIsConsistent(): void {
+  if (!satisfiesSystem(START, SOLUTION) || !satisfiesSystem(END, SOLUTION)) {
+    throw new Error("eliminationScene: the row operation moved the solution.");
+  }
+  for (const [index, column] of COLUMNS.entries()) {
+    if (Math.abs(column.minuend - column.subtrahend - column.result) > 1e-9) {
+      throw new Error(`eliminationScene: column ${index} does not subtract.`);
+    }
+  }
+  if (Math.abs(NEW_R2[0]) > 1e-9) {
+    throw new Error("eliminationScene: the leading entry was not eliminated.");
+  }
+  if (Math.abs(rowAtAlpha(FACTOR)[0]) > 1e-9) {
+    throw new Error("eliminationScene: the sweep does not reach the new row.");
+  }
+}
+
+/**
+ * The constraints reachable from R₂ by adding a multiple of R₁. Every member
+ * passes through the solution, which is what licenses the continuous sweep.
+ */
+function rowAtAlpha(alpha: number): AugmentedRow {
+  return [
+    R2[0] + alpha * R1[0],
+    R2[1] + alpha * R1[1],
+    R2[2] + alpha * R1[2],
+  ];
+}
+
+/* ------------------------------------------------------------ typography */
+
+/**
+ * Every symbol in this scene is typeset through `Latex`, which renders via the
+ * bundled MathJax to SVG paths: real italic variables, real minus signs, real
+ * scaled brackets, and no webfont that could silently fall back to a system
+ * sans face. The design experiment established this; the surrounding lesson UI
+ * keeps the product type.
+ */
+const INK = "#e9eef6";
+const INK_MUTED = "#8b97a8";
+const INK_FAINT = "#3a4351";
+const SCRATCH = "#d99a5b";
+
+function tex(
+  value: Parameters<typeof Latex.prototype.tex>[0] | (() => string),
+  size: number,
+  fill: string = INK,
+  key?: string,
+): Latex {
+  return new Latex({ key, tex: value as never, fontSize: size, fill });
+}
+
+/** A number as a frame shows it: real minus, never `-0`. */
+function num(value: number): string {
+  const rounded = Math.round(value * 1000) / 1000;
+  return String(Object.is(rounded, -0) ? 0 : rounded);
+}
+
+/** `x + 3y = -1` — the way a person writes the row. */
+function equation(row: AugmentedRow): string {
+  const parts: string[] = [];
+  const push = (value: number, symbol: string) => {
+    if (Math.abs(value) < 1e-9) return;
+    const magnitude = Math.abs(value);
+    const body = magnitude === 1 ? symbol : `${num(magnitude)}${symbol}`;
+    parts.push(
+      parts.length === 0
+        ? `${value < 0 ? "-" : ""}${body}`
+        : `${value < 0 ? "-" : "+"} ${body}`,
+    );
+  };
+  push(row[0], "x");
+  push(row[1], "y");
+  return `${parts.length > 0 ? parts.join(" ") : "0"} = ${num(row[2])}`;
+}
+
+/* --------------------------------------------------------------- layout */
+
+/** Matrix column centres and row heights, shared by the matrix and the working. */
+const COL_X = [-104, -18, 96] as const;
+const MATRIX_ROW_Y = [-34, 34] as const;
+const MATRIX_HALF_W = 168;
+const MATRIX_HALF_H = 74;
+
+/** Where the matrix sits while the algebra has the frame, and afterwards. */
+const MATRIX_HOME = new Vector2(20, -132);
+const MATRIX_PARKED = new Vector2(-296, -150);
+const MATRIX_PARKED_SCALE = 0.66;
+
+/** The working area, below the matrix. */
+const WORK_MINUEND_Y = 16;
+const WORK_SCALED_Y = 86;
+const WORK_RULE_Y = 134;
+const WORK_RESULT_Y = 184;
+// Clear of the stage edge: a 34px note centred lower than this loses its
+// descenders off the bottom of the frame.
+const WORK_NOTE_Y = 240;
+
+/** The plane, once the geometry takes over. */
+// Sized so an equation label attached to either end of the moving line —
+// the steep one at α = 0 and the horizontal one at α = −2 — still lands inside
+// the stage. A wider plot pushes the α = 0 label off the right edge.
+const PLANE_ORIGIN = new Vector2(40, 34);
+const PLANE_SCALE = 68;
+const PLANE_X: readonly [number, number] = [-2, 3.4];
+const PLANE_Y: readonly [number, number] = [-2.4, 1.6];
+const toPlane = (point: readonly [number, number]): Vector2 =>
+  new Vector2(
+    PLANE_ORIGIN.x + point[0] * PLANE_SCALE,
+    PLANE_ORIGIN.y - point[1] * PLANE_SCALE,
+  );
+
+/** `a x + b y = c` clipped to the plotted box; handles the horizontal case. */
+function clipLine(row: AugmentedRow): [Vector2, Vector2] {
+  const [a, b, c] = row;
+  const hits: [number, number][] = [];
   if (Math.abs(b) > 1e-9) {
-    for (const x of [-ext, ext]) {
+    for (const x of PLANE_X) {
       const y = (c - a * x) / b;
-      if (inRange(y)) pts.push([x, y]);
+      if (y >= PLANE_Y[0] - 1e-6 && y <= PLANE_Y[1] + 1e-6) hits.push([x, y]);
     }
   }
   if (Math.abs(a) > 1e-9) {
-    for (const y of [-ext, ext]) {
+    for (const y of PLANE_Y) {
       const x = (c - b * y) / a;
-      if (inRange(x)) pts.push([x, y]);
+      if (x >= PLANE_X[0] - 1e-6 && x <= PLANE_X[1] + 1e-6) hits.push([x, y]);
     }
   }
-  const distinct: MathVector2[] = [];
-  for (const p of pts) {
-    if (!distinct.some((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6)) {
-      distinct.push(p);
+  const distinct: [number, number][] = [];
+  for (const point of hits) {
+    if (
+      !distinct.some(
+        (other) => Math.hypot(other[0] - point[0], other[1] - point[1]) < 1e-6,
+      )
+    ) {
+      distinct.push(point);
     }
   }
-  return distinct.length >= 2 ? [distinct[0]!, distinct[1]!] : null;
-}
-
-/** Plain-text equation `a x + b y = c` (unicode minus, drops zero / unit 1). */
-function equationString(a: number, b: number, c: number): string {
-  const parts: string[] = [];
-  const push = (coef: number, v: string) => {
-    if (Math.abs(coef) < 1e-9) return;
-    const r = Math.round(coef * 100) / 100;
-    const mag = Math.abs(r);
-    const m = mag === 1 ? "" : fmt(mag);
-    if (parts.length === 0) {
-      parts.push(`${r < 0 ? "−" : ""}${m}${v}`);
-    } else {
-      parts.push(`${r < 0 ? "−" : "+"} ${m}${v}`);
-    }
-  };
-  push(a, "x");
-  push(b, "y");
-  const lhs = parts.length > 0 ? parts.join(" ") : "0";
-  return `${lhs} = ${fmt(c)}`;
-}
-
-/** One augmented row as a fixed-width bracketed string. */
-function matrixRowString(a: number, b: number, c: number): string {
-  const pad = (n: number) => fmt(n).padStart(3, " ");
-  return `[ ${pad(a)}  ${pad(b)}  |  ${pad(c)} ]`;
-}
-
-function makeMono(size: number, color: string): Txt {
-  return new Txt({
-    text: "",
-    fill: color,
-    fontSize: size,
-    fontFamily: "'JetBrains Mono', 'SF Mono', 'Consolas', monospace",
-    fontWeight: 500,
-    textAlign: "left",
-  });
+  return [toPlane(distinct[0] ?? [0, 0]), toPlane(distinct[1] ?? [0, 0])];
 }
 
 export const eliminationScene = makeScene2D(function* (view) {
+  assertSceneMathIsConsistent();
   view.fill(ROLE.background);
 
-  const split = makeSplitScreen({
-    gap: 38,
-    leftKey: "semantic:elimination:symbolic-panel",
-    rightKey: "semantic:elimination:geometry-panel",
-  });
-  view.add(split.node);
-  const symbolic = split.left;
-  const geometry = split.right;
-
-  // Derive the system, the operation, and the result row from shared math — the
-  // scene never hardcodes (2,−1,5)→(0,−7,7) (correctness: single source of truth).
-  const startSys = augmentedFromSystem(EX.a, EX.b);
-  const op = eliminationStepToClearX(startSys);
-  if (!op || op.kind !== "add") {
-    throw new Error("Expected an add row-operation to clear x from R2.");
-  }
-  const endSys = applyRowOperation(startSys, op);
-  const r2Start = startSys.rows[1];
-  const r2End = endSys.rows[1];
-  // The scaled term the operation adds to R2: op.factor · R1 (here −2·R1).
-  const scaledR1: [number, number, number] = [
-    op.factor * startSys.rows[0][0],
-    op.factor * startSys.rows[0][1],
-    op.factor * startSys.rows[0][2],
-  ];
-
-  // Row 1 is fixed.
-  const a11 = createSignal(startSys.rows[0][0]);
-  const a12 = createSignal(startSys.rows[0][1]);
-  const b1 = createSignal(startSys.rows[0][2]);
-  // Row 2 is driven by ONE progress signal 0→1 that interpolates the whole row
-  // from r2Start to r2End, so equations, matrix, and line stay one state.
-  const progress = createSignal(0);
-  const a21 = () => lerp(r2Start[0], r2End[0], progress());
-  const a22 = () => lerp(r2Start[1], r2End[1], progress());
-  const b2 = () => lerp(r2Start[2], r2End[2], progress());
-
-  // --- Right viewport: border + subdued grid + axes ---
-  const box = new Rect({
-    x: BOX_CX,
-    y: 0,
-    width: 2 * BOX_EXT * BOX_SCALE,
-    height: 2 * BOX_EXT * BOX_SCALE,
-    stroke: ROLE.axis,
-    lineWidth: 2,
-    radius: 8,
-  });
-  geometry.add(box);
-  for (let k = -BOX_EXT; k <= BOX_EXT; k += 1) {
-    const isAxis = k === 0;
-    geometry.add(
-      new Line({
-        stroke: isAxis ? ROLE.axis : ROLE.grid,
-        lineWidth: isAxis ? 2 : 1,
-        opacity: 0.5,
-        points: [lpx([k, -BOX_EXT]), lpx([k, BOX_EXT])],
-      }),
-    );
-    geometry.add(
-      new Line({
-        stroke: isAxis ? ROLE.axis : ROLE.grid,
-        lineWidth: isAxis ? 2 : 1,
-        opacity: 0.5,
-        points: [lpx([-BOX_EXT, k]), lpx([BOX_EXT, k])],
-      }),
-    );
-  }
-
-  const line1 = makeSegment(
-    ROLE.basis1,
-    4,
-    false,
-    "semantic:elimination:row-1-line",
-  );
-  line1.points(() => {
-    const seg = rowLineBoxPoints(a11(), a12(), b1(), BOX_EXT);
-    return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
-  });
-  line1.opacity(0);
-  geometry.add(line1);
-
-  const line2 = makeSegment(
-    ROLE.basis2,
-    4,
-    false,
-    "semantic:elimination:row-2-line",
-  );
-  line2.points(() => {
-    const seg = rowLineBoxPoints(a21(), a22(), b2(), BOX_EXT);
-    return seg ? [lpx(seg[0]), lpx(seg[1])] : [];
-  });
-  line2.opacity(0);
-  geometry.add(line2);
-
-  // Fixed solution dot — stays put the whole scene (the invariant).
-  const solutionDot = new Circle({
-    key: "semantic:elimination:solution",
-    size: 18,
-    fill: ROLE.selected,
-    opacity: 0,
-  });
-  solutionDot.position(lpx([EX.solution[0], EX.solution[1]]));
-  geometry.add(solutionDot);
-  const solutionLabel = new Txt({
-    text: `(${fmt(EX.solution[0])}, ${fmt(EX.solution[1])})`,
-    fill: ROLE.selected,
-    fontSize: 22,
-    fontWeight: 600,
-    stroke: ROLE.background,
-    lineWidth: 4,
-    strokeFirst: true,
-  });
-  // Below the dot, not to its right: at +64px the label ran past the viewport
-  // border and out of the safe frame, where CSS scaling can clip it.
-  solutionLabel.position(
-    lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(-4, 30)),
-  );
-  solutionLabel.opacity(0);
-  geometry.add(solutionLabel);
-
-  // --- Left symbolic column: equations + augmented matrix ---
-  const LEFT_X = -18;
-  const eqHeading = new Txt({
-    text: "Equations",
-    fill: ROLE.textMuted,
-    fontSize: 22,
-    fontWeight: 600,
-    x: LEFT_X,
-    y: -150,
-    textAlign: "left",
-  });
-  eqHeading.opacity(0);
-  symbolic.add(eqHeading);
-
-  const eq1 = makeMono(30, ROLE.basis1);
-  eq1.text(() => equationString(a11(), a12(), b1()));
-  eq1.position(new Vector2(LEFT_X, -110));
-  eq1.opacity(0);
-  symbolic.add(eq1);
-  const eq2 = makeMono(30, ROLE.basis2);
-  eq2.text(() => equationString(a21(), a22(), b2()));
-  eq2.position(new Vector2(LEFT_X, -70));
-  eq2.opacity(0);
-  symbolic.add(eq2);
-
-  const matHeading = new Txt({
-    text: "Augmented matrix  [A | b]",
-    fill: ROLE.textMuted,
-    fontSize: 22,
-    fontWeight: 600,
-    x: LEFT_X,
-    y: 10,
-    textAlign: "left",
-  });
-  matHeading.opacity(0);
-  symbolic.add(matHeading);
-
-  const mat1 = makeMono(28, ROLE.basis1);
-  mat1.text(() => matrixRowString(a11(), a12(), b1()));
-  mat1.position(new Vector2(LEFT_X, 52));
-  mat1.opacity(0);
-  symbolic.add(mat1);
-  const MAT2_Y = 90;
-  const mat2 = makeMono(28, ROLE.basis2);
-  mat2.text(() => matrixRowString(a21(), a22(), b2()));
-  mat2.position(new Vector2(LEFT_X, MAT2_Y));
-  mat2.opacity(0);
-  symbolic.add(mat2);
-
-  // The scaled term −2·R1 shown as its OWN row (in R1's colour, so its origin is
-  // unmistakable) below R2, plus a small "+ (−2)·R1" tag. During the operation
-  // it slides UP onto R2 while R2 interpolates to the sum — the addition is
-  // enacted on screen, not left implicit in ticking digits.
-  const GHOST_START_Y = 150;
-  const ghostRow = makeMono(28, ROLE.basis1);
-  ghostRow.text(matrixRowString(scaledR1[0], scaledR1[1], scaledR1[2]));
-  ghostRow.position(new Vector2(LEFT_X, GHOST_START_Y));
-  ghostRow.opacity(0);
-  symbolic.add(ghostRow);
-  const ghostTag = new Txt({
-    text: `add  ${fmt(op.factor)}·R1`,
-    fill: ROLE.basis1,
-    fontSize: 20,
-    fontWeight: 600,
-    x: LEFT_X + 210,
-    y: GHOST_START_Y,
-    textAlign: "left",
-  });
-  ghostTag.opacity(0);
-  symbolic.add(ghostTag);
-
-  // A persistent invariant ledger replaces the title/caption bands. The
-  // synchronized symbolic and geometric panels carry the explanation.
-  const ledger = makeEquationLedger(
-    [
-      { id: "operation", label: "operation", value: "R₂ → R₂ − 2R₁" },
-      {
-        id: "invariant",
-        label: "invariant",
-        value: "same intersection",
-        color: ROLE.selected,
-      },
-    ],
-    {
-      position: new Vector2(0, 210),
-      width: 470,
-      rowHeight: 32,
-      key: "semantic:elimination:ledger",
-    },
-  );
-  ledger.node.opacity(0);
-  view.add(ledger.node);
-  const operationReadout = ledger.row("operation").value;
-  const invariantReadout = ledger.row("invariant").value;
-  const setTop = (text: string) => operationReadout.text(text);
-  const setCaption = (text: string) => invariantReadout.text(text);
-
-  // A banner, not a full frame. The question is answerable only from what is on
-  // screen — both equations, the augmented matrix, the two lines, and the point
-  // they cross at — so blanking the stage to ask it made it a guess.
-  const prediction = makeFullFrameTreatment(
-    "Will (2, −1) stay on the new second line?",
-    {
-      kind: "prediction",
-      key: "presentation:elimination:prediction",
-      coverage: "banner",
-    },
-  );
-  view.add(prediction.node);
-
-  const fixedPoint = makeTemporaryAnnotation(
-    "fixed",
-    lpx([EX.solution[0], EX.solution[1]]).add(new Vector2(42, -24)),
-    () => lpx([EX.solution[0], EX.solution[1]]),
-    { key: "presentation:elimination:fixed-point" },
-  );
-  geometry.add(fixedPoint.node);
-
-  // Every animated yield reads its duration from the pure ELIMINATION_BEATS
-  // budget; runSegment then pads each body up to its segment's declared length,
-  // so the generated timeline equals totalDuration(ELIMINATION_SEGMENTS).
   const B = ELIMINATION_BEATS;
 
+  /* ----------------------------------------------------------- equations */
+  const eq1 = tex(equation(R1), 48, ROLE.basis1);
+  eq1.position(new Vector2(0, -52));
+  eq1.opacity(0);
+  view.add(eq1);
+  const eq2 = tex(equation(R2), 48, ROLE.basis2);
+  eq2.position(new Vector2(0, 34));
+  eq2.opacity(0);
+  view.add(eq2);
+
+  /* ------------------------------------------------------ the matrix group */
+  // One group, moved and scaled once. The matrix never disappears and comes
+  // back: it is the same object through the whole clip, which is what lets the
+  // geometry half refer to rows the learner can still read.
+  const matrixGroup = new Node({
+    key: "semantic:elimination:matrix",
+    position: MATRIX_HOME,
+    opacity: 0,
+  });
+  view.add(matrixGroup);
+
+  const brackets = new Node({});
+  for (const side of [-1, 1] as const) {
+    const x = side * MATRIX_HALF_W;
+    brackets.add(
+      new Line({
+        stroke: INK,
+        lineWidth: 3,
+        lineCap: "square",
+        points: [
+          new Vector2(x - side * 18, -MATRIX_HALF_H),
+          new Vector2(x, -MATRIX_HALF_H),
+          new Vector2(x, MATRIX_HALF_H),
+          new Vector2(x - side * 18, MATRIX_HALF_H),
+        ],
+      }),
+    );
+  }
+  matrixGroup.add(brackets);
+
+  // The augmentation divider is what makes this an augmented matrix rather
+  // than a 2×3 one. Drawing it is not decoration.
+  const divider = new Line({
+    stroke: INK_MUTED,
+    lineWidth: 2,
+    points: [
+      new Vector2(38, -MATRIX_HALF_H + 10),
+      new Vector2(38, MATRIX_HALF_H - 10),
+    ],
+  });
+  matrixGroup.add(divider);
+
+  const row1Cells = R1.map((value, index) => {
+    const cell = tex(num(value), 46, ROLE.basis1);
+    cell.position(new Vector2(COL_X[index]!, MATRIX_ROW_Y[0]!));
+    matrixGroup.add(cell);
+    return cell;
+  });
+
+  /**
+   * R₂'s entries — the objects that will travel. They are children of the
+   * matrix group so they park with it, and they are moved in group-local
+   * coordinates when they drop out of the bracket.
+   */
+  const row2Cells = R2.map((value, index) => {
+    const cell = tex(
+      num(value),
+      46,
+      ROLE.basis2,
+      `semantic:elimination:row-2-entry-${index}`,
+    );
+    cell.position(new Vector2(COL_X[index]!, MATRIX_ROW_Y[1]!));
+    matrixGroup.add(cell);
+    return cell;
+  });
+
+  /**
+   * The translucent record of where R₂ was. Revealed as R₂ leaves, so the
+   * bracket is never drawn with an empty second row, and the learner can still
+   * read the values being worked on.
+   */
+  const ghostCells = R2.map((value, index) => {
+    const cell = tex(num(value), 46, ROLE.basis2);
+    cell.position(new Vector2(COL_X[index]!, MATRIX_ROW_Y[1]!));
+    cell.opacity(0);
+    matrixGroup.add(cell);
+    return cell;
+  });
+
+  const label1 = tex("R_1", 34, ROLE.basis1);
+  label1.position(new Vector2(-MATRIX_HALF_W - 74, MATRIX_ROW_Y[0]!));
+  label1.opacity(0);
+  matrixGroup.add(label1);
+  const label2 = tex("R_2", 34, ROLE.basis2);
+  label2.position(new Vector2(-MATRIX_HALF_W - 74, MATRIX_ROW_Y[1]!));
+  label2.opacity(0);
+  matrixGroup.add(label2);
+
+  /* ------------------------------------------------------------ the aim */
+  const pivotRing = new Circle({
+    size: 62,
+    stroke: ROLE.basis1,
+    lineWidth: 3,
+    opacity: 0,
+    position: new Vector2(COL_X[0]!, MATRIX_ROW_Y[0]!),
+  });
+  matrixGroup.add(pivotRing);
+  const targetRing = new Circle({
+    size: 62,
+    stroke: ROLE.target,
+    lineWidth: 3,
+    opacity: 0,
+    position: new Vector2(COL_X[0]!, MATRIX_ROW_Y[1]!),
+  });
+  matrixGroup.add(targetRing);
+
+  const aimNote = tex(`\\text{we want a } 0 \\text{ here}`, 30, ROLE.target);
+  aimNote.position(new Vector2(MATRIX_HOME.x + COL_X[0]! - 4, MATRIX_HOME.y + 128));
+  aimNote.opacity(0);
+  view.add(aimNote);
+
+  /* -------------------------------------------------------- the working */
+  const opLabel = tex(
+    `R_2 \\leftarrow R_2 - ${MULTIPLIER}\\,R_1`,
+    36,
+    INK,
+  );
+  opLabel.position(new Vector2(300, -226));
+  opLabel.opacity(0);
+  view.add(opLabel);
+
+  /** The copy of R₁ that becomes 2·R₁. R₁ itself never moves — it is the tool. */
+  const scaledCells = R1.map((value, index) => {
+    const cell = tex(
+      num(value),
+      46,
+      SCRATCH,
+      `semantic:elimination:scaled-entry-${index}`,
+    );
+    cell.position(
+      new Vector2(MATRIX_HOME.x + COL_X[index]!, MATRIX_HOME.y + MATRIX_ROW_Y[0]!),
+    );
+    cell.opacity(0);
+    view.add(cell);
+    return cell;
+  });
+
+  const minusSign = tex("-", 46, INK_MUTED);
+  minusSign.position(new Vector2(MATRIX_HOME.x + COL_X[0]! - 196, WORK_SCALED_Y));
+  minusSign.opacity(0);
+  view.add(minusSign);
+  const scaledTag = tex(`${MULTIPLIER}\\,R_1`, 34, SCRATCH);
+  scaledTag.position(new Vector2(MATRIX_HOME.x + COL_X[0]! - 126, WORK_SCALED_Y));
+  scaledTag.opacity(0);
+  view.add(scaledTag);
+
+  const rule = new Line({
+    stroke: INK,
+    lineWidth: 3,
+    opacity: 0,
+    points: [
+      new Vector2(MATRIX_HOME.x + COL_X[0]! - 210, WORK_RULE_Y),
+      new Vector2(MATRIX_HOME.x + COL_X[2]! + 72, WORK_RULE_Y),
+    ],
+  });
+  view.add(rule);
+
+  /** Each result, typeset once when its column is computed. */
+  const resultCells = COLUMNS.map((column, index) => {
+    const cell = tex(
+      num(column.result),
+      50,
+      column.isTarget ? ROLE.target : INK,
+      `semantic:elimination:result-entry-${index}`,
+    );
+    cell.position(new Vector2(MATRIX_HOME.x + COL_X[index]!, WORK_RESULT_Y));
+    cell.opacity(0);
+    view.add(cell);
+    return cell;
+  });
+
+  /** The working for one column, e.g. `5 - (-2) = 7`. */
+  const columnNote = tex("", 34, INK_MUTED);
+  columnNote.position(new Vector2(MATRIX_HOME.x + COL_X[1]!, WORK_NOTE_Y));
+  columnNote.opacity(0);
+  view.add(columnNote);
+
+  const cancelNote = tex("\\text{no } x \\text{ left}", 32, ROLE.target);
+  cancelNote.position(new Vector2(MATRIX_HOME.x + COL_X[0]! - 10, WORK_NOTE_Y));
+  cancelNote.opacity(0);
+  view.add(cancelNote);
+
+  /* ---------------------------------------------------------- the plane */
+  const plane = new Node({ opacity: 0 });
+  view.add(plane);
+  for (let x = PLANE_X[0]; x <= PLANE_X[1]; x += 1) {
+    plane.add(
+      new Line({
+        stroke: x === 0 ? INK_MUTED : INK_FAINT,
+        lineWidth: x === 0 ? 2 : 1,
+        points: [toPlane([x, PLANE_Y[0]]), toPlane([x, PLANE_Y[1]])],
+      }),
+    );
+  }
+  for (let y = Math.ceil(PLANE_Y[0]); y <= PLANE_Y[1]; y += 1) {
+    plane.add(
+      new Line({
+        stroke: y === 0 ? INK_MUTED : INK_FAINT,
+        lineWidth: y === 0 ? 2 : 1,
+        points: [toPlane([PLANE_X[0], y]), toPlane([PLANE_X[1], y])],
+      }),
+    );
+  }
+  for (const x of [-1, 1, 2, 3]) {
+    plane.add(
+      new Line({
+        stroke: INK_MUTED,
+        lineWidth: 2,
+        points: [
+          toPlane([x, 0]).add(new Vector2(0, -6)),
+          toPlane([x, 0]).add(new Vector2(0, 6)),
+        ],
+      }),
+    );
+    const numeral = tex(num(x), 24, INK_MUTED);
+    numeral.position(toPlane([x, 0]).add(new Vector2(0, 26)));
+    plane.add(numeral);
+  }
+  for (const y of [-2, -1, 1]) {
+    const numeral = tex(num(y), 24, INK_MUTED);
+    numeral.position(toPlane([0, y]).add(new Vector2(-26, 0)));
+    plane.add(numeral);
+  }
+
+  const line1 = new Line({
+    key: "semantic:elimination:row-1-line",
+    stroke: ROLE.basis1,
+    lineWidth: 5,
+    points: clipLine(R1),
+    opacity: 0,
+  });
+  view.add(line1);
+
+  /**
+   * α drives R₂'s line. Every value in [−2, 0] gives a genuine constraint
+   * through the crossing, so the sweep walks the pencil rather than dissolving
+   * between two unrelated pictures.
+   */
+  const alpha = createSignal(0);
+  const line2 = new Line({
+    key: "semantic:elimination:row-2-line",
+    stroke: ROLE.basis2,
+    lineWidth: 5,
+    points: () => clipLine(rowAtAlpha(alpha())),
+    opacity: 0,
+  });
+  view.add(line2);
+
+  /** R₁'s equation, parked beside the end of its own line. */
+  const lineLabel1 = tex(equation(R1), 32, ROLE.basis1);
+  lineLabel1.position(clipLine(R1)[0].add(new Vector2(-118, 44)));
+  lineLabel1.opacity(0);
+  view.add(lineLabel1);
+
+  const ghostLine2 = new Line({
+    stroke: ROLE.basis2,
+    lineWidth: 2.5,
+    lineDash: [10, 10],
+    points: clipLine(R2),
+    opacity: 0,
+  });
+  view.add(ghostLine2);
+
+  /** The equation rides at the line's end: it is the line's name, not a panel. */
+  const lineLabel2 = tex(() => equation(rowAtAlpha(alpha())), 32, ROLE.basis2);
+  lineLabel2.position(() => clipLine(rowAtAlpha(alpha()))[1].add(new Vector2(84, -22)));
+  lineLabel2.opacity(0);
+  view.add(lineLabel2);
+
+  const solutionDot = new Circle({
+    key: "semantic:elimination:solution",
+    size: 20,
+    fill: ROLE.selected,
+    position: toPlane([SOLUTION[0]!, SOLUTION[1]!]),
+    opacity: 0,
+  });
+  view.add(solutionDot);
+
+  // The crossing label is, by construction, on the busiest ink in the frame;
+  // a plate keeps it legible wherever the mathematics puts it.
+  const crossing = new Node({ opacity: 0 });
+  crossing.position(toPlane([SOLUTION[0]!, SOLUTION[1]!]).add(new Vector2(-6, 56)));
+  crossing.add(
+    new Rect({
+      width: 150,
+      height: 50,
+      radius: 8,
+      fill: ROLE.background,
+      opacity: 0.82,
+    }),
+  );
+  crossing.add(
+    tex(`(${num(SOLUTION[0]!)},\\, ${num(SOLUTION[1]!)})`, 32, ROLE.selected),
+  );
+  view.add(crossing);
+
+  /* ------------------------------------------------------- closing notes */
+  // The strip must sit INSIDE the stage: the top edge is y = −270, so a band
+  // centred lower than that loses its text off the frame entirely.
+  const banner = new Rect({
+    width: 1280,
+    height: 78,
+    y: -234,
+    fill: "#05080d",
+    opacity: 0,
+  });
+  view.add(banner);
+  const bannerText = tex("", 34, INK);
+  bannerText.position(new Vector2(0, -236));
+  bannerText.opacity(0);
+  view.add(bannerText);
+
+  const note = tex("", 30, INK_MUTED);
+  note.position(new Vector2(60, 244));
+  note.opacity(0);
+  view.add(note);
+
+  // Two short lines rather than one aligned block: the block's natural width
+  // ran off the left edge and straight across the plot.
+  const readY = tex("", 30, ROLE.selected);
+  readY.position(new Vector2(-292, 122));
+  readY.opacity(0);
+  view.add(readY);
+  const readX = tex("", 30, ROLE.selected);
+  readX.position(new Vector2(-292, 172));
+  readX.opacity(0);
+  view.add(readX);
+
+  /* ---------------------------------------------------------- the beats */
+
+  const fadeAll = (
+    nodes: readonly { opacity: (value: number, duration?: number) => unknown }[],
+    value: number,
+    duration: number,
+  ): ThreadGenerator =>
+    all(...nodes.map((node) => node.opacity(value, duration) as ThreadGenerator));
+
+  /** One column of the longhand subtraction. */
+  function* subtractColumn(
+    index: number,
+    beats: { focus: number; show: number; wait: number; result: number; clear: number },
+  ): ThreadGenerator {
+    const column = COLUMNS[index]!;
+    yield* all(
+      fadeAll(
+        row2Cells.filter((_, i) => i !== index),
+        0.3,
+        beats.focus,
+      ),
+      fadeAll(
+        scaledCells.filter((_, i) => i !== index),
+        0.3,
+        beats.focus,
+      ),
+      row2Cells[index]!.opacity(1, beats.focus),
+      scaledCells[index]!.opacity(1, beats.focus),
+    );
+    const subtrahend =
+      column.subtrahend < 0
+        ? `(${num(column.subtrahend)})`
+        : num(column.subtrahend);
+    columnNote.tex(
+      `${num(column.minuend)} - ${subtrahend} = ${num(column.result)}`,
+    );
+    yield* columnNote.opacity(1, beats.show);
+    yield* waitFor(beats.wait);
+    yield* resultCells[index]!.opacity(1, beats.result);
+    return;
+  }
+
   const bodies: Record<string, () => ThreadGenerator> = {
-    *setup() {
-      const b = B.setup!;
-      setTop("equations ↔ [A|b]");
-      setCaption("same two constraints");
-      yield* all(
-        eqHeading.opacity(0.9, b.panels),
-        matHeading.opacity(0.9, b.panels),
-        eq1.opacity(1, b.panels),
-        eq2.opacity(1, b.panels),
-        mat1.opacity(1, b.panels),
-        mat2.opacity(1, b.panels),
-        ledger.node.opacity(1, b.panels),
-      );
-      yield* all(line1.opacity(1, b.lines), line2.opacity(1, b.lines));
-      yield* all(solutionDot.opacity(1, b.dotIn), fixedPoint.show(b.dotIn));
-      yield* all(
-        solutionLabel.opacity(1, b.dotPulseUp),
-        solutionDot.size(28, b.dotPulseUp),
-      );
-      yield* solutionDot.size(18, b.dotPulseDown);
-      setCaption("intersection=(2,−1)");
+    *system() {
+      const b = B.system!;
+      yield* eq1.opacity(1, b.first!);
+      yield* waitFor(b.gap!);
+      yield* eq2.opacity(1, b.second!);
+      yield* waitFor(b.hold!);
     },
+
+    *matrix() {
+      const b = B.matrix!;
+      // The equations retire and the matrix is built where they were: the same
+      // six numbers, now packed so a whole equation is one row and one move.
+      yield* all(eq1.opacity(0, b.retire!), eq2.opacity(0, b.retire!));
+      matrixGroup.opacity(1);
+      brackets.opacity(0);
+      divider.opacity(0);
+      yield* all(brackets.opacity(1, b.brackets!), divider.opacity(1, b.brackets!));
+      yield* all(
+        ...row1Cells.map((cell) => cell.opacity(1, b.entries!)),
+        ...row2Cells.map((cell) => cell.opacity(1, b.entries!)),
+      );
+      yield* all(label1.opacity(1, b.labels!), label2.opacity(1, b.labels!));
+      yield* waitFor(b.hold!);
+    },
+
+    *aim() {
+      const b = B.aim!;
+      // Snap-free: the rings grow in, the note follows. Scrubbing here lands on
+      // the pivot already marked, which is what the chapter is about.
+      yield* pivotRing.opacity(0.9, b.pivot!);
+      yield* targetRing.opacity(1, b.target!);
+      yield* all(aimNote.opacity(1, b.note!), opLabel.opacity(1, b.note!));
+      yield* waitFor(b.hold!);
+    },
+
+    *detach() {
+      const b = B.detach!;
+      // Everything that is not the operation steps back, so the row that moves
+      // is the only thing at full strength.
+      yield* all(
+        fadeAll(row1Cells, 0.42, b.dim!),
+        label1.opacity(0.42, b.dim!),
+        label2.opacity(0.42, b.dim!),
+        brackets.opacity(0.42, b.dim!),
+        divider.opacity(0.42, b.dim!),
+        pivotRing.opacity(0.3, b.dim!),
+        aimNote.opacity(0, b.dim!),
+        targetRing.opacity(0.5, b.dim!),
+      );
+      // R₂ ITSELF leaves the bracket — it is not duplicated. The cells are
+      // children of the matrix group, so the drop is in group-local space.
+      yield* all(
+        ...row2Cells.map((cell) =>
+          cell.position(
+            new Vector2(
+              COL_X[row2Cells.indexOf(cell)]!,
+              WORK_MINUEND_Y - MATRIX_HOME.y,
+            ),
+            b.drop!,
+            easeInOutCubic,
+          ),
+        ),
+      );
+      // …and the record of where it was appears in the slot it vacated.
+      yield* all(...ghostCells.map((cell) => cell.opacity(0.3, b.ghost!)));
+      yield* waitFor(b.hold!);
+    },
+
+    *scale() {
+      const b = B.scale!;
+      // A copy of R₁ travels down. R₁ itself never moves: its permanence is
+      // the point — it is the tool the operation is performed with.
+      yield* all(
+        ...scaledCells.map((cell, index) =>
+          all(
+            cell.opacity(1, b.copy! * 0.4),
+            cell.position(
+              new Vector2(MATRIX_HOME.x + COL_X[index]!, WORK_SCALED_Y),
+              b.copy!,
+              easeInOutCubic,
+            ),
+          ),
+        ),
+      );
+      yield* minusSign.opacity(0.9, b.minus!);
+      yield* rule.opacity(1, b.rule!);
+      yield* waitFor(b.hold!);
+    },
+
+    *double() {
+      const b = B.double!;
+      const tag = tex(`\\times ${MULTIPLIER}`, 32, SCRATCH);
+      tag.position(new Vector2(MATRIX_HOME.x + COL_X[2]! + 150, WORK_SCALED_Y));
+      tag.opacity(0);
+      view.add(tag);
+      yield* all(tag.opacity(1, b.tag!), scaledTag.opacity(1, b.tag!));
+      // Each entry is REPLACED, not interpolated: 1 → 2, 3 → 6, −1 → −2. An
+      // interpolated coefficient shows numbers that were never anybody's row.
+      for (const [index, key] of (["e0", "e1", "e2"] as const).entries()) {
+        const cell = scaledCells[index]!;
+        yield* cell.opacity(0.12, b[key]! * 0.4);
+        cell.tex(num(SCALED_R1[index]!));
+        yield* cell.opacity(1, b[key]! * 0.6);
+      }
+      yield* tag.opacity(0, b.tagOut!);
+      yield* waitFor(b.hold!);
+    },
+
+    *subtract() {
+      const b = B.subtract!;
+      yield* subtractColumn(0, {
+        focus: b.c0Focus!,
+        show: b.c0Show!,
+        wait: b.c0Wait!,
+        result: b.c0Result!,
+        clear: b.c0Clear!,
+      });
+      // The cancellation is the whole reason for the operation, so it is the
+      // only thing in the beat that gets emphasis.
+      yield* all(
+        cancelNote.opacity(1, b.c0Cancel!),
+        resultCells[0]!.scale(1.25, b.c0Cancel!),
+      );
+      yield* all(
+        resultCells[0]!.scale(1, b.c0Settle!),
+        cancelNote.opacity(0, b.c0Settle!),
+      );
+      yield* columnNote.opacity(0, b.c0Clear!);
+
+      yield* subtractColumn(1, {
+        focus: b.c1Focus!,
+        show: b.c1Show!,
+        wait: b.c1Wait!,
+        result: b.c1Result!,
+        clear: b.c1Clear!,
+      });
+      yield* columnNote.opacity(0, b.c1Clear!);
+
+      yield* subtractColumn(2, {
+        focus: b.c2Focus!,
+        show: b.c2Show!,
+        wait: b.c2Wait!,
+        result: b.c2Result!,
+        clear: b.c2Clear!,
+      });
+      yield* columnNote.opacity(0, b.c2Clear!);
+
+      yield* all(fadeAll(row2Cells, 1, b.restore!), fadeAll(scaledCells, 1, b.restore!));
+      yield* waitFor(b.hold!);
+    },
+
+    *promote() {
+      const b = B.promote!;
+      // The working steps back and the computed row travels into the slot R₂
+      // left; the translucent record resolves into it as it lands.
+      yield* all(
+        fadeAll(row2Cells, 0.18, b.fade!),
+        fadeAll(scaledCells, 0.18, b.fade!),
+        minusSign.opacity(0.18, b.fade!),
+        scaledTag.opacity(0.18, b.fade!),
+        rule.opacity(0.2, b.fade!),
+        targetRing.opacity(0, b.fade!),
+        pivotRing.opacity(0, b.fade!),
+      );
+      for (const [index, cell] of ghostCells.entries()) {
+        cell.tex(num(NEW_R2[index]!));
+      }
+      yield* all(
+        ...resultCells.map((cell, index) =>
+          all(
+            cell.position(
+              new Vector2(
+                MATRIX_HOME.x + COL_X[index]!,
+                MATRIX_HOME.y + MATRIX_ROW_Y[1]!,
+              ),
+              b.travel!,
+              easeInOutCubic,
+            ),
+            cell.opacity(0, b.travel!),
+          ),
+        ),
+        ...ghostCells.map((cell) => cell.opacity(1, b.travel!)),
+      );
+      yield* all(
+        fadeAll(row1Cells, 1, b.settle!),
+        label1.opacity(1, b.settle!),
+        label2.opacity(1, b.settle!),
+        brackets.opacity(1, b.settle!),
+        divider.opacity(1, b.settle!),
+      );
+      yield* waitFor(b.hold!);
+    },
+
+    *plane() {
+      const b = B.plane!;
+      // Camera-style reframe: the matrix keeps its identity and parks, so the
+      // geometry half can refer to rows the learner can still read — including
+      // R₂'s original values, which the working leaves behind.
+      yield* all(
+        matrixGroup.position(MATRIX_PARKED, b.reframe!, easeInOutCubic),
+        matrixGroup.scale(MATRIX_PARKED_SCALE, b.reframe!, easeInOutCubic),
+        fadeAll(row2Cells, 0.4, b.reframe!),
+        ...row2Cells.map((cell, index) =>
+          cell.position(
+            new Vector2(COL_X[index]!, MATRIX_ROW_Y[1]! + 118),
+            b.reframe!,
+            easeInOutCubic,
+          ),
+        ),
+        fadeAll(scaledCells, 0, b.reframe!),
+        minusSign.opacity(0, b.reframe!),
+        scaledTag.opacity(0, b.reframe!),
+        rule.opacity(0, b.reframe!),
+        opLabel.position(new Vector2(300, -166), b.reframe!),
+      );
+      yield* plane.opacity(1, b.grid!);
+      note.tex("\\text{the two rows, drawn}");
+      yield* all(
+        line1.opacity(1, b.lines!),
+        line2.opacity(1, b.lines!),
+        lineLabel1.opacity(1, b.lines!),
+        lineLabel2.opacity(1, b.lines!),
+        note.opacity(1, b.lines!),
+      );
+      yield* all(solutionDot.opacity(1, b.dot!), crossing.opacity(1, b.dot!));
+      yield* solutionDot.size(32, b.dotUp!);
+      yield* solutionDot.size(20, b.dotDown!);
+      yield* waitFor(b.hold!);
+    },
+
     *predict() {
       const b = B.predict!;
-      setTop("R₂ → R₂ − 2R₁");
-      setCaption("(2,−1) satisfies R₁ and R₂");
+      // Every object the answer depends on stays up: both rows, the new row in
+      // the bracket, both lines, and the crossing. A blanked stage would make
+      // this a guess.
+      bannerText.tex("\\text{Can that operation move the crossing?}");
       yield* all(
-        solutionDot.size(28, b.anchor!),
-        solutionLabel.opacity(1, b.anchor!),
+        banner.opacity(0.94, b.ask!),
+        bannerText.opacity(1, b.ask!),
+        note.opacity(0, b.ask!),
       );
-      yield* all(
-        solutionDot.size(18, b.ask!),
-        // The apparatus stays up, only stepping back so the banner reads.
-        split.node.opacity(0.75, b.ask!),
-        prediction.show(b.ask!),
-      );
-      setCaption("new R₂ still through (2,−1)?");
-      yield* silentHold(b.think!);
+      yield* waitFor(b.think!);
     },
-    *operation() {
-      const b = B.operation!;
-      setTop("R₂ → R₂ − 2R₁");
-      setCaption("add −2R₁ entrywise");
+
+    *pivot() {
+      const b = B.pivot!;
       yield* all(
-        prediction.hide(b.anchorUp),
-        split.node.opacity(1, b.anchorUp),
-        solutionDot.size(26, b.anchorUp),
-        solutionLabel.opacity(1, b.anchorUp),
+        banner.opacity(0, b.ghost!),
+        bannerText.opacity(0, b.ghost!),
+        ghostLine2.opacity(0.5, b.ghost!),
       );
-      yield* solutionDot.size(18, b.anchorDown);
-      yield* all(
-        ghostRow.opacity(0.9, b.ghostReveal),
-        ghostTag.opacity(0.9, b.ghostReveal),
-      );
-      setCaption("x cancels · line pivots");
-      yield* uninterruptedMotion(
-        progress(1, b.combine, easeInOutCubic),
-        ghostRow.y(MAT2_Y, b.combine, easeInOutCubic),
-        ghostTag.y(MAT2_Y, b.combine, easeInOutCubic),
-        ghostRow.opacity(0, b.combine * 0.5),
-        ghostTag.opacity(0, b.combine * 0.5),
-      );
-      setCaption("intersection unchanged");
-      yield* solutionDot.size(26, b.landUp);
-      yield* solutionDot.size(18, b.landDown);
+      // The sweep walks the pencil R₂ + α·R₁. Its label is re-typeset at the
+      // whole stop, never interpolated into digits nobody wrote.
+      yield* alpha(FACTOR, b.sweep!, easeInOutCubic);
+      note.tex("\\text{horizontal — its equation has no } x \\text{ left}");
+      yield* all(note.opacity(1, b.settle!), line2.lineWidth(8, b.settle!));
+      yield* line2.lineWidth(5, b.emphasis!);
+      yield* waitFor(b.hold!);
     },
-    *triangular() {
-      const b = B.triangular!;
-      setTop("triangular system");
-      setCaption("−7y=7 ⇒ y=−1");
-      yield* line2.lineWidth(6, b.lineUp);
-      yield* line2.lineWidth(4, b.lineDown);
-      setCaption("x+3(−1)=−1 ⇒ x=2");
-      yield* all(
-        solutionDot.size(28, b.dotUp),
-        solutionLabel.scale(1.15, b.dotUp),
-      );
-      yield* all(
-        solutionDot.size(18, b.dotDown),
-        solutionLabel.scale(1, b.dotDown),
-      );
-    },
-    *invariance() {
-      const b = B.invariance!;
-      setTop("R₂−2R₁ is equivalent");
-      setCaption("common point stays common");
-      yield* all(line1.opacity(0.45, b.dim), solutionDot.opacity(1, b.dim));
-      yield* solutionDot.size(30, b.grow);
-      yield* solutionDot.size(18, b.shrink);
-      yield* line1.opacity(1, b.restore);
-    },
-    *summary() {
-      const b = B.summary!;
-      setTop("easier rows · same solution");
-      setCaption("solution set untouched");
-      yield* all(
-        solutionLabel.scale(1.08, b.settleUp),
-        solutionDot.size(24, b.settleUp),
-      );
-      yield* all(
-        solutionLabel.scale(1, b.settleDown),
-        solutionDot.size(18, b.settleDown),
-      );
+
+    *read() {
+      const b = B.read!;
+      readY.tex(`${equation(NEW_R2)} \\;\\Rightarrow\\; y = ${num(SOLUTION[1]!)}`);
+      readX.tex(`${equation(R1)} \\;\\Rightarrow\\; x = ${num(SOLUTION[0]!)}`);
+      yield* all(readY.opacity(1, b.yOut!), note.opacity(0, b.yOut!));
+      yield* waitFor(b.hold!);
+      yield* readX.opacity(1, b.xOut!);
+      yield* waitFor(b.hold2!);
+      note.tex("\\text{same crossing, easier second row}");
+      yield* all(note.opacity(1, b.back!), solutionDot.size(30, b.back!));
+      yield* solutionDot.size(20, b.settle!);
+      yield* waitFor(b.hold3!);
     },
   };
 
@@ -493,7 +903,7 @@ export const eliminationScene = makeScene2D(function* (view) {
     yield* runSegment(
       segment.duration,
       bodies[segment.id]!,
-      `elimination.${segment.id}`,
+      `${SCENE_ID}.${segment.id}`,
     );
   }
 });

@@ -208,46 +208,125 @@
     }
   },
   "elimination": {
-    "setup": {
-      "panels": "transition",
+    "system": {
+      "first": "transition",
+      "gap": "hold",
+      "second": "transition",
+      "hold": "hold"
+    },
+    "matrix": {
+      "retire": "transition",
+      "brackets": "transition",
+      "entries": "transition",
+      "labels": "transition",
+      "hold": "hold"
+    },
+    "aim": {
+      "pivot": "emphasis",
+      "target": "emphasis",
+      "note": "text",
+      "hold": "hold"
+    },
+    "detach": {
+      "dim": "emphasis",
+      "drop": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:elimination:row-2-entry-*"
+        ]
+      },
+      "ghost": "transition",
+      "hold": "hold"
+    },
+    "scale": {
+      "copy": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:elimination:scaled-entry-*"
+        ]
+      },
+      "minus": "transition",
+      "rule": "transition",
+      "hold": "hold"
+    },
+    "double": {
+      "tag": "transition",
+      "e0": "transition",
+      "e1": "transition",
+      "e2": "transition",
+      "tagOut": "transition",
+      "hold": "hold"
+    },
+    "subtract": {
+      "c0Focus": "emphasis",
+      "c0Show": "text",
+      "c0Wait": "hold",
+      "c0Result": "transition",
+      "c0Cancel": "emphasis",
+      "c0Settle": "emphasis",
+      "c0Clear": "transition",
+      "c1Focus": "emphasis",
+      "c1Show": "text",
+      "c1Wait": "hold",
+      "c1Result": "transition",
+      "c1Clear": "transition",
+      "c2Focus": "emphasis",
+      "c2Show": "text",
+      "c2Wait": "hold",
+      "c2Result": "transition",
+      "c2Clear": "transition",
+      "restore": "emphasis",
+      "hold": "hold"
+    },
+    "promote": {
+      "fade": "emphasis",
+      "travel": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:elimination:result-entry-*"
+        ]
+      },
+      "settle": "emphasis",
+      "hold": "hold"
+    },
+    "plane": {
+      "reframe": {
+        "intent": "camera",
+        "targets": [
+          "semantic:elimination:matrix"
+        ]
+      },
+      "grid": "transition",
       "lines": "transition",
-      "dotIn": "transition",
-      "dotPulseUp": "emphasis",
-      "dotPulseDown": "emphasis"
+      "dot": "transition",
+      "dotUp": "emphasis",
+      "dotDown": "emphasis",
+      "hold": "hold"
     },
     "predict": {
-      "anchor": "transition",
       "ask": "text",
       "think": "hold"
     },
-    "operation": {
-      "anchorUp": "emphasis",
-      "anchorDown": "emphasis",
-      "ghostReveal": "text",
-      "combine": {
+    "pivot": {
+      "ghost": "transition",
+      "sweep": {
         "intent": "geometry",
         "targets": [
           "semantic:elimination:row-2-line"
         ]
       },
-      "landUp": "emphasis",
-      "landDown": "emphasis"
+      "settle": "emphasis",
+      "emphasis": "emphasis",
+      "hold": "hold"
     },
-    "triangular": {
-      "lineUp": "emphasis",
-      "lineDown": "emphasis",
-      "dotUp": "emphasis",
-      "dotDown": "emphasis"
-    },
-    "invariance": {
-      "dim": "emphasis",
-      "grow": "transition",
-      "shrink": "transition",
-      "restore": "transition"
-    },
-    "summary": {
-      "settleUp": "emphasis",
-      "settleDown": "emphasis"
+    "read": {
+      "yOut": "text",
+      "hold": "hold",
+      "xOut": "transition",
+      "hold2": "hold",
+      "back": "transition",
+      "settle": "emphasis",
+      "hold3": "hold"
     }
   },
   "solution-sets": {

@@ -165,7 +165,7 @@ describe("scene timings (pure data)", () => {
     });
 
     it("requireBeats resolves declared budgets and refuses undeclared ones", () => {
-      expect(requireBeats("elimination", "operation").combine).toBe(2.6);
+      expect(requireBeats("elimination", "pivot").sweep).toBe(2.6);
       expect(() => requireBeats("elimination", "nope")).toThrow(/beat budget/);
       expect(() => requireBeats("no-such-scene", "setup")).toThrow(/beat budget/);
     });
@@ -230,7 +230,7 @@ describe("scene timings (pure data)", () => {
       },
       "columns-rule-graphic": { predict: "predict", reveal: "image" },
       "linear-systems": { predict: "predict-column", reveal: "column" },
-      elimination: { predict: "predict", reveal: "operation" },
+      elimination: { predict: "predict", reveal: "pivot" },
       "solution-sets": { predict: "predict-generate", reveal: "generate" },
       "matrix-composition": { predict: "predict-order", reveal: "order" },
       "determinant-area-scaling": {
@@ -396,16 +396,45 @@ describe("scene timings (pure data)", () => {
   });
 
   describe("elimination", () => {
-    it("declares six segments including the prediction before the row operation", () => {
-      expect(ELIMINATION_SEGMENTS.map((s) => s.id)).toEqual([
-        "setup",
+    /**
+     * The clip that came out of the design experiment: an arithmetic spine
+     * (the row leaves the bracket, a doubled copy of R1 lands under it, the
+     * three columns are subtracted, the result returns) followed by the
+     * geometric payoff (the line pivots about the crossing until horizontal).
+     */
+    it("runs the longhand arithmetic before the geometry", () => {
+      const ids = ELIMINATION_SEGMENTS.map((s) => s.id);
+      expect(ids).toEqual([
+        "system",
+        "matrix",
+        "aim",
+        "detach",
+        "scale",
+        "double",
+        "subtract",
+        "promote",
+        "plane",
         "predict",
-        "operation",
-        "triangular",
-        "invariance",
-        "summary",
+        "pivot",
+        "read",
       ]);
-      expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(32.5);
+      // Every result entry is computed before any of it is drawn as a line.
+      expect(ids.indexOf("subtract")).toBeLessThan(ids.indexOf("plane"));
+      expect(ids.indexOf("promote")).toBeLessThan(ids.indexOf("pivot"));
+      expect(totalDuration(ELIMINATION_SEGMENTS)).toBe(53);
+    });
+
+    it("gives the three-column subtraction the most time of any beat", () => {
+      const byId = Object.fromEntries(
+        ELIMINATION_SEGMENTS.map((s) => [s.id, s.duration]),
+      );
+      const longest = Math.max(...ELIMINATION_SEGMENTS.map((s) => s.duration));
+      expect(byId.subtract).toBe(longest);
+      // The cancelling column is held longer than the other two: it is the one
+      // the whole operation exists to produce.
+      const beats = SCENE_BEATS.elimination!.subtract!;
+      expect(beats.c0Wait!).toBeGreaterThan(beats.c1Wait!);
+      expect(beats.c0Wait!).toBeGreaterThan(beats.c2Wait!);
     });
   });
 

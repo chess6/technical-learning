@@ -68,12 +68,14 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
   // The beats this lesson must offer, addressed by NAME — the ordinals shift
   // whenever a beat is inserted, and this spec has no opinion about numbering.
   const ideaTitles = [
-    "One system, three views",
-    "Predict: what can the operation not move?",
-    "R2 → R2 − 2·R1",
-    "Triangular: read off y, back-substitute",
-    "The crossing never moved",
-    "Same solutions, easier system",
+    "The same rows, packed",
+    "The entry we want to kill",
+    "Take R2 out to work on it",
+    "Subtract, column by column",
+    "Return the row to the matrix",
+    "Predict: can the crossing move?",
+    "The line pivots about the crossing",
+    "Read y, then x",
   ];
   await expectChaptersMatchMetadata(scene, "elimination");
   for (const title of ideaTitles) {
@@ -82,15 +84,14 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
 
   const stageTitle = scene.locator(".guided-scene-player__stage-title");
 
-  // Seek to the OPERATION beat (R2 → R2 − 2·R1) and confirm the stage marker
-  // tracks it.
-  await gotoChapter(scene, "R2 → R2 − 2·R1");
+  // Seek to the longhand SUBTRACTION and confirm the stage marker tracks it.
+  await gotoChapter(scene, "Subtract, column by column");
 
-  // Scrub to the MIDPOINT of the operation (≈0.42 of the 32.5s timeline: the
-  // operation beat runs 10.5s–17.5s, so 13.65s sits inside it), where
-  // the scaled −2·R1 term is sliding into R2 and R2's line pivots about the
-  // fixed crossing. The marker must still report the operation beat — pinning
-  // that the scrubber and the step markers share one aligned timeline.
+  // Scrub into the middle of that beat (it runs 21.5s–29s of the 53s
+  // timeline, so 0.47 ≈ 24.9s sits inside it), where a column's two operands
+  // are lit and its result has just been typeset. The marker must still report
+  // the subtraction beat — pinning that the scrubber and the step markers
+  // share one aligned timeline.
   const timeline = scene.getByRole("slider", { name: "Animation timeline" });
   // React controls this range input, so set the value through the native setter
   // and dispatch a real `input` event to drive its onChange (Playwright's fill
@@ -103,14 +104,15 @@ test("Elimination lesson loads, guided scene plays, and row operations keep the 
     )!.set!;
     setter.call(input, String(value));
     input.dispatchEvent(new Event("input", { bubbles: true }));
-  }, 0.42);
-  await expect(timeline).toHaveAttribute("aria-valuetext", "42%");
-  await expect(stageTitle).toHaveText("R2 → R2 − 2·R1");
-  await scene.screenshot({ path: screenshotPath("elimination-scene-operation.png") });
+  }, 0.47);
+  await expect(timeline).toHaveAttribute("aria-valuetext", "47%");
+  await expect(stageTitle).toHaveText("Subtract, column by column");
+  await scene.screenshot({ path: screenshotPath("elimination-scene-subtract.png") });
 
-  // Seek to the final TRIANGULAR state and confirm the marker tracks it too.
-  await gotoChapter(scene, "Triangular: read off y, back-substitute");
-  await scene.screenshot({ path: screenshotPath("elimination-scene-triangular.png") });
+  // …and to the geometric payoff, where the rewritten row's line has pivoted
+  // about the crossing until it is horizontal.
+  await gotoChapter(scene, "The line pivots about the crossing");
+  await scene.screenshot({ path: screenshotPath("elimination-scene-pivot.png") });
 
   // --- Interactive explorer: the three synchronized views. ---
   const explore = page.getByRole("region", {
@@ -229,7 +231,7 @@ test("Elimination guided scene honors reduced motion (establishing frame, no aut
   // The scene seeks to the first major idea (the establishing frame), and
   // Previous/Next idea remain available to step through the sequence.
   await expect(scene.locator(".guided-scene-player__stage-title")).toHaveText(
-    "One system, three views",
+    "Two equations",
   );
   await expect(scene.getByRole("button", { name: "Next idea" })).toBeEnabled();
 

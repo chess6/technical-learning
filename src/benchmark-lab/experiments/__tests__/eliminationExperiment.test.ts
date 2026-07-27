@@ -109,11 +109,20 @@ describe("the pencil the pivot and search clips sweep", () => {
 
 describe("candidate registry", () => {
   it("offers three genuinely labelled candidates and no declared winner", () => {
-    expect(listCandidateIds()).toEqual(["longhand", "pivot", "combination"]);
+    expect(listCandidateIds()).toEqual([
+      "shipped",
+      "longhand",
+      "pivot",
+      "combination",
+    ]);
     for (const candidate of ELIMINATION_CANDIDATES) {
       expect(candidate.obstacle.length).toBeGreaterThan(40);
       expect(candidate.distinctBecause.length).toBeGreaterThan(40);
-      expect(JSON.stringify(candidate)).not.toMatch(/recommended|winner|best/i);
+      // The three hypotheses stay unranked; only the accepted combination is
+      // labelled as shipped, and it says why it is here.
+      if (candidate.id !== "shipped") {
+        expect(JSON.stringify(candidate)).not.toMatch(/recommended|winner|best/i);
+      }
     }
   });
 
@@ -126,24 +135,24 @@ describe("candidate registry", () => {
     // derives each beat's length from the NEXT beat — so an out-of-order or
     // overrunning beat list would seek somewhere the clip is not.
     for (const candidate of ELIMINATION_CANDIDATES) {
-      expect(candidate.beats.length, candidate.id).toBeGreaterThanOrEqual(6);
-      expect(candidate.beats[0]!.at, candidate.id).toBe(0);
-      for (let i = 1; i < candidate.beats.length; i += 1) {
+      const resolved = getEliminationCandidate(candidate.id);
+      expect(resolved.beats.length, candidate.id).toBeGreaterThanOrEqual(6);
+      expect(resolved.beats[0]!.at, candidate.id).toBe(0);
+      for (let i = 1; i < resolved.beats.length; i += 1) {
         expect(
-          candidate.beats[i]!.at,
-          `${candidate.id}.${candidate.beats[i]!.id}`,
-        ).toBeGreaterThan(candidate.beats[i - 1]!.at);
+          resolved.beats[i]!.at,
+          `${candidate.id}.${resolved.beats[i]!.id}`,
+        ).toBeGreaterThan(resolved.beats[i - 1]!.at);
       }
-      expect(
-        candidate.beats.at(-1)!.at,
-        candidate.id,
-      ).toBeLessThan(candidate.durationSeconds);
+      expect(resolved.beats.at(-1)!.at, candidate.id).toBeLessThan(
+        resolved.durationSeconds,
+      );
     }
   });
 
   it("has unique beat ids within a candidate", () => {
     for (const candidate of ELIMINATION_CANDIDATES) {
-      const ids = candidate.beats.map((b) => b.id);
+      const ids = getEliminationCandidate(candidate.id).beats.map((b) => b.id);
       expect(new Set(ids).size, candidate.id).toBe(ids.length);
     }
   });
