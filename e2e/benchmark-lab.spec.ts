@@ -1,9 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { BENCHMARK_MANIFESTS } from "../src/benchmark-lab/manifests";
-import {
-  ELIMINATION_CANDIDATES,
-  getEliminationCandidate,
-} from "../src/benchmark-lab/experiments/eliminationCandidates";
+import { DESIGN_EXPERIMENTS } from "../src/benchmark-lab/experiments/designExperiments";
 
 /**
  * The animation benchmark laboratory, exercised the way an author uses it.
@@ -259,8 +256,8 @@ function land(width: number): number {
  * seek inside the clip, and that no candidate logs a beat overrun (which is how
  * a body that outgrew its declared beat would show up).
  */
-test.describe("elimination design experiment", () => {
-  test.describe.configure({ timeout: 180_000 });
+test.describe("design experiments", () => {
+  test.describe.configure({ timeout: 240_000 });
 
   const DESIGN = `${LAB}?mode=design`;
 
@@ -277,58 +274,59 @@ test.describe("elimination design experiment", () => {
     await expect(page.locator(".design-lab__stage canvas")).toBeVisible();
   }
 
-  test("builds and plays every candidate, and switches between them", async ({
-    page,
-  }) => {
-    const errors = consoleErrors(page);
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto(DESIGN);
-    await waitForCandidate(page);
-
-    // Every candidate is offered, none is pre-declared the winner.
-    const tabs = page.getByRole("tab");
-    await expect(tabs).toHaveCount(ELIMINATION_CANDIDATES.length);
-    for (const candidate of ELIMINATION_CANDIDATES) {
-      await expect(
-        page.getByRole("tab", { name: titlePattern(candidate.title) }),
-      ).toBeVisible();
-    }
-
-    for (const candidate of ELIMINATION_CANDIDATES) {
-      await page.getByRole("tab", { name: titlePattern(candidate.title) }).click();
+  for (const experiment of DESIGN_EXPERIMENTS) {
+    test(`${experiment.id}: builds and plays every candidate, and switches between them`, async ({
+      page,
+    }) => {
+      const errors = consoleErrors(page);
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.goto(`${DESIGN}&experiment=${experiment.id}`);
       await waitForCandidate(page);
-      // Selection is linkable, so a reviewer can send one candidate.
-      expect(page.url()).toContain(`candidate=${candidate.id}`);
-      // Its own beats drive the chapter buttons. The shipped clip resolves
-      // them from the production timing registry, so ask the resolver.
-      await expect(page.locator(".design-lab__beats button")).toHaveCount(
-        getEliminationCandidate(candidate.id).beats.length,
-      );
-      // The thesis names the obstacle rather than leaving the clip unexplained.
-      await expect(page.locator(".design-lab__thesis")).toContainText(
-        candidate.title,
+
+      // Every candidate is offered, none is pre-declared the winner.
+      await expect(page.getByRole("tab")).toHaveCount(
+        experiment.candidates.length,
       );
 
-      // Seek to the last beat and confirm the transport followed.
-      const finalBeat = getEliminationCandidate(candidate.id).beats.at(-1)!;
-      await page.locator(".design-lab__beats button").last().click();
-      await expect(page.locator(".bench-lab__clock")).toContainText(
-        `${Math.floor(finalBeat.at)}`,
-        { timeout: 15_000 },
-      );
-    }
+      for (const candidate of experiment.candidates) {
+        await page
+          .getByRole("tab", { name: titlePattern(candidate.title) })
+          .click();
+        await waitForCandidate(page);
+        // Selection is linkable, so a reviewer can send one candidate.
+        expect(page.url()).toContain(`candidate=${candidate.id}`);
+        expect(page.url()).toContain(`experiment=${experiment.id}`);
+        // Its own beats drive the chapter buttons. A candidate may derive them
+        // from a production timing registry, so ask the resolver.
+        await expect(page.locator(".design-lab__beats button")).toHaveCount(
+          experiment.resolve(candidate.id).beats.length,
+        );
+        // The thesis names the obstacle rather than leaving the clip unexplained.
+        await expect(page.locator(".design-lab__thesis")).toContainText(
+          candidate.title,
+        );
 
-    // Playback runs in the real runtime.
-    await page.getByRole("button", { name: "Restart" }).click();
-    await page.getByRole("button", { name: "Play" }).click();
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-    await page.waitForTimeout(1200);
-    await page.getByRole("button", { name: "Pause" }).click();
+        // Seek to the last beat and confirm the transport followed.
+        const finalBeat = experiment.resolve(candidate.id).beats.at(-1)!;
+        await page.locator(".design-lab__beats button").last().click();
+        await expect(page.locator(".bench-lab__clock")).toContainText(
+          `${Math.floor(finalBeat.at)}`,
+          { timeout: 15_000 },
+        );
+      }
 
-    // A beat body that outgrew its declared length logs a console error.
-    expect(errors.filter((e) => /overran/.test(e))).toEqual([]);
-    expect(errors).toEqual([]);
-  });
+      // Playback runs in the real runtime.
+      await page.getByRole("button", { name: "Restart" }).click();
+      await page.getByRole("button", { name: "Play" }).click();
+      await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+      await page.waitForTimeout(1200);
+      await page.getByRole("button", { name: "Pause" }).click();
+
+      // A beat body that outgrew its declared length logs a console error.
+      expect(errors.filter((e) => /overran/.test(e))).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
 
   test("keeps the chosen playback speed when the candidate changes", async ({
     page,
@@ -340,6 +338,14 @@ test.describe("elimination design experiment", () => {
     const speed = page.getByLabel("Playback speed");
     await speed.selectOption("2");
     await page.getByRole("tab", { name: titlePattern("B · Pivot") }).click();
+    await waitForCandidate(page);
+
+    // …and it survives a change of EXPERIMENT too, which remounts from a
+    // different registry entirely.
+    await page.getByLabel("Experiment").selectOption("eigen");
+    await waitForCandidate(page);
+    await expect(speed).toHaveValue("2");
+    await page.getByLabel("Experiment").selectOption("elimination");
     await waitForCandidate(page);
 
     // The control still reads 2×…

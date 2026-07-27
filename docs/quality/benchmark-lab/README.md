@@ -202,3 +202,33 @@ copy, so a lab entry cannot drift from what learners see.
 The serif/near-black treatment is accepted **for this lesson**. Whether it
 becomes the course-wide animation language is still open, and is not decided by
 this experiment.
+
+### Eigenvector derivation — experiment (2026-07)
+
+Two candidates for the chain `Av = λv → (A − λI)v = 0 → det(A − λI) = 0 →
+eigenvalues and eigenspaces`, at `?mode=design&experiment=eigen`. They take
+opposite routes through it and opposite visual languages.
+
+**A · Knob** — geometry-first, and the only candidate where λ is continuous.
+The whole plane deforms under `A − λI` inside a clipped viewport, and the graph
+of `det(A − λI)` against λ is *traced* by the same dial, so the algebraic
+condition and the geometric collapse are two readouts of one motion. The
+eigenvalues are found rather than computed; the characteristic polynomial is
+named at the end, as the equation that predicts crossings the learner has
+already watched.
+
+**B · Chain** — algebra-first, on a **page rather than a void**. Eleven lines
+build downward and none is ever cleared, so the closing frame is the whole
+derivation; a witness panel beside it shows the one geometric fact licensing the
+line being written. The light ground is a deliberate cosmetic experiment:
+mathematical animation is almost always light-on-black, and a warm near-white
+page holds fine strokes and small type better at embedded-player size.
+
+Both fix the ambiguity the production scene has while solving `(A − 2I)`: only
+that root's null direction is drawn there, because `A − 2I` kills exactly one of
+the two eigenlines. Both directions share a frame only after the plane has
+returned to `A`, where each is scaled by its own λ — true of both at once.
+
+The lab now holds several experiments; `?experiment=` selects one and the chosen
+playback speed survives switching candidates *and* experiments, so two clips are
+never compared at different speeds.

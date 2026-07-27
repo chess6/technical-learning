@@ -146,6 +146,9 @@ export const ELIMINATION_CANDIDATES: readonly EliminationCandidate[] = [
   },
 ];
 
+/** Alias: the registry types are shared by every design experiment. */
+export type DesignCandidate = EliminationCandidate;
+
 export function getEliminationCandidate(id: string): EliminationCandidate {
   const candidate = ELIMINATION_CANDIDATES.find((c) => c.id === id);
   if (!candidate) {

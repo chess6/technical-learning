@@ -34,31 +34,34 @@ const VERSIONS: Versions = {
  * How a mounted clip resolves its scene description.
  *
  * `benchmark` is the original path — a replica keyed by benchmark id. `design`
- * is the elimination design experiment: candidate clips that have no reference
- * to compare against, so they are deliberately NOT in the replica registry
- * (whose ids are checked against the benchmark manifests).
+ * is a design experiment: candidate clips that have no reference to compare
+ * against, so they are deliberately NOT in the replica registry (whose ids are
+ * checked against the benchmark manifests). Design mounts also carry the
+ * experiment id, because candidate ids are only unique within one experiment.
  */
 export type LabSceneKind = "benchmark" | "design";
 
 async function resolveSceneDescription(
   kind: LabSceneKind,
   id: string,
+  experimentId: string,
 ): Promise<unknown> {
   if (kind === "benchmark") return getReplicaSceneDescription(id);
-  const { getCandidateSceneDescription } = await import(
-    "../experiments/eliminationCandidates"
+  const { getDesignExperiment } = await import(
+    "../experiments/designExperiments"
   );
-  return getCandidateSceneDescription(id);
+  return getDesignExperiment(experimentId).loadScene(id);
 }
 
 export async function buildLabProject(
   benchmarkId: string,
   plugins: Project["plugins"] = [],
   kind: LabSceneKind = "benchmark",
+  experimentId = "elimination",
 ): Promise<Project> {
-  const name = `${kind}-${benchmarkId}`;
+  const name = `${kind}-${experimentId}-${benchmarkId}`;
   const description = {
-    ...((await resolveSceneDescription(kind, benchmarkId)) as object),
+    ...((await resolveSceneDescription(kind, benchmarkId, experimentId)) as object),
     name,
   } as unknown as FullSceneDescription;
   description.onReplaced ??= new ValueDispatcher(description);
@@ -98,8 +101,9 @@ export async function mountLabPlayer(
   benchmarkId: string,
   container: HTMLElement,
   kind: LabSceneKind = "benchmark",
+  experimentId = "elimination",
 ): Promise<LabPlayerHandle> {
-  const project = await buildLabProject(benchmarkId, [], kind);
+  const project = await buildLabProject(benchmarkId, [], kind, experimentId);
   const stage = new Stage();
   const player = new Player(project);
 

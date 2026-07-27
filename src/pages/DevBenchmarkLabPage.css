@@ -602,3 +602,11 @@
     margin-top: 8px;
   }
 }
+
+.design-lab__question {
+  max-width: var(--design-lab-max);
+  margin: 0 auto 12px;
+  color: #8b97a8;
+  font-size: 13px;
+  line-height: 1.45;
+}

@@ -7,9 +7,9 @@ import {
 } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ELIMINATION_CANDIDATES,
-  getEliminationCandidate,
-} from "../benchmark-lab/experiments/eliminationCandidates";
+  DESIGN_EXPERIMENTS,
+  getDesignExperiment,
+} from "../benchmark-lab/experiments/designExperiments";
 import {
   BENCHMARK_MANIFESTS,
   LAB_STAGE,
@@ -638,10 +638,15 @@ function BenchmarkComparison() {
  */
 function DesignExperiment() {
   const [params, setParams] = useSearchParams();
-  const candidateId = params.get("candidate") ?? ELIMINATION_CANDIDATES[0]!.id;
+  const experimentId = params.get("experiment") ?? DESIGN_EXPERIMENTS[0]!.id;
+  const experiment = useMemo(
+    () => getDesignExperiment(experimentId),
+    [experimentId],
+  );
+  const candidateId = params.get("candidate") ?? experiment.candidates[0]!.id;
   const candidate = useMemo(
-    () => getEliminationCandidate(candidateId),
-    [candidateId],
+    () => experiment.resolve(candidateId),
+    [experiment, candidateId],
   );
   const durationFrames = Math.round(candidate.durationSeconds * REPLICA_FPS);
 
@@ -672,7 +677,12 @@ function DesignExperiment() {
     setPlaying(false);
     (async () => {
       if (!host.current) return;
-      const handle = await mountLabPlayer(candidateId, host.current, "design");
+      const handle = await mountLabPlayer(
+        candidateId,
+        host.current,
+        "design",
+        experimentId,
+      );
       if (cancelled) {
         handle.dispose();
         return;
@@ -689,7 +699,7 @@ function DesignExperiment() {
       mounted?.dispose();
       handleRef.current = null;
     };
-  }, [candidateId]);
+  }, [candidateId, experimentId]);
 
   const seekTo = useCallback(
     (target: number) => {
@@ -713,7 +723,12 @@ function DesignExperiment() {
   }, [playing]);
 
   const selectCandidate = (id: string) => {
-    setParams({ mode: "design", candidate: id });
+    setParams({ mode: "design", experiment: experimentId, candidate: id });
+  };
+  const selectExperiment = (id: string) => {
+    // Candidate ids are per-experiment, so switching experiments falls back to
+    // its own first candidate rather than carrying a stale one across.
+    setParams({ mode: "design", experiment: id });
   };
 
   const currentTime = frame / REPLICA_FPS;
@@ -724,18 +739,30 @@ function DesignExperiment() {
   return (
     <div className={`bench-lab design-lab ${theater ? "design-lab--theater" : ""}`}>
       <header className="bench-lab__header">
-        <h1>Elimination — animation design experiment</h1>
+        <h1>Animation design experiments</h1>
         <span className="bench-lab__dev-tag">dev-only</span>
         <Link className="bench-lab__mode-link" to="/dev/benchmark-lab">
           ← Benchmark comparison
         </Link>
+        <select
+          value={experimentId}
+          onChange={(event) => selectExperiment(event.target.value)}
+          aria-label="Experiment"
+        >
+          {DESIGN_EXPERIMENTS.map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              {entry.title}
+            </option>
+          ))}
+        </select>
         <span className="bench-lab__source">
-          three candidates · same system · no winner declared
+          {experiment.candidates.length} candidates · no winner declared
         </span>
       </header>
+      <p className="design-lab__question">{experiment.question}</p>
 
       <div className="design-lab__candidates" role="tablist" aria-label="Candidate">
-        {ELIMINATION_CANDIDATES.map((c) => (
+        {experiment.candidates.map((c) => (
           <button
             key={c.id}
             role="tab"
