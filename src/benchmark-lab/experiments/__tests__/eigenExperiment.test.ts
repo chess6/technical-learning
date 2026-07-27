@@ -25,6 +25,7 @@ import {
   collapseWitnessIndex,
   determinantLineIndex,
   knobBeat,
+  resolveCancellationTerm,
 } from "../eigenSceneScript";
 import { matrixVectorMultiply, type Vector2 as MathVector2 } from "../../../math";
 
@@ -346,6 +347,47 @@ describe("chain scene state: the written argument", () => {
     expect(gather.tex).toContain("A\\mathbf{v}");
     expect(gather.tex).toContain("\\lambda\\mathbf{v}");
     expect(gather.witness).toBe("cancel");
+  });
+
+  it("resolves those names to the vectors the scene actually draws", () => {
+    // The scene draws whatever the resolver returns for the declared terms, so
+    // this is a check on the picture rather than on a label beside it.
+    for (const step of STEPS) {
+      const context = {
+        v: step.direction,
+        av: matrixVectorMultiply(A, step.direction),
+        lambda: step.lambda,
+      };
+      const minuend = resolveCancellationTerm(CANCELLATION_TERMS.minuend, context);
+      const subtrahend = resolveCancellationTerm(
+        CANCELLATION_TERMS.subtrahend,
+        context,
+      );
+      const difference: MathVector2 = [
+        minuend[0] - subtrahend[0],
+        minuend[1] - subtrahend[1],
+      ];
+      const zero = resolveCancellationTerm(CANCELLATION_TERMS.difference, context);
+
+      // Av − λv really reaches the origin…
+      expect(Math.hypot(difference[0] - zero[0], difference[1] - zero[1])).toBeLessThan(1e-12);
+      // …and the minuend really is Av, not v: swapping them would leave a
+      // difference of (λ − 1)v, which is not zero.
+      const wrong = resolveCancellationTerm("Av", { ...context, av: step.direction });
+      expect(
+        Math.hypot(wrong[0] - subtrahend[0], wrong[1] - subtrahend[1]),
+        `λ=${step.lambda}`,
+      ).toBeGreaterThan(0.5);
+    }
+  });
+
+  it("refuses an unnamed cancellation term rather than falling back to v", () => {
+    expect(() =>
+      resolveCancellationTerm(
+        "v" as never,
+        { v: [1, 0], av: [3, 0], lambda: 3 },
+      ),
+    ).toThrow(/unknown cancellation term/);
   });
 
   it("really does make that difference zero for the running eigenpair", () => {

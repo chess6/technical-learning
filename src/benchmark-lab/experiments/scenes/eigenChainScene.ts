@@ -21,7 +21,11 @@ import {
   assertEigenDataIsConsistent,
   lerpIdentityTo,
 } from "../eigenExperimentData";
-import { CHAIN_SCRIPT } from "../eigenSceneScript";
+import {
+  CANCELLATION_TERMS,
+  CHAIN_SCRIPT,
+  resolveCancellationTerm,
+} from "../eigenSceneScript";
 import { texNumber, texRoman } from "../texFormat";
 import { runCandidateBeats } from "../candidateKit";
 
@@ -278,8 +282,21 @@ export const eigenChainScene = makeScene2D(function* (view) {
    * to compare Av with λv — comparing v with λv would show a difference of
    * (λ − 1)v, which is not zero and is not what the line says.
    */
+  const cancellationContext = () => ({
+    v: [V[0] * vLen(), V[1] * vLen()] as const,
+    av: matrixVectorMultiply(A, [V[0] * vLen(), V[1] * vLen()]),
+    lambda: lambdaShown(),
+  });
+  /**
+   * The minuend of the cancellation, resolved from `CANCELLATION_TERMS` rather
+   * than chosen here. The table names `Av`; drawing `v` instead — the mistake
+   * this correction fixed — would mean bypassing the resolver.
+   */
   const av = (): MathVector2 =>
-    matrixVectorMultiply(A, [V[0] * vLen(), V[1] * vLen()]);
+    resolveCancellationTerm(
+      CANCELLATION_TERMS.minuend,
+      cancellationContext(),
+    ) as MathVector2;
   const avArrow = new Line({
     stroke: HOT,
     lineWidth: 5,
@@ -294,11 +311,12 @@ export const eigenChainScene = makeScene2D(function* (view) {
   avLabel.opacity(0);
   witness.add(avLabel);
 
-  /** λv, drawn on the same ray. For an eigenvector it lands exactly on Av. */
-  const lv = (): MathVector2 => [
-    V[0] * vLen() * lambdaShown(),
-    V[1] * vLen() * lambdaShown(),
-  ];
+  /** The subtrahend, resolved the same way. It lands exactly on Av. */
+  const lv = (): MathVector2 =>
+    resolveCancellationTerm(
+      CANCELLATION_TERMS.subtrahend,
+      cancellationContext(),
+    ) as MathVector2;
   const lvArrow = new Line({
     stroke: COOL,
     lineWidth: 3,

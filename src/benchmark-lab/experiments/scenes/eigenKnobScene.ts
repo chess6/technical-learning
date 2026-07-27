@@ -498,13 +498,18 @@ export const eigenKnobScene = makeScene2D(function* (view) {
     },
 
     *firstZero() {
-      yield* say(
-        `${texRoman("at ")}\\lambda = ${texNumber(STEPS[1]!.lambda)}${texRoman(" the determinant is zero — the plane is flat")}`,
-        0.35,
-      );
+      // Prospective while the dial is still travelling: naming the value it is
+      // about to reach, before it reaches it, reads as the clip telling the
+      // learner the answer instead of letting them watch it happen.
+      yield* say(texRoman("the determinant is falling toward zero"), 0.35);
       yield* all(
         lambda(STEPS[1]!.lambda, 1.5, easeInOutCubic),
         traceTo(STEPS[1]!.lambda, 1.5, easeInOutCubic),
+      );
+      // Landed: now it can be named.
+      yield* say(
+        `${texRoman("at ")}\\lambda = ${texNumber(STEPS[1]!.lambda)}${texRoman(" the determinant is zero — the plane is flat")}`,
+        0.3,
       );
       yield* all(
         zeroMarks[1]!.mark.opacity(1, 0.4),
@@ -536,15 +541,16 @@ export const eigenKnobScene = makeScene2D(function* (view) {
       // determinant is −0.24 and the plane is still two-dimensional; labelling
       // an image line there would claim a collapse that has not happened.
       yield* stageFor("sweep", 0.4);
-      yield* say(texRoman("keep turning"), 0.35);
+      yield* say(texRoman("keep turning — the curve is coming back up"), 0.35);
       yield* all(lambda(2.6, 1.6, easeInOutCubic), traceTo(2.6, 1.6, easeInOutCubic));
-      yield* say(
-        `${texRoman("and again at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
-        0.3,
-      );
       yield* all(
         lambda(STEPS[0]!.lambda, 1.2, easeInOutCubic),
         traceTo(STEPS[0]!.lambda, 1.2, easeInOutCubic),
+      );
+      // …and only once it has arrived is the second crossing named.
+      yield* say(
+        `${texRoman("it touches zero again, at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
+        0.3,
       );
       yield* all(
         zeroMarks[0]!.mark.opacity(1, 0.4),

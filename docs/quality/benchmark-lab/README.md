@@ -247,10 +247,20 @@ Corrections after review, all of them things only visible in playback:
   unit square is brought up at rest under "A − λI is not invertible" and only
   collapses after `det(A − λI) = 0` is written.
 
-The scene-state regressions are on the tables the scenes read — `KNOB_BEATS` and
-`CHAIN_SCRIPT` in `eigenSceneScript.ts` — so kernel/image visibility, the active
-eigendirection per shifted matrix, the cancellation quantities, and the
-witness-after-statement ordering all fail a unit test rather than only an eye.
+### What the scene-state regressions do and do not protect
+
+The tables in `eigenSceneScript.ts` are only worth testing to the extent the
+scenes actually read them. Stated precisely, because the first version of this
+note overstated it:
+
+| Property | Enforced how |
+| --- | --- |
+| Kernel/image visibility per beat; one kernel at a time; an image only where `det = 0` | **Consumed.** Knob's `stageFor` sets every opacity from `KNOB_BEATS`; drawing something else means bypassing it. |
+| The kernel and image directions per shifted matrix | **Consumed.** Derived in `eigenExperimentData` from `nullspaceBasis2x2` / `columnSpaceBasis`, with a load guard. |
+| The cancellation quantities (`Av` vs `λv`) | **Consumed.** Chain's two witness arrows are whatever `resolveCancellationTerm` returns for the declared terms; an unnamed term throws rather than falling back to `v`. |
+| The persistent-symbol morph fragments | **Consumed.** Chain's first three lines are written from `CHAIN_SCRIPT[i].tex`. |
+| The collapse never preceding `det(A − λI) = 0` | **Table-only, for now.** The ordering is asserted on `CHAIN_SCRIPT`, but the scene still calls the collapse from its own beat body, so a scene edit could diverge while the test stays green. Closed when Chain is promoted and the witness dispatch reads `CHAIN_SCRIPT[i].witness`. |
+| The last five chain lines' LaTeX | **Table-only.** They are `@`-placeholders the scene fills in, so the script records their order, not their text. |
 
 The lab now holds several experiments; `?experiment=` selects one and the chosen
 playback speed survives switching candidates *and* experiments, so two clips are

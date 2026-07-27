@@ -183,14 +183,50 @@ export function collapseWitnessIndex(): number {
 }
 
 /**
- * The two quantities the cancellation witness compares.
+ * The quantities the cancellation witness compares, by name.
  *
  * `Av` against `λv` — NOT `v` against `λv`, whose difference is `(λ − 1)v` and
- * is not zero. Declared here so the check is on the mathematics rather than on
- * whichever two arrows a scene happens to have drawn.
+ * is not zero.
  */
 export const CANCELLATION_TERMS = {
   minuend: "Av",
   subtrahend: "lambda-v",
   difference: "zero",
 } as const;
+
+export type CancellationTerm =
+  (typeof CANCELLATION_TERMS)[keyof typeof CANCELLATION_TERMS];
+
+/**
+ * Resolve a named term against a concrete eigenpair.
+ *
+ * This is what makes the table above load-bearing rather than decorative: the
+ * scene draws whatever `resolveCancellationTerm` returns for
+ * `CANCELLATION_TERMS.minuend` and `.subtrahend`, so changing the table changes
+ * the picture, and drawing something else means bypassing the resolver.
+ * Unknown names throw rather than falling back to `v`, which is the mistake the
+ * correction was made for.
+ */
+export function resolveCancellationTerm(
+  term: CancellationTerm,
+  context: {
+    /** The eigenvector, at the length the witness draws it. */
+    v: readonly [number, number];
+    /** Its image under A, computed through A rather than assumed. */
+    av: readonly [number, number];
+    lambda: number;
+  },
+): readonly [number, number] {
+  switch (term) {
+    case "Av":
+      return context.av;
+    case "lambda-v":
+      return [context.lambda * context.v[0], context.lambda * context.v[1]];
+    case "zero":
+      return [0, 0];
+    default: {
+      const unknown: never = term;
+      throw new Error(`eigenSceneScript: unknown cancellation term ${unknown}`);
+    }
+  }
+}
