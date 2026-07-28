@@ -42,8 +42,11 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
  * So λ becomes a dial. `A − λI` is presented as a whole FAMILY of maps, the
  * plane deforms under whichever member the dial selects, and the graph of
  * `det(A − λI)` is traced by the same sweep. The eigenvalues are then found
- * rather than computed: they are where the curve touches the axis and, at the
- * same instant, where the grid flattens onto a line. The polynomial is named
+ * rather than computed: they are where the curve crosses the axis and, at the
+ * same instant, where the grid flattens onto a line. Both roots of
+ * `(3 − λ)(2 − λ)` are simple, so the curve passes through zero at each of them
+ * and is negative in between — it does not touch and turn back. The polynomial
+ * is named
  * last, as the equation that predicts crossings the learner has already
  * watched happen.
  *
@@ -577,7 +580,7 @@ export const eigenvectorsCharacteristicEquationScene = makeScene2D(function* (
         traceTo(STEPS[0]!.lambda, b.land!, easeInOutCubic),
       );
       yield* say(
-        `${roman("it touches zero again, at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
+        `${roman("it crosses zero again, at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
         b.name!,
       );
       yield* all(

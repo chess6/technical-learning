@@ -36,7 +36,7 @@ import { runCandidateBeats } from "../candidateKit";
  * So λ becomes a dial, and the frame carries two readouts of it: the whole
  * plane deforming under A − λI, and the graph of det(A − λI) against λ, traced
  * by the same sweep. The eigenvalues are then discovered rather than computed —
- * they are where the curve touches the axis and, at the same instant, where the
+ * they are where the curve crosses the axis and, at the same instant, where the
  * grid flattens onto a line. The characteristic polynomial is named at the END,
  * as the equation that predicts the crossings the learner has already seen.
  *
@@ -549,7 +549,7 @@ export const eigenKnobScene = makeScene2D(function* (view) {
       );
       // …and only once it has arrived is the second crossing named.
       yield* say(
-        `${texRoman("it touches zero again, at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
+        `${texRoman("it crosses zero again, at ")}\\lambda = ${texNumber(STEPS[0]!.lambda)}`,
         0.3,
       );
       yield* all(

@@ -375,6 +375,13 @@ equation that predicts crossings the learner has already watched happen. The
 opening fan and the per-root eigenspace solves were dropped: they belong to the
 clips either side of it.
 
+Both roots of `(3 − λ)(2 − λ)` are **simple**, so the curve *crosses* the axis at
+λ = 2 and λ = 3 and is negative in between. An early draft said it "touches"
+zero, which is the language for a repeated root and would have implied a
+tangency the picture does not show — corrected in the caption, the scene
+metadata, the chapter summaries, and held by a test that the determinant is
+strictly negative strictly between the two roots.
+
 Three clips, three jobs — and no course-wide rule follows from it:
 
 | Clip | Question it answers |

@@ -66,6 +66,23 @@ describe("eigen derivation data", () => {
     }
   });
 
+  it("crosses the axis at each root rather than touching it", () => {
+    // Both roots of (3 − λ)(2 − λ) are SIMPLE, so the determinant changes sign
+    // at each of them and is negative in between. "Touches zero" is the
+    // language for a repeated root; using it here would claim a tangency the
+    // traced curve does not have, and would make the bridge's "keep turning,
+    // it comes back up" beat describe the wrong picture.
+    const [high, low] = [STEPS[0]!.lambda, STEPS[1]!.lambda];
+    expect(high).toBeGreaterThan(low);
+    for (let t = 0.05; t < 1; t += 0.05) {
+      const lambda = low + (high - low) * t;
+      expect(detAtLambda(lambda), `λ = ${lambda}`).toBeLessThan(0);
+    }
+    // …and positive on the far side of each root, which is what a crossing is.
+    expect(detAtLambda(low - 0.1)).toBeGreaterThan(0);
+    expect(detAtLambda(high + 0.1)).toBeGreaterThan(0);
+  });
+
   it("keeps the kernel and the image apart at every root", () => {
     // The correction this clip family exists downstream of: at λ = 2 the
     // shifted map is (x, y) ↦ (x + y, 0), so the kernel is y = −x and the

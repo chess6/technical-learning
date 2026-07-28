@@ -30,7 +30,7 @@ export const eigenvectorsLesson: LessonDefinition = {
     { kind: "formal", formalId: "thm-characteristic" },
     // The theorem's own justification, before the calculation that uses it: λ
     // as a dial, and the eigenvalues found as the places where det(A − λI)
-    // touches zero. A second clip because it does a job neither of the others
+    // crosses zero. A second clip because it does a job neither of the others
     // does — not because lessons are expected to have one animation each.
     {
       kind: "visual",

@@ -1313,13 +1313,13 @@ export const EIGEN_CHARACTERISTIC_SEGMENTS: readonly SceneSegment[] = [
     id: "firstZero",
     title: "The determinant reaches zero",
     duration: 8.5,
-    summary: "The curve touches the axis and the grid flattens at the same instant; the image line and the kernel are named apart.",
+    summary: "The curve crosses the axis and the grid flattens at the same instant; the image line and the kernel are named apart.",
   },
   {
     id: "secondZero",
     title: "And again, further along",
     duration: 9,
-    summary: "A second crossing, where kernel and image swap places — the plane is not singular between them.",
+    summary: "The curve comes back up through zero — a second crossing, where kernel and image swap places. Between the two roots the determinant is negative and the plane is not flat.",
   },
   {
     id: "roots",
