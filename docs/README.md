@@ -22,6 +22,7 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Hit the animation quality bar | [authoring/animation-quality-bar.md](authoring/animation-quality-bar.md) |
 | Plan a lesson (fill-in templates) | [authoring/templates/](authoring/templates/) |
 | Work on the linear-algebra course | [courses/linear-algebra/](courses/linear-algebra/) |
+| Work on the applied-mathematics course (calculus → fields → transforms) | [courses/applied-mathematics/](courses/applied-mathematics/) |
 | Understand the multi-subject platform model | [courses/multi-domain-architecture.md](courses/multi-domain-architecture.md) |
 | Change math or a visualization | [engineering/math-correctness.md](engineering/math-correctness.md) + [quality/known-failure-modes.md](quality/known-failure-modes.md) |
 | Understand the code architecture / contracts | [engineering/architecture.md](engineering/architecture.md), [engineering/platform-contracts.md](engineering/platform-contracts.md) |
@@ -71,9 +72,14 @@ unit id), e.g. `courses/linear-algebra/modules/systems-elimination/`:
   module-owned outcomes); template [authoring/templates/module-assessment-plan.md](authoring/templates/module-assessment-plan.md)
 - `validation.md` — Gate 10 covered/missing/deferred vs the benchmark + declared
   target; template [authoring/templates/module-validation.md](authoring/templates/module-validation.md)
-- `implementation-package.md` *(optional)* — when the workflow is applied
-  **retrospectively** to a built module, the audit of build-vs-required gaps and the
-  smallest ordered work to satisfy the mastery contracts
+- `implementation-package.md` *(optional)* — the module's ordered work list. Two
+  uses, same file: **retrospectively** on a built module it is the audit of
+  build-vs-required gaps and the smallest work to satisfy the mastery contracts
+  (`linear-algebra/modules/systems-elimination`); **prospectively** on an
+  unbuilt one it is the batch ledger a Mode B package hands to implementation —
+  slices in dependency order, package-specific review checks, and a status table
+  (`applied-mathematics/modules/change-accumulation`). It never re-decides
+  curriculum: everything it schedules is already settled in the lesson artifacts
 
 **Never create a new loose `docs/insight-*.md`.** New briefs, contracts, plans go
 under `courses/<course>/lessons/<lesson>/`; module assessment/validation go under

@@ -1,0 +1,133 @@
+# Lesson Mastery Contract — The derivative as local linearity (L2)
+
+Gate 5 for **L2 `derivative-local-linearity`**, after [insight.md](insight.md)
+reached `PASS`.
+
+## 1a. Placement & upstream links
+- **Spine:** L2, unit `change`, second lesson of Package A.
+- **Profile:** P2 primary. No P3 bar claimed: differentiability is *characterized*
+  and *used*, not proved from an \(\varepsilon\)–\(\delta\) argument.
+- **Insight contract:** [insight.md](insight.md) — `PASS`.
+- **Concepts introduced:** `local-linearity`, `derivative`. **Reused:** `limit`,
+  `continuity` (L1).
+- **Cross-course:** LA `transformations` (built) — cited once for C9, as a
+  connection. Not re-taught, not a hard gate.
+
+## 1b. Role, bridge, need
+- **Role:** supplies the object the whole course differentiates, and — more
+  importantly — supplies **C5**, the first-order approximation with an error that
+  vanishes faster than the step. L6's telescoping argument consumes C5 directly;
+  without it the FTC cannot be derived, only asserted.
+- **Retrieve:** L1's forced value and the irrelevance of the point (the difference
+  quotient is \(0/0\) at \(h=0\) and always will be).
+- **Bridge from L1:** L1 established that the instantaneous rate is a well-defined
+  number. L2 asks the obvious next question — *a number measuring what?*
+- **Motivating need:** *Everyone says the speedometer reading is the slope of a
+  line. A rate is metres per second; a slope is a ratio of two lengths on a page.
+  Why should those be the same number?*
+
+## 1c. Content to teach
+- **Definitions (D2):** the derivative at a point (limit of difference quotients);
+  local linearity; the tangent line **by error decay**, not by contact;
+  differentiability; the derivative as a function.
+- **Objects:** `ex-parabola` at \(a=3\) (continuing L1's arithmetic);
+  `ex-drive` (rate costume); `ex-abs` (\(\lvert x\rvert\) at 0, the visible
+  failure); `ex-cubic-inflection` (\(x^3\) at 0 — tangent crosses); `ex-decay`
+  (\(e^{-t/\tau}\), introduced here for the first time and reused in L4, L8, L18).
+- **Procedures (D3):** compute a derivative from the definition on a fresh
+  polynomial; produce the linear approximation at a point and use it to estimate;
+  read \(f'\) from a graph of \(f\) and sketch it; decide differentiability from a
+  graph.
+- **Results (D5):** \(f(a+h)=f(a)+f'(a)h+E(h)\) with \(E(h)/h\to0\); the tangent is
+  unique; differentiable ⇒ continuous. **Explicitly denied:** the converse; and
+  "the tangent touches at one point".
+- **Proof depth (D6):** C5's characterization **derived** for `ex-parabola` with an
+  exact error term (contract §7), including the comparison against a wrong slope.
+  The general \(x^n\) rule is derived for \(n=2,3\) and generalized by statement.
+  Product/quotient rules **stated as stated**.
+- **Representations (D4):** magnified graph (visual); secant table (numeric);
+  \(f(a)+f'(a)h+E(h)\) (symbolic); "the line the curve becomes" (verbal);
+  m/s on the drive trace (applied); the \(1\times1\) matrix (structural, one line).
+- **Translations:** zoom picture ↔ approximation formula; secant slope ↔ average
+  rate; \(f'\) graph ↔ slopes read off \(f\); units of the axes ↔ units of \(f'\).
+- **Edge/degenerate cases (D7):** corner; vertical tangent (stated with a picture,
+  not developed); inflection with a crossing tangent; a function continuous but
+  not differentiable; the residual \(E(h)\) never being zero for a genuinely
+  curved graph.
+- **Misconceptions (D13):** M1–M6 of [insight §Prerequisites](insight.md#prerequisites-limitations-likely-misconceptions).
+
+## 1d. Outcomes with evidence
+
+| Outcome | Dim | Owner | Level | Evidence | Attainment |
+| --- | --- | --- | --- | --- | --- |
+| Compute \(f'(a)\) from the definition on a fresh polynomial, showing the cancelled quotient | D3 | lesson | E3 | `der-from-definition-fresh` (`exercise-sequence`: quotient, simplified form, limit) | independently demonstrated |
+| Produce the linear approximation at a point and use it to estimate a nearby value | D3/D4 | lesson | E3 | `der-linearize-estimate` (`numeric`, fresh function) | independently demonstrated |
+| Answer a **rate** question with a slope and a **slope** question with a rate, on one graph | D4/D13 | lesson | E3 | `der-three-names` (`exercise-sequence`, both directions, units required) | independently demonstrated |
+| Refute "a tangent touches at one point and does not cross" with a specific curve and point | D7/D13 | lesson | E4 | `der-tangent-crosses` (`construct`, predicate-graded: any inflection point of a supplied family) | independently demonstrated |
+| Decide differentiability from an unfamiliar graph and justify by the zoom | D3/D7 | lesson | E3 | `der-differentiable-graph` (`exercise-sequence`, typed reason) | independently demonstrated |
+| Supply a function continuous at a point but not differentiable there | D7/D13 | lesson | E4 | `der-continuous-not-differentiable` (`construct`, predicate-graded) | independently demonstrated |
+| Sketch/identify \(f'\) from a graph of \(f\) | D4 | lesson | E3 | `der-sketch-derivative` (`multiple-choice` over four plotted candidates, distractors = sign error, shift, and \(f\) itself) | **recognition — recorded as E1–E2, not claimed E3** |
+| State what remains after zooming, in symbols | D5/D13 | lesson | E3 | `der-residual-remains` (`text`, produced) | independently demonstrated |
+| Interpret a derivative in an unfamiliar applied setting, including the **sign** of the linearization error | D9 | lesson | E4 | `der-applied-transfer` (tank volume; three parts) | independently demonstrated |
+| Retain "differentiable ⇒ continuous, not conversely" under delayed retrieval | D12 | **module** | E3 | `mod-change-retain-diff-cont` (module `change`, Gate 9) | **not built** — Gate 9 open |
+| Integrate the derivative with limits and with accumulation on a mixed item | D10 | **module** | E5 | `mod-change-mixed-rate-total` (module `change`, Gate 9) | **not built** — Gate 9 open |
+
+**Transfer:** three D9/E4 outcomes (`der-tangent-crosses`,
+`der-continuous-not-differentiable`, `der-applied-transfer`).
+
+## 1e. Coverage status
+Taught: all of §1c. Practiced: every lesson-owned outcome. Independently
+demonstrated: all lesson-owned outcomes except `der-sketch-derivative`, honestly
+recorded as **recognition** — producing a sketch is not machine-gradable with the
+current capability set, and the lesson does not claim it.
+
+## 1f. Connections, assessment, retention
+- **Cumulative (D10):** L1's `ex-parabola` arithmetic reused *unchanged*, so the
+  only new thing is the interpretation; L1's forced value cited at C2 by name; LA
+  `transformations` cited once at C9.
+- **Assessment:** 2 check, 4 drill, 3 transfer; **recall capped at one**
+  (`der-sketch-derivative`). Every graded item uses a function the guided scenes
+  do not animate, except `der-three-names`, whose point is that it is the scene's
+  own drive trace read two ways.
+- **Retention (D12):** differentiable ⇒ continuous but not conversely — the fact
+  most likely to invert on recall.
+- **Forward:** L3 (composition of these lines), L4 (linearization as a tool),
+  **L6 (C5 is the telescoping step)**, L18 (equations about \(f'\)), L22 (the
+  zoom in several directions).
+
+## 1g. Correctness & scope
+- **Correctness checks:** every displayed slope, secant, tangent, and residual
+  comes from `src/math/calculus.ts`. Property tests: the difference quotient of
+  `ex-parabola` equals \(2a+h\) exactly for \(h\neq0\); the residual for the
+  tangent satisfies \(E(h)/h\to0\) on a shrinking sample while a wrong-slope line's
+  ratio tends to a nonzero constant (this is C6, asserted numerically); the zoomed
+  window really is the function's own values, never a redrawn straight line;
+  `ex-abs` has different one-sided quotients at 0; the plotted \(f'\) equals the
+  numerically differentiated \(f\) within tolerance on every fixture.
+- **Visualization honesty:** at every magnification the scene displays the residual
+  \(E(h)\) as a **labelled nonzero gap**. The clip must never show a window in
+  which the curve has been replaced by a straight line — the curve is always the
+  real sampled function, and the "straightness" must be genuine at that scale.
+  This is the lesson's principal known-failure-mode risk and its principal
+  invariant.
+- **Scope exclusions:** the differentiation rulebook beyond \(x^n\) small \(n\),
+  constants and sums; the chain rule (L3); implicit differentiation; higher-order
+  Taylor (L4 states first order only); the mean value theorem; nowhere-
+  differentiable functions beyond a one-sentence existence remark.
+- **Abstraction return:** insight §14; evidenced by `der-tangent-crosses`, which
+  requires a curve and a point with no reference to the Earth or the car.
+
+## 6. Acceptance record (Gate 8)
+- [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
+- [ ] All §1 fields filled.
+- [ ] Outcomes operational, owner-marked, evidence-paired.
+- [ ] Lesson-owned core outcomes independently demonstrated, with the recorded
+      exception (`der-sketch-derivative`).
+- [ ] Module-owned outcomes recorded as Gate-9 obligations.
+- [ ] Assessment matches §1f; recall capped at one; three transfer items.
+- [ ] Backward bridge (L1) + forward edge (L3/L4/L6/L18/L22) recorded.
+- [ ] Retention hook recorded.
+- [ ] Correctness gate passed, **including the residual-is-visible invariant**.
+- [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
+
+*(Unchecked: Gate 8 is an implementation gate. Nothing here is built.)*
