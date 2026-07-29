@@ -182,3 +182,27 @@ current capability set, and the lesson does not claim it.
   so a fixed `h` in a window shrinking 100× sent it a thousand pixels away. It is
   parked on the point before the zoom; fading it was not enough, because the
   teleport gate measures position rather than visibility — correctly.
+
+### Correction, 2026-07-28 (post-A3 review)
+
+**The explorer invented a tangent at a corner.** At \(x=0\) on \(|x|\) the
+readout correctly said the derivative does not exist — and at the same moment
+`numericDerivative` returned `0`, that zero was drawn as the tangent \(y=0\),
+offered as a linear estimate, and printed as \(f'(0)\) in the derivative panel.
+Three claims that a derivative exists, on a screen that said it did not.
+
+The fix is a type, not a guard. `slopeAt` returns a discriminated `SlopeAt` —
+`{ kind: "differentiable"; slope }` or `{ kind: "corner"; left; right }` —
+resolved from the fixture's **declared** `nonDifferentiable` points rather than
+detected numerically, because whether a function has a corner is a fact the
+course states and a numerical test for it would be exactly the sampled inference
+this layer refuses elsewhere. `zoomReadouts` returns it, so `estimate`,
+`residual` and `residualRatio` are `null` at a corner; `LocalLinearityZoom`
+passes `oneSided` instead of `tangent`, and `FunctionPlot` draws the two
+one-sided half-lines, each only on its own side. The secant is still drawn and
+read out, because a chord is real and needs no derivative to exist.
+
+Regressions in `calculusExplorerLayout.test.tsx` pin all of it — including one
+asserting that the raw symmetric quotient *still* returns 0 at the vertex. The
+trap is recorded rather than removed, so the next person to reach for
+`numericDerivative` sees why not.

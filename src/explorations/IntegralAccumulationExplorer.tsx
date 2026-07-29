@@ -112,6 +112,18 @@ export function IntegralAccumulationExplorer() {
 
   const hi = Math.max(b, a + 1e-6);
 
+  /**
+   * ONE effective right-hand endpoint, clamped to the interval, used for both the
+   * geometry and the readout.
+   *
+   * Moving `a` or `b` does not move `runningAt`, so the stored value can end up
+   * outside `[a, b]`. Previously the readout computed and labelled `A(x)` at that
+   * stale value while the plotted marker was clamped to the drawn curve — the
+   * number on screen and the point on screen were answers to different questions.
+   * Deriving both from one clamped value makes that disagreement unrepresentable.
+   */
+  const effectiveRunningAt = Math.min(Math.max(runningAt, a), hi);
+
   const sum = useMemo(
     () => riemannSum(fixture.f, a, hi, n, sample),
     [fixture, a, hi, n, sample],
@@ -128,15 +140,16 @@ export function IntegralAccumulationExplorer() {
   );
 
   const bracket = useMemo(
-    () => bracketReport(fixture.f, a, hi, n, fine),
+    () => bracketReport(fixture, a, hi, n, fine),
     [fixture, a, hi, n, fine],
   );
 
   const units = fixture.units ? accumulatedUnits(fixture) : null;
 
   const runningValue = useMemo(
-    () => riemannSum(fixture.f, a, Math.max(runningAt, a + 1e-9), 2048, "mid"),
-    [fixture, a, runningAt],
+    () =>
+      riemannSum(fixture.f, a, Math.max(effectiveRunningAt, a + 1e-9), 2048, "mid"),
+    [fixture, a, effectiveRunningAt],
   );
 
   const table = useMemo(
@@ -240,7 +253,7 @@ export function IntegralAccumulationExplorer() {
                     {
                       id: "runningAt",
                       label: "Right-hand end x",
-                      value: runningAt,
+                      value: effectiveRunningAt,
                       min: a,
                       max: hi,
                       step: 0.05,
@@ -316,7 +329,7 @@ export function IntegralAccumulationExplorer() {
                 ? [
                     {
                       id: "running",
-                      label: `A(${fmt(runningAt, 2)})`,
+                      label: `A(${fmt(effectiveRunningAt, 2)})`,
                       value:
                         units === null
                           ? fmt(runningValue)
@@ -385,7 +398,7 @@ export function IntegralAccumulationExplorer() {
         n={n}
         sample={sample}
         showRunningTotal={showRunning}
-        runningAt={showRunning ? runningAt : undefined}
+        runningAt={showRunning ? effectiveRunningAt : undefined}
         onDragRightEndpoint={showRunning ? setRunningAt : undefined}
         onDragInterval={(which, x) => {
           // Each end is clamped away from the other, so a drag can never invert

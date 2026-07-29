@@ -14,7 +14,7 @@ import { ExplorationToggles } from "./ExplorationToggles";
 import {
   CALCULUS_FIXTURES,
   getCalculusFixture,
-  numericDerivative,
+  slopeAt,
   type CalculusFixture,
 } from "../math";
 import "./DerivativeLocalLinearityExplorer.css";
@@ -77,11 +77,17 @@ export function DerivativeLocalLinearityExplorer() {
     [fixtureId],
   );
 
-  const trueSlope = useMemo(
-    () =>
-      fixture.derivative ? fixture.derivative(at) : numericDerivative(fixture.f, at),
-    [fixture, at],
-  );
+  /**
+   * The slope, or the two one-sided slopes where there is none.
+   *
+   * Everything downstream branches on this. Previously a `numericDerivative`
+   * call returned `0` at |x|'s vertex, and that zero was drawn as a tangent,
+   * offered as a linear estimate, and listed as f'(0) in the derivative panel —
+   * three separate claims that a derivative exists at a point the readout
+   * simultaneously said had none.
+   */
+  const here = useMemo(() => slopeAt(fixture, at), [fixture, at]);
+  const trueSlope = here.kind === "differentiable" ? here.slope : null;
 
   const pick = useCallback((id: string) => {
     setFixtureId(id);
@@ -105,15 +111,13 @@ export function DerivativeLocalLinearityExplorer() {
         fixture,
         at,
         h,
-        showComparison ? trueSlope + comparisonSlope : undefined,
+        showComparison && trueSlope !== null ? trueSlope + comparisonSlope : undefined,
       ),
     [fixture, at, h, showComparison, comparisonSlope, trueSlope],
   );
 
   const atCeiling = magnification >= MAX_MAGNIFICATION;
-  const differentiableHere = !(fixture.nonDifferentiable ?? []).some(
-    (p) => Math.abs(p - at) < 1e-9,
-  );
+  const differentiableHere = here.kind === "differentiable";
 
   /** What to do, phrased for whatever is on screen now. */
   const instruction = !differentiableHere
@@ -219,9 +223,10 @@ export function DerivativeLocalLinearityExplorer() {
               {
                 id: "slope",
                 label: "f′(a)",
-                value: differentiableHere
-                  ? fmt(r.slope)
-                  : "does not exist — the one-sided slopes differ",
+                value:
+                  here.kind === "differentiable"
+                    ? fmt(here.slope)
+                    : `does not exist — the one-sided slopes are ${fmt(here.left, 2)} and ${fmt(here.right, 2)}`,
               },
               {
                 id: "estimate",
@@ -282,10 +287,17 @@ export function DerivativeLocalLinearityExplorer() {
               items={[0.25, 0.5, 0.75].map((t) => {
                 const x =
                   fixture.domain[0] + (fixture.domain[1] - fixture.domain[0]) * t;
+                // Routed through the same resolver as everything else, so a
+                // sampled point that lands on a declared corner reports its
+                // absence rather than a symmetric-difference artefact.
+                const s = slopeAt(fixture, x);
                 return {
                   id: `dv-${t}`,
                   label: `f′(${fmt(x, 2)})`,
-                  value: fmt(numericDerivative(fixture.f, x)),
+                  value:
+                    s.kind === "differentiable"
+                      ? fmt(s.slope)
+                      : "does not exist",
                 };
               })}
             />
@@ -300,7 +312,9 @@ export function DerivativeLocalLinearityExplorer() {
         magnification={magnification}
         h={h}
         showSecant
-        comparisonSlope={showComparison ? trueSlope + comparisonSlope : undefined}
+        comparisonSlope={
+          showComparison && trueSlope !== null ? trueSlope + comparisonSlope : undefined
+        }
         baseHalfWidth={BASE_HALF_WIDTH}
         height={340}
         ariaLabel={`${fixture.label}, magnified ${Math.round(magnification)} times about x = ${fmt(at, 2)}`}

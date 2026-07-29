@@ -69,6 +69,15 @@ export interface FunctionPlotProps {
   readonly secant?: { readonly h: number };
   /** Tangent, or any comparison line, through `(at, f(at))`. */
   readonly tangent?: { readonly slope: number; readonly compare?: number };
+  /**
+   * The two one-sided slopes at a corner, drawn as half-lines.
+   *
+   * Mutually exclusive with `tangent`, and that is the point: where the two
+   * one-sided slopes differ there is no tangent to draw, and drawing one anyway
+   * is the defect this prop exists to replace. The half-lines show *why* there
+   * is none — they leave the point at different rates and no single line fits.
+   */
+  readonly oneSided?: { readonly left: number; readonly right: number };
 
   /**
    * Sampling overlay: a grid of the given spacing, the straight-line
@@ -130,6 +139,7 @@ export function FunctionPlot({
   window: inputWindow,
   secant,
   tangent,
+  oneSided,
   sampling,
   showCoordinates = true,
 }: FunctionPlotProps) {
@@ -281,6 +291,26 @@ export function FunctionPlot({
               opacity={0.85}
             />
           )}
+        </>
+      )}
+
+      {/* No tangent exists here. The two one-sided slopes are drawn instead,
+          each only on its own side, so the disagreement is visible rather than
+          asserted. */}
+      {oneSided && at !== undefined && y0 !== undefined && (
+        <>
+          <Line.Segment
+            point1={[Math.max(lo, at - (hi - lo) / 2), y0 - oneSided.left * Math.min((hi - lo) / 2, at - lo)]}
+            point2={[at, y0]}
+            color={COMPARE}
+            style="dashed"
+          />
+          <Line.Segment
+            point1={[at, y0]}
+            point2={[Math.min(hi, at + (hi - lo) / 2), y0 + oneSided.right * Math.min((hi - lo) / 2, hi - at)]}
+            color={COMPARE}
+            style="dashed"
+          />
         </>
       )}
 

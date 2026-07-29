@@ -195,7 +195,7 @@ export function AccumulationStrip({
    */
   const bracketBars = useMemo(() => {
     if (!bracket) return null;
-    const report = bracketReport(fixture.f, a, b, n, bracket.value);
+    const report = bracketReport(fixture, a, b, n, bracket.value);
     if (!report.guaranteed || !report.straddles) return null;
     return { lo: report.lo, hi: report.hi };
   }, [bracket, fixture, a, b, n]);

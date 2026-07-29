@@ -192,3 +192,28 @@ Recorded because the next slice reuses the same apparatus:
 - **Two quantities on one axis.** The rate and the total are drawn in separate
   panels on separate vertical scales: the rate swings about 13 m/s and the total
   about 31 m, and one axis would have flattened the rate to a line.
+
+### Corrections, 2026-07-28 (post-A3 review)
+
+- **A finite sample was called a guarantee.** `bracketReport.guaranteed` came
+  from `isMonotoneOn`, which inspected 512 values. A turn narrower than the
+  spacing is invisible to it, so that was an inference dressed as a theorem —
+  the same error class as the lucky straddle it had just been introduced to fix,
+  one level up. Monotonicity is now **declared data**: each fixture carries
+  `monotoneIntervals`, certified from the derivative's sign, and `guaranteed`
+  reads nothing else. The sampled check survives as `looksMonotoneOn`, named for
+  what it is, and licenses nothing.
+
+  `assertCalculusFixturesAreConsistent` checks every declared interval at 4000
+  samples, and immediately caught a wrong declaration: `ex-drive` turns **twice**
+  on \([0,10]\), at \(t\approx2.663\) and again at \(t\approx8.761\), and the
+  second turn had been missed. That is the mechanism earning its keep — a wrong
+  certification is a false claim, and the only defence against one is a check
+  that runs.
+
+- **The running-total endpoint could leave the interval.** Moving \(a\) or \(b\)
+  did not move `runningAt`, so the readout computed and labelled \(A(x)\) at a
+  stale value while the plotted marker stayed clamped to the drawn curve — the
+  number on screen and the point on screen were answers to different questions.
+  One clamped `effectiveRunningAt` now feeds both geometry and readout, with a
+  regression that moves each interval end while the running-total view is open.

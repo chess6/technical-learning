@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { FunctionPlot } from "./FunctionPlot";
 import {
   differenceQuotient,
-  numericDerivative,
   residual,
+  slopeAt,
   type CalculusFixture,
+  type SlopeAt,
 } from "../math";
 
 /**
@@ -51,9 +52,14 @@ export function zoomWindow(
     throw new Error(`zoomWindow: magnification must be >= 1, got ${magnification}.`);
   }
   const halfWidth = baseHalfWidth / magnification;
-  const slope = fixture.derivative
-    ? fixture.derivative(a)
-    : numericDerivative(fixture.f, a);
+  const here = slopeAt(fixture, a);
+  // At a corner there is no slope; the steeper one-sided slope is the honest
+  // scale for the window, and asking `numericDerivative` here would have
+  // returned the symmetric average — zero for |x| — and flattened the V.
+  const slope =
+    here.kind === "differentiable"
+      ? here.slope
+      : Math.max(Math.abs(here.left), Math.abs(here.right));
   // Enough vertical room for the tangent to traverse the window, plus headroom
   // so the residual is visible rather than pressed against the edge.
   const halfHeight = Math.max(Math.abs(slope) * halfWidth * 1.6, halfWidth * 0.6);
@@ -76,14 +82,24 @@ export function magnificationCeiling(baseHalfWidth = 1, floor = 1e-4): number {
 
 export interface ZoomReadouts {
   readonly value: number;
-  readonly slope: number;
+  /**
+   * The slope, or the two one-sided slopes where there is none.
+   *
+   * Callers must branch on `kind`. The previous `slope: number` let a corner
+   * report `0` — a fabricated value that was then drawn as a tangent, offered as
+   * a linear estimate, and printed as f'(0).
+   */
+  readonly slope: SlopeAt;
   /** The secant slope over the current step, or `null` when the step is zero. */
   readonly secantSlope: number | null;
   /** The linear model's prediction a step ahead. */
   readonly estimate: number | null;
   /** The function's true value a step ahead. */
   readonly actual: number | null;
-  /** `E(h)` — never reported as zero for a curved fixture. */
+  /**
+   * `E(h)` — never reported as zero for a curved fixture, and `null` at a
+   * corner, where there is no linear model to have an error against.
+   */
   readonly residual: number | null;
   /** `E(h)/h` — the readout that carries "vanishes faster than the step". */
   readonly residualRatio: number | null;
@@ -97,35 +113,40 @@ export function zoomReadouts(
   h: number,
   comparisonSlope?: number,
 ): ZoomReadouts {
-  const slope = fixture.derivative
-    ? fixture.derivative(a)
-    : numericDerivative(fixture.f, a);
+  const slope = slopeAt(fixture, a);
   const value = fixture.f(a);
-  if (h === 0) {
+  const secantSlope = h === 0 ? null : differenceQuotient(fixture.f, a, h);
+  const actual = h === 0 ? null : fixture.f(a + h);
+  const comparisonResidualRatio =
+    h === 0 || comparisonSlope === undefined
+      ? null
+      : residual(fixture.f, a, comparisonSlope, h) / h;
+
+  // At a corner there is no linear model, so there is no estimate and no error
+  // against one. The secant is still real — it is a chord, and needs no
+  // derivative to exist — so it is still reported.
+  if (slope.kind === "corner" || h === 0) {
     return {
       value,
       slope,
-      secantSlope: null,
+      secantSlope,
       estimate: null,
-      actual: null,
+      actual,
       residual: null,
       residualRatio: null,
-      comparisonResidualRatio: null,
+      comparisonResidualRatio,
     };
   }
-  const e = residual(fixture.f, a, slope, h);
+  const e = residual(fixture.f, a, slope.slope, h);
   return {
     value,
     slope,
-    secantSlope: differenceQuotient(fixture.f, a, h),
-    estimate: value + slope * h,
-    actual: fixture.f(a + h),
+    secantSlope,
+    estimate: value + slope.slope * h,
+    actual,
     residual: e,
     residualRatio: e / h,
-    comparisonResidualRatio:
-      comparisonSlope === undefined
-        ? null
-        : residual(fixture.f, a, comparisonSlope, h) / h,
+    comparisonResidualRatio,
   };
 }
 
@@ -161,11 +182,7 @@ export function LocalLinearityZoom({
     () => zoomWindow(fixture, at, magnification, baseHalfWidth),
     [fixture, at, magnification, baseHalfWidth],
   );
-  const slope = useMemo(
-    () =>
-      fixture.derivative ? fixture.derivative(at) : numericDerivative(fixture.f, at),
-    [fixture, at],
-  );
+  const here = useMemo(() => slopeAt(fixture, at), [fixture, at]);
 
   return (
     <FunctionPlot
@@ -174,7 +191,18 @@ export function LocalLinearityZoom({
       viewBox={{ x: [win.x[0], win.x[1]], y: [win.y[0], win.y[1]], padding: 0 }}
       at={at}
       onDragTo={onDragTo}
-      tangent={{ slope, compare: comparisonSlope }}
+      // A tangent where one exists, and the two one-sided slopes where none
+      // does — never a fabricated line through a corner.
+      tangent={
+        here.kind === "differentiable"
+          ? { slope: here.slope, compare: comparisonSlope }
+          : undefined
+      }
+      oneSided={
+        here.kind === "corner"
+          ? { left: here.left, right: here.right }
+          : undefined
+      }
       secant={showSecant && h !== undefined && h !== 0 ? { h } : undefined}
       height={height}
       showCoordinates={false}

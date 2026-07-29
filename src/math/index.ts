@@ -352,6 +352,7 @@ export type {
   SamplePoint,
   TelescopingTerm,
   WindowSearch,
+  SlopeAt,
   BracketReport,
   CancellationReport,
 } from "./calculus";
@@ -380,7 +381,9 @@ export {
   continuityAt,
   differenceQuotient,
   getCalculusFixture,
-  isMonotoneOn,
+  isCertifiedMonotoneOn,
+  looksMonotoneOn,
+  slopeAt,
   limitFailureAt,
   linearModel,
   numericDerivative,

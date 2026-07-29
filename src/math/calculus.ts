@@ -77,6 +77,63 @@ export interface CalculusFixture {
   readonly modulus?: Modulus;
   /** True when `f` is monotone on `domain` — the precondition for left/right bracketing. */
   readonly monotone?: boolean;
+  /**
+   * Closed sub-intervals on which `f` is **certified** monotone.
+   *
+   * Declared by the course from the derivative's sign, not inferred by sampling.
+   * Sampling can only ever report what it happened to look at: a narrow turn
+   * between two samples is invisible to it, so a sampled check may support an
+   * *observation* and must never license a *guarantee*. `bracketReport` reads
+   * this field and nothing else for its `guaranteed` flag, and
+   * `assertCalculusFixturesAreConsistent` checks each declared interval densely,
+   * so a wrong declaration fails the suite rather than reaching a learner.
+   *
+   * Absent means "not certified", which is not the same as "not monotone".
+   */
+  readonly monotoneIntervals?: readonly (readonly [number, number])[];
+}
+
+/**
+ * The slope at a point, or the two one-sided slopes where there is none.
+ *
+ * A discriminated union rather than a `number`, because at a corner there is no
+ * number to return and every previous caller invented one: the symmetric
+ * `numericDerivative` reports `0` at the vertex of `|x|`, and that zero was
+ * drawn as a tangent, offered as a linear estimate, and printed as `f'(0)`. A
+ * type that cannot express "no slope" guarantees somebody will fabricate one.
+ */
+export type SlopeAt =
+  | { readonly kind: "differentiable"; readonly slope: number }
+  | { readonly kind: "corner"; readonly left: number; readonly right: number };
+
+/**
+ * Resolve the slope at `a`, consulting the fixture's **declared**
+ * non-differentiable points first.
+ *
+ * Declared, not detected: whether a function has a corner is a mathematical fact
+ * the course states, and a numerical test for it would be exactly the kind of
+ * sampled inference this module refuses elsewhere.
+ */
+export function slopeAt(
+  fixture: CalculusFixture,
+  a: number,
+  tolerance = 1e-9,
+): SlopeAt {
+  const corner = (fixture.nonDifferentiable ?? []).some(
+    (p) => Math.abs(p - a) <= tolerance,
+  );
+  if (corner) {
+    const d = 1e-5;
+    return {
+      kind: "corner",
+      left: (fixture.f(a) - fixture.f(a - d)) / d,
+      right: (fixture.f(a + d) - fixture.f(a)) / d,
+    };
+  }
+  return {
+    kind: "differentiable",
+    slope: fixture.derivative ? fixture.derivative(a) : numericDerivative(fixture.f, a),
+  };
 }
 
 /* ------------------------------------------------------- limits & continuity */
@@ -433,26 +490,29 @@ export interface BracketReport {
    */
   readonly straddles: boolean;
   /**
-   * Does the guarantee apply — is the rate monotone on `[a, b]`?
+   * Does the guarantee apply — is `[a, b]` inside a **declared** monotone
+   * interval of the fixture?
    *
    * These two are deliberately separate, because they come apart in exactly the
    * case the lesson is about. On a rate that rises and falls, the left and right
    * sums can still straddle the answer at some `n` **by luck**; reporting that as
    * a bracket would teach that left/right sums bracket in general, which is the
    * misconception the lesson's recognition item exists to catch. Only
-   * `guaranteed` licenses the claim.
+   * `guaranteed` licenses the claim — and it comes from certified data rather
+   * than from a sampled check, because a finite sample cannot prove monotonicity.
    */
   readonly guaranteed: boolean;
 }
 
 /**
- * Is `f` monotone on `[a, b]`?
+ * Did `f` **look** monotone on `[a, b]` at this sampling resolution?
  *
- * Decided by sampling, so it is a statement about the resolution used — which is
- * the honest thing a finite check can say, and the same discipline
- * `largestWindowFound` applies to its own search.
+ * An observation, and named as one. A finite sample cannot prove monotonicity —
+ * a turn narrower than the spacing is invisible to it — so this must never
+ * license the word "guaranteed" or the drawing of bracket bars. Use
+ * `isCertifiedMonotoneOn` for that.
  */
-export function isMonotoneOn(
+export function looksMonotoneOn(
   f: RealFunction,
   a: number,
   b: number,
@@ -471,13 +531,34 @@ export function isMonotoneOn(
   return true;
 }
 
+/**
+ * Is `[a, b]` inside an interval the fixture **certifies** monotone?
+ *
+ * The only thing that may license the bracketing guarantee. A fixture that
+ * declares no monotone intervals gets `false`, which says "not certified" rather
+ * than "not monotone" — the honest reading of missing information.
+ */
+export function isCertifiedMonotoneOn(
+  fixture: CalculusFixture,
+  a: number,
+  b: number,
+  tolerance = 1e-9,
+): boolean {
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  return (fixture.monotoneIntervals ?? []).some(
+    ([start, end]) => lo >= start - tolerance && hi <= end + tolerance,
+  );
+}
+
 export function bracketReport(
-  f: RealFunction,
+  fixture: CalculusFixture,
   a: number,
   b: number,
   n: number,
   value: number,
 ): BracketReport {
+  const f = fixture.f;
   const left = riemannSum(f, a, b, n, "left");
   const right = riemannSum(f, a, b, n, "right");
   const lo = Math.min(left, right);
@@ -490,7 +571,9 @@ export function bracketReport(
     width: hi - lo,
     // A tolerance would hide the failure this exists to expose, so there is none.
     straddles: value >= lo && value <= hi,
-    guaranteed: isMonotoneOn(f, a, b),
+    // Certified, not sampled. `looksMonotoneOn` would have been an inference
+    // from 512 values dressed up as a theorem.
+    guaranteed: isCertifiedMonotoneOn(fixture, a, b),
   };
 }
 
@@ -608,6 +691,15 @@ export const EX_DRIVE: CalculusFixture = {
   derivative: (t) => 6 * 0.55 * Math.cos(0.55 * t) - 0.35,
   antiderivative: drivePosition,
   modulus: { omega: (d) => (6 * 0.55 + 0.35) * d, label: "3.65\\delta" },
+  // v'(t) = 3.3 cos(0.55 t) - 0.35 vanishes TWICE on [0, 10]: at t ≈ 2.6628 and
+  // again at t ≈ 8.7612, where the trace turns back up before the window closes.
+  // The second turn was missed on first writing and the fixture guard caught it,
+  // which is the whole reason the declaration is checked rather than trusted.
+  monotoneIntervals: [
+    [0, 2.66],
+    [2.67, 8.75],
+    [8.77, 10],
+  ],
 };
 
 export const EX_PARABOLA: CalculusFixture = {
@@ -619,6 +711,7 @@ export const EX_PARABOLA: CalculusFixture = {
   antiderivative: (x) => (x * x * x) / 3,
   modulus: { omega: (d) => 4 * d, label: "4\\delta" },
   monotone: true,
+  monotoneIntervals: [[0, 2]],
 };
 
 /** `ex-parabola` with the point at x = 3 deleted — the puncture beat. */
@@ -639,6 +732,12 @@ export const EX_ABS: CalculusFixture = {
   domain: [-2, 2],
   nonDifferentiable: [0],
   modulus: { omega: (d) => d, label: "\\delta" },
+  // Falling to the vertex, rising away from it. Monotone on each side, and on
+  // neither interval straddling zero.
+  monotoneIntervals: [
+    [-2, 0],
+    [0, 2],
+  ],
 };
 
 export const EX_CUBIC_INFLECTION: CalculusFixture = {
@@ -649,6 +748,7 @@ export const EX_CUBIC_INFLECTION: CalculusFixture = {
   derivative: (x) => 3 * x * x,
   antiderivative: (x) => (x * x * x * x) / 4,
   monotone: true,
+  monotoneIntervals: [[-1.5, 1.5]],
 };
 
 export const EX_DECAY: CalculusFixture = {
@@ -663,6 +763,7 @@ export const EX_DECAY: CalculusFixture = {
   antiderivative: (t) => -TAU_DECAY * Math.exp(-t / TAU_DECAY),
   modulus: { omega: (d) => d / TAU_DECAY, label: "\\delta/1.5" },
   monotone: true,
+  monotoneIntervals: [[0, 8]],
 };
 
 export const EX_JUMP: CalculusFixture = {
@@ -725,6 +826,9 @@ export const EX_CONSTANT_RATE: CalculusFixture = {
   antiderivative: (t) => 3 * t,
   modulus: { omega: () => 0, label: "0" },
   monotone: true,
+  // A constant rate is monotone in the non-strict sense, and its left and right
+  // sums agree: a bracket of width zero, degenerate but perfectly valid.
+  monotoneIntervals: [[0, 4]],
 };
 
 /** Non-monotone: left/right sums do **not** bracket. Used to test the restriction. */
@@ -736,6 +840,9 @@ export const EX_NON_MONOTONE: CalculusFixture = {
   derivative: Math.cos,
   antiderivative: (x) => -Math.cos(x),
   monotone: false,
+  // Deliberately EMPTY, not absent: this fixture exists to be the case where no
+  // sub-interval of the whole domain is certified, so nothing licenses a bracket.
+  monotoneIntervals: [],
 };
 
 /** A current trace that goes negative — the transfer item's fixture. */
@@ -746,6 +853,13 @@ export const EX_CURRENT: CalculusFixture = {
   domain: [0, 8],
   units: { input: "s", output: "A", accumulated: "C" },
   antiderivative: (t) => (-2.4 / 0.8) * Math.cos(0.8 * t) - 0.125 * t * t + 3,
+  // i'(t) = 1.92 cos(0.8 t) - 0.25 vanishes where cos(0.8 t) = 0.130208, i.e. at
+  // t ≈ 1.8003 and t ≈ 6.0537 on [0, 8].
+  monotoneIntervals: [
+    [0, 1.8],
+    [1.81, 6.05],
+    [6.06, 8],
+  ],
 };
 
 export const EX_POWER: CalculusFixture = {
@@ -755,6 +869,13 @@ export const EX_POWER: CalculusFixture = {
   domain: [0, 8],
   units: { input: "s", output: "W", accumulated: "J" },
   antiderivative: (t) => 40 * t - (30 / 0.6) * Math.cos(0.6 * t) + 50,
+  // p'(t) = 18 cos(0.6 t) vanishes at 0.6 t = pi/2 and 3pi/2, i.e. t ≈ 2.618 and
+  // t ≈ 7.854.
+  monotoneIntervals: [
+    [0, 2.61],
+    [2.62, 7.85],
+    [7.86, 8],
+  ],
 };
 
 export const CALCULUS_FIXTURES: readonly CalculusFixture[] = [
@@ -821,6 +942,23 @@ export function assertCalculusFixturesAreConsistent(): void {
             `${fixture.id}: declared antiderivative disagrees at x = ${x} by ${gap}.`,
           );
         }
+      }
+    }
+    // A DECLARED monotone interval must actually be monotone. Densely sampled
+    // here — not to prove the claim, which sampling cannot do, but to catch a
+    // declaration that is simply wrong before it reaches a learner as a
+    // "guarantee". A narrow turn this misses is a bug in the declaration; a
+    // narrow turn a UI-time sample missed would be a false claim on screen.
+    for (const [start, end] of fixture.monotoneIntervals ?? []) {
+      if (!(start >= lo - 1e-9 && end <= hi + 1e-9 && end > start)) {
+        throw new Error(
+          `${fixture.id}: declared monotone interval [${start}, ${end}] is not a real sub-interval of the domain.`,
+        );
+      }
+      if (!looksMonotoneOn(fixture.f, start, end, 4000)) {
+        throw new Error(
+          `${fixture.id}: declares [${start}, ${end}] monotone, and it is not.`,
+        );
       }
     }
     // A declared modulus must actually bound the variation.

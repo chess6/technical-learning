@@ -6,7 +6,16 @@ import {
   zoomReadouts,
   zoomWindow,
 } from "../LocalLinearityZoom";
-import { EX_ABS, EX_DECAY, EX_PARABOLA } from "../../math";
+import { EX_ABS, EX_DECAY, EX_PARABOLA, type SlopeAt } from "../../math";
+
+/** The slope, asserted to exist. `SlopeAt` is a union precisely so a corner
+ *  cannot silently supply a number, so a test that wants one must say so. */
+function theSlope(s: SlopeAt): number {
+  if (s.kind !== "differentiable") {
+    throw new Error(`expected a slope, got a corner (${s.left}, ${s.right})`);
+  }
+  return s.slope;
+}
 
 /**
  * The `local-linearity-zoom` family. Its honesty rule — the curve is never
@@ -76,7 +85,7 @@ describe("the zoom readouts", () => {
 
   it("reports the three readings the lesson says are one object", () => {
     const r = zoomReadouts(EX_PARABOLA, 1, 0.25);
-    expect(r.slope).toBeCloseTo(2, 12); // the rate, and the tangent's slope
+    expect(theSlope(r.slope)).toBeCloseTo(2, 12); // the rate, and the tangent's slope
     expect(r.secantSlope).toBeCloseTo(2.25, 12); // the average over the step
     expect(r.estimate).toBeCloseTo(1 + 2 * 0.25, 12); // the prediction
     expect(r.actual).toBeCloseTo(1.5625, 12);
@@ -85,7 +94,13 @@ describe("the zoom readouts", () => {
 
   it("falls back to a numeric slope for a fixture with no declared derivative", () => {
     const r = zoomReadouts(EX_ABS, 1, 0.1);
-    expect(r.slope).toBeCloseTo(1, 4);
+    expect(theSlope(r.slope)).toBeCloseTo(1, 4);
+  });
+
+  it("refuses to invent one at that fixture's declared corner", () => {
+    // Away from zero |x| has a slope and the fallback supplies it; AT zero the
+    // symmetric quotient would supply 0, and there is no slope to supply.
+    expect(zoomReadouts(EX_ABS, 0, 0.1).slope.kind).toBe("corner");
   });
 
   it("reports nothing step-dependent when the step is zero", () => {
@@ -93,7 +108,7 @@ describe("the zoom readouts", () => {
     expect(r.secantSlope).toBeNull();
     expect(r.residual).toBeNull();
     expect(r.residualRatio).toBeNull();
-    expect(r.slope).toBeCloseTo(EX_DECAY.derivative!(2), 10);
+    expect(theSlope(r.slope)).toBeCloseTo(EX_DECAY.derivative!(2), 10);
   });
 });
 
