@@ -1,4 +1,4 @@
-# Lesson Plan — The Fundamental Theorem of Calculus (spine L6)
+# Lesson Plan — The Fundamental Theorem of Calculus (spine L4)
 
 Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 [mastery-contract.md](mastery-contract.md). **Flagship of Package A.**
@@ -35,7 +35,7 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 > **Two clips, on purpose.** The lesson has two directions and they must not be
 > blurred: clip 1 accumulates and then measures (the plausible half, which closes
-> L5's loose end); clip 2 measures and then accumulates (the astonishing half,
+> L3's loose end); clip 2 measures and then accumulates (the astonishing half,
 > whose mechanism is the cancellation). Running them on one timeline would let the
 > learner read the second as a continuation of the first rather than as its
 > mirror.
@@ -48,10 +48,10 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 ## Shared examples
 - **Main example id:** `ex-drive` — fourth and final appearance. Both instruments
   on screen; the agreement they have enjoyed since L1 becomes a theorem.
-- **Corroboration:** `ex-parabola` on \([0,2]\). L5 obtained \(8/3\) from
+- **Corroboration:** `ex-parabola` on \([0,2]\). L3 obtained \(8/3\) from
   \(\frac43\cdot\frac{(n+1)(2n+1)}{n^2}\) with no antiderivative; this lesson
   obtains \(8/3\) from \(\bigl[x^3/3\bigr]_0^2\). **Both computations must appear
-  on screen together.** This is only possible because L5 refused the shortcut.
+  on screen together.** This is only possible because L3 refused the shortcut.
 - **Unequal partition:** a deliberately irregular chopping, used for the
   cancellation so that "the pieces must be equal" is never suggested.
 - **Standing counterexample:** \(e^{-x^2}\).
@@ -65,11 +65,11 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 ## Guided-scene outline (Watch) — clip 1, `ftc-accumulate-then-measure`
 
-Picks up L5's loose end and answers it.
+Picks up L3's loose end and answers it.
 
 | Step id | Name (learner-facing) | Idea revealed | Notation synced |
 | --- | --- | --- | --- |
-| `loose-end` | The thing left unexplained | L5's two traces, replayed: \(A\) rises fastest where \(f\) is highest. | \(A(x)=\int_a^x f\) |
+| `loose-end` | The thing left unexplained | L3's two traces, replayed: \(A\) rises fastest where \(f\) is highest. | \(A(x)=\int_a^x f\) |
 | `sliver` | One more step | The right endpoint advances by \(h\); \(A\) gains one thin sliver. | \(A(x+h)-A(x)\) |
 | `squeeze` | Trapped between two rectangles | The sliver is bounded by \(m_h h\) and \(M_h h\); both bars are drawn. | \(m_h \le \frac{A(x+h)-A(x)}{h}\le M_h\) |
 | `predict` | **Prediction beat** | *As the step shrinks, the two bars close on something. On what?* Nothing moves. | — |
@@ -79,7 +79,7 @@ Picks up L5's loose end and answers it.
 
 ## Guided-scene outline (Watch) — clip 2, `ftc-telescoping`
 
-The mechanism. **This clip's family is re-run in L27.**
+The mechanism. **This clip's family is re-run in L34.**
 
 | Step id | Name (learner-facing) | Idea revealed | Notation synced |
 | --- | --- | --- | --- |
@@ -87,19 +87,19 @@ The mechanism. **This clip's family is re-run in L27.**
 | `identity` | The same thing, written out | \(F(b)-F(a)=\sum(F(x_{i+1})-F(x_i))\) on an **unequal** partition. Each interior \(F(x_i)\) is written twice, in opposite signs. | the identity, in full |
 | `cancel` | Everything in the middle goes | Paired interior terms annihilate one by one; the survivor count is displayed: \(n\) terms, \(n-1\) cancellations, **2** left. | live counters |
 | `one-step` | Calculus enters, once | Each small change is replaced by L2's local model \(f(x_i)\Delta x_i\), with its error drawn. | \(F(x_{i+1})-F(x_i)=f(x_i)\Delta x_i+E_i\) |
-| `riemann` | That is a Riemann sum | The replaced terms are exactly L5's rectangles; the strip is re-drawn beneath. | \(\sum f(x_i)\Delta x_i\) |
-| `refine` | Refine, and it is exact | Mesh shrinks, errors vanish, the identity becomes the theorem. | \(\int_a^b f = F(b)-F(a)\) |
-| `corroborate` | Two computations, one number | L5's summation value and \(\bigl[x^3/3\bigr]_0^2\) side by side. Both \(8/3\). | both shown |
+| `riemann` | That is a Riemann sum | The replaced terms are exactly L3's rectangles; the strip is re-drawn beneath. | \(\sum f(x_i)\Delta x_i\) |
+| `refine` | Refine, and it is exact | Mesh shrinks, errors vanish, the identity becomes the theorem. **L1's modulus is named on screen as the assumption doing the "uniformly".** | \(\int_a^b f = F(b)-F(a)\); \(\omega(\delta)\) |
+| `corroborate` | Two computations, one number | L3's summation value and \(\bigl[x^3/3\bigr]_0^2\) side by side. Both \(8/3\). | both shown |
 | `not-a-recipe` | What it does not promise | \(e^{-x^2}\): the theorem applies, no elementary \(F\) exists, numerical accumulation stays the method. | — |
 
 - **Pauses / dimming:** `predict` in clip 1 is a true hold; `cancel` holds after
   the counters settle.
 - **Honest labelling:** the `one-step` beat draws \(E_i\) as a **visible nonzero
-  quantity** (as L2 did); the unproved uniformity assumption is named on screen at
-  `refine`; `corroborate` shows two independently computed numbers, not one number
+  quantity** (as L2 did); the unproved uniformity assumption is named on screen at `refine`, **as L1's
+  modulus of continuity** rather than as an unattributed hand-wave; `corroborate` shows two independently computed numbers, not one number
   twice.
 - **Visual family:** this scene **creates** `telescoping-cancellation`, and it
-  **must be parameterized over which contributions cancel against which** — L27
+  **must be parameterized over which contributions cancel against which** — L34
   re-runs it with shared interior edges of a subdivided region instead of shared
   endpoints. Hard-coding it to an interval is the one implementation shortcut that
   would quietly cost the course its capstone.
@@ -115,7 +115,7 @@ The mechanism. **This clip's family is re-run in L27.**
   and is not obvious at all in symbols.
 
 ## Interactive controls (Explore) — `fundamental-theorem`
-> Initialized from `ex-parabola` on \([0,2]\) — L5's own corroboration case.
+> Initialized from `ex-parabola` on \([0,2]\) — L3's own corroboration case.
 - **Primary controls:** integrand fixture; the interval; the number of pieces;
   a toggle **equal / unequal partition**; a constant \(C\) added to \(F\); the
   lower limit \(a\) of the running total.
@@ -146,10 +146,10 @@ The mechanism. **This clip's family is re-run in L27.**
 
 | Contract obligation | Learner-facing location | Evidence of understanding |
 | --- | --- | --- |
-| C1 the running total (from L5) | clip 1 `loose-end` | Ex. 2 |
+| C1 the running total (from L3) | clip 1 `loose-end` | Ex. 2 |
 | C2–C3 the sliver, bounded (cites L1) | clip 1 `sliver`, `squeeze` | Ex. 2 |
 | C4 \(A'=f\) | clip 1 `predict`, `close` | Ex. 2 |
-| C5 L5's loose end explained | clip 1 `answer` | Ex. 4's reasoning |
+| C5 L3's loose end explained | clip 1 `answer` | Ex. 4's reasoning |
 | C6 the identity, no calculus | clip 2 `staircase`, `identity` | Ex. 3, Ex. 9 |
 | C7 the cancellation and the count | clip 2 `cancel`; explorer survivor count | Ex. 3, Ex. 4 |
 | C8 calculus enters once (cites L2 C5) | clip 2 `one-step` | Ex. 1 |
@@ -158,7 +158,7 @@ The mechanism. **This clip's family is re-run in L27.**
 | C11 existence, not a recipe | clip 2 `not-a-recipe` | Ex. 7 |
 | C12 falsification | Checkpoint | Ex. 8 |
 | C13 the two computations agree | clip 2 `corroborate` | Ex. 10 |
-| C14 forward to L27 | a `looking-ahead` layer, one paragraph | — *(promise, not assessed)* |
+| C14 forward to L34 | a `looking-ahead` layer, one paragraph | — *(promise, not assessed)* |
 | **Bridge** two instruments / staircase | Motivating question; clip 2 `staircase` | Ex. 8 |
 | **Analogy limit** finitely many steps | clip 2 `identity` caption | Ex. 3 |
 | **Abstraction return** | Ex. 9 | Mechanism named with no integral present |
@@ -173,7 +173,7 @@ The mechanism. **This clip's family is re-run in L27.**
 
 ## Notation
 - \(F\) for an antiderivative; \(A(x)=\int_a^x f\) for the running total, carried
-  unchanged from L5; \(\bigl[F(x)\bigr]_a^b\) introduced once.
+  unchanged from L3; \(\bigl[F(x)\bigr]_a^b\) introduced once.
 - \(E_i\) for the per-piece error, carried unchanged from L2 — the same symbol
   deliberately, because it is the same quantity.
 - Cancelling pairs drawn in the `original`/`transformed` semantic roles and struck
@@ -195,7 +195,7 @@ The mechanism. **This clip's family is re-run in L27.**
 - [ ] moving the lower limit shifts \(A\) by a constant and leaves \(A'\) unchanged
 - [ ] the two independent computations of \(\int_0^2 x^2\) agree to machine tolerance
 - [ ] every antiderivative used by inspection satisfies \(F'=f\) on a dense sample
-- [ ] **`telescoping-cancellation` accepts a non-interval pairing** (the L27 generalization test)
+- [ ] **`telescoping-cancellation` accepts a non-interval pairing** (the L34 generalization test)
 
 ## Required tests
 - [ ] Unit tests for the FTC helpers in `src/math/calculus.ts`
@@ -213,10 +213,10 @@ The mechanism. **This clip's family is re-run in L27.**
 - [ ] Headings content-specific
 - [ ] Guided-to-interactive continuity across both clips and the explorer
 - [ ] Progressive disclosure applied
-- [ ] KaTeX notation consistent; \(A\), \(E_i\) carried from L5/L2 unchanged
+- [ ] KaTeX notation consistent; \(A\), \(E_i\) carried from L3/L2 unchanged
 - [ ] Accessibility: labels, focus, readouts, reduced-motion frames for both clips
 - [ ] Diagrams labelled, unclipped, safe frame intact
-- [ ] The unproved uniformity step is named on screen
+- [ ] The unproved uniformity step is named on screen, citing L1's modulus of continuity
 - [ ] `telescoping-cancellation` parameterized, with its test
 - [ ] `docs/quality/lesson-correctness-checklist.md` completed
 - [ ] All tests pass

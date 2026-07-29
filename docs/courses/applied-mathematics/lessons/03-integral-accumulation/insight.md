@@ -1,4 +1,4 @@
-# Approved Insight Contract — The integral as accumulation (spine L5)
+# Approved Insight Contract — The integral as accumulation (spine L3)
 
 Stage 2 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md),
 selecting from [insight-brief.md](insight-brief.md), with Audits A and B.
@@ -64,7 +64,7 @@ Three consequences that the area model does not give:
 2. **Sign.** A negative rate contributes a negative amount and walks the running
    total backwards. Nothing about that is an "area".
 3. **Generality.** The same construction, applied to current, gives charge; to
-   power, energy; to density, mass; and — in M4 — to a product of two functions,
+   power, energy; to density, mass; and — in M5 — to a product of two functions,
    an inner product. The area picture is what the construction looks like when
    you have drawn the rate; it is a *consequence*, not the definition.
 
@@ -73,7 +73,7 @@ Three consequences that the area model does not give:
 | # | Step | Depends on |
 | --- | --- | --- |
 | C1 | Constant rate: total = rate × duration. Undisputed, and the whole lesson is built on it. | Entry |
-| C2 | A varying rate has no single value to multiply by. But on a **short enough** piece it is nearly constant. | L1 (continuity: nothing hides between samples) |
+| C2 | A varying rate has no single value to multiply by. But on a **short enough** piece it is nearly constant — and "short enough" is exactly what L1's **modulus of continuity** quantifies. | **L1 C9, C10b** |
 | C3 | So approximate: chop \([a,b]\) into \(n\) pieces, and on each use one sampled rate times that piece's width. Each term is a **product with units**, not a shape. | C1, C2 |
 | C4 | Sum the terms: a **Riemann sum**. Drawn, each term is a rectangle of height = rate and width = duration — so the sum *looks like* an area. | C3 |
 | C5 | Refine. Left-sample and right-sample sums **bracket** the answer for a monotone rate, and the bracket closes. So refinement is a squeeze, not a hope. | C3, C4 |
@@ -82,8 +82,8 @@ Three consequences that the area model does not give:
 | C8 | A negative rate gives negative terms, so the total decreases. The integral is **signed**. | C3 |
 | C9 | Fixing \(a\) and letting the right endpoint move gives the **running total** \(A(x)=\int_a^x f\) — a function, not a number. On the drive trace, it is the odometer. | C6 |
 | C10 | The same construction with a different plotted quantity totals charge, energy, mass. One machine, many meters. | C3, C7 |
-| C11 | The construction is a **limit of weighted sums**, which is the shape of every integral in the rest of the course — inner products (L12), Fourier coefficients (L14), transforms (L15, L20). | C6 |
-| C12 | Forward: L6 asks whether \(A(x)\) has a shortcut. **This lesson deliberately does not answer that.** | C9 |
+| C11 | The construction is a **limit of weighted sums**, which is the shape of every integral in the rest of the course — inner products (L15), Fourier coefficients (L17), the Fourier transform (L18), the Laplace transform (L24), and line and surface integrals (L31, L35). *Shared shape only:* L15 and L17 are genuine orthogonal projections; L24 is not, and the lesson's forward sentence says "the same **kind of integral**", never "the same construction". | C6 |
+| C12 | Forward: L4 asks whether \(A(x)\) has a shortcut. **This lesson deliberately does not answer that.** | C9 |
 
 ### 7. Minimal formal derivation
 
@@ -117,7 +117,7 @@ The learner gives up a comfortable one-line answer to "what is an integral?" and
 takes on a construction with three moving parts. They must also tolerate the
 lesson **not** telling them how to compute integrals in general — the only tools
 here are a formula for \(\sum i^2\) and geometry for simple shapes. That is
-uncomfortable and is the price of L6 being a theorem. In exchange they get an
+uncomfortable and is the price of L4 being a theorem. In exchange they get an
 object with units, a sign, and a type that survives every later use in the course.
 
 ### 10. What the learner can predict or do afterward
@@ -142,7 +142,7 @@ its own maximum" is exactly the prediction the area model gets wrong.
 the speedometer's instantaneous reading could mean; L2 said what it was the slope
 of; this lesson turns the reading into the *other* instrument's number. The bridge
 carries real weight: the learner already knows both instruments agree, and that
-belief is precisely what L6 will convert into a theorem.
+belief is precisely what L4 will convert into a theorem.
 
 ## 13. Preserved correspondences & analogy limits
 
@@ -153,7 +153,7 @@ belief is precisely what L6 will convert into a theorem.
 | A short stretch at nearly constant speed | One partition piece | Yes |
 | Reversing the car | Negative rate, decreasing total | Yes |
 | An odometer that only counts up | The integral is **signed** | **No — named limit**: real odometers do not run backwards, and the lesson says so explicitly at the reversing beat |
-| Reading the odometer at the start and end | *That shortcut is L6's theorem, not available yet* | **No — deliberately withheld** |
+| Reading the odometer at the start and end | *That shortcut is L4's theorem, not available yet* | **No — deliberately withheld** |
 | A real journey's finite sampling | The definition refines without bound | **No — named limit** |
 
 ## 14. Abstraction return
@@ -172,14 +172,15 @@ Evidence the return happened: on the transfer item the learner names the units o
 
 ## Prerequisites, limitations, likely misconceptions
 
-**Prerequisites:** L1 (`limits-continuity`) — hard, for C2 and C6. **Not** L2:
-this lesson deliberately does not use the derivative, so that L6's connection is
+**Prerequisites:** L1 (`limits-continuity`) — hard, for C2 (continuity and its
+modulus) and C6 (the forced value). **Not** L2:
+this lesson deliberately does not use the derivative, so that L4's connection is
 unspoiled. (L2 nonetheless precedes it in the spine, for the FTC's sake.)
 
 **Limitations / scope — the exclusions are load-bearing:**
 
 - **No antiderivative.** Not named, not hinted, not in an exercise. Hard exclusion.
-- **No Fundamental Theorem.** L6 owns it.
+- **No Fundamental Theorem.** L4 owns it.
 - **No integration techniques.** L7 owns them.
 - **No improper integrals.** L8 owns them.
 - No general integrability theory; continuous integrands on closed bounded
@@ -210,7 +211,7 @@ unspoiled. (L2 nonetheless precedes it in the spine, for the FTC's sake.)
 ## Grounding & model-change audit (Audit B)
 
 - **Does the bridge change the intelligible goal?** Yes. "Find the area" becomes "how far did it go?", which the learner already wants to answer.
-- **Is the bridge decorative?** No — and it is doing structural work across four lessons, since the learner's existing belief that the two instruments agree is the raw material for L6's theorem.
+- **Is the bridge decorative?** No — and it is doing structural work across four lessons, since the learner's existing belief that the two instruments agree is the raw material for L4's theorem.
 - **Are analogy limits named?** Yes, three, including the one that matters: real odometers do not run backwards, and the integral does.
 - **Does the learner return to the abstraction?** Yes — §14 step 4 and the transfer item, both of which require the units to be read from the axes with no journey available.
 - **Is the model change observable?** Yes: before, the learner answers "area"; after, they answer with a quantity **and its units**, and they correctly predict a negative contribution.

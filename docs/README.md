@@ -22,7 +22,7 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Hit the animation quality bar | [authoring/animation-quality-bar.md](authoring/animation-quality-bar.md) |
 | Plan a lesson (fill-in templates) | [authoring/templates/](authoring/templates/) |
 | Work on the linear-algebra course | [courses/linear-algebra/](courses/linear-algebra/) |
-| Work on the applied-mathematics course (calculus → fields → transforms) | [courses/applied-mathematics/](courses/applied-mathematics/) |
+| Work on the applied-mathematics course (calculus, series, transforms, ODEs, vector calculus) | [courses/applied-mathematics/](courses/applied-mathematics/) |
 | Understand the multi-subject platform model | [courses/multi-domain-architecture.md](courses/multi-domain-architecture.md) |
 | Change math or a visualization | [engineering/math-correctness.md](engineering/math-correctness.md) + [quality/known-failure-modes.md](quality/known-failure-modes.md) |
 | Understand the code architecture / contracts | [engineering/architecture.md](engineering/architecture.md), [engineering/platform-contracts.md](engineering/platform-contracts.md) |

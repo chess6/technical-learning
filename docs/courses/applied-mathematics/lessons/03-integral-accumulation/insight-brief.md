@@ -1,9 +1,9 @@
-# Insight Discovery Brief — The integral as accumulation (L3 of Package A, spine L5)
+# Insight Discovery Brief — The integral as accumulation (Package A, spine L3)
 
 Stage 1 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md)
 for `integral-accumulation`.
 
-Spine row: [course-spine §4](../../course-spine.md#4-the-spine-at-a-glance), L5.
+Spine row: [course-spine §4](../../course-spine.md#4-the-spine-at-a-glance), L3.
 
 ---
 
@@ -32,7 +32,7 @@ curve."** This is the standard first sentence, and it costs more than it gives:
 \(\int\) is introduced as "the opposite of \(\frac{d}{dx}\)", and the definite
 integral is defined *by* the antiderivative. That ordering is fatal to this
 course: it makes the Fundamental Theorem a **definition rather than a theorem**,
-so L6 has nothing to prove and the learner never experiences the compression that
+so L4 has nothing to prove and the learner never experiences the compression that
 the whole course is built on. This lesson must therefore contain **no
 antiderivative at all** — a deliberate and slightly uncomfortable omission.
 
@@ -56,7 +56,7 @@ will manage it.
 | R6 | **Same machine, four meters**: velocity→distance, current→charge, power→energy, density→mass. One construction, four readings. | Structural compression |
 | R7 | **Signed totals**: a negative rate walks the running total backwards. | Predictive reorganization |
 | R8 | **The running total is a function**, not a number: \(A(x)=\int_a^x f\). | Representational change |
-| R9 | **Deliberately withhold the antiderivative** so that L6 is a genuine surprise. | Structural (curricular) |
+| R9 | **Deliberately withhold the antiderivative** so that L4 is a genuine surprise. | Structural (curricular) |
 | R10 | Riemann sums as the **honest definition**; area as the *picture* of that definition. | Structural compression |
 | R11 | **Over- and under-estimates bracket the answer**, so refinement is a squeeze, not a hope. | Predictive reorganization |
 | R12 | An integral is a **weighted sum in the limit** — the shape L12's inner product and L15's transform both take. | Structural compression |
@@ -78,7 +78,7 @@ Open on the pair of instruments the learner already trusts, and build the runnin
 total as a second trace beneath the rate. Signed contributions arrive naturally
 by reversing.
 **Delivers:** the motivating need, the running-total function, and the setup that
-makes L6's theorem land as a discovery rather than a definition.
+makes L4's theorem land as a discovery rather than a definition.
 
 ### P3 — "Refine and it settles" *(R5, R10, R11)*
 The limit machinery: partition, sum, refine; over- and under-estimates bracket the
@@ -108,7 +108,7 @@ and the running-total close, **P4** as a single forward sentence.
 
 > **Explicit curricular decision (R9).** The antiderivative does not appear in
 > this lesson. Not in a footnote, not in an exercise, not in a "you may know…"
-> aside. L6's entire value is that the connection is *discovered*; naming it here
+> aside. L4's entire value is that the connection is *discovered*; naming it here
 > would spend it. This is recorded as a hard scope exclusion in the contract and
 > is the single thing most likely to be violated by an implementer working from
 > habit.
@@ -119,14 +119,14 @@ and the running-total close, **P4** as a single forward sentence.
 
 - **Canonical example:** `ex-drive` — third appearance, and now the *other*
   instrument. L1 read the speedometer at an instant; L2 said what that reading was
-  the slope of; L3 accumulates it. In L6 the two traces are finally shown to be
+  the slope of; L3 accumulates it. In L4 the two traces are finally shown to be
   the same information, which is the payoff the three previous appearances have
   been buying.
 - **Second example:** `ex-parabola` — its accumulation over \([0,2]\) is exactly
-  \(8/3\), hand-checkable, and used in L6 as the arithmetic check on the FTC.
+  \(8/3\), hand-checkable, and used in L4 as the arithmetic check on the FTC.
 - **Creates:** `accumulation-strip` (partition, refinement, running total, units
-  readout), reused by L6, L7, L8, L12, L23.
+  readout), reused by L4, L7, L8, L15, L29.
 - **Reuses:** `function-plot` from L1 for the rate graph.
 - **Withheld deliberately:** the antiderivative and all integration technique
-  (L7); the FTC (L6); improper limits (L8); \(\int\) applied to area *for its own
+  (L7); the FTC (L4); improper limits (L8); \(\int\) applied to area *for its own
   sake*, which this course never needs.

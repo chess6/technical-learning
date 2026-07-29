@@ -1,19 +1,19 @@
-# Lesson Mastery Contract — The integral as accumulation (spine L5)
+# Lesson Mastery Contract — The integral as accumulation (spine L3)
 
 Gate 5 for **`integral-accumulation`**, after [insight.md](insight.md) reached `PASS`.
 
 ## 1a. Placement & upstream links
-- **Spine:** L5, unit `accumulation`, third lesson of Package A.
+- **Spine:** L3, unit `calculus-foundations`, third lesson of Package A.
 - **Profile:** P2 primary. No P3 bar: integrability is restricted to continuous
   integrands on closed bounded intervals, declared rather than proved.
 - **Insight contract:** [insight.md](insight.md) — `PASS`.
 - **Concepts introduced:** `riemann-sum`, `definite-integral`. **Reused:**
   `limit`, `continuity` (L1).
 - **Deliberate non-dependency:** this lesson does **not** use `derivative`. L2
-  precedes it in the spine for L6's sake, not because L5 needs it.
+  precedes it in the spine for L4's sake, not because L3 needs it.
 
 ## 1b. Role, bridge, need
-- **Role:** supplies the second of the two objects L6 will connect, and supplies
+- **Role:** supplies the second of the two objects L4 will connect, and supplies
   it in a form (limit of weighted sums, with units) that M4–M7 reuse unchanged for
   inner products, Fourier coefficients, transforms, and line integrals.
 - **Retrieve:** L1's forced value; L1's continuity as the guarantee that a short
@@ -61,8 +61,8 @@ Gate 5 for **`integral-accumulation`**, after [insight.md](insight.md) reached `
 | Explain why redrawing the graph at another scale does not change the integral | D5/D13 | lesson | E4 | `int-scale-invariance` (`text`, produced) | independently demonstrated |
 | Recognise the construction in a different meter (current → charge, power → energy) | D4/D10 | lesson | E3 | `int-same-machine` (`exercise-sequence`, units in both settings) | independently demonstrated |
 | Identify where left/right bracketing **fails** | D7 | lesson | E4 | `int-bracket-fails` (`multiple-choice` over four rate graphs; correct = the non-monotone one) | **recognition — recorded as E2, not claimed E3** |
-| Retain "the integral is signed" under delayed retrieval | D12 | **module** | E3 | `mod-accum-retain-signed` (module `accumulation`, Gate 9) | **not built** — Gate 9 open |
-| Integrate accumulation with the derivative on a mixed item | D10 | **module** | E5 | `mod-accum-mixed-rate-total` (module `accumulation`, Gate 9) | **not built** — Gate 9 open |
+| Retain "the integral is signed" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-signed` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
+| Integrate accumulation with the derivative on a mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-rate-total` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer:** three D9/E4 outcomes (`int-signed-transfer`, `int-scale-invariance`,
 `int-bracket-fails`).
@@ -77,14 +77,14 @@ not have.
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** L1's forced value cited by name at the refinement beat;
   `ex-drive` in its third role; `ex-parabola` reused so the arithmetic is familiar.
-  **No L2 connection is drawn** — deliberately, so L6 can draw it.
+  **No L2 connection is drawn** — deliberately, so L4 can draw it.
 - **Assessment:** 2 check, 3 drill, 3 transfer; **recall capped at one**
   (`int-bracket-fails`). Every graded item uses a rate the guided scene does not
   animate, except `int-read-running-total`, whose point is that it is the scene's
   own drive trace.
 - **Retention (D12):** the signedness of the integral.
-- **Forward:** **L6** (the running total's shortcut — the question this lesson
-  deliberately leaves open), L7, L8, L12, L14, L15, L23, L24.
+- **Forward:** **L4** (the running total's shortcut — the question this lesson
+  deliberately leaves open), L7, L8, L15, L17, L18, L29, L31.
 
 ## 1g. Correctness & scope
 - **Correctness checks:** every sum, estimate, and running total comes from
@@ -99,7 +99,7 @@ not have.
   displayed total's units are derived from the axes rather than hard-coded. A test
   asserts that changing the fixture's declared axis units changes the readout.
 - **Scope exclusions (hard):** the **antiderivative** — absent from prose, scene,
-  explorer, exercises, and depth layers; the Fundamental Theorem (L6); integration
+  explorer, exercises, and depth layers; the Fundamental Theorem (L4); integration
   techniques (L7); improper integrals (L8); general integrability; area for its
   own sake. An implementer working from habit is most likely to violate the first
   of these, so it is also listed in the package ledger's review checklist.
@@ -107,17 +107,38 @@ not have.
   supplies axes and no story.
 
 ## 6. Acceptance record (Gate 8)
+
+> **Gate 8 is scoped to this lesson's own outcomes.** Per
+> [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
+> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> demonstrated with real in-lesson evidence, and that module-owned outcomes are
+> **carried forward as planned Gate-9 obligations**. The presence of open
+> Gate-9 obligations is the normal state of an accepted lesson and does **not**
+> block Gate 8. Gate 8 would be blocked only by a *lesson-owned* outcome with no
+> real evidencing item, or by accepting a lesson-owned outcome on planned module
+> evidence — neither of which this contract does.
+
+**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
+§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
+recognition-level outcome is declared at their honest level rather than being
+claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
+checkboxes below are unticked because the lesson is not built, not because
+anything is missing from the plan.
+
 - [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
 - [ ] All §1 fields filled.
 - [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] Lesson-owned core outcomes independently demonstrated, with the recorded exception.
-- [ ] Module-owned outcomes recorded as Gate-9 obligations.
-- [ ] Assessment matches §1f; recall capped at one; three transfer items.
-- [ ] Forward edges recorded; **the L6 question left open on purpose**.
+- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
+      recorded recognition-level exceptions declared as such.
+- [ ] No lesson-owned outcome accepted on planned module evidence.
+- [ ] Assessment set matches §1f; recall capped; transfer items present.
+- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
+      design; not a Gate 8 blocker)*.
+- [ ] Forward edges recorded; **the L4 question left open on purpose**.
 - [ ] Retention hook recorded.
 - [ ] Correctness gate passed, including the failing-bracket test and the units invariant.
 - [ ] **Antiderivative-absence check**: grep the built lesson for antiderivative /
-      \(\int f = F\) / "reverse of differentiation" and find nothing.
 - [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
 
-*(Unchecked: Gate 8 is an implementation gate. Nothing here is built.)*
+*(Unticked because nothing is built. Gate 8 is an implementation gate; this
+contract is Gate 5.)*

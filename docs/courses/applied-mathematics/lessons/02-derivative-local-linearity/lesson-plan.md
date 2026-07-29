@@ -51,11 +51,11 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 - **Rate costume:** `ex-drive`, continuing from L1.
 - **Failure:** `ex-abs` (\(\lvert x\rvert\) at 0).
 - **Crossing tangent:** `ex-cubic-inflection` (\(x^3\) at 0).
-- **Introduced here, reused later:** `ex-decay` (\(e^{-t/\tau}\)) — L4, L8, L18, L20.
+- **Introduced here, reused later:** `ex-decay` (\(e^{-t/\tau}\)) — L4, L8, L18, L24.
 - **Fresh, practice only:** a cubic and an applied volume curve the clips never draw.
 
 ## Supporting concepts
-- \(f'\) as a function (the closing beat), so L5/L6 have an object to accumulate.
+- \(f'\) as a function (the closing beat), so L3/L4 have an object to accumulate.
 - Notation: \(f'\), \(\frac{df}{dx}\), and \(\dot s\) all introduced once and
   declared equivalent — the course uses \(f'\) and \(\frac{df}{dx}\) and reserves
   the dot for time in M6.
@@ -149,7 +149,7 @@ The compression. One number, three readings, driven by one signal.
 | C10 visible failure | clip 1 `corner` | Ex. 5, Ex. 6 |
 | C11 differentiable ⇒ continuous | depth layer + retention item | module retention item |
 | C12 \(f'\) as a function | clip 2 `derivative-fn` | Ex. 7 |
-| C13 forward to L6 | Key takeaway | — *(carried by L6's opening)* |
+| C13 forward to L4 | Key takeaway | — *(carried by L4's opening)* |
 | **Bridge** flat Earth / speedometer | Motivating question; clip 1 `zoom` | Learner restates why a rate is a slope |
 | **Analogy limit** curvature varies | Checkpoint reveal | Learner answers "no, it is still curved" |
 | **Abstraction return** | Ex. 4 | Curve + point produced, no bridge referenced |
@@ -161,8 +161,8 @@ The compression. One number, three readings, driven by one signal.
 ## Notation
 - \(f'(a)\) and \(\frac{df}{dx}\Big|_{a}\) — both used, declared equivalent once.
 - \(h\) for the step, always; never \(\Delta x\) in this lesson, so that
-  \(\Delta x\) can mean a *partition width* in L5 without collision.
-- \(E(h)\) for the residual, carried unchanged into L6's telescoping step.
+  \(\Delta x\) can mean a *partition width* in L3 without collision.
+- \(E(h)\) for the residual, carried unchanged into L4's telescoping step.
 - Tangent drawn solid; secants dashed; wrong-slope comparison dotted. Fixed course-wide.
 
 ## Edge cases

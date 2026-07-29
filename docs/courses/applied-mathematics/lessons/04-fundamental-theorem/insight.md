@@ -1,4 +1,4 @@
-# Approved Insight Contract — The Fundamental Theorem of Calculus (spine L6)
+# Approved Insight Contract — The Fundamental Theorem of Calculus (spine L4)
 
 Stage 2 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md),
 selecting from [insight-brief.md](insight-brief.md), with Audits A and B.
@@ -17,7 +17,7 @@ of correctness obligations; **P5** is one closing sentence.
 the antiderivative, so the theorem restates a definition and is stored as two
 labelled statements. The learner acquires a computational rule and **no
 argument**, and therefore has nothing to generalize when the same argument is
-needed in two dimensions (L27). Secondary: the collapse from unboundedly many
+needed in two dimensions (L34). Secondary: the collapse from unboundedly many
 terms to two evaluations is not registered as remarkable. Tertiary: the two parts
 are held as a numbered pair rather than as one symmetry.
 
@@ -33,7 +33,7 @@ never going to matter").
 The Fundamental Theorem is the rule \(\int_a^b f = F(b) - F(a)\), plus another
 one about derivatives of integrals that I keep confusing with it."
 
-*(In this course the learner arrives without even that, because L5 refused to
+*(In this course the learner arrives without even that, because L3 refused to
 name the antiderivative. Their model is: "an integral is a limit of sums, and I
 can only compute it when the sum has a closed form." That is a **better** starting
 point and is exactly what makes the theorem land.)*
@@ -41,9 +41,9 @@ point and is exactly what makes the theorem land.)*
 ### 4. Tension / redundancy
 Two things are now unreconciled, and both were planted deliberately.
 
-1. **L5's loose end.** The running total \(A(x)\) rises fastest exactly where the
-   rate \(f(x)\) is highest. L5 showed it and refused to explain it.
-2. **The computational wall.** L5 computed \(\int_0^2 x^2\) only because
+1. **L3's loose end.** The running total \(A(x)\) rises fastest exactly where the
+   rate \(f(x)\) is highest. L3 showed it and refused to explain it.
+2. **The computational wall.** L3 computed \(\int_0^2 x^2\) only because
    \(\sum i^2\) happens to have a closed form. For almost any other rate the sum
    has none, and the learner is stuck — yet the odometer in the car manages it
    without summing anything.
@@ -85,26 +85,26 @@ The other half is the same statement read backwards: define
 measure then accumulate, and you get the change. **One symmetry, not two rules.**
 
 The interior never mattered. That is the whole theorem, and it is the sentence
-that will be re-run over a region in L27.
+that will be re-run over a region in L34.
 
 ### 6. Full causal chain
 
 | # | Step | Depends on |
 | --- | --- | --- |
-| C1 | Define \(A(x)=\int_a^x f\) — L5's running total, unchanged. | **L5 C9** |
-| C2 | Over a step \(h\), \(A(x+h)-A(x)\) is the accumulation over \([x,x+h]\): one thin sliver. | L5 C6 |
+| C1 | Define \(A(x)=\int_a^x f\) — L3's running total, unchanged. | **L3 C9** |
+| C2 | Over a step \(h\), \(A(x+h)-A(x)\) is the accumulation over \([x,x+h]\): one thin sliver. | L3 C6 |
 | C3 | \(f\) is continuous, so on a short enough sliver it is nearly constant (L1) and the sliver is \(\approx f(x)h\). | **L1 C9** |
 | C4 | Hence \(\dfrac{A(x+h)-A(x)}{h}\to f(x)\): **\(A'(x)=f(x)\)**. Accumulating then measuring returns the original rate. | C2, C3, **L2 C2** |
-| C5 | This explains L5's loose end: \(A\) rises fastest where \(f\) is largest, because \(f\) *is* \(A\)'s slope. | C4 |
+| C5 | This explains L3's loose end: \(A\) rises fastest where \(f\) is largest, because \(f\) *is* \(A\)'s slope. | C4 |
 | C6 | Now the other direction. Take any \(F\) with \(F'=f\). Chop \([a,b]\) and write \(F(b)-F(a)=\sum(F(x_{i+1})-F(x_i))\). **This is an identity — no calculus.** | Entry algebra |
 | C7 | Every interior \(F(x_i)\) occurs twice with opposite signs and cancels. \(n\) terms, \(n-1\) cancellations, **2 survivors**. | C6 |
 | C8 | By L2's local linearity \(F(x_{i+1})-F(x_i)=f(x_i)\Delta x_i + E_i\) with \(\sum E_i \to 0\) under refinement. | **L2 C5** |
-| C9 | So \(F(b)-F(a)\) equals a Riemann sum plus vanishing error; refine and \(F(b)-F(a)=\int_a^b f\). | C6–C8, **L5 C6** |
+| C9 | So \(F(b)-F(a)\) equals a Riemann sum plus vanishing error; refine and \(F(b)-F(a)=\int_a^b f\). | C6–C8, **L3 C6** |
 | C10 | \(+C\) is harmless: adding a constant to \(F\) changes nothing in a **difference**. | C9 |
 | C11 | The theorem is about **existence**, not a recipe. C4 shows \(A\) exists for every continuous \(f\); it does **not** promise an elementary formula. \(e^{-x^2}\) is the standing counterexample. | C4 |
 | C12 | Falsification: if the theorem failed, the odometer's change and the accumulated speedometer would differ — two instruments measuring one journey, disagreeing. | C9, `ex-drive` |
-| C13 | Check: \(\int_0^2 x^2\) was \(8/3\) by summation in L5 and is \(\frac{2^3}{3}-0=8/3\) by C9. **The two computations must be seen to agree.** | C9, L5 §7 |
-| C14 | Forward: L7 exists to *find* \(F\); L8 lets an endpoint run to infinity; L20's derivative rule is C9 plus a product; **L27 re-runs C6–C9 over a region, with loops instead of intervals and interior edges cancelling in pairs.** | C9 |
+| C13 | Check: \(\int_0^2 x^2\) was \(8/3\) by summation in L3 and is \(\frac{2^3}{3}-0=8/3\) by C9. **The two computations must be seen to agree.** | C9, L3 §7 |
+| C14 | Forward, and along **both** of the course's structural themes. *Theme 1 (local accumulation and boundary effects):* **L34, L36, and L37 re-run C6–C9 over a region, a surface, and a solid, with shared interior edges and faces cancelling in pairs instead of shared endpoints.** *Theme 2 (representation change):* L7's integration by parts is C9 plus a product, and its **boundary term** is what turns \(d/dt\) into multiplication in L18 and L24 — and, in L24, what carries the initial conditions. L8 lets an endpoint run to infinity. | C9 |
 
 ### 7. Minimal formal derivation
 
@@ -127,30 +127,32 @@ F(b)-F(a)=\sum_{i=0}^{n-1}\bigl(F(x_{i+1})-F(x_i)\bigr)
 =\sum_{i=0}^{n-1}\bigl(f(x_i)\Delta x_i + E_i\bigr),
 \]
 
-where \(E_i/\Delta x_i \to 0\) uniformly as the mesh shrinks (L2 C5, with
-continuity of \(f\) on a closed bounded interval). The first sum is a Riemann sum
+where \(E_i/\Delta x_i \to 0\) **uniformly** as the mesh shrinks (L2 C5, together
+with L1's `modulus-of-continuity` for \(f\) on a closed bounded interval — the
+object that makes "uniformly" mean something here rather than being asserted). The first sum is a Riemann sum
 converging to \(\int_a^b f\); the second is bounded by
 \((b-a)\max_i \lvert E_i/\Delta x_i\rvert \to 0\). Hence \(F(b)-F(a)=\int_a^b f\).
 
 **Arithmetic check (C13).** \(F(x)=x^3/3\) has \(F'=x^2\), so
-\(\int_0^2 x^2 = 8/3 - 0 = 8/3\) — the number L5 obtained from
+\(\int_0^2 x^2 = 8/3 - 0 = 8/3\) — the number L3 obtained from
 \(\frac43\cdot\frac{(n+1)(2n+1)}{n^2}\) with no antiderivative in sight.
 
 ### 8. Equivalence to the original object
 These are the two standard statements of the Fundamental Theorem for continuous
 integrands. Part 1's proof is the usual squeeze; part 2's is the usual telescoping
-argument. The uniformity of the \(E_i\) bound is the one analytic point the course
-does not prove — it follows from uniform continuity on a compact interval, which
-is **stated and attributed, not derived** (a P3 obligation this course does not
-claim). That gap is declared in the contract and in the lesson.
+argument. The uniformity of the \(E_i\) bound is the one analytic point the course does not
+prove. It follows from the existence of a **modulus of continuity** on a compact
+interval — the object L1 introduces — and that existence is **stated and
+attributed, not derived** (a P3 obligation this course does not claim). The gap
+is declared in the contract and named on screen in the lesson.
 
 ### 9. Cost / model change
 The learner must accept that a picture of cancelling terms is an argument (it is —
 C6 is an algebraic identity, and the drawing is faithful to it), and must hold two
 directions at once. They also give up the hope that the theorem is a recipe: C11
 says plainly that most rates have no elementary antiderivative, so the sum-based
-methods of L5 are not obsolete. In exchange they get the computational shortcut,
-the resolution of L5's loose end, and — the real prize — **an argument they will
+methods of L3 are not obsolete. In exchange they get the computational shortcut,
+the resolution of L3's loose end, and — the real prize — **an argument they will
 recognise again in two dimensions**.
 
 ### 10. What the learner can predict or do afterward
@@ -215,7 +217,7 @@ no calculus in it, and which the learner must name as C6.
 **Prerequisites:** L1 (`limits-continuity`) for C3 and the squeeze; **L2**
 (`derivative-local-linearity`) for C4 and C8 — this is the lesson that consumes
 L2's C5 and is the reason L2 was framed as approximation rather than as slope;
-**L5** (`integral-accumulation`) for C1 and C9.
+**L3** (`integral-accumulation`) for C1 and C9.
 
 **Limitations / scope:**
 - Continuous integrands on closed bounded intervals only, declared.
@@ -231,7 +233,7 @@ L2's C5 and is the reason L2 was framed as approximation rather than as slope;
 
 | # | Misconception | Where it is broken |
 | --- | --- | --- |
-| M1 | The theorem is a definition, so there is nothing to prove. | The whole lesson: L5 refused the antiderivative, so C13's two independent computations of \(8/3\) are genuine corroboration. |
+| M1 | The theorem is a definition, so there is nothing to prove. | The whole lesson: L3 refused the antiderivative, so C13's two independent computations of \(8/3\) are genuine corroboration. |
 | M2 | Part 1 and part 2 are two unrelated rules. | C4 and C9 presented as one symmetry, with the same picture read in both directions. |
 | M3 | Every function has an antiderivative you can write down. | C11 + the \(e^{-x^2}\) counterexample; graded. |
 | M4 | \(+C\) matters / is a ritual. | C10 — it cancels in the difference; graded by asking what changes if \(F\) is shifted. |
@@ -244,10 +246,10 @@ L2's C5 and is the reason L2 was framed as approximation rather than as slope;
 ## Mathematical audit (Audit A)
 
 - **Correct as stated?** Yes. §7 part 1 is the standard squeeze via extreme values on a compact interval; part 2 is the standard telescoping argument.
-- **Any false simplification?** One real gap, declared: the passage from "each \(E_i\) is \(o(\Delta x_i)\)" to "\(\sum E_i \to 0\)" needs uniformity, i.e. uniform continuity on \([a,b]\). The lesson states this as an assumption with a named justification rather than gliding over it. This is the audit's principal finding.
+- **Any false simplification?** One real gap, declared: the passage from "each \(E_i\) is \(o(\Delta x_i)\)" to "\(\sum E_i \to 0\)" needs **uniformity**. The named object is L1's `modulus-of-continuity`; that a continuous function on a closed bounded interval has one is **stated with attribution, not proved**. This is the audit's principal finding and the single analytic gap in Package A. It is visible in the lesson rather than glossed.
 - **A second, easily-missed point:** part 1 requires \(f\) continuous **at \(x\)**, not merely integrable; the lesson's hypotheses are stated as continuity on the closed interval throughout, which is sufficient and is what every Package A integrand satisfies.
 - **Degenerate cases handled?** Unequal partitions (M6, demonstrated); a shifted \(F\) (M4); a shifted lower limit (M7); \(f\) negative on part of the interval (the total decreasing); \(a=b\) (both sides zero).
-- **Does the insight survive generalization?** Yes — and this is the reason for the selection. C6–C9 is exactly the argument re-run in L27 with oriented boundary edges instead of endpoints, and the cancellation of shared interior edges instead of shared endpoints. The `telescoping-cancellation` visual family is therefore required to be parameterized over "what cancels against what" rather than hard-coded to an interval.
+- **Does the insight survive generalization?** Yes — and this is the reason for the selection. C6–C9 is exactly the argument re-run in L34 with oriented boundary edges instead of endpoints, and the cancellation of shared interior edges instead of shared endpoints. The `telescoping-cancellation` visual family is therefore required to be parameterized over "what cancels against what" rather than hard-coded to an interval.
 - **Anything asserted but not derived?** The antiderivatives used by inspection (\(x^n\), \(\sin\), \(\cos\), \(e^x\)) are verified by differentiating them on screen, not asserted.
 
 ## Grounding & model-change audit (Audit B)
@@ -263,8 +265,8 @@ L2's C5 and is the reason L2 was framed as approximation rather than as slope;
 ## Review signoff
 
 - [x] One primary insight selected, with the reason for **not** leading with the more common choice recorded.
-- [x] Causal chain complete, with each upstream dependency cited at the exact step (L1 C9 at C3; L2 C2 at C4; L2 C5 at C8; L5 C6/C9 at C1/C9).
-- [x] Minimal formal derivation present for **both** parts, plus the arithmetic corroboration that L5's refusal made possible.
+- [x] Causal chain complete, with each upstream dependency cited at the exact step (L1 C9 at C3; L2 C2 at C4; L2 C5 at C8; L3 C6/C9 at C1/C9).
+- [x] Minimal formal derivation present for **both** parts, plus the arithmetic corroboration that L3's refusal made possible.
 - [x] Equivalence to the standard statements recorded, with the uniformity gap declared rather than hidden.
 - [x] Cost stated honestly, including what the theorem does not buy.
 - [x] Transfer item specified: unfamiliar, calculus-free, and diagnostic of the actual obstacle.

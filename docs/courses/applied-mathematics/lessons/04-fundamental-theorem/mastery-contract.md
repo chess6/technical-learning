@@ -1,26 +1,26 @@
-# Lesson Mastery Contract — The Fundamental Theorem of Calculus (spine L6)
+# Lesson Mastery Contract — The Fundamental Theorem of Calculus (spine L4)
 
 Gate 5 for **`fundamental-theorem`**, after [insight.md](insight.md) reached `PASS`.
 This is the **flagship of Package A**.
 
 ## 1a. Placement & upstream links
-- **Spine:** L6, unit `accumulation`, fourth and closing lesson of Package A.
+- **Spine:** L4, unit `calculus-foundations`, fourth and closing lesson of Package A.
 - **Profile:** P2 primary. **No P3 bar claimed** — the uniformity step in the
   proof is stated with attribution, not proved. That is declared here and in the
   lesson, and is the one place a later P3 override on `accumulation` would attach.
 - **Insight contract:** [insight.md](insight.md) — `PASS`.
 - **Concepts introduced:** `antiderivative`, `ftc`. **Reused:** `limit`,
   `continuity` (L1); `local-linearity`, `derivative` (L2); `riemann-sum`,
-  `definite-integral` (L5).
+  `definite-integral` (L3).
 
 ## 1b. Role, bridge, need
 - **Role:** binds the course's two halves and supplies the **argument template**
-  reused in L8, L20, and — decisively — L27. This lesson is the reason L2 was
-  framed as approximation and L5 was denied the antiderivative.
-- **Retrieve:** L5's running total and its unexplained observation; L5's
+  reused in L8, L24, and — decisively — L34. This lesson is the reason L2 was
+  framed as approximation and L3 was denied the antiderivative.
+- **Retrieve:** L3's running total and its unexplained observation; L3's
   summation value \(8/3\); L2's local-linear model with its error term; L1's
   continuity.
-- **Bridge from L5:** L5 ended by noting that the running total rises fastest
+- **Bridge from L3:** L3 ended by noting that the running total rises fastest
   where the rate is highest, and refused to say why.
 - **Motivating need:** *An integral is a limit of unboundedly many terms. The
   odometer in the car produces the answer without summing anything. How?*
@@ -68,8 +68,8 @@ This is the **flagship of Package A**.
 | Predict what would be observably wrong if the theorem were false | D9 | lesson | E4 | `ftc-falsify` (`text`, produced) | independently demonstrated |
 | Recognise the telescoping mechanism in an unfamiliar, calculus-free setting | D9 | lesson | E4 | `ftc-telescope-transfer` (\(\sum(1/k - 1/(k+1))\); evaluate, then identify which step of the argument it is and what plays \(F\)) | independently demonstrated |
 | Reconcile the two computations of \(\int_0^2 x^2\) | D10 | lesson | E3 | `ftc-corroborate` (`numeric` + `text`: both values, and why agreement is evidence) | independently demonstrated |
-| Retain "the theorem gives existence, not a formula" under delayed retrieval | D12 | **module** | E3 | `mod-accum-retain-existence` (module `accumulation`, Gate 9) | **not built** — Gate 9 open |
-| Integrate the FTC with the derivative and the Riemann sum on one mixed item | D10 | **module** | E5 | `mod-accum-mixed-ftc` (module `accumulation`, Gate 9) | **not built** — Gate 9 open |
+| Retain "the theorem gives existence, not a formula" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-existence` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
+| Integrate the FTC with the derivative and the Riemann sum on one mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-ftc` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer:** four D9/E4 outcomes (`ftc-lower-limit-shift`,
 `ftc-no-elementary-antiderivative`, `ftc-falsify`, `ftc-telescope-transfer`).
@@ -81,16 +81,16 @@ recorded as **recognition (E2)** — the learner selects among plotted candidate
 rather than producing a plot.
 
 ## 1f. Connections, assessment, retention
-- **Cumulative (D10):** the strongest in Package A. L5's `8/3` recomputed and
+- **Cumulative (D10):** the strongest in Package A. L3's `8/3` recomputed and
   compared (`ftc-corroborate`); L2's error term used **verbatim** at C8; L1's
   continuity used in the squeeze; `ex-drive`'s four-lesson arc closed.
 - **Assessment:** 2 check, 4 drill, 4 transfer; **recall capped at one**
   (`ftc-lower-limit-shift`). Every graded item uses an integrand the clips do not
-  animate, except `ftc-corroborate`, whose entire point is that it is L5's.
+  animate, except `ftc-corroborate`, whose entire point is that it is L3's.
 - **Retention (D12):** existence-not-a-formula — the claim most likely to erode
   into "every integral can be done".
-- **Forward:** L7 (finding \(F\)), L8 (an endpoint to infinity), L20 (the
-  derivative rule via parts), **L27 (the same argument over a region)**.
+- **Forward:** L7 (finding \(F\)), L8 (an endpoint to infinity), L24 (the
+  derivative rule via parts), **L34 (the same argument over a region)**.
 
 ## 1g. Correctness & scope
 - **Correctness checks:** all values from `src/math/calculus.ts`. Property tests:
@@ -103,12 +103,16 @@ rather than producing a plot.
   machine tolerance.
 - **Generalization requirement (structural):** `telescoping-cancellation` must be
   built **parameterized over the cancelling pairs**, not hard-coded to interval
-  endpoints, because L27 re-runs it with shared interior edges of a subdivided
+  endpoints, because L34 re-runs it with shared interior edges of a subdivided
   region. A test asserts the family accepts a non-interval pairing. *This is the
   single most important implementation constraint in Package A*, and skipping it
   would silently cost the course its capstone.
-- **Declared unproved step:** the uniformity of the \(E_i\) bound. It must be
-  visible in the lesson as a named assumption, not glossed.
+- **Declared unproved step:** the uniformity of the \(E_i\) bound. It is now
+  citable rather than hand-waved: L1 introduces `modulus-of-continuity`, and this
+  lesson names it as the object supplying uniformity on a closed bounded
+  interval. **The existence of a modulus there is stated with attribution, not
+  proved** — that is the one analytic gap in Package A, and it must be visible in
+  the lesson as a named assumption.
 - **Scope exclusions:** integration techniques (L7); improper integrals (L8);
   substitution in definite integrals (L7); the mean value theorem for integrals as
   a named result; general integrability.
@@ -116,17 +120,39 @@ rather than producing a plot.
   which contains no integral.
 
 ## 6. Acceptance record (Gate 8)
+
+> **Gate 8 is scoped to this lesson's own outcomes.** Per
+> [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
+> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> demonstrated with real in-lesson evidence, and that module-owned outcomes are
+> **carried forward as planned Gate-9 obligations**. The presence of open
+> Gate-9 obligations is the normal state of an accepted lesson and does **not**
+> block Gate 8. Gate 8 would be blocked only by a *lesson-owned* outcome with no
+> real evidencing item, or by accepting a lesson-owned outcome on planned module
+> evidence — neither of which this contract does.
+
+**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
+§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
+recognition-level outcome is declared at their honest level rather than being
+claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
+checkboxes below are unticked because the lesson is not built, not because
+anything is missing from the plan.
+
 - [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
 - [ ] All §1 fields filled.
 - [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] Lesson-owned core outcomes independently demonstrated, with the recorded exception.
-- [ ] Module-owned outcomes recorded as Gate-9 obligations.
-- [ ] Assessment matches §1f; recall capped at one; four transfer items.
-- [ ] Backward bridges (L1/L2/L5) + forward edges (L7/L8/L20/L27) recorded.
+- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
+      recorded recognition-level exceptions declared as such.
+- [ ] No lesson-owned outcome accepted on planned module evidence.
+- [ ] Assessment set matches §1f; recall capped; transfer items present.
+- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
+      design; not a Gate 8 blocker)*.
+- [ ] Backward bridges (L1/L2/L3) + forward edges (L7/L8/L24/L34) recorded.
 - [ ] Retention hook recorded.
 - [ ] Correctness gate passed, **including the exact telescoping identity on unequal partitions**.
 - [ ] **`telescoping-cancellation` is parameterized over cancelling pairs**, with the test that proves it.
 - [ ] The unproved uniformity step is visible in the lesson as a named assumption.
 - [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
 
-*(Unchecked: Gate 8 is an implementation gate. Nothing here is built.)*
+*(Unticked because nothing is built. Gate 8 is an implementation gate; this
+contract is Gate 5.)*

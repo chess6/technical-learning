@@ -5,8 +5,8 @@ selecting from [insight-brief.md](insight-brief.md), with Audits A and B.
 
 Primary insight: **Package P1** — *a limit is a value the neighbours force.*
 **P2** (the speedometer paradox) is the motivating need; **P3** (continuity as a
-sampling guarantee) is the consequence and the forward edge. **P4** (zoom) is
-deliberately withheld for L2.
+**local** guarantee, and what sampling additionally needs) is the consequence and
+the forward edge. **P4** (zoom) is deliberately withheld for L2.
 
 ---
 
@@ -57,8 +57,29 @@ Three consequences, in order of how much they change the model:
    sometimes it does not; the tolerance game is what decides.
 
 **Continuity** is then the *special* case in which the forced value happens to
-equal the actual value: \(\lim_{x\to a}f(x)=f(a)\). Read forwards, that is a
-promise — **nothing can hide between your samples**.
+equal the actual value: \(\lim_{x\to a}f(x)=f(a)\).
+
+That is a real guarantee, and it is worth being exact about its strength,
+because the obvious over-reading is false. Continuity at \(a\) says: *for each
+tolerance, **some** window delivers it, near **this** point.* It does **not** say
+how wide that window is, and it does not say that one window width works
+everywhere. So continuity alone does **not** license a finite sampling grid —
+between two samples of a continuous function, an arbitrarily large excursion can
+still occur if the function is steep enough there.
+
+What licenses sampling is two further things the learner must choose and know:
+
+1. a **resolution** — how fine a grid you are willing to pay for, and what
+   tolerance you will accept; and
+2. **quantitative control** of the guarantee — a **modulus of continuity**
+   \(\omega\), a function with \(\lvert f(x)-f(y)\rvert \le \omega(\lvert x-y\rvert)\)
+   and \(\omega(\delta)\to0\), which converts "some window exists" into "**this**
+   window suffices, anywhere on the interval".
+
+A continuous function on a **closed bounded** interval always has one (its
+continuity there is uniform) — stated here with attribution, proved nowhere in
+this course. The point for the learner is the distinction: continuity is a local
+promise; sampling needs a uniform, quantitative one.
 
 ### 6. Full causal chain
 
@@ -72,10 +93,11 @@ promise — **nothing can hide between your samples**.
 | C6 | That guarantee **is** the definition of the limit. It consults only \(0<|x-a|<\delta\), never \(x=a\). | C5 |
 | C7 | Therefore the value at \(a\) is irrelevant: puncture the graph and the limit is unchanged. | C6 |
 | C8 | Therefore \(0/0\) is not a dead end. It is the *normal* form of a rate, and the tolerance game decides whether a rate exists. | C6, C2 |
-| C9 | **Continuity** is the case \(\lim_{x\to a}f(x)=f(a)\): the forced value and the actual value agree. | C6 |
-| C10 | Consequence: for a continuous function, sampling and interpolating is honest — nothing hides between samples. For a discontinuous one it is not. | C9 |
+| C9 | **Continuity** is the case \(\lim_{x\to a}f(x)=f(a)\): the forced value and the actual value agree. It is a **local** claim, about one point at a time. | C6 |
+| C10 | Continuity therefore licenses **substitution**, and nothing more. It does **not** by itself bound how much \(f\) moves between two chosen samples, because it fixes no window width. | C9 |
+| C10b | Finite sampling needs two additions: a **chosen resolution**, and a **modulus of continuity** \(\omega\) with \(\lvert f(x)-f(y)\rvert\le\omega(\lvert x-y\rvert)\) — the quantitative form of the guarantee. On a closed bounded interval a continuous function has one (stated, not proved). | C9 |
 | C11 | The game can be lost in exactly four visible ways: **jump** (two different forced values), **removable** (a forced value the function disagrees with or omits), **oscillation** (no forced value), **blow-up** (outputs leave every band). | C6 |
-| C12 | Forward: the derivative (L2) and the definite integral (L5) are both limits of expressions that are undefined at the limit. C7 is what licenses them. | C7, C8 |
+| C12 | Forward: the derivative (L2) and the definite integral (L3) are both limits of expressions that are undefined at the limit — C7 licenses them; and L4's uniformity step cites C10b's modulus by name rather than hand-waving. | C7, C8, C10b |
 
 ### 7. Minimal formal derivation
 
@@ -116,6 +138,8 @@ numerical method in the course legitimate.
 - Say what changes if the function's value at the point is altered or deleted — and answer *nothing*.
 - Compute a limit of the form \(0/0\) by exhibiting an expression that agrees off the point.
 - Say why substitution is legitimate for a continuous function and illegitimate in general.
+- State what continuity does **not** give: it does not bound the variation between two samples, so it does not on its own justify a sampling grid.
+- Say what would have to be added to justify one — a resolution and a modulus — and use a supplied modulus to choose a grid spacing for a stated tolerance.
 - Predict which of two shrinking quantities wins in a simple race.
 
 ### 11. Transfer assessment
@@ -131,7 +155,7 @@ applied in an unfamiliar setting.)
 **A speedometer.** The learner already accepts that a car has a speed at an
 instant and already knows the speed formula needs two times. The bridge is not a
 decoration: it supplies the *contradiction* that motivates the definition, and the
-same object (`ex-drive`) is the demonstration vehicle in L2, L5, and L6.
+same object (`ex-drive`) is the demonstration vehicle in L2, L3, and L4.
 
 ## 13. Preserved correspondences & analogy limits
 
@@ -175,6 +199,7 @@ no sequences.
 | M3 | \(0/0\) means "no answer" or "cancel and it's fine". | C8 + §7's two-expressions argument; graded. |
 | M4 | A limit exists whenever the graph looks smooth-ish. | C11's failure catalogue, including \(\sin(1/x)\). |
 | M5 | Continuity means "drawable without lifting the pen". | Refuted directly: it is neither the definition nor a usable criterion; C9 replaces it. |
+| M5b | Continuity means "nothing can happen between two samples", so sampling a continuous function is automatically safe. | **False, and directly targeted.** C10 and C10b, plus a graded item on a continuous function steep enough to hide a large excursion between two grid points. |
 | M6 | If a limit exists the function is continuous there. | Removable-discontinuity case; graded. |
 
 ---
@@ -184,7 +209,8 @@ no sequences.
 - **Correct as stated?** Yes. §5's definition is the standard one; §7's \(\delta=\varepsilon\) works.
 - **Any false simplification?** The phrase "the neighbours force the value" is informal but not false: it names exactly the quantifier structure. The lesson pairs it with the symbolic statement so the informality is never the only form on the page.
 - **Degenerate cases handled?** Jump, removable, oscillatory, and blow-up are all shown, not just mentioned. One-sided limits are introduced only as the diagnostic for the jump case.
-- **Does the insight survive generalization?** Yes — the same definition is used unchanged for \(h\to0\) in L2, for mesh \(\to 0\) in L5, and for \(b\to\infty\) in L8. It is not a special-case story.
+- **Does the insight survive generalization?** Yes — the same definition is used unchanged for \(h\to0\) in L2, for mesh \(\to 0\) in L3, for \(n\to\infty\) in `sequences-limits`, and for \(b\to\infty\) in `improper-integrals`. It is not a special-case story.
+- **Was anything over-claimed?** Yes, in an earlier draft: "continuity means nothing hides between your samples". That is false — continuity is local and fixes no window width. It is corrected in §5 and C10/C10b, the correct object (a modulus of continuity, plus a chosen resolution) is named, and the over-reading is now a **targeted misconception (M5b)** with its own graded item. The correction also gives L4's uniformity step a named object to cite instead of hand-waving.
 - **Is anything asserted that the lesson does not derive?** The four-failure catalogue is presented as exhaustive *for the cases drawn*, not as a classification theorem — and the lesson says so.
 
 ## Grounding & model-change audit (Audit B)

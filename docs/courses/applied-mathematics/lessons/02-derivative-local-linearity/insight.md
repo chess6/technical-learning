@@ -76,7 +76,7 @@ and the learner can *see* that rather than being told it.
 | C10 | **Failure is visible.** \(\lvert x\rvert\) at 0 never straightens: the left and right magnified pictures are different lines, so no single line satisfies C5 and \(f'(0)\) does not exist. | C3, C5 |
 | C11 | Differentiability implies continuity: C5 forces \(f(a+h)\to f(a)\). The converse fails (C10). | C5, L1 C9 |
 | C12 | Reading the slope at **every** point gives a new function \(f'\). For `ex-parabola`, \(f'(x)=2x\) — derived from C2, not recalled. | C2 |
-| C13 | Forward: L3 composes these lines; L4 uses C5 as a computational tool; **L6 uses C5 as the approximation step in the telescoping argument**; L18 writes equations about \(f'\); L22 runs C3 in several directions at once. | C5, C12 |
+| C13 | Forward: L3 composes these lines; L4 uses C5 as a computational tool; **L4 uses C5 as the approximation step in the telescoping argument**; L22 writes equations about \(f'\); L28 runs C3 in several directions at once. | C5, C12 |
 
 ### 7. Minimal formal derivation
 
@@ -149,7 +149,7 @@ and never drills.
 | Speedometer reading in m/s | Slope in output-units per input-unit | Yes |
 | The Earth has **one** radius of curvature everywhere | A graph's curvature **varies with \(x\)**; the flat window is not one fixed size | **No — named limit** |
 | The Earth is a real surface you could survey | A graph is a plot; the zoom is about a function, not a place | **No — discard** |
-| "Flat means you can ignore the curvature" | Ignoring \(E(h)\) is only valid to *first order*; L4 and L6 both care about it | **No — named limit** |
+| "Flat means you can ignore the curvature" | Ignoring \(E(h)\) is only valid to *first order*; L4 and L4 both care about it | **No — named limit** |
 
 ## 14. Abstraction return
 1. **Grounded:** the flat-Earth zoom and the speedometer.
@@ -195,13 +195,13 @@ higher-order Taylor, no mean value theorem, no \(f''\) beyond one naming.
 - **Correct as stated?** Yes. C5 is the standard differentiability characterization; §7's error term is exact, not asymptotic hand-waving.
 - **Any false simplification?** The risk is the zoom being taken as *proof* that a limit exists (M4). Mitigated structurally: every zoom beat displays the residual \(E(h)\) as a nonzero quantity, and the formal statement is derived algebraically in §7 for the canonical example rather than inferred from a picture.
 - **Degenerate cases handled?** Corner (\(\lvert x\rvert\)), vertical tangent (\(x^{1/3}\), stated), inflection with a crossing tangent, and continuity-without-differentiability are all shown. A nowhere-differentiable continuous function is mentioned once as an existence remark and explicitly not developed.
-- **Does the insight survive generalization?** Yes, and it is the reason the lesson is framed this way: C5 is exactly the definition that generalizes to L22's gradient and to the multivariable derivative as a linear map. "Slope of the tangent" does not generalize; "best linear approximation" does.
+- **Does the insight survive generalization?** Yes, and it is the reason the lesson is framed this way: C5 is exactly the definition that generalizes to L28's gradient and to the multivariable derivative as a linear map. "Slope of the tangent" does not generalize; "best linear approximation" does.
 - **Anything asserted but not derived?** The product and quotient rules — flagged as stated in the scope note above and never used as if derived.
 
 ## Grounding & model-change audit (Audit B)
 
 - **Does the bridge change the intelligible goal?** Yes. "Differentiate this" becomes "find the line this curve becomes here."
-- **Is the bridge decorative?** No — it is a true instance, and the flat-Earth reading is precisely what C3 asserts. It also does real work later: L22's tangent plane is the same picture with one more dimension.
+- **Is the bridge decorative?** No — it is a true instance, and the flat-Earth reading is precisely what C3 asserts. It also does real work later: L28's tangent plane is the same picture with one more dimension.
 - **Are the analogy limits named?** Yes, three, including the important one: the Earth's curvature is constant and a graph's is not, so there is no single "flat enough" window size.
 - **Does the learner return to the abstraction?** Yes — §14 step 4, evidenced by the inflection-point refutation.
 - **Is the model change observable?** Yes: before, the learner recites three descriptions; after, they answer a rate question with a slope and an approximation question with the same number, and they can produce a counterexample to the school tangent definition.

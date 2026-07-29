@@ -1,10 +1,10 @@
-# Insight Discovery Brief — The Fundamental Theorem of Calculus (spine L6)
+# Insight Discovery Brief — The Fundamental Theorem of Calculus (spine L4)
 
 Stage 1 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md)
 for `fundamental-theorem`. This is the **flagship lesson of Package A** and the
 lesson the whole course's architecture rests on.
 
-Spine row: [course-spine §4](../../course-spine.md#4-the-spine-at-a-glance), L6.
+Spine row: [course-spine §4](../../course-spine.md#4-the-spine-at-a-glance), L4.
 
 ---
 
@@ -25,8 +25,9 @@ convenience here — it is the **template** the course reuses three more times:
 | Later | Reuses |
 | --- | --- |
 | L8 improper integrals | evaluate at endpoints, then take a limit in one of them |
-| L20 Laplace | integration by parts turns \(d/dt\) into multiplication — the FTC is the boundary-term machinery |
-| **L27 Green's theorem** | **the identical telescoping argument, one dimension up** |
+| L7 → L18, L24 | **Theme 2**: integration by parts is C9 plus a product, and its *boundary term* is what turns \(d/dt\) into multiplication in both transforms — and in Laplace, what carries the initial conditions |
+| **L34 Green's theorem** | **Theme 1**: the identical cancellation argument, one dimension up |
+| **L36 Stokes, L37 divergence** | **Theme 1**, on a surface and on a solid |
 
 A learner who received the FTC as a definition has no argument to generalize when
 Green's theorem arrives, and Green's theorem then becomes a fourth thing to
@@ -53,7 +54,7 @@ that they will be unable to do anything with it in M6 or M7.
 | # | Lead | Mechanism |
 | --- | --- | --- |
 | R1 | **Telescoping.** Write the total change as a sum of small changes; interior endpoints appear twice with opposite signs and cancel; only the ends survive. | Structural compression |
-| R2 | **Pick up L5's loose end.** L5 observed that the running total rises fastest where the rate is highest and stopped. This lesson explains it. | Predictive reorganization |
+| R2 | **Pick up L3's loose end.** L3 observed that the running total rises fastest where the rate is highest and stopped. This lesson explains it. | Predictive reorganization |
 | R3 | **The two instruments finally agree** — and now it is a theorem, not a belief. Three lessons of `ex-drive` were the setup. | Semantic grounding |
 | R4 | **A(x) grows by f(x)·h.** Over a short step, the running total gains one thin rectangle; divide by \(h\) and it *is* the rate. | Representational change |
 | R5 | **Infinitely many terms, two survivors** — dramatize the count: \(n\) contributions, \(n-1\) cancellations, 2 evaluations. | Structural compression |
@@ -76,13 +77,13 @@ change by L2's local-linear model, and watch every interior evaluation cancel
 against its neighbour. What is left is two numbers.
 **Delivers:** the reason the collapse happens, the compression that makes it feel
 astonishing, and — decisively — an argument that is **re-runnable in two
-dimensions**, which is what L27 needs.
+dimensions**, which is what L34 needs.
 
 ### P2 — "Accumulate, then measure, and you get back what you started with" *(R2, R4, R6)*
 The other half: define \(A(x)=\int_a^x f\), ask how fast it grows, find it grows
 by one thin rectangle per step, so \(A'=f\). Then observe that the two halves are
 one symmetry rather than a numbered pair.
-**Delivers:** the first part of the theorem, the resolution of L5's deliberate
+**Delivers:** the first part of the theorem, the resolution of L3's deliberate
 loose end, and the unification of the pair.
 
 ### P3 — "The two instruments were never going to disagree" *(R3, R11)*
@@ -99,9 +100,10 @@ falsification the learner can reason about.
 is a computing rule — but it is a set of caveats, not a reframe.
 
 ### P5 — "The template" *(R9)*
-Name, at the close, that this argument will be re-run over a region in L27.
-**Delivers:** the course's architectural spine — but it is a promise about a
-lesson 21 nodes away.
+Name, at the close, that this argument will be re-run over a region, a surface,
+and a solid — **Theme 1** of the course's two structural themes.
+**Delivers:** half the course's architecture — but it is a promise about lessons
+30 nodes away.
 
 ---
 
@@ -109,11 +111,11 @@ lesson 21 nodes away.
 
 | Rank | Package | Why |
 | --- | --- | --- |
-| **1** | **P1** | It is the only candidate that supplies a **transferable argument**. The diagnosed obstacle is that learners get a statement instead of a mechanism, and the cost is paid in L27. Telescoping is the mechanism, it is visual, it is exactly reusable, and it makes the collapse feel like something happened. |
-| 2 | P2 | Indispensable — it is half the theorem and it closes L5's open question. But on its own it explains the *first* part and leaves the computational miracle unexplained. Adopted as the first half of the causal chain and the first clip. |
+| **1** | **P1** | It is the only candidate that supplies a **transferable argument**. The diagnosed obstacle is that learners get a statement instead of a mechanism, and the cost is paid in L34. Telescoping is the mechanism, it is visual, it is exactly reusable, and it makes the collapse feel like something happened. |
+| 2 | P2 | Indispensable — it is half the theorem and it closes L3's open question. But on its own it explains the *first* part and leaves the computational miracle unexplained. Adopted as the first half of the causal chain and the first clip. |
 | 3 | P3 | The best opening, and the payoff of a three-lesson setup. Adopted as the motivating need and the falsification checkpoint. |
 | 4 | P4 | Required for honesty; adopted as obligations inside the chain (C10, C11) and one graded item. Not a reframe. |
-| 5 | P5 | Adopted as one closing sentence and a `looking-ahead` layer. Deliberately **not** developed — a promise the learner cannot yet evaluate should not be sold as an insight. |
+| 5 | P5 | Adopted as one closing sentence and a `looking-ahead` layer. Deliberately **not** developed — a promise the learner cannot yet evaluate should not be sold as an insight. The second structural theme (representation change) is **not** previewed here at all: it has no instance the learner has met. |
 
 **Selected:** **P1 primary**, with **P2** as the chain's first half and first clip,
 **P3** as the opening and the falsification, **P4** as correctness obligations,
@@ -132,13 +134,13 @@ lesson 21 nodes away.
 
 - **Canonical examples:** `ex-drive` in its **fourth and final** appearance — the
   two instruments, now proved to agree. `ex-parabola` supplies the arithmetic
-  check: L5 computed \(\int_0^2 x^2 = 8/3\) from the sum with no antiderivative;
+  check: L3 computed \(\int_0^2 x^2 = 8/3\) from the sum with no antiderivative;
   this lesson recomputes it as \(F(2)-F(0)\) and the two must be *seen* to match.
   That agreement is the strongest possible evidence, and it exists only because
-  L5 refused the shortcut.
-- **Reuses:** `accumulation-strip` (L5) and `function-plot` (L1).
+  L3 refused the shortcut.
+- **Reuses:** `accumulation-strip` (L3) and `function-plot` (L1).
 - **Creates:** `telescoping-cancellation`, whose entire purpose is to be re-run in
-  L27. It must therefore be built parameterized over "what cancels against what",
+  L34. It must therefore be built parameterized over "what cancels against what",
   not hard-coded to intervals.
 - **Withheld deliberately:** integration technique (L7 — this lesson finds
   antiderivatives only for \(x^n\) by inspection); improper limits (L8);

@@ -4,7 +4,7 @@ Gate 5 for **L2 `derivative-local-linearity`**, after [insight.md](insight.md)
 reached `PASS`.
 
 ## 1a. Placement & upstream links
-- **Spine:** L2, unit `change`, second lesson of Package A.
+- **Spine:** L2, unit `calculus-foundations`, second lesson of Package A.
 - **Profile:** P2 primary. No P3 bar claimed: differentiability is *characterized*
   and *used*, not proved from an \(\varepsilon\)–\(\delta\) argument.
 - **Insight contract:** [insight.md](insight.md) — `PASS`.
@@ -16,7 +16,7 @@ reached `PASS`.
 ## 1b. Role, bridge, need
 - **Role:** supplies the object the whole course differentiates, and — more
   importantly — supplies **C5**, the first-order approximation with an error that
-  vanishes faster than the step. L6's telescoping argument consumes C5 directly;
+  vanishes faster than the step. L4's telescoping argument consumes C5 directly;
   without it the FTC cannot be derived, only asserted.
 - **Retrieve:** L1's forced value and the irrelevance of the point (the difference
   quotient is \(0/0\) at \(h=0\) and always will be).
@@ -69,8 +69,8 @@ reached `PASS`.
 | Sketch/identify \(f'\) from a graph of \(f\) | D4 | lesson | E3 | `der-sketch-derivative` (`multiple-choice` over four plotted candidates, distractors = sign error, shift, and \(f\) itself) | **recognition — recorded as E1–E2, not claimed E3** |
 | State what remains after zooming, in symbols | D5/D13 | lesson | E3 | `der-residual-remains` (`text`, produced) | independently demonstrated |
 | Interpret a derivative in an unfamiliar applied setting, including the **sign** of the linearization error | D9 | lesson | E4 | `der-applied-transfer` (tank volume; three parts) | independently demonstrated |
-| Retain "differentiable ⇒ continuous, not conversely" under delayed retrieval | D12 | **module** | E3 | `mod-change-retain-diff-cont` (module `change`, Gate 9) | **not built** — Gate 9 open |
-| Integrate the derivative with limits and with accumulation on a mixed item | D10 | **module** | E5 | `mod-change-mixed-rate-total` (module `change`, Gate 9) | **not built** — Gate 9 open |
+| Retain "differentiable ⇒ continuous, not conversely" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-diff-cont` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
+| Integrate the derivative with limits and with accumulation on a mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-rate-total` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer:** three D9/E4 outcomes (`der-tangent-crosses`,
 `der-continuous-not-differentiable`, `der-applied-transfer`).
@@ -92,7 +92,7 @@ current capability set, and the lesson does not claim it.
 - **Retention (D12):** differentiable ⇒ continuous but not conversely — the fact
   most likely to invert on recall.
 - **Forward:** L3 (composition of these lines), L4 (linearization as a tool),
-  **L6 (C5 is the telescoping step)**, L18 (equations about \(f'\)), L22 (the
+  **L4 (C5 is the telescoping step)**, L22 (equations about \(f'\)), L28 (the
   zoom in several directions).
 
 ## 1g. Correctness & scope
@@ -118,16 +118,37 @@ current capability set, and the lesson does not claim it.
   requires a curve and a point with no reference to the Earth or the car.
 
 ## 6. Acceptance record (Gate 8)
+
+> **Gate 8 is scoped to this lesson's own outcomes.** Per
+> [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
+> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> demonstrated with real in-lesson evidence, and that module-owned outcomes are
+> **carried forward as planned Gate-9 obligations**. The presence of open
+> Gate-9 obligations is the normal state of an accepted lesson and does **not**
+> block Gate 8. Gate 8 would be blocked only by a *lesson-owned* outcome with no
+> real evidencing item, or by accepting a lesson-owned outcome on planned module
+> evidence — neither of which this contract does.
+
+**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
+§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
+recognition-level outcome is declared at their honest level rather than being
+claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
+checkboxes below are unticked because the lesson is not built, not because
+anything is missing from the plan.
+
 - [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
 - [ ] All §1 fields filled.
 - [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] Lesson-owned core outcomes independently demonstrated, with the recorded
-      exception (`der-sketch-derivative`).
-- [ ] Module-owned outcomes recorded as Gate-9 obligations.
-- [ ] Assessment matches §1f; recall capped at one; three transfer items.
-- [ ] Backward bridge (L1) + forward edge (L3/L4/L6/L18/L22) recorded.
+- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
+      recorded recognition-level exceptions declared as such.
+- [ ] No lesson-owned outcome accepted on planned module evidence.
+- [ ] Assessment set matches §1f; recall capped; transfer items present.
+- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
+      design; not a Gate 8 blocker)*.
+- [ ] Backward bridge (L1) + forward edge (L3/L4/L4/L18/L22) recorded.
 - [ ] Retention hook recorded.
 - [ ] Correctness gate passed, **including the residual-is-visible invariant**.
 - [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
 
-*(Unchecked: Gate 8 is an implementation gate. Nothing here is built.)*
+*(Unticked because nothing is built. Gate 8 is an implementation gate; this
+contract is Gate 5.)*

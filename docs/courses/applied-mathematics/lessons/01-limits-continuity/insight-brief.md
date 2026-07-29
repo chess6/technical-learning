@@ -52,7 +52,8 @@ The learner needs the *content* of the guarantee, not the quantifier discipline.
 | R3 | **Puncture the graph.** Delete the point. The limit is unchanged. Therefore the value at the point was never part of the question. | Representational change |
 | R4 | **Zoom**: a limit is what you see as you magnify toward \(a\). Directly foreshadows L2. | Representational change |
 | R5 | **Two bands**: a horizontal band of half-height \(\varepsilon\) around the candidate \(L\), and a vertical window of half-width \(\delta\) around \(a\). The claim is "the graph inside the window stays inside the band." | Representational change |
-| R6 | **Continuity as a sampling guarantee**: if a function is continuous you may sample it and interpolate; if not, something can hide between your samples. | Predictive reorganization |
+| R6 | **Continuity as a local tolerance guarantee**, and what it is *not*: it promises that *some* window achieves any tolerance, near each point. It does **not** by itself say how wide that window may be, so it does not on its own license a finite sampling grid. | Predictive reorganization |
+| R6b | **The quantitative upgrade**: a *modulus of continuity* \(\omega(\delta)\) — a bound on how much \(f\) can move over any step of size \(\delta\) — is what turns the qualitative guarantee into a usable sampling rule, once a resolution has been chosen. | Predictive reorganization |
 | R7 | **The failure catalogue is the definition.** Jump, removable, oscillation, blow-up — four ways to lose the game, each diagnosable from the picture. | Predictive reorganization |
 | R8 | Limits as the operation that **manufactures new quantities** (speed, density, slope) that no finite measurement gives you. | Semantic grounding |
 | R9 | Left and right limits as **two separate games**; the limit exists iff both are winnable with the same answer. | Structural compression |
@@ -76,12 +77,16 @@ the reinterpretation of \(0/0\).
 Open on a genuine contradiction the learner already believes both halves of: a
 car has a speed at an instant, and the speed formula needs an interval. Resolve
 it with P1's machinery.
-**Delivers:** motivation and an application anchor that runs through L2, L5, L6.
+**Delivers:** motivation and an application anchor that runs through L2, L3, L4.
 
-### P3 — "Continuity is the promise that nothing hides between samples" *(R6, R7, R12)*
-Continuity reframed from "no pen lift" to a **usable guarantee**: sampling and
-interpolating is honest exactly when the forced value equals the actual value.
-**Delivers:** the payoff, and the property L2/L5/L6 will silently rely on.
+### P3 — "Continuity is a local guarantee; sampling needs a quantitative one" *(R6, R6b, R7, R12)*
+Continuity reframed from "no pen lift" to a precise but **local** guarantee: the
+forced value equals the actual value at each point. Then the honest sequel — that
+this alone does not tell you how finely to sample, because it says nothing about
+how the window size varies from point to point. What does is a **modulus of
+continuity**, together with a chosen resolution.
+**Delivers:** the property L2/L3/L4 rely on, *and* the named object L4's
+uniformity step will point at instead of hand-waving.
 
 ### P4 — "Zoom is the limit you can see" *(R4)*
 Magnification as the visual form of the limit process.
@@ -96,7 +101,7 @@ definition, and it *anticipates* L2's insight rather than owning one.
 | --- | --- | --- |
 | **1** | **P1** | The only candidate that changes what the learner *checks*. It converts "substitute and hope" into "can the guarantee be met?", which is the model every later lesson needs. Directly disarms the \(0/0\) obstacle. |
 | 2 | P2 | The best *opening* but not a self-standing insight — it poses the question P1 answers. **Adopted as the motivating need, not the primary insight.** |
-| 3 | P3 | The correct *closing* move and a genuine reframe, but it is downstream of P1 (continuity is defined using the limit). **Adopted as the lesson's consequence and its forward hook.** |
+| 3 | P3 | The correct *closing* move and a genuine reframe, but it is downstream of P1 (continuity is defined using the limit). **Adopted as the lesson's consequence and its forward hook** — including the honest limitation, which is where the modulus of continuity enters the course. |
 | 4 | P4 | Real, but it is L2's insight. Using it here would spend L2's payoff a lesson early and leave L1 without one. **Deliberately withheld** — L1 shrinks the *interval*, L2 magnifies the *picture*. |
 
 **Selected:** **P1 primary**, opened by **P2**, closed by **P3**. P4 explicitly
@@ -107,15 +112,18 @@ deferred to L2.
 ## 1e. Continuity decision recorded here
 
 - **Canonical example:** `ex-drive` (a velocity trace with its matching position
-  trace) supplies P2's opening and will recur in L2, L5, and L6. Introducing it
+  trace) supplies P2's opening and will recur in L2, L3, and L4. Introducing it
   here means the course's central FTC demonstration is set up four lessons in
   advance on an object the learner already trusts.
 - **Second example:** `ex-parabola` (\(f(x)=x^2\)) for the hand-checkable
-  arithmetic, also recurring through L6.
+  arithmetic, also recurring through L4.
 - **Visualization family:** this lesson **creates** `function-plot` (see
   [architecture §5](../../curriculum-architecture.md#5-reusable-visualization-families)),
   which six later lessons reuse. Its cost is family construction, not a bespoke
   scene, and the family must be built parameterized from the start.
 - **Withheld deliberately:** \(\varepsilon\)–\(\delta\) *proof writing*; limits at
-  infinity (L8 owns them, where they are load-bearing); L'Hôpital (needs the
-  derivative, and would re-teach \(0/0\) as a trick).
+  infinity (`improper-integrals` owns them, where they are load-bearing);
+  L'Hôpital (needs the derivative, and would re-teach \(0/0\) as a trick); a
+  *proof* that continuity on a closed bounded interval is uniform (P3 — the
+  modulus is defined and used here, and its existence on a compact interval is
+  stated with attribution).

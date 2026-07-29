@@ -27,8 +27,8 @@ in whichever of its three costumes a situation offers:
 
 | Later lesson | Costume it needs |
 | --- | --- |
-| L6 FTC | rate (accumulating a rate; \(A'(x)=f(x)\)) |
-| L6 telescoping | approximation (\(F(x_{i+1})-F(x_i)\approx f(x_i)\Delta x\)) |
+| L4 FTC | rate (accumulating a rate; \(A'(x)=f(x)\)) |
+| L4 telescoping | approximation (\(F(x_{i+1})-F(x_i)\approx f(x_i)\Delta x\)) |
 | L4, L19 | approximation (linearization; small-oscillation arguments) |
 | L18 ODEs | rate (an equation *about* the rate) |
 | L22 gradient | slope, in each of several directions |
@@ -88,11 +88,11 @@ units argument.
 Replaces "touches at one point" with a criterion that is true, checkable, and
 survives inflection points: every line through the point has error \(O(h)\); the
 tangent alone has error \(o(h)\).
-**Delivers:** correctness, and the exact fact L6's telescoping step needs.
+**Delivers:** correctness, and the exact fact L4's telescoping step needs.
 
 ### P4 — "The derivative is a function" *(R9, R11)*
 The slope read at every point and plotted; the rules derived rather than asserted.
-**Delivers:** the object L5/L6 will accumulate — but it is a consequence, not a
+**Delivers:** the object L3/L4 will accumulate — but it is a consequence, not a
 reframe.
 
 ---
@@ -103,8 +103,8 @@ reframe.
 | --- | --- | --- |
 | **1** | **P2** | It targets the diagnosed obstacle exactly. Fragmentation is the problem; compression into one object is the cure. Nothing else on the list changes what the learner can *do* as much. |
 | 2 | P1 | The **mechanism** that makes P2 true and visible — without the zoom, "three names, one object" is another thing to be told. Adopted as the primary's engine and its opening beat. |
-| 3 | P3 | The correctness backbone, and the single fact L6 will consume. Adopted as an obligation *inside* the primary rather than as a separate package, because on its own it reads as a technicality. |
-| 4 | P4 | True and necessary, but a consequence. Adopted as the closing beat and the hand-off to L5/L6. |
+| 3 | P3 | The correctness backbone, and the single fact L4 will consume. Adopted as an obligation *inside* the primary rather than as a separate package, because on its own it reads as a technicality. |
+| 4 | P4 | True and necessary, but a consequence. Adopted as the closing beat and the hand-off to L3/L4. |
 
 **Selected:** **P2 primary**, with **P1** as its mechanism and opening, **P3** as a
 required obligation in the causal chain, **P4** as the close.
@@ -126,7 +126,7 @@ required obligation in the causal chain, **P4** as the close.
 - **Reuses:** `function-plot` from L1, with a secant/tangent overlay added.
 - **Creates:** `local-linearity-zoom`, reused by L3 (two linked panels) and L22.
 - **Cross-course hand-off:** the derivative as the \(1\times1\) matrix of the best
-  linear map cites LA `transformations` (built) and prepares L22's Jacobian.
+  linear map cites LA `transformations` (built) and prepares L28's Jacobian.
   Stated as a connection, **not** re-taught.
 - **Withheld deliberately:** the full differentiation rulebook (product and
   quotient rules are stated for use, derived nowhere in Package A; the chain rule

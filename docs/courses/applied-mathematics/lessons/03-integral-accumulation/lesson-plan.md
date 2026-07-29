@@ -1,4 +1,4 @@
-# Lesson Plan — The integral as accumulation (spine L5)
+# Lesson Plan — The integral as accumulation (spine L3)
 
 Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 [mastery-contract.md](mastery-contract.md).
@@ -20,7 +20,7 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 - Obstacle: an over-specific prior model ("area under the curve") plus the usual ordering that makes the FTC a definition.
 - Mechanisms: semantic grounding + representational change, with structural compression at the close.
 - Bridge: an odometer, against L1/L2's speedometer.
-- Analogy limits to discard: odometers do not run backwards; a real journey is finitely sampled; "read it at both ends" is L6's theorem and is not available.
+- Analogy limits to discard: odometers do not run backwards; a real journey is finitely sampled; "read it at both ends" is L4's theorem and is not available.
 - Abstraction return: name the units of \(\int i\,dt\) from the axes alone.
 
 ## Route / ids
@@ -47,7 +47,7 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 ## Supporting concepts
 - Partition, mesh, sample point — named once each, used throughout.
-- The running total as a *function* (closing beat), so L6 has an object to differentiate.
+- The running total as a *function* (closing beat), so L4 has an object to differentiate.
 
 ## Guided-scene outline (Watch) — `integral-accumulation`
 
@@ -72,7 +72,7 @@ One rate trace. Rectangles that are products. A total that builds beneath.
   sampled fixture; the refinement counter shows the actual \(n\).
 - **Hard exclusion:** no antiderivative appears in any beat, caption, or layer.
 - **Visual family:** this scene **creates** `accumulation-strip` (partition,
-  refinement, running total, per-rectangle unit labels), reused by L6, L7, L8,
+  refinement, running total, per-rectangle unit labels), reused by L4, L7, L8,
   L12, L23. It ships parameterized and tested.
 
 ## Checkpoint (Check understanding)
@@ -104,14 +104,14 @@ One rate trace. Rectangles that are products. A total that builds beneath.
 | 2 | `int-estimate-table` — estimate from a fresh table; high or low, and why | `exercise-sequence` | sum, verdict, typed reason | Names monotonicity as the reason the verdict is knowable. |
 | 3 | `int-parabola-from-sum` — \(\int_0^2 x^2\) from the sum | `exercise-sequence` (\(S_n\) → limit) | \(8/3\) | Shows the closed form and the \(1/n\) bracket; **no antiderivative in the feedback**. |
 | 4 | `int-signed-transfer` — a current trace going negative | `exercise-sequence` (units → sign → "can the final total be below the maximum?") | charge in coulombs; yes | The area model predicts "no"; the total model predicts "yes". |
-| 5 | `int-read-running-total` — read \(A\) against \(f\) at four marked points | `exercise-sequence` | rising / flat / falling / steepest | Ties the slope of \(A\) to the height of \(f\) **without naming the FTC** — the observation is left standing for L6. |
+| 5 | `int-read-running-total` — read \(A\) against \(f\) at four marked points | `exercise-sequence` | rising / flat / falling / steepest | Ties the slope of \(A\) to the height of \(f\) **without naming the FTC** — the observation is left standing for L4. |
 | 6 | `int-scale-invariance` — why redrawing does not change the answer | `text`, produced | the product is unchanged | The checkpoint made general. |
 | 7 | `int-same-machine` — current → charge and power → energy | `exercise-sequence`, units in both | per-setting | One construction, different meters. |
 | 8 | `int-bracket-fails` — which rate graph breaks left/right bracketing? | `multiple-choice` (4 graphs) | the non-monotone one | **Recorded as recognition.** Distractors are monotone increasing, decreasing, and constant. |
 
 > **Note on Ex. 5.** It deliberately walks the learner to the edge of the FTC —
 > "the total rises fastest where the rate is highest" — and stops. The observation
-> is recorded, not explained. L6 opens by picking it up.
+> is recorded, not explained. L4 opens by picking it up.
 
 ## Insight traceability
 
@@ -127,8 +127,8 @@ One rate trace. Rectangles that are products. A total that builds beneath.
 | C8 signed | `reverse` beat | Ex. 4 |
 | C9 the running total is a function | `running` beat | Ex. 5 |
 | C10 one machine, many meters | `meters` beat | Ex. 7 |
-| C11 the shape of later integrals | a `looking-ahead` layer, one paragraph | — *(forward promise, not assessed)* |
-| C12 the open question | Key takeaway's final line | — *(L6 opens on it)* |
+| C11 the shape of later integrals | a `looking-ahead` layer, one paragraph — **"the same kind of integral", not "the same construction"** | — *(forward promise, not assessed)* |
+| C12 the open question | Key takeaway's final line | — *(L4 opens on it)* |
 | **Bridge** odometer | Motivating question; `running` beat | Ex. 5 |
 | **Analogy limit** odometers don't run backwards | `reverse` beat caption | Ex. 4 |
 | **Abstraction return** | Ex. 1 | Units named from axes with no story |
@@ -143,7 +143,7 @@ One rate trace. Rectangles that are products. A total that builds beneath.
 ## Notation
 - \(\int_a^b f(x)\,dx\); \(\Delta x_i\) for a partition width (**reserved** — L2
   used \(h\) for a step precisely so this symbol was free); \(x_i^\*\) for a sample
-  point; \(A(x)\) for the running total, reused verbatim in L6.
+  point; \(A(x)\) for the running total, reused verbatim in L4.
 - Rectangles drawn with a visible product label; positive contributions above the
   axis, negative below, in the `result` and `violation` semantic roles respectively.
 
