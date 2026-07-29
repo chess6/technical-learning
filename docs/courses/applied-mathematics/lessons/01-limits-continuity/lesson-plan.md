@@ -120,11 +120,11 @@ One graph, one candidate value, two bands. The bands are the whole scene.
 
 | # | Objective | Type | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- |
-| 1 | `lim-diagnose-graph` — decide existence and name the failure on four fresh graphs | `exercise-sequence`, typed failure mode | exists / jump / oscillation / blow-up | Points at which band cannot be answered, and why one-sided limits settle the jump case. |
+| 1 | `lim-diagnose-definition` — decide existence and name the failure on four fresh functions, **from their definitions** | `exercise-sequence`, typed failure mode | exists / jump / oscillation / blow-up | Points at which band cannot be answered, and why one-sided limits settle the jump case. *(Graph reading is practised in the explorer; no graded item captures it — see the contract's §1e.)* |
 | 2 | `lim-point-value-irrelevant` — say what changes if \(f(a)\) is altered | `text`, produced | "nothing" (normalized: none/no change/unchanged) | Re-shows the puncture beat: the definition consults \(0<\lvert x-a\rvert\). |
-| 3 | `lim-zero-over-zero-fresh` — a \(0/0\) quotient the scene never shows | `numeric` | the forced value | Shows the agreeing expression and stresses that cancelling exhibits a *second* function, not a repair. |
+| 3 | `lim-zero-over-zero-fresh` — a \(0/0\) quotient the scene never shows | `exercise-sequence`: the agreeing expression (typed), then its value | `x+5`, then 10 | The expression is elicited **before** the number, because exhibiting it is the outcome; cancelling produces a *second* function, not a repair. |
 | 4 | `lim-continuity-test` — three-part test on a fresh piecewise function | `exercise-sequence` | per-part verdicts + overall | Names which part failed. |
-| 5 | `lim-limit-not-continuity` — construct a function with a limit but no continuity at \(x=1\) | `construct`, predicate-graded | any removable discontinuity at 1 | Rejects continuous answers and answers with a jump; explains why removability is exactly the gap. |
+| 5 | `lim-limit-not-continuity` — construct a function with a limit but no continuity at \(x=1\), as the pair (limit, value) | **`construct-in-explorer`**, predicate-graded (ceiling E4) | any finite pair that differs | Rejects equal coordinates (a continuous point) and explains why removability is exactly the gap. **The lesson's only E4 claim.** |
 | 6 | `lim-repair-transfer` — can changing one point repair the limit, continuity, both, neither? | `exercise-sequence` on an unfamiliar function | continuity only | The limit is fixed by the neighbours and cannot be edited at a point. |
 | 7 | `lim-why-substitution-works` — justify substituting into a polynomial | `text` | cites continuity | Rejects "because it's easy"; requires the property to be named. |
 | 7b | `lim-continuity-not-enough` — the samples are all near zero; may you conclude the function is? | `exercise-sequence` (verdict → what would have to be added) | no; a resolution **and** a modulus | Shows `ex-hidden-spike`; names the two missing ingredients. |
@@ -195,14 +195,21 @@ One graph, one candidate value, two bands. The bands are the whole scene.
 - [ ] Browser test: readouts correct, no console errors
 
 ## Acceptance checklist
-- [ ] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
-- [ ] Insight traceability table complete
-- [ ] Route composed intentionally from the block palette; Watch precedes Explore
-- [ ] Headings content-specific, not generic phase names
-- [ ] Guided-to-interactive continuity (same fixtures, same notation, same roles)
-- [ ] Progressive disclosure applied
-- [ ] KaTeX notation consistent with §Notation
-- [ ] Accessibility: labels, focus, readouts, reduced-motion frame
-- [ ] Diagrams labelled, unclipped, safe frame intact
-- [ ] `docs/quality/lesson-correctness-checklist.md` completed
-- [ ] All tests pass
+
+**Built and accepted 2026-07-28.** Gate 8 record:
+[mastery-contract §6](mastery-contract.md#6-acceptance-record-gate-8).
+
+- [x] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
+- [x] Insight traceability table complete
+- [x] Route composed intentionally from the block palette; Watch precedes Explore
+- [x] Headings content-specific, not generic phase names
+- [x] Guided-to-interactive continuity (same fixtures, same notation, same roles)
+- [x] Progressive disclosure applied
+- [x] KaTeX notation consistent with §Notation
+- [x] Accessibility: labels, focus, readouts, reduced-motion frame
+- [x] Diagrams labelled, unclipped, safe frame intact — verified by the
+      text-clipping hard gate and by watching all eleven chapters at 1×
+- [x] `docs/quality/lesson-correctness-checklist.md` completed
+- [x] All tests pass — 40 math assertions, 94 explorer assertions, 85 grading
+      assertions, 20/20 scene hard gates, chapter seeks, and
+      `e2e/lesson-limits-continuity.spec.ts`

@@ -124,11 +124,51 @@ describe("honesty rule 3 — no guaranteed band without a declared modulus", () 
     expect(fine.worstGap).toBeLessThan(0.1);
   });
 
-  it("samples the grid it was asked for", () => {
+  it("samples the grid it was asked for, when the spacing divides the span", () => {
     const overlay = samplingOverlay(EX_PARABOLA, 0, 2, 0.5);
     expect(overlay.samples).toHaveLength(5);
+    expect(overlay.actualSpacing).toBeCloseTo(0.5, 12);
     expect(overlay.samples[0]).toEqual([0, 0]);
     expect(overlay.samples[4]![0]).toBeCloseTo(2, 12);
+  });
+
+  it("never uses a COARSER grid than requested, and bands the grid it drew", () => {
+    // The defect: rounding the interval count to nearest could produce a grid
+    // coarser than the request while the guarantee was still computed from the
+    // finer requested value — a band narrower than the mathematics supports.
+    // 0.62 on [0, 2] is the witness: to-nearest gives 3 intervals of 0.667.
+    const overlay = samplingOverlay(EX_PARABOLA, 0, 2, 0.62);
+    expect(overlay.samples).toHaveLength(5); // ceil(2 / 0.62) = 4 intervals
+    expect(overlay.actualSpacing).toBeCloseTo(0.5, 12);
+    expect(overlay.actualSpacing).toBeLessThanOrEqual(0.62);
+    // The band must describe the grid on screen, not the request.
+    expect(overlay.guaranteedBand).toBeCloseTo(
+      EX_PARABOLA.modulus!.omega(overlay.actualSpacing),
+      12,
+    );
+    expect(overlay.guaranteedBand).not.toBeCloseTo(
+      EX_PARABOLA.modulus!.omega(0.62),
+      6,
+    );
+  });
+
+  it("keeps the band and the measured gap on the same grid, for every spacing", () => {
+    for (const requested of [0.62, 0.3, 0.17, 0.9, 1.3, 2.5]) {
+      const o = samplingOverlay(EX_PARABOLA, 0, 2, requested);
+      expect(o.actualSpacing, `requested ${requested}`).toBeLessThanOrEqual(
+        requested + 1e-12,
+      );
+      // Samples really are that far apart.
+      for (let i = 1; i < o.samples.length; i += 1) {
+        expect(o.samples[i]![0] - o.samples[i - 1]![0]).toBeCloseTo(
+          o.actualSpacing,
+          10,
+        );
+      }
+      // And the guarantee genuinely bounds what the grid misses.
+      expect(o.guaranteedBand).not.toBeNull();
+      expect(o.worstGap).toBeLessThanOrEqual(o.guaranteedBand! + 1e-9);
+    }
   });
 
   it("rejects a non-positive spacing rather than dividing by zero", () => {

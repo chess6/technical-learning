@@ -6,8 +6,14 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: APPROVED — implementation in progress.** Approved 2026-07-28.
-> Slices A0 and A1 are **shipped** on `master`; A2–A4 have not begun.
+> **Status: A0 + A1 built. A2–A4 PAUSED, pending explicit approval.**
+>
+> Slices A0 (shared foundations) and A1 (`limits-continuity`) are built on
+> `master` and A1 passes Gate 8 on its lesson-owned outcomes. They were
+> implemented after an approval that did not unambiguously cover writing lesson
+> code, which review flagged as crossing the planning-to-implementation boundary.
+> They are **retained**, and **slice A2 does not begin until Package A is
+> explicitly approved for implementation.**
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -146,9 +152,9 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | --- | --- | --- |
 | A0 shared foundations | **SHIPPED** | `master` |
 | A1 `limits-continuity` | **SHIPPED** | `master` |
-| A2 `derivative-local-linearity` | NOT STARTED | — |
-| A3 `integral-accumulation` | NOT STARTED | — |
-| A4 `fundamental-theorem` | NOT STARTED | — |
+| A2 `derivative-local-linearity` | **PAUSED — awaiting explicit approval** | — |
+| A3 `integral-accumulation` | PAUSED — awaiting explicit approval | — |
+| A4 `fundamental-theorem` | PAUSED — awaiting explicit approval | — |
 
 ## 7. Acceptance for the package
 

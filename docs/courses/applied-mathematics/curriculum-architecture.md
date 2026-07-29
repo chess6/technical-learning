@@ -10,7 +10,8 @@ The **encoding-facing** companion to the [course spine](course-spine.md):
 6. the **platform gaps**, recorded and *not* scheduled.
 
 > **Scope note (durable).** Architecture, not an authoring reopening. Every
-> lesson is a `future` node.
+> lesson is a `future` node **except `limits-continuity`, which is built**
+> (Package A, slice A1). Listing the rest does not authorize building them.
 
 ---
 
@@ -65,7 +66,7 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | L36 | Stokes' theorem | `stokes-theorem` | `boundary-theorems` | K |
 | L37 | The divergence theorem and conservation | `divergence-theorem` | `boundary-theorems` | K |
 
-**39 lessons; 38 indispensable.** No id collides with a built lesson or with a
+**39 lessons; 38 indispensable. One built** (`limits-continuity`). No id collides with a built lesson or with a
 linear-algebra `future` node (`orthogonality`, `least-squares`, `svd`). All ids
 satisfy `ID_SYNTAX` in `src/platform/identity.ts`.
 
@@ -422,8 +423,13 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **APPROVED — A0, A1 shipped; A2–A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **A0 + A1 built; A2–A4 PAUSED pending explicit approval** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
+
+> **Approval state, stated plainly.** Slices A0 and A1 were implemented after an
+> approval that did not unambiguously cover implementation. They are retained and
+> now meet Gate 8, but **A2 does not begin until Package A is explicitly
+> approved** — see the ledger's status block.
 
 ### 6.2 Suggested Mode B order
 
@@ -456,6 +462,8 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A.** On every path in §2.4, nothing can precede it, it ends on a
-theorem worth arriving at, and it stands alone as a coherent learner experience.
-Mode B artifacts are complete and it awaits a single approval.
+**Package A, slices A2–A4.** A0 (the calculus layer, the course registration, and
+the `function-plot` family) and A1 (`limits-continuity`) are built and accepted.
+The remaining three lessons — `derivative-local-linearity`,
+`integral-accumulation`, `fundamental-theorem` — have complete Mode B artifacts
+and await **explicit approval** before implementation resumes.

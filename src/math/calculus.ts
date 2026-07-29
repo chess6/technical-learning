@@ -110,30 +110,49 @@ export function shrinkingQuotients(
 }
 
 /**
- * The smallest step size, searched on a grid, for which every sampled output in
+ * The outcome of searching a finite ladder of candidate windows.
+ *
+ * The distinction between the two failure cases is the whole reason this is a
+ * discriminated result rather than `number | null`. Exhausting a finite search
+ * is **not** a proof that no window exists — on a continuous function a window
+ * always exists, and the ladder can still run out for a tolerance small enough
+ * relative to its resolution. Collapsing both cases to `null` let the explorer
+ * report "continuous: yes" and "guarantee: cannot be met" on the same screen.
+ */
+export type WindowSearch =
+  /** A window that demonstrably answers the tolerance, on the sampled evidence. */
+  | { readonly kind: "found"; readonly delta: number }
+  /** No candidate on the ladder worked. Says nothing about whether one exists. */
+  | { readonly kind: "not-found" };
+
+/**
+ * The **largest** window on a geometric ladder for which every sampled output in
  * `0 < |x - a| < delta` lies within `epsilon` of `target`.
  *
- * Returns `null` when no tested window works — which is how the explorer
- * reports "the guarantee cannot be met" for `ex-oscillate` and `ex-blowup`.
- * This is a **witness**, not a proof: it reports what a finite sample shows.
+ * Largest, not smallest: the ladder descends from `maxDelta` and returns the
+ * first candidate that works, which is the widest one tested. A *smallest*
+ * window is not a meaningful object anyway — any smaller window also works.
+ *
+ * This is a **witness**, not a proof, in both directions: `found` reports what a
+ * finite sample shows, and `not-found` reports only that the search failed.
  */
-export function smallestWindow(
+export function largestWindowFound(
   f: RealFunction,
   a: number,
   target: number,
   epsilon: number,
   options: { readonly maxDelta?: number; readonly samples?: number; readonly steps?: number } = {},
-): number | null {
+): WindowSearch {
   const maxDelta = options.maxDelta ?? 1;
   const samples = options.samples ?? 64;
   const steps = options.steps ?? 40;
   for (let s = steps; s >= 1; s -= 1) {
-    // Geometric ladder from maxDelta downward; the first (largest) delta that
-    // works is the honest answer to "how wide may the window be?".
     const delta = maxDelta * Math.pow(0.8, steps - s);
-    if (windowHolds(f, a, target, epsilon, delta, samples)) return delta;
+    if (windowHolds(f, a, target, epsilon, delta, samples)) {
+      return { kind: "found", delta };
+    }
   }
-  return null;
+  return { kind: "not-found" };
 }
 
 function windowHolds(

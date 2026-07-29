@@ -1,5 +1,5 @@
 import type { LessonDefinition } from "./types";
-import { EXERCISE_SEQUENCE_ID } from "./capabilities";
+import { CONSTRUCT_IN_EXPLORER_ID, EXERCISE_SEQUENCE_ID } from "./capabilities";
 import {
   EX_HIDDEN_SPIKE,
   HIDDEN_SPIKE_GRID,
@@ -287,12 +287,16 @@ export const limitsContinuityLesson: LessonDefinition = {
 
     /* ---- drill ------------------------------------------------------- */
     {
-      id: "lim-diagnose-graph",
+      // Named for what it is: the learner is given each function's DEFINITION,
+      // not its graph. Graph-reading is practised in the explorer and shown in
+      // the scene; it is not what this item captures, and the mastery contract
+      // no longer claims it does.
+      id: "lim-diagnose-definition",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
       prompt:
-        "Four functions, each examined at the marked point. For each, name what happens to the limit. Type one of: **exists**, **jump**, **oscillation**, **blow-up**.",
+        "Four functions, each defined below and examined at the marked point. From the definition alone, name what happens to the limit. Type one of: **exists**, **jump**, **oscillation**, **blow-up**.",
       config: {
         steps: [
           {
@@ -328,15 +332,35 @@ export const limitsContinuityLesson: LessonDefinition = {
       },
     },
     {
+      // Two steps, because the claimed outcome is that the learner EXHIBITS an
+      // agreeing expression. A bare number would have evidenced only the answer,
+      // and the expression is the part that carries the insight.
       id: "lim-zero-over-zero-fresh",
-      type: "numeric",
+      type: "custom",
+      capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
       prompt:
-        "Evaluate $\\displaystyle\\lim_{x\\to5}\\frac{x^2-25}{x-5}$. (At $x=5$ the expression reads $0/0$.)",
-      expected: FRESH_QUOTIENT_LIMIT,
-      tolerance: 1e-9,
-      explanation:
-        "For $x\\neq5$, $\\frac{x^2-25}{x-5}=x+5$, and that is exactly the region the limit consults \u2014 so the value forced is $5+5=10$. Note what happened: the cancellation exhibited a **second** expression agreeing with the first off the point. It did not repair the first, which is still $0/0$ at $x=5$.",
+        "Evaluate $\\displaystyle\\lim_{x\\to5}\\frac{x^2-25}{x-5}$. At $x=5$ the expression reads $0/0$, so substitution is not available.",
+      config: {
+        steps: [
+          {
+            kind: "text",
+            prompt:
+              "First, give a simpler expression that agrees with this one at every $x\\neq5$.",
+            accept: ["x+5", "x + 5", "5+x", "5 + x", "y=x+5", "y = x + 5"],
+            explanation:
+              "$\\frac{x^2-25}{x-5} = \\frac{(x-5)(x+5)}{x-5} = x+5$ whenever $x\\neq5$ \u2014 and that is exactly the region the limit consults.",
+          },
+          {
+            kind: "numeric",
+            prompt: "Now read the forced value off that expression.",
+            expected: FRESH_QUOTIENT_LIMIT,
+            tolerance: 1e-9,
+            explanation:
+              "$5+5=10$. Note what happened: the cancellation exhibited a **second** function agreeing with the first off the point. It did not repair the first, which is still $0/0$ at $x=5$.",
+          },
+        ],
+      },
     },
     {
       id: "lim-continuity-test",
@@ -416,24 +440,23 @@ export const limitsContinuityLesson: LessonDefinition = {
 
     /* ---- transfer ---------------------------------------------------- */
     {
+      // `construct-in-explorer`, not a one-step `exercise-sequence`: this is an
+      // open predicate-graded construction and its capability ceiling (E4) is
+      // what the mastery contract's transfer claim rests on. Wrapping it in a
+      // scaffolded chain would have capped the honest claim at E3.
       id: "lim-limit-not-continuity",
       type: "custom",
-      capabilityId: EXERCISE_SEQUENCE_ID,
+      capabilityId: CONSTRUCT_IN_EXPLORER_ID,
       tier: "transfer",
       prompt:
         "Describe a function that **has a limit** at $x=1$ but is **not continuous** there, by giving the pair $(\\text{limit},\\ f(1))$. Any pair that does the job is accepted.",
       config: {
-        steps: [
-          {
-            kind: "construct",
-            prompt:
-              "Enter the limit as the first coordinate and $f(1)$ as the second.",
-            check: { kind: "removable-discontinuity" },
-            tolerance: 1e-9,
-            explanation:
-              "Any pair of finite numbers that **differ** works \u2014 e.g. $(3,\\,0)$: the neighbours force 3 and the function insists on 0. Equal coordinates describe a continuous point, and no pair at all describes the jump, oscillation, or blow-up cases, where there is no limit to give.",
-          },
-        ],
+        target: "vector2",
+        check: { kind: "removable-discontinuity" },
+        tolerance: 1e-9,
+        reveal:
+          "Any pair of finite numbers that **differ** works \u2014 the neighbours force one value and the function insists on another. That is precisely a removable discontinuity: the limit exists, and continuity fails only because the value disagrees with it.",
+        hint: "Equal coordinates describe a *continuous* point. And no pair at all describes the jump, oscillation, or blow-up cases \u2014 in those there is no limit to give.",
       },
     },
     {

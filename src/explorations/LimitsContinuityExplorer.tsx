@@ -13,7 +13,7 @@ import {
   getCalculusFixture,
   limitFailureAt,
   oneSidedLimit,
-  smallestWindow,
+  largestWindowFound,
   type CalculusFixture,
 } from "../math";
 import "./LimitsContinuityExplorer.css";
@@ -27,9 +27,12 @@ import "./LimitsContinuityExplorer.css";
  *
  * Two things it is careful about, because they are the lesson's content:
  *
- *  1. The reported window is **searched, not guessed**: `smallestWindow` returns
- *     `null` when no tested window works, and the verdict says so rather than
- *     showing a number nobody can defend.
+ *  1. The reported window is **searched, not guessed**, and the readout says
+ *     which of three things happened: the limit does not exist, so no window
+ *     could answer any tolerance; a window was found; or **the finite search
+ *     ran out** without finding one, which is not the same claim. Exhausting a
+ *     ladder is not a proof — on a continuous function a window always exists,
+ *     and the search can still fail for a small enough tolerance.
  *  2. The sampling panel draws its guaranteed band only when the fixture
  *     declares a modulus. On `ex-hidden-spike` — continuous, no modulus — the
  *     true curve leaves the sampled polyline's neighbourhood entirely until the
@@ -104,13 +107,14 @@ export function LimitsContinuityExplorer() {
     return oneSidedLimit(fixture.f, at, 1);
   }, [fixture, at]);
 
-  const window = useMemo(() => {
+  const search = useMemo(() => {
     if (candidate === null) return null;
     const [lo, hi] = fixture.domain;
-    return smallestWindow(fixture.f, at, candidate, epsilon, {
+    return largestWindowFound(fixture.f, at, candidate, epsilon, {
       maxDelta: Math.min(1, (hi - lo) / 4),
     });
   }, [fixture, at, candidate, epsilon]);
+  const foundDelta = search?.kind === "found" ? search.delta : null;
 
   const verdict = continuityAt(fixture, at);
   const failure = limitFailureAt(fixture, at);
@@ -153,7 +157,7 @@ export function LimitsContinuityExplorer() {
         ariaLabel={`${fixture.label}, with a tolerance band and an input window at x = ${fmt(at)}`}
         at={at}
         band={candidate === null ? undefined : { target: candidate, epsilon }}
-        window={window === null ? undefined : { delta: window }}
+        window={foundDelta === null ? undefined : { delta: foundDelta }}
         sampling={showSampling ? { spacing } : undefined}
         height={320}
       />
@@ -206,19 +210,26 @@ export function LimitsContinuityExplorer() {
           },
           {
             id: "window",
-            label: "Smallest window that answers ε",
+            label: "Largest window found",
             value:
               candidate === null
                 ? "—"
-                : window === null
-                  ? "no tested window works"
-                  : `δ = ${fmt(window, 4)}`,
+                : foundDelta === null
+                  ? "none on the search ladder"
+                  : `δ = ${fmt(foundDelta, 4)}`,
           },
           {
+            // Three outcomes, not two. "The search ran out" is a statement about
+            // the search, not about the mathematics, and saying otherwise let
+            // this panel report a continuous point as having no guarantee.
             id: "guarantee",
             label: "Guarantee",
             value:
-              candidate !== null && window !== null ? "met" : "cannot be met",
+              candidate === null
+                ? `no limit — ${failure ?? "none"}`
+                : foundDelta !== null
+                  ? "met"
+                  : "not found at this search depth — try a larger ε",
           },
           { id: "value", label: "f(a) exists", value: verdict.valueExists ? "yes" : "no" },
           { id: "limit", label: "Limit exists", value: verdict.limitExists ? "yes" : "no" },
@@ -274,6 +285,11 @@ export function LimitsContinuityExplorer() {
         <SceneReadout
           title="Sampling"
           items={[
+            {
+              id: "spacing",
+              label: "Spacing actually used",
+              value: fmt(overlay.actualSpacing, 4),
+            },
             {
               id: "band",
               label: "Guaranteed band over one step",

@@ -26,7 +26,7 @@ import {
   riemannSum,
   runningTotal,
   samplingGap,
-  smallestWindow,
+  largestWindowFound,
   spacingForTolerance,
   telescopingTerms,
 } from "../calculus";
@@ -89,22 +89,62 @@ describe("limits and continuity (L1)", () => {
 
   it("answers a tolerance with a window where the limit exists", () => {
     for (const epsilon of [0.5, 0.1, 0.01]) {
-      const delta = smallestWindow(EX_PARABOLA.f, 1, 1, epsilon);
-      expect(delta, `epsilon = ${epsilon}`).not.toBeNull();
+      const search = largestWindowFound(EX_PARABOLA.f, 1, 1, epsilon);
+      expect(search.kind, `epsilon = ${epsilon}`).toBe("found");
       // The reported window must genuinely work.
+      const delta = search.kind === "found" ? search.delta : 0;
       for (let i = 1; i <= 32; i += 1) {
-        const off = (delta! * i) / 32;
+        const off = (delta * i) / 32;
         expect(Math.abs(EX_PARABOLA.f(1 + off) - 1)).toBeLessThan(epsilon);
         expect(Math.abs(EX_PARABOLA.f(1 - off) - 1)).toBeLessThan(epsilon);
       }
     }
   });
 
-  it("cannot answer a tight tolerance where the limit fails", () => {
+  it("finds no window where the limit fails", () => {
     // Oscillation: no candidate value can be defended.
-    expect(smallestWindow(getCalculusFixture("ex-oscillate").f, 0, 0, 0.2)).toBeNull();
+    expect(
+      largestWindowFound(getCalculusFixture("ex-oscillate").f, 0, 0, 0.2).kind,
+    ).toBe("not-found");
     // Blow-up: the outputs leave every band.
-    expect(smallestWindow(getCalculusFixture("ex-blowup").f, 0, 0, 0.5)).toBeNull();
+    expect(
+      largestWindowFound(getCalculusFixture("ex-blowup").f, 0, 0, 0.5).kind,
+    ).toBe("not-found");
+  });
+
+  it("reports a failed SEARCH, not a failed limit, when the ladder runs out", () => {
+    // The defect this discriminated result exists to prevent: `ex-hidden-spike`
+    // is continuous at 4.4, so a window genuinely exists for every tolerance —
+    // but a finite ladder can still fail to find one. "not-found" must therefore
+    // never be read as "no limit exists".
+    const spike = getCalculusFixture("ex-hidden-spike");
+    expect(continuityAt(spike, 4.4).continuous).toBe(true);
+    expect(limitFailureAt(spike, 4.4)).toBeNull();
+    const tight = largestWindowFound(spike.f, 4.4, spike.f(4.4), 1e-3, {
+      maxDelta: 1,
+      steps: 6,
+    });
+    expect(tight.kind).toBe("not-found");
+    // With enough ladder depth the same point does find one, which is exactly
+    // why exhausting a short ladder proves nothing.
+    const deeper = largestWindowFound(spike.f, 4.4, spike.f(4.4), 1e-3, {
+      maxDelta: 1,
+      steps: 200,
+    });
+    expect(deeper.kind).toBe("found");
+  });
+
+  it("returns the LARGEST tested window, not the smallest", () => {
+    // A smallest working window is not a meaningful object: any smaller one also
+    // works. The readout that called this "smallest" was describing the wrong
+    // quantity.
+    const loose = largestWindowFound(EX_PARABOLA.f, 1, 1, 0.5, { maxDelta: 1 });
+    const tight = largestWindowFound(EX_PARABOLA.f, 1, 1, 0.05, { maxDelta: 1 });
+    expect(loose.kind).toBe("found");
+    expect(tight.kind).toBe("found");
+    if (loose.kind === "found" && tight.kind === "found") {
+      expect(loose.delta).toBeGreaterThan(tight.delta);
+    }
   });
 
   it("distinguishes the four failure modes as the fixtures declare them", () => {

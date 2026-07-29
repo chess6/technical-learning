@@ -8,8 +8,10 @@ import { expect, test, type Page } from "@playwright/test";
  * claims the lesson exists to make, because both are easy to lose silently in a
  * refactor:
  *
- *  1. the explorer reports the guarantee as **unmeetable** where the limit fails
- *     (oscillation, blow-up) rather than printing a number nobody can defend;
+ *  1. the explorer distinguishes three outcomes — a limit that does not exist, a
+ *     window found, and a **finite search that ran out** — rather than
+ *     collapsing the last two, which let it report a continuous point as having
+ *     no guarantee;
  *  2. the sampling panel reports **no guaranteed band** for a continuous fixture
  *     that declares no modulus — the lesson's continuity correction.
  */
@@ -63,25 +65,35 @@ test("loads, plays its guided scene, and runs its explorer", async ({ page }) =>
   expect(errors).toEqual([]);
 });
 
-test("the explorer refuses to defend a value where the limit fails", async ({
+test("the explorer names WHICH thing failed, and never both at once", async ({
   page,
 }) => {
   await page.goto("/lesson/limits-continuity");
   const explorer = page.getByRole("region", { name: /exploration/i }).first();
   await explorer.scrollIntoViewIfNeeded();
 
-  // On the parabola the guarantee is met and a window is reported.
+  // On the parabola a window is found and the guarantee is met.
   await expect(readout(page, "Guarantee")).toHaveText("met");
-  await expect(readout(page, "Smallest window that answers")).toContainText("δ =");
+  await expect(readout(page, "Largest window found")).toContainText("δ =");
 
-  // Switch to the oscillating fixture: no candidate can be defended.
+  // Where the limit genuinely fails, the readout says so — it attributes the
+  // failure to the mathematics, not to the search.
   await explorer.getByRole("button", { name: /sin\(1\/x\)/ }).click();
-  await expect(readout(page, "Guarantee")).toHaveText("cannot be met");
+  await expect(readout(page, "Guarantee")).toContainText("no limit");
+  await expect(readout(page, "Guarantee")).toContainText("oscillation");
   await expect(readout(page, "Forced value")).toContainText("oscillation");
 
-  // …and to the blow-up, which is a different failure with the same verdict.
   await explorer.getByRole("button", { name: /1\/x/ }).last().click();
-  await expect(readout(page, "Guarantee")).toHaveText("cannot be met");
+  await expect(readout(page, "Guarantee")).toContainText("no limit");
+
+  // And the contradiction that motivated the fix must be impossible: a point
+  // reported continuous can never simultaneously be reported as having no limit.
+  await explorer.getByRole("button", { name: /spike between the samples/i }).click();
+  const continuous = await readout(page, "Continuous at a").textContent();
+  const guarantee = await readout(page, "Guarantee").textContent();
+  if (continuous?.trim() === "yes") {
+    expect(guarantee).not.toContain("no limit");
+  }
 });
 
 test("sampling a continuous function with no modulus reports no guaranteed band", async ({

@@ -79,7 +79,7 @@ describeGradingContract(byId("lim-symbolic-recognition"), {
   ],
 });
 
-describeGradingContract(byId("lim-diagnose-graph"), {
+describeGradingContract(byId("lim-diagnose-definition"), {
   mustAccept: [
     {
       name: "exists / jump / oscillation / blow-up",
@@ -112,13 +112,25 @@ describeGradingContract(byId("lim-diagnose-graph"), {
 const num = (value: number | null): NamedAnswer["answer"] => ({ value });
 
 describeGradingContract(byId("lim-zero-over-zero-fresh"), {
-  mustAccept: [{ name: "the forced value", answer: num(10) }],
+  mustAccept: [
+    { name: "the agreeing expression, then its value", answer: seq("x+5", 10) },
+    { name: "spacing tolerated", answer: seq("x + 5", 10) },
+    { name: "commuted", answer: seq("5 + x", 10) },
+  ],
   mustReject: [
-    { name: "blank", answer: num(null) },
-    { name: "zero — the 0/0 read as an answer", answer: num(0) },
-    { name: "the point itself, not the limit", answer: num(5) },
-    { name: "off by the point's value (x, not x + 5)", answer: num(25) },
-    { name: "the derivative of the numerator instead", answer: num(2) },
+    { name: "all blank", answer: seq("", null) },
+    {
+      name: "right number, no expression — the claim is that one is exhibited",
+      answer: seq("", 10),
+    },
+    {
+      name: "the original expression, which agrees with itself but is still 0/0",
+      answer: seq("(x^2-25)/(x-5)", 10),
+    },
+    { name: "zero — the 0/0 read as an answer", answer: seq("x+5", 0) },
+    { name: "the point itself, not the limit", answer: seq("x+5", 5) },
+    { name: "off by the point's value (x, not x + 5)", answer: seq("x+5", 25) },
+    { name: "the derivative of the numerator instead", answer: seq("x+5", 2) },
   ],
 });
 
@@ -171,18 +183,20 @@ describeGradingContract(byId("lim-choose-spacing"), {
   ],
 });
 
+/** `construct-in-explorer` takes `{ vector }`, not a step list. */
+const vec = (x: number, y: number): NamedAnswer["answer"] => ({ vector: [x, y] });
+
 describeGradingContract(byId("lim-limit-not-continuity"), {
   mustAccept: [
-    { name: "limit 3, value 0", answer: seq([3, 0] as const) },
-    { name: "limit 0, value 2 — a zero coordinate is fine", answer: seq([0, 2] as const) },
-    { name: "negatives", answer: seq([-1.5, 4] as const) },
+    { name: "limit 3, value 0", answer: vec(3, 0) },
+    { name: "limit 0, value 2 — a zero coordinate is fine", answer: vec(0, 2) },
+    { name: "negatives", answer: vec(-1.5, 4) },
+    { name: "a tiny but real gap", answer: vec(1, 1.0001) },
   ],
   mustReject: [
-    {
-      name: "equal coordinates — that point is CONTINUOUS",
-      answer: seq([3, 3] as const),
-    },
-    { name: "both zero — continuous, and the zero vector", answer: seq([0, 0] as const) },
+    { name: "equal coordinates — that point is CONTINUOUS", answer: vec(3, 3) },
+    { name: "both zero — continuous, and the zero vector", answer: vec(0, 0) },
+    { name: "equal negatives", answer: vec(-2, -2) },
   ],
 });
 
@@ -235,7 +249,7 @@ describe("limits-continuity grading-contract coverage", () => {
   const CONTRACTED = new Set([
     "lim-point-value-irrelevant",
     "lim-symbolic-recognition",
-    "lim-diagnose-graph",
+    "lim-diagnose-definition",
     "lim-zero-over-zero-fresh",
     "lim-continuity-test",
     "lim-why-substitution-works",
@@ -278,6 +292,13 @@ describe("limits-continuity grading-contract coverage", () => {
     expect(tally("check")).toBe(2);
     expect(tally("drill")).toBe(5);
     expect(tally("transfer")).toBe(3);
+    // Exactly one item is an open construction, and it is the one the mastery
+    // contract's single E4 claim rests on. `exercise-sequence` is capped at E3.
+    expect(
+      items.filter(
+        (i) => i.type === "custom" && i.capabilityId === "construct-in-explorer",
+      ),
+    ).toHaveLength(1);
     // Recall is capped at one: only the symbolic-recognition item is a bare
     // multiple choice, and the contract records it as E1 recognition.
     expect(items.filter((i) => i.type === "multiple-choice")).toHaveLength(1);

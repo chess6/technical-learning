@@ -60,26 +60,40 @@ Gate 5 for **L1 `limits-continuity`**, after [insight.md](insight.md) reached `P
 
 | Outcome | Dim | Owner | Level | Evidence | Attainment |
 | --- | --- | --- | --- | --- | --- |
-| Decide from an unfamiliar graph whether a limit exists at a marked point, and name the failure mode when it does not | D3/D4 | lesson | E3 | `lim-diagnose-graph` (`exercise-sequence`, four fresh graphs, typed failure mode — not multiple choice) | independently demonstrated |
+| Decide, from a function's **definition**, whether a limit exists at a marked point, and name the failure mode when it does not | D3 | lesson | E3 | `lim-diagnose-definition` (`exercise-sequence`, four fresh functions, typed failure mode — not multiple choice) | independently demonstrated |
+| Decide the same **from a graph** | D4 | lesson | — | *(no graded item: `exercise-sequence` cannot present a figure)* | **practised only** — the scene shows all four failures and the explorer reports the verdict per fixture, but nothing captures the learner's own reading. Not claimed. |
 | State that altering or deleting the value at the point leaves the limit unchanged, and use it | D5/D13 | lesson | E3 | `lim-point-value-irrelevant` (`text`, produced) | independently demonstrated |
-| Evaluate a fresh \(0/0\) limit by exhibiting an agreeing expression | D3 | lesson | E3 | `lim-zero-over-zero-fresh` (`numeric`, a quotient the scene never shows) | independently demonstrated |
+| Evaluate a fresh \(0/0\) limit **by exhibiting an agreeing expression**, then reading the value off it | D3 | lesson | E3 | `lim-zero-over-zero-fresh` (`exercise-sequence`: the expression as typed text, then the value; a quotient the scene never shows) | independently demonstrated |
 | Apply the three-part continuity test at a point of a fresh piecewise function | D3/D2 | lesson | E3 | `lim-continuity-test` (`exercise-sequence`) | independently demonstrated |
-| Reject "a limit exists ⇒ continuous" with a counterexample of their own | D7/D13 | lesson | E4 | `lim-limit-not-continuity` (`construct`, predicate-graded: any function with a removable discontinuity at the named point) | independently demonstrated |
-| Decide whether changing one point could repair the limit, continuity, both, or neither | D9 | lesson | E4 | `lim-repair-transfer` (unfamiliar piecewise function) | independently demonstrated |
+| Reject "a limit exists ⇒ continuous" with a counterexample of their own | D7/D13 | lesson | **E4** | `lim-limit-not-continuity` (**`construct-in-explorer`**, ceiling E4; predicate-graded on the pair (limit, value) — any finite pair that differs passes) | independently demonstrated |
+| Decide whether changing one point could repair the limit, continuity, both, or neither | D9 | lesson | **E3** | `lim-repair-transfer` (`exercise-sequence`, unfamiliar piecewise functions) | independently demonstrated — **transfer *tier*, E3 *level***: the chain is scaffolded, and `exercise-sequence` is capped at E3 |
 | Justify a substitution by citing continuity rather than habit | D4/D13 | lesson | E3 | `lim-why-substitution-works` (`text`) | independently demonstrated |
-| Reject "the samples are all small, so the function is", and name what would have to be added | D5/D13 | lesson | E4 | `lim-continuity-not-enough` (`exercise-sequence` on `ex-hidden-spike`: verdict → the two missing ingredients) | independently demonstrated |
+| Reject "the samples are all small, so the function is", and name what would have to be added | D5/D13 | lesson | **E3** | `lim-continuity-not-enough` (`exercise-sequence` on `ex-hidden-spike`: verdict → the two missing ingredients) | independently demonstrated — transfer tier, E3 level (see above) |
 | Use a supplied modulus of continuity to choose a grid spacing for a stated tolerance | D3 | lesson | E3 | `lim-choose-spacing` (`numeric`) | independently demonstrated |
 | Recognise the symbolic \(\varepsilon\)–\(\delta\) statement as the guarantee just used | D2 | lesson | E1 | `lim-symbolic-recognition` (`multiple-choice`) | **recognition only — recorded as E1, not claimed higher** |
 | Retain "the point value is irrelevant" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-point-value` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 | Integrate limits with the derivative on a later mixed item | D10 | **module** | E5 | `mod-calcfound-limit-in-derivative` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
-**Transfer:** two D9/E4 outcomes (`lim-limit-not-continuity`, `lim-repair-transfer`).
+**Transfer:** three transfer-tier items. **Exactly one is claimed at E4** —
+`lim-limit-not-continuity`, an open predicate-graded construction on
+`construct-in-explorer` (ceiling E4). The other two are scaffolded chains on
+`exercise-sequence`, whose ceiling is **E3**
+([`evidence.ts`](../../../../../src/lessons/evidence.ts)), and are claimed there.
+An earlier draft of this contract claimed E4 for all three; that exceeded the
+capability ceiling and is corrected.
 
 ## 1e. Coverage status
-Taught: all of §1c. Practiced: every lesson-owned outcome. Independently
-demonstrated: all lesson-owned outcomes except `lim-symbolic-recognition`, which
-is honestly recorded as **E1 recognition** — the lesson does not claim the learner
-can produce the quantified statement.
+Taught: all of §1c. Practised: every lesson-owned outcome. Independently
+demonstrated: all lesson-owned outcomes except two, both recorded honestly rather
+than claimed:
+
+- `lim-symbolic-recognition` — **E1 recognition**. The lesson does not claim the
+  learner can produce the quantified statement.
+- **Deciding a limit's fate from a graph** — **practised, not demonstrated**. The
+  `exercise-sequence` capability cannot present a figure, so no graded item
+  captures the learner's own graph reading; the graded item works from the
+  definition instead. Adding it would need either a new capability or a
+  figure-bearing item type, and neither is in this package's scope.
 
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** none backwards — this is the first lesson. Forwards it is
@@ -120,34 +134,49 @@ can produce the quantified statement.
 
 > **Gate 8 is scoped to this lesson's own outcomes.** Per
 > [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
-> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> it confirms that every **lesson-owned** core outcome is independently
 > demonstrated with real in-lesson evidence, and that module-owned outcomes are
-> **carried forward as planned Gate-9 obligations**. The presence of open
-> Gate-9 obligations is the normal state of an accepted lesson and does **not**
-> block Gate 8. Gate 8 would be blocked only by a *lesson-owned* outcome with no
-> real evidencing item, or by accepting a lesson-owned outcome on planned module
-> evidence — neither of which this contract does.
+> carried forward as planned Gate-9 obligations. Open Gate-9 obligations are the
+> normal state of an accepted lesson and do **not** block Gate 8.
 
-**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
-§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
-recognition-level outcome is declared at their honest level rather than being
-claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
-checkboxes below are unticked because the lesson is not built, not because
-anything is missing from the plan.
+**Status: PASSED** for `limits-continuity`, on the built lesson
+(`src/lessons/limitsContinuity.ts`), 2026-07-28.
 
-- [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
-- [ ] All §1 fields filled.
-- [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
-      recorded recognition-level exceptions declared as such.
-- [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f; recall capped; transfer items present.
-- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
+- [x] Insight contract linked and `Gate result: PASS`.
+- [x] All §1 fields filled.
+- [x] Outcomes operational, owner-marked, evidence-paired.
+- [x] **Every lesson-owned outcome that is *claimed* is independently
+      demonstrated by a real, auto-graded, in-lesson item.** The two outcomes
+      that are *not* independently demonstrated are recorded in §1e as
+      recognition (`lim-symbolic-recognition`, E1) and as practised-only
+      (graph reading) rather than being claimed.
+- [x] No lesson-owned outcome accepted on planned module evidence.
+- [x] **No claim exceeds its capability ceiling.** One E4 claim, on
+      `construct-in-explorer` (ceiling E4). Every `exercise-sequence` item is
+      claimed at E3 or below. Asserted by
+      `src/lessons/__tests__/limitsContinuityGradingContract.test.ts`.
+- [x] **Every claimed evidencing item captures what the outcome says.** The two
+      that did not are fixed: `lim-diagnose-definition` no longer claims graph
+      reading, and `lim-zero-over-zero-fresh` now elicits the agreeing
+      expression before its value.
+- [x] Assessment set matches §1f; recall capped at one; three transfer-tier items.
+- [x] Module-owned outcomes carried forward as Gate-9 obligations *(open by
       design; not a Gate 8 blocker)*.
-- [ ] Forward edges recorded.
-- [ ] Retention hook recorded.
-- [ ] Correctness gate passed (`src/math/__tests__/calculus.test.ts`).
-- [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
+- [x] Forward edges recorded.
+- [x] Retention hook recorded.
+- [x] Correctness gate passed (`src/math/__tests__/calculus.test.ts`, 40 assertions).
+- [x] Grading contracts registered for all ten items
+      (`limitsContinuityGradingContract.test.ts`, 85 assertions), each
+      `mustReject` pinning one regression class.
+- [x] Guided-scene hard gates pass; chapter seeking covered.
+- [x] Browser spec passes (`e2e/lesson-limits-continuity.spec.ts`).
 
-*(Unticked because nothing is built. Gate 8 is an implementation gate; this
-contract is Gate 5.)*
+**Not in scope of this gate, and open:** Gate 9 for the `calculus-foundations`
+module. The `mod-calcfound-*` items in §1d are unbuilt by design.
+
+### Correction history
+
+An earlier version of this record was left unticked with the note "nothing is
+built" **after** the lesson had shipped, and claimed E4 for three
+`exercise-sequence` items whose ceiling is E3. Both were review findings, and
+both are corrected above rather than argued.

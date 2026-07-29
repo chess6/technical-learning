@@ -351,6 +351,7 @@ export type {
   RealFunction,
   SamplePoint,
   TelescopingTerm,
+  WindowSearch,
   CancellationReport,
 } from "./calculus";
 export {
@@ -389,7 +390,7 @@ export {
   runningTotal,
   samplingGap,
   shrinkingQuotients,
-  smallestWindow,
+  largestWindowFound,
   spacingForTolerance,
   telescopingTerms,
 } from "./calculus";

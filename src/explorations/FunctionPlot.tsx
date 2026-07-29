@@ -195,11 +195,11 @@ export function FunctionPlot({
           {samplePoints.map(([x, y]) => (
             <Point key={`sample-${x}`} x={x} y={y} color={SAMPLE} />
           ))}
-          {overlay?.guaranteedBand !== null &&
-            overlay !== null &&
+          {overlay !== null &&
+            overlay.guaranteedBand !== null &&
             samplePoints.slice(0, -1).map(([x, y], i) => {
               const next = samplePoints[i + 1]!;
-              const bound = overlay.guaranteedBand!;
+              const bound: number = overlay.guaranteedBand!;
               return (
                 <g key={`guarantee-${x}`}>
                   <Line.Segment
@@ -288,8 +288,20 @@ export function FunctionPlot({
 export interface SamplingOverlay {
   readonly samples: readonly (readonly [number, number])[];
   /**
-   * Half-height of the band the fixture's modulus guarantees over one grid
-   * step, or **`null` when the fixture declares no modulus**.
+   * The spacing actually used, which is `(hi - lo) / n` for a whole number of
+   * intervals and is therefore rarely the spacing that was requested.
+   *
+   * It is **never larger** than the request: the interval count is rounded UP,
+   * so a request of 0.62 on [0, 2] becomes 4 intervals of 0.5 rather than 3 of
+   * 0.667. Rounding to nearest would have produced a *coarser* grid than asked
+   * for while the guarantee below was still computed from the finer requested
+   * value — a band narrower than the mathematics supports.
+   */
+  readonly actualSpacing: number;
+  /**
+   * Half-height of the band the fixture's modulus guarantees over one grid step
+   * — computed from `actualSpacing`, never from the request — or **`null` when
+   * the fixture declares no modulus**.
    *
    * This null is the component's structural enforcement of the lesson's
    * continuity correction: continuity alone licenses no sampling claim, so
@@ -299,7 +311,9 @@ export interface SamplingOverlay {
   readonly guaranteedBand: number | null;
   /**
    * The worst true-vs-interpolated discrepancy on this grid — the number that
-   * makes `ex-hidden-spike` a demonstration rather than an assertion.
+   * makes `ex-hidden-spike` a demonstration rather than an assertion. Computed
+   * from the same `actualSpacing` as the band, so the two always describe the
+   * same grid.
    */
   readonly worstGap: number;
 }
@@ -313,14 +327,19 @@ export function samplingOverlay(
   if (!(spacing > 0)) {
     throw new Error(`samplingOverlay: spacing must be positive, got ${spacing}.`);
   }
-  const count = Math.max(1, Math.round((hi - lo) / spacing));
+  // Round UP, then derive the spacing actually used. Both the guarantee and the
+  // measured gap are computed from that one value; deriving either from the
+  // request would describe a grid that is not on screen.
+  const count = Math.max(1, Math.ceil((hi - lo) / spacing));
+  const actualSpacing = (hi - lo) / count;
   const samples = partitionPoints(lo, hi, count).map(
     (x) => [x, fixture.f(x)] as [number, number],
   );
   return {
     samples,
-    guaranteedBand: fixture.modulus ? fixture.modulus.omega(spacing) : null,
-    worstGap: samplingGap(fixture.f, [lo, hi], (hi - lo) / count),
+    actualSpacing,
+    guaranteedBand: fixture.modulus ? fixture.modulus.omega(actualSpacing) : null,
+    worstGap: samplingGap(fixture.f, [lo, hi], actualSpacing),
   };
 }
 
