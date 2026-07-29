@@ -1406,6 +1406,44 @@ export const LIMITS_CONTINUITY_SEGMENTS: readonly SceneSegment[] = [
   },
 ];
 
+/** `derivative-local-linearity` clip 1 — the zoom. */
+export const DERIVATIVE_ZOOM_SEGMENTS: readonly SceneSegment[] = [
+  { id: "secantBeat", title: "An average over an interval", duration: 6,
+    summary: "The secant through the point and one step away; its slope is the average rate." },
+  { id: "shrink", title: "Shrink the interval", duration: 6,
+    summary: "The step shrinks and the secant's slope settles on 6 — L1's forced value, on a new quantity." },
+  { id: "predict", title: "Predict: what will 100x magnification show?", duration: 5.5,
+    summary: "Nothing moves. The learner commits before the zoom runs." },
+  { id: "zoom", title: "It becomes a line", duration: 9,
+    summary: "Successive magnifications about the point. The curve straightens — and the residual is drawn and read out at every stage, because the curvature has not gone away." },
+  { id: "same", title: "The same line the secants settled on", duration: 5,
+    summary: "The tangent is drawn and coincides with what the zoom produced." },
+  { id: "corner", title: "Where it fails", duration: 7.5,
+    summary: "The same magnification on |x| at 0: the two sides stay different lines, so no single line exists and there is no derivative." },
+];
+
+/** `derivative-local-linearity` clip 2 — the compression. */
+export const DERIVATIVE_NAMES_SEGMENTS: readonly SceneSegment[] = [
+  { id: "oneLine", title: "One line, from the zoom", duration: 4,
+    summary: "The tangent clip 1 produced, carried into this clip unchanged." },
+  { id: "asRate", title: "Read it as a rate", duration: 4,
+    summary: "The same number, in output units per input unit." },
+  { id: "asSlope", title: "Read it as a slope", duration: 5,
+    summary: "Rise over run drawn on the same line, giving the same number." },
+  { id: "asApprox", title: "Read it as a prediction", duration: 5.5,
+    summary: "The linear model one step ahead, with the gap to the true value drawn." },
+  { id: "twoLines", title: "Two lines through the same point", duration: 5.5,
+    summary: "A nearby wrong slope is drawn alongside the tangent, each with its own measured gap and its own error ratio." },
+  { id: "predictDecay", title: "Predict: what will the two ratios do?", duration: 5.5,
+    summary: "Nothing moves. Both ratios are on screen; the learner commits before the step shrinks." },
+  { id: "decay", title: "One vanishes faster than the step", duration: 6.5,
+    summary: "The step shrinks: the tangent's error ratio tends to zero while the other settles on a nonzero constant. Measured, not asserted." },
+  { id: "crosses", title: "A tangent may cross the curve", duration: 6,
+    summary: "y = x cubed at the origin: the tangent crosses at the point of tangency, refuting touches-once." },
+  { id: "derivativeFn", title: "A slope at every point", duration: 5.5,
+    summary: "The derivative plotted as a function, drawn from a numeric derivative of the same fixture." },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1422,6 +1460,8 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "eigenvectors-invariant-directions": EIGENVECTOR_SEGMENTS,
   "eigenvectors-derivation": EIGEN_DERIVATION_SEGMENTS,
   "limits-continuity": LIMITS_CONTINUITY_SEGMENTS,
+  "derivative-local-linearity": DERIVATIVE_ZOOM_SEGMENTS,
+  "derivative-three-names": DERIVATIVE_NAMES_SEGMENTS,
   "eigenvectors-characteristic-equation": EIGEN_CHARACTERISTIC_SEGMENTS,
   "karatsuba-cross-terms": KARATSUBA_SEGMENTS,
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
@@ -1839,6 +1879,27 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     continuity: { clear: 0.4, title: 0.4, caption: 0.4, hold: 2.6 },
     localOnly: { clear: 0.4, show: 0.6, title: 0.4, hold: 2.0, reveal: 0.8, caption: 0.4, hold2: 3.0 },
     modulus: { title: 0.4, band: 0.6, caption: 0.5, hold: 3.2 },
+  },
+
+  "derivative-local-linearity": {
+    secantBeat: { title: 0.4, draw: 0.5, caption: 0.4, hold: 3.5 },
+    shrink: { title: 0.4, narrow: 2.4, caption: 0.4, hold: 2.0 },
+    predict: { ask: 0.5, think: 4.4 },
+    zoom: { clear: 0.4, title: 0.4, reveal: 0.5, magnify: 3.4, caption: 0.4, hold: 3.0 },
+    same: { title: 0.4, draw: 0.5, caption: 0.4, hold: 3.0 },
+    corner: { clear: 0.4, restore: 0.5, title: 0.4, magnify: 2.4, caption: 0.4, hold: 2.6 },
+  },
+
+  "derivative-three-names": {
+    oneLine: { title: 0.4, draw: 0.5, hold: 2.4 },
+    asRate: { title: 0.4, show: 0.5, hold: 2.4 },
+    asSlope: { title: 0.4, show: 0.5, caption: 0.4, hold: 2.8 },
+    asApprox: { title: 0.4, show: 0.5, caption: 0.4, hold: 3.3 },
+    twoLines: { clear: 0.4, title: 0.4, draw: 0.6, settle: 0.9, hold: 2.9 },
+    predictDecay: { ask: 0.5, think: 4.4 },
+    decay: { shrink: 2.6, title: 0.4, caption: 0.4, hold: 2.9 },
+    crosses: { clear: 0.5, show: 0.5, title: 0.4, caption: 0.4, hold: 3.3 },
+    derivativeFn: { clear: 0.4, show: 0.5, title: 0.4, caption: 0.4, hold: 2.9 },
   },
 
   "karatsuba-cross-terms": {

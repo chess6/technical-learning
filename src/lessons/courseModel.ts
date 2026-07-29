@@ -171,13 +171,7 @@ export const CURRICULUM: readonly Subject[] = [
             title: "The two operations, and the theorem that binds them",
             items: [
               { kind: "lesson", lessonId: "limits-continuity" },
-              {
-                kind: "future",
-                id: "derivative-local-linearity",
-                title: "The Derivative as Local Linearity",
-                subtitle:
-                  "Zoom far enough and a smooth curve is a line; the derivative is that line",
-              },
+              { kind: "lesson", lessonId: "derivative-local-linearity" },
               {
                 kind: "future",
                 id: "integral-accumulation",

@@ -121,34 +121,64 @@ current capability set, and the lesson does not claim it.
 
 > **Gate 8 is scoped to this lesson's own outcomes.** Per
 > [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
-> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> it confirms that every **lesson-owned** core outcome is independently
 > demonstrated with real in-lesson evidence, and that module-owned outcomes are
-> **carried forward as planned Gate-9 obligations**. The presence of open
-> Gate-9 obligations is the normal state of an accepted lesson and does **not**
-> block Gate 8. Gate 8 would be blocked only by a *lesson-owned* outcome with no
-> real evidencing item, or by accepting a lesson-owned outcome on planned module
-> evidence — neither of which this contract does.
+> carried forward as planned Gate-9 obligations. Open Gate-9 obligations are the
+> normal state of an accepted lesson and do **not** block Gate 8.
 
-**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
-§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
-recognition-level outcome is declared at their honest level rather than being
-claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
-checkboxes below are unticked because the lesson is not built, not because
-anything is missing from the plan.
+**Status: PASSED** for `derivative-local-linearity`, on the built lesson
+(`src/lessons/derivativeLocalLinearity.ts`), 2026-07-28.
 
-- [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
-- [ ] All §1 fields filled.
-- [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
-      recorded recognition-level exceptions declared as such.
-- [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f; recall capped; transfer items present.
-- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
-      design; not a Gate 8 blocker)*.
-- [ ] Backward bridge (L1) + forward edge (L3/L4/L4/L18/L22) recorded.
-- [ ] Retention hook recorded.
-- [ ] Correctness gate passed, **including the residual-is-visible invariant**.
-- [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
+- [x] Insight contract linked and `Gate result: PASS`.
+- [x] All §1 fields filled.
+- [x] Outcomes operational, owner-marked, evidence-paired.
+- [x] **Every claimed lesson-owned outcome is independently demonstrated** by a
+      real, auto-graded, in-lesson item. The two that are not claimed are
+      recorded in §1e as recognition (`der-identify-derivative`, E2) and as
+      practised-only (deciding differentiability from a graph).
+- [x] No lesson-owned outcome accepted on planned module evidence.
+- [x] **No claim exceeds its capability ceiling.** One E4 claim, on
+      `construct-in-explorer` (ceiling E4); every `exercise-sequence` item is
+      claimed at E3 or below. Asserted by
+      `src/lessons/__tests__/derivativeLocalLinearityGradingContract.test.ts`,
+      which reads `CAPABILITY_EVIDENCE_CEILING` rather than trusting the prose.
+- [x] **Every claimed evidencing item captures what the outcome says.** No item
+      claims to present a figure its capability cannot render — the correction
+      carried forward from L1's review, applied here *before* the lesson was
+      built rather than after.
+- [x] Assessment set matches §1f; recall capped at one; two transfer-tier items.
+- [x] Module-owned outcomes carried forward as Gate-9 obligations.
+- [x] Forward edges recorded (L4 consumes C5 verbatim).
+- [x] Retention hook recorded.
+- [x] Correctness gate passed (`calculus.test.ts`; `LocalLinearityZoom.test.tsx`,
+      12 assertions pinning the zoom family's honesty rule).
+- [x] Grading contracts registered for all nine items (75 assertions).
+- [x] **Ledger check P3 verified by test, not inspection**: `zoomReadouts` keeps
+      the residual nonzero at every magnification, and
+      `e2e/lesson-derivative-local-linearity.spec.ts` drives the explorer to the
+      magnification ceiling and asserts the residual is still nonzero while the
+      ratio goes to zero.
+- [x] Guided-scene hard gates pass for **both** clips; chapter seeking covered;
+      the placed second clip has a route test.
 
-*(Unticked because nothing is built. Gate 8 is an implementation gate; this
-contract is Gate 5.)*
+**Not in scope of this gate, and open:** Gate 9 for `calculus-foundations`.
+
+### Defects found while building, and fixed
+
+- **A module-scope signal.** `halfWidth` was declared outside the scene
+  generator, so the Player's second pass began with the previous pass's
+  fully-zoomed window — every earlier beat drew the wrong picture and the reset
+  registered as the whole panel teleporting. Seek determinism depended on it.
+- **A window sized by the wrong function.** The vertical extent used the running
+  example's slope for every fixture, so the corner appeared as a shallow dent
+  rather than a V: |x| rises at ±1 and the window was scaled for a slope of 6.
+- **A sign slip** in the corner's left half-line, which visibly failed to lie on
+  the curve it was drawn to trace.
+- **A comparison that opened by contradicting itself.** At the initial step the
+  *wrong* line's error ratio was the smaller of the two; the step is now brought
+  inside the range where the tangent is already better before the prediction is
+  posed.
+- **An off-panel marker.** The secant dot's position is `a + h` in world units,
+  so a fixed `h` in a window shrinking 100× sent it a thousand pixels away. It is
+  parked on the point before the zoom; fading it was not enough, because the
+  teleport gate measures position rather than visibility — correctly.

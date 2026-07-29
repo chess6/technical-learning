@@ -6,14 +6,13 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: A0 + A1 built. A2–A4 PAUSED, pending explicit approval.**
+> **Status: APPROVED. A0 + A1 + A2 built; A3–A4 open.**
 >
-> Slices A0 (shared foundations) and A1 (`limits-continuity`) are built on
-> `master` and A1 passes Gate 8 on its lesson-owned outcomes. They were
-> implemented after an approval that did not unambiguously cover writing lesson
-> code, which review flagged as crossing the planning-to-implementation boundary.
-> They are **retained**, and **slice A2 does not begin until Package A is
-> explicitly approved for implementation.**
+> Package A was explicitly approved for implementation on 2026-07-28, resolving
+> the boundary question review had raised about A0/A1. Slices A0 (shared
+> foundations), A1 (`limits-continuity`) and A2 (`derivative-local-linearity`)
+> are built on `master`, and A1 and A2 each pass Gate 8 on their lesson-owned
+> outcomes.
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -81,10 +80,19 @@ recording because the next three lessons reuse the same apparatus:
   bound spans the whole panel, so no honest narrow band exists. The beat now shows
   what a modulus is *for*: a grid chosen against a tolerance, tracking the truth.
 
-### A2 — `derivative-local-linearity`
+### A2 — `derivative-local-linearity` *(shipped)*
 Creates `local-linearity-zoom`. **Two clips** — `derivative-local-linearity` and
 the placed `derivative-three-names`, positioned by a
 `{ kind: "visual", sceneId }` route block. Nine items.
+
+Its evidence claims were made ceiling-legal and figure-free **before** any code
+was written, applying L1's review findings rather than repeating them: three E4
+claims on `exercise-sequence` (ceiling E3) became one E4 claim on
+`construct-in-explorer`, and two items that claimed to present graphs were
+reworded to what they capture. The defects found while building it are listed in
+its [Gate 8 record](../../lessons/02-derivative-local-linearity/mastery-contract.md#6-acceptance-record-gate-8);
+the one worth carrying forward to A3/A4 is that a **signal declared at module
+scope survives between scene runs**, which silently breaks seek determinism.
 
 ### A3 — `integral-accumulation`
 Creates `accumulation-strip`. One clip, one explorer, eight items.
@@ -102,7 +110,7 @@ ones most likely to be lost by an implementer working from habit**:
 | --- | --- | --- | --- |
 | **P1** | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. Enforce with a grep over the built lesson. |
 | **P2** | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. |
-| **P3** | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). |
+| **P3** ✅ *(A2)* | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). |
 | **P4** | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. |
 | **P5** | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. |
 
@@ -152,9 +160,9 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | --- | --- | --- |
 | A0 shared foundations | **SHIPPED** | `master` |
 | A1 `limits-continuity` | **SHIPPED** | `master` |
-| A2 `derivative-local-linearity` | **PAUSED — awaiting explicit approval** | — |
-| A3 `integral-accumulation` | PAUSED — awaiting explicit approval | — |
-| A4 `fundamental-theorem` | PAUSED — awaiting explicit approval | — |
+| A2 `derivative-local-linearity` | **SHIPPED** | `master` |
+| A3 `integral-accumulation` | NOT STARTED | — |
+| A4 `fundamental-theorem` | NOT STARTED | — |
 
 ## 7. Acceptance for the package
 

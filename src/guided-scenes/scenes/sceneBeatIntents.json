@@ -647,6 +647,121 @@
       "hold3": "hold"
     }
   },
+  "derivative-local-linearity": {
+    "secantBeat": {
+      "title": "text",
+      "draw": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "shrink": {
+      "title": "text",
+      "narrow": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:derivative:secant"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "zoom": {
+      "clear": "transition",
+      "title": "text",
+      "reveal": "transition",
+      "magnify": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:derivative:curve"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "same": {
+      "title": "text",
+      "draw": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "corner": {
+      "clear": "transition",
+      "restore": "transition",
+      "title": "text",
+      "magnify": "transition",
+      "caption": "text",
+      "hold": "hold"
+    }
+  },
+  "derivative-three-names": {
+    "oneLine": {
+      "title": "text",
+      "draw": "transition",
+      "hold": "hold"
+    },
+    "asRate": {
+      "title": "text",
+      "show": "transition",
+      "hold": "hold"
+    },
+    "asSlope": {
+      "title": "text",
+      "show": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "asApprox": {
+      "title": "text",
+      "show": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "twoLines": {
+      "clear": "transition",
+      "title": "text",
+      "draw": "transition",
+      "settle": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:three-names:tangent-gap"
+        ]
+      },
+      "hold": "hold"
+    },
+    "predictDecay": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "decay": {
+      "shrink": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:three-names:tangent-gap"
+        ]
+      },
+      "title": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "crosses": {
+      "clear": "transition",
+      "show": "transition",
+      "title": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "derivativeFn": {
+      "clear": "transition",
+      "show": "transition",
+      "title": "text",
+      "caption": "text",
+      "hold": "hold"
+    }
+  },
   "limits-continuity": {
     "paradox": {
       "title": "text",

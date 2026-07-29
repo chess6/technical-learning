@@ -12,6 +12,11 @@ import { ExplorerLoading } from "../components/lesson/ExplorerLoading";
  * learner hasn't opened.
  */
 const LAZY_EXPLORERS: Record<string, ComponentType> = {
+  "derivative-local-linearity": lazy(() =>
+    import("./DerivativeLocalLinearityExplorer").then((m) => ({
+      default: m.DerivativeLocalLinearityExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,

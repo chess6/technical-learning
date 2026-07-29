@@ -6,6 +6,8 @@ import {
   DETERMINANT_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
   EIGEN_CHARACTERISTIC_SEGMENTS,
+  DERIVATIVE_NAMES_SEGMENTS,
+  DERIVATIVE_ZOOM_SEGMENTS,
   LIMITS_CONTINUITY_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
@@ -61,6 +63,8 @@ const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const EIGEN_CHARACTERISTIC_STEPS = toSteps(EIGEN_CHARACTERISTIC_SEGMENTS);
 const LIMITS_CONTINUITY_STEPS = toSteps(LIMITS_CONTINUITY_SEGMENTS);
+const DERIVATIVE_ZOOM_STEPS = toSteps(DERIVATIVE_ZOOM_SEGMENTS);
+const DERIVATIVE_NAMES_STEPS = toSteps(DERIVATIVE_NAMES_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -313,6 +317,39 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "defective",
       "rotation",
       "summary",
+    ]),
+  },
+  "derivative-local-linearity": {
+    id: "derivative-local-linearity",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing that a smooth curve becomes a line under magnification. A secant is drawn through the point on x squared at three and one step away, and its slope is the average rate over that step. The step shrinks and the slope settles on six, the value the previous lesson forced. The learner is asked to predict what a hundredfold magnification will show, and nothing moves while the question stands. The window then narrows about the point and the curve straightens — but the residual, the vertical gap between the curve and the straight line at a fixed fraction of the window, is drawn and read out at every stage, because the curvature has not gone away, it has become small compared to the step. The tangent is then drawn and shown to be the same line the secants settled on. Finally the same magnification is applied to the absolute value function at zero, where the two sides stay different lines however far you magnify, so no single line exists and there is no derivative there.",
+    steps: DERIVATIVE_ZOOM_STEPS,
+    majorSteps: pickMajor(DERIVATIVE_ZOOM_STEPS, [
+      "secantBeat",
+      "shrink",
+      "predict",
+      "zoom",
+      "same",
+      "corner",
+    ]),
+  },
+  "derivative-three-names": {
+    id: "derivative-three-names",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing that a rate, a slope, and a best linear approximation are one object. The tangent from the previous clip is carried in unchanged. It is read first as a rate in output units per input unit, then as a slope with rise over run drawn on the same line giving the same number, then as a prediction one step ahead with the gap between the prediction and the true value drawn. A second line of a nearby but wrong slope is then drawn with its own measured gap, and as the step shrinks the tangent's error divided by the step tends to zero while the other line's tends to a nonzero constant — so the tangent is singled out by how fast its error decays, not by touching. The school definition is then refuted directly: on y equals x cubed at the origin the tangent crosses the curve at the point of tangency. The clip closes by plotting the slope at every point as a new function, drawn from a numeric derivative of the same curve.",
+    steps: DERIVATIVE_NAMES_STEPS,
+    majorSteps: pickMajor(DERIVATIVE_NAMES_STEPS, [
+      "oneLine",
+      "asRate",
+      "asSlope",
+      "asApprox",
+      "twoLines",
+      "predictDecay",
+      "decay",
+      "crosses",
+      "derivativeFn",
     ]),
   },
   "limits-continuity": {

@@ -272,6 +272,10 @@ function bmatrixTex(entries: readonly (readonly number[])[]): string {
  *  - `vector-off-line` / `vector-on-line`: the (nonzero) vector must be
  *    non-parallel / parallel to `spanning`;
  *  - `eigenvector`: the (nonzero) vector must satisfy `A v = λ v`;
+ *  - `corner-slopes`: the learner supplies the PAIR of one-sided slopes at a
+ *    point, and it passes iff both are finite and **differ** — which is exactly
+ *    what makes a continuous point non-differentiable. Any such pair passes, and
+ *    equal slopes are rejected as describing a differentiable point;
  *  - `removable-discontinuity`: the learner supplies the PAIR
  *    `(limit, value)` describing a function at a point, and it passes iff both
  *    are finite and **differ** — which is exactly what it means for a limit to
@@ -291,7 +295,8 @@ export type ConstructCheck =
   | { kind: "vector-off-line"; spanning: readonly [number, number] }
   | { kind: "vector-on-line"; spanning: readonly [number, number] }
   | { kind: "eigenvector"; matrix: readonly (readonly number[])[]; eigenvalue: number }
-  | { kind: "removable-discontinuity" };
+  | { kind: "removable-discontinuity" }
+  | { kind: "corner-slopes" };
 
 export type ConstructInExplorerConfig = {
   /** What the learner constructs. Only a single 2D vector for now. */
@@ -405,6 +410,22 @@ export function evaluateConstructCheck(
           : nonzero
             ? "A knocks it off its own line"
             : "the zero vector is never an eigenvector",
+      };
+    }
+    case "corner-slopes": {
+      // The pair is (left slope, right slope). As with `removable-discontinuity`
+      // the zero-vector guard does not apply: (0, 1) is a perfectly good corner.
+      const [left, right] = vector;
+      const finite = Number.isFinite(left) && Number.isFinite(right);
+      const differ = Math.abs(left - right) > tolerance;
+      return {
+        pass: finite && differ,
+        because:
+          finite && differ
+            ? "the two one-sided slopes disagree, so no single line fits"
+            : !finite
+              ? "a one-sided slope that is not a finite number is not a slope"
+              : "the slopes agree, so that point is differentiable",
       };
     }
     case "removable-discontinuity": {

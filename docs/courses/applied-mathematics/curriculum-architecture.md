@@ -10,8 +10,9 @@ The **encoding-facing** companion to the [course spine](course-spine.md):
 6. the **platform gaps**, recorded and *not* scheduled.
 
 > **Scope note (durable).** Architecture, not an authoring reopening. Every
-> lesson is a `future` node **except `limits-continuity`, which is built**
-> (Package A, slice A1). Listing the rest does not authorize building them.
+> lesson is a `future` node **except `limits-continuity` and
+> `derivative-local-linearity`, which are built** (Package A, slices A1–A2).
+> Listing the rest does not authorize building them.
 
 ---
 
@@ -29,7 +30,7 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | B0 | Functions, graphs, and the shapes you keep meeting | `functions-graphs-bridge` | `entry-bridges` | B0 *(conditional)* |
 | B1 | Radians and the rotating point | `radians-rotation` | `entry-bridges` | B0 |
 | L1 | What "approaches" means | `limits-continuity` | `calculus-foundations` | **A** ✅ |
-| L2 | The derivative as local linearity | `derivative-local-linearity` | `calculus-foundations` | **A** |
+| L2 | The derivative as local linearity | `derivative-local-linearity` | `calculus-foundations` | **A** ✅ |
 | L3 | The integral as accumulation | `integral-accumulation` | `calculus-foundations` | **A** |
 | L4 | The Fundamental Theorem of Calculus | `fundamental-theorem` | `calculus-foundations` | **A** |
 | L5 | The chain rule | `chain-rule` | `calculus-technique` | B |
@@ -66,7 +67,8 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | L36 | Stokes' theorem | `stokes-theorem` | `boundary-theorems` | K |
 | L37 | The divergence theorem and conservation | `divergence-theorem` | `boundary-theorems` | K |
 
-**39 lessons; 38 indispensable. One built** (`limits-continuity`). No id collides with a built lesson or with a
+**39 lessons; 38 indispensable. Two built** (`limits-continuity`,
+`derivative-local-linearity`). No id collides with a built lesson or with a
 linear-algebra `future` node (`orthogonality`, `least-squares`, `svd`). All ids
 satisfy `ID_SYNTAX` in `src/platform/identity.ts`.
 
@@ -353,7 +355,7 @@ A **family** is a parameterized visual treatment built once and re-instantiated.
 | Family | What it renders | Built by | Reused by |
 | --- | --- | --- | --- |
 | `function-plot` | \(y=f(x)\) with a movable point, tolerance band, input window, punctured points, secant/tangent overlay, optional \(f'\) panel. | **L1** | L2, L5, L6, L7, L9, L11, L22 |
-| `local-linearity-zoom` | Recursive zoom toward a point until the curve is a line; honest about the magnification and the residual. | L2 | L5 (two linked panels), L11, L28 |
+| `local-linearity-zoom` | Recursive zoom toward a point until the curve is a line; honest about the magnification and the residual. | **L2** ✅ | L5 (two linked panels), L11, L28 |
 | `accumulation-strip` | Riemann rectangles refining, with a running total and units readout. | L3 | L4, L7, L8, L15, L29 |
 | `telescoping-cancellation` | Adjacent contributions with opposite orientation annihilating so only the boundary survives. **Theme 1's family.** | L4 | **L34, L36, L37** — the same argument in 2-D and 3-D. The highest-value reuse in the course. |
 | `partial-sum-ladder` | Partial sums plotted against \(n\), with a tolerance band and the tail highlighted. | L9 | L10, L11, L17 |
@@ -423,13 +425,12 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **A0 + A1 built; A2–A4 PAUSED pending explicit approval** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **APPROVED — A0–A2 built; A3–A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
-> **Approval state, stated plainly.** Slices A0 and A1 were implemented after an
-> approval that did not unambiguously cover implementation. They are retained and
-> now meet Gate 8, but **A2 does not begin until Package A is explicitly
-> approved** — see the ledger's status block.
+> **Approval state.** Package A was explicitly approved for implementation on
+> 2026-07-28. A0–A2 are built; A3 (`integral-accumulation`) and A4
+> (`fundamental-theorem`) remain, with complete Mode B artifacts.
 
 ### 6.2 Suggested Mode B order
 
@@ -462,8 +463,8 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A, slices A2–A4.** A0 (the calculus layer, the course registration, and
-the `function-plot` family) and A1 (`limits-continuity`) are built and accepted.
-The remaining three lessons — `derivative-local-linearity`,
-`integral-accumulation`, `fundamental-theorem` — have complete Mode B artifacts
-and await **explicit approval** before implementation resumes.
+**Package A, slices A3–A4.** A0 (the calculus layer, the course registration, and
+the `function-plot` family), A1 (`limits-continuity`) and A2
+(`derivative-local-linearity`, with the `local-linearity-zoom` family) are built
+and accepted. `integral-accumulation` and `fundamental-theorem` remain, with
+complete Mode B artifacts and no open curriculum questions.

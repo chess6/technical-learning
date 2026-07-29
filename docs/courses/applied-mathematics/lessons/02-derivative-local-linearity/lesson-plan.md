@@ -126,12 +126,12 @@ The compression. One number, three readings, driven by one signal.
 | 1 | `der-from-definition-fresh` — derivative of a fresh cubic from the definition | `exercise-sequence` (quotient → simplified → limit) | per-step | Rejects a jump to the rule; shows where the cancellation is legal and why (L1 C7). |
 | 2 | `der-linearize-estimate` — estimate a nearby value | `numeric` | \(f(a)+f'(a)h\) | Shows the true value and the residual, and names the direction of the error. |
 | 3 | `der-three-names` — rate asked, slope answered; slope asked, rate answered | `exercise-sequence`, units required | both readings | Rejects a unitless number; the units are the argument. |
-| 4 | `der-tangent-crosses` — supply a curve and point where the tangent crosses | `construct`, predicate-graded | any inflection point of the supplied family | Rejects circles and parabolas; explains that contact was never the criterion. |
-| 5 | `der-differentiable-graph` — decide differentiability on unfamiliar graphs | `exercise-sequence`, typed reason | per-graph verdict | Names which magnified picture fails to become one line. |
-| 6 | `der-continuous-not-differentiable` — supply such a function at \(x=2\) | `construct`, predicate-graded | any corner/cusp at 2, continuous there | Rejects discontinuous answers and smooth ones; both failure directions explained. |
-| 7 | `der-sketch-derivative` — identify \(f'\) from a graph of \(f\) | `multiple-choice` (4 plots) | the correct \(f'\) | **Recorded as recognition.** Distractors: sign-flipped, shifted, and \(f\) itself. |
-| 8 | `der-residual-remains` — what is left after zooming? | `text`, produced | the residual / error term, nonzero | Re-shows the labelled gap; refutes "the curve is straight there". |
-| 9 | `der-applied-transfer` — a tank's volume against time (unfamiliar) | `exercise-sequence` (units → physical meaning of the tangent → estimate → **sign of the error**) | per-part | The final part requires reading \(E(h)\)'s sign from the bending; taught once, drilled never. |
+| 4 | `der-tangent-crosses` — on \(y=x^3\), where does the tangent cross **at the point of tangency**, and where does the tangent at \(a=1\) meet the curve again? | `exercise-sequence` (numeric, numeric) | \(0\); \(-2\) | Contact was never the criterion. The second part shows the tangent meeting the curve again is *ordinary*, not a defect. |
+| 5 | `der-differentiable-definition` — decide differentiability at a point for three fresh functions, **from their definitions** | `exercise-sequence`, verdict + typed reason | per-function verdict | Names what the magnified picture would do. *(Graph reading is practised in clip 1 and the explorer; no graded item captures it — see the contract's §1e.)* |
+| 6 | `der-corner-slopes` — supply a corner at \(x=2\) as the pair (left slope, right slope) | **`construct-in-explorer`**, predicate `corner-slopes` (ceiling E4) | any two finite slopes that differ | Equal slopes describe a *differentiable* point; that is the whole content of a corner. **The lesson's only E4 claim.** |
+| 7 | `der-identify-derivative` — identify \(f'\) for a given \(f\) | `multiple-choice` (4 **expressions**) | the correct \(f'\) | **Recorded as E2 recognition.** Distractors: sign-flipped, off-by-a-power, and \(f\) itself. |
+| 8 | `der-residual-remains` — what is left after zooming? | `exercise-sequence`, typed | the residual / error, nonzero | Re-shows the labelled gap; refutes "the curve is straight there". |
+| 9 | `der-applied-transfer` — a tank's volume against time (unfamiliar) | `exercise-sequence` (units → meaning of the tangent → estimate → **sign of the error**) | per-part | The final part requires reading \(E(h)\)'s sign from the bending; taught once, drilled never. Transfer tier, **E3 level**. |
 
 ## Insight traceability
 
@@ -147,6 +147,7 @@ The compression. One number, three readings, driven by one signal.
 | C8 **the compression — one object** | clip 2 `as-rate`/`as-slope`/`as-approx` | Ex. 3 |
 | C9 the \(1\times1\) matrix | a `connection` depth layer, one paragraph | — *(connection, not assessed)* |
 | C10 visible failure | clip 1 `corner` | Ex. 5, Ex. 6 |
+| C6 tangent by error decay | clip 2 `wrong-slope`; explorer comparison slope | Ex. 4 |
 | C11 differentiable ⇒ continuous | depth layer + retention item | module retention item |
 | C12 \(f'\) as a function | clip 2 `derivative-fn` | Ex. 7 |
 | C13 forward to L4 | Key takeaway | — *(carried by L4's opening)* |
@@ -192,14 +193,19 @@ The compression. One number, three readings, driven by one signal.
 - [ ] Browser test: readouts correct, no console errors
 
 ## Acceptance checklist
-- [ ] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
-- [ ] Insight traceability table complete
-- [ ] Route intentional; the second clip's placement justified in-plan
-- [ ] Headings content-specific
-- [ ] Guided-to-interactive continuity (same fixtures across both clips and the explorer)
-- [ ] Progressive disclosure applied
-- [ ] KaTeX notation consistent with §Notation, including the \(h\) vs \(\Delta x\) reservation
-- [ ] Accessibility: labels, focus, readouts, reduced-motion frames for both clips
-- [ ] Diagrams labelled, unclipped, safe frame intact
-- [ ] `docs/quality/lesson-correctness-checklist.md` completed
-- [ ] All tests pass
+
+**Built and accepted 2026-07-28.** Gate 8 record:
+[mastery-contract §6](mastery-contract.md#6-acceptance-record-gate-8).
+
+- [x] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
+- [x] Insight traceability table complete
+- [x] Route intentional; the second clip's placement justified in-plan
+- [x] Headings content-specific
+- [x] Guided-to-interactive continuity across both clips and the explorer
+- [x] Progressive disclosure applied
+- [x] KaTeX notation consistent, including the \(h\) vs \(\Delta x\) reservation
+- [x] Accessibility: labels, focus, readouts, reduced-motion frames for both clips
+- [x] Diagrams labelled, unclipped, safe frame intact
+- [x] `docs/quality/lesson-correctness-checklist.md` completed
+- [x] All tests pass — 12 zoom-family assertions, 75 grading assertions, hard
+      gates for both clips, chapter seeks, and four browser tests

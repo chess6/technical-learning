@@ -64,6 +64,16 @@
     "module": "eigenvectorsInvariantDirectionsScene",
     "exportName": "eigenvectorsInvariantDirectionsScene"
   },
+  "derivative-local-linearity": {
+    "module": "derivativeLocalLinearityScene",
+    "exportName": "derivativeLocalLinearityScene",
+    "lessonId": "derivative-local-linearity"
+  },
+  "derivative-three-names": {
+    "module": "derivativeThreeNamesScene",
+    "exportName": "derivativeThreeNamesScene",
+    "lessonId": "derivative-local-linearity"
+  },
   "limits-continuity": {
     "module": "limitsContinuityScene",
     "exportName": "limitsContinuityScene",

@@ -365,6 +365,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       // authoring order, not a curriculum — `courseModel.ts` decides which
       // course a lesson belongs to and what precedes it.
       "limits-continuity",
+      "derivative-local-linearity",
     ]);
   });
 

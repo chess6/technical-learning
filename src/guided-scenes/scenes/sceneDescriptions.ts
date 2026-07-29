@@ -44,6 +44,12 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./eigenvectorsInvariantDirectionsScene").then(
       (m) => m.eigenvectorsInvariantDirectionsScene,
     ),
+  "derivative-local-linearity": () =>
+    import("./derivativeLocalLinearityScene").then(
+      (m) => m.derivativeLocalLinearityScene,
+    ),
+  "derivative-three-names": () =>
+    import("./derivativeThreeNamesScene").then((m) => m.derivativeThreeNamesScene),
   "limits-continuity": () =>
     import("./limitsContinuityScene").then((m) => m.limitsContinuityScene),
   "eigenvectors-characteristic-equation": () =>

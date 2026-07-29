@@ -9,10 +9,11 @@ This is the course's calibration quarantine, as
 linear algebra's: the subject-agnostic standards stay unchanged, and the
 applied-mathematics particulars live here.
 
-> **A calibration target, not a claim.** **One lesson of thirty-nine is built** —
-> `limits-continuity`, in `calculus-foundations`. Every other "current coverage"
-> cell reads *none (planned)*. What the matrix fixes is **how deep** each module
-> must go before it can be called done, and one lesson does not move a module bar.
+> **A calibration target, not a claim.** **Two lessons of thirty-nine are
+> built** — `limits-continuity` and `derivative-local-linearity`, both in
+> `calculus-foundations`. Every other "current coverage" cell reads *none
+> (planned)*. What the matrix fixes is **how deep** each module must go before it
+> can be called done, and two lessons do not move a module bar.
 
 ---
 
@@ -94,7 +95,7 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 | Module | P1 bar | **P2 bar (target)** | P3 bar (not targeted) | Current |
 | --- | --- | --- | --- | --- |
 | **M0 `entry-bridges`** | Radians and the unit circle usable. | Same, plus reading a phasor diagram cold. | — | none (planned) |
-| **M1 `calculus-foundations`** | Riemann sums; the FTC applied. [ext-18.01SC] | Limits as a **local tolerance guarantee**, with a modulus of continuity as the quantitative control; local linearity as the *meaning* of the derivative; the FTC **derived by telescoping**. | \(\varepsilon\)–\(\delta\); uniform continuity proved on a compact interval; integrability theory. | **1 of 4 lessons built** (`limits-continuity`): the tolerance guarantee and the modulus are delivered; local linearity, accumulation, and the FTC are not. The module bar is **not** met. |
+| **M1 `calculus-foundations`** | Riemann sums; the FTC applied. [ext-18.01SC] | Limits as a **local tolerance guarantee**, with a modulus of continuity as the quantitative control; local linearity as the *meaning* of the derivative; the FTC **derived by telescoping**. | \(\varepsilon\)–\(\delta\); uniform continuity proved on a compact interval; integrability theory. | **2 of 4 lessons built**: the tolerance guarantee, the modulus, and local linearity as the *meaning* of the derivative are delivered; accumulation and the FTC are not. The module bar is **not** met. |
 | **M2 `calculus-technique`** | Substitution, parts, standard improper integrals. [ext-Stewart] | Techniques **derived** from the chain and product rules; parts recognised as Theme 1's boundary term; improper convergence judged by decay rate. | Comparison and limit-comparison proved; conditional convergence. | none (planned) |
 | **M3 `series`** | Convergence tests applied; Taylor polynomials computed. [ext-18.01SC] | Series as the limit of partial sums; absolute vs conditional convergence and why rearrangement is unsafe; radius of convergence as a property of the coefficients. | Uniform convergence; term-by-term differentiation justified; Weierstrass M-test. | none (planned) |
 | **M4 `complex-oscillation`** | \(a+bi\) arithmetic; Euler's formula stated. | Complex multiplication as rotate-and-scale; Euler **derived** (twice — from the ODE and from the series); phasor arithmetic used to add sinusoids and read impedance. [ext-18.03SC] | Complex differentiability; the exponential defined rigorously. | none (planned) |
@@ -110,9 +111,9 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 
 ## 3. Course-level gap summary
 
-**Coverage: one lesson.** `limits-continuity` is built and passes Gate 8 on its
-lesson-owned outcomes. Every other lesson is `future`, and **no module bar in §2
-is met** — a module is judged on its whole set, and Gate 9 for
+**Coverage: two lessons.** `limits-continuity` and `derivative-local-linearity`
+are built and each passes Gate 8 on its lesson-owned outcomes. Every other lesson
+is `future`, and **no module bar in §2 is met** — a module is judged on its whole set, and Gate 9 for
 `calculus-foundations` has not run.
 
 **Highest-risk P2 bars** — the ones most likely to be quietly missed:

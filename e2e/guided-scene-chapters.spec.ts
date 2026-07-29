@@ -49,6 +49,8 @@ const SCENE_ROUTES: { scene: string; route: string }[] = [
   { scene: "karatsuba-cross-terms", route: "/lesson/karatsuba" },
   // Applied mathematics, unit `calculus-foundations`.
   { scene: "limits-continuity", route: "/lesson/limits-continuity" },
+  { scene: "derivative-local-linearity", route: "/lesson/derivative-local-linearity" },
+  { scene: "derivative-three-names", route: "/lesson/derivative-local-linearity" },
 ];
 
 const PLAYER = ".guided-scene-player";
