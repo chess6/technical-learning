@@ -6,11 +6,9 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: PLANNED — awaiting approval.** Mode B is complete for all four
-> lessons. Per the [course-authoring workflow](../../../../authoring/course-authoring-workflow.md)
-> and `.cursor/rules/course-authoring.mdc`, **no lesson code may be written until
-> this package is approved.** Approval of this ledger approves all four lessons
-> as one batch.
+> **Status: APPROVED — implementation started.** Approved 2026-07-28. Mode B is
+> complete for all four lessons, and slice A0 (shared foundations) is in
+> progress on `master`. Lesson slices A1–A4 have not begun.
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -132,7 +130,7 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 
 | Slice | Status | Branch / worktree |
 | --- | --- | --- |
-| A0 shared foundations | NOT STARTED | — |
+| A0 shared foundations | **IN PROGRESS** | `master` |
 | A1 `limits-continuity` | NOT STARTED | — |
 | A2 `derivative-local-linearity` | NOT STARTED | — |
 | A3 `integral-accumulation` | NOT STARTED | — |

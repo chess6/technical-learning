@@ -1,0 +1,6 @@
+/* The `function-plot` family shares MafsSceneShell's canvas styling; only the
+   sampling overlay needs anything of its own, and it needs it to stay legible
+   against the dashed polyline beneath it. */
+.function-plot__guarantee {
+  pointer-events: none;
+}

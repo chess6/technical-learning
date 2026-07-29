@@ -422,7 +422,7 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **PLANNED — awaiting approval** | — | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **APPROVED — slice A0 in progress** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 ### 6.2 Suggested Mode B order

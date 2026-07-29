@@ -155,6 +155,53 @@ export const CURRICULUM: readonly Subject[] = [
           },
         ],
       },
+      {
+        id: "applied-mathematics",
+        title: "Applied Mathematics",
+        subtitle: "Change, fields, and transforms",
+        // Units mirror the authoritative spine in
+        // docs/courses/applied-mathematics/course-spine.md, where **one unit =
+        // one module directory = one implementation package**. Only
+        // `calculus-foundations` (Package A) is planned in Mode B; the later
+        // units are added as their packages enter Mode B, so this list grows
+        // with the roadmap rather than declaring 39 stubs up front.
+        units: [
+          {
+            id: "calculus-foundations",
+            title: "The two operations, and the theorem that binds them",
+            items: [
+              {
+                kind: "future",
+                id: "limits-continuity",
+                title: "What \u201Capproaches\u201D Means",
+                subtitle:
+                  "A limit is a value the neighbours force \u2014 the point never votes",
+              },
+              {
+                kind: "future",
+                id: "derivative-local-linearity",
+                title: "The Derivative as Local Linearity",
+                subtitle:
+                  "Zoom far enough and a smooth curve is a line; the derivative is that line",
+              },
+              {
+                kind: "future",
+                id: "integral-accumulation",
+                title: "The Integral as Accumulation",
+                subtitle:
+                  "Not an area \u2014 the total of a rate, with the units to prove it",
+              },
+              {
+                kind: "future",
+                id: "fundamental-theorem",
+                title: "The Fundamental Theorem of Calculus",
+                subtitle:
+                  "Everything in the middle cancels; only the two ends survive",
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
