@@ -252,6 +252,7 @@ describe("scene timings (pure data)", () => {
       "limits-continuity": { predict: "predict", reveal: "tighter" },
       "derivative-local-linearity": { predict: "predict", reveal: "zoom" },
       "derivative-three-names": { predict: "predictDecay", reveal: "decay" },
+      "integral-accumulation": { predict: "predict", reveal: "refine" },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },

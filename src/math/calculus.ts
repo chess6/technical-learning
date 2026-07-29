@@ -413,6 +413,98 @@ export function runningTotal(
   return out;
 }
 
+/**
+ * Left and right sums, and whether they actually bracket a value.
+ *
+ * The `brackets` flag is **computed, never assumed**. Left/right bracketing is a
+ * consequence of monotonicity, not of being a Riemann sum, and `integral-accumulation`
+ * shows the restriction rather than stating it: `EX_NON_MONOTONE` is in the
+ * fixture list precisely so a test can require this to come back `false`.
+ */
+export interface BracketReport {
+  readonly left: number;
+  readonly right: number;
+  readonly lo: number;
+  readonly hi: number;
+  readonly width: number;
+  /**
+   * Did the pair happen to straddle the value at THIS partition? An observation
+   * about one `n`, and nothing more.
+   */
+  readonly straddles: boolean;
+  /**
+   * Does the guarantee apply — is the rate monotone on `[a, b]`?
+   *
+   * These two are deliberately separate, because they come apart in exactly the
+   * case the lesson is about. On a rate that rises and falls, the left and right
+   * sums can still straddle the answer at some `n` **by luck**; reporting that as
+   * a bracket would teach that left/right sums bracket in general, which is the
+   * misconception the lesson's recognition item exists to catch. Only
+   * `guaranteed` licenses the claim.
+   */
+  readonly guaranteed: boolean;
+}
+
+/**
+ * Is `f` monotone on `[a, b]`?
+ *
+ * Decided by sampling, so it is a statement about the resolution used — which is
+ * the honest thing a finite check can say, and the same discipline
+ * `largestWindowFound` applies to its own search.
+ */
+export function isMonotoneOn(
+  f: RealFunction,
+  a: number,
+  b: number,
+  samples = 512,
+): boolean {
+  let rising = false;
+  let falling = false;
+  let previous = f(a);
+  for (let i = 1; i <= samples; i += 1) {
+    const value = f(a + ((b - a) * i) / samples);
+    if (value > previous + 1e-12) rising = true;
+    if (value < previous - 1e-12) falling = true;
+    if (rising && falling) return false;
+    previous = value;
+  }
+  return true;
+}
+
+export function bracketReport(
+  f: RealFunction,
+  a: number,
+  b: number,
+  n: number,
+  value: number,
+): BracketReport {
+  const left = riemannSum(f, a, b, n, "left");
+  const right = riemannSum(f, a, b, n, "right");
+  const lo = Math.min(left, right);
+  const hi = Math.max(left, right);
+  return {
+    left,
+    right,
+    lo,
+    hi,
+    width: hi - lo,
+    // A tolerance would hide the failure this exists to expose, so there is none.
+    straddles: value >= lo && value <= hi,
+    guaranteed: isMonotoneOn(f, a, b),
+  };
+}
+
+/** Riemann sums over a ladder of partition counts — the "it settles" table. */
+export function refinementTable(
+  f: RealFunction,
+  a: number,
+  b: number,
+  counts: readonly number[],
+  sample: SamplePoint = "right",
+): readonly { readonly n: number; readonly sum: number }[] {
+  return counts.map((n) => ({ n, sum: riemannSum(f, a, b, n, sample) }));
+}
+
 /** The right-endpoint sum for `x^2` on `[0, 2]`, in closed form. */
 export function parabolaRightSum(n: number): number {
   if (!Number.isInteger(n) || n < 1) {

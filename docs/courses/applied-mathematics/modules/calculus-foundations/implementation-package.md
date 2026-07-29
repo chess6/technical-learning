@@ -6,13 +6,13 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: APPROVED. A0 + A1 + A2 built; A3–A4 open.**
+> **Status: APPROVED. A0 + A1 + A2 + A3 built; A4 open.**
 >
 > Package A was explicitly approved for implementation on 2026-07-28, resolving
 > the boundary question review had raised about A0/A1. Slices A0 (shared
-> foundations), A1 (`limits-continuity`) and A2 (`derivative-local-linearity`)
-> are built on `master`, and A1 and A2 each pass Gate 8 on their lesson-owned
-> outcomes.
+> foundations), A1 (`limits-continuity`), A2 (`derivative-local-linearity`) and
+> A3 (`integral-accumulation`) are built on `master`, and each of A1–A3 passes
+> Gate 8 on its lesson-owned outcomes.
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -94,8 +94,25 @@ its [Gate 8 record](../../lessons/02-derivative-local-linearity/mastery-contract
 the one worth carrying forward to A3/A4 is that a **signal declared at module
 scope survives between scene runs**, which silently breaks seek determinism.
 
-### A3 — `integral-accumulation`
-Creates `accumulation-strip`. One clip, one explorer, eight items.
+### A3 — `integral-accumulation` *(shipped)*
+Creates `accumulation-strip`. One clip (ten beats), one explorer, eight items.
+
+Its evidence claims were made ceiling-legal **before** any code was written, as
+A2's were: three E4 claims became one E4 claim on `construct-in-explorer`
+(`int-signed-transfer`, a constructed two-piece current whose charge ends below
+its maximum), with the other two recorded at E3 and E2. The reconciliation table
+is in its [contract §1d](../../lessons/03-integral-accumulation/mastery-contract.md#evidence-ceiling-reconciliation-applied-at-build-2026-07-28).
+
+The defect worth carrying forward to A4 is recorded in its
+[Gate 8 record](../../lessons/03-integral-accumulation/mastery-contract.md#6-acceptance-record-gate-8):
+**a conditional result reported as an unconditional one.** The explorer's
+bracket readout was a single boolean computed by checking whether the two sums
+*happened* to straddle the value — and on a rate that plainly turns they
+sometimes do, so the panel asserted a guarantee it had not earned. Observation
+and guarantee are now separate fields (`straddles`, `guaranteed`), with a test
+pinning a case where they disagree. A4 has the same shape of risk: the
+telescoping identity holds for **any** partition, and a picture drawn only on
+equal ones would imply it needs them.
 
 ### A4 — `fundamental-theorem`
 Creates `telescoping-cancellation`. **Two clips** — `ftc-accumulate-then-measure`
@@ -108,10 +125,10 @@ ones most likely to be lost by an implementer working from habit**:
 
 | # | Check | Slice | Why it matters |
 | --- | --- | --- | --- |
-| **P1** | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. Enforce with a grep over the built lesson. |
+| **P1** ✅ *(A3)* | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. **Satisfied:** `src/lessons/__tests__/noAntiderivative.test.tsx` greps the built lesson definition, the scene's chapters and accessible description, and the explorer's rendered text, and carries a guard asserting the pattern set is not vacuous; `e2e/lesson-integral-accumulation.spec.ts` repeats it over the rendered article. Scoped to the lesson, not the page: the course sidebar names L4 by title, and should. |
 | **P2** | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. |
 | **P3** ✅ *(A2)* | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). |
-| **P4** | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. |
+| **P4** ◑ *(A3 half)* | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. **A3: satisfied.** `riemannSum`, `refinementTable` and the scene's own prefix sums evaluate only the rate; several offered fixtures declare a closed-form antiderivative and no lesson code path reads one. `accumulation.test.ts` checks the summed and shortcut values agree *in the test*, which is where that comparison belongs. |
 | **P5** | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. |
 
 Also required, from the ordinary standards:
@@ -161,12 +178,12 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | A0 shared foundations | **SHIPPED** | `master` |
 | A1 `limits-continuity` | **SHIPPED** | `master` |
 | A2 `derivative-local-linearity` | **SHIPPED** | `master` |
-| A3 `integral-accumulation` | NOT STARTED | — |
+| A3 `integral-accumulation` | **SHIPPED** | `master` |
 | A4 `fundamental-theorem` | NOT STARTED | — |
 
 ## 7. Acceptance for the package
 
-- [ ] All four lessons built, each meeting its own lesson-plan acceptance checklist.
+- [ ] All four lessons built, each meeting its own lesson-plan acceptance checklist. *(3 of 4: A1, A2, A3.)*
 - [ ] **Each lesson passes Gate 8 on its lesson-owned outcomes**, with module-owned
       outcomes recorded as open Gate-9 obligations.
 - [ ] P1–P5 verified, each by a test rather than by inspection.

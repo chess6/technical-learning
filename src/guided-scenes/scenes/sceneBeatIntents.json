@@ -1461,5 +1461,106 @@
       "recolour": "transition",
       "hold": "hold"
     }
+  },
+  "integral-accumulation": {
+    "constant": {
+      "title": "text",
+      "draw": "transition",
+      "units": "text",
+      "hold": "hold"
+    },
+    "vary": {
+      "title": "text",
+      "morph": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:rate"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "chop": {
+      "title": "text",
+      "split": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:strips"
+        ]
+      },
+      "label": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "sum": {
+      "title": "text",
+      "fill": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:totalBar"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "refine": {
+      "title": "text",
+      "double": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:strips"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "bracket": {
+      "clear": "transition",
+      "title": "text",
+      "draw": "transition",
+      "close": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:bracketLow"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "reverse": {
+      "clear": "transition",
+      "restore": "transition",
+      "title": "text",
+      "extend": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:strips"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "running": {
+      "title": "text",
+      "sweep": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:accumulation:runningTotal"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "meters": {
+      "title": "text",
+      "relabel": "text",
+      "second": "text",
+      "caption": "text",
+      "hold": "hold"
+    }
   }
 }

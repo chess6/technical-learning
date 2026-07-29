@@ -1,0 +1,6 @@
+/* The `accumulation-strip` family shares MafsSceneShell's canvas styling. The
+   only thing it needs of its own is that the per-rectangle product labels never
+   intercept a pointer that was aimed at the draggable right endpoint beneath. */
+.accumulation-strip__label {
+  pointer-events: none;
+}

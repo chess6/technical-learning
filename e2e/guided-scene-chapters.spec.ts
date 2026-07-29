@@ -51,6 +51,7 @@ const SCENE_ROUTES: { scene: string; route: string }[] = [
   { scene: "limits-continuity", route: "/lesson/limits-continuity" },
   { scene: "derivative-local-linearity", route: "/lesson/derivative-local-linearity" },
   { scene: "derivative-three-names", route: "/lesson/derivative-local-linearity" },
+  { scene: "integral-accumulation", route: "/lesson/integral-accumulation" },
 ];
 
 const PLAYER = ".guided-scene-player";

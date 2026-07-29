@@ -16,7 +16,34 @@ export type MafsSceneShellProps = {
   /** Accessible name for the diagram. */
   ariaLabel: string;
   showCoordinates?: boolean;
+  /**
+   * Gridline/label spacing, in math units.
+   *
+   * Defaults to 1, which is right for a plot a few units tall and unreadable for
+   * one spanning thirty: the accumulation explorer's total panel drew a label on
+   * every integer from -16 to 17 inside 130 pixels, and the axis became a smear.
+   * A panel that knows its own range passes its own step.
+   */
+  xStep?: number;
+  yStep?: number;
 };
+
+/** A 1/2/5×10^k step that puts roughly `target` gridlines across `span`. */
+export function niceStep(span: number, target = 6): number {
+  if (!Number.isFinite(span) || span <= 0) return 1;
+  const raw = span / target;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const normalized = raw / magnitude;
+  const step = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return step * magnitude;
+}
+
+/** A tick label with only as many decimals as its own step needs. */
+function label(value: number, step: number): string {
+  if (Number.isInteger(step)) return Number.isInteger(value) ? String(value) : "";
+  const places = Math.max(0, -Math.floor(Math.log10(step)));
+  return value.toFixed(places);
+}
 
 /**
  * Thin Mafs wrapper with consistent dark-canvas styling and responsive width.
@@ -28,6 +55,8 @@ export function MafsSceneShell({
   viewBox = { x: [-4, 4], y: [-3, 3], padding: 0.35 },
   ariaLabel,
   showCoordinates = true,
+  xStep = 1,
+  yStep = 1,
 }: MafsSceneShellProps) {
   return (
     <div className="mafs-scene-shell" role="img" aria-label={ariaLabel}>
@@ -40,8 +69,8 @@ export function MafsSceneShell({
       >
         {showCoordinates && (
           <Coordinates.Cartesian
-            xAxis={{ lines: 1, labels: (n) => (Number.isInteger(n) ? String(n) : "") }}
-            yAxis={{ lines: 1, labels: (n) => (Number.isInteger(n) ? String(n) : "") }}
+            xAxis={{ lines: xStep, labels: (n) => label(n, xStep) }}
+            yAxis={{ lines: yStep, labels: (n) => label(n, yStep) }}
           />
         )}
         {children}

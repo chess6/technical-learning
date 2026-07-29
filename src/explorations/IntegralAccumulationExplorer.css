@@ -1,0 +1,35 @@
+.integral-explorer__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.integral-explorer__table caption {
+  text-align: left;
+  padding-bottom: 0.35rem;
+  color: var(--color-text-muted);
+}
+
+.integral-explorer__table th,
+.integral-explorer__table td {
+  text-align: right;
+  padding: 0.2rem 0.6rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.integral-explorer__table th:first-child,
+.integral-explorer__table td:first-child {
+  text-align: left;
+}
+
+/* The note that appears when left/right sums fail to bracket: it carries
+   a restriction the learner must not miss, so it is styled as a caution. */
+.integral-explorer__note {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--role-invariant);
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}

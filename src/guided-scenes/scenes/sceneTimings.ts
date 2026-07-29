@@ -1444,6 +1444,30 @@ export const DERIVATIVE_NAMES_SEGMENTS: readonly SceneSegment[] = [
     summary: "The derivative plotted as a function, drawn from a numeric derivative of the same fixture." },
 ];
 
+/** `integral-accumulation` — the one clip. */
+export const INTEGRAL_ACCUMULATION_SEGMENTS: readonly SceneSegment[] = [
+  { id: "constant", title: "If it never changed", duration: 6,
+    summary: "A flat rate: one rectangle, with its product and its units written inside. (m/s)(s) = m." },
+  { id: "vary", title: "But it does change", duration: 5,
+    summary: "The real drive trace replaces the flat one. There is no single number left to multiply by." },
+  { id: "chop", title: "Short enough to pretend", duration: 7,
+    summary: "Four pieces. On each, one sampled rate times that width — each rectangle carries its own product." },
+  { id: "sum", title: "Add the pieces", duration: 6,
+    summary: "The four contributions accumulate into a running bar, and the sum is displayed." },
+  { id: "predict", title: "Predict: halve the pieces, then halve again", duration: 5.5,
+    summary: "Nothing moves. Will the total rise, fall, or settle? The learner commits before the refinement runs." },
+  { id: "refine", title: "It settles", duration: 8,
+    summary: "n doubles repeatedly and the sum settles — L1's forced value, cited by name, on a new quantity." },
+  { id: "bracket", title: "Squeezed, not guessed", duration: 7,
+    summary: "On a monotone stretch the left and right sums are drawn as a lower and upper bar closing on the value. The caption states the monotone restriction." },
+  { id: "reverse", title: "Going backwards", duration: 6.5,
+    summary: "The reversing segment: the rate goes negative, its rectangles hang below the axis, and the running total falls." },
+  { id: "running", title: "The other instrument", duration: 7,
+    summary: "The right endpoint sweeps and A(x) is plotted beneath the rate. It is the odometer." },
+  { id: "meters", title: "One machine, four meters", duration: 6.5,
+    summary: "The axes are relabelled — current against time, power against time — and the same construction reads charge, then energy." },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1462,6 +1486,7 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "limits-continuity": LIMITS_CONTINUITY_SEGMENTS,
   "derivative-local-linearity": DERIVATIVE_ZOOM_SEGMENTS,
   "derivative-three-names": DERIVATIVE_NAMES_SEGMENTS,
+  "integral-accumulation": INTEGRAL_ACCUMULATION_SEGMENTS,
   "eigenvectors-characteristic-equation": EIGEN_CHARACTERISTIC_SEGMENTS,
   "karatsuba-cross-terms": KARATSUBA_SEGMENTS,
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
@@ -1888,6 +1913,19 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     zoom: { clear: 0.4, title: 0.4, reveal: 0.5, magnify: 3.4, caption: 0.4, hold: 3.0 },
     same: { title: 0.4, draw: 0.5, caption: 0.4, hold: 3.0 },
     corner: { clear: 0.4, restore: 0.5, title: 0.4, magnify: 2.4, caption: 0.4, hold: 2.6 },
+  },
+
+  "integral-accumulation": {
+    constant: { title: 0.4, draw: 0.6, units: 0.4, hold: 3.2 },
+    vary: { title: 0.4, morph: 1.4, caption: 0.4, hold: 2.2 },
+    chop: { title: 0.4, split: 1.6, label: 0.5, caption: 0.4, hold: 3.4 },
+    sum: { title: 0.4, fill: 1.4, caption: 0.4, hold: 3.2 },
+    predict: { ask: 0.5, think: 4.4 },
+    refine: { title: 0.4, double: 4.2, caption: 0.4, hold: 2.4 },
+    bracket: { clear: 0.4, title: 0.4, draw: 1.5, close: 1.4, caption: 0.5, hold: 2.2 },
+    reverse: { clear: 0.4, restore: 0.5, title: 0.4, extend: 1.8, caption: 0.4, hold: 2.5 },
+    running: { title: 0.4, sweep: 2.8, caption: 0.4, hold: 2.8 },
+    meters: { title: 0.4, relabel: 0.6, second: 0.6, caption: 0.4, hold: 3.9 },
   },
 
   "derivative-three-names": {

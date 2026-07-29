@@ -50,6 +50,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     ),
   "derivative-three-names": () =>
     import("./derivativeThreeNamesScene").then((m) => m.derivativeThreeNamesScene),
+  "integral-accumulation": () =>
+    import("./integralAccumulationScene").then((m) => m.integralAccumulationScene),
   "limits-continuity": () =>
     import("./limitsContinuityScene").then((m) => m.limitsContinuityScene),
   "eigenvectors-characteristic-equation": () =>

@@ -24,7 +24,8 @@ Neighbours:
   the sibling course this one reuses and hands off to, never duplicates.
 
 > **Scope note (durable).** Every lesson below is a `future` node **except
-> `limits-continuity` and `derivative-local-linearity`, which are built**
+> `limits-continuity`, `derivative-local-linearity` and `integral-accumulation`,
+> which are built**
 > (Package A, slices A1–A2). Listing the rest does **not** authorize building
 > them. Lessons are promoted one approved package
 > at a time.
@@ -42,7 +43,7 @@ Neighbours:
 - **P3 module overrides: none at launch.** The natural future candidate is
   `boundary-theorems`.
 
-> **A target, not a claim of attainment.** Two lessons of thirty-nine are built.
+> **A target, not a claim of attainment.** Three lessons of thirty-nine are built.
 > Gate 10 reports the real distance.
 
 ---
@@ -183,8 +184,8 @@ M9–M11 are three branches, described in [§6](#6-the-three-branches).
 
 ## 4. The spine at a glance
 
-`Status`: all `future` except `limits-continuity` and
-`derivative-local-linearity`, which are **built**.
+`Status`: all `future` except `limits-continuity`, `derivative-local-linearity`
+and `integral-accumulation`, which are **built**.
 
 | Spine | Lesson | Central insight (the "not memorize X, but Y") | Unit | Curriculum id |
 | --- | --- | --- | --- | --- |
@@ -192,7 +193,7 @@ M9–M11 are three branches, described in [§6](#6-the-three-branches).
 | B1 | Radians and the rotating point | An angle is an **arc length**, and \(\sin,\cos\) are the **coordinates of a point circling at constant speed** — not triangle ratios. | `entry-bridges` | `radians-rotation` |
 | L1 | What "approaches" means **(built)** | A limit is not "substitute the value"; it is a **local tolerance guarantee** — name any tolerance and *some* window delivers it. Continuity is that guarantee holding with the function's own value as the target. | `calculus-foundations` | `limits-continuity` |
 | L2 | The derivative as local linearity **(built)** | Zoom far enough into a smooth curve and it **is** a line. "Rate of change", "slope of the tangent", and "best linear approximation" are one object read three ways. | `calculus-foundations` | `derivative-local-linearity` |
-| L3 | The integral as accumulation | An integral is **the total of a rate**; "area under the curve" is what totalling a rate looks like when the thing you drew is the rate. | `calculus-foundations` | `integral-accumulation` |
+| L3 | The integral as accumulation **(built)** | An integral is **the total of a rate**; "area under the curve" is what totalling a rate looks like when the thing you drew is the rate. | `calculus-foundations` | `integral-accumulation` |
 | L4 | The Fundamental Theorem of Calculus | Measuring a rate and accumulating a rate are **inverse processes**, and the infinite sum collapses because interior contributions **telescope**. **Theme 1, in one dimension.** | `calculus-foundations` | `fundamental-theorem` |
 | L5 | The chain rule: rates compose | Composing functions composes their local linear models, so rates **multiply**. This is matrix composition (LA L6) in one dimension. | `calculus-technique` | `chain-rule` |
 | L6 | Deciding with the derivative | The derivative turns "find the best" into "find where the local model is flat", and "hard function" into "easy polynomial, near here". | `calculus-technique` | `optimization-approximation` |

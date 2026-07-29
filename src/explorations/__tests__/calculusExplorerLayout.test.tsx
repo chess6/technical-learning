@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { LimitsContinuityExplorer } from "../LimitsContinuityExplorer";
 import { DerivativeLocalLinearityExplorer } from "../DerivativeLocalLinearityExplorer";
+import { IntegralAccumulationExplorer } from "../IntegralAccumulationExplorer";
 import { CALCULUS_FIXTURES } from "../../math";
 
 /**
@@ -24,7 +25,18 @@ const EXPLORERS = [
     name: "derivative-local-linearity",
     Component: DerivativeLocalLinearityExplorer,
   },
+  { name: "integral-accumulation", Component: IntegralAccumulationExplorer },
 ] as const;
+
+/**
+ * The two explorers whose primary control is a point on the curve. The third,
+ * `integral-accumulation`, is driven by an interval and a partition count, so it
+ * names its controls "Start a" / "End b" instead and is exempt from this one
+ * check rather than being made to fake a control it does not have.
+ */
+const POINT_EXPLORERS = EXPLORERS.filter(
+  (e) => e.name !== "integral-accumulation",
+);
 
 describe.each(EXPLORERS)("$name explorer", ({ Component }) => {
   it("puts its controls in the side region, not on the dark canvas", () => {
@@ -61,19 +73,21 @@ describe.each(EXPLORERS)("$name explorer", ({ Component }) => {
     expect(summary!.textContent?.toLowerCase()).toContain("drag");
   });
 
+  it("keeps the reset and the presets in the toolbar", () => {
+    const { container } = render(<Component />);
+    const toolbar = container.querySelector(".exploration-panel__toolbar");
+    expect(toolbar).toBeTruthy();
+    expect(toolbar!.textContent).toContain("Reset");
+  });
+});
+
+describe.each(POINT_EXPLORERS)("$name explorer", ({ Component }) => {
   it("offers a labelled point control as well as the drag", () => {
     const { container } = render(<Component />);
     const labels = [...container.querySelectorAll("label")].map((l) =>
       l.textContent?.trim(),
     );
     expect(labels.some((l) => l?.startsWith("Point a"))).toBe(true);
-  });
-
-  it("keeps the reset and the presets in the toolbar", () => {
-    const { container } = render(<Component />);
-    const toolbar = container.querySelector(".exploration-panel__toolbar");
-    expect(toolbar).toBeTruthy();
-    expect(toolbar!.textContent).toContain("Reset");
   });
 });
 

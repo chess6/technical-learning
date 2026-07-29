@@ -7,6 +7,7 @@ import {
   EIGENVECTOR_SEGMENTS,
   EIGEN_CHARACTERISTIC_SEGMENTS,
   DERIVATIVE_NAMES_SEGMENTS,
+  INTEGRAL_ACCUMULATION_SEGMENTS,
   DERIVATIVE_ZOOM_SEGMENTS,
   LIMITS_CONTINUITY_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
@@ -65,6 +66,7 @@ const EIGEN_CHARACTERISTIC_STEPS = toSteps(EIGEN_CHARACTERISTIC_SEGMENTS);
 const LIMITS_CONTINUITY_STEPS = toSteps(LIMITS_CONTINUITY_SEGMENTS);
 const DERIVATIVE_ZOOM_STEPS = toSteps(DERIVATIVE_ZOOM_SEGMENTS);
 const DERIVATIVE_NAMES_STEPS = toSteps(DERIVATIVE_NAMES_SEGMENTS);
+const INTEGRAL_ACCUMULATION_STEPS = toSteps(INTEGRAL_ACCUMULATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -332,6 +334,25 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "zoom",
       "same",
       "corner",
+    ]),
+  },
+  "integral-accumulation": {
+    id: "integral-accumulation",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation building the integral as the total of a rate. It opens with a flat rate over an interval, drawn as a single rectangle whose product is written inside it with units: metres per second times seconds gives metres. The flat rate is then replaced by a real drive trace, so there is no longer one number to multiply by. The interval is chopped into four pieces and on each piece one sampled rate is multiplied by that piece's width, each rectangle carrying its own product. The four contributions accumulate into a running bar and the sum is displayed. The learner is asked to predict whether the total will rise, fall, or settle when the pieces are halved and halved again, and nothing moves while the question stands. The number of pieces then doubles repeatedly and the sum settles on a value, which is the forced value the first lesson defined, applied to a new quantity. On a monotone stretch the left and right sums are drawn as a lower and an upper bar closing in on that value, with the caption stating that the bracketing holds because the rate is monotone there. The reversing segment of the drive is then included: the rate is negative, its rectangles hang below the axis, and the running total falls. The right endpoint sweeps across the interval and the running total is plotted as a second curve beneath the rate, the odometer against the speedometer. Finally the axes are relabelled to current against time and then power against time, and the same construction reads charge in coulombs and energy in joules.",
+    steps: INTEGRAL_ACCUMULATION_STEPS,
+    majorSteps: pickMajor(INTEGRAL_ACCUMULATION_STEPS, [
+      "constant",
+      "vary",
+      "chop",
+      "sum",
+      "predict",
+      "refine",
+      "bracket",
+      "reverse",
+      "running",
+      "meters",
     ]),
   },
   "derivative-three-names": {

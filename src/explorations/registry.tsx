@@ -17,6 +17,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.DerivativeLocalLinearityExplorer,
     })),
   ),
+  "integral-accumulation": lazy(() =>
+    import("./IntegralAccumulationExplorer").then((m) => ({
+      default: m.IntegralAccumulationExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,

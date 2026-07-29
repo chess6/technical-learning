@@ -356,7 +356,7 @@ A **family** is a parameterized visual treatment built once and re-instantiated.
 | --- | --- | --- | --- |
 | `function-plot` | \(y=f(x)\) with a movable point, tolerance band, input window, punctured points, secant/tangent overlay, optional \(f'\) panel. | **L1** | L2, L5, L6, L7, L9, L11, L22 |
 | `local-linearity-zoom` | Recursive zoom toward a point until the curve is a line; honest about the magnification and the residual. | **L2** ✅ | L5 (two linked panels), L11, L28 |
-| `accumulation-strip` | Riemann rectangles refining, with a running total and units readout. | L3 | L4, L7, L8, L15, L29 |
+| `accumulation-strip` | Riemann rectangles refining, with a running total and units readout. Positive contributions above the axis and negative below, never mirrored; per-rectangle products composed from the fixture's **own declared axis units**, or omitted when it declares none; left/right bracket bars drawn only where the rate is monotone; and the total on its **own panel and scale**, because it is a different quantity in different units. | **L3** ✅ | L4, L7, L8, L15, L29 |
 | `telescoping-cancellation` | Adjacent contributions with opposite orientation annihilating so only the boundary survives. **Theme 1's family.** | L4 | **L34, L36, L37** — the same argument in 2-D and 3-D. The highest-value reuse in the course. |
 | `partial-sum-ladder` | Partial sums plotted against \(n\), with a tolerance band and the tail highlighted. | L9 | L10, L11, L17 |
 | `unit-circle-phasor` | A point circling at constant angular speed, projecting onto both axes, arc-length angle readout. | B1 | L12–L14, L16–L18, L20 |
@@ -425,12 +425,12 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **APPROVED — A0–A2 built; A3–A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **APPROVED — A0–A3 built; A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
-> 2026-07-28. A0–A2 are built; A3 (`integral-accumulation`) and A4
-> (`fundamental-theorem`) remain, with complete Mode B artifacts.
+> 2026-07-28. A0–A3 are built; A4 (`fundamental-theorem`) remains, with complete
+> Mode B artifacts.
 
 ### 6.2 Suggested Mode B order
 
@@ -463,8 +463,15 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A, slices A3–A4.** A0 (the calculus layer, the course registration, and
-the `function-plot` family), A1 (`limits-continuity`) and A2
-(`derivative-local-linearity`, with the `local-linearity-zoom` family) are built
-and accepted. `integral-accumulation` and `fundamental-theorem` remain, with
-complete Mode B artifacts and no open curriculum questions.
+**Package A, slice A4.** A0 (the calculus layer, the course registration, and the
+`function-plot` family), A1 (`limits-continuity`), A2
+(`derivative-local-linearity`, with the `local-linearity-zoom` family) and A3
+(`integral-accumulation`, with the `accumulation-strip` family) are built and
+accepted. `fundamental-theorem` remains, with complete Mode B artifacts and no
+open curriculum questions.
+
+A4 creates `telescoping-cancellation`, which ledger check **P2** requires to be
+parameterized over the cancelling pairs rather than hard-coded to interval
+endpoints — Packages I–K re-run that family with shared interior edges and faces.
+`telescopingTerms` and `cancellationReport` already take an arbitrary point list
+for that reason.

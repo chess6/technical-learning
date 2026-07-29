@@ -296,7 +296,19 @@ export type ConstructCheck =
   | { kind: "vector-on-line"; spanning: readonly [number, number] }
   | { kind: "eigenvector"; matrix: readonly (readonly number[])[]; eigenvalue: number }
   | { kind: "removable-discontinuity" }
-  | { kind: "corner-slopes" };
+  | { kind: "corner-slopes" }
+  | {
+      /**
+       * A two-piece rate whose running total **ends below its own maximum**.
+       *
+       * The learner supplies the two rates; each piece lasts `halfDuration`. The
+       * area model predicts this is impossible ("area cannot be negative"); the
+       * total model predicts it easily. Infinitely many pairs work, which is why
+       * this is a construction rather than a lookup.
+       */
+      kind: "signed-total";
+      halfDuration: number;
+    };
 
 export type ConstructInExplorerConfig = {
   /** What the learner constructs. Only a single 2D vector for now. */
@@ -426,6 +438,30 @@ export function evaluateConstructCheck(
             : !finite
               ? "a one-sided slope that is not a finite number is not a slope"
               : "the slopes agree, so that point is differentiable",
+      };
+    }
+    case "signed-total": {
+      // The pair is (first rate, second rate), each held for `halfDuration`.
+      // Two conditions, and both are needed: the total must actually RISE first
+      // (otherwise its maximum is the starting zero and "below its maximum" is
+      // vacuous), and it must END below that maximum.
+      const [first, second] = vector;
+      const t = check.halfDuration;
+      const finite = Number.isFinite(first) && Number.isFinite(second);
+      const peak = first * t;
+      const final = peak + second * t;
+      const rises = peak > tolerance;
+      const ends = final < peak - tolerance;
+      return {
+        pass: finite && rises && ends,
+        because:
+          finite && rises && ends
+            ? `the total climbs to ${peak.toFixed(2)} and falls back to ${final.toFixed(2)} — below its own maximum`
+            : !finite
+              ? "a rate that is not a finite number is not a rate"
+              : !rises
+                ? "the total never rises, so it has no maximum to end below"
+                : "the total never comes back down",
       };
     }
     case "removable-discontinuity": {

@@ -172,13 +172,7 @@ export const CURRICULUM: readonly Subject[] = [
             items: [
               { kind: "lesson", lessonId: "limits-continuity" },
               { kind: "lesson", lessonId: "derivative-local-linearity" },
-              {
-                kind: "future",
-                id: "integral-accumulation",
-                title: "The Integral as Accumulation",
-                subtitle:
-                  "Not an area \u2014 the total of a rate, with the units to prove it",
-              },
+              { kind: "lesson", lessonId: "integral-accumulation" },
               {
                 kind: "future",
                 id: "fundamental-theorem",

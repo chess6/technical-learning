@@ -173,3 +173,29 @@ whose text fits only in the best case is not laid out.
 *Recorded 2026-07-28 while shipping applied-mathematics Package A slice A1. Not
 fixed there: `solution-sets` is a linear-algebra lesson and outside that
 package's scope. It needs its own narrow-correction commit.*
+
+## Media-heavy specs that fail only inside the full `--e2e` sweep
+
+**Seen in:** `benchmark-lab.spec.ts` ("elimination: builds and plays every
+candidate") and `inline-motion-figures.spec.ts`
+("elimination-fixed-intersection loads both formats and poster").
+
+Two consecutive full `./check.sh --e2e` runs on the same tree failed **different**
+tests: the first only `solution-sets` hard gates, the second only these two, with
+`solution-sets` passing. Both re-run green in isolation — 16/16 — and the
+symptoms are starvation rather than wrongness: a design-lab clock still reading
+`0.00s / 38s` after 15s, and a `<video>` that never became scrollable within 30s.
+
+**Why it matters, and why it is different from the entry above.** The caption
+clipping *does* reproduce standalone at the same rate; these do not. That
+difference is the evidence that separates a real marginal defect from contention
+under two Playwright workers on a suite that decodes video and drives Motion
+Canvas at the same time. Do not conflate them, and do not "fix" either by
+re-running until green.
+
+**What would actually settle it:** raise the timeouts on the two media specs to
+match what a loaded machine needs, or serialize the media-decoding specs into
+their own project. Both are platform work on the harness, not lesson work.
+
+*Recorded 2026-07-28 while shipping Package A slice A3, on a tree whose changes
+touch none of the three specs.*

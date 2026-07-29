@@ -99,5 +99,10 @@
   "red-black-encoding": {
     "module": "redBlackEncodingScene",
     "exportName": "redBlackEncodingScene"
+  },
+  "integral-accumulation": {
+    "module": "integralAccumulationScene",
+    "exportName": "integralAccumulationScene",
+    "lessonId": "integral-accumulation"
   }
 }
