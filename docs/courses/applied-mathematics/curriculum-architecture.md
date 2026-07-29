@@ -27,7 +27,7 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | --- | --- | --- | --- | --- |
 | B0 | Functions, graphs, and the shapes you keep meeting | `functions-graphs-bridge` | `entry-bridges` | B0 *(conditional)* |
 | B1 | Radians and the rotating point | `radians-rotation` | `entry-bridges` | B0 |
-| L1 | What "approaches" means | `limits-continuity` | `calculus-foundations` | **A** |
+| L1 | What "approaches" means | `limits-continuity` | `calculus-foundations` | **A** ✅ |
 | L2 | The derivative as local linearity | `derivative-local-linearity` | `calculus-foundations` | **A** |
 | L3 | The integral as accumulation | `integral-accumulation` | `calculus-foundations` | **A** |
 | L4 | The Fundamental Theorem of Calculus | `fundamental-theorem` | `calculus-foundations` | **A** |
@@ -422,7 +422,7 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **APPROVED — slice A0 in progress** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **APPROVED — A0, A1 shipped; A2–A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 ### 6.2 Suggested Mode B order

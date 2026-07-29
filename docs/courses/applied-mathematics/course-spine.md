@@ -23,7 +23,8 @@ Neighbours:
 - [courses/linear-algebra/course-spine.md](../linear-algebra/course-spine.md) —
   the sibling course this one reuses and hands off to, never duplicates.
 
-> **Scope note (durable).** Every lesson below is a `future` node. Listing them
+> **Scope note (durable).** Every lesson below is a `future` node **except
+> `limits-continuity`, which is built** (Package A, slice A1). Listing the rest
 > does **not** authorize building them. Lessons are promoted one approved package
 > at a time.
 
@@ -40,8 +41,8 @@ Neighbours:
 - **P3 module overrides: none at launch.** The natural future candidate is
   `boundary-theorems`.
 
-> **A target, not a claim of attainment.** Nothing is built. Gate 10 reports the
-> real distance.
+> **A target, not a claim of attainment.** One lesson of thirty-nine is built.
+> Gate 10 reports the real distance.
 
 ---
 
@@ -181,13 +182,13 @@ M9–M11 are three branches, described in [§6](#6-the-three-branches).
 
 ## 4. The spine at a glance
 
-`Status`: all `future`.
+`Status`: all `future` except `limits-continuity`, which is **built**.
 
 | Spine | Lesson | Central insight (the "not memorize X, but Y") | Unit | Curriculum id |
 | --- | --- | --- | --- | --- |
 | B0 | Functions, graphs, and the shapes you keep meeting | *(conditional)* A function is a machine; its graph is the machine's whole behaviour at once, and shifting or scaling the graph is arithmetic on the machine. | `entry-bridges` | `functions-graphs-bridge` |
 | B1 | Radians and the rotating point | An angle is an **arc length**, and \(\sin,\cos\) are the **coordinates of a point circling at constant speed** — not triangle ratios. | `entry-bridges` | `radians-rotation` |
-| L1 | What "approaches" means | A limit is not "substitute the value"; it is a **local tolerance guarantee** — name any tolerance and *some* window delivers it. Continuity is that guarantee holding with the function's own value as the target. | `calculus-foundations` | `limits-continuity` |
+| L1 | What "approaches" means **(built)** | A limit is not "substitute the value"; it is a **local tolerance guarantee** — name any tolerance and *some* window delivers it. Continuity is that guarantee holding with the function's own value as the target. | `calculus-foundations` | `limits-continuity` |
 | L2 | The derivative as local linearity | Zoom far enough into a smooth curve and it **is** a line. "Rate of change", "slope of the tangent", and "best linear approximation" are one object read three ways. | `calculus-foundations` | `derivative-local-linearity` |
 | L3 | The integral as accumulation | An integral is **the total of a rate**; "area under the curve" is what totalling a rate looks like when the thing you drew is the rate. | `calculus-foundations` | `integral-accumulation` |
 | L4 | The Fundamental Theorem of Calculus | Measuring a rate and accumulating a rate are **inverse processes**, and the infinite sum collapses because interior contributions **telescope**. **Theme 1, in one dimension.** | `calculus-foundations` | `fundamental-theorem` |

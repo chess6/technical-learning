@@ -12,6 +12,11 @@ import { ExplorerLoading } from "../components/lesson/ExplorerLoading";
  * learner hasn't opened.
  */
 const LAZY_EXPLORERS: Record<string, ComponentType> = {
+  "limits-continuity": lazy(() =>
+    import("./LimitsContinuityExplorer").then((m) => ({
+      default: m.LimitsContinuityExplorer,
+    })),
+  ),
   "bst-insertion-order": lazy(() =>
     import("./BstInsertionOrderExplorer").then((m) => ({
       default: m.BstInsertionOrderExplorer,

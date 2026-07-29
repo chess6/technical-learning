@@ -64,6 +64,11 @@
     "module": "eigenvectorsInvariantDirectionsScene",
     "exportName": "eigenvectorsInvariantDirectionsScene"
   },
+  "limits-continuity": {
+    "module": "limitsContinuityScene",
+    "exportName": "limitsContinuityScene",
+    "lessonId": "limits-continuity"
+  },
   "eigenvectors-characteristic-equation": {
     "module": "eigenvectorsCharacteristicEquationScene",
     "exportName": "eigenvectorsCharacteristicEquationScene",

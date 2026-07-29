@@ -149,3 +149,27 @@ scrambled words mid-tween — snap captions and spend the time as a hold.
    of appending a duplicate.
 3. Let the test and the commit carry the detailed story — do not paste a full
    post-mortem here.
+
+## Marginal caption clipping, revealed only when webfont metrics differ
+
+**Seen in:** `solution-sets`, at the beat where "homogeneous — varies" and
+"their sum — a solution" are captioned (frame ≈ 2082).
+
+The two captions sit **7–10px** from the stage edge. When the guided-scene hard
+gates run before `Source Sans 3` has loaded, the fallback face measures slightly
+wider and both captions cross the edge, so `text-clipping` fires. The run is
+therefore **intermittent — roughly 2 failures in 6** — and it is *not* a load
+flake: it reproduces standalone, at the same rate, on a tree with no local
+changes.
+
+**Why it matters.** A caption that clips only under a font race is a real defect
+that ordinary review will never see, and "it passed last time" is not evidence.
+The gate is behaving correctly; the scene is genuinely marginal.
+
+**The fix is not "increase the tolerance".** Either shorten the captions or move
+them inside the safe frame with room for the widest plausible metrics. A scene
+whose text fits only in the best case is not laid out.
+
+*Recorded 2026-07-28 while shipping applied-mathematics Package A slice A1. Not
+fixed there: `solution-sets` is a linear-algebra lesson and outside that
+package's scope. It needs its own narrow-correction commit.*

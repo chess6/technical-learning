@@ -47,6 +47,8 @@ const SCENE_ROUTES: { scene: string; route: string }[] = [
   { scene: "bst-lift-from-array", route: "/lesson/binary-search-trees" },
   { scene: "red-black-encoding", route: "/lesson/red-black-trees" },
   { scene: "karatsuba-cross-terms", route: "/lesson/karatsuba" },
+  // Applied mathematics, unit `calculus-foundations`.
+  { scene: "limits-continuity", route: "/lesson/limits-continuity" },
 ];
 
 const PLAYER = ".guided-scene-player";

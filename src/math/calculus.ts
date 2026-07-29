@@ -216,12 +216,17 @@ export function oneSidedLimit(
 /* -------------------------------------------------- modulus of continuity */
 
 /**
- * The largest grid spacing whose guaranteed variation stays within `tolerance`,
- * found on a shrinking ladder.
+ * **A** grid spacing whose guaranteed variation stays within `tolerance`, found
+ * on a shrinking ladder — not necessarily the largest such spacing.
  *
- * This is the tool `lim-choose-spacing` asks the learner to use, and the whole
- * point of the lesson's continuity correction: a *resolution* is chosen, and a
- * modulus converts it into a guarantee. Continuity alone does neither.
+ * The distinction matters and is why this is not used to grade anything: for a
+ * modulus with a closed form the exact supremum is available (for
+ * `omega(d) = 3d` and a tolerance of 0.06 it is exactly 0.02), and letting a
+ * search ladder's granularity decide a graded answer would be arbitrary. This
+ * helper exists for the explorer, where the learner may supply any modulus and a
+ * sufficient spacing is what is wanted.
+ *
+ * Returns `null` when no tested spacing meets the tolerance.
  */
 export function spacingForTolerance(
   modulus: Modulus,

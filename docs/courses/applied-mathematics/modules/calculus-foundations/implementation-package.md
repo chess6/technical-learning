@@ -6,9 +6,8 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: APPROVED — implementation started.** Approved 2026-07-28. Mode B is
-> complete for all four lessons, and slice A0 (shared foundations) is in
-> progress on `master`. Lesson slices A1–A4 have not begun.
+> **Status: APPROVED — implementation in progress.** Approved 2026-07-28.
+> Slices A0 and A1 are **shipped** on `master`; A2–A4 have not begun.
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -58,8 +57,23 @@ and L3's un-shortcut \(8/3\) **by name**.
 > `telescoping-cancellation` each serve five or more lessons across the course. A
 > copy-pasted scene here is a debt the Fourier and fields branches pay twice.
 
-### A1 — `limits-continuity`
-Creates `function-plot`. One guided clip, one explorer, **ten items**.
+### A1 — `limits-continuity` *(shipped)*
+Creates `function-plot`. One guided clip (11 chapters), one explorer, **ten
+items**, all auto-graded and contracted.
+
+Two defects found by watching it and fixed in the same slice, both worth
+recording because the next three lessons reuse the same apparatus:
+
+- **Clipped-panel offsets.** A Motion Canvas `Rect` with `clip: true` positions
+  its children relative to *its own centre*, while the scene's pixel helpers
+  return stage coordinates. The main panel compensated with an inner node; the
+  sampling and failure panels did not, so their contents rendered 150px off. Every
+  clipped panel now carries the compensating node.
+- **A band the function could break.** The `modulus` beat first drew a narrow
+  guaranteed band around the coarse samples — which the spike visibly escaped,
+  making a true modulus look false. At that spacing the fixture's real Lipschitz
+  bound spans the whole panel, so no honest narrow band exists. The beat now shows
+  what a modulus is *for*: a grid chosen against a tolerance, tracking the truth.
 
 ### A2 — `derivative-local-linearity`
 Creates `local-linearity-zoom`. **Two clips** — `derivative-local-linearity` and
@@ -84,7 +98,7 @@ ones most likely to be lost by an implementer working from habit**:
 | **P2** | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. |
 | **P3** | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). |
 | **P4** | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. |
-| **P5** | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1, A4 | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. |
+| **P5** | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. |
 
 Also required, from the ordinary standards:
 
@@ -130,8 +144,8 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 
 | Slice | Status | Branch / worktree |
 | --- | --- | --- |
-| A0 shared foundations | **IN PROGRESS** | `master` |
-| A1 `limits-continuity` | NOT STARTED | — |
+| A0 shared foundations | **SHIPPED** | `master` |
+| A1 `limits-continuity` | **SHIPPED** | `master` |
 | A2 `derivative-local-linearity` | NOT STARTED | — |
 | A3 `integral-accumulation` | NOT STARTED | — |
 | A4 `fundamental-theorem` | NOT STARTED | — |

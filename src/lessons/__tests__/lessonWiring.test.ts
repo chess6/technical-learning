@@ -361,6 +361,10 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "karatsuba",
       "binary-search-trees",
       "red-black-trees",
+      // Applied mathematics, unit `calculus-foundations`. The registry is
+      // authoring order, not a curriculum — `courseModel.ts` decides which
+      // course a lesson belongs to and what precedes it.
+      "limits-continuity",
     ]);
   });
 

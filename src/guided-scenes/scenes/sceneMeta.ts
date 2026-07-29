@@ -6,6 +6,7 @@ import {
   DETERMINANT_SEGMENTS,
   EIGENVECTOR_SEGMENTS,
   EIGEN_CHARACTERISTIC_SEGMENTS,
+  LIMITS_CONTINUITY_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
   KARATSUBA_SEGMENTS,
   CHAPTER0_SEGMENTS,
@@ -59,6 +60,7 @@ const DETERMINANT_STEPS = toSteps(DETERMINANT_SEGMENTS);
 const EIGENVECTOR_STEPS = toSteps(EIGENVECTOR_SEGMENTS);
 const EIGEN_DERIVATION_STEPS = toSteps(EIGEN_DERIVATION_SEGMENTS);
 const EIGEN_CHARACTERISTIC_STEPS = toSteps(EIGEN_CHARACTERISTIC_SEGMENTS);
+const LIMITS_CONTINUITY_STEPS = toSteps(LIMITS_CONTINUITY_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -311,6 +313,26 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "defective",
       "rotation",
       "summary",
+    ]),
+  },
+  "limits-continuity": {
+    id: "limits-continuity",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for what it means for a function to approach a value. The difference quotient of x squared at three is graphed against the step size, with a hole where the step is zero because the expression reads zero over zero there. A table of computed quotients over shrinking steps settles on six. A horizontal band of half height epsilon is drawn around six, and a vertical window of half width delta narrows until every value inside the window lies inside the band. The learner is then asked to predict whether a band ten times narrower can still be answered, before both band and window shrink together and the guarantee holds again. The hole is emphasized: deleting or changing the value at the point leaves the limit unchanged, because the definition never consults it. Two failures follow, a jump whose two approaches settle on different values and an oscillation where nothing is forced, which is labelled as having no forced value rather than as being zero. Continuity is then defined as the forced value agreeing with the function's own value. Finally a continuous function is sampled on a coarse grid: every sample reads zero, and a full height spike is revealed sitting entirely between two of them, so continuity is seen to fix no window width. A modulus of continuity is supplied and its guaranteed band drawn around the sampled polyline, as the quantitative control a sampling claim actually needs.",
+    steps: LIMITS_CONTINUITY_STEPS,
+    majorSteps: pickMajor(LIMITS_CONTINUITY_STEPS, [
+      "paradox",
+      "shrink",
+      "band",
+      "window",
+      "predict",
+      "tighter",
+      "puncture",
+      "fail",
+      "continuity",
+      "localOnly",
+      "modulus",
     ]),
   },
   "eigenvectors-characteristic-equation": {

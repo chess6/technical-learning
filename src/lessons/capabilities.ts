@@ -271,7 +271,14 @@ function bmatrixTex(entries: readonly (readonly number[])[]): string {
  *    (e.g. "produce a *second*, distinct solution");
  *  - `vector-off-line` / `vector-on-line`: the (nonzero) vector must be
  *    non-parallel / parallel to `spanning`;
- *  - `eigenvector`: the (nonzero) vector must satisfy `A v = λ v`.
+ *  - `eigenvector`: the (nonzero) vector must satisfy `A v = λ v`;
+ *  - `removable-discontinuity`: the learner supplies the PAIR
+ *    `(limit, value)` describing a function at a point, and it passes iff both
+ *    are finite and **differ** — which is exactly what it means for a limit to
+ *    exist where the function is not continuous. Any such pair passes, so the
+ *    learner constructs rather than recalls, and the two ways to be wrong
+ *    (making them equal ⇒ continuous; using a function with no limit) are
+ *    rejected with distinct reasons.
  */
 export type ConstructCheck =
   | { kind: "system-classification"; matrix: readonly (readonly number[])[]; expect: LinearSystemKind }
@@ -283,7 +290,8 @@ export type ConstructCheck =
     }
   | { kind: "vector-off-line"; spanning: readonly [number, number] }
   | { kind: "vector-on-line"; spanning: readonly [number, number] }
-  | { kind: "eigenvector"; matrix: readonly (readonly number[])[]; eigenvalue: number };
+  | { kind: "eigenvector"; matrix: readonly (readonly number[])[]; eigenvalue: number }
+  | { kind: "removable-discontinuity" };
 
 export type ConstructInExplorerConfig = {
   /** What the learner constructs. Only a single 2D vector for now. */
@@ -397,6 +405,23 @@ export function evaluateConstructCheck(
           : nonzero
             ? "A knocks it off its own line"
             : "the zero vector is never an eigenvector",
+      };
+    }
+    case "removable-discontinuity": {
+      // The pair is (limit, value). The zero-vector guard above does NOT apply:
+      // (0, 2) is a perfectly good answer, so this check reads the coordinates
+      // directly rather than requiring a nonzero vector.
+      const [limit, value] = vector;
+      const finite = Number.isFinite(limit) && Number.isFinite(value);
+      const differ = Math.abs(limit - value) > tolerance;
+      return {
+        pass: finite && differ,
+        because:
+          finite && differ
+            ? "the limit exists and the function disagrees with it there"
+            : !finite
+              ? "a limit that is not a finite number is not a limit"
+              : "the limit and the value agree, so that point is continuous",
       };
     }
   }

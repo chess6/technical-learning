@@ -1329,6 +1329,83 @@ export const EIGEN_CHARACTERISTIC_SEGMENTS: readonly SceneSegment[] = [
   },
 ];
 
+/**
+ * `limits-continuity` — applied mathematics L1.
+ *
+ * One graph, one candidate value, two bands. The last two segments are the
+ * lesson's continuity correction and are not optional: `localOnly` shows a
+ * continuous function whose spike hides between two samples, and `modulus`
+ * supplies the object a sampling claim actually needs.
+ */
+export const LIMITS_CONTINUITY_SEGMENTS: readonly SceneSegment[] = [
+  {
+    id: "paradox",
+    title: "A number with no formula",
+    duration: 6,
+    summary: "Average speed needs an interval; at the instant the quotient reads 0/0, and the graph has a hole exactly there.",
+  },
+  {
+    id: "shrink",
+    title: "The averages settle",
+    duration: 6.5,
+    summary: "Computed quotients over shrinking steps, closing on 6 — the value the neighbours force.",
+  },
+  {
+    id: "band",
+    title: "Name a tolerance",
+    duration: 4,
+    summary: "A horizontal band of half-height epsilon around the candidate value.",
+  },
+  {
+    id: "window",
+    title: "Answer it with a window",
+    duration: 6,
+    summary: "A vertical window narrows until every value inside it lies within the band.",
+  },
+  {
+    id: "predict",
+    title: "Predict: can a tenfold narrower band be answered?",
+    duration: 5.5,
+    summary: "Nothing moves. Everything the answer depends on is already on screen.",
+  },
+  {
+    id: "tighter",
+    title: "It can, and it always can",
+    duration: 5.5,
+    summary: "Both band and window shrink together; that guarantee is what the limit means.",
+  },
+  {
+    id: "puncture",
+    title: "The point never voted",
+    duration: 5.5,
+    summary: "The hole is emphasized: deleting, changing, or moving the value at the point leaves the limit untouched.",
+  },
+  {
+    id: "fail",
+    title: "Two ways to lose",
+    duration: 8,
+    summary: "A jump, whose two approaches settle on different values, and an oscillation, where nothing is forced — labelled as no forced value, never as zero.",
+  },
+  {
+    id: "continuity",
+    title: "When the forced value is the real one",
+    duration: 5,
+    summary: "Continuity is the limit agreeing with the function's own value, which is what makes substitution legal.",
+  },
+  {
+    id: "localOnly",
+    title: "But it is only a local promise",
+    duration: 8.5,
+    summary: "A continuous function sampled on a coarse grid: every sample reads zero, and a full-height spike sits entirely between two of them.",
+  },
+  {
+    id: "modulus",
+    title: "What sampling actually needs",
+    duration: 6,
+    summary: "A chosen resolution and a modulus of continuity, drawn as the guaranteed band around the sampled polyline.",
+  },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1344,6 +1421,7 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "change-of-basis": CHANGE_OF_BASIS_SEGMENTS,
   "eigenvectors-invariant-directions": EIGENVECTOR_SEGMENTS,
   "eigenvectors-derivation": EIGEN_DERIVATION_SEGMENTS,
+  "limits-continuity": LIMITS_CONTINUITY_SEGMENTS,
   "eigenvectors-characteristic-equation": EIGEN_CHARACTERISTIC_SEGMENTS,
   "karatsuba-cross-terms": KARATSUBA_SEGMENTS,
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
@@ -1742,6 +1820,25 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
       hold: 1.2,
     },
     roots: { caption: 0.4, swap: 0.5, restore: 2.2, close: 0.4, hold: 2.0 },
+  },
+
+  "limits-continuity": {
+    paradox: { title: 0.4, caption: 0.4, curve: 0.8, hold: 3.6 },
+    // `rows` is the whole table's window, divided by the body across the five
+    // rows. Declaring a single row's cost and fading five of them would spend
+    // four rows' time inside the window the intent table calls a hold.
+    shrink: { title: 0.4, rows: 1.75, caption: 0.4, hold: 3.5 },
+    band: { title: 0.35, draw: 0.5, hold: 2.4 },
+    window: { title: 0.35, draw: 0.4, narrow: 1.6, caption: 0.4, hold: 2.4 },
+    // Nothing moves while the question stands: every readout the answer follows
+    // from is already on screen and stays there.
+    predict: { ask: 0.5, think: 4.4 },
+    tighter: { narrow: 1.8, title: 0.4, caption: 0.4, hold: 2.2 },
+    puncture: { title: 0.4, emphasis: 0.5, settle: 0.4, caption: 0.4, hold: 2.8 },
+    fail: { clear: 0.4, show: 0.5, hold: 2.4, swap: 0.5, hold2: 2.6 },
+    continuity: { clear: 0.4, title: 0.4, caption: 0.4, hold: 2.6 },
+    localOnly: { clear: 0.4, show: 0.6, title: 0.4, hold: 2.0, reveal: 0.8, caption: 0.4, hold2: 3.0 },
+    modulus: { title: 0.4, band: 0.6, caption: 0.5, hold: 3.2 },
   },
 
   "karatsuba-cross-terms": {

@@ -249,6 +249,7 @@ describe("scene timings (pure data)", () => {
         predict: "predict",
         reveal: "firstZero",
       },
+      "limits-continuity": { predict: "predict", reveal: "tighter" },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },

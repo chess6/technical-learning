@@ -647,6 +647,88 @@
       "hold3": "hold"
     }
   },
+  "limits-continuity": {
+    "paradox": {
+      "title": "text",
+      "caption": "text",
+      "curve": "transition",
+      "hold": "hold"
+    },
+    "shrink": {
+      "title": "text",
+      "rows": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "band": {
+      "title": "text",
+      "draw": "transition",
+      "hold": "hold"
+    },
+    "window": {
+      "title": "text",
+      "draw": "transition",
+      "narrow": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:limits:window"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "tighter": {
+      "narrow": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:limits:band",
+          "semantic:limits:window"
+        ]
+      },
+      "title": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "puncture": {
+      "title": "text",
+      "emphasis": "emphasis",
+      "settle": "emphasis",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "fail": {
+      "clear": "transition",
+      "show": "transition",
+      "hold": "hold",
+      "swap": "transition",
+      "hold2": "hold"
+    },
+    "continuity": {
+      "clear": "transition",
+      "title": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "localOnly": {
+      "clear": "transition",
+      "show": "transition",
+      "title": "text",
+      "hold": "hold",
+      "reveal": "transition",
+      "caption": "text",
+      "hold2": "hold"
+    },
+    "modulus": {
+      "title": "text",
+      "band": "transition",
+      "caption": "text",
+      "hold": "hold"
+    }
+  },
   "eigenvectors-characteristic-equation": {
     "family": {
       "caption": "text",

@@ -170,13 +170,7 @@ export const CURRICULUM: readonly Subject[] = [
             id: "calculus-foundations",
             title: "The two operations, and the theorem that binds them",
             items: [
-              {
-                kind: "future",
-                id: "limits-continuity",
-                title: "What \u201Capproaches\u201D Means",
-                subtitle:
-                  "A limit is a value the neighbours force \u2014 the point never votes",
-              },
+              { kind: "lesson", lessonId: "limits-continuity" },
               {
                 kind: "future",
                 id: "derivative-local-linearity",
