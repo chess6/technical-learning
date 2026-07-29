@@ -63,6 +63,19 @@ function fmt(n: number, places = 3): string {
   return Object.is(r, -0) ? "0" : String(r);
 }
 
+/**
+ * A vertical frame per fixture. Without one Mafs auto-fits, and a function whose
+ * interesting behaviour is near zero was drawn in a corner of a very tall box.
+ */
+const Y_FRAME: Record<string, [number, number]> = {
+  "ex-parabola": [-0.5, 4.5],
+  "ex-parabola-punctured": [0, 26],
+  "ex-jump": [-1, 3],
+  "ex-oscillate": [-1.4, 1.4],
+  "ex-blowup": [-1, 12],
+  "ex-hidden-spike": [-0.4, 1.4],
+};
+
 /** Where each fixture's interesting point is, so the picker lands somewhere useful. */
 const FOCUS: Record<string, number> = {
   "ex-parabola": 1,
@@ -136,187 +149,205 @@ export function LimitsContinuityExplorer() {
     }));
   }, [showTable, fixture, at]);
 
+  /** What to do, in one sentence, phrased for whatever is on screen now. */
+  const instruction =
+    candidate === null
+      ? `**Drag the gold point along the curve**, or use the *Point a* slider. At this point the limit fails (${failure}), so no band can be answered — move *a* somewhere else and watch the verdict change.`
+      : foundDelta === null
+        ? "**Drag the gold point along the curve**, or use the *Point a* slider. The tolerance is tighter than this finite search can answer — widen *Tolerance ε* and watch the window reappear."
+        : "**Drag the gold point along the curve**, or use the sliders. The dashed gold lines are the tolerance you named; the vertical lines are the window that answers it. Tighten *Tolerance ε* and watch the window narrow to keep the promise.";
+
   return (
     <ExplorationPanel
       explorationId="limits-continuity"
       title="Answer a tolerance with a window"
       description="Name how close the outputs must stay. The explorer searches for a window that delivers it — and tells you honestly when none does."
-    >
-      <PresetPicker
-        label="Function"
-        activeId={fixtureId}
-        presets={OFFERED.map((id) => ({
-          id,
-          label: CALCULUS_FIXTURES.find((f) => f.id === id)!.label,
-          onSelect: () => pickFixture(id),
-        }))}
-      />
+      summary={instruction}
+      toolbar={
+        <>
+          <PresetPicker
+            label="Function"
+            activeId={fixtureId}
+            presets={OFFERED.map((id) => ({
+              id,
+              label: CALCULUS_FIXTURES.find((f) => f.id === id)!.label,
+              onSelect: () => pickFixture(id),
+            }))}
+          />
+          <ResetButton onReset={reset} />
+        </>
+      }
+      controls={
+        <>
+          <ParameterControls
+            title="Drag the point, or set it here"
+            controls={[
+              {
+                id: "at",
+                label: "Point a",
+                value: at,
+                min: fixture.domain[0],
+                max: fixture.domain[1],
+                step: 0.05,
+                onChange: setAt,
+              },
+              {
+                id: "epsilon",
+                label: "Tolerance ε",
+                value: epsilon,
+                min: EPSILON_MIN,
+                max: EPSILON_MAX,
+                step: 0.001,
+                onChange: setEpsilon,
+              },
+              ...(showSampling
+                ? [
+                    {
+                      id: "spacing",
+                      label: "Grid spacing",
+                      value: spacing,
+                      min: 0.02,
+                      max: 2,
+                      step: 0.01,
+                      onChange: setSpacing,
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          <ExplorationToggles
+            toggles={[
+              {
+                id: "table",
+                label: "Show the shrinking-interval table",
+                checked: showTable,
+                onChange: setShowTable,
+              },
+              {
+                id: "sampling",
+                label: "Sample it",
+                checked: showSampling,
+                onChange: setShowSampling,
+              },
+            ]}
+          />
+        </>
+      }
+      readout={
+        <>
+          <SceneReadout
+            items={[
+              {
+                id: "forced",
+                label: "Forced value",
+                value:
+                  candidate === null
+                    ? `none — ${failure ?? "no limit"}`
+                    : fmt(candidate),
+              },
+              {
+                id: "window",
+                label: "Largest window found",
+                value:
+                  candidate === null
+                    ? "—"
+                    : foundDelta === null
+                      ? "none on the search ladder"
+                      : `δ = ${fmt(foundDelta, 4)}`,
+              },
+              {
+                // Three outcomes, not two. "The search ran out" is a statement
+                // about the search, not about the mathematics.
+                id: "guarantee",
+                label: "Guarantee",
+                value:
+                  candidate === null
+                    ? `no limit — ${failure ?? "none"}`
+                    : foundDelta !== null
+                      ? "met"
+                      : "not found at this search depth — try a larger ε",
+              },
+              { id: "value", label: "f(a) exists", value: verdict.valueExists ? "yes" : "no" },
+              { id: "limit", label: "Limit exists", value: verdict.limitExists ? "yes" : "no" },
+              { id: "agree", label: "They agree", value: verdict.agree ? "yes" : "no" },
+              {
+                id: "continuous",
+                label: "Continuous at a",
+                value: verdict.continuous ? "yes" : "no",
+              },
+            ]}
+          />
 
+          {showTable && (
+            <table className="limits-explorer__table">
+              <caption>Values on either side, as the step shrinks</caption>
+              <thead>
+                <tr>
+                  <th scope="col">step h</th>
+                  <th scope="col">f(a − h)</th>
+                  <th scope="col">f(a + h)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((row) => (
+                  <tr key={row.h}>
+                    <td>{row.h}</td>
+                    <td>{Number.isFinite(row.left) ? fmt(row.left, 4) : "—"}</td>
+                    <td>{Number.isFinite(row.right) ? fmt(row.right, 4) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {overlay && (
+            <SceneReadout
+              title="Sampling"
+              items={[
+                {
+                  id: "spacing",
+                  label: "Spacing actually used",
+                  value: fmt(overlay.actualSpacing, 4),
+                },
+                {
+                  id: "band",
+                  label: "Guaranteed band over one step",
+                  value:
+                    overlay.guaranteedBand === null
+                      ? "none — this function declares no modulus"
+                      : `± ${fmt(overlay.guaranteedBand, 4)}`,
+                },
+                {
+                  id: "gap",
+                  label: "Worst true-vs-sampled gap",
+                  value: fmt(overlay.worstGap, 4),
+                },
+              ]}
+            />
+          )}
+
+          {overlay && overlay.guaranteedBand === null && (
+            <ProseWithMath
+              className="limits-explorer__note"
+              text={
+                "This function is continuous, and the samples still tell you nothing about the gaps: the worst discrepancy above is what a straight line between two samples misses. Continuity fixes no window width. Narrow the spacing and watch the gap close — but notice that nothing except *measuring* told you when to stop."
+              }
+            />
+          )}
+        </>
+      }
+    >
       <FunctionPlot
         fixture={fixture}
         ariaLabel={`${fixture.label}, with a tolerance band and an input window at x = ${fmt(at)}`}
         at={at}
+        onDragTo={setAt}
+        viewBox={{ x: [fixture.domain[0], fixture.domain[1]], y: Y_FRAME[fixtureId] }}
         band={candidate === null ? undefined : { target: candidate, epsilon }}
         window={foundDelta === null ? undefined : { delta: foundDelta }}
         sampling={showSampling ? { spacing } : undefined}
-        height={320}
+        height={340}
       />
-
-      <ParameterControls
-        controls={[
-          {
-            id: "at",
-            label: "Point a",
-            value: at,
-            min: fixture.domain[0],
-            max: fixture.domain[1],
-            step: 0.05,
-            onChange: setAt,
-          },
-          {
-            id: "epsilon",
-            label: "Tolerance ε",
-            value: epsilon,
-            min: EPSILON_MIN,
-            max: EPSILON_MAX,
-            step: 0.001,
-            onChange: setEpsilon,
-          },
-          ...(showSampling
-            ? [
-                {
-                  id: "spacing",
-                  label: "Grid spacing",
-                  value: spacing,
-                  min: 0.02,
-                  max: 2,
-                  step: 0.01,
-                  onChange: setSpacing,
-                },
-              ]
-            : []),
-        ]}
-      />
-
-      <SceneReadout
-        items={[
-          {
-            id: "forced",
-            label: "Forced value",
-            value:
-              candidate === null
-                ? `none — ${failure ?? "no limit"}`
-                : fmt(candidate),
-          },
-          {
-            id: "window",
-            label: "Largest window found",
-            value:
-              candidate === null
-                ? "—"
-                : foundDelta === null
-                  ? "none on the search ladder"
-                  : `δ = ${fmt(foundDelta, 4)}`,
-          },
-          {
-            // Three outcomes, not two. "The search ran out" is a statement about
-            // the search, not about the mathematics, and saying otherwise let
-            // this panel report a continuous point as having no guarantee.
-            id: "guarantee",
-            label: "Guarantee",
-            value:
-              candidate === null
-                ? `no limit — ${failure ?? "none"}`
-                : foundDelta !== null
-                  ? "met"
-                  : "not found at this search depth — try a larger ε",
-          },
-          { id: "value", label: "f(a) exists", value: verdict.valueExists ? "yes" : "no" },
-          { id: "limit", label: "Limit exists", value: verdict.limitExists ? "yes" : "no" },
-          { id: "agree", label: "They agree", value: verdict.agree ? "yes" : "no" },
-          {
-            id: "continuous",
-            label: "Continuous at a",
-            value: verdict.continuous ? "yes" : "no",
-          },
-        ]}
-      />
-
-      <ExplorationToggles
-        toggles={[
-          {
-            id: "table",
-            label: "Show the shrinking-interval table",
-            checked: showTable,
-            onChange: setShowTable,
-          },
-          {
-            id: "sampling",
-            label: "Sample it",
-            checked: showSampling,
-            onChange: setShowSampling,
-          },
-        ]}
-      />
-
-      {showTable && (
-        <table className="limits-explorer__table">
-          <caption>Values on either side, as the step shrinks</caption>
-          <thead>
-            <tr>
-              <th scope="col">step h</th>
-              <th scope="col">f(a − h)</th>
-              <th scope="col">f(a + h)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {table.map((row) => (
-              <tr key={row.h}>
-                <td>{row.h}</td>
-                <td>{Number.isFinite(row.left) ? fmt(row.left, 4) : "—"}</td>
-                <td>{Number.isFinite(row.right) ? fmt(row.right, 4) : "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {overlay && (
-        <SceneReadout
-          title="Sampling"
-          items={[
-            {
-              id: "spacing",
-              label: "Spacing actually used",
-              value: fmt(overlay.actualSpacing, 4),
-            },
-            {
-              id: "band",
-              label: "Guaranteed band over one step",
-              value:
-                overlay.guaranteedBand === null
-                  ? "none — this function declares no modulus"
-                  : `± ${fmt(overlay.guaranteedBand, 4)}`,
-            },
-            {
-              id: "gap",
-              label: "Worst true-vs-sampled gap",
-              value: fmt(overlay.worstGap, 4),
-            },
-          ]}
-        />
-      )}
-
-      {overlay && overlay.guaranteedBand === null && (
-        <ProseWithMath
-          className="limits-explorer__note"
-          text={
-            "This function is continuous, and the samples still tell you nothing about the gaps: the worst discrepancy above is what a straight line between two samples misses. Continuity fixes no window width. Narrow the spacing and watch the gap close — but notice that nothing except *measuring* told you when to stop."
-          }
-        />
-      )}
-
-      <ResetButton onReset={reset} />
     </ExplorationPanel>
   );
 }

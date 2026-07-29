@@ -96,6 +96,49 @@ test("the explorer names WHICH thing failed, and never both at once", async ({
   }
 });
 
+test("the plot is draggable, and the panel says so", async ({ page }) => {
+  await page.goto("/lesson/limits-continuity");
+  const explorer = page.getByRole("region", { name: /exploration/i }).first();
+  await explorer.scrollIntoViewIfNeeded();
+
+  // The instruction names the affordance. Without it a learner clicks the graph,
+  // gets nothing, and concludes the explorer is broken — which is exactly what
+  // happened before the controls were moved out of the dark canvas slot.
+  const summary = explorer.locator(".exploration-panel__summary");
+  await expect(summary).toContainText(/drag/i);
+
+  // And the affordance is real: dragging the handle moves the point.
+  const before = await explorer.getByLabel(/Point a/).inputValue();
+  const handle = explorer.locator("svg circle").last();
+  const box = await handle.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width / 2 + 120, box!.y + box!.height / 2, {
+    steps: 10,
+  });
+  await page.mouse.up();
+  await expect
+    .poll(async () => Number(await explorer.getByLabel(/Point a/).inputValue()))
+    .toBeGreaterThan(Number(before));
+});
+
+test("the controls are legible, not stranded on the dark canvas", async ({
+  page,
+}) => {
+  await page.goto("/lesson/limits-continuity");
+  const explorer = page.getByRole("region", { name: /exploration/i }).first();
+  await explorer.scrollIntoViewIfNeeded();
+
+  // Every slider is inside the light side region and actually visible.
+  const sliders = explorer.locator(".exploration-panel__side input[type=range]");
+  await expect(sliders).toHaveCount(2);
+  for (const s of await sliders.all()) await expect(s).toBeVisible();
+  await expect(
+    explorer.locator(".exploration-panel__scene input"),
+  ).toHaveCount(0);
+});
+
 test("sampling a continuous function with no modulus reports no guaranteed band", async ({
   page,
 }) => {

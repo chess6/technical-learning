@@ -141,6 +141,8 @@ export interface LocalLinearityZoomProps {
   readonly baseHalfWidth?: number;
   readonly height?: number;
   readonly ariaLabel: string;
+  /** Makes the point draggable along the curve. See `FunctionPlot.onDragTo`. */
+  readonly onDragTo?: (x: number) => void;
 }
 
 export function LocalLinearityZoom({
@@ -153,6 +155,7 @@ export function LocalLinearityZoom({
   baseHalfWidth = 1,
   height = 320,
   ariaLabel,
+  onDragTo,
 }: LocalLinearityZoomProps) {
   const win = useMemo(
     () => zoomWindow(fixture, at, magnification, baseHalfWidth),
@@ -170,6 +173,7 @@ export function LocalLinearityZoom({
       ariaLabel={ariaLabel}
       viewBox={{ x: [win.x[0], win.x[1]], y: [win.y[0], win.y[1]], padding: 0 }}
       at={at}
+      onDragTo={onDragTo}
       tangent={{ slope, compare: comparisonSlope }}
       secant={showSecant && h !== undefined && h !== 0 ? { h } : undefined}
       height={height}

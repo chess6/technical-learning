@@ -561,7 +561,9 @@ export const EX_CUBIC_INFLECTION: CalculusFixture = {
 
 export const EX_DECAY: CalculusFixture = {
   id: "ex-decay",
-  label: "e^{-t/τ}",
+  // Labels are shown to learners in preset buttons, which render plain text —
+  // a LaTeX-looking label appeared verbatim as "e^{-t/τ}".
+  label: "Exponential decay",
   f: (t) => Math.exp(-t / TAU_DECAY),
   domain: [0, 8],
   units: { input: "s", output: "V", accumulated: "V·s" },

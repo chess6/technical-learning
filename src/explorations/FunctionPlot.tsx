@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Circle, Line, Plot, Point, Text } from "mafs";
+import { Circle, Line, MovablePoint, Plot, Point, Text } from "mafs";
 import { MafsSceneShell, type MafsViewBox } from "./MafsSceneShell";
 import {
   differenceQuotient,
@@ -50,6 +50,15 @@ export interface FunctionPlotProps {
 
   /** The point under discussion. */
   readonly at?: number;
+  /**
+   * Makes the marked point **draggable along the curve**.
+   *
+   * Without this the plot has no interactive surface at all, and a learner who
+   * clicks it — the obvious thing to do with a graph — gets no response and
+   * concludes the explorer is broken. The point is constrained to the curve, so
+   * dragging can only ever choose an input, never move the function.
+   */
+  readonly onDragTo?: (x: number) => void;
 
   /** Horizontal tolerance band of half-height `epsilon` about `target`. */
   readonly band?: { readonly target: number; readonly epsilon: number };
@@ -78,6 +87,8 @@ const TANGENT = "var(--role-transformed, #d4a574)";
 const SECANT = "var(--role-basis-2, #b89ad4)";
 const COMPARE = "var(--role-violation, #f26e5c)";
 const SAMPLE = "var(--role-target, #2fc7b8)";
+/** The draggable handle: deliberately the brightest thing on the plot. */
+const HANDLE = "var(--role-selected, #ecd484)";
 
 /**
  * Contiguous stretches of the domain, split at every punctured point.
@@ -114,6 +125,7 @@ export function FunctionPlot({
   height = 320,
   ariaLabel,
   at,
+  onDragTo,
   band,
   window: inputWindow,
   secant,
@@ -272,12 +284,37 @@ export function FunctionPlot({
         </>
       )}
 
-      {at !== undefined && y0 !== undefined && Number.isFinite(y0) && (
-        <Point x={at} y={y0} color={INK} />
-      )}
+      {at !== undefined &&
+        y0 !== undefined &&
+        Number.isFinite(y0) &&
+        (onDragTo ? (
+          <MovablePoint
+            point={[at, y0]}
+            color={HANDLE}
+            // Constrained to the curve: the learner picks an input, and the
+            // output is whatever the function says it is. Dragging can never
+            // move the graph itself.
+            constrain={([x]) => {
+              const clamped = Math.min(Math.max(x, lo), hi);
+              const y = fixture.f(clamped);
+              return [clamped, Number.isFinite(y) ? y : 0];
+            }}
+            onMove={([x]) => onDragTo(Math.min(Math.max(x, lo), hi))}
+          />
+        ) : (
+          <Point x={at} y={y0} color={INK} />
+        ))}
 
       {band && (
-        <Text x={hi} y={band.target + band.epsilon} attach="nw" color={BAND} size={14}>
+        // Inset from the right edge: attached to `hi` the label sat half outside
+        // the plot and was clipped.
+        <Text
+          x={lo + (hi - lo) * 0.94}
+          y={band.target + band.epsilon}
+          attach="nw"
+          color={BAND}
+          size={16}
+        >
           ε
         </Text>
       )}

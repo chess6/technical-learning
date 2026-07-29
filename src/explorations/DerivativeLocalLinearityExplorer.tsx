@@ -115,180 +115,196 @@ export function DerivativeLocalLinearityExplorer() {
     (p) => Math.abs(p - at) < 1e-9,
   );
 
+  /** What to do, phrased for whatever is on screen now. */
+  const instruction = !differentiableHere
+    ? "**Drag the gold point along the curve**, or use *Point a*. You are sitting on a corner: magnify all you like and the two sides stay different lines, so there is no tangent to draw here."
+    : magnification < 4
+      ? "**Drag the gold point along the curve** to choose a point, then pull *Magnification* up and watch the curve straighten. Keep an eye on **Residual E(h)** in the readout — it never reaches zero."
+      : "Now compare the two readouts: **Residual E(h)** is still not zero, but **E(h) / h** is heading there. That contrast — the error shrinking *faster than the step* — is what the tangent is defined by.";
+
   return (
     <ExplorationPanel
       explorationId="derivative-local-linearity"
       title="Zoom until it is a line"
       description="Magnify about the point and watch the curve straighten — and watch the gap that is still there."
-    >
-      <PresetPicker
-        label="Function"
-        activeId={fixtureId}
-        presets={OFFERED.map((id) => ({
-          id,
-          label: CALCULUS_FIXTURES.find((f) => f.id === id)!.label,
-          onSelect: () => pick(id),
-        }))}
-      />
+      summary={instruction}
+      toolbar={
+        <>
+          <PresetPicker
+            label="Function"
+            activeId={fixtureId}
+            presets={OFFERED.map((id) => ({
+              id,
+              label: CALCULUS_FIXTURES.find((f) => f.id === id)!.label,
+              onSelect: () => pick(id),
+            }))}
+          />
+          <ResetButton onReset={reset} />
+        </>
+      }
+      controls={
+        <>
+          <ParameterControls
+            title="Drag the point, or set it here"
+            controls={[
+              {
+                id: "at",
+                label: "Point a",
+                value: at,
+                min: fixture.domain[0],
+                max: fixture.domain[1],
+                step: 0.05,
+                onChange: setAt,
+              },
+              {
+                id: "magnification",
+                label: "Magnification",
+                value: magnification,
+                min: 1,
+                max: MAX_MAGNIFICATION,
+                step: 1,
+                onChange: setMagnification,
+              },
+              {
+                id: "h",
+                label: "Step h",
+                value: h,
+                min: 0.0001,
+                max: 1,
+                step: 0.0001,
+                onChange: setH,
+              },
+              ...(showComparison
+                ? [
+                    {
+                      id: "comparison",
+                      label: "Comparison slope, offset from f′(a)",
+                      value: comparisonSlope,
+                      min: -2,
+                      max: 2,
+                      step: 0.1,
+                      onChange: setComparisonSlope,
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          <ExplorationToggles
+            toggles={[
+              {
+                id: "comparison",
+                label: "Compare against a line of another slope",
+                checked: showComparison,
+                onChange: setShowComparison,
+              },
+              {
+                id: "derivative",
+                label: "Show f′ across the domain",
+                checked: showDerivative,
+                onChange: setShowDerivative,
+              },
+            ]}
+          />
+        </>
+      }
+      readout={
+        <>
+          <SceneReadout
+            items={[
+              {
+                id: "secant",
+                label: "Secant slope over h",
+                value: r.secantSlope === null ? "—" : fmt(r.secantSlope),
+              },
+              {
+                id: "slope",
+                label: "f′(a)",
+                value: differentiableHere
+                  ? fmt(r.slope)
+                  : "does not exist — the one-sided slopes differ",
+              },
+              {
+                id: "estimate",
+                label: "Linear estimate f(a) + f′(a)h",
+                value: r.estimate === null ? "—" : fmt(r.estimate),
+              },
+              {
+                id: "actual",
+                label: "True f(a + h)",
+                value: r.actual === null ? "—" : fmt(r.actual),
+              },
+              {
+                id: "residual",
+                label: "Residual E(h)",
+                value: r.residual === null ? "—" : fmt(r.residual),
+              },
+              {
+                // The readout that carries C5, listed last and named as a ratio:
+                // it goes to zero while the residual above it does not.
+                id: "ratio",
+                label: "E(h) / h",
+                value: r.residualRatio === null ? "—" : fmt(r.residualRatio),
+              },
+              ...(showComparison
+                ? [
+                    {
+                      id: "comparison-ratio",
+                      label: "E(h) / h for the comparison line",
+                      value:
+                        r.comparisonResidualRatio === null
+                          ? "—"
+                          : fmt(r.comparisonResidualRatio),
+                    },
+                  ]
+                : []),
+            ]}
+          />
 
+          {atCeiling && (
+            <ProseWithMath
+              className="derivative-explorer__note"
+              text={`Magnification is capped at ${MAX_MAGNIFICATION.toLocaleString()}×. Past this the window is narrower than the resolution the curve is sampled at, so the picture would show the sampling rather than the function. The cap is stated rather than applied silently.`}
+            />
+          )}
+
+          {showComparison && (
+            <ProseWithMath
+              className="derivative-explorer__note"
+              text={
+                "Shrink $h$ and watch the two ratios. The tangent's $E(h)/h$ goes to zero; the comparison line's settles on a nonzero number — the difference between the two slopes. *That* is what singles the tangent out, not touching the curve once."
+              }
+            />
+          )}
+
+          {showDerivative && (
+            <SceneReadout
+              title="f′ sampled across the domain"
+              items={[0.25, 0.5, 0.75].map((t) => {
+                const x =
+                  fixture.domain[0] + (fixture.domain[1] - fixture.domain[0]) * t;
+                return {
+                  id: `dv-${t}`,
+                  label: `f′(${fmt(x, 2)})`,
+                  value: fmt(numericDerivative(fixture.f, x)),
+                };
+              })}
+            />
+          )}
+        </>
+      }
+    >
       <LocalLinearityZoom
         fixture={fixture}
         at={at}
+        onDragTo={setAt}
         magnification={magnification}
         h={h}
         showSecant
-        comparisonSlope={
-          showComparison ? trueSlope + comparisonSlope : undefined
-        }
+        comparisonSlope={showComparison ? trueSlope + comparisonSlope : undefined}
         baseHalfWidth={BASE_HALF_WIDTH}
+        height={340}
         ariaLabel={`${fixture.label}, magnified ${Math.round(magnification)} times about x = ${fmt(at, 2)}`}
       />
-
-      <ParameterControls
-        controls={[
-          {
-            id: "at",
-            label: "Point a",
-            value: at,
-            min: fixture.domain[0],
-            max: fixture.domain[1],
-            step: 0.05,
-            onChange: setAt,
-          },
-          {
-            id: "magnification",
-            label: "Magnification",
-            value: magnification,
-            min: 1,
-            max: MAX_MAGNIFICATION,
-            step: 1,
-            onChange: setMagnification,
-          },
-          {
-            id: "h",
-            label: "Step h",
-            value: h,
-            min: 0.0001,
-            max: 1,
-            step: 0.0001,
-            onChange: setH,
-          },
-          ...(showComparison
-            ? [
-                {
-                  id: "comparison",
-                  label: "Comparison slope, offset from f′(a)",
-                  value: comparisonSlope,
-                  min: -2,
-                  max: 2,
-                  step: 0.1,
-                  onChange: setComparisonSlope,
-                },
-              ]
-            : []),
-        ]}
-      />
-
-      <SceneReadout
-        items={[
-          {
-            id: "secant",
-            label: "Secant slope over h",
-            value: r.secantSlope === null ? "—" : fmt(r.secantSlope),
-          },
-          {
-            id: "slope",
-            label: differentiableHere ? "f′(a)" : "f′(a)",
-            value: differentiableHere
-              ? fmt(r.slope)
-              : "does not exist — the one-sided slopes differ",
-          },
-          {
-            id: "estimate",
-            label: "Linear estimate f(a) + f′(a)h",
-            value: r.estimate === null ? "—" : fmt(r.estimate),
-          },
-          {
-            id: "actual",
-            label: "True f(a + h)",
-            value: r.actual === null ? "—" : fmt(r.actual),
-          },
-          {
-            id: "residual",
-            label: "Residual E(h)",
-            value: r.residual === null ? "—" : fmt(r.residual),
-          },
-          {
-            // The readout that carries C5. It is listed last and named as the
-            // ratio, because it is the one that goes to zero while E(h) does not.
-            id: "ratio",
-            label: "E(h) / h",
-            value: r.residualRatio === null ? "—" : fmt(r.residualRatio),
-          },
-          ...(showComparison
-            ? [
-                {
-                  id: "comparison-ratio",
-                  label: "E(h) / h for the comparison line",
-                  value:
-                    r.comparisonResidualRatio === null
-                      ? "—"
-                      : fmt(r.comparisonResidualRatio),
-                },
-              ]
-            : []),
-        ]}
-      />
-
-      <ExplorationToggles
-        toggles={[
-          {
-            id: "comparison",
-            label: "Compare against a line of another slope",
-            checked: showComparison,
-            onChange: setShowComparison,
-          },
-          {
-            id: "derivative",
-            label: "Show f′ as a function",
-            checked: showDerivative,
-            onChange: setShowDerivative,
-          },
-        ]}
-      />
-
-      {atCeiling && (
-        <ProseWithMath
-          className="derivative-explorer__note"
-          text={`Magnification is capped at ${MAX_MAGNIFICATION.toLocaleString()}×. Past this the window is narrower than the resolution the curve is sampled at, so the picture would show the sampling rather than the function. The cap is stated rather than applied silently.`}
-        />
-      )}
-
-      {showComparison && (
-        <ProseWithMath
-          className="derivative-explorer__note"
-          text={
-            "Shrink $h$ and watch the two ratios. The tangent's $E(h)/h$ goes to zero; the comparison line's settles on a nonzero number — the difference between the two slopes. *That* is what singles the tangent out, not touching the curve once."
-          }
-        />
-      )}
-
-      {showDerivative && (
-        <SceneReadout
-          title="f′ sampled across the domain"
-          items={[0.25, 0.5, 0.75].map((t) => {
-            const x =
-              fixture.domain[0] + (fixture.domain[1] - fixture.domain[0]) * t;
-            return {
-              id: `dv-${t}`,
-              label: `f′(${fmt(x, 2)})`,
-              value: fmt(numericDerivative(fixture.f, x)),
-            };
-          })}
-        />
-      )}
-
-      <ResetButton onReset={reset} />
     </ExplorationPanel>
   );
 }
