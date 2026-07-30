@@ -14,6 +14,7 @@ import {
   intervalContributions,
   partitionPoints,
   residual,
+  residualEndpoints,
   riemannSum,
 } from "../../math";
 import { FTC_TELESCOPING_SEGMENTS, requireBeats } from "./sceneTimings";
@@ -185,6 +186,31 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
     }));
   }
 
+  /**
+   * The first piece's error `E_i = [F(x_{i+1}) - F(x_i)] - f(x_i)\,\Delta x_i`,
+   * drawn on the F-PANEL as the gap between the true increment (top of the
+   * `staircase` riser, `F(x_1)`) and the local-linear model's PREDICTION for
+   * it (`F(x_0) + f(x_0)\,\Delta x_i`) — both read off the F-axis, so both
+   * share units, unlike the rate difference `f(x_1)-f(x_0)` the strip panel
+   * would otherwise suggest. Added to `view` rather than `fInner` so it stays
+   * fully visible while `staircaseOpacity` dims the rest of the F-panel to
+   * shift focus onto the strip panel during this beat.
+   */
+  const errorMarker = new Line({
+    key: "semantic:ftc2:error",
+    stroke: ROLE.violation, lineWidth: 4, opacity: errorOpacity,
+    points: () => {
+      const points = stripPoints();
+      const x0 = points[0]!;
+      const x1 = points[1]!;
+      const dx = x1 - x0;
+      const F = EX_PARABOLA.antiderivative!;
+      const { predicted, actual } = residualEndpoints(F, x0, stripF(x0), dx);
+      return [fPx(x1, predicted), fPx(x1, actual)];
+    },
+  });
+  view.add(errorMarker);
+
   /* --------------------------------------------------------------- strips */
 
   stripInner.add(new Line({
@@ -218,19 +244,6 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
     },
   }));
 
-  /** The first piece's error: the true riser vs. the local-linear rectangle. */
-  const errorMarker = new Line({
-    key: "semantic:ftc2:error",
-    stroke: ROLE.violation, lineWidth: 4, opacity: errorOpacity,
-    points: () => {
-      const points = stripPoints();
-      const x0 = points[0]!;
-      const x1 = points[1]!;
-      const f = stripF;
-      return [stripPx(x1, f(x0)), stripPx(x1, f(x1))];
-    },
-  });
-  stripInner.add(errorMarker);
 
   /* ------------------------------------------------------------ the labels */
 

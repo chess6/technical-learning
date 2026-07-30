@@ -438,6 +438,25 @@ export function residual(
   return f(a + h) - linearModel(f, a, slope)(h);
 }
 
+/**
+ * The two values a residual VISUALIZATION compares: the local-linear model's
+ * prediction for `f(a + h)`, and `f(a + h)` itself. Their difference is
+ * exactly `residual(f, a, slope, h)` — this exists so a drawn comparison (two
+ * points read on the SAME axis/units as `f`) can be pinned by a unit test
+ * independent of any rendering code, rather than trusted to match the
+ * labelled number by inspection. Do not draw a residual as a difference
+ * between two values of a DIFFERENT function (e.g. a rate `slope`'s own
+ * values) — that compares different units and is not this quantity.
+ */
+export function residualEndpoints(
+  f: RealFunction,
+  a: number,
+  slope: number,
+  h: number,
+): { readonly predicted: number; readonly actual: number } {
+  return { predicted: linearModel(f, a, slope)(h), actual: f(a + h) };
+}
+
 export function residualRatio(
   f: RealFunction,
   a: number,

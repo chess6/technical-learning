@@ -400,6 +400,7 @@ export {
   partitionPoints,
   refinementTable,
   residual,
+  residualEndpoints,
   residualRatio,
   riemannSum,
   runningTotal,

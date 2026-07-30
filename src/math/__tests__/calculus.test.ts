@@ -27,6 +27,7 @@ import {
   parabolaRightSum,
   partitionPoints,
   residual,
+  residualEndpoints,
   residualRatio,
   riemannSum,
   runningTotal,
@@ -479,6 +480,54 @@ describe("the Fundamental Theorem (L4)", () => {
       const e = residual(F, x0, EX_PARABOLA.f(x0), dx);
       expect(Math.abs(e), `piece ${i}`).toBeGreaterThan(0);
     }
+  });
+
+  describe("residualEndpoints — the two points a residual VISUALIZATION must compare", () => {
+    // `ftc-telescoping`'s `one-step` beat draws E_i as the gap between these
+    // two exact values (both read on the F/accumulation axis). A prior
+    // version instead drew a segment between f(x_i) and f(x_{i+1}) — a RATE
+    // difference, different units, not this quantity. These regressions pin
+    // the endpoints themselves, not just the scalar residual.
+
+    it("its difference equals residual() exactly, for every piece of an unequal partition", () => {
+      const points = partitionPoints(0, 2, 5, "unequal");
+      const F = EX_PARABOLA.antiderivative!;
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const x0 = points[i]!;
+        const dx = points[i + 1]! - x0;
+        const { predicted, actual } = residualEndpoints(F, x0, EX_PARABOLA.f(x0), dx);
+        expect(actual - predicted).toBeCloseTo(residual(F, x0, EX_PARABOLA.f(x0), dx), 12);
+      }
+    });
+
+    it("REQUIRED: the two endpoints are visibly distinct (a nonzero residual) on every unequal piece", () => {
+      const points = partitionPoints(0, 2, 5, "unequal");
+      const F = EX_PARABOLA.antiderivative!;
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const x0 = points[i]!;
+        const dx = points[i + 1]! - x0;
+        const { predicted, actual } = residualEndpoints(F, x0, EX_PARABOLA.f(x0), dx);
+        expect(Math.abs(actual - predicted), `piece ${i}`).toBeGreaterThan(0);
+      }
+    });
+
+    it("`actual` is F(x_{i+1}) itself, not a rate value — same axis the caption/equation describe", () => {
+      const F = EX_PARABOLA.antiderivative!;
+      const x0 = 0.3;
+      const dx = 0.5;
+      const { actual } = residualEndpoints(F, x0, EX_PARABOLA.f(x0), dx);
+      expect(actual).toBeCloseTo(F(x0 + dx), 12);
+      expect(actual).not.toBeCloseTo(EX_PARABOLA.f(x0 + dx), 2);
+    });
+
+    it("`predicted` is the local-linear model's F-value, not f(x_0)", () => {
+      const F = EX_PARABOLA.antiderivative!;
+      const x0 = 0.3;
+      const dx = 0.5;
+      const slope = EX_PARABOLA.f(x0);
+      const { predicted } = residualEndpoints(F, x0, slope, dx);
+      expect(predicted).toBeCloseTo(F(x0) + slope * dx, 12);
+    });
   });
 
   it("applies to e^(-x^2): the theorem holds numerically with no elementary antiderivative", () => {
