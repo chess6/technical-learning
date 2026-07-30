@@ -6,13 +6,16 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: APPROVED. A0 + A1 + A2 + A3 built; A4 open.**
+> **Status: BUILT. A0 + A1 + A2 + A3 + A4 complete — Package A is done, pending
+> its single package-level Opus semantic review.**
 >
 > Package A was explicitly approved for implementation on 2026-07-28, resolving
 > the boundary question review had raised about A0/A1. Slices A0 (shared
-> foundations), A1 (`limits-continuity`), A2 (`derivative-local-linearity`) and
-> A3 (`integral-accumulation`) are built on `master`, and each of A1–A3 passes
-> Gate 8 on its lesson-owned outcomes.
+> foundations), A1 (`limits-continuity`), A2 (`derivative-local-linearity`), and
+> A3 (`integral-accumulation`) are built on `master`; A4 (`fundamental-theorem`)
+> is built on `feature/a4-fundamental-theorem`, awaiting merge. Each of A1–A4
+> passes Gate 8 on its lesson-owned outcomes. The module-owned
+> `mod-calcfound-*` outcomes remain open Gate-9 obligations, by design (§4).
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -114,9 +117,37 @@ pinning a case where they disagree. A4 has the same shape of risk: the
 telescoping identity holds for **any** partition, and a picture drawn only on
 equal ones would imply it needs them.
 
-### A4 — `fundamental-theorem`
+### A4 — `fundamental-theorem` *(shipped)*
 Creates `telescoping-cancellation`. **Two clips** — `ftc-accumulate-then-measure`
 and the placed `ftc-telescoping`. One explorer, ten items.
+
+Its evidence claims were made ceiling-legal **before** any code was written, as
+A2's and A3's were: the contract's four aspirational E4 claims
+(`ftc-lower-limit-shift`'s Level column, and three D9 outcomes built on
+`exercise-sequence`/text) were reconciled to E2/E3 — no `construct-in-explorer`
+item exists in this lesson, so E3 is the honest ceiling throughout. The
+reconciliation table is in its [contract's evidence-ceiling
+reconciliation](../../lessons/04-fundamental-theorem/mastery-contract.md#evidence-ceiling-reconciliation-applied-at-build-2026-07-29).
+
+Before any A4 code was written, the guarantee-state defect A3 left recorded
+(§ above) was corrected: `EX_NON_MONOTONE` and the other turning fixtures now
+carry exact critical-point expressions and complete certified monotone
+stretches either side of the turn, a `turningPoints` field distinguishes
+"known to turn" from merely "not certified", and the explorer's wording only
+ever claims what the certification state proves.
+
+The defect worth carrying forward from A4 is recorded in its [Gate 8
+record](../../lessons/04-fundamental-theorem/mastery-contract.md#6-acceptance-record-gate-8)
+and in
+[known-failure-modes.md](../../../../quality/known-failure-modes.md#latex-glyph-identities-are-not-stable-across-a-scene-reset-and-can-fail-seek-determinism):
+`ftc-accumulate-then-measure` fails the hard gates' `seek-determinism` check
+for reasons traced to `@motion-canvas/2d`'s own `Latex` component (a
+process-lifetime glyph cache racing against a per-scene auto-key counter),
+not to this lesson's content — the gate's own report confirms the canvas
+pixels match in every case. Three fix attempts (explicit keys, signal-backed
+text, one static node per string) each removed a real, separate defect
+without resolving this one; it is left as a known, disclosed limitation
+rather than further guessed at.
 
 ## 2. Package-specific review checks
 
@@ -125,11 +156,11 @@ ones most likely to be lost by an implementer working from habit**:
 
 | # | Check | Slice | Why it matters |
 | --- | --- | --- | --- |
-| **P1** ✅ *(A3)* | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. **Satisfied:** `src/lessons/__tests__/noAntiderivative.test.tsx` greps the built lesson definition, the scene's chapters and accessible description, and the explorer's rendered text, and carries a guard asserting the pattern set is not vacuous; `e2e/lesson-integral-accumulation.spec.ts` repeats it over the rendered article. Scoped to the lesson, not the page: the course sidebar names L4 by title, and should. |
-| **P2** | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. |
-| **P3** ✅ *(A2)* | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). |
-| **P4** ◑ *(A3 half)* | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. **A3: satisfied.** `riemannSum`, `refinementTable` and the scene's own prefix sums evaluate only the rate; several offered fixtures declare a closed-form antiderivative and no lesson code path reads one. `accumulation.test.ts` checks the summed and shortcut values agree *in the test*, which is where that comparison belongs. |
-| **P5** | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. |
+| **P1** ✅ *(A3)* | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. **Satisfied:** `src/lessons/__tests__/noAntiderivative.test.tsx` greps the built lesson definition, the scene's chapters and accessible description, and the explorer's rendered text, and carries a guard asserting the pattern set is not vacuous; `e2e/lesson-integral-accumulation.spec.ts` repeats it over the rendered article. Scoped to the lesson, not the page: the course sidebar names L4 by title, and should — and once A4 shipped as a real lesson, the in-article Prev/Next footer started naming it too, for the identical reason; the e2e check now excludes both. |
+| **P2** ✅ *(A4)* | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. **Satisfied:** `cancelContributions`/`intervalContributions` (`src/math/calculus.ts`) and the `TelescopingCancellation` explorer component group purely by an id + sign pair, with no notion of order or adjacency; `calculus.test.ts` and `TelescopingCancellation.test.tsx` each feed a non-interval pairing (three cells sharing two interior edges) and assert the correct survivors. |
+| **P3** ✅ *(A2, A4)* | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). **A4 satisfied:** `calculus.test.ts` pins a nonzero `residual` on every piece of the unequal partition clip 2 and the explorer both use; the explorer's own "Show the error" table is asserted nonzero in `FundamentalTheoremExplorer.test.tsx` and `e2e/lesson-fundamental-theorem.spec.ts`. |
+| **P4** ✅ *(A3, A4)* | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. **A3: satisfied.** `riemannSum`, `refinementTable` and the scene's own prefix sums evaluate only the rate; several offered fixtures declare a closed-form antiderivative and no lesson code path reads one. `accumulation.test.ts` checks the summed and shortcut values agree *in the test*, which is where that comparison belongs. **A4: satisfied.** Clip 2's `SUMMED_VALUE` (`riemannSum` alone) and `FTC_VALUE` (`EX_PARABOLA.antiderivative` alone), the explorer's `fineSum`/`bracketValue`, and the lesson's own `ftc-corroborate` item are each independently computed; `calculus.test.ts` pins their agreement. |
+| **P5** ✅ *(A1, A4)* | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 ✅ | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. **A4: satisfied** — the `refine` beat names `EX_PARABOLA`'s own declared modulus label on screen; `e2e/lesson-fundamental-theorem.spec.ts` seeks to that chapter and asserts the chapter summary names "modulus of continuity". |
 
 Also required, from the ordinary standards:
 
@@ -179,17 +210,25 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | A1 `limits-continuity` | **SHIPPED** | `master` |
 | A2 `derivative-local-linearity` | **SHIPPED** | `master` |
 | A3 `integral-accumulation` | **SHIPPED** | `master` |
-| A4 `fundamental-theorem` | NOT STARTED | — |
+| A4 `fundamental-theorem` | **SHIPPED** | `feature/a4-fundamental-theorem` |
 
 ## 7. Acceptance for the package
 
-- [ ] All four lessons built, each meeting its own lesson-plan acceptance checklist. *(3 of 4: A1, A2, A3.)*
-- [ ] **Each lesson passes Gate 8 on its lesson-owned outcomes**, with module-owned
+- [x] All four lessons built, each meeting its own lesson-plan acceptance checklist.
+- [x] **Each lesson passes Gate 8 on its lesson-owned outcomes**, with module-owned
       outcomes recorded as open Gate-9 obligations.
-- [ ] P1–P5 verified, each by a test rather than by inspection.
-- [ ] `./check.sh --e2e` green.
+- [x] P1–P5 verified, each by a test rather than by inspection.
+- [ ] `./check.sh --e2e` green. **One known exception:** `ftc-accumulate-then-measure`
+      fails the hard gates' `seek-determinism` check for a diagnosed
+      `@motion-canvas/2d` `Latex` limitation unrelated to this lesson's content
+      (see A4's note above and
+      [known-failure-modes.md](../../../../quality/known-failure-modes.md#latex-glyph-identities-are-not-stable-across-a-scene-reset-and-can-fail-seek-determinism)).
+      A second, pre-existing failure (`solution-sets`, a linear-algebra scene) and
+      one pre-existing flaky media spec are both already recorded in that file and
+      are outside this package. Every other check, including every other hard gate
+      for both A4 scenes, is green.
 - [ ] Package-level semantic review (Opus) requested and passed.
-- [ ] Spine and architecture updated: four rows `future → built`, status ledgers
+- [x] Spine and architecture updated: four rows `future → built`, status ledgers
       updated, next-package recommendation re-stated.
 - [ ] A Gate 9 assessment plan for `calculus-foundations` opened as the next Mode D
       item, so the module-owned outcomes are not silently dropped.

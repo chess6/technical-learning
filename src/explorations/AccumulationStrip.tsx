@@ -45,6 +45,8 @@ export interface AccumulationStripProps {
   readonly interval?: readonly [number, number];
   readonly n: number;
   readonly sample?: SamplePoint;
+  /** Equal-width pieces by default; `"unequal"` for `fundamental-theorem`'s toggle. */
+  readonly partitionKind?: "equal" | "unequal";
 
   readonly viewBox?: MafsViewBox;
   readonly height?: number;
@@ -114,8 +116,9 @@ export function strips(
   b: number,
   n: number,
   sample: SamplePoint = "right",
+  partitionKind: "equal" | "unequal" = "equal",
 ): readonly Strip[] {
-  const points = partitionPoints(a, b, n);
+  const points = partitionPoints(a, b, n, partitionKind);
   const out: Strip[] = [];
   for (let i = 0; i < points.length - 1; i += 1) {
     const lo = points[i]!;
@@ -168,6 +171,7 @@ export function AccumulationStrip({
   interval,
   n,
   sample = "right",
+  partitionKind = "equal",
   viewBox,
   height = 340,
   ariaLabel,
@@ -181,7 +185,10 @@ export function AccumulationStrip({
 }: AccumulationStripProps) {
   const [a, b] = interval ?? fixture.domain;
 
-  const bars = useMemo(() => strips(fixture, a, b, n, sample), [fixture, a, b, n, sample]);
+  const bars = useMemo(
+    () => strips(fixture, a, b, n, sample, partitionKind),
+    [fixture, a, b, n, sample, partitionKind],
+  );
 
   const totals = useMemo(
     () => (showRunningTotal ? runningTotal(fixture.f, a, b, Math.max(n, 48), "mid") : null),

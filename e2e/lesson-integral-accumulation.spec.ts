@@ -76,15 +76,22 @@ test("names no antiderivative anywhere on the rendered page (ledger check P1)", 
     await toggle.click({ timeout: 2000 }).catch(() => {});
   }
 
-  // Scoped to the lesson article, not the whole page. The course sidebar names
-  // the NEXT lesson — "The Fundamental Theorem of Calculus" — and it is right to:
-  // the spine is navigation, and hiding the next node's title would be a
+  // Scoped to the lesson article, not the whole page — and within it, with the
+  // `.lesson-nav` Prev/Next footer excluded. The course sidebar AND this
+  // in-article footer both name the NEXT lesson — "The Fundamental Theorem of
+  // Calculus" — and it is right for both to: they are navigation chrome, not
+  // content this lesson teaches, and hiding the next node's title would be a
   // different kind of dishonesty. P1 is about what this lesson teaches.
   //
   // `textContent`, not `innerText`: a term inside a collapsed panel is still a
   // term the lesson ships, and this check is about the lesson, not the viewport.
-  const text = ((await page.locator("article.lesson-layout").textContent()) ?? "")
-    .toLowerCase();
+  const text = (
+    await page.locator("article.lesson-layout").evaluate((el) => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.querySelector(".lesson-nav")?.remove();
+      return clone.textContent ?? "";
+    })
+  ).toLowerCase();
   expect(text.length, "the page rendered too little to be a real check").toBeGreaterThan(
     3000,
   );
@@ -128,6 +135,34 @@ test("the explorer never reports a lucky straddle as a guarantee", async ({
   await explorer.getByLabel(/Refinement step/).fill("6"); // rung 6 = 64 pieces
   const fine = await widthAt();
   expect(fine).toBeLessThan(coarse);
+});
+
+test("narrowing a turning rate to a certified stretch restores the guarantee", async ({
+  page,
+}) => {
+  // The A3 defect this pins: `ex-non-monotone` (sin on [0, pi]) used to declare
+  // an EMPTY monotone-interval list, so no narrowing inside the app could ever
+  // make the guarantee return — contradicting the explorer's own promise that
+  // narrowing to a rising-only or falling-only stretch brings it back. Both
+  // halves, split at the turn at pi/2, are now certified.
+  await page.goto("/lesson/integral-accumulation");
+  const explorer = explorerOf(page);
+  await explorer.scrollIntoViewIfNeeded();
+
+  await explorer
+    .getByRole("button", { name: "A rate that rises and falls", exact: true })
+    .click();
+
+  // Full domain: not guaranteed, and the wording is licensed to name the turn
+  // because a declared turning point (pi/2) really is inside [0, pi].
+  await expect(readout(page, "Guaranteed to?")).toContainText(/^no/i);
+  await expect(explorer.locator(".integral-explorer__note")).toContainText(
+    /turns/i,
+  );
+
+  // Narrow to the first certified half by dragging the end down past the turn.
+  await explorer.getByLabel(/End b/).fill("1.4"); // < pi/2 ≈ 1.5708
+  await expect(readout(page, "Guaranteed to?")).toContainText(/^yes/i);
 });
 
 test("the units come from the axes, and change when the axes do", async ({

@@ -253,6 +253,8 @@ describe("scene timings (pure data)", () => {
       "derivative-local-linearity": { predict: "predict", reveal: "zoom" },
       "derivative-three-names": { predict: "predictDecay", reveal: "decay" },
       "integral-accumulation": { predict: "predict", reveal: "refine" },
+      "ftc-accumulate-then-measure": { predict: "predict", reveal: "close" },
+      "ftc-telescoping": { predict: "predict", reveal: "cancel" },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },

@@ -264,26 +264,24 @@ export const integralAccumulationLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "What quantity does the integral of this graph compute? (One word or short phrase.)",
-            accept: [
-              "rainfall",
-              "total rainfall",
-              "rain",
-              "depth",
-              "rainfall depth",
-              "accumulated rainfall",
-              "amount of rain",
-              "total rain",
+              "What quantity does the integral of this graph compute?",
+            choices: [
+              "Total rainfall",
+              "The rainfall rate at the end",
+              "The area under the curve, in square millimetres",
+              "The average rate over the interval",
             ],
+            correctChoice: 0,
             explanation:
               "The accumulated quantity — how much rain fell in total. The vertical axis is a rate of rainfall, so its total is rainfall.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "In what units?",
-            accept: ["mm", "millimetres", "millimeters", "millimetre", "millimeter"],
+            choices: ["mm", "mm/h", "mm²", "h"],
+            correctChoice: 0,
             explanation:
               "$(\\text{mm/h})(\\text{h}) = \\text{mm}$. The hours cancel. Read the units off the axes and the product tells you what you computed — no story required, and no square units anywhere.",
           },
@@ -327,25 +325,24 @@ export const integralAccumulationLesson: LessonDefinition = {
               `$2(9 + 7 + 6 + 5.5) = ${TABLE_RIGHT_SUM}$ litres. Each term is (L/min)(min) = L — four products, added.`,
           },
           {
-            kind: "text",
-            prompt: "Is that estimate too high or too low? (high / low)",
-            accept: ["low", "too low", "under", "underestimate", "an underestimate"],
+            kind: "multiple-choice",
+            prompt: "Is that estimate too high or too low?",
+            choices: ["Too low", "Too high", "Exact", "Cannot be determined"],
+            correctChoice: 0,
             explanation:
               `Too low. The left-hand estimate is $2(12 + 9 + 7 + 6) = ${TABLE_LEFT_SUM}$ litres, and the answer is between the two.`,
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "Why can you be sure which way it errs, without knowing the true value? (One word about the flow.)",
-            accept: [
-              "decreasing",
-              "it is decreasing",
-              "monotone",
-              "monotonic",
-              "falling",
-              "always decreasing",
-              "the flow is decreasing",
+              "Why can you be sure which way it errs, without knowing the true value?",
+            choices: [
+              "The flow only ever decreases over the interval",
+              "The flow only ever increases over the interval",
+              "The pieces are all the same width",
+              "It cannot be known without the true value",
             ],
+            correctChoice: 0,
             explanation:
               "Because the flow only ever **decreases**. On each piece the right-hand reading is the smallest value there, so every rectangle sits under the true contribution. Monotonicity is what makes the direction of the error knowable; on a flow that rose and then fell you could not say.",
           },
@@ -401,37 +398,39 @@ export const integralAccumulationLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "At $t = 1$ s, is $A$ rising, flat, or falling?",
-            accept: ["rising", "increasing", "rise", "up", "going up"],
+            choices: ["Rising", "Flat", "Falling"],
+            correctChoice: 0,
             explanation: "The rate is positive there, so the total is still being added to.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: `At $t = ${round1(TOTAL_PEAK_T)}$ s, is $A$ rising, flat, or falling?`,
-            accept: ["flat", "level", "neither", "stationary", "flat — at its maximum"],
+            choices: ["Rising", "Flat — this is where $A$ peaks", "Falling"],
+            correctChoice: 1,
             explanation:
               "The rate is zero there, so nothing is being added. This is where $A$ reaches its maximum.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "At $t = 9$ s, is $A$ rising, flat, or falling?",
-            accept: ["falling", "decreasing", "fall", "down", "going down"],
+            choices: ["Rising", "Flat", "Falling"],
+            correctChoice: 2,
             explanation:
               "The rate is negative, so each piece contributes a negative amount and the total comes down — which is how it ends below its own maximum.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "At roughly what time is $A$ climbing **fastest**? Give a number in seconds.",
-            accept: [
-              String(round1(RATE_PEAK_T)),
-              `${round1(RATE_PEAK_T)} s`,
-              `${round1(RATE_PEAK_T)}s`,
-              `about ${round1(RATE_PEAK_T)}`,
-              `${round1(RATE_PEAK_T)} seconds`,
-              RATE_PEAK_T.toFixed(2),
+              "At roughly what time is $A$ climbing **fastest**?",
+            choices: [
+              `About ${round1(RATE_PEAK_T)} s — where the rate itself peaks`,
+              "$t = 0$ s — the very start",
+              `About ${round1(TOTAL_PEAK_T)} s — where the total peaks`,
+              `${DRIVE_END} s — the very end`,
             ],
+            correctChoice: 0,
             explanation:
               "At about $t = 2.7$ s — exactly where the *rate* is at its maximum. Record that: the total climbs fastest where the rate is highest. It is not a coincidence, and it is not explained here.",
           },
@@ -484,10 +483,16 @@ export const integralAccumulationLesson: LessonDefinition = {
               "Unchanged. Redrawing changes the page, not the journey.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
               "Which quantity in each term $f(x_i^*)\\,\\Delta x_i$ is unchanged by the redrawing — the rate, or the width?",
-            accept: ["both", "both of them", "neither changes", "both are unchanged"],
+            choices: [
+              "Both — neither is a length on the page",
+              "Only the rate",
+              "Only the width",
+              "Neither — both scale with the redrawing",
+            ],
+            correctChoice: 0,
             explanation:
               "**Both.** $\\Delta x_i$ is a number of seconds, not a number of centimetres of paper; drawing it wider does not make it more seconds. The rate at each sample point is likewise a physical value. Every term is unchanged, so the sum is, so the limit is. The ink on the page is the only thing that scaled — which is precisely why an area on the page was never the right invariant to name.",
           },
@@ -504,17 +509,16 @@ export const integralAccumulationLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
               "A current of a steady $5$ A flows for $4$ s. Integrating current against time gives what quantity, in what units?",
-            accept: [
-              "charge in coulombs",
-              "charge, coulombs",
-              "charge (coulombs)",
-              "charge c",
-              "charge in c",
-              "charge coulombs",
+            choices: [
+              "Charge, in coulombs",
+              "Charge, in amps",
+              "Power, in watts",
+              "Energy, in joules",
             ],
+            correctChoice: 0,
             explanation: "$(\\text{A})(\\text{s}) = \\text{C}$: charge, in coulombs.",
           },
           {
@@ -525,17 +529,16 @@ export const integralAccumulationLesson: LessonDefinition = {
             explanation: `$(5\\ \\text{A})(4\\ \\text{s}) = ${CHARGE}\\ \\text{C}$ — a constant rate, so one rectangle does it.`,
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
               "A device draws a steady $60$ W for $4$ s. Integrating power against time gives what quantity, in what units?",
-            accept: [
-              "energy in joules",
-              "energy, joules",
-              "energy (joules)",
-              "energy j",
-              "energy in j",
-              "energy joules",
+            choices: [
+              "Energy, in joules",
+              "Power, in watts",
+              "Charge, in coulombs",
+              "Energy, in watt-hours",
             ],
+            correctChoice: 0,
             explanation: "$(\\text{W})(\\text{s}) = \\text{J}$: energy, in joules.",
           },
           {

@@ -38,18 +38,16 @@ const vec = (x: number, y: number): NamedAnswer["answer"] => ({ vector: [x, y] }
 
 describeGradingContract(byId("der-residual-remains"), {
   mustAccept: [
-    { name: "not zero, and the ratio is what changed", answer: seq("no", { choice: 0 }) },
-    { name: "synonym", answer: seq("nonzero", { choice: 0 }) },
+    { name: "not zero, and the ratio is what changed", answer: seq({ choice: 1 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "blank verdict", answer: seq("", { choice: 0 }) },
     {
       name: "believes the curve is straight there — the misconception itself",
-      answer: seq("yes", { choice: 1 }),
+      answer: seq({ choice: 0 }, { choice: 1 }),
     },
-    { name: "right verdict, wrong reason (residual reached zero)", answer: seq("no", { choice: 1 }) },
-    { name: "thinks nothing changed but the drawing", answer: seq("no", { choice: 2 }) },
-    { name: "thinks h reached zero", answer: seq("no", { choice: 3 }) },
+    { name: "right verdict, wrong reason (residual reached zero)", answer: seq({ choice: 1 }, { choice: 1 }) },
+    { name: "thinks nothing changed but the drawing", answer: seq({ choice: 1 }, { choice: 2 }) },
+    { name: "thinks h reached zero", answer: seq({ choice: 1 }, { choice: 3 }) },
   ],
 });
 
@@ -109,6 +107,10 @@ describeGradingContract(byId("der-three-names"), {
     { name: "prediction uses one second, not two", answer: seq("0.4 m/s", "0.4", 1.9) },
   ],
 });
+// NOTE: der-three-names' two `text` steps ask for a plain computed number
+// (with units) rather than a word/phrase classification, so they were left as
+// free text in the MCQ-conversion pass — the ambiguity that pass targeted was
+// unclear wording, not numeric-answer formatting.
 
 describeGradingContract(byId("der-tangent-crosses"), {
   mustAccept: [{ name: "0, then −2", answer: seq(0, -2) }],
@@ -123,21 +125,18 @@ describeGradingContract(byId("der-tangent-crosses"), {
 
 describeGradingContract(byId("der-differentiable-definition"), {
   mustAccept: [
-    { name: "no / yes / yes", answer: seq("no", "yes", "yes") },
-    { name: "synonyms", answer: seq("not differentiable", "differentiable", "y") },
+    { name: "no / yes / yes", answer: seq({ choice: 1 }, { choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "", "") },
     {
       name: "assumes any absolute value makes a corner — x|x| is smooth at 0",
-      answer: seq("no", "no", "yes"),
+      answer: seq({ choice: 1 }, { choice: 1 }, { choice: 0 }),
     },
     {
       name: "assumes any piecewise definition breaks differentiability",
-      answer: seq("no", "yes", "no"),
+      answer: seq({ choice: 1 }, { choice: 0 }, { choice: 1 }),
     },
-    { name: "misses the corner", answer: seq("yes", "yes", "yes") },
-    { name: "all no", answer: seq("no", "no", "no") },
+    { name: "misses the corner", answer: seq({ choice: 0 }, { choice: 0 }, { choice: 0 }) },
   ],
 });
 
@@ -159,28 +158,27 @@ describeGradingContract(byId("der-applied-transfer"), {
   mustAccept: [
     {
       name: "units, meaning, estimate, sign",
-      answer: seq("litres per minute", "constant rate", 92, { choice: 0 }),
-    },
-    {
-      name: "spelling variants",
-      answer: seq("l/min", "steady rate", 92, { choice: 0 }),
+      answer: seq({ choice: 0 }, { choice: 0 }, 92, { choice: 0 }),
     },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "", null, { choice: 0 }) },
-    { name: "litres, not litres per minute", answer: seq("litres", "constant rate", 92, { choice: 0 }) },
-    { name: "estimate ignores the two-minute step", answer: seq("litres per minute", "constant rate", 80, { choice: 0 }) },
+    { name: "wrong units on the rate", answer: seq({ choice: 2 }, { choice: 0 }, 92, { choice: 0 }) },
+    { name: "estimate ignores the two-minute step", answer: seq({ choice: 0 }, { choice: 0 }, 80, { choice: 0 }) },
+    {
+      name: "thinks the tangent describes the actual, ever-changing volume",
+      answer: seq({ choice: 0 }, { choice: 1 }, 92, { choice: 0 }),
+    },
     {
       name: "gets the sign backwards on an upward-bending curve",
-      answer: seq("litres per minute", "constant rate", 92, { choice: 1 }),
+      answer: seq({ choice: 0 }, { choice: 0 }, 92, { choice: 1 }),
     },
     {
       name: "thinks the tangent is exact",
-      answer: seq("litres per minute", "constant rate", 92, { choice: 2 }),
+      answer: seq({ choice: 0 }, { choice: 0 }, 92, { choice: 2 }),
     },
     {
       name: "refuses to decide although the bending was given",
-      answer: seq("litres per minute", "constant rate", 92, { choice: 3 }),
+      answer: seq({ choice: 0 }, { choice: 0 }, 92, { choice: 3 }),
     },
   ],
 });

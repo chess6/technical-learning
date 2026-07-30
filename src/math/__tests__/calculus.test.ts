@@ -5,6 +5,7 @@ import {
   EX_CONSTANT_RATE,
   EX_CURRENT,
   EX_DRIVE,
+  EX_GAUSSIAN,
   EX_HIDDEN_SPIKE,
   EX_JUMP,
   EX_NON_MONOTONE,
@@ -13,10 +14,12 @@ import {
   HIDDEN_SPIKE_GRID,
   accumulatedUnits,
   assertCalculusFixturesAreConsistent,
+  cancelContributions,
   cancellationReport,
   continuityAt,
   differenceQuotient,
   getCalculusFixture,
+  intervalContributions,
   limitFailureAt,
   numericDerivative,
   parabolaRightSum,
@@ -29,6 +32,7 @@ import {
   largestWindowFound,
   spacingForTolerance,
   telescopingTerms,
+  type SignedContribution,
 } from "../calculus";
 
 /**
@@ -458,5 +462,112 @@ describe("the Fundamental Theorem (L4)", () => {
         5,
       );
     }
+  });
+
+  it("keeps the one-step error visibly nonzero on every piece of an unequal partition (ledger check P3)", () => {
+    // Clip 2's `one-step` beat and the explorer's error table both draw
+    // E_i = [F(x_{i+1}) - F(x_i)] - f(x_i) * dx_i on this exact partition
+    // shape. F(x) = x^3/3 is genuinely curved, so no piece may show E_i = 0 --
+    // a zero would silently teach that the local-linear model is exact.
+    const points = partitionPoints(0, 2, 5, "unequal");
+    const F = EX_PARABOLA.antiderivative!;
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const x0 = points[i]!;
+      const dx = points[i + 1]! - x0;
+      const e = residual(F, x0, EX_PARABOLA.f(x0), dx);
+      expect(Math.abs(e), `piece ${i}`).toBeGreaterThan(0);
+    }
+  });
+
+  it("applies to e^(-x^2): the theorem holds numerically with no elementary antiderivative", () => {
+    // The standing counterexample (`not-a-recipe`, clip 2). No `antiderivative`
+    // is declared — none exists in closed form — so the only route to a number
+    // is the same numerical accumulation every other fixture uses.
+    expect(EX_GAUSSIAN.antiderivative).toBeUndefined();
+    const [lo, hi] = EX_GAUSSIAN.domain;
+    // A'(x) = f(x): the theorem's first half does not need a formula for A.
+    const A = (x: number) => riemannSum(EX_GAUSSIAN.f, lo, x, 4000, "mid");
+    for (const x of [0.4, 1, 1.6]) {
+      expect(numericDerivative(A, x)).toBeCloseTo(EX_GAUSSIAN.f(x), 3);
+    }
+    // The sum still converges, and it is bracketed on the certified stretch.
+    const coarse = riemannSum(EX_GAUSSIAN.f, lo, hi, 8, "mid");
+    const fine = riemannSum(EX_GAUSSIAN.f, lo, hi, 20000, "mid");
+    expect(Math.abs(coarse - fine)).toBeLessThan(0.05);
+  });
+});
+
+describe("generic cancellation (parameterized over cancelling pairs, not intervals)", () => {
+  // Package-ledger check P2: `telescoping-cancellation` must not be hard-coded
+  // to interval endpoints, because L34 (Green's theorem) re-runs the same
+  // mechanism over interior EDGES shared by adjacent cells — a graph of
+  // cancelling pairs, not a single ordered chain with exactly two ends.
+
+  it("cancels a simple interval chain exactly like `cancellationReport`", () => {
+    const points = partitionPoints(0, 2, 5, "unequal");
+    const contributions = intervalContributions(EX_PARABOLA.antiderivative!, points);
+    const report = cancelContributions(contributions);
+    // Two raw contributions per piece (once as a term's "to", once as the next
+    // term's "from"), so termCount is 2*(pieces), not the piece count itself.
+    expect(report.termCount).toBe(2 * (points.length - 1));
+    expect(report.cancellingCount).toBe(points.length - 2); // interior points
+    expect(report.survivors).toHaveLength(2);
+    const survivorValues = report.survivors.map((s) => s.value).sort((a, b) => a - b);
+    expect(survivorValues[0]).toBeCloseTo(EX_PARABOLA.antiderivative!(points[0]!), 10);
+    expect(survivorValues[1]).toBeCloseTo(
+      EX_PARABOLA.antiderivative!(points[points.length - 1]!),
+      10,
+    );
+  });
+
+  it("REQUIRED: cancels a non-interval pairing — shared interior edges, not a chain", () => {
+    // Three cells sharing two interior edges, the way three adjacent regions in
+    // a subdivided area would share boundaries in Green's theorem. There is no
+    // 1D order here at all — "AB" and "BC" are edge names, not coordinates —
+    // and each interior edge is walked once by each of its two neighbouring
+    // cells, in opposite orientation, exactly like an interior partition point
+    // is evaluated once positively and once negatively above.
+    const contributions: SignedContribution[] = [
+      // Cell 1's boundary: outer edge "out1", plus shared edge "AB" (its side).
+      { id: "out1", sign: 1, value: 4, label: "outer edge 1" },
+      { id: "AB", sign: 1, value: 10, label: "edge AB (cell 1 side)" },
+      // Cell 2's boundary: shares "AB" (opposite orientation) and "BC".
+      { id: "AB", sign: -1, value: 10, label: "edge AB (cell 2 side)" },
+      { id: "BC", sign: 1, value: -3, label: "edge BC (cell 2 side)" },
+      // Cell 3's boundary: shares "BC" (opposite orientation), plus an outer edge.
+      { id: "BC", sign: -1, value: -3, label: "edge BC (cell 3 side)" },
+      { id: "out3", sign: 1, value: 7, label: "outer edge 3" },
+    ];
+    const report = cancelContributions(contributions);
+    expect(report.termCount).toBe(6);
+    expect(report.cancellingCount).toBe(2); // AB and BC, the shared interior edges
+    expect(report.survivors.map((s) => s.id).sort()).toEqual(["out1", "out3"]);
+    // The surviving contributions sum to the total boundary circulation of the
+    // whole subdivided region — the interior never mattered, whatever shape it is.
+    const total = contributions.reduce((s, c) => s + c.sign * c.value, 0);
+    const survivorTotal = report.survivors.reduce((s, c) => s + c.sign * c.value, 0);
+    expect(survivorTotal).toBeCloseTo(total, 12);
+  });
+
+  it("does not silently cancel an id that appears with the same sign twice, or three times", () => {
+    const sameSign: SignedContribution[] = [
+      { id: "x", sign: 1, value: 1, label: "a" },
+      { id: "x", sign: 1, value: 1, label: "b" },
+    ];
+    expect(cancelContributions(sameSign).cancellingCount).toBe(0);
+    expect(cancelContributions(sameSign).survivors).toHaveLength(2);
+
+    const triple: SignedContribution[] = [
+      { id: "y", sign: 1, value: 1, label: "a" },
+      { id: "y", sign: -1, value: 1, label: "b" },
+      { id: "y", sign: 1, value: 1, label: "c" },
+    ];
+    expect(cancelContributions(triple).cancellingCount).toBe(0);
+    expect(cancelContributions(triple).survivors).toHaveLength(3);
+  });
+
+  it("rejects an empty contribution list rather than reporting a vacuous identity", () => {
+    expect(() => cancelContributions([])).toThrow(/at least one/);
+    expect(() => intervalContributions((x) => x, [1])).toThrow(/at least two/);
   });
 });

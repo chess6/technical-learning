@@ -221,10 +221,16 @@ export const derivativeLocalLinearityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "Is the gap between the curve and the tangent now zero? (yes / no)",
-            accept: ["no", "n", "not zero", "nonzero", "non-zero"],
+              "Is the gap between the curve and the tangent now zero?",
+            choices: [
+              "Yes — it has reached zero",
+              "No — it is still nonzero",
+              "It was never nonzero to begin with",
+              "Cannot be determined without a formula",
+            ],
+            correctChoice: 1,
             explanation:
               "No. The residual $E(h)$ is nonzero at every magnification for a genuinely curved function.",
           },
@@ -408,24 +414,42 @@ export const derivativeLocalLinearityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "$f(x) = \\lvert x - 3\\rvert$ at $x=3$.",
-            accept: ["no", "n", "not differentiable"],
+            choices: [
+              "Yes — differentiable there",
+              "No — a corner, with two different one-sided slopes",
+              "No — the function isn't even continuous there",
+              "Cannot be determined without a formula",
+            ],
+            correctChoice: 1,
             explanation:
               "No — a corner. Magnify and the two sides stay lines of slope $-1$ and $+1$; no single line appears.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "$g(x) = x\\lvert x\\rvert$ at $x=0$.",
-            accept: ["yes", "y", "differentiable"],
+            choices: [
+              "Yes — both one-sided slopes tend to the same value",
+              "No — any absolute value creates a corner",
+              "No — the two pieces disagree at $x=0$",
+              "Cannot be determined without a formula",
+            ],
+            correctChoice: 0,
             explanation:
               "Yes, and it is worth the surprise: $g(x)=x^2$ for $x\\ge0$ and $-x^2$ for $x<0$, so both one-sided quotients tend to $0$. An absolute value inside an expression does not automatically make a corner.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
               "$p(x) = x^2$ for $x<1$ and $p(x)=2x-1$ for $x\\ge1$, at $x=1$.",
-            accept: ["yes", "y", "differentiable"],
+            choices: [
+              "Yes — the values and the one-sided slopes both agree",
+              "No — any piecewise definition breaks differentiability",
+              "Yes, but only because the values happen to agree",
+              "No — the one-sided slopes disagree",
+            ],
+            correctChoice: 0,
             explanation:
               "Yes. The values agree at $1$ (both give $1$) and so do the one-sided slopes (both give $2$) — the pieces join smoothly, so the magnified picture is one line.",
           },
@@ -463,29 +487,28 @@ export const derivativeLocalLinearityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "What are the units of $V'(10)$?",
-            accept: [
-              "litres per minute",
-              "liters per minute",
-              "l/min",
-              "litres/minute",
-              "liters/minute",
-              "l per min",
+            choices: [
+              "Litres per minute",
+              "Minutes per litre",
+              "Litres",
+              "Litres per minute squared",
             ],
+            correctChoice: 0,
             explanation: "Output units per input unit: litres per minute.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "What does the tangent line at $t=10$ mean physically, in one phrase?",
-            accept: [
-              "constant rate",
-              "filling at a constant rate",
-              "steady rate",
-              "the same rate forever",
-              "constant filling rate",
+              "What does the tangent line at $t=10$ mean physically?",
+            choices: [
+              "The tank filling at a constant rate, forever",
+              "The tank's actual volume at every later time",
+              "The fastest the tank could possibly fill",
+              "A rate that itself keeps speeding up",
             ],
+            correctChoice: 0,
             explanation:
               "It is the tank filling at a *constant* 6 litres per minute — the volume the tank would reach if the rate stopped changing at that instant.",
           },

@@ -22,6 +22,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.IntegralAccumulationExplorer,
     })),
   ),
+  "fundamental-theorem": lazy(() =>
+    import("./FundamentalTheoremExplorer").then((m) => ({
+      default: m.FundamentalTheoremExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,

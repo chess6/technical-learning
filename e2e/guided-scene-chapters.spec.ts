@@ -52,6 +52,10 @@ const SCENE_ROUTES: { scene: string; route: string }[] = [
   { scene: "derivative-local-linearity", route: "/lesson/derivative-local-linearity" },
   { scene: "derivative-three-names", route: "/lesson/derivative-local-linearity" },
   { scene: "integral-accumulation", route: "/lesson/integral-accumulation" },
+  { scene: "ftc-accumulate-then-measure", route: "/lesson/fundamental-theorem" },
+  // A clip placed by a `visual` route block, mid-lesson beside the formal
+  // telescoping identity it visualizes.
+  { scene: "ftc-telescoping", route: "/lesson/fundamental-theorem" },
 ];
 
 const PLAYER = ".guided-scene-player";

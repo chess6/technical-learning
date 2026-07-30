@@ -3,6 +3,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { LimitsContinuityExplorer } from "../LimitsContinuityExplorer";
 import { DerivativeLocalLinearityExplorer } from "../DerivativeLocalLinearityExplorer";
 import { IntegralAccumulationExplorer } from "../IntegralAccumulationExplorer";
+import { FundamentalTheoremExplorer } from "../FundamentalTheoremExplorer";
 import {
   CALCULUS_FIXTURES,
   EX_ABS,
@@ -32,16 +33,18 @@ const EXPLORERS = [
     Component: DerivativeLocalLinearityExplorer,
   },
   { name: "integral-accumulation", Component: IntegralAccumulationExplorer },
+  { name: "fundamental-theorem", Component: FundamentalTheoremExplorer },
 ] as const;
 
 /**
- * The two explorers whose primary control is a point on the curve. The third,
- * `integral-accumulation`, is driven by an interval and a partition count, so it
- * names its controls "Start a" / "End b" instead and is exempt from this one
- * check rather than being made to fake a control it does not have.
+ * The two explorers whose primary control is a point on the curve. The other
+ * two, `integral-accumulation` and `fundamental-theorem`, are driven by an
+ * interval and a partition count, so they name their controls "Start a" /
+ * "End b" instead and are exempt from this one check rather than being made
+ * to fake a control they do not have.
  */
 const POINT_EXPLORERS = EXPLORERS.filter(
-  (e) => e.name !== "integral-accumulation",
+  (e) => e.name !== "integral-accumulation" && e.name !== "fundamental-theorem",
 );
 
 describe.each(EXPLORERS)("$name explorer", ({ Component }) => {

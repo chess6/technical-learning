@@ -42,26 +42,23 @@ const vec = (x: number, y: number): NamedAnswer["answer"] => ({ vector: [x, y] }
 
 describeGradingContract(byId("int-units-fresh"), {
   mustAccept: [
-    { name: "rainfall, in millimetres", answer: seq("rainfall", "mm") },
-    { name: "spelled out", answer: seq("total rainfall", "millimetres") },
-    { name: "US spelling", answer: seq("amount of rain", "millimeters") },
+    { name: "rainfall, in millimetres", answer: seq({ choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "") },
     {
       name: "THE misconception: the integral is an area",
-      answer: seq("area", "mm"),
+      answer: seq({ choice: 2 }, { choice: 0 }),
     },
     {
       name: "square units — what an area on the page would be in",
-      answer: seq("rainfall", "mm^2"),
+      answer: seq({ choice: 0 }, { choice: 2 }),
     },
     {
       name: "gives the rate back instead of the accumulated quantity",
-      answer: seq("rainfall rate", "mm"),
+      answer: seq({ choice: 1 }, { choice: 0 }),
     },
-    { name: "the input unit, not the product", answer: seq("rainfall", "hours") },
-    { name: "the rate's unit, unaccumulated", answer: seq("rainfall", "mm/h") },
+    { name: "the input unit, not the product", answer: seq({ choice: 0 }, { choice: 3 }) },
+    { name: "the rate's unit, unaccumulated", answer: seq({ choice: 0 }, { choice: 1 }) },
   ],
 });
 
@@ -76,22 +73,20 @@ describeGradingContract(byId("int-bracket-fails"), {
 
 describeGradingContract(byId("int-estimate-table"), {
   mustAccept: [
-    { name: "55 L, low, because it decreases", answer: seq(55, "low", "decreasing") },
-    { name: "synonyms", answer: seq(55, "underestimate", "monotone") },
+    { name: "55 L, low, because it decreases", answer: seq(55, { choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq(null, "", "") },
-    { name: "zero-filled", answer: seq(0, "low", "decreasing") },
-    { name: "used the LEFT readings — a different estimate", answer: seq(68, "low", "decreasing") },
-    { name: "forgot the 2-minute width: added the readings", answer: seq(27.5, "low", "decreasing") },
-    { name: "included all five readings", answer: seq(79, "low", "decreasing") },
+    { name: "zero-filled", answer: seq(0, { choice: 0 }, { choice: 0 }) },
+    { name: "used the LEFT readings — a different estimate", answer: seq(68, { choice: 0 }, { choice: 0 }) },
+    { name: "forgot the 2-minute width: added the readings", answer: seq(27.5, { choice: 0 }, { choice: 0 }) },
+    { name: "included all five readings", answer: seq(79, { choice: 0 }, { choice: 0 }) },
     {
       name: "right number, wrong direction — the verdict is the point",
-      answer: seq(55, "high", "decreasing"),
+      answer: seq(55, { choice: 1 }, { choice: 0 }),
     },
     {
-      name: "right verdict, no reason that makes it knowable",
-      answer: seq(55, "low", "it looks smaller"),
+      name: "right verdict, wrong reason — thinks the flow increases",
+      answer: seq(55, { choice: 0 }, { choice: 1 }),
     },
   ],
 });
@@ -123,29 +118,27 @@ describeGradingContract(byId("int-parabola-from-sum"), {
 
 describeGradingContract(byId("int-read-running-total"), {
   mustAccept: [
-    { name: "rising / flat / falling / 2.7", answer: seq("rising", "flat", "falling", "2.7") },
     {
-      name: "synonyms and units",
-      answer: seq("increasing", "level", "decreasing", "2.7 s"),
+      name: "rising / flat / falling / fastest at the rate's own peak",
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 2 }, { choice: 0 }),
     },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "", "", "") },
     {
       name: "reads the RATE instead of the total at the turning point",
-      answer: seq("rising", "falling", "falling", "2.7"),
+      answer: seq({ choice: 0 }, { choice: 2 }, { choice: 2 }, { choice: 0 }),
     },
     {
       name: "thinks a negative rate still adds — the area model",
-      answer: seq("rising", "flat", "rising", "2.7"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 0 }, { choice: 0 }),
     },
     {
       name: "puts the fastest climb where the total peaks, not where the rate does",
-      answer: seq("rising", "flat", "falling", "5.2"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 2 }, { choice: 2 }),
     },
     {
       name: "puts the fastest climb at the start",
-      answer: seq("rising", "flat", "falling", "0"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 2 }, { choice: 1 }),
     },
   ],
 });
@@ -172,21 +165,19 @@ describeGradingContract(byId("int-signed-transfer"), {
 
 describeGradingContract(byId("int-scale-invariance"), {
   mustAccept: [
-    { name: "unchanged, and both factors are unchanged", answer: seq({ choice: 0 }, "both") },
-    { name: "phrasing", answer: seq({ choice: 0 }, "both are unchanged") },
+    { name: "unchanged, and both factors are unchanged", answer: seq({ choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "blank reason", answer: seq({ choice: 0 }, "") },
-    { name: "scales with the ink — the area model", answer: seq({ choice: 1 }, "both") },
-    { name: "scales the other way", answer: seq({ choice: 2 }, "both") },
-    { name: "refuses to decide", answer: seq({ choice: 3 }, "both") },
+    { name: "scales with the ink — the area model", answer: seq({ choice: 1 }, { choice: 0 }) },
+    { name: "scales the other way", answer: seq({ choice: 2 }, { choice: 0 }) },
+    { name: "refuses to decide", answer: seq({ choice: 3 }, { choice: 0 }) },
     {
       name: "thinks only the rate survives the redrawing",
-      answer: seq({ choice: 0 }, "the rate"),
+      answer: seq({ choice: 0 }, { choice: 1 }),
     },
     {
       name: "thinks the width is a length on the page",
-      answer: seq({ choice: 0 }, "the width"),
+      answer: seq({ choice: 0 }, { choice: 2 }),
     },
   ],
 });
@@ -195,34 +186,25 @@ describeGradingContract(byId("int-same-machine"), {
   mustAccept: [
     {
       name: "charge in coulombs, 20; energy in joules, 240",
-      answer: seq("charge in coulombs", 20, "energy in joules", 240),
-    },
-    {
-      name: "symbol units",
-      answer: seq("charge C", 20, "energy J", 240),
+      answer: seq({ choice: 0 }, 20, { choice: 0 }, 240),
     },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", null, "", null) },
-    {
-      name: "names the quantity without units — the units are the argument",
-      answer: seq("charge", 20, "energy in joules", 240),
-    },
     {
       name: "gives the rate's unit back",
-      answer: seq("charge in amps", 20, "energy in joules", 240),
+      answer: seq({ choice: 1 }, 20, { choice: 0 }, 240),
     },
     {
-      name: "swaps the two meters",
-      answer: seq("energy in joules", 20, "charge in coulombs", 240),
+      name: "swaps the two meters — power route names charge",
+      answer: seq({ choice: 0 }, 20, { choice: 2 }, 240),
     },
     {
       name: "forgot the duration on the charge",
-      answer: seq("charge in coulombs", 5, "energy in joules", 240),
+      answer: seq({ choice: 0 }, 5, { choice: 0 }, 240),
     },
     {
       name: "forgot the duration on the energy",
-      answer: seq("charge in coulombs", 20, "energy in joules", 60),
+      answer: seq({ choice: 0 }, 20, { choice: 0 }, 60),
     },
   ],
 });

@@ -252,16 +252,28 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
-            prompt: "After the change, what is $\\lim_{x\\to2}f(x)$? (A number, or \u201Cno limit\u201D.)",
-            accept: ["7", "seven", "still 7", "7, unchanged", "unchanged"],
+            kind: "multiple-choice",
+            prompt: "After the change, what is $\\lim_{x\\to2}f(x)$?",
+            choices: [
+              "Still 7 \u2014 unchanged",
+              "$-100$, the new value of $f(2)$",
+              "0",
+              "No limit \u2014 it was destroyed by the edit",
+            ],
+            correctChoice: 0,
             explanation:
               "Still 7. The definition consults $0<\\lvert x-2\\rvert$ only, so it never read $f(2)$ in the first place.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "After $f(2)$ is deleted, what is $\\lim_{x\\to2}f(x)$?",
-            accept: ["7", "seven", "still 7", "unchanged", "7, unchanged"],
+            choices: [
+              "Still 7 \u2014 unchanged",
+              "Undefined, since $f(2)$ no longer exists",
+              "0",
+              "It cannot be determined without $f(2)$",
+            ],
+            correctChoice: 0,
             explanation:
               "Still 7 \u2014 and this is the case that matters, because every derivative in this course is a quotient with no value at the point.",
           },
@@ -300,31 +312,55 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
               "$g(x)=\\dfrac{x^2-9}{x-3}$ at $x=3$ (the function is undefined there).",
-            accept: ["exists", "it exists", "limit exists", "removable"],
+            choices: [
+              "The limit exists",
+              "Jump \u2014 the two sides approach different values",
+              "Oscillation \u2014 the values keep sweeping the same range and never settle",
+              "Blow-up \u2014 the values leave every band and never return",
+            ],
+            correctChoice: 0,
             explanation:
               "The limit exists and equals 6: $g$ agrees with $x+3$ everywhere the limit looks. The function being undefined at 3 is irrelevant \u2014 that is a removable discontinuity, not a missing limit.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "$h(x)=0$ for $x<1$ and $h(x)=2$ for $x\\ge1$, at $x=1$.",
-            accept: ["jump"],
+            choices: [
+              "The limit exists",
+              "Jump \u2014 the two sides approach different values",
+              "Oscillation \u2014 the values keep sweeping the same range and never settle",
+              "Blow-up \u2014 the values leave every band and never return",
+            ],
+            correctChoice: 1,
             explanation:
               "The two approaches settle on 0 and 2. No single target can be defended, so no tolerance narrower than 2 can be answered.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "$k(x)=\\sin(1/x)$ at $x=0$.",
-            accept: ["oscillation", "oscillates", "oscillating"],
+            choices: [
+              "The limit exists",
+              "Jump \u2014 the two sides approach different values",
+              "Oscillation \u2014 the values keep sweeping the same range and never settle",
+              "Blow-up \u2014 the values leave every band and never return",
+            ],
+            correctChoice: 2,
             explanation:
               "However narrow the window, the values still sweep the whole of $[-1,1]$. Nothing is forced, so there is no limit \u2014 and in particular the answer is not 0.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "$m(x)=1/x^2$ at $x=0$.",
-            accept: ["blow-up", "blow up", "blowup", "blows up"],
+            choices: [
+              "The limit exists",
+              "Jump \u2014 the two sides approach different values",
+              "Oscillation \u2014 the values keep sweeping the same range and never settle",
+              "Blow-up \u2014 the values leave every band and never return",
+            ],
+            correctChoice: 3,
             explanation:
               "The outputs leave every band and keep going. Distinct from oscillation: here they do not come back.",
           },
@@ -372,9 +408,15 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
-            prompt: "Does $p(2)$ exist? (yes / no)",
-            accept: ["yes", "y", "it exists", "exists"],
+            kind: "multiple-choice",
+            prompt: "Does $p(2)$ exist?",
+            choices: [
+              "Yes \u2014 it was defined to be 1",
+              "No \u2014 the expression is $0/0$ there",
+              "No \u2014 $p$ is undefined at $x=2$",
+              "Only in the limiting sense",
+            ],
+            correctChoice: 0,
             explanation: "Yes \u2014 it was defined to be 1.",
           },
           {
@@ -386,9 +428,15 @@ export const limitsContinuityLesson: LessonDefinition = {
               "Off the point $p$ agrees with $x+2$, so the neighbours force 4.",
           },
           {
-            kind: "text",
-            prompt: "Is $p$ continuous at $x=2$? (yes / no)",
-            accept: ["no", "n", "not continuous", "discontinuous"],
+            kind: "multiple-choice",
+            prompt: "Is $p$ continuous at $x=2$?",
+            choices: [
+              "Yes \u2014 both parts exist",
+              "No \u2014 the limit and the defined value disagree",
+              "No \u2014 the limit does not exist",
+              "Cannot be decided from the given information",
+            ],
+            correctChoice: 1,
             explanation:
               "No. Both parts exist, but they disagree \u2014 $4\\neq1$. This is exactly the removable case: redefining the single value $p(2)=4$ would repair the continuity, and would not change the limit at all.",
           },
@@ -405,15 +453,15 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
-            prompt: "One word.",
-            accept: [
-              "continuity",
-              "continuous",
-              "it is continuous",
-              "polynomials are continuous",
-              "continuity of polynomials",
+            kind: "multiple-choice",
+            prompt: "Name the property.",
+            choices: [
+              "Continuity — polynomials are continuous everywhere",
+              "Differentiability of the polynomial",
+              "The definition of the limit itself",
+              "Boundedness of the polynomial near $x=4$",
             ],
+            correctChoice: 0,
             explanation:
               "Continuity \u2014 and it has to be named, because substitution is not what a limit *is*. It is a shortcut available exactly when the forced value happens to equal the actual value, which for a polynomial it always does.",
           },
@@ -469,9 +517,15 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
-            prompt: "Is the conclusion justified? (yes / no)",
-            accept: ["no", "n", "not justified", "unjustified"],
+            kind: "multiple-choice",
+            prompt: "Is the conclusion justified?",
+            choices: [
+              "Yes — continuity guarantees it",
+              "No — continuity fixes no window width between samples",
+              "No — the function is not actually continuous",
+              "Cannot be decided from the given information",
+            ],
+            correctChoice: 1,
             explanation:
               "No. Continuity is local: it promises a window at each point but fixes no width, so it says nothing about the gaps between chosen samples.",
           },
@@ -501,17 +555,29 @@ export const limitsContinuityLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
-            prompt: "Can you make the limit at $x=3$ exist? (yes / no)",
-            accept: ["no", "n", "cannot", "can't", "impossible"],
+            kind: "multiple-choice",
+            prompt: "Can you make the limit at $x=3$ exist?",
+            choices: [
+              "Yes \u2014 redefine $q(3)$ to split the difference",
+              "No \u2014 the two one-sided values disagree, and one point can't fix that",
+              "Yes \u2014 the limit already exists there",
+              "No \u2014 $q$ is undefined everywhere near $x=3$",
+            ],
+            correctChoice: 1,
             explanation:
               "No. The limit is fixed by the neighbours, and they are $-1$ on the left and $+1$ on the right. Editing one point changes nothing the limit reads \u2014 it is a jump, and jumps are not repairable from a single value.",
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt:
-              "Now take $r(x)=\\dfrac{x^2-9}{x-3}$ with $r(3)=0$. Can you make **that** continuous at 3 by redefining $r(3)$? (yes / no)",
-            accept: ["yes", "y", "can", "possible"],
+              "Now take $r(x)=\\dfrac{x^2-9}{x-3}$ with $r(3)=0$. Can you make **that** continuous at 3 by redefining $r(3)$?",
+            choices: [
+              "Yes \u2014 set $r(3)$ to match the limit",
+              "No \u2014 the limit doesn't exist here either",
+              "No \u2014 a single point can never repair continuity",
+              "Yes, but only by also changing $r$ near $x=3$",
+            ],
+            correctChoice: 0,
             explanation:
               "Yes \u2014 set $r(3)=6$. Here the limit already exists; only the value disagreed with it, and the value is the one thing you are allowed to move.",
           },

@@ -199,3 +199,49 @@ their own project. Both are platform work on the harness, not lesson work.
 
 *Recorded 2026-07-28 while shipping Package A slice A3, on a tree whose changes
 touch none of the three specs.*
+
+## `Latex` glyph identities are not stable across a scene reset, and can fail seek-determinism
+
+**Hazard.** The `seek-determinism` hard gate seeks to a segment's midpoint two
+ways — forward from frame 0, and backward (via a full scene reset) from the
+last frame — and compares every sampled node's identity, position, and
+opacity. A scene with several `Latex` nodes whose **text content differs
+across beats** can fail this gate even though the canvas pixels are byte-
+identical in both replays (the gate's own `canvas matches` note confirms it):
+`Latex`'s internal glyphs are children of the node, individually auto-keyed by
+a per-class-name counter (`Scene2D.registerNode`) that is reset per scene
+instance, but `Latex` also resolves its rendered SVG through a **static,
+process-lifetime cache** (`Latex.texNodesPool` / `svgContentsPool`, never
+cleared by `reset()`). Whether a given string's glyphs are freshly built or
+served from that cache can differ between the two replay paths, and the
+resulting construction-order difference reassigns which glyph gets which
+auto-generated key — so the gate compares the wrong pair of (visually
+identical) nodes and reports a large, spurious position delta.
+
+**Confirmed NOT the cause, tried in this order, same failure signature every
+time:** giving every node an explicit `key` (fixes the *parent* Latex node's
+own identity, not its auto-keyed children); moving beat-to-beat text out of
+imperative `node.tex(string)` calls into a signal (`tex: mySignal`); replacing
+one reused, repeatedly-mutated label with one static, never-mutated node per
+distinct string (rules out mutation timing, not the cache/counter race
+underneath it). A scene built the same way with *more* distinct strings and
+*more* beats (`ftc-telescoping`) did not trip it — the fragility is not simply
+"how many Latex nodes", and no reliable trigger short of the framework's own
+cache state has been found.
+
+**Prevention (partial).** Keep beat-to-beat title/caption/equation text as
+short-lived as possible and prefer the fewest distinct strings a clip
+genuinely needs; this lowers the odds of hitting the race without eliminating
+it. Do not spend further authoring effort chasing a specific occurrence past
+one focused diagnostic pass — confirm via the gate's own `canvas matches`
+note that the mismatch is confined to node identity, not pixels, and record
+it here rather than reinvent the diagnosis. A real fix would patch
+`@motion-canvas/2d`'s `Latex`/`Scene2D` (out of scope for lesson authoring).
+
+**Not a lesson-content defect.** Every other hard gate (motion presence, no
+teleport, no flicker, text-in-stage, no overlap, segment-overrun,
+empty-frame) is unaffected, and chapter-seeking/Prev-Next/reduced-motion all
+work normally for an affected scene.
+
+*Recorded 2026-07-29–30 while shipping applied-mathematics Package A slice A4,
+on `ftc-accumulate-then-measure`.*

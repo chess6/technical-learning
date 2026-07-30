@@ -3,6 +3,7 @@ import { changeOfBasisLesson } from "./changeOfBasis";
 import { chapter0Lesson } from "./chapter0";
 import { derivativeLocalLinearityLesson } from "./derivativeLocalLinearity";
 import { integralAccumulationLesson } from "./integralAccumulation";
+import { fundamentalTheoremLesson } from "./fundamentalTheorem";
 import { determinantsLesson } from "./determinants";
 import { eigenvectorsLesson } from "./eigenvectors";
 import { eliminationLesson } from "./elimination";
@@ -46,6 +47,7 @@ export const lessons: LessonDefinition[] = [
   limitsContinuityLesson,
   derivativeLocalLinearityLesson,
   integralAccumulationLesson,
+  fundamentalTheoremLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

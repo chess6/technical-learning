@@ -104,5 +104,15 @@
     "module": "integralAccumulationScene",
     "exportName": "integralAccumulationScene",
     "lessonId": "integral-accumulation"
+  },
+  "ftc-accumulate-then-measure": {
+    "module": "ftcAccumulateThenMeasureScene",
+    "exportName": "ftcAccumulateThenMeasureScene",
+    "lessonId": "fundamental-theorem"
+  },
+  "ftc-telescoping": {
+    "module": "ftcTelescopingScene",
+    "exportName": "ftcTelescopingScene",
+    "lessonId": "fundamental-theorem"
   }
 }

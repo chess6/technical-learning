@@ -8,6 +8,8 @@ import {
   EIGEN_CHARACTERISTIC_SEGMENTS,
   DERIVATIVE_NAMES_SEGMENTS,
   INTEGRAL_ACCUMULATION_SEGMENTS,
+  FTC_ACCUMULATE_SEGMENTS,
+  FTC_TELESCOPING_SEGMENTS,
   DERIVATIVE_ZOOM_SEGMENTS,
   LIMITS_CONTINUITY_SEGMENTS,
   EIGEN_DERIVATION_SEGMENTS,
@@ -67,6 +69,8 @@ const LIMITS_CONTINUITY_STEPS = toSteps(LIMITS_CONTINUITY_SEGMENTS);
 const DERIVATIVE_ZOOM_STEPS = toSteps(DERIVATIVE_ZOOM_SEGMENTS);
 const DERIVATIVE_NAMES_STEPS = toSteps(DERIVATIVE_NAMES_SEGMENTS);
 const INTEGRAL_ACCUMULATION_STEPS = toSteps(INTEGRAL_ACCUMULATION_SEGMENTS);
+const FTC_ACCUMULATE_STEPS = toSteps(FTC_ACCUMULATE_SEGMENTS);
+const FTC_TELESCOPING_STEPS = toSteps(FTC_TELESCOPING_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -353,6 +357,40 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "reverse",
       "running",
       "meters",
+    ]),
+  },
+  "ftc-accumulate-then-measure": {
+    id: "ftc-accumulate-then-measure",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation answering the previous lesson's loose end. It opens by replaying the rate and running-total traces from that lesson while a marker sweeps to the point where the rate is highest, showing that the running total climbs fastest there. The right end of the interval then advances by a small step h, and the running total gains one thin sliver. That sliver is shown trapped between two rectangles, one at the rate's value at the start of the step and one at its value at the end. The learner is asked to predict what the two bounds close on as the step shrinks, and nothing moves while the question stands. The step then shrinks continuously and the two bounds visibly converge onto the same number, revealing that the derivative of the running total equals the rate itself. The tangent line to the running total is then drawn with exactly that slope, answering the opening observation: the rate is the running total's slope, which is why the total climbed fastest where the rate was highest. Finally a second running total, independently accumulated from a different starting point, is drawn alongside the first: it is shifted vertically by a constant and has the same slope everywhere.",
+    steps: FTC_ACCUMULATE_STEPS,
+    majorSteps: pickMajor(FTC_ACCUMULATE_STEPS, [
+      "loose-end",
+      "sliver",
+      "squeeze",
+      "predict",
+      "close",
+      "answer",
+      "lower-limit",
+    ]),
+  },
+  "ftc-telescoping": {
+    id: "ftc-telescoping",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing the telescoping mechanism behind the Fundamental Theorem. A staircase is drawn through an unequal partition of the interval, each step's rise being one antiderivative value minus the previous one, so the total rise equals the top value minus the bottom value. The identity is written out symbolically, each interior evaluation appearing once with a positive sign and once with a negative sign. The learner is asked to predict how many of the n contributions survive the cancellation, and nothing moves while the question stands. The interior landings then fade one by one while a live counter displays the term count, the cancellation count, and the two surviving endpoints. Each small change is then replaced by the local linear model from the previous lesson, with its error drawn as a visible nonzero quantity, and the picture is identified as exactly the rectangles from the accumulation lesson. The mesh is refined and the errors shrink toward zero, with the modulus of continuity from the first lesson named as the assumption providing uniform control. Two independently computed numbers are then displayed side by side and shown to agree: the same sum from the summation route, and the antiderivative evaluated at the two endpoints. Finally the integrand is swapped for e to the minus x squared, and the same numerical accumulation still produces a number even though no elementary antiderivative exists for it.",
+    steps: FTC_TELESCOPING_STEPS,
+    majorSteps: pickMajor(FTC_TELESCOPING_STEPS, [
+      "staircase",
+      "identity",
+      "predict",
+      "cancel",
+      "one-step",
+      "riemann",
+      "refine",
+      "corroborate",
+      "not-a-recipe",
     ]),
   },
   "derivative-three-names": {

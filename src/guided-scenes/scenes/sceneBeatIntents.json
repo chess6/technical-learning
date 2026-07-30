@@ -1562,5 +1562,132 @@
       "caption": "text",
       "hold": "hold"
     }
+  },
+  "ftc-accumulate-then-measure": {
+    "loose-end": {
+      "title": "text",
+      "sweep": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:ftc:peakMarker",
+          "semantic:ftc:riseMarker"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
+    "sliver": {
+      "title": "text",
+      "advance": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "squeeze": {
+      "title": "text",
+      "bars": "transition",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "close": {
+      "title": "text",
+      "shrink": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:ftc:squeezeLow",
+          "semantic:ftc:squeezeHigh"
+        ]
+      },
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "answer": {
+      "title": "text",
+      "connect": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "lower-limit": {
+      "title": "text",
+      "shift": "transition",
+      "caption": "text",
+      "hold": "hold"
+    }
+  },
+  "ftc-telescoping": {
+    "staircase": {
+      "title": "text",
+      "draw": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "identity": {
+      "title": "text",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "cancel": {
+      "title": "text",
+      "count": "text",
+      "fade": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "one-step": {
+      "clear": "transition",
+      "title": "text",
+      "reveal": "text",
+      "mark": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "riemann": {
+      "title": "text",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "refine": {
+      "title": "text",
+      "mesh": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:ftc2:strips"
+        ]
+      },
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "corroborate": {
+      "clear": "transition",
+      "title": "text",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "not-a-recipe": {
+      "title": "text",
+      "swap": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:ftc2:curve",
+          "semantic:ftc2:strips"
+        ]
+      },
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    }
   }
 }
