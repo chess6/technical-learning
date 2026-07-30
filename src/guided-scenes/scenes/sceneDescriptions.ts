@@ -52,6 +52,12 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./derivativeThreeNamesScene").then((m) => m.derivativeThreeNamesScene),
   "integral-accumulation": () =>
     import("./integralAccumulationScene").then((m) => m.integralAccumulationScene),
+  "ftc-accumulate-then-measure": () =>
+    import("./ftcAccumulateThenMeasureScene").then(
+      (m) => m.ftcAccumulateThenMeasureScene,
+    ),
+  "ftc-telescoping": () =>
+    import("./ftcTelescopingScene").then((m) => m.ftcTelescopingScene),
   "limits-continuity": () =>
     import("./limitsContinuityScene").then((m) => m.limitsContinuityScene),
   "eigenvectors-characteristic-equation": () =>

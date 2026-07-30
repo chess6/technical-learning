@@ -1468,6 +1468,46 @@ export const INTEGRAL_ACCUMULATION_SEGMENTS: readonly SceneSegment[] = [
     summary: "The axes are relabelled — current against time, power against time — and the same construction reads charge, then energy." },
 ];
 
+/** `fundamental-theorem` clip 1 — `ftc-accumulate-then-measure`. */
+export const FTC_ACCUMULATE_SEGMENTS: readonly SceneSegment[] = [
+  { id: "loose-end", title: "L3's loose end", duration: 7,
+    summary: "L3's two traces, replayed: the running total climbs fastest exactly where the rate is highest." },
+  { id: "sliver", title: "One more step", duration: 6,
+    summary: "The right end advances by h; the running total gains one thin sliver." },
+  { id: "squeeze", title: "Trapped between two rectangles", duration: 7,
+    summary: "The sliver is bounded above and below by the rate at the two ends of the step." },
+  { id: "predict", title: "Predict: what do the two bars close on?", duration: 5,
+    summary: "Nothing moves. The learner commits before the step shrinks." },
+  { id: "close", title: "They close on f(x)", duration: 8,
+    summary: "As the step shrinks, continuity forces both bounds onto the same number: A'(x) = f(x)." },
+  { id: "answer", title: "The loose end, explained", duration: 5,
+    summary: "f is A's slope — which is why A rose fastest exactly where f was highest." },
+  { id: "lower-limit", title: "Moving the start", duration: 7,
+    summary: "A second, independently accumulated total from a different lower limit: A shifts vertically, its slope unchanged." },
+];
+
+/** `fundamental-theorem` clip 2 (placed) — `ftc-telescoping`. */
+export const FTC_TELESCOPING_SEGMENTS: readonly SceneSegment[] = [
+  { id: "staircase", title: "Total rise, with no calculus", duration: 7,
+    summary: "A staircase: every landing is the top of one step and the bottom of the next." },
+  { id: "identity", title: "The same thing, written out", duration: 7,
+    summary: "F(b) - F(a) as a sum over an unequal partition, each interior F(x_i) written twice with opposite signs." },
+  { id: "predict", title: "Predict: how many contributions survive?", duration: 5,
+    summary: "Nothing moves. The learner commits before the cancellation runs." },
+  { id: "cancel", title: "Everything in the middle goes", duration: 7,
+    summary: "Interior terms annihilate one by one; the survivor count is displayed live: n terms, n-1 cancellations, two survivors." },
+  { id: "one-step", title: "Calculus enters, once", duration: 8,
+    summary: "Each small change is replaced by the local linear model, with its error drawn as a real, nonzero quantity." },
+  { id: "riemann", title: "That is a Riemann sum", duration: 6,
+    summary: "The replaced terms are exactly the rectangles from the previous lesson, re-drawn beneath." },
+  { id: "refine", title: "Refine, and it is exact", duration: 8,
+    summary: "The mesh shrinks and the errors vanish; the modulus of continuity from Lesson 1 is named as the uniformity assumption." },
+  { id: "corroborate", title: "Two computations, one number", duration: 7,
+    summary: "The summation route and the antiderivative bracket, computed independently, agree." },
+  { id: "not-a-recipe", title: "What it does not promise", duration: 7,
+    summary: "e^(-x^2): the theorem applies, but no elementary antiderivative exists — numerical accumulation stays the method." },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1487,6 +1527,8 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "derivative-local-linearity": DERIVATIVE_ZOOM_SEGMENTS,
   "derivative-three-names": DERIVATIVE_NAMES_SEGMENTS,
   "integral-accumulation": INTEGRAL_ACCUMULATION_SEGMENTS,
+  "ftc-accumulate-then-measure": FTC_ACCUMULATE_SEGMENTS,
+  "ftc-telescoping": FTC_TELESCOPING_SEGMENTS,
   "eigenvectors-characteristic-equation": EIGEN_CHARACTERISTIC_SEGMENTS,
   "karatsuba-cross-terms": KARATSUBA_SEGMENTS,
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
@@ -1926,6 +1968,28 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     reverse: { clear: 0.4, restore: 0.5, title: 0.4, extend: 1.8, caption: 0.4, hold: 2.5 },
     running: { title: 0.4, sweep: 2.8, caption: 0.4, hold: 2.8 },
     meters: { title: 0.4, relabel: 0.6, second: 0.6, caption: 0.4, hold: 3.9 },
+  },
+
+  "ftc-accumulate-then-measure": {
+    "loose-end": { title: 0.4, sweep: 4.0, caption: 0.6, hold: 1.5 },
+    sliver: { title: 0.4, advance: 2.6, caption: 0.6, hold: 1.9 },
+    squeeze: { title: 0.4, bars: 1.8, reveal: 0.6, caption: 0.6, hold: 3.1 },
+    predict: { ask: 0.5, think: 4.0 },
+    close: { title: 0.4, shrink: 3.0, reveal: 0.6, caption: 0.6, hold: 2.9 },
+    answer: { title: 0.4, connect: 1.5, caption: 0.6, hold: 2.0 },
+    "lower-limit": { title: 0.4, shift: 2.5, caption: 0.6, hold: 3.0 },
+  },
+
+  "ftc-telescoping": {
+    staircase: { title: 0.4, draw: 2.0, caption: 0.6, hold: 3.5 },
+    identity: { title: 0.4, reveal: 1.0, caption: 0.6, hold: 4.5 },
+    predict: { ask: 0.5, think: 4.0 },
+    cancel: { title: 0.4, count: 0.5, fade: 1.6, caption: 0.6, hold: 3.4 },
+    "one-step": { clear: 0.8, title: 0.4, reveal: 0.8, mark: 1.5, caption: 0.6, hold: 3.4 },
+    riemann: { title: 0.4, reveal: 0.8, caption: 0.6, hold: 3.7 },
+    refine: { title: 0.4, mesh: 3.0, reveal: 0.8, caption: 0.6, hold: 2.7 },
+    corroborate: { clear: 0.6, title: 0.4, reveal: 0.8, caption: 0.6, hold: 4.1 },
+    "not-a-recipe": { title: 0.4, swap: 2.0, reveal: 0.8, caption: 0.6, hold: 2.7 },
   },
 
   "derivative-three-names": {
