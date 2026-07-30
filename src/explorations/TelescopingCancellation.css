@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
-  border: 1px solid var(--color-border, #1e2633);
-  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .telescoping-cancellation__title {
@@ -19,7 +19,7 @@
   gap: var(--space-3);
   margin: 0;
   font-size: var(--text-xs);
-  color: var(--color-text-muted, #9aa6b5);
+  color: var(--color-text-muted);
 }
 
 .telescoping-cancellation__terms {
@@ -30,7 +30,7 @@
   padding: 0;
   list-style: none;
   font-size: var(--text-sm);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }
 
 .telescoping-cancellation__term {
