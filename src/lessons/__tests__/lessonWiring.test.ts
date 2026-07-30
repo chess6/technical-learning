@@ -105,6 +105,45 @@ describe("lesson wiring for all registered lessons", () => {
     expect(lesson.guidedSceneId).toBe("eigenvectors-invariant-directions");
   });
 
+  /**
+   * `fundamental-theorem`'s second clip is the mechanism (the telescoping
+   * cancellation), placed immediately after the identity it makes visible is
+   * stated formally — required test from the A4 lesson plan.
+   */
+  it("places the ftc-telescoping clip immediately after the formal identity it visualizes", () => {
+    const lesson = getLessonById("fundamental-theorem")!;
+    const route = lesson.route!;
+    const placed = route.filter(
+      (block) => block.kind === "visual" && block.sceneId,
+    );
+    expect(placed).toHaveLength(1);
+    const bridge = placed[0]!;
+    if (bridge.kind !== "visual") throw new Error("unreachable");
+    expect(bridge.sceneId).toBe("ftc-telescoping");
+    expect(hasGuidedScene(bridge.sceneId!)).toBe(true);
+    expect(getSceneMeta(bridge.sceneId!).id).toBe("ftc-telescoping");
+    // A placed clip is announced by its own heading; without one, two players
+    // on the page would carry the same accessible name.
+    expect(bridge.heading).toBeTruthy();
+
+    const identity = route.findIndex(
+      (block) => block.kind === "formal" && block.formalId === "identity-telescoping",
+    );
+    const antiderivative = route.findIndex(
+      (block) => block.kind === "formal" && block.formalId === "def-antiderivative",
+    );
+    const bridgeAt = route.indexOf(bridge);
+    expect(identity).toBeGreaterThanOrEqual(0);
+    // Immediately after the identity — nothing else (no section, no other
+    // formal block) comes between the identity and the clip that visualizes it.
+    expect(bridgeAt).toBe(identity + 1);
+    expect(bridgeAt).toBeLessThan(antiderivative);
+
+    // The lesson's own top-of-page clip is the accumulate-then-measure half.
+    expect(lesson.guidedSceneId).toBe("ftc-accumulate-then-measure");
+    expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
+  });
+
   it("Lesson 4 worked computation is a clean ordered equation sequence", () => {
     const lesson = getLessonById("eigenvectors")!;
     const primary = lesson.workedExamples![0]!;
