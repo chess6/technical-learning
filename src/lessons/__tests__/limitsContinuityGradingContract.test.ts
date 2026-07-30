@@ -51,22 +51,15 @@ const seq = (
 
 describeGradingContract(byId("lim-point-value-irrelevant"), {
   mustAccept: [
-    { name: "both steps: the limit is unchanged", answer: seq("7", "7") },
-    { name: "spelled out", answer: seq("seven", "unchanged") },
-    { name: "case and padding tolerated", answer: seq("  7  ", "STILL 7") },
+    { name: "both steps: the limit is unchanged", answer: seq({ choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "empty", answer: seq("", "") },
     {
       name: "the changed VALUE, not the limit (the misconception itself)",
-      answer: seq("-100", "7"),
+      answer: seq({ choice: 1 }, { choice: 0 }),
     },
-    { name: "claims the limit dies with the point", answer: seq("7", "no limit") },
-    { name: "second step blank", answer: seq("7", "") },
-    {
-      name: "an accepted answer embedded in a longer one",
-      answer: seq("I think it is 7 but I am not sure", "7"),
-    },
+    { name: "claims the limit dies with the point", answer: seq({ choice: 0 }, { choice: 1 }) },
+    { name: "picks zero both times", answer: seq({ choice: 2 }, { choice: 2 }) },
   ],
 });
 
@@ -83,28 +76,22 @@ describeGradingContract(byId("lim-diagnose-definition"), {
   mustAccept: [
     {
       name: "exists / jump / oscillation / blow-up",
-      answer: seq("exists", "jump", "oscillation", "blow-up"),
-    },
-    {
-      name: "accepted synonyms",
-      answer: seq("removable", "jump", "oscillates", "blows up"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 2 }, { choice: 3 }),
     },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "", "", "") },
     {
       name: "calls the removable case a failure — the classic error",
-      answer: seq("jump", "jump", "oscillation", "blow-up"),
+      answer: seq({ choice: 1 }, { choice: 1 }, { choice: 2 }, { choice: 3 }),
     },
     {
       name: "calls the oscillation a blow-up (they are different failures)",
-      answer: seq("exists", "jump", "blow-up", "blow-up"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 3 }, { choice: 3 }),
     },
     {
       name: "says sin(1/x) has limit 0",
-      answer: seq("exists", "jump", "exists", "blow-up"),
+      answer: seq({ choice: 0 }, { choice: 1 }, { choice: 0 }, { choice: 3 }),
     },
-    { name: "one step blank", answer: seq("exists", "jump", "oscillation", "") },
   ],
 });
 
@@ -136,39 +123,28 @@ describeGradingContract(byId("lim-zero-over-zero-fresh"), {
 
 describeGradingContract(byId("lim-continuity-test"), {
   mustAccept: [
-    { name: "yes / 4 / no", answer: seq("yes", 4, "no") },
-    { name: "synonyms", answer: seq("exists", 4, "discontinuous") },
+    { name: "yes / 4 / no", answer: seq({ choice: 0 }, 4, { choice: 1 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", null, "") },
     {
       name: "reads the limit off the DEFINED value (1, not 4)",
-      answer: seq("yes", 1, "no"),
+      answer: seq({ choice: 0 }, 1, { choice: 1 }),
     },
     {
       name: "concludes continuity because both parts exist",
-      answer: seq("yes", 4, "yes"),
+      answer: seq({ choice: 0 }, 4, { choice: 0 }),
     },
-    { name: "limit blank", answer: seq("yes", null, "no") },
-    { name: "zero-filled limit", answer: seq("yes", 0, "no") },
+    { name: "limit blank", answer: seq({ choice: 0 }, null, { choice: 1 }) },
+    { name: "zero-filled limit", answer: seq({ choice: 0 }, 0, { choice: 1 }) },
   ],
 });
 
 describeGradingContract(byId("lim-why-substitution-works"), {
-  mustAccept: [
-    { name: "continuity", answer: seq("continuity") },
-    { name: "adjectival form", answer: seq("continuous") },
-    { name: "the polynomial phrasing", answer: seq("polynomials are continuous") },
-  ],
+  mustAccept: [{ name: "continuity", answer: seq({ choice: 0 }) }],
   mustReject: [
-    { name: "blank", answer: seq("") },
-    { name: "because it is easy", answer: seq("it is easy") },
-    { name: "names the answer, not the property", answer: seq("56") },
-    { name: "differentiability is not the reason", answer: seq("differentiability") },
-    {
-      name: "an accepted word buried in a longer sentence",
-      answer: seq("the function looks continuous enough to me honestly"),
-    },
+    { name: "differentiability is not the reason", answer: seq({ choice: 1 }) },
+    { name: "names the limit definition instead", answer: seq({ choice: 2 }) },
+    { name: "boundedness is not the reason", answer: seq({ choice: 3 }) },
   ],
 });
 
@@ -202,44 +178,40 @@ describeGradingContract(byId("lim-limit-not-continuity"), {
 
 describeGradingContract(byId("lim-continuity-not-enough"), {
   mustAccept: [
-    { name: "no, then resolution + modulus", answer: seq("no", { choice: 0 }) },
-    { name: "synonym", answer: seq("not justified", { choice: 0 }) },
+    { name: "no, then resolution + modulus", answer: seq({ choice: 1 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "blank verdict", answer: seq("", { choice: 0 }) },
     {
       name: "accepts the conclusion — the misconception itself",
-      answer: seq("yes", { choice: 0 }),
+      answer: seq({ choice: 0 }, { choice: 0 }),
     },
     {
       name: "right verdict, but thinks continuity already suffices",
-      answer: seq("no", { choice: 1 }),
+      answer: seq({ choice: 1 }, { choice: 1 }),
     },
-    { name: "thinks more samples alone would do it", answer: seq("no", { choice: 2 }) },
-    { name: "thinks differentiability is the missing piece", answer: seq("no", { choice: 3 }) },
+    { name: "thinks more samples alone would do it", answer: seq({ choice: 1 }, { choice: 2 }) },
+    { name: "thinks differentiability is the missing piece", answer: seq({ choice: 1 }, { choice: 3 }) },
   ],
 });
 
 describeGradingContract(byId("lim-repair-transfer"), {
   mustAccept: [
-    { name: "no / yes / continuity only", answer: seq("no", "yes", { choice: 0 }) },
-    { name: "synonyms", answer: seq("cannot", "can", { choice: 0 }) },
+    { name: "no / yes / continuity only", answer: seq({ choice: 1 }, { choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "", { choice: 0 }) },
     {
       name: "thinks a jump is repairable from one point",
-      answer: seq("yes", "yes", { choice: 0 }),
+      answer: seq({ choice: 0 }, { choice: 0 }, { choice: 0 }),
     },
     {
       name: "thinks the removable case is not repairable",
-      answer: seq("no", "no", { choice: 0 }),
+      answer: seq({ choice: 1 }, { choice: 1 }, { choice: 0 }),
     },
     {
       name: "inverts the general rule (limit repairable, continuity not)",
-      answer: seq("no", "yes", { choice: 1 }),
+      answer: seq({ choice: 1 }, { choice: 0 }, { choice: 1 }),
     },
-    { name: "claims both are repairable", answer: seq("no", "yes", { choice: 2 }) },
+    { name: "claims both are repairable", answer: seq({ choice: 1 }, { choice: 0 }, { choice: 2 }) },
   ],
 });
 

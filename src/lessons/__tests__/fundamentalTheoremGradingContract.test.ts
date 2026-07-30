@@ -55,15 +55,13 @@ describeGradingContract(byId("ftc-lower-limit-shift"), {
 
 describeGradingContract(byId("ftc-evaluate-fresh"), {
   mustAccept: [
-    { name: "F'(1)=5, identically, 30", answer: seq(5, "identically", 30) },
-    { name: "phrasing", answer: seq(5, "for every x", 30) },
+    { name: "F'(1)=5, identically, 30", answer: seq(5, { choice: 0 }, 30) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq(null, "", null) },
-    { name: "zero-filled", answer: seq(0, "", 0) },
-    { name: "used f(1) itself, not F'(1) — same value here by coincidence, still the wrong step to name", answer: seq(5, "only at that point", 30) },
-    { name: "right verification, wrong evaluation — swapped F(1) and F(3)", answer: seq(5, "identically", -30) },
-    { name: "used the wrong bounds (0 to 3 instead of 1 to 3)", answer: seq(5, "identically", 33) },
+    { name: "zero-filled", answer: seq(0, { choice: 0 }, 0) },
+    { name: "thinks F' only matches f at that one point — the misconception itself", answer: seq(5, { choice: 1 }, 30) },
+    { name: "right verification, wrong evaluation — swapped F(1) and F(3)", answer: seq(5, { choice: 0 }, -30) },
+    { name: "used the wrong bounds (0 to 3 instead of 1 to 3)", answer: seq(5, { choice: 0 }, 33) },
   ],
 });
 
@@ -78,51 +76,45 @@ describeGradingContract(byId("ftc-telescope-count"), {
 });
 
 describeGradingContract(byId("ftc-why-collapse"), {
-  mustAccept: [
-    { name: "interior terms cancel", answer: seq("interior terms cancel") },
-    { name: "phrasing", answer: seq("everything in the middle cancels") },
-  ],
+  mustAccept: [{ name: "interior terms cancel", answer: seq({ choice: 0 }) }],
   mustReject: [
-    { name: "blank", answer: seq("") },
     {
       name: "names the conclusion, not the reason — explicitly rejected by the lesson plan",
-      answer: seq("because integration is the opposite of differentiation"),
+      answer: seq({ choice: 1 }),
     },
-    { name: "unrelated", answer: seq("because the function is continuous") },
+    { name: "thinks it's about term count", answer: seq({ choice: 2 }) },
+    { name: "thinks it's about even spacing", answer: seq({ choice: 3 }) },
   ],
 });
 
 describeGradingContract(byId("ftc-constant-cancels"), {
   mustAccept: [
-    { name: "nothing; opposite signs cancel", answer: seq("nothing", "c cancels") },
-    { name: "phrasing", answer: seq("unchanged", "added once and subtracted once") },
+    { name: "nothing; opposite signs cancel", answer: seq({ choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "") },
-    { name: "thinks C changes the value", answer: seq("it increases by C", "c cancels") },
-    { name: "right verdict, no mechanism", answer: seq("nothing", "it just does") },
+    { name: "thinks C increases the value", answer: seq({ choice: 1 }, { choice: 0 }) },
+    { name: "thinks C decreases the value", answer: seq({ choice: 2 }, { choice: 0 }) },
+    { name: "right verdict, no mechanism — thinks C is too small to matter", answer: seq({ choice: 0 }, { choice: 1 }) },
   ],
 });
 
 describeGradingContract(byId("ftc-no-elementary-antiderivative"), {
   mustAccept: [
-    { name: "a formula; e^(-x^2)", answer: seq("a formula", "e^(-x^2)") },
-    { name: "phrasing; sin(x)/x", answer: seq("a closed form", "sin(x)/x") },
+    { name: "a formula; e^(-x^2)", answer: seq({ choice: 0 }, { choice: 0 }) },
   ],
   mustReject: [
-    { name: "all blank", answer: seq("", "") },
-    { name: "no counterexample named — explicitly rejected by the lesson plan", answer: seq("a formula", "") },
-    { name: "names a function that DOES have an elementary antiderivative", answer: seq("a formula", "x^2") },
-    { name: "misstates what's missing: existence itself", answer: seq("existence", "e^(-x^2)") },
+    { name: "names a function that DOES have an elementary antiderivative (x^2)", answer: seq({ choice: 0 }, { choice: 1 }) },
+    { name: "names sin(x), which also has an elementary antiderivative", answer: seq({ choice: 0 }, { choice: 2 }) },
+    { name: "misstates what's missing: existence itself", answer: seq({ choice: 1 }, { choice: 0 }) },
   ],
 });
 
 describeGradingContract(byId("ftc-falsify"), {
-  mustAccept: [{ name: "the two instruments disagree", answer: seq("the two instruments would disagree") }],
+  mustAccept: [{ name: "the two instruments disagree", answer: seq({ choice: 0 }) }],
   mustReject: [
-    { name: "blank", answer: seq("") },
-    { name: "unrelated", answer: seq("the car would stop") },
-    { name: "restates the theorem rather than its falsification", answer: seq("the integral would equal F(b)-F(a)") },
+    { name: "unrelated: the car would stop", answer: seq({ choice: 1 }) },
+    { name: "unrelated: the speedometer reads zero", answer: seq({ choice: 2 }) },
+    { name: "denies anything observable would change", answer: seq({ choice: 3 }) },
   ],
 });
 
@@ -142,14 +134,14 @@ describeGradingContract(byId("ftc-corroborate"), {
   mustAccept: [
     {
       name: "8/3 both ways, independent routes",
-      answer: seq(8 / 3, 8 / 3, "the sum never used the antiderivative"),
+      answer: seq(8 / 3, 8 / 3, { choice: 0 }),
     },
   ],
   mustReject: [
-    { name: "all blank", answer: seq(null, null, "") },
-    { name: "sum route wrong", answer: seq(2, 8 / 3, "the sum never used the antiderivative") },
-    { name: "bracket route wrong", answer: seq(8 / 3, 4, "the sum never used the antiderivative") },
-    { name: "right numbers, circular reasoning offered", answer: seq(8 / 3, 8 / 3, "because they're supposed to agree") },
+    { name: "sum route wrong", answer: seq(2, 8 / 3, { choice: 0 }) },
+    { name: "bracket route wrong", answer: seq(8 / 3, 4, { choice: 0 }) },
+    { name: "right numbers, thinks both routes used the same formula", answer: seq(8 / 3, 8 / 3, { choice: 1 }) },
+    { name: "right numbers, thinks rounding explains agreement", answer: seq(8 / 3, 8 / 3, { choice: 2 }) },
   ],
 });
 

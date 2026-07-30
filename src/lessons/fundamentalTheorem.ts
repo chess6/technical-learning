@@ -279,9 +279,15 @@ export const fundamentalTheoremLesson: LessonDefinition = {
             explanation: `$F'(x) = 3x^2 + 2$, so $F'(${FRESH_A}) = ${FRESH_FPRIME_AT_A}$ — matching $f(${FRESH_A})$, which is what a real antiderivative must do.`,
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "Does F'(x) match f(x) at that one point only, or identically, for every x?",
-            accept: ["identically", "exactly", "for every x", "everywhere", "for all x", "identically for every x"],
+            choices: [
+              "Identically — for every $x$",
+              "Only at that one point",
+              "Only near that point, not everywhere",
+              "It cannot be checked without more points",
+            ],
+            correctChoice: 0,
             explanation:
               "Identically — $F'(x) = 3x^2 + 2 = f(x)$ for every $x$, not by coincidence at one point. That is what makes $F$ a genuine antiderivative rather than a lucky guess.",
           },
@@ -349,19 +355,17 @@ export const fundamentalTheoremLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "Why does it collapse?",
-            accept: [
-              "interior terms cancel",
-              "the interior cancels",
-              "interior values cancel in pairs",
-              "interior terms cancel in pairs",
-              "everything in the middle cancels",
-              "the middle cancels",
-              "every interior evaluation cancels",
+            choices: [
+              "Every interior evaluation cancels — counted once positively, once negatively",
+              "Because integration is the opposite of differentiation",
+              "Because the number of terms happens to be small",
+              "Because the partition is evenly spaced",
             ],
+            correctChoice: 0,
             explanation:
-              "Every interior evaluation is counted once positively and once negatively, so it contributes nothing to the total — leaving only the two ends. \"Because integration is the opposite of differentiation\" names the conclusion, not this reason, and is not accepted here.",
+              "Every interior evaluation is counted once positively and once negatively, so it contributes nothing to the total — leaving only the two ends. \"Because integration is the opposite of differentiation\" names the conclusion, not this reason.",
           },
         ],
       },
@@ -375,21 +379,27 @@ export const fundamentalTheoremLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "What happens to the value of $\\int_a^b f\\,dx = [F(x)+C]_a^b$?",
-            accept: ["nothing", "it stays the same", "unchanged", "no change", "it doesn't change", "it is unchanged"],
+            choices: [
+              "Nothing — it is unchanged",
+              "It increases by $C$",
+              "It decreases by $C$",
+              "It depends on the sign of $C$",
+            ],
+            correctChoice: 0,
             explanation: "Nothing changes — the definite integral is unaffected by which antiderivative you pick.",
           },
           {
-            kind: "text",
-            prompt: "Why, in one phrase?",
-            accept: [
-              "c appears twice with opposite signs",
-              "c cancels",
-              "added once and subtracted once",
-              "opposite signs cancel",
-              "c is added then subtracted",
+            kind: "multiple-choice",
+            prompt: "Why?",
+            choices: [
+              "$C$ is added once and subtracted once",
+              "$C$ is too small to matter",
+              "$C$ is not actually part of $F$",
+              "The two endpoints are equal",
             ],
+            correctChoice: 0,
             explanation:
               "$(F(b)+C) - (F(a)+C)$: $C$ is added once and subtracted once — a telescoping cancellation of its own, on a partition with exactly one piece.",
           },
@@ -407,27 +417,30 @@ export const fundamentalTheoremLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "What is not guaranteed?",
-            accept: [
-              "an elementary antiderivative",
-              "a formula",
-              "a closed form",
-              "an elementary formula",
-              "a formula for f",
+            choices: [
+              "An elementary formula for the antiderivative",
+              "That an antiderivative exists at all",
+              "That the antiderivative is continuous",
+              "That the antiderivative is unique up to a constant",
             ],
+            correctChoice: 0,
             explanation:
               "Existence of an antiderivative, not a usable formula for one — the two are different claims.",
           },
           {
-            kind: "text",
-            prompt: "Name a specific integrand with no elementary antiderivative.",
-            accept: [
-              "e^-x^2", "e^(-x^2)", "e^{-x^2}", "exp(-x^2)", "exp(-x^2)",
-              "sin(x)/x", "sinx/x", "sin(x^2)", "cos(x^2)", "1/ln(x)", "1/lnx",
+            kind: "multiple-choice",
+            prompt: "Which of these integrands has no elementary antiderivative?",
+            choices: [
+              "$e^{-x^2}$",
+              "$x^2$",
+              "$\\sin(x)$",
+              "$\\dfrac{1}{x}$",
             ],
+            correctChoice: 0,
             explanation:
-              "$e^{-x^2}$ is the course's standing example: continuous everywhere, with an antiderivative that exists but is not any finite combination of elementary functions.",
+              "$e^{-x^2}$ is the course's standing example: continuous everywhere, with an antiderivative that exists but is not any finite combination of elementary functions. The other three all have elementary antiderivatives.",
           },
         ],
       },
@@ -441,15 +454,15 @@ export const fundamentalTheoremLesson: LessonDefinition = {
       config: {
         steps: [
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "What would be observably wrong?",
-            accept: [
-              "the two instruments would disagree",
-              "the odometer and speedometer would disagree",
-              "the sum and the antiderivative would give different numbers",
-              "they would not agree",
-              "the accumulated speed would not match the distance",
+            choices: [
+              "The odometer and the accumulated speedometer reading would disagree",
+              "The car would stop moving",
+              "The speedometer would read zero",
+              "Nothing observable — the theorem is not about the car",
             ],
+            correctChoice: 0,
             explanation:
               "The accumulated speedometer reading and the odometer's actual change would come apart — two readings of the same journey giving different numbers.",
           },
@@ -517,15 +530,15 @@ export const fundamentalTheoremLesson: LessonDefinition = {
             explanation: `$\\bigl[x^3/3\\bigr]_0^2 = 8/3 \\approx ${CORROBORATE_BRACKET.toFixed(4)}$.`,
           },
           {
-            kind: "text",
+            kind: "multiple-choice",
             prompt: "Why does their agreement count as evidence, rather than being circular?",
-            accept: [
-              "the sum never used the antiderivative",
-              "the two routes are independent",
-              "neither method used the other",
-              "the summation route didn't use f",
-              "the summation route didn't use the antiderivative",
+            choices: [
+              "The summation route never consulted the antiderivative $F$",
+              "Both routes used the same formula, just written differently",
+              "Rounding makes any two computations agree eventually",
+              "The bracket route secretly used the sum's result",
             ],
+            correctChoice: 0,
             explanation:
               "The summation route never consulted $F$, and the bracket route never summed anything — two independent computations that happen to agree is exactly what evidence looks like.",
           },
