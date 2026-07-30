@@ -9,10 +9,10 @@ import { ResetButton } from "./ResetButton";
 import { SceneReadout } from "./SceneReadout";
 import { ExplorationToggles } from "./ExplorationToggles";
 import {
+  boundaryAwareDerivative,
   cancelContributions,
   getCalculusFixture,
   intervalContributions,
-  numericDerivative,
   partitionPoints,
   residual,
   riemannSum,
@@ -137,13 +137,20 @@ export function FundamentalTheoremExplorer() {
   }, [fixture, points]);
 
   const effectiveRunningAt = Math.min(Math.max(runningAt, runningLimitA), fixture.domain[1]);
+  /**
+   * `A(x) = \int_{runningLimitA}^{x} f`, with no epsilon clamp on `x`:
+   * `riemannSum` already returns the correctly-signed negative area when
+   * `x < runningLimitA` (the same convention `\int_a^b = -\int_b^a` uses
+   * everywhere else in this lesson), so clamping here would only have
+   * silently changed which function got differentiated.
+   */
   const A = useCallback(
-    (x: number) => riemannSum(fixture.f, runningLimitA, Math.max(x, runningLimitA + 1e-9), 2000, "mid"),
+    (x: number) => riemannSum(fixture.f, runningLimitA, x, 2000, "mid"),
     [fixture, runningLimitA],
   );
   const slopeOfA = useMemo(
-    () => numericDerivative(A, effectiveRunningAt),
-    [A, effectiveRunningAt],
+    () => boundaryAwareDerivative(A, effectiveRunningAt, fixture.domain),
+    [A, effectiveRunningAt, fixture],
   );
 
   return (

@@ -366,6 +366,52 @@ export function numericDerivative(f: RealFunction, x: number, h = 1e-5): number 
   return (f(x + h) - f(x - h)) / (2 * h);
 }
 
+/**
+ * Numeric derivative that never evaluates `f` outside `domain`: a centered
+ * difference away from the ends, and a one-sided (forward at the lower end,
+ * backward at the upper end) difference within `h` of either end.
+ *
+ * `numericDerivative`'s symmetric difference is wrong at a domain boundary
+ * for two different reasons depending on which side: at the lower end it
+ * needs `f(x - h)`, a point the domain doesn't admit, so the naive fix of
+ * clamping the *argument* up by an epsilon silently evaluates a shrunken
+ * one-sided piece instead — for a running total `A(x) = \int_a^x f`, that
+ * clamp turns `A(a - h)` into `A(a + \varepsilon) \approx 0` instead of the
+ * true `-\int_{a-h}^{a} f`, halving the reported slope at `x = a`. At the
+ * upper end, no such clamp existed, so the symmetric difference silently
+ * *extrapolated* `f` past the stated domain instead. Both are avoided here by
+ * choosing the difference scheme from `x`'s distance to the domain ends,
+ * never by moving `x` itself.
+ */
+export function boundaryAwareDerivative(
+  f: RealFunction,
+  x: number,
+  domain: readonly [number, number],
+  h = 1e-5,
+): number {
+  const [lo, hi] = domain;
+  if (hi - lo < h) {
+    throw new Error(
+      `boundaryAwareDerivative: domain [${lo}, ${hi}] is narrower than the step size ${h}.`,
+    );
+  }
+  if (x < lo || x > hi) {
+    throw new Error(`boundaryAwareDerivative: x = ${x} is outside domain [${lo}, ${hi}].`);
+  }
+  const canStepLeft = x - h >= lo;
+  const canStepRight = x + h <= hi;
+  if (canStepLeft && canStepRight) {
+    return (f(x + h) - f(x - h)) / (2 * h);
+  }
+  if (canStepRight) {
+    return (f(x + h) - f(x)) / h;
+  }
+  if (canStepLeft) {
+    return (f(x) - f(x - h)) / h;
+  }
+  throw new Error(`boundaryAwareDerivative: x = ${x} is outside domain [${lo}, ${hi}].`);
+}
+
 /** The local linear model at `a`: `h => f(a) + slope * h`. */
 export function linearModel(
   f: RealFunction,

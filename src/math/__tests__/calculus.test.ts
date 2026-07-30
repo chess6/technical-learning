@@ -4,6 +4,7 @@ import {
   EX_ABS,
   EX_CONSTANT_RATE,
   EX_CURRENT,
+  EX_DECAY,
   EX_DRIVE,
   EX_GAUSSIAN,
   EX_HIDDEN_SPIKE,
@@ -14,6 +15,7 @@ import {
   HIDDEN_SPIKE_GRID,
   accumulatedUnits,
   assertCalculusFixturesAreConsistent,
+  boundaryAwareDerivative,
   cancelContributions,
   cancellationReport,
   continuityAt,
@@ -487,13 +489,59 @@ describe("the Fundamental Theorem (L4)", () => {
     const [lo, hi] = EX_GAUSSIAN.domain;
     // A'(x) = f(x): the theorem's first half does not need a formula for A.
     const A = (x: number) => riemannSum(EX_GAUSSIAN.f, lo, x, 4000, "mid");
+    // Interior points: the ordinary symmetric difference is fine here.
     for (const x of [0.4, 1, 1.6]) {
       expect(numericDerivative(A, x)).toBeCloseTo(EX_GAUSSIAN.f(x), 3);
     }
+    // Both domain ends need the boundary-aware one-sided difference — the
+    // symmetric difference is provably wrong right at an end (see the
+    // `boundaryAwareDerivative` describe block below for the endpoint bug
+    // this guards against).
+    expect(boundaryAwareDerivative(A, lo, EX_GAUSSIAN.domain)).toBeCloseTo(EX_GAUSSIAN.f(lo), 3);
+    expect(boundaryAwareDerivative(A, hi, EX_GAUSSIAN.domain)).toBeCloseTo(EX_GAUSSIAN.f(hi), 3);
     // The sum still converges, and it is bracketed on the certified stretch.
     const coarse = riemannSum(EX_GAUSSIAN.f, lo, hi, 8, "mid");
     const fine = riemannSum(EX_GAUSSIAN.f, lo, hi, 20000, "mid");
     expect(Math.abs(coarse - fine)).toBeLessThan(0.05);
+  });
+});
+
+describe("boundaryAwareDerivative — no symmetric difference reaching past a domain end", () => {
+  it("matches the symmetric difference at an interior point", () => {
+    const domain: [number, number] = [0, 2];
+    const f = (x: number) => x * x * x;
+    const x = 1;
+    expect(boundaryAwareDerivative(f, x, domain)).toBeCloseTo(numericDerivative(f, x), 8);
+  });
+
+  it("REQUIRED: reports the true derivative at a=0 for the running total of e^(-x^2), not half of it", () => {
+    // The exact reported bug: clamping A's argument up by an epsilon before a
+    // symmetric difference gave A(a-h) ≈ 0 instead of the true negative
+    // extension, halving the reported slope at x = a (≈0.5 instead of ≈1).
+    const [lo] = EX_GAUSSIAN.domain;
+    const A = (x: number) => riemannSum(EX_GAUSSIAN.f, lo, x, 4000, "mid");
+    const slopeAtLower = boundaryAwareDerivative(A, lo, EX_GAUSSIAN.domain);
+    expect(slopeAtLower).toBeCloseTo(EX_GAUSSIAN.f(lo), 3); // f(0) = 1
+    expect(slopeAtLower).not.toBeCloseTo(EX_GAUSSIAN.f(lo) / 2, 1);
+  });
+
+  it("is correct at both ends of a fixture whose f is nonzero at both, and at an interior point", () => {
+    // EX_DECAY: f(t) = e^(-t/1.5) on [0, 8] — nonzero at both ends, unlike a
+    // fixture that happens to vanish at its boundary and could mask a bug.
+    const [lo, hi] = EX_DECAY.domain;
+    const A = (x: number) => riemannSum(EX_DECAY.f, lo, x, 4000, "mid");
+    expect(boundaryAwareDerivative(A, lo, EX_DECAY.domain)).toBeCloseTo(EX_DECAY.f(lo), 3);
+    expect(boundaryAwareDerivative(A, hi, EX_DECAY.domain)).toBeCloseTo(EX_DECAY.f(hi), 3);
+    const mid = (lo + hi) / 2;
+    expect(boundaryAwareDerivative(A, mid, EX_DECAY.domain)).toBeCloseTo(EX_DECAY.f(mid), 3);
+  });
+
+  it("rejects a domain narrower than the step size", () => {
+    expect(() => boundaryAwareDerivative((x) => x, 0, [0, 1e-7], 1e-5)).toThrow(/narrower/);
+  });
+
+  it("rejects an x outside the domain", () => {
+    expect(() => boundaryAwareDerivative((x) => x, 5, [0, 2])).toThrow(/outside domain/);
   });
 });
 

@@ -103,4 +103,34 @@ describe("FundamentalTheoremExplorer", () => {
     // where the accumulation started (A' = f regardless of the lower limit).
     expect(container.textContent).toMatch(/vs f\(x\) = 4/);
   });
+
+  it("REQUIRED: A'(x) at the domain's lower endpoint is f(a), not half of it", () => {
+    // The reported bug: an epsilon clamp on A's argument turned a symmetric
+    // difference at x = a into (≈f(a)·h − ≈0)/(2h) ≈ f(a)/2. Gaussian's f(0) = 1,
+    // so the bug's signature would be a reading near 0.5, not near 1.
+    const { container } = render(<FundamentalTheoremExplorer />);
+    const button = [...container.querySelectorAll("button")].find((b) =>
+      b.textContent?.includes("e^(-x²)") || b.textContent?.toLowerCase().includes("no elementary"),
+    );
+    fireEvent.click(button!);
+    fireEvent.change(slider(container, "A evaluated at x"), { target: { value: "0" } });
+    const text = container.textContent ?? "";
+    const match = text.match(/(-?\d+\.?\d*) vs f\(x\) = 1\b/);
+    expect(match, text).not.toBeNull();
+    expect(Number(match![1])).toBeCloseTo(1, 1);
+  });
+
+  it("A'(x) at the domain's upper endpoint is f(b), computed one-sided rather than extrapolated past it", () => {
+    const { container } = render(<FundamentalTheoremExplorer />);
+    const button = [...container.querySelectorAll("button")].find((b) =>
+      b.textContent?.includes("e^(-x²)") || b.textContent?.toLowerCase().includes("no elementary"),
+    );
+    fireEvent.click(button!);
+    // Default "A evaluated at x" is already the fixture's upper domain end (2).
+    const text = container.textContent ?? "";
+    const fAt2 = Math.exp(-4); // f(2) = e^(-4) ≈ 0.0183
+    const match = text.match(/(-?\d+\.?\d*) vs f\(x\) = (0\.\d+)/);
+    expect(match, text).not.toBeNull();
+    expect(Number(match![1])).toBeCloseTo(fAt2, 2);
+  });
 });

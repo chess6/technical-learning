@@ -380,6 +380,7 @@ export {
   HIDDEN_SPIKE_GRID,
   accumulatedUnits,
   assertCalculusFixturesAreConsistent,
+  boundaryAwareDerivative,
   bracketReport,
   cancelContributions,
   cancellationReport,
