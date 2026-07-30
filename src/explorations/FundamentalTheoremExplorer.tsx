@@ -28,11 +28,14 @@ import "./FundamentalTheoremExplorer.css";
  *
  *  1. **The two computations stay independent.** `fineSum` comes from
  *     `riemannSum` alone; `bracketValue` comes from the fixture's declared
- *     `antiderivative` alone. Neither reads the other, so their agreement (or
- *     `ex-gaussian`'s refusal to produce one at all) is real evidence.
- *  2. **`ex-gaussian` offers no bracket value.** Its `antiderivative` is
- *     undefined, and the readout says so rather than inventing one — the
- *     explorer-side twin of clip 2's `not-a-recipe` beat.
+ *     `antiderivative` alone. Neither reads the other, so their agreement (or,
+ *     for `ex-gaussian`, the sum standing alone with no bracket to check it
+ *     against) is real evidence.
+ *  2. **`ex-gaussian` offers no bracket value.** Its `antiderivative` field is
+ *     undefined because no ELEMENTARY formula exists for it — the antiderivative
+ *     itself still exists (FTC guarantees it) and `A(x)` still computes it
+ *     numerically. The readout says "no elementary closed form", never "no
+ *     antiderivative" — the explorer-side twin of clip 2's `not-a-recipe` beat.
  *  3. **The cancellation display is the GENERIC engine**
  *     (`intervalContributions` + `cancelContributions`), the same one
  *     `greens-theorem` reuses over shared interior edges — never a hard-coded
@@ -220,7 +223,7 @@ export function FundamentalTheoremExplorer() {
               {
                 id: "bracket",
                 label: "F(b) − F(a)",
-                value: bracketValue === null ? "no closed form — F has none for this integrand" : fmt(bracketValue),
+                value: bracketValue === null ? "no closed form — no elementary formula for F" : fmt(bracketValue),
               },
               { id: "sum", label: "Refined Riemann sum", value: fmt(fineSum) },
               {
@@ -231,7 +234,7 @@ export function FundamentalTheoremExplorer() {
               {
                 id: "survivors",
                 label: "Survivors from the cancellation",
-                value: cancellation === null ? "— (no F to telescope)" : String(cancellation.survivors.length),
+                value: cancellation === null ? "— (no elementary F to build the identity from)" : String(cancellation.survivors.length),
               },
               {
                 id: "A",
@@ -251,7 +254,7 @@ export function FundamentalTheoremExplorer() {
               className="ftc-explorer__note"
               text={
                 bracketValue === null
-                  ? "This integrand declares no antiderivative, so there is only one route to a number here — the sum. That is exactly `not-a-recipe`'s point: the theorem promises existence, not a formula."
+                  ? "This integrand has no elementary formula for its antiderivative, so there is only one route to a number here — the sum. The antiderivative still exists (FTC guarantees it); that is exactly `not-a-recipe`'s point: the theorem promises existence, not a formula."
                   : "Two routes that never call each other: the sum chops and adds the rate; the bracket evaluates a stated antiderivative at the two ends. Agreement between them is independent corroboration, not circularity — because neither computation consulted the other."
               }
             />
@@ -266,7 +269,7 @@ export function FundamentalTheoremExplorer() {
           {showCancellation && !contributions && (
             <ProseWithMath
               className="ftc-explorer__note"
-              text="No antiderivative, no telescoping identity to show — the cancellation is a statement about F, and this integrand has none in closed form."
+              text="No elementary formula for F, so no telescoping identity to display — the identity is written in terms of F's values, and this integrand's antiderivative has none in closed form (though it still exists, and the numerical running total is still an antiderivative witness)."
             />
           )}
 
@@ -294,7 +297,7 @@ export function FundamentalTheoremExplorer() {
           {showError && !errors && (
             <ProseWithMath
               className="ftc-explorer__note"
-              text="No antiderivative, no local-linear error to report against — E_i is defined relative to F."
+              text="No elementary formula for F, so no local-linear error to report against — E_i is defined relative to F's closed form, and this integrand's antiderivative has none (numerical accumulation is still available as A(x))."
             />
           )}
         </>

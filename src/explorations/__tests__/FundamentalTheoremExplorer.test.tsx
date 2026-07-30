@@ -75,7 +75,7 @@ describe("FundamentalTheoremExplorer", () => {
     expect(container.textContent).toContain("2 survivors");
   });
 
-  it("offers no bracket value for e^(-x^2), which declares no antiderivative", () => {
+  it("offers no bracket value for e^(-x^2), which has no elementary antiderivative formula", () => {
     const { container } = render(<FundamentalTheoremExplorer />);
     const button = [...container.querySelectorAll("button")].find((b) =>
       b.textContent?.includes("e^(-x²)") || b.textContent?.toLowerCase().includes("no elementary"),

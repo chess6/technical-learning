@@ -73,7 +73,7 @@ if (Math.abs(CORROBORATE_SUM - CORROBORATE_BRACKET) > 1e-3) {
 }
 if (EX_GAUSSIAN.antiderivative !== undefined) {
   throw new Error(
-    "fundamentalTheorem: EX_GAUSSIAN must declare no antiderivative, or not-a-recipe is false.",
+    "fundamentalTheorem: EX_GAUSSIAN must declare no ELEMENTARY antiderivative formula, or not-a-recipe is false.",
   );
 }
 

@@ -148,7 +148,7 @@ test("the explorer's per-piece error is a real nonzero number (ledger check P3)"
   }
 });
 
-test("offers no bracket value for e^(-x^2), which declares no antiderivative", async ({
+test("offers no bracket value for e^(-x^2), which has no elementary antiderivative formula", async ({
   page,
 }) => {
   await page.goto("/lesson/fundamental-theorem");
