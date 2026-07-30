@@ -179,7 +179,7 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | A1 `limits-continuity` | **SHIPPED** | `master` |
 | A2 `derivative-local-linearity` | **SHIPPED** | `master` |
 | A3 `integral-accumulation` | **SHIPPED** | `master` |
-| A4 `fundamental-theorem` | NOT STARTED | — |
+| A4 `fundamental-theorem` | IN PROGRESS | `feature/a4-fundamental-theorem` |
 
 ## 7. Acceptance for the package
 
