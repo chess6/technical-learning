@@ -63,16 +63,47 @@ This is the **flagship of Package A**.
 | Carry out the telescoping cancellation on an **unequal** partition and state how many survive | D6/D7 | lesson | E3 | `ftc-telescope-count` (`exercise-sequence`: which terms cancel → how many remain → which) | independently demonstrated |
 | Explain, without notation, why unboundedly many contributions collapse to two evaluations | D6/D13 | lesson | E3 | `ftc-why-collapse` (`text`, produced) | independently demonstrated |
 | Say what changes if \(F\) is replaced by \(F+C\), and why | D5/D13 | lesson | E3 | `ftc-constant-cancels` (`text`) | independently demonstrated |
-| Say what changes if the **lower limit** of \(A\) is moved | D5/D13 | lesson | E4 | `ftc-lower-limit-shift` (`multiple-choice` over four \(A\) plots — correct = vertically shifted, same slope) | **recognition — recorded as E2** |
-| State what the theorem does **not** promise, with a counterexample | D5/D13 | lesson | E4 | `ftc-no-elementary-antiderivative` (`text`, must name a specific integrand) | independently demonstrated |
-| Predict what would be observably wrong if the theorem were false | D9 | lesson | E4 | `ftc-falsify` (`text`, produced) | independently demonstrated |
-| Recognise the telescoping mechanism in an unfamiliar, calculus-free setting | D9 | lesson | E4 | `ftc-telescope-transfer` (\(\sum(1/k - 1/(k+1))\); evaluate, then identify which step of the argument it is and what plays \(F\)) | independently demonstrated |
+| Say what changes if the **lower limit** of \(A\) is moved | D5/D13 | lesson | **E2** | `ftc-lower-limit-shift` (`multiple-choice` over four \(A\) plots — correct = vertically shifted, same slope) | **recognition — recorded as E2** |
+| State what the theorem does **not** promise, with a counterexample | D5/D13 | lesson | **E3** | `ftc-no-elementary-antiderivative` (`text`, must name a specific integrand) | independently demonstrated |
+| Predict what would be observably wrong if the theorem were false | D9 | lesson | **E3** | `ftc-falsify` (`text`, produced) | independently demonstrated |
+| Recognise the telescoping mechanism in an unfamiliar, calculus-free setting | D9 | lesson | **E3** | `ftc-telescope-transfer` (\(\sum(1/k - 1/(k+1))\); evaluate, then identify which step of the argument it is and what plays \(F\)) | independently demonstrated |
 | Reconcile the two computations of \(\int_0^2 x^2\) | D10 | lesson | E3 | `ftc-corroborate` (`numeric` + `text`: both values, and why agreement is evidence) | independently demonstrated |
 | Retain "the theorem gives existence, not a formula" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-existence` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 | Integrate the FTC with the derivative and the Riemann sum on one mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-ftc` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
-**Transfer:** four D9/E4 outcomes (`ftc-lower-limit-shift`,
-`ftc-no-elementary-antiderivative`, `ftc-falsify`, `ftc-telescope-transfer`).
+**Transfer:** four transfer-*tier* items (`ftc-no-elementary-antiderivative`,
+`ftc-falsify`, `ftc-telescope-transfer`, `ftc-corroborate`); the first three are
+this lesson's D9 outcomes, reconciled to **E3** below; the fourth is D10
+(cumulative). `ftc-lower-limit-shift` is **not** a transfer-tier item — it is the
+one recall-capped `check`-tier item (D5/D13, recognition, E2) — and was wrongly
+grouped with the D9 outcomes in an earlier draft of this table.
+
+### Evidence-ceiling reconciliation *(applied at build, 2026-07-29)*
+
+The contract as drafted at Gate 5 claimed E4 four times, on capabilities whose
+capture interfaces cannot record it. `CAPABILITY_EVIDENCE_CEILING` caps
+`multiple-choice` at **E2** and `exercise-sequence`/produced-`text` items at
+**E3**; this lesson builds no `construct-in-explorer` item, so **E3 is the
+honest ceiling for every lesson-owned outcome here**. This is the same
+preflight L2 and L3 applied before coding, applied here before coding too:
+
+| Item | Claimed | Now | How |
+| --- | --- | --- | --- |
+| `ftc-lower-limit-shift` | E4 in the Level column, E2 in the Attainment column | **E2** | the Level column was simply wrong; the Attainment column already said E2 and the item was already built as a four-plot `multiple-choice` picker |
+| `ftc-no-elementary-antiderivative` | E4 on produced text | **E3** | recorded at the ceiling of the capability that actually captures it (`exercise-sequence`, a `text` step) |
+| `ftc-falsify` | E4 on produced text | **E3** | same — `exercise-sequence`/`text` ceiling |
+| `ftc-telescope-transfer` | E4 on `exercise-sequence` | **E3** | ceiling, not capability, was the error — the same correction A2 made for its transfer-tier exercise-sequence chains |
+
+No item was rebuilt as `construct-in-explorer` to preserve an E4 label: none of
+these four outcomes is an open construction a predicate can grade — they are
+explanations, a counterexample name, and a symbolic-transfer identification —
+and inventing a construction task to fit the capability would cue the answer or
+misrepresent what the item actually asks. The mathematical task in each item is
+unchanged; only the claimed evidence level moved to match what the capability
+can prove. `ftcGradingContract.test.ts` asserts the resulting shape: no claim
+above its capability's ceiling, and the tier mix (2 check, 4 drill, 4 transfer)
+holds with `ftc-lower-limit-shift` and `ftc-differentiate-integral` as the two
+`check`-tier items.
 
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome. Independently

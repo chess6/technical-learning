@@ -129,18 +129,23 @@ The mechanism. **This clip's family is re-run in L34.**
 
 ## Exercises (Practice)
 
-| # | Objective | Type | Deterministic answer | Feedback (why) |
-| --- | --- | --- | --- | --- |
-| 1 | `ftc-evaluate-fresh` — evaluate a fresh definite integral | `exercise-sequence` (propose \(F\) → verify \(F'=f\) → evaluate) | per step | The verification step is graded, so an \(F\) that is guessed and wrong fails at the right place. |
-| 2 | `ftc-differentiate-integral` — \(\frac{d}{dx}\int_a^x f\) | expression | \(f(x)\) | Re-shows the sliver argument. |
-| 3 | `ftc-telescope-count` — on an unequal partition, which terms cancel and how many survive? | `exercise-sequence` | pairs; \(2\); the two ends | Rejects "the pieces must be equal"; the identity never used equality. |
-| 4 | `ftc-why-collapse` — explain the collapse without notation | `text`, produced | interior terms cancel in pairs | Rejects "because integration is the opposite of differentiation" as an answer that names the conclusion rather than the reason. |
-| 5 | `ftc-constant-cancels` — what changes if \(F \to F+C\)? | `text` | nothing | It is a difference; \(C\) appears twice with opposite signs — a telescoping cancellation of its own. |
-| 6 | `ftc-lower-limit-shift` — which plot is \(A\) with a different lower limit? | `multiple-choice` (4 plots) | vertically shifted, same slope | **Recorded as recognition.** Distractors: horizontally shifted, scaled, and slope-changed. |
-| 7 | `ftc-no-elementary-antiderivative` — what does the theorem not promise? | `text`, must name an integrand | existence ≠ formula; \(e^{-x^2}\) | Rejects answers with no counterexample. |
-| 8 | `ftc-falsify` — what would be wrong with the world if it were false? | `text`, produced | two instruments would disagree | The checkpoint, made a graded item. |
-| 9 | `ftc-telescope-transfer` — \(\sum_{k=1}^{n}(1/k - 1/(k+1))\), then: which step is this, and what plays \(F\)? | `exercise-sequence` | \(1 - \frac1{n+1}\); the identity step; \(F(k)=-1/k\) | **The transfer item.** No integral, no calculus — it is answerable only by a learner who took the mechanism. |
-| 10 | `ftc-corroborate` — both computations of \(\int_0^2 x^2\), and why agreement is evidence | `numeric` ×2 + `text` | \(8/3\), \(8/3\) | Because the summation route never used an antiderivative, agreement is independent corroboration rather than circularity. |
+Tiers and evidence levels below are the **reconciled** values (mastery-contract
+§1d and its evidence-ceiling reconciliation) — `check` (2), `drill` (4),
+`transfer` (4); no item exceeds its capability's ceiling, so this lesson claims
+no E4.
+
+| # | Objective | Type | Tier / evidence | Deterministic answer | Feedback (why) |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `ftc-evaluate-fresh` — evaluate a fresh definite integral | `exercise-sequence` (propose \(F\) → verify \(F'=f\) → evaluate) | drill / E3 | per step | The verification step is graded, so an \(F\) that is guessed and wrong fails at the right place. |
+| 2 | `ftc-differentiate-integral` — \(\frac{d}{dx}\int_a^x f\) at a given point | `numeric`, fresh integrand | check / E3 | \(f(x_0)\) | Re-shows the sliver argument. |
+| 3 | `ftc-telescope-count` — on an unequal partition, which terms cancel and how many survive? | `exercise-sequence` | drill / E3 | pairs; \(2\); the two ends | Rejects "the pieces must be equal"; the identity never used equality. |
+| 4 | `ftc-why-collapse` — explain the collapse without notation | `exercise-sequence` (`text` step), produced | drill / E3 | interior terms cancel in pairs | Rejects "because integration is the opposite of differentiation" as an answer that names the conclusion rather than the reason. |
+| 5 | `ftc-constant-cancels` — what changes if \(F \to F+C\)? | `exercise-sequence` (`text` step) | drill / E3 | nothing | It is a difference; \(C\) appears twice with opposite signs — a telescoping cancellation of its own. |
+| 6 | `ftc-lower-limit-shift` — which plot is \(A\) with a different lower limit? | `multiple-choice` (4 plots) | check / **E2** | vertically shifted, same slope | **Recorded as recognition** — a picker cannot exceed E2. Distractors: horizontally shifted, scaled, and slope-changed. |
+| 7 | `ftc-no-elementary-antiderivative` — what does the theorem not promise? | `exercise-sequence` (`text` step), must name an integrand | transfer / **E3** | existence ≠ formula; \(e^{-x^2}\) (or another accepted non-elementary integrand) | Rejects answers with no counterexample. **Reconciled from an aspirational E4** — a produced-text answer cannot exceed `exercise-sequence`'s E3 ceiling. |
+| 8 | `ftc-falsify` — what would be wrong with the world if it were false? | `exercise-sequence` (`text` step), produced | transfer / **E3** | two instruments would disagree | The checkpoint, made a graded item. **Reconciled from an aspirational E4**, same ceiling reason as #7. |
+| 9 | `ftc-telescope-transfer` — \(\sum_{k=1}^{n}(1/k - 1/(k+1))\), then: which step is this, and what plays \(F\)? | `exercise-sequence` | transfer / **E3** | \(1 - \frac1{n+1}\); the identity step; \(F(k)=-1/k\) | **The transfer item.** No integral, no calculus — it is answerable only by a learner who took the mechanism. **Reconciled from an aspirational E4** — `exercise-sequence` is capped at E3 regardless of step count, the same correction A2 applied to its transfer chains. |
+| 10 | `ftc-corroborate` — both computations of \(\int_0^2 x^2\), and why agreement is evidence | `exercise-sequence` (`numeric` ×2 + `text` steps) | transfer / E3 | \(8/3\), \(8/3\) | Because the summation route never used an antiderivative, agreement is independent corroboration rather than circularity. |
 
 ## Insight traceability
 
