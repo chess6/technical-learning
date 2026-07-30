@@ -227,10 +227,15 @@ test("grades the units item, rejecting 'area'", async ({ page }) => {
   const practice = page.getByRole("region", { name: "Practice exercises" });
   await practice.scrollIntoViewIfNeeded();
 
-  // Item 1 is the fresh-axes units question. "Area" is the misconception the
-  // whole lesson exists to dislodge, so the grader must not take it.
-  await practice.getByRole("textbox").first().fill("area");
-  await practice.getByRole("button", { name: /check|submit/i }).first().click();
+  // Item 1 is the fresh-axes units question — an `exercise-sequence` whose
+  // first step is now multiple-choice (converted from typed text 2026-07-30).
+  // "Area" is the misconception the whole lesson exists to dislodge, so the
+  // grader must not take it; it is choice index 2 among the first step's options.
+  await practice
+    .locator(".exercise-panel__sequence-step")
+    .first()
+    .locator('button[data-choice-index="2"]')
+    .click();
   await expect(
     practice.locator('.exercise-panel__feedback[data-state="incorrect"]').first(),
   ).toBeVisible();

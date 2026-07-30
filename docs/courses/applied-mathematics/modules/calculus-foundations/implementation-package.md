@@ -6,16 +6,34 @@ that an implementation model can execute it **without reopening any curriculum
 decision**: every "what" and "why" is settled in the Mode A and Mode B artifacts
 linked below.
 
-> **Status: BUILT. A0 + A1 + A2 + A3 + A4 complete — Package A is done, pending
-> its single package-level Opus semantic review.**
+> **Status: BUILT. A0 + A1 + A2 + A3 + A4 complete, all four on `master`.**
+> **The package-level Opus semantic review has run twice, found defects, and
+> those defects are corrected and re-verified (`./check.sh --e2e`, typecheck,
+> lint, build, and manual player inspection all green — §7). The remaining
+> condition before this package is marked approved is an independent
+> confirmation of that correction, not further work — see §7's note on why
+> that box is left for someone other than the correcting agent.**
 >
 > Package A was explicitly approved for implementation on 2026-07-28, resolving
-> the boundary question review had raised about A0/A1. Slices A0 (shared
-> foundations), A1 (`limits-continuity`), A2 (`derivative-local-linearity`), and
-> A3 (`integral-accumulation`) are built on `master`; A4 (`fundamental-theorem`)
-> is built on `feature/a4-fundamental-theorem`, awaiting merge. Each of A1–A4
-> passes Gate 8 on its lesson-owned outcomes. The module-owned
+> the boundary question review had raised about A0/A1. All four slices — A0
+> (shared foundations), A1 (`limits-continuity`), A2
+> (`derivative-local-linearity`), A3 (`integral-accumulation`), and A4
+> (`fundamental-theorem`) — are built and merged to `master`
+> (`feature/a4-fundamental-theorem` merged 2026-07-30 and deleted). Each of
+> A1–A4 passes Gate 8 on its lesson-owned outcomes. The module-owned
 > `mod-calcfound-*` outcomes remain open Gate-9 obligations, by design (§4).
+>
+> **2026-07-30 correction pass.** The package-level review found: 15 items
+> across A1–A4 whose mastery-contract Level column had drifted above what
+> their actual (post-MCQ-conversion) steps support; two code defects in A4
+> unrelated to evidence (`ftc-telescoping`'s `E_i` visualization drew a rate
+> difference instead of the labelled residual; the running total's numerical
+> derivative was wrong at the domain's lower endpoint); five learner-facing
+> strings in A4's explorer overclaiming "no antiderivative" for \(e^{-x^2}\)
+> where only an elementary formula is missing; and a generic-cancellation
+> helper (shared by A3/A4 and planned for L34 reuse) that didn't check
+> magnitude before treating two contributions as cancelling. All are fixed,
+> with regressions; see §1's per-slice notes and §7.
 
 **One unit = one module directory = one package.** This directory's name is the
 planned `courseModel.ts` unit id, `calculus-foundations`, and the package's four
@@ -237,7 +255,7 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 | A1 `limits-continuity` | **SHIPPED** | `master` |
 | A2 `derivative-local-linearity` | **SHIPPED** | `master` |
 | A3 `integral-accumulation` | **SHIPPED** | `master` |
-| A4 `fundamental-theorem` | **SHIPPED** | `feature/a4-fundamental-theorem` |
+| A4 `fundamental-theorem` | **SHIPPED** | `master` (merged from `feature/a4-fundamental-theorem`, 2026-07-30; branch deleted) |
 
 ## 7. Acceptance for the package
 
@@ -245,16 +263,33 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 - [x] **Each lesson passes Gate 8 on its lesson-owned outcomes**, with module-owned
       outcomes recorded as open Gate-9 obligations.
 - [x] P1–P5 verified, each by a test rather than by inspection.
-- [ ] `./check.sh --e2e` green. **One known exception:** `ftc-accumulate-then-measure`
-      fails the hard gates' `seek-determinism` check for a diagnosed
-      `@motion-canvas/2d` `Latex` limitation unrelated to this lesson's content
-      (see A4's note above and
-      [known-failure-modes.md](../../../../quality/known-failure-modes.md#latex-glyph-identities-are-not-stable-across-a-scene-reset-and-can-fail-seek-determinism)).
-      A second, pre-existing failure (`solution-sets`, a linear-algebra scene) and
-      one pre-existing flaky media spec are both already recorded in that file and
-      are outside this package. Every other check, including every other hard gate
-      for both A4 scenes, is green.
-- [ ] Package-level semantic review (Opus) requested and passed.
+- [x] `./check.sh --e2e` green, re-confirmed 2026-07-30 after the correction pass
+      below. **Two known, pre-existing exceptions, both already recorded in
+      [known-failure-modes.md](../../../../quality/known-failure-modes.md) and
+      outside this package:** `ftc-accumulate-then-measure` fails the hard
+      gates' `seek-determinism` check for a diagnosed `@motion-canvas/2d`
+      `Latex` limitation (unrelated to this lesson's content — confirmed
+      unrelated to any 2026-07-30 code change, since that scene calls none of
+      the functions this pass touched); `solution-sets` (a linear-algebra
+      scene) fails `text-clipping` intermittently under webfont-metric
+      variance. Every other check, including every other hard gate for both
+      A4 scenes, is green — `npm run typecheck`, `npm run lint`, and
+      `npm run build` all pass clean.
+- [ ] Package-level semantic review (Opus) requested and passed. **Status:**
+      the review has run twice — once at the original scope (2026-07-29,
+      found the defects this ledger's per-slice notes describe) and once
+      narrower (2026-07-30, the MCQ-conversion evidence audit plus four code
+      defects: `ftc-telescoping`'s `E_i` visualization, the Gaussian-wording
+      overclaims, the `A'(x)` endpoint bug, and `cancelContributions`'
+      magnitude check). Every finding from both passes is corrected, with
+      regressions, and independently re-verified in this session (`./check.sh`,
+      `./check.sh --e2e`, typecheck, lint, build, and manual player inspection
+      of the corrected `ftc-telescoping` clip). **Left unchecked deliberately:**
+      the agent that ran the 2026-07-30 correction pass is the same agent that
+      built A4 and ran the 2026-07-29 review — the same
+      self-certification gap ADR-002 names as a known limitation of this
+      workflow. Ticking this box is left to an independent reviewer or to the
+      user's own sign-off, not to the correcting agent.
 - [x] Spine and architecture updated: four rows `future → built`, status ledgers
       updated, next-package recommendation re-stated.
 - [ ] A Gate 9 assessment plan for `calculus-foundations` opened as the next Mode D

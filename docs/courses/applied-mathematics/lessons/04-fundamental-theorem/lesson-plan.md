@@ -193,35 +193,35 @@ no E4.
 - \(e^{-x^2}\) — the theorem applies and no elementary \(F\) exists.
 
 ## Mathematical invariants to assert
-- [ ] the telescoping identity holds **exactly** for randomly generated unequal partitions (pure arithmetic, no calculus)
-- [ ] \(F(b)-F(a)\) equals the refined Riemann sum within tolerance on every fixture
-- [ ] numerically differentiated \(A\) equals \(f\) on every fixture
-- [ ] adding \(C\) to \(F\) leaves the definite integral bit-identical
-- [ ] moving the lower limit shifts \(A\) by a constant and leaves \(A'\) unchanged
-- [ ] the two independent computations of \(\int_0^2 x^2\) agree to machine tolerance
-- [ ] every antiderivative used by inspection satisfies \(F'=f\) on a dense sample
-- [ ] **`telescoping-cancellation` accepts a non-interval pairing** (the L34 generalization test)
+- [x] the telescoping identity holds **exactly** for randomly generated unequal partitions (pure arithmetic, no calculus) — `calculus.test.ts` "holds the telescoping identity EXACTLY on unequal partitions"
+- [x] \(F(b)-F(a)\) equals the refined Riemann sum within tolerance on every fixture — `calculus.test.ts` "agrees with the refined Riemann sum on every fixture with an antiderivative", iterating `CALCULUS_FIXTURES`
+- [x] numerically differentiated \(A\) equals \(f\) on every fixture — `calculus.test.ts`, including (added 2026-07-30, correcting an endpoint bug) `boundaryAwareDerivative` checks at both domain endpoints for the Gaussian and a second fixture, plus interior points
+- [x] adding \(C\) to \(F\) leaves the definite integral bit-identical — `calculus.test.ts` "leaves the definite integral unchanged when F is shifted by a constant"
+- [x] moving the lower limit shifts \(A\) by a constant and leaves \(A'\) unchanged — `calculus.test.ts` "shifts the running total when the lower limit moves, without changing its slope"; `FundamentalTheoremExplorer.test.tsx` "moving A's lower limit changes A(x) but not A'(x) = f(x)"
+- [x] the two independent computations of \(\int_0^2 x^2\) agree to machine tolerance — `calculus.test.ts` "corroborates 8/3 by two independent routes"
+- [x] every antiderivative used by inspection satisfies \(F'=f\) on a dense sample — `assertCalculusFixturesAreConsistent` (`src/math/calculus.ts`), run by the "fixtures" describe block
+- [x] **`telescoping-cancellation` accepts a non-interval pairing** (the L34 generalization test) — `calculus.test.ts` "REQUIRED: cancels a non-interval pairing"; `TelescopingCancellation.test.tsx`; (added 2026-07-30) magnitude-validation regressions for the same shared-edge case
 
 ## Required tests
-- [ ] Unit tests for the FTC helpers in `src/math/calculus.ts`
-- [ ] Invariant tests (the list above, including the parameterization test)
-- [ ] Component tests: explorer difference readout, survivor count, equal/unequal toggle, \(C\) control, reset
-- [ ] Grading contracts + `ITEM_ASSESSMENT_META` for all ten items
-- [ ] Guided-scene hard gates + chapter seek for **both** clips
-- [ ] Route test: the placed `visual` block renders `ftc-telescoping`
-- [ ] Browser test: readouts correct, no console errors
+- [x] Unit tests for the FTC helpers in `src/math/calculus.ts`
+- [x] Invariant tests (the list above, including the parameterization test)
+- [x] Component tests: explorer difference readout, survivor count, equal/unequal toggle, \(C\) control, reset — `FundamentalTheoremExplorer.test.tsx`
+- [x] Grading contracts for all ten items — `fundamentalTheoremGradingContract.test.ts`. **No `ITEM_ASSESSMENT_META` entry**: that manifest is scoped to `MODULE_ITEMS` (Gate 9), not lesson-owned items — see the contract's §6, matching A2's and A3's precedent.
+- [x] Guided-scene hard gates + chapter seek for **both** clips — green except the disclosed `ftc-accumulate-then-measure` `seek-determinism` limitation (known-failure-modes.md), unrelated to this lesson's content
+- [x] Route test: the placed `visual` block renders `ftc-telescoping` — `lessonWiring.test.ts`
+- [x] Browser test: readouts correct, no console errors — `e2e/lesson-fundamental-theorem.spec.ts`
 
 ## Acceptance checklist
-- [ ] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
-- [ ] Insight traceability table complete
-- [ ] Route intentional; the second clip's placement justified in-plan
-- [ ] Headings content-specific
-- [ ] Guided-to-interactive continuity across both clips and the explorer
-- [ ] Progressive disclosure applied
-- [ ] KaTeX notation consistent; \(A\), \(E_i\) carried from L3/L2 unchanged
-- [ ] Accessibility: labels, focus, readouts, reduced-motion frames for both clips
-- [ ] Diagrams labelled, unclipped, safe frame intact
-- [ ] The unproved uniformity step is named on screen, citing L1's modulus of continuity
-- [ ] `telescoping-cancellation` parameterized, with its test
-- [ ] `docs/quality/lesson-correctness-checklist.md` completed
-- [ ] All tests pass
+- [x] Approved Insight Contract linked and `PASS`; insight verbatim in metadata
+- [x] Insight traceability table complete
+- [x] Route intentional; the second clip's placement justified in-plan
+- [x] Headings content-specific
+- [x] Guided-to-interactive continuity across both clips and the explorer
+- [x] Progressive disclosure applied
+- [x] KaTeX notation consistent; \(A\), \(E_i\) carried from L3/L2 unchanged
+- [x] Accessibility: labels, focus, readouts, reduced-motion frames for both clips
+- [x] Diagrams labelled, unclipped, safe frame intact
+- [x] The unproved uniformity step is named on screen, citing L1's modulus of continuity
+- [x] `telescoping-cancellation` parameterized, with its test
+- [x] `docs/quality/lesson-correctness-checklist.md` completed
+- [x] All tests pass — `./check.sh` green (2026-07-30, post-correction); see the mastery contract's §6 and the module ledger's §7 for the package-level verification record

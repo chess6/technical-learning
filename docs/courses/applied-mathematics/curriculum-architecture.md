@@ -426,16 +426,21 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **BUILT — A0–A4 complete, pending package-level semantic review** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **BUILT — A0–A4 complete on `master`; package-level semantic review run twice, defects found and corrected, re-verified green** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
 > 2026-07-28. A0–A4 are all built: `limits-continuity`, `derivative-local-linearity`,
 > `integral-accumulation`, and `fundamental-theorem` are complete lessons, each
-> passing Gate 8 on its lesson-owned outcomes. The package's single Opus
-> semantic review (`AGENTS.md` model routing) and the Gate 9 module assessment
-> for `calculus-foundations` are the two remaining, separate steps — neither is
-> in scope here. **B** is the next package recommended to enter Mode B.
+> passing Gate 8 on its lesson-owned outcomes, and all four are on `master`
+> (A4 merged 2026-07-30). The package's single Opus semantic review has run
+> once (2026-07-29) and a second, narrower re-review (2026-07-30) after a
+> follow-up correction pass; both found defects, all of which are corrected
+> with regressions — see the [ledger](modules/calculus-foundations/implementation-package.md)
+> §7 for the acceptance checklist and what remains before the package is
+> marked approved. The Gate 9 module assessment for `calculus-foundations` is
+> a separate, later step, open by design. **B** is the next package
+> recommended to enter Mode B once Package A's acceptance checklist closes.
 
 ### 6.2 Suggested Mode B order
 
@@ -472,10 +477,15 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 the `function-plot` family), A1 (`limits-continuity`), A2
 (`derivative-local-linearity`, with the `local-linearity-zoom` family), A3
 (`integral-accumulation`, with the `accumulation-strip` family), and A4
-(`fundamental-theorem`, with the `telescoping-cancellation` family) are all built.
-Package A's single Opus semantic review is the remaining step before the
-package is accepted; the Gate 9 module assessment for `calculus-foundations`
-is a separate, later Mode D pass, open by design.
+(`fundamental-theorem`, with the `telescoping-cancellation` family) are all
+built and merged to `master`. Package A's single Opus semantic review has run,
+found defects (evidence-level over-claims from a later MCQ-conversion pass, an
+`E_i` visualization defect, Gaussian-antiderivative overclaims, an endpoint
+derivative bug, and a generic-cancellation gap), and all are corrected with
+regressions; a verification pass is the remaining step before the package is
+marked approved (see the [ledger](modules/calculus-foundations/implementation-package.md)
+§7). The Gate 9 module assessment for `calculus-foundations` is a separate,
+later Mode D pass, open by design.
 
 A4 created `telescoping-cancellation` parameterized over the cancelling pairs
 rather than hard-coded to interval endpoints (ledger check **P2**) — Packages
