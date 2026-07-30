@@ -108,8 +108,13 @@ const TOTALS_FROM_SHIFT = buildPrefixTable(SHIFT_A, DRIVE_END);
 /** A second, INDEPENDENTLY accumulated total starting at `SHIFT_A`. */
 const A_SHIFT = (x: number): number => lookup(TOTALS_FROM_SHIFT, x);
 
-function tex(value: string | (() => string), size: number, fill: string = ROLE.text): Latex {
-  return new Latex({ tex: value as never, fontSize: size, fill });
+function tex(
+  value: string | (() => string),
+  size: number,
+  fill: string = ROLE.text,
+  key?: string,
+): Latex {
+  return new Latex({ key, tex: value as never, fontSize: size, fill });
 }
 
 export const ftcAccumulateThenMeasureScene = makeScene2D(function* (view) {
@@ -137,25 +142,35 @@ export const ftcAccumulateThenMeasureScene = makeScene2D(function* (view) {
   /* ------------------------------------------------------------ the panels */
 
   const ratePanel = new Rect({
+    key: "semantic:ftc:ratePanel",
     x: RATE.x, y: RATE.y, width: RATE_W + 24, height: RATE_H + 24,
     radius: 10, stroke: ROLE.grid, lineWidth: 1.5, clip: true,
   });
   view.add(ratePanel);
-  const rateInner = new Node({ position: new Vector2(-RATE.x, -RATE.y) });
+  const rateInner = new Node({
+    key: "semantic:ftc:rateInner",
+    position: new Vector2(-RATE.x, -RATE.y),
+  });
   ratePanel.add(rateInner);
 
   const totalPanel = new Rect({
+    key: "semantic:ftc:totalPanel",
     x: TOTAL.x, y: TOTAL.y, width: TOTAL_W + 24, height: TOTAL_H + 24,
     radius: 10, stroke: ROLE.grid, lineWidth: 1.5, clip: true,
   });
   view.add(totalPanel);
-  const totalInner = new Node({ position: new Vector2(-TOTAL.x, -TOTAL.y) });
+  const totalInner = new Node({
+    key: "semantic:ftc:totalInner",
+    position: new Vector2(-TOTAL.x, -TOTAL.y),
+  });
   totalPanel.add(totalInner);
 
   rateInner.add(new Line({
+    key: "semantic:ftc:rateAxis",
     stroke: ROLE.axis, lineWidth: 2, points: [ratePx(0, 0), ratePx(DRIVE_END, 0)],
   }));
   totalInner.add(new Line({
+    key: "semantic:ftc:totalAxis",
     stroke: ROLE.axis, lineWidth: 2, points: [totalPx(0, 0), totalPx(DRIVE_END, 0)],
   }));
 
@@ -251,6 +266,7 @@ export const ftcAccumulateThenMeasureScene = makeScene2D(function* (view) {
   /** The same two bounds, carried onto the total panel as tick marks. */
   const squeezeTick = (which: "lo" | "hi"): Line =>
     new Line({
+      key: which === "lo" ? "semantic:ftc:squeezeTickLow" : "semantic:ftc:squeezeTickHigh",
       stroke: which === "lo" ? ROLE.basis1 : ROLE.basis2,
       lineWidth: 3, lineDash: [8, 6], opacity: squeezeOpacity,
       points: () => {
@@ -292,6 +308,7 @@ export const ftcAccumulateThenMeasureScene = makeScene2D(function* (view) {
   totalInner.add(shiftedTotal);
 
   const shiftGap = new Line({
+    key: "semantic:ftc:shiftGap",
     stroke: ROLE.textMuted, lineWidth: 2, lineDash: [6, 6], opacity: shiftOpacity,
     points: () => [totalPx(8, A0(8)), totalPx(8, A_SHIFT(8))],
   });
@@ -299,125 +316,179 @@ export const ftcAccumulateThenMeasureScene = makeScene2D(function* (view) {
 
   /* ------------------------------------------------------------ the labels */
 
-  const title = tex("", 30);
-  title.position(new Vector2(LABEL_CENTER_X, -235));
-  title.opacity(0);
-  view.add(title);
+  const roman = (t: string) => `\\text{${t}}`;
 
-  const caption = tex("", 22, ROLE.textMuted);
-  caption.position(new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y));
-  caption.opacity(0);
-  view.add(caption);
+  /**
+   * Every title/caption/equation is a SEPARATE, STATIC Latex node, created
+   * once here and never mutated afterward — only its opacity ever changes.
+   *
+   * `Latex` resolves its rendered glyphs through a module-level cache keyed
+   * by the TeX string (`Latex.texNodesPool`, private to `@motion-canvas/2d`),
+   * which is never cleared by a scene reset. A node whose TEXT is mutated
+   * imperatively mid-timeline (`node.tex(newBody)`) can therefore end up
+   * built from a warm cache on one replay and a cold one on another,
+   * assigning its internal glyph nodes different identities — which is
+   * invisible on screen (the pixels match) but fails the seek-determinism
+   * hard gate, which compares node identities directly. Building one
+   * dedicated node per distinct string sidesteps the whole class: every
+   * replay constructs the exact same set of nodes in the exact same order.
+   */
+  function labelSet(
+    entries: Record<string, { text: string; fontSize?: number }>,
+    fill: string,
+    keyPrefix: string,
+    position: Vector2,
+  ): Record<string, Latex> {
+    const out: Record<string, Latex> = {};
+    for (const [id, entry] of Object.entries(entries)) {
+      const node = tex(entry.text, entry.fontSize ?? 22, fill, `${keyPrefix}:${id}`);
+      node.position(position);
+      node.opacity(0);
+      view.add(node);
+      out[id] = node;
+    }
+    return out;
+  }
 
-  const equation = tex("", 22, ROLE.selected);
-  equation.position(new Vector2(275, -60));
-  equation.opacity(0);
-  view.add(equation);
+  /** Fade the one named node to opacity 1 and every sibling to 0. */
+  function* showOnly(
+    nodes: Record<string, Latex>,
+    id: string,
+    d: number,
+  ): ThreadGenerator {
+    yield* all(
+      ...Object.entries(nodes).map(([key, node]) =>
+        node.opacity(key === id ? 1 : 0, d),
+      ),
+    );
+  }
 
-  const rateAxisLabel = tex("\\text{rate }f(t)\\ (\\text{m/s})", 18, ROLE.original);
+  const titles = labelSet(
+    {
+      "loose-end": { text: roman("L3's loose end"), fontSize: 30 },
+      sliver: { text: roman("One more step"), fontSize: 30 },
+      squeeze: { text: roman("Trapped between two rectangles"), fontSize: 30 },
+      predict: {
+        text: `\\begin{gathered} ${roman("As the step shrinks, the two bars close on something.")} \\\\ ${roman("On what?")} \\end{gathered}`,
+        fontSize: 26,
+      },
+      close: { text: roman("They close on f(x)"), fontSize: 30 },
+      answer: { text: roman("The loose end, explained"), fontSize: 30 },
+      "lower-limit": { text: roman("Moving the start"), fontSize: 30 },
+    },
+    ROLE.text,
+    "semantic:ftc:title",
+    new Vector2(LABEL_CENTER_X, -235),
+  );
+
+  const captions = labelSet(
+    {
+      "loose-end": { text: roman("A rises fastest exactly where f is highest — why?") },
+      sliver: { text: roman("the right end advances by h; A gains one sliver") },
+      squeeze: { text: roman("both bars are the rate itself, at the two ends of the step") },
+      close: { text: roman("continuity (L1) drives m_h and M_h onto the same number") },
+      answer: { text: roman("f is A's slope — which is why A rose fastest where f was highest") },
+      "lower-limit": {
+        text: roman("a different lower limit shifts A vertically — its slope does not change"),
+      },
+    },
+    ROLE.textMuted,
+    "semantic:ftc:caption",
+    new Vector2(LABEL_CENTER_X, LABEL_BOTTOM_Y),
+  );
+
+  const equations = labelSet(
+    {
+      squeeze: { text: `m_h \\le \\dfrac{A(x_0+h)-A(x_0)}{h} \\le M_h` },
+      close: { text: `A'(x) = f(x)` },
+      "lower-limit": { text: `A_0(x) - A_3(x) = A_0(3),\\ \\text{a constant}` },
+    },
+    ROLE.selected,
+    "semantic:ftc:equation",
+    new Vector2(275, -60),
+  );
+
+  const rateAxisLabel = tex(
+    "\\text{rate }f(t)\\ (\\text{m/s})",
+    18,
+    ROLE.original,
+    "semantic:ftc:rateAxisLabel",
+  );
   rateAxisLabel.position(new Vector2(-330, -40));
   view.add(rateAxisLabel);
 
-  const totalAxisLabel = tex("A(t) = \\int_0^t f\\ (\\text{m})", 18, ROLE.transformed);
+  const totalAxisLabel = tex(
+    "A(t) = \\int_0^t f\\ (\\text{m})",
+    18,
+    ROLE.transformed,
+    "semantic:ftc:totalAxisLabel",
+  );
   totalAxisLabel.position(new Vector2(-335, 180));
   view.add(totalAxisLabel);
-
-  const say = function* (node: Latex, body: string, d: number): ThreadGenerator {
-    node.tex(body);
-    yield* node.opacity(1, d);
-  };
-  const roman = (t: string) => `\\text{${t}}`;
 
   /* ------------------------------------------------------------- the beats */
 
   const bodies: Record<string, () => ThreadGenerator> = {
     *["loose-end"]() {
       const b = beats("loose-end");
-      yield* say(title, roman("L3's loose end"), b.title!);
+      yield* showOnly(titles, "loose-end", b.title!);
       yield* markerX(RATE_PEAK_T, b.sweep!, easeInOutCubic);
-      yield* say(
-        caption,
-        roman("A rises fastest exactly where f is highest — why?"),
-        b.caption!,
-      );
+      yield* showOnly(captions, "loose-end", b.caption!);
       yield* waitFor(b.hold!);
     },
 
     *sliver() {
       const b = beats("sliver");
-      yield* say(title, roman("One more step"), b.title!);
+      yield* showOnly(titles, "sliver", b.title!);
       yield* sliverOpacity(1, b.advance!, easeInOutCubic);
-      yield* say(caption, roman("the right end advances by h; A gains one sliver"), b.caption!);
+      yield* showOnly(captions, "sliver", b.caption!);
       yield* waitFor(b.hold!);
     },
 
     *squeeze() {
       const b = beats("squeeze");
-      yield* say(title, roman("Trapped between two rectangles"), b.title!);
+      yield* showOnly(titles, "squeeze", b.title!);
       yield* squeezeOpacity(1, b.bars!, easeInOutCubic);
-      yield* say(
-        equation,
-        `m_h \\le \\dfrac{A(x_0+h)-A(x_0)}{h} \\le M_h`,
-        b.reveal!,
-      );
-      yield* say(caption, roman("both bars are the rate itself, at the two ends of the step"), b.caption!);
+      yield* showOnly(equations, "squeeze", b.reveal!);
+      yield* showOnly(captions, "squeeze", b.caption!);
       yield* waitFor(b.hold!);
     },
 
     *predict() {
       const b = beats("predict");
-      title.fontSize(26);
-      yield* say(
-        title,
-        `\\begin{gathered} ${roman("As the step shrinks, the two bars close on something.")} \\\\ ${roman("On what?")} \\end{gathered}`,
-        b.ask!,
-      );
+      yield* showOnly(titles, "predict", b.ask!);
       yield* waitFor(b.think!);
     },
 
     *close() {
       const b = beats("close");
-      title.fontSize(30);
-      yield* say(title, roman("They close on f(x)"), b.title!);
+      yield* showOnly(titles, "close", b.title!);
       yield* hSig(H_FINAL, b.shrink!, easeInOutCubic);
-      yield* say(equation, `A'(x) = f(x)`, b.reveal!);
-      yield* say(
-        caption,
-        roman("continuity (L1) drives m_h and M_h onto the same number"),
-        b.caption!,
-      );
+      yield* showOnly(equations, "close", b.reveal!);
+      yield* showOnly(captions, "close", b.caption!);
       yield* waitFor(b.hold!);
     },
 
     *answer() {
       const b = beats("answer");
-      yield* say(title, roman("The loose end, explained"), b.title!);
+      yield* showOnly(titles, "answer", b.title!);
       yield* all(
         sliverOpacity(0, b.connect!, easeInOutCubic),
         squeezeOpacity(0, b.connect!, easeInOutCubic),
         tangentOpacity(1, b.connect!, easeInOutCubic),
       );
-      yield* say(
-        caption,
-        roman("f is A's slope — which is why A rose fastest where f was highest"),
-        b.caption!,
-      );
+      yield* showOnly(captions, "answer", b.caption!);
       yield* waitFor(b.hold!);
     },
 
     *["lower-limit"]() {
       const b = beats("lower-limit");
-      yield* say(title, roman("Moving the start"), b.title!);
-      equation.tex("A_0(x) - A_3(x) = A_0(3),\\ \\text{a constant}");
+      yield* showOnly(titles, "lower-limit", b.title!);
       yield* all(
         shiftOpacity(1, b.shift!, easeInOutCubic),
-        equation.opacity(1, b.shift!),
+        showOnly(equations, "lower-limit", b.shift!),
       );
-      yield* say(
-        caption,
-        roman("a different lower limit shifts A vertically — its slope does not change"),
-        b.caption!,
-      );
+      yield* showOnly(captions, "lower-limit", b.caption!);
       yield* waitFor(b.hold!);
     },
   };

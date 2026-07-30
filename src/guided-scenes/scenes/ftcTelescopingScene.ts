@@ -91,9 +91,15 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
   const stripOpacity = createSignal(0);
   const errorOpacity = createSignal(0);
   const gaussianBlend = createSignal(0); // 0 = x^2, 1 = e^(-x^2)
+  // A cross-fade in VALUE space, not a hard switch of which fixture answers
+  // `.f` — the same technique clip 1 uses for its flat-rate/drive blend. A
+  // discrete swap would hold the curve/strips static while `gaussianBlend`
+  // visibly animates, then snap them to the new shape — motion claimed but
+  // not delivered.
+  const stripF = (x: number): number =>
+    (1 - gaussianBlend()) * EX_PARABOLA.f(x) + gaussianBlend() * EX_GAUSSIAN.f(x);
 
   const n = () => Math.max(2, Math.round(nSig()));
-  const stripFixture = () => (gaussianBlend() > 0.5 ? EX_GAUSSIAN : EX_PARABOLA);
   const stripPoints = () => partitionPoints(0, DOM_END, n(), "unequal");
 
   const fPx = (x: number, y: number): Vector2 =>
@@ -185,7 +191,7 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
     key: "semantic:ftc2:curve",
     stroke: ROLE.original, lineWidth: 4,
     points: () => {
-      const f = stripFixture().f;
+      const f = stripF;
       const pts: Vector2[] = [];
       for (let i = 0; i <= 150; i += 1) {
         const x = (DOM_END * i) / 150;
@@ -200,7 +206,7 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
     stroke: ROLE.transformed, lineWidth: 2.5,
     points: () => {
       const points = stripPoints();
-      const f = stripFixture().f;
+      const f = stripF;
       const pts: Vector2[] = [];
       for (let i = 0; i < points.length - 1; i += 1) {
         const lo = points[i]!;
@@ -220,7 +226,7 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
       const points = stripPoints();
       const x0 = points[0]!;
       const x1 = points[1]!;
-      const f = stripFixture().f;
+      const f = stripF;
       return [stripPx(x1, f(x0)), stripPx(x1, f(x1))];
     },
   });
@@ -263,7 +269,7 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
       const points = stripPoints();
       const x0 = points[0]!;
       const dx = points[1]! - x0;
-      const f = stripFixture().f;
+      const f = stripF;
       const E = residual(EX_PARABOLA.antiderivative!, x0, f(x0), dx);
       return `E_0 = ${E.toFixed(4)}`;
     },
