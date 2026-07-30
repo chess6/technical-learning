@@ -91,6 +91,20 @@ export interface CalculusFixture {
    * Absent means "not certified", which is not the same as "not monotone".
    */
   readonly monotoneIntervals?: readonly (readonly [number, number])[];
+  /**
+   * Interior points where `f` is **certified** to turn — the derivative is zero
+   * and changes sign, declared from the derivative rather than inferred.
+   *
+   * This exists so the UI can distinguish two different reasons a bracket
+   * guarantee can be absent: the interval genuinely straddles a known turn, or
+   * the interval is merely uncertified (nothing declared either way). Without
+   * this field, "not `guaranteed`" has only one honest reading — "not
+   * certified" — and code that says more than that (e.g. "the rate turns
+   * here") would be asserting a fact this fixture never declared.
+   * `assertCalculusFixturesAreConsistent` checks each declared point against
+   * the derivative, so a wrong declaration fails the suite.
+   */
+  readonly turningPoints?: readonly number[];
 }
 
 /**
@@ -502,6 +516,13 @@ export interface BracketReport {
    * than from a sampled check, because a finite sample cannot prove monotonicity.
    */
   readonly guaranteed: boolean;
+  /**
+   * Does a **declared** turning point of the fixture lie strictly inside
+   * `(a, b)`? This is the only thing that may license the stronger claim "the
+   * rate turns here" — `!guaranteed` alone only ever means "not certified",
+   * which is a weaker and different statement. See `CalculusFixture.turningPoints`.
+   */
+  readonly turnsWithin: boolean;
 }
 
 /**
@@ -551,6 +572,23 @@ export function isCertifiedMonotoneOn(
   );
 }
 
+/**
+ * Does a **declared** turning point of `fixture` lie strictly inside `(a, b)`?
+ *
+ * Strictly, not inclusively: a turning point sitting exactly at an endpoint is
+ * where two certified stretches meet, not a turn the selected interval crosses.
+ */
+export function turnsWithinInterval(
+  fixture: CalculusFixture,
+  a: number,
+  b: number,
+  tolerance = 1e-9,
+): boolean {
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  return (fixture.turningPoints ?? []).some((t) => t > lo + tolerance && t < hi - tolerance);
+}
+
 export function bracketReport(
   fixture: CalculusFixture,
   a: number,
@@ -574,6 +612,41 @@ export function bracketReport(
     // Certified, not sampled. `looksMonotoneOn` would have been an inference
     // from 512 values dressed up as a theorem.
     guaranteed: isCertifiedMonotoneOn(fixture, a, b),
+    turnsWithin: turnsWithinInterval(fixture, a, b),
+  };
+}
+
+/** A short and a long-form message licensed by `report`, and nothing more. */
+export interface BracketGuaranteeMessage {
+  readonly headline: string;
+  /** Longer explanatory prose, or `null` when the guarantee holds outright. */
+  readonly note: string | null;
+}
+
+/**
+ * What the certification state actually proves, in learner-facing words.
+ *
+ * Pure and separately tested so the wording is held to the same discipline as
+ * the numbers: `!guaranteed` alone means only "not certified", and must not be
+ * worded as "the rate turns here" unless `turnsWithin` — an independent,
+ * declared fact — says so. Conflating the two would let an uncertified-but-
+ * possibly-monotone interval be reported as a known turn.
+ */
+export function describeBracketGuarantee(report: BracketReport): BracketGuaranteeMessage {
+  if (report.guaranteed) {
+    return { headline: "yes — the rate is monotone on this interval", note: null };
+  }
+  if (report.turnsWithin) {
+    return {
+      headline: "no — the rate turns inside this interval, so any straddle is luck",
+      note:
+        "The rate **turns** on this interval, so the left and right sums guarantee nothing — even if they happen to land either side of the answer at this $n$, which they sometimes do. Bracketing is a consequence of the rate being *monotone*, not of the sum being a Riemann sum, which is why the picture shows no bars here. Narrow the interval to stop at the turn, where the rate only rises or only falls, and the guarantee returns.",
+    };
+  }
+  return {
+    headline: "no — not certified monotone on this interval",
+    note:
+      "This interval has not been **certified** monotone, so the left and right sums guarantee nothing here — even if they happen to land either side of the answer at this $n$. That is a gap in what has been declared about this rate, not a demonstration that it turns: an uncertified interval can still be genuinely monotone. Bracketing is a consequence of a *certified* guarantee, not of the sum being a Riemann sum, which is why the picture shows no bars here.",
   };
 }
 
@@ -682,6 +755,14 @@ const drivePosition: RealFunction = (t) =>
   // Exact antiderivative of the above, normalized to A(0) = 0.
   (-6 / 0.55) * Math.cos(0.55 * t) - 0.175 * t * t + 6 / 0.55;
 
+// v'(t) = 3.3 cos(0.55 t) - 0.35 vanishes TWICE on [0, 10]: once rising into the
+// peak, once falling into the trough before the trace turns back up before the
+// window closes. Exact expressions, not rounded decimals, so the two certified
+// stretches this produces can share a boundary with the third instead of
+// leaving an uncertified gap around the very points that matter most.
+const EX_DRIVE_T1 = Math.acos(0.35 / 3.3) / 0.55;
+const EX_DRIVE_T2 = (2 * Math.PI - Math.acos(0.35 / 3.3)) / 0.55;
+
 export const EX_DRIVE: CalculusFixture = {
   id: "ex-drive",
   label: "A short drive",
@@ -691,15 +772,15 @@ export const EX_DRIVE: CalculusFixture = {
   derivative: (t) => 6 * 0.55 * Math.cos(0.55 * t) - 0.35,
   antiderivative: drivePosition,
   modulus: { omega: (d) => (6 * 0.55 + 0.35) * d, label: "3.65\\delta" },
-  // v'(t) = 3.3 cos(0.55 t) - 0.35 vanishes TWICE on [0, 10]: at t ≈ 2.6628 and
-  // again at t ≈ 8.7612, where the trace turns back up before the window closes.
-  // The second turn was missed on first writing and the fixture guard caught it,
-  // which is the whole reason the declaration is checked rather than trusted.
+  // The second turn was missed on first writing and the fixture guard caught
+  // it, which is the whole reason the declaration is checked rather than
+  // trusted.
   monotoneIntervals: [
-    [0, 2.66],
-    [2.67, 8.75],
-    [8.77, 10],
+    [0, EX_DRIVE_T1],
+    [EX_DRIVE_T1, EX_DRIVE_T2],
+    [EX_DRIVE_T2, 10],
   ],
+  turningPoints: [EX_DRIVE_T1, EX_DRIVE_T2],
 };
 
 export const EX_PARABOLA: CalculusFixture = {
@@ -831,7 +912,13 @@ export const EX_CONSTANT_RATE: CalculusFixture = {
   monotoneIntervals: [[0, 4]],
 };
 
-/** Non-monotone: left/right sums do **not** bracket. Used to test the restriction. */
+/**
+ * Non-monotone on its full domain — left/right sums do **not** bracket there.
+ * Used to test the restriction. But it is monotone on each half, meeting at the
+ * turn at pi/2, and both halves are certified: a narrowed interval inside one
+ * must restore the guarantee, or the explorer's "narrow it and the guarantee
+ * comes back" claim would be false for the one fixture built to exercise it.
+ */
 export const EX_NON_MONOTONE: CalculusFixture = {
   id: "ex-non-monotone",
   label: "A rate that rises and falls",
@@ -840,10 +927,18 @@ export const EX_NON_MONOTONE: CalculusFixture = {
   derivative: Math.cos,
   antiderivative: (x) => -Math.cos(x),
   monotone: false,
-  // Deliberately EMPTY, not absent: this fixture exists to be the case where no
-  // sub-interval of the whole domain is certified, so nothing licenses a bracket.
-  monotoneIntervals: [],
+  monotoneIntervals: [
+    [0, Math.PI / 2],
+    [Math.PI / 2, Math.PI],
+  ],
+  turningPoints: [Math.PI / 2],
 };
+
+// i'(t) = 1.92 cos(0.8 t) - 0.25 vanishes where cos(0.8 t) = 0.25 / 1.92, at two
+// points on [0, 8]. Exact expressions, so the certified stretches meet exactly
+// at the turn rather than leaving an uncertified gap around it.
+const EX_CURRENT_T1 = Math.acos(0.25 / 1.92) / 0.8;
+const EX_CURRENT_T2 = (2 * Math.PI - Math.acos(0.25 / 1.92)) / 0.8;
 
 /** A current trace that goes negative — the transfer item's fixture. */
 export const EX_CURRENT: CalculusFixture = {
@@ -853,14 +948,18 @@ export const EX_CURRENT: CalculusFixture = {
   domain: [0, 8],
   units: { input: "s", output: "A", accumulated: "C" },
   antiderivative: (t) => (-2.4 / 0.8) * Math.cos(0.8 * t) - 0.125 * t * t + 3,
-  // i'(t) = 1.92 cos(0.8 t) - 0.25 vanishes where cos(0.8 t) = 0.130208, i.e. at
-  // t ≈ 1.8003 and t ≈ 6.0537 on [0, 8].
   monotoneIntervals: [
-    [0, 1.8],
-    [1.81, 6.05],
-    [6.06, 8],
+    [0, EX_CURRENT_T1],
+    [EX_CURRENT_T1, EX_CURRENT_T2],
+    [EX_CURRENT_T2, 8],
   ],
+  turningPoints: [EX_CURRENT_T1, EX_CURRENT_T2],
 };
+
+// p'(t) = 18 cos(0.6 t) vanishes at 0.6 t = pi/2 and 3 pi/2, i.e. t = pi/1.2 and
+// t = 2.5 pi exactly.
+const EX_POWER_T1 = Math.PI / 1.2;
+const EX_POWER_T2 = 2.5 * Math.PI;
 
 export const EX_POWER: CalculusFixture = {
   id: "ex-power",
@@ -869,13 +968,12 @@ export const EX_POWER: CalculusFixture = {
   domain: [0, 8],
   units: { input: "s", output: "W", accumulated: "J" },
   antiderivative: (t) => 40 * t - (30 / 0.6) * Math.cos(0.6 * t) + 50,
-  // p'(t) = 18 cos(0.6 t) vanishes at 0.6 t = pi/2 and 3pi/2, i.e. t ≈ 2.618 and
-  // t ≈ 7.854.
   monotoneIntervals: [
-    [0, 2.61],
-    [2.62, 7.85],
-    [7.86, 8],
+    [0, EX_POWER_T1],
+    [EX_POWER_T1, EX_POWER_T2],
+    [EX_POWER_T2, 8],
   ],
+  turningPoints: [EX_POWER_T1, EX_POWER_T2],
 };
 
 export const CALCULUS_FIXTURES: readonly CalculusFixture[] = [
@@ -959,6 +1057,37 @@ export function assertCalculusFixturesAreConsistent(): void {
         throw new Error(
           `${fixture.id}: declares [${start}, ${end}] monotone, and it is not.`,
         );
+      }
+    }
+    // A DECLARED turning point must actually be one: interior to the domain,
+    // numerically flat there, and a real sign change either side — otherwise
+    // `describeBracketGuarantee` would tell a learner "the rate turns here" at
+    // a point that does not.
+    for (const t of fixture.turningPoints ?? []) {
+      if (!(t > lo + 1e-9 && t < hi - 1e-9)) {
+        throw new Error(`${fixture.id}: declared turning point ${t} is not interior to the domain.`);
+      }
+      const slope = numericDerivative(fixture.f, t);
+      if (Math.abs(slope) > 1e-4) {
+        throw new Error(`${fixture.id}: declared turning point ${t} has nonzero slope ${slope}.`);
+      }
+      const before = numericDerivative(fixture.f, t - 1e-3);
+      const after = numericDerivative(fixture.f, t + 1e-3);
+      if (!(before * after < 0)) {
+        throw new Error(`${fixture.id}: declared turning point ${t} has no sign change either side.`);
+      }
+    }
+    // Every declared turning point must be excluded from every declared
+    // monotone interval's interior — a "certified monotone" stretch that
+    // secretly contains a turn is the exact overclaim this module exists to
+    // prevent.
+    for (const t of fixture.turningPoints ?? []) {
+      for (const [start, end] of fixture.monotoneIntervals ?? []) {
+        if (t > start + 1e-9 && t < end - 1e-9) {
+          throw new Error(
+            `${fixture.id}: declared monotone interval [${start}, ${end}] contains turning point ${t}.`,
+          );
+        }
       }
     }
     // A declared modulus must actually bound the variation.

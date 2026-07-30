@@ -11,6 +11,7 @@ import {
   CALCULUS_FIXTURES,
   accumulatedUnits,
   bracketReport,
+  describeBracketGuarantee,
   getCalculusFixture,
   refinementTable,
   riemannSum,
@@ -143,6 +144,7 @@ export function IntegralAccumulationExplorer() {
     () => bracketReport(fixture, a, hi, n, fine),
     [fixture, a, hi, n, fine],
   );
+  const guaranteeMessage = useMemo(() => describeBracketGuarantee(bracket), [bracket]);
 
   const units = fixture.units ? accumulatedUnits(fixture) : null;
 
@@ -321,9 +323,7 @@ export function IntegralAccumulationExplorer() {
               {
                 id: "guaranteed",
                 label: "Guaranteed to?",
-                value: bracket.guaranteed
-                  ? "yes — the rate is monotone on this interval"
-                  : "no — the rate turns here, so any straddle is luck",
+                value: guaranteeMessage.headline,
               },
               ...(showRunning
                 ? [
@@ -352,13 +352,8 @@ export function IntegralAccumulationExplorer() {
             />
           )}
 
-          {!bracket.guaranteed && (
-            <ProseWithMath
-              className="integral-explorer__note"
-              text={
-                "The rate **turns** on this interval, so the left and right sums guarantee nothing — even if they happen to land either side of the answer at this $n$, which they sometimes do. Bracketing is a consequence of the rate being *monotone*, not of the sum being a Riemann sum, which is why the picture shows no bars here. Narrow the interval to a stretch where the rate only rises, or only falls, and they come back."
-              }
-            />
+          {guaranteeMessage.note && (
+            <ProseWithMath className="integral-explorer__note" text={guaranteeMessage.note} />
           )}
 
           {showTable && (

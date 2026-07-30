@@ -130,6 +130,34 @@ test("the explorer never reports a lucky straddle as a guarantee", async ({
   expect(fine).toBeLessThan(coarse);
 });
 
+test("narrowing a turning rate to a certified stretch restores the guarantee", async ({
+  page,
+}) => {
+  // The A3 defect this pins: `ex-non-monotone` (sin on [0, pi]) used to declare
+  // an EMPTY monotone-interval list, so no narrowing inside the app could ever
+  // make the guarantee return — contradicting the explorer's own promise that
+  // narrowing to a rising-only or falling-only stretch brings it back. Both
+  // halves, split at the turn at pi/2, are now certified.
+  await page.goto("/lesson/integral-accumulation");
+  const explorer = explorerOf(page);
+  await explorer.scrollIntoViewIfNeeded();
+
+  await explorer
+    .getByRole("button", { name: "A rate that rises and falls", exact: true })
+    .click();
+
+  // Full domain: not guaranteed, and the wording is licensed to name the turn
+  // because a declared turning point (pi/2) really is inside [0, pi].
+  await expect(readout(page, "Guaranteed to?")).toContainText(/^no/i);
+  await expect(explorer.locator(".integral-explorer__note")).toContainText(
+    /turns/i,
+  );
+
+  // Narrow to the first certified half by dragging the end down past the turn.
+  await explorer.getByLabel(/End b/).fill("1.4"); // < pi/2 ≈ 1.5708
+  await expect(readout(page, "Guaranteed to?")).toContainText(/^yes/i);
+});
+
 test("the units come from the axes, and change when the axes do", async ({
   page,
 }) => {

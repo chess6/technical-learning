@@ -9,6 +9,7 @@ import {
   EX_POWER,
   accumulatedUnits,
   bracketReport,
+  describeBracketGuarantee,
   looksMonotoneOn,
   numericDerivative,
   slopeAt,
@@ -274,6 +275,69 @@ describe("the bracketing guarantee comes from certified data, not sampling", () 
       monotoneIntervals: undefined,
     };
     expect(bracketReport(fixture, 0, 1, 8, 0.5).guaranteed).toBe(false);
+  });
+});
+
+describe("the negative guarantee wording says only what certification proves", () => {
+  // The A3 defect this locks down: `guaranteed === false` was worded as "the
+  // rate turns here" unconditionally, which `ex-non-monotone` could not honour
+  // for a NARROWED interval — its `monotoneIntervals` was empty, so no interval
+  // inside the fixture could ever recover the guarantee the explorer's own
+  // prose promised. The fix gives every offered fixture complete certified
+  // stretches and adds `turnsWithin` so the wording distinguishes "not
+  // certified" from "known to turn" instead of equating the two.
+
+  it("the full sine interval: not guaranteed, and the wording is licensed to name the turn", () => {
+    const [a, b] = EX_NON_MONOTONE.domain; // [0, pi], turning point at pi/2
+    const value = riemannSum(EX_NON_MONOTONE.f, a, b, 8192, "mid");
+    const report = bracketReport(EX_NON_MONOTONE, a, b, 8, value);
+    expect(report.guaranteed).toBe(false);
+    // pi/2 is strictly interior to (0, pi): the declared turning point is
+    // actually inside the selected interval, so "it turns here" is licensed.
+    expect(report.turnsWithin).toBe(true);
+    const message = describeBracketGuarantee(report);
+    expect(message.headline).toMatch(/turns inside this interval/i);
+    expect(message.note).toMatch(/turns/i);
+  });
+
+  it("a narrowed monotone half of the sine interval restores the guarantee", () => {
+    // [0, pi/2] and [pi/2, pi] are each certified — the "narrow it and the
+    // guarantee comes back" claim must actually be true for this fixture.
+    const halfA = riemannSum(EX_NON_MONOTONE.f, 0, Math.PI / 2, 8192, "mid");
+    const reportA = bracketReport(EX_NON_MONOTONE, 0, Math.PI / 2, 8, halfA);
+    expect(reportA.guaranteed).toBe(true);
+    expect(reportA.turnsWithin).toBe(false);
+    expect(describeBracketGuarantee(reportA).headline).toMatch(/^yes/i);
+
+    const halfB = riemannSum(EX_NON_MONOTONE.f, Math.PI / 2, Math.PI, 8192, "mid");
+    const reportB = bracketReport(EX_NON_MONOTONE, Math.PI / 2, Math.PI, 8, halfB);
+    expect(reportB.guaranteed).toBe(true);
+    expect(reportB.turnsWithin).toBe(false);
+  });
+
+  it("an uncertified interval with no declared turn is never worded as a known turn", () => {
+    // No `monotoneIntervals` AND no `turningPoints`: honestly, nothing is known
+    // either way. The wording must say "not certified", never "turns".
+    const uncertified = { ...EX_PARABOLA, monotoneIntervals: undefined, turningPoints: undefined };
+    const report = bracketReport(uncertified, 0, 2, 8, 8 / 3);
+    expect(report.guaranteed).toBe(false);
+    expect(report.turnsWithin).toBe(false);
+    const message = describeBracketGuarantee(report);
+    expect(message.headline).toMatch(/not certified/i);
+    expect(message.headline).not.toMatch(/turns/i);
+    // The note may disclaim a turn ("not a demonstration that it turns") but
+    // must never assert one as fact.
+    expect(message.note).not.toMatch(/the rate turns/i);
+  });
+
+  it("crossing a genuine turn is never restored merely by widening the coarse grid", () => {
+    // Guaranteed is a fact about the SELECTED INTERVAL, independent of n.
+    for (const n of [2, 8, 64]) {
+      const value = riemannSum(EX_NON_MONOTONE.f, 1, 2, n, "mid");
+      const report = bracketReport(EX_NON_MONOTONE, 1, 2, n, value); // straddles pi/2
+      expect(report.guaranteed, `n = ${n}`).toBe(false);
+      expect(report.turnsWithin, `n = ${n}`).toBe(true);
+    }
   });
 });
 

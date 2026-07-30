@@ -354,6 +354,7 @@ export type {
   WindowSearch,
   SlopeAt,
   BracketReport,
+  BracketGuaranteeMessage,
   CancellationReport,
 } from "./calculus";
 export {
@@ -379,6 +380,7 @@ export {
   bracketReport,
   cancellationReport,
   continuityAt,
+  describeBracketGuarantee,
   differenceQuotient,
   getCalculusFixture,
   isCertifiedMonotoneOn,
