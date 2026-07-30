@@ -96,6 +96,13 @@ reworded to what they capture. The defects found while building it are listed in
 its [Gate 8 record](../../lessons/02-derivative-local-linearity/mastery-contract.md#6-acceptance-record-gate-8);
 the one worth carrying forward to A3/A4 is that a **signal declared at module
 scope survives between scene runs**, which silently breaks seek determinism.
+A 2026-07-30 package-level re-review found this contract had also drifted from
+the shipped code independent of any MCQ conversion — stale ids
+(`der-sketch-derivative`, `der-continuous-not-differentiable`), a tier-mix
+count that didn't match the built items (2/4/3 vs. the actual 2/5/2), and
+`der-tangent-crosses` claimed as an open E4 `construct` when it ships as two
+fixed-answer numeric questions at **drill**, not transfer, tier. Corrected in
+its [contract's 2026-07-30 section](../../lessons/02-derivative-local-linearity/mastery-contract.md#correction-2026-07-30-package-level-semantic-re-review).
 
 ### A3 — `integral-accumulation` *(shipped)*
 Creates `accumulation-strip`. One clip (ten beats), one explorer, eight items.
@@ -105,6 +112,12 @@ A2's were: three E4 claims became one E4 claim on `construct-in-explorer`
 (`int-signed-transfer`, a constructed two-piece current whose charge ends below
 its maximum), with the other two recorded at E3 and E2. The reconciliation table
 is in its [contract §1d](../../lessons/03-integral-accumulation/mastery-contract.md#evidence-ceiling-reconciliation-applied-at-build-2026-07-28).
+A 2026-07-30 package-level re-review found three further items (`int-units-fresh`,
+`int-read-running-total`, `int-scale-invariance`) had kept an E3 claim solely
+because a later MCQ-conversion pass left their enclosing `exercise-sequence`
+capability unchanged, even though every one of their steps became
+`multiple-choice`; corrected to E2 in the contract's
+[second reconciliation](../../lessons/03-integral-accumulation/mastery-contract.md#second-reconciliation-2026-07-30-post-mcq-conversion-package-level-re-review).
 
 The defect worth carrying forward to A4 is recorded in its
 [Gate 8 record](../../lessons/03-integral-accumulation/mastery-contract.md#6-acceptance-record-gate-8):
@@ -128,6 +141,20 @@ A2's and A3's were: the contract's four aspirational E4 claims
 item exists in this lesson, so E3 is the honest ceiling throughout. The
 reconciliation table is in its [contract's evidence-ceiling
 reconciliation](../../lessons/04-fundamental-theorem/mastery-contract.md#evidence-ceiling-reconciliation-applied-at-build-2026-07-29).
+A 2026-07-30 package-level re-review found four items
+(`ftc-why-collapse`, `ftc-constant-cancels`, `ftc-no-elementary-antiderivative`,
+`ftc-falsify`) had kept their reconciled E3 claim solely because a later
+MCQ-conversion pass left their `exercise-sequence` capability unchanged, even
+though the `text` step each E3 claim rested on became `multiple-choice`;
+corrected to E2 in the contract's [second
+reconciliation](../../lessons/04-fundamental-theorem/mastery-contract.md#corrections-2026-07-30-package-level-semantic-re-review-second-pass).
+The same re-review also found and fixed three code defects unrelated to
+evidence: `ftc-telescoping`'s `E_i` visualization compared a rate difference
+instead of the labelled accumulation residual, five explorer strings overclaimed
+"no antiderivative" for \(e^{-x^2}\) instead of naming the missing elementary
+formula, and the running total's numeric derivative was wrong at the domain's
+lower endpoint (an epsilon clamp halved it). All three are detailed in the same
+section of the contract.
 
 Before any A4 code was written, the guarantee-state defect A3 left recorded
 (§ above) was corrected: `EX_NON_MONOTONE` and the other turning fixtures now
@@ -158,7 +185,7 @@ ones most likely to be lost by an implementer working from habit**:
 | --- | --- | --- | --- |
 | **P1** ✅ *(A3)* | **No antiderivative anywhere in `integral-accumulation`** — prose, captions, explorer, exercises, layers, feedback strings. | A3 | L4's value is that the connection is *discovered*. Naming it in L3 spends the course's central payoff. **Satisfied:** `src/lessons/__tests__/noAntiderivative.test.tsx` greps the built lesson definition, the scene's chapters and accessible description, and the explorer's rendered text, and carries a guard asserting the pattern set is not vacuous; `e2e/lesson-integral-accumulation.spec.ts` repeats it over the rendered article. Scoped to the lesson, not the page: the course sidebar names L4 by title, and should — and once A4 shipped as a real lesson, the in-article Prev/Next footer started naming it too, for the identical reason; the e2e check now excludes both. |
 | **P2** ✅ *(A4)* | **`telescoping-cancellation` is parameterized over the cancelling pairs**, not hard-coded to interval endpoints, with a test that feeds it a non-interval pairing. | A4 | Packages I–K re-run this family with shared interior **edges** (L34) and **faces** (L36, L37). Hard-coding it costs the course Theme 1's capstone. **Satisfied:** `cancelContributions`/`intervalContributions` (`src/math/calculus.ts`) and the `TelescopingCancellation` explorer component group purely by an id + sign pair, with no notion of order or adjacency; `calculus.test.ts` and `TelescopingCancellation.test.tsx` each feed a non-interval pairing (three cells sharing two interior edges) and assert the correct survivors. |
-| **P3** ✅ *(A2, A4)* | **The residual is visible.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4). **A4 satisfied:** `calculus.test.ts` pins a nonzero `residual` on every piece of the unequal partition clip 2 and the explorer both use; the explorer's own "Show the error" table is asserted nonzero in `FundamentalTheoremExplorer.test.tsx` and `e2e/lesson-fundamental-theorem.spec.ts`. |
+| **P3** ✅ *(A2, A4)* | **The residual is visible, and the geometry drawn for it is the quantity it's labelled as.** Every zoom frame in L2 and every `one-step` frame in L4 renders the error as a labelled nonzero quantity, on the same axis/units as the label, and the magnified window renders the **real sampled fixture**, never a substituted straight line. | A2, A4 | The package's principal known-failure-mode risk: a zoom that fakes straightness teaches that the curve *is* straight (L2's M4); a close second is a residual drawn as the wrong quantity, which looks plausible but has different units. **A4 satisfied:** `calculus.test.ts` pins a nonzero `residual` on every piece of the unequal partition clip 2 and the explorer both use, and (added 2026-07-30) pins that the two geometry endpoints `ftc-telescoping` actually draws (`residualEndpoints`) differ by exactly that residual — a 2026-07-30 review found the drawn segment had been comparing \(f(x_i)\) and \(f(x_{i+1})\), a rate difference in different units, not the labelled \(F\)-based residual; the explorer's own "Show the error" table is asserted nonzero in `FundamentalTheoremExplorer.test.tsx` and `e2e/lesson-fundamental-theorem.spec.ts`. |
 | **P4** ✅ *(A3, A4)* | **The two computations of \(\int_0^2 x^2\) are independent** — L3's summation route must not call any FTC helper, and L4's corroboration must display two separately computed numbers. | A3, A4 | Otherwise the corroboration is circular and the strongest evidence in the package is worthless. **A3: satisfied.** `riemannSum`, `refinementTable` and the scene's own prefix sums evaluate only the rate; several offered fixtures declare a closed-form antiderivative and no lesson code path reads one. `accumulation.test.ts` checks the summed and shortcut values agree *in the test*, which is where that comparison belongs. **A4: satisfied.** Clip 2's `SUMMED_VALUE` (`riemannSum` alone) and `FTC_VALUE` (`EX_PARABOLA.antiderivative` alone), the explorer's `fineSum`/`bracketValue`, and the lesson's own `ftc-corroborate` item are each independently computed; `calculus.test.ts` pins their agreement. |
 | **P5** ✅ *(A1, A4)* | **Continuity is not oversold.** L1 must ship the `local-only` and `modulus` beats and the `ex-hidden-spike` fixture; L4 must name the modulus at its `refine` beat. | A1 ✅, A4 ✅ | Continuity does **not** mean "nothing hides between samples" — it fixes no window width. Dropping this content re-introduces a false claim *and* leaves L4's uniformity step hand-waving. **A1: satisfied** — both beats ship, and `e2e/lesson-limits-continuity.spec.ts` asserts the explorer reports *no guaranteed band* for a continuous fixture with no modulus. **A4: satisfied** — the `refine` beat names `EX_PARABOLA`'s own declared modulus label on screen; `e2e/lesson-fundamental-theorem.spec.ts` seeks to that chapter and asserts the chapter summary names "modulus of continuity". |
 

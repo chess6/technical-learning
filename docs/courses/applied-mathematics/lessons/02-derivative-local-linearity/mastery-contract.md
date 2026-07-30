@@ -63,32 +63,40 @@ reached `PASS`.
 | Compute \(f'(a)\) from the definition on a fresh polynomial, showing the cancelled quotient | D3 | lesson | E3 | `der-from-definition-fresh` (`exercise-sequence`: quotient, simplified form, limit) | independently demonstrated |
 | Produce the linear approximation at a point and use it to estimate a nearby value | D3/D4 | lesson | E3 | `der-linearize-estimate` (`numeric`, fresh function) | independently demonstrated |
 | Answer a **rate** question with a slope and a **slope** question with a rate, on one graph | D4/D13 | lesson | E3 | `der-three-names` (`exercise-sequence`, both directions, units required) | independently demonstrated |
-| Refute "a tangent touches at one point and does not cross" with a specific curve and point | D7/D13 | lesson | E4 | `der-tangent-crosses` (`construct`, predicate-graded: any inflection point of a supplied family) | independently demonstrated |
-| Decide differentiability from an unfamiliar graph and justify by the zoom | D3/D7 | lesson | E3 | `der-differentiable-graph` (`exercise-sequence`, typed reason) | independently demonstrated |
-| Supply a function continuous at a point but not differentiable there | D7/D13 | lesson | E4 | `der-continuous-not-differentiable` (`construct`, predicate-graded) | independently demonstrated |
-| Sketch/identify \(f'\) from a graph of \(f\) | D4 | lesson | E3 | `der-sketch-derivative` (`multiple-choice` over four plotted candidates, distractors = sign error, shift, and \(f\) itself) | **recognition — recorded as E1–E2, not claimed E3** |
-| State what remains after zooming, in symbols | D5/D13 | lesson | E3 | `der-residual-remains` (`text`, produced) | independently demonstrated |
-| Interpret a derivative in an unfamiliar applied setting, including the **sign** of the linearization error | D9 | lesson | E4 | `der-applied-transfer` (tank volume; three parts) | independently demonstrated |
+| Locate where a tangent meets its curve again, on a cubic with an inflection point | D7 | lesson | **E3** | `der-tangent-crosses` (`exercise-sequence`, tier **drill**: two `numeric` steps — the crossing at the inflection point itself, then the second meeting point) | independently demonstrated — **corrected 2026-07-30**: this row previously claimed E4 on a `construct`/predicate-graded capability that was never built; the shipped item is two fixed-answer numeric questions on \(y=x^3\) (`exercise-sequence`, ceiling E3), and its tier is **drill**, not transfer — it does not belong in the transfer/E4 list below |
+| Decide differentiability from three functions given **by their definitions**, at a marked point | D3/D7 | lesson | **E2** | `der-differentiable-definition` (`exercise-sequence`, all three steps **multiple-choice** yes/no-with-reason) | independently demonstrated — **recognition, corrected 2026-07-30**: this row previously described an unfamiliar-graph item with a "typed reason" step; the shipped item gives algebraic definitions (never a graph — `exercise-sequence` cannot present one, same correction as L1) and, after the MCQ-conversion pass, all three steps are multiple-choice |
+| Supply a function continuous at a point but not differentiable there | D7/D13 | lesson | E4 | `der-corner-slopes` (`construct-in-explorer`, predicate-graded: any pair of differing one-sided slopes) | independently demonstrated — id corrected 2026-07-30 (this row previously named a nonexistent `der-continuous-not-differentiable`) |
+| Recognise \(f'(x)\) among symbolic alternatives for a fresh polynomial | D2 | lesson | E1 | `der-identify-derivative` (`multiple-choice`, distractors = a dropped linear term, a lost coefficient, and an antiderivative) | **recognition only — recorded as E1, not claimed higher.** Id corrected 2026-07-30 (this row previously named a nonexistent `der-sketch-derivative` and described a graph-sketch item that was never built; the shipped item is a symbolic-recognition question, not a graph-reading one) |
+| State what remains after zooming, in symbols | D5/D13 | lesson | **E2** | `der-residual-remains` (`exercise-sequence`, both steps **multiple-choice**) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from typed text; the learner selects the verdict and the reason among stated options |
+| Interpret a derivative in an unfamiliar applied setting, including the **sign** of the linearization error | D9 | lesson | **E2** | `der-applied-transfer` (tank volume; four steps — units and "what the tangent means" and the error's sign are now **multiple-choice**; one `numeric` estimate remains) | independently demonstrated — **recognition, corrected 2026-07-30**: this row previously claimed E4, which `exercise-sequence` (ceiling E3) could never support. After the MCQ-conversion pass, the outcome's actual interpretive content — units, physical meaning, error sign — is recognition; the one remaining numeric step is a mechanical plug-in that does not by itself carry an E3 claim for the bundle |
 | Retain "differentiable ⇒ continuous, not conversely" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-diff-cont` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 | Integrate the derivative with limits and with accumulation on a mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-rate-total` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
-**Transfer:** three D9/E4 outcomes (`der-tangent-crosses`,
-`der-continuous-not-differentiable`, `der-applied-transfer`).
+**Transfer:** two transfer-tier items: `der-corner-slopes` (E4,
+`construct-in-explorer`) and `der-applied-transfer` (E2, recognition — see
+correction above). `der-tangent-crosses` is **drill** tier, not transfer; an
+earlier version of this table grouped it with the E4 claims by tier-labelling
+error, compounding its capability-ceiling overclaim.
 
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome. Independently
-demonstrated: all lesson-owned outcomes except `der-sketch-derivative`, honestly
-recorded as **recognition** — producing a sketch is not machine-gradable with the
-current capability set, and the lesson does not claim it.
+demonstrated at E3 or E4: `der-from-definition-fresh`, `der-linearize-estimate`,
+`der-three-names`, `der-tangent-crosses`, `der-corner-slopes`. Independently
+demonstrated at **recognition (E1/E2)**, honestly recorded rather than claimed
+higher: `der-identify-derivative` (E1 — producing a sketch is not
+machine-gradable with the current capability set, and the lesson does not claim
+it), `der-differentiable-definition`, `der-residual-remains`, and
+`der-applied-transfer` (E2 each, corrected 2026-07-30 — see §1d).
 
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** L1's `ex-parabola` arithmetic reused *unchanged*, so the
   only new thing is the interpretation; L1's forced value cited at C2 by name; LA
   `transformations` cited once at C9.
-- **Assessment:** 2 check, 4 drill, 3 transfer; **recall capped at one**
-  (`der-sketch-derivative`). Every graded item uses a function the guided scenes
-  do not animate, except `der-three-names`, whose point is that it is the scene's
-  own drive trace read two ways.
+- **Assessment:** 2 check, 5 drill, 2 transfer (corrected 2026-07-30 — an earlier
+  version of this line read 2/4/3, miscounting `der-tangent-crosses` as
+  transfer); **recall capped at one** (`der-identify-derivative`). Every graded
+  item uses a function the guided scenes do not animate, except `der-three-names`,
+  whose point is that it is the scene's own drive trace read two ways.
 - **Retention (D12):** differentiable ⇒ continuous but not conversely — the fact
   most likely to invert on recall.
 - **Forward:** L3 (composition of these lines), L4 (linearization as a tool),
@@ -133,19 +141,25 @@ current capability set, and the lesson does not claim it.
 - [x] All §1 fields filled.
 - [x] Outcomes operational, owner-marked, evidence-paired.
 - [x] **Every claimed lesson-owned outcome is independently demonstrated** by a
-      real, auto-graded, in-lesson item. The two that are not claimed are
-      recorded in §1e as recognition (`der-identify-derivative`, E2) and as
-      practised-only (deciding differentiability from a graph).
+      real, auto-graded, in-lesson item. `der-identify-derivative` is recorded in
+      §1e as recognition (E1); deciding differentiability from a **graph** is not
+      claimed (the shipped item uses definitions, not a figure — see §1d).
 - [x] No lesson-owned outcome accepted on planned module evidence.
 - [x] **No claim exceeds its capability ceiling.** One E4 claim, on
       `construct-in-explorer` (ceiling E4); every `exercise-sequence` item is
-      claimed at E3 or below. Asserted by
+      claimed at E3 or below — three are claimed at **E2**
+      (`der-differentiable-definition`, `der-residual-remains`,
+      `der-applied-transfer`; see §1d's 2026-07-30 correction). Asserted by
       `src/lessons/__tests__/derivativeLocalLinearityGradingContract.test.ts`,
       which reads `CAPABILITY_EVIDENCE_CEILING` rather than trusting the prose.
 - [x] **Every claimed evidencing item captures what the outcome says.** No item
       claims to present a figure its capability cannot render — the correction
       carried forward from L1's review, applied here *before* the lesson was
-      built rather than after.
+      built rather than after. A second-pass finding (2026-07-30): three ids
+      (`der-sketch-derivative`, `der-continuous-not-differentiable`) and one
+      capability name (`construct` for `der-tangent-crosses`) named items that
+      were never built as described; all three rows are corrected in §1d to
+      match the shipped code.
 - [x] Assessment set matches §1f; recall capped at one; two transfer-tier items.
 - [x] Module-owned outcomes carried forward as Gate-9 obligations.
 - [x] Forward edges recorded (L4 consumes C5 verbatim).
@@ -206,3 +220,32 @@ Regressions in `calculusExplorerLayout.test.tsx` pin all of it — including one
 asserting that the raw symmetric quotient *still* returns 0 at the vertex. The
 trap is recorded rather than removed, so the next person to reach for
 `numericDerivative` sees why not.
+
+### Correction, 2026-07-30 (package-level semantic re-review)
+
+This contract had drifted furthest from the shipped code of any Package A
+lesson, in two independent ways:
+
+1. **Stale ids and descriptions, present before the MCQ-conversion pass.**
+   `der-sketch-derivative` and `der-continuous-not-differentiable` named items
+   that were never built as described — the real ids are
+   `der-identify-derivative` (a symbolic-recognition question, not a graph
+   sketch) and `der-corner-slopes` (matches, just renamed). `der-tangent-crosses`
+   was described as an open `construct`, predicate-graded E4 item; the shipped
+   item is two fixed-answer `numeric` questions at **drill** tier, not transfer,
+   on `exercise-sequence` (ceiling E3) — an outright capability-ceiling
+   overclaim independent of anything the MCQ-conversion pass touched.
+   `der-applied-transfer` was claimed at E4 on `exercise-sequence`, which cannot
+   support it; the tier mix stated in §1f (2/4/3) also did not match the shipped
+   9 items (2/5/2).
+2. **Evidence-level overclaims from the MCQ-conversion pass.**
+   `der-differentiable-definition` and `der-residual-remains` had every step
+   converted to `multiple-choice` but kept their E3 claim because
+   `exercise-sequence`'s ceiling still permits it; `der-applied-transfer`'s
+   interpretive steps (units, meaning, error sign) were similarly converted,
+   leaving only one incidental numeric step.
+
+All are corrected in §1d–§1f above to the level the shipped interaction
+actually supports, following the same standard applied to L1, L3, and L4: a
+capability's ceiling bounds what an item may claim, not what a specific item
+has earned.

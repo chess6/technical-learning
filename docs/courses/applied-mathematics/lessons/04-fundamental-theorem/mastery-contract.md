@@ -58,24 +58,30 @@ This is the **flagship of Package A**.
 
 | Outcome | Dim | Owner | Level | Evidence | Attainment |
 | --- | --- | --- | --- | --- | --- |
-| Evaluate a fresh definite integral via an antiderivative, verifying the antiderivative by differentiating it | D3 | lesson | E3 | `ftc-evaluate-fresh` (`exercise-sequence`: propose \(F\) → verify \(F'=f\) → evaluate) | independently demonstrated |
+| Evaluate a fresh definite integral via an antiderivative, verifying the antiderivative by differentiating it | D3 | lesson | E3 | `ftc-evaluate-fresh` (`exercise-sequence`: verify \(F'=f\) (`numeric`) → does it match at that point only or identically (**`multiple-choice`** since 2026-07-30) → evaluate (`numeric`)) | independently demonstrated — the E3 claim rests on the two produced numeric steps; the middle conceptual check is recognition |
 | Differentiate an integral with a variable upper limit | D3 | lesson | E3 | `ftc-differentiate-integral` (`numeric`/expression, fresh integrand) | independently demonstrated |
-| Carry out the telescoping cancellation on an **unequal** partition and state how many survive | D6/D7 | lesson | E3 | `ftc-telescope-count` (`exercise-sequence`: which terms cancel → how many remain → which) | independently demonstrated |
-| Explain, without notation, why unboundedly many contributions collapse to two evaluations | D6/D13 | lesson | E3 | `ftc-why-collapse` (`text`, produced) | independently demonstrated |
-| Say what changes if \(F\) is replaced by \(F+C\), and why | D5/D13 | lesson | E3 | `ftc-constant-cancels` (`text`) | independently demonstrated |
-| Say what changes if the **lower limit** of \(A\) is moved | D5/D13 | lesson | **E2** | `ftc-lower-limit-shift` (`multiple-choice` over four \(A\) plots — correct = vertically shifted, same slope) | **recognition — recorded as E2** |
-| State what the theorem does **not** promise, with a counterexample | D5/D13 | lesson | **E3** | `ftc-no-elementary-antiderivative` (`text`, must name a specific integrand) | independently demonstrated |
-| Predict what would be observably wrong if the theorem were false | D9 | lesson | **E3** | `ftc-falsify` (`text`, produced) | independently demonstrated |
-| Recognise the telescoping mechanism in an unfamiliar, calculus-free setting | D9 | lesson | **E3** | `ftc-telescope-transfer` (\(\sum(1/k - 1/(k+1))\); evaluate, then identify which step of the argument it is and what plays \(F\)) | independently demonstrated |
-| Reconcile the two computations of \(\int_0^2 x^2\) | D10 | lesson | E3 | `ftc-corroborate` (`numeric` + `text`: both values, and why agreement is evidence) | independently demonstrated |
+| Carry out the telescoping cancellation on an **unequal** partition and state how many survive | D6/D7 | lesson | E3 | `ftc-telescope-count` (`exercise-sequence`: which terms cancel (`multiple-choice`) → how many remain (**`numeric`**, produced) → which (`multiple-choice`)) | independently demonstrated — the E3 claim rests on the produced count, which is this outcome's substance |
+| Explain, without notation, why unboundedly many contributions collapse to two evaluations | D6/D13 | lesson | **E2** | `ftc-why-collapse` (**`multiple-choice`**) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from a typed one-phrase answer; the learner now selects the reason among four choices |
+| Say what changes if \(F\) is replaced by \(F+C\), and why | D5/D13 | lesson | **E2** | `ftc-constant-cancels` (`exercise-sequence`, both steps **multiple-choice**) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from typed text |
+| Say what changes if the **lower limit** of \(A\) is moved | D5/D13 | lesson | **E2** | `ftc-lower-limit-shift` (`multiple-choice` over four **prose statements** — correct = vertically shifted, same slope) | **recognition — recorded as E2.** Description corrected 2026-07-30: the shipped item's four choices are prose claims, not four plotted \(A\) graphs as this row and the lesson-plan previously stated; the mastery-contract's own evidence-ceiling reconciliation table below already recorded this as `multiple-choice`, but the plotted-candidates description had not been corrected to match |
+| State what the theorem does **not** promise, with a counterexample | D5/D13 | lesson | **E2** | `ftc-no-elementary-antiderivative` (`exercise-sequence`, both steps **multiple-choice** since 2026-07-30 — the second now selects among four listed integrands rather than naming one) | independently demonstrated — **recognition**: this row's E3 reconciliation (below) rested on a `text` step that no longer exists |
+| Predict what would be observably wrong if the theorem were false | D9 | lesson | **E2** | `ftc-falsify` (**`multiple-choice`**) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from typed text |
+| Recognise the telescoping mechanism in an unfamiliar, calculus-free setting | D9 | lesson | **E3** | `ftc-telescope-transfer` (\(\sum(1/k - 1/(k+1))\); evaluate (`numeric`) → identify which step of the argument it is (`multiple-choice`) → what plays \(F\) (**`text`**, produced) | independently demonstrated — unaffected by the MCQ-conversion pass; both flanking productions are this outcome's substance |
+| Reconcile the two computations of \(\int_0^2 x^2\) | D10 | lesson | E3 | `ftc-corroborate` (`numeric` + `numeric`: both values produced; why agreement counts as evidence is now **`multiple-choice`**, converted from `text`) | independently demonstrated — the E3 claim rests on the two independently produced values, which are the corroboration itself |
 | Retain "the theorem gives existence, not a formula" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-existence` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 | Integrate the FTC with the derivative and the Riemann sum on one mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-ftc` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer:** four transfer-*tier* items (`ftc-no-elementary-antiderivative`,
-`ftc-falsify`, `ftc-telescope-transfer`, `ftc-corroborate`); the first three are
-this lesson's D9 outcomes, reconciled to **E3** below; the fourth is D10
-(cumulative). `ftc-lower-limit-shift` is **not** a transfer-tier item — it is the
-one recall-capped `check`-tier item (D5/D13, recognition, E2) — and was wrongly
+`ftc-falsify`, `ftc-telescope-transfer`, `ftc-corroborate`). Two are now
+recognition (`ftc-no-elementary-antiderivative`, `ftc-falsify` — **E2**,
+corrected 2026-07-30: both were reconciled to E3 at build time on a `text`
+step that the MCQ-conversion pass later converted to `multiple-choice`); two
+remain **E3** (`ftc-telescope-transfer`, `ftc-corroborate` — each keeps at
+least one genuine produced value that carries the outcome). Transfer *tier*
+(unfamiliar context) and evidence *level* (how the response is captured) are
+independent: a transfer-tier item can honestly be recognition.
+`ftc-lower-limit-shift` is **not** a transfer-tier item — it is the one
+recall-capped `check`-tier item (D5/D13, recognition, E2) — and was wrongly
 grouped with the D9 outcomes in an earlier draft of this table.
 
 ### Evidence-ceiling reconciliation *(applied at build, 2026-07-29)*
@@ -105,11 +111,41 @@ above its capability's ceiling, and the tier mix (2 check, 4 drill, 4 transfer)
 holds with `ftc-lower-limit-shift` and `ftc-differentiate-integral` as the two
 `check`-tier items.
 
+### Second reconciliation, 2026-07-30 (post-MCQ-conversion, package-level re-review)
+
+A follow-up sweep converted several ambiguous free-text steps across Package A
+to multiple-choice — including three of the four items the table above had
+just reconciled to E3 on a `text` step. The re-review found the E3 claim no
+longer held once that step became `multiple-choice`:
+
+| Item | Was (first reconciliation) | Now | Why |
+| --- | --- | --- | --- |
+| `ftc-why-collapse` | E3 (`text`, produced) | **E2** | its only step converted to multiple-choice |
+| `ftc-constant-cancels` | E3 (`text`) | **E2** | both steps converted to multiple-choice |
+| `ftc-no-elementary-antiderivative` | E3 (`text`, must name a specific integrand) | **E2** | both steps converted to multiple-choice; the second now selects among four listed integrands |
+| `ftc-falsify` | E3 (`text`, produced) | **E2** | its only step converted to multiple-choice |
+
+Two transfer-tier items with a `text` step at the first reconciliation keep
+their E3 claim because that step was **not** converted, or a sibling `numeric`
+step still carries the outcome: `ftc-telescope-transfer` (its "what plays
+\(F\)" step is still `text`, produced) and `ftc-corroborate` (both computed
+values are `numeric`; only its "why is this evidence" step became
+multiple-choice). `ftc-evaluate-fresh` and `ftc-telescope-count` also had one
+step converted each, but each keeps at least one genuine `numeric` production
+carrying the claimed outcome — see §1d. The same standard is applied across
+all four Package A lessons: a capability's ceiling bounds what an item may
+claim, not what a specific item's actual steps have earned.
+
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome. Independently
-demonstrated: all lesson-owned outcomes except `ftc-lower-limit-shift`, honestly
-recorded as **recognition (E2)** — the learner selects among plotted candidates
-rather than producing a plot.
+demonstrated at E3: `ftc-differentiate-integral`, `ftc-evaluate-fresh`,
+`ftc-telescope-count`, `ftc-telescope-transfer`, `ftc-corroborate`.
+Independently demonstrated at **recognition (E2)**, honestly recorded rather
+than claimed higher: `ftc-lower-limit-shift` (by design — the learner selects
+among four prose statements rather than producing one) and, corrected
+2026-07-30, `ftc-why-collapse`, `ftc-constant-cancels`,
+`ftc-no-elementary-antiderivative`, `ftc-falsify` (see the second
+reconciliation above).
 
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** the strongest in Package A. L3's `8/3` recomputed and
@@ -170,9 +206,11 @@ a demonstration.
 - [x] Insight contract linked and `PASS` — linked; PASS recorded.
 - [x] All §1 fields filled.
 - [x] Outcomes operational, owner-marked, evidence-paired.
-- [x] **Every lesson-owned** core outcome independently demonstrated, with the
-      recorded recognition-level exception (`ftc-lower-limit-shift`, E2)
-      declared as such.
+- [x] **Every lesson-owned** core outcome independently demonstrated, with
+      recognition-level outcomes declared as such: `ftc-lower-limit-shift` (by
+      design) and, corrected 2026-07-30, `ftc-why-collapse`,
+      `ftc-constant-cancels`, `ftc-no-elementary-antiderivative`, `ftc-falsify`
+      (see the second reconciliation in §1d).
 - [x] No lesson-owned outcome accepted on planned module evidence.
 - [x] Assessment set matches §1f (2 check, 4 drill, 4 transfer); recall capped
       at one; transfer items present —
@@ -218,3 +256,41 @@ a demonstration.
   [known-failure-modes.md](../../../../quality/known-failure-modes.md#latex-glyph-identities-are-not-stable-across-a-scene-reset-and-can-fail-seek-determinism)
   rather than left undiagnosed. Every other hard gate, for both A4 scenes,
   passes.
+
+### Corrections, 2026-07-30 (package-level semantic re-review, second pass)
+
+Four defects found in the follow-up review, all fixed in code with regressions
+before this record was updated:
+
+- **Evidence-level over-claims from the MCQ-conversion pass.** Four items'
+  E3 claims from the first reconciliation (above) rested on a `text` step that
+  the conversion pass later replaced with `multiple-choice`. Corrected to E2 —
+  see the second reconciliation in §1d.
+- **`ftc-telescoping`'s `E_i` visualization compared the wrong quantities.**
+  The equation and `E_0` label correctly computed the local-linear residual
+  \(F(x_{i+1})-F(x_i)-f(x_i)\Delta x_i\), but the drawn red geometry was a
+  segment between \(f(x_i)\) and \(f(x_{i+1})\) — a rate difference, different
+  units, not this quantity. Fixed by drawing the marker on the \(F\)-panel
+  between the local-linear prediction and the true value
+  (`residualEndpoints`, `src/math/calculus.ts`), with regressions pinning that
+  its endpoints' difference equals `residual()` exactly. Verified in the
+  learner player: the corrected marker renders at the right place, matching
+  the `E_0` label.
+- **Five learner-facing strings overclaimed "no antiderivative" for
+  \(e^{-x^2}\).** FTC guarantees the antiderivative exists; only an elementary
+  formula is missing. All five (in `FundamentalTheoremExplorer.tsx`) reworded
+  to name the elementary-formula gap precisely.
+- **\(A'(x)\) at the running total's domain endpoints was numerically wrong**
+  (the explorer's own epsilon clamp, not this contract's math, was the cause):
+  an epsilon clamp on `A`'s argument turned a symmetric difference at
+  \(x=a\) into approximately half the true derivative. Fixed with
+  `boundaryAwareDerivative` (a centered difference away from the domain's
+  ends, one-sided within it), with regressions at both endpoints, an interior
+  point, and a second fixture.
+
+`cancelContributions` (shared by this lesson's explorer and
+`ftc-telescoping`) was also hardened in the same review pass to require
+matching magnitude, not just opposite sign, before treating two contributions
+as cancelling — needed for the planned `greens-theorem` shared-edge reuse, not
+observable in this lesson's own fixtures (its two occurrences of any shared
+point are always exactly equal by construction).

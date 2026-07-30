@@ -100,13 +100,13 @@ One rate trace. Rectangles that are products. A total that builds beneath.
 
 | # | Objective | Type | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- |
-| 1 | `int-units-fresh` — what does this integral compute, in what units? | `text`, produced (axes only, no story) | the quantity + units | Rejects "area"; re-derives the units from the product. |
-| 2 | `int-estimate-table` — estimate from a fresh table; high or low, and why | `exercise-sequence` | sum, verdict, typed reason | Names monotonicity as the reason the verdict is knowable. |
+| 1 | `int-units-fresh` — what does this integral compute, in what units? | `exercise-sequence`, both steps multiple-choice (E2; converted from typed text 2026-07-30) | the quantity + units | Rejects "area"; re-derives the units from the product. |
+| 2 | `int-estimate-table` — estimate from a fresh table; high or low, and why | `exercise-sequence`: sum (`numeric`) → verdict, reason (multiple-choice since 2026-07-30) | sum, verdict, reason | Names monotonicity as the reason the verdict is knowable. |
 | 3 | `int-parabola-from-sum` — \(\int_0^2 x^2\) from the sum | `exercise-sequence` (\(S_n\) → limit) | \(8/3\) | Shows the closed form and the \(1/n\) bracket; **no antiderivative in the feedback**. |
 | 4 | `int-signed-transfer` — a current trace going negative | `exercise-sequence` (units → sign → "can the final total be below the maximum?") | charge in coulombs; yes | The area model predicts "no"; the total model predicts "yes". |
-| 5 | `int-read-running-total` — read \(A\) against \(f\) at four marked points | `exercise-sequence` | rising / flat / falling / steepest | Ties the slope of \(A\) to the height of \(f\) **without naming the FTC** — the observation is left standing for L4. |
-| 6 | `int-scale-invariance` — why redrawing does not change the answer | `text`, produced | the product is unchanged | The checkpoint made general. |
-| 7 | `int-same-machine` — current → charge and power → energy | `exercise-sequence`, units in both | per-setting | One construction, different meters. |
+| 5 | `int-read-running-total` — read \(A\) against \(f\) at four marked points | `exercise-sequence`, all four steps multiple-choice (E2; converted from typed judgments 2026-07-30) | rising / flat / falling / steepest | Ties the slope of \(A\) to the height of \(f\) **without naming the FTC** — the observation is left standing for L4. |
+| 6 | `int-scale-invariance` — why redrawing does not change the answer | `exercise-sequence`, both steps multiple-choice (E2; converted from typed text 2026-07-30) | the product is unchanged | The checkpoint made general. |
+| 7 | `int-same-machine` — current → charge and power → energy | `exercise-sequence`; naming the quantity is multiple-choice (since 2026-07-30), both amounts are `numeric` | per-setting | One construction, different meters. |
 | 8 | `int-bracket-fails` — which rate graph breaks left/right bracketing? | `multiple-choice` (4 graphs) | the non-monotone one | **Recorded as recognition.** Distractors are monotone increasing, decreasing, and constant. |
 
 > **Note on Ex. 5.** It deliberately walks the learner to the edge of the FTC —

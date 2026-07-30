@@ -53,20 +53,22 @@ Gate 5 for **`integral-accumulation`**, after [insight.md](insight.md) reached `
 
 | Outcome | Dim | Owner | Level | Evidence | Attainment |
 | --- | --- | --- | --- | --- | --- |
-| State what an integral computes in an unfamiliar applied setting, **with units**, before computing | D4/D13 | lesson | E3 | `int-units-fresh` (`text`, produced; axes given, no journey) | independently demonstrated |
-| Estimate an integral from a fresh table by partitioning, and say whether the estimate is high or low with a reason | D3 | lesson | E3 | `int-estimate-table` (`exercise-sequence`: sum → verdict → typed reason) | independently demonstrated |
-| Compute \(\int_0^2 x^2\) from the Riemann sum, with no antiderivative available | D3/D6 | lesson | E3 | `int-parabola-from-sum` (`exercise-sequence`: \(S_n\) → limit) | independently demonstrated |
+| State what an integral computes in an unfamiliar applied setting, **with units**, before computing | D4/D13 | lesson | **E2** | `int-units-fresh` (`exercise-sequence`, both steps **multiple-choice**; axes given, no journey) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from typed text; the learner selects the quantity and its unit among stated options rather than producing them |
+| Estimate an integral from a fresh table by partitioning, and say whether the estimate is high or low with a reason | D3 | lesson | E3 | `int-estimate-table` (`exercise-sequence`: sum (**`numeric`**, a genuine computation from raw table readings) → verdict → reason, the latter two now **multiple-choice** since 2026-07-30) | independently demonstrated — the E3 claim rests on the produced sum, not the bundle; the verdict/reason steps are recognition |
+| Compute \(\int_0^2 x^2\) from the Riemann sum, with no antiderivative available | D3/D6 | lesson | E3 | `int-parabola-from-sum` (`exercise-sequence`: \(S_n\) → limit) | independently demonstrated — unaffected by the MCQ-conversion pass |
 | Predict the sign of an integral from the rate, and explain a total ending below its own maximum | D5/D9 | lesson | E4 | `int-signed-transfer` (`construct-in-explorer`: construct a two-piece current whose charge ends below its maximum) | independently demonstrated |
-| Read a running-total graph against its rate graph: rising, falling, flat, steepest | D4 | lesson | E3 | `int-read-running-total` (`exercise-sequence` over four marked points) | independently demonstrated |
-| Explain why redrawing the graph at another scale does not change the integral | D5/D13 | lesson | **E3** | `int-scale-invariance` (`exercise-sequence`: verdict → which factor survives) | independently demonstrated |
-| Recognise the construction in a different meter (current → charge, power → energy) | D4/D10 | lesson | E3 | `int-same-machine` (`exercise-sequence`, units in both settings) | independently demonstrated |
+| Read a running-total graph against its rate graph: rising, falling, flat, steepest | D4 | lesson | **E2** | `int-read-running-total` (`exercise-sequence` over four marked points, all four steps **multiple-choice**) | independently demonstrated — **recognition, corrected 2026-07-30**: converted from typed judgments; the three rising/flat/falling steps and the "when does it climb fastest" step are all now selections among stated options |
+| Explain why redrawing the graph at another scale does not change the integral | D5/D13 | lesson | **E2** | `int-scale-invariance` (`exercise-sequence`: verdict (`multiple-choice`, unaffected) → which factor survives, now also **multiple-choice**) | independently demonstrated — **recognition, corrected 2026-07-30**: the surviving-factor step was converted from typed text; both steps are now selection |
+| Recognise the construction in a different meter (current → charge, power → energy) | D4/D10 | lesson | E3 | `int-same-machine` (`exercise-sequence`: naming the quantity+units is now **multiple-choice**, but both amounts (charge=20, energy=240) are still produced by `numeric` computation) | independently demonstrated — the E3 claim rests on the two produced quantities, not the naming steps |
 | Identify where left/right bracketing **fails** | D7 | lesson | **E2** | `int-bracket-fails` (`multiple-choice` over four rate descriptions; correct = the non-monotone one) | **recognition — recorded as E2** |
 | Retain "the integral is signed" under delayed retrieval | D12 | **module** | E3 | `mod-calcfound-retain-signed` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 | Integrate accumulation with the derivative on a mixed item | D10 | **module** | E5 | `mod-calcfound-mixed-rate-total` (module `calculus-foundations`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer:** three transfer-*tier* items (`int-signed-transfer`,
-`int-scale-invariance`, `int-same-machine`). Exactly **one E4 evidence claim**,
-and it rests on the one open construction.
+`int-scale-invariance`, `int-same-machine`). One E4 evidence claim, resting on
+the one open construction; `int-same-machine` at E3 (two produced quantities);
+`int-scale-invariance` at **E2** (recognition, corrected 2026-07-30 — see the
+reconciliation below).
 
 ### Evidence-ceiling reconciliation *(applied at build, 2026-07-28)*
 
@@ -86,12 +88,38 @@ The ceiling was not bent to fit the contract. `integralAccumulationGradingContra
 asserts the resulting shape — one open construction, and no claim above its
 capability's ceiling.
 
+### Second reconciliation, 2026-07-30 (post-MCQ-conversion, package-level re-review)
+
+A follow-up sweep converted several ambiguous free-text steps across Package A
+to multiple-choice. The re-review found three items in this lesson had kept
+their E3 claim solely because `exercise-sequence`'s ceiling still permits E3,
+even though every step is now `multiple-choice`:
+
+| Item | Was | Now | Why |
+| --- | --- | --- | --- |
+| `int-units-fresh` | E3 | **E2** | both steps converted to multiple-choice |
+| `int-read-running-total` | E3 | **E2** | all four steps converted to multiple-choice |
+| `int-scale-invariance` | E3 | **E2** | its remaining `text` step converted to multiple-choice |
+
+Two items keep E3 because a genuine `numeric` production still carries the
+outcome, even though a sibling step in the same sequence was also converted:
+`int-estimate-table` (the sum is computed from raw table data, not selected)
+and `int-same-machine` (both quantities — charge and energy — are computed,
+only their names are now selected). `int-parabola-from-sum` and
+`int-signed-transfer` were untouched by the conversion pass. The same standard
+— a capability's ceiling is a maximum, not proof a given item reaches it — is
+applied across all four Package A lessons.
+
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome. Independently
-demonstrated: all lesson-owned outcomes except `int-bracket-fails`, honestly
-recorded as **recognition (E2)** — the learner selects the failing graph rather
-than constructing a counterexample, which would need machinery this lesson does
-not have.
+demonstrated at E3/E4: `int-estimate-table`, `int-parabola-from-sum`,
+`int-signed-transfer`, `int-same-machine`. Independently demonstrated at
+**recognition (E2)**, honestly recorded rather than claimed higher:
+`int-bracket-fails` (the learner selects the failing graph rather than
+constructing a counterexample, which would need machinery this lesson does not
+have), and — corrected 2026-07-30 — `int-units-fresh`, `int-read-running-total`,
+`int-scale-invariance` (converted to multiple-choice; see the second
+reconciliation above).
 
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** L1's forced value cited by name at the refinement beat;
@@ -144,8 +172,11 @@ not have.
 - [x] Insight contract linked and `PASS`.
 - [x] All §1 fields filled.
 - [x] Outcomes operational, owner-marked, evidence-paired.
-- [x] **Every lesson-owned** core outcome independently demonstrated, with the
-      one recognition-level outcome declared at E2 rather than claimed higher.
+- [x] **Every lesson-owned** core outcome independently demonstrated, with
+      recognition-level outcomes declared at E2 rather than claimed higher:
+      `int-bracket-fails` (by design) and, corrected 2026-07-30,
+      `int-units-fresh`, `int-read-running-total`, `int-scale-invariance` (see
+      the second reconciliation above).
 - [x] No lesson-owned outcome accepted on planned module evidence.
 - [x] Assessment set matches §1f (2 check / 3 drill / 3 transfer); recall capped
       at one; three transfer items present.
