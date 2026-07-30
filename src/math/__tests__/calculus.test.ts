@@ -570,4 +570,70 @@ describe("generic cancellation (parameterized over cancelling pairs, not interva
     expect(() => cancelContributions([])).toThrow(/at least one/);
     expect(() => intervalContributions((x) => x, [1])).toThrow(/at least two/);
   });
+
+  describe("magnitude validation — required for a future shared-edge (Green's theorem) reuse", () => {
+    // A shared edge cancels only when both sides agree on the edge's value.
+    // Opposite sign alone is not enough: two independently-computed sides
+    // that disagree are a real inconsistency, not a telescoping identity, and
+    // must stay visible rather than vanish.
+
+    it("cancels equal-magnitude, opposite-sign contributions", () => {
+      const equal: SignedContribution[] = [
+        { id: "AB", sign: 1, value: 5, label: "edge AB (cell 1 side)" },
+        { id: "AB", sign: -1, value: 5, label: "edge AB (cell 2 side)" },
+      ];
+      const report = cancelContributions(equal);
+      expect(report.cancellingCount).toBe(1);
+      expect(report.survivors).toHaveLength(0);
+    });
+
+    it("does NOT cancel opposite-sign contributions with unequal magnitude", () => {
+      const unequal: SignedContribution[] = [
+        { id: "AB", sign: 1, value: 5, label: "edge AB (cell 1 side)" },
+        { id: "AB", sign: -1, value: 5.4, label: "edge AB (cell 2 side)" },
+      ];
+      const report = cancelContributions(unequal);
+      expect(report.cancellingCount).toBe(0);
+      expect(report.survivors).toHaveLength(2);
+      expect(report.survivors.map((s) => s.value).sort()).toEqual([5, 5.4]);
+    });
+
+    it("cancels within the default tolerance — floating-point drift from two independent computations", () => {
+      const withinTolerance: SignedContribution[] = [
+        { id: "AB", sign: 1, value: 5, label: "edge AB (cell 1 side)" },
+        { id: "AB", sign: -1, value: 5 + 1e-10, label: "edge AB (cell 2 side)" },
+      ];
+      expect(cancelContributions(withinTolerance).cancellingCount).toBe(1);
+    });
+
+    it("does not cancel just outside a caller-supplied tolerance", () => {
+      const justOutside: SignedContribution[] = [
+        { id: "AB", sign: 1, value: 5, label: "edge AB (cell 1 side)" },
+        { id: "AB", sign: -1, value: 5.01, label: "edge AB (cell 2 side)" },
+      ];
+      expect(cancelContributions(justOutside, 1e-3).cancellingCount).toBe(0);
+      expect(cancelContributions(justOutside, 1e-1).cancellingCount).toBe(1);
+    });
+
+    it("still cancels the existing interval and shared-edge fixtures under magnitude validation", () => {
+      // Regression guard: the two tests above this describe block must keep
+      // passing now that magnitude is checked, since every real contribution
+      // in this codebase is built from the same value evaluated twice.
+      const points = partitionPoints(0, 2, 5, "unequal");
+      const contributions = intervalContributions(EX_PARABOLA.antiderivative!, points);
+      expect(cancelContributions(contributions).cancellingCount).toBe(points.length - 2);
+    });
+
+    it("a mismatched pair keeps BOTH sides visible in survivors, not just one", () => {
+      const contributions: SignedContribution[] = [
+        { id: "out1", sign: 1, value: 4, label: "outer edge 1" },
+        { id: "AB", sign: 1, value: 10, label: "edge AB (cell 1 side)" },
+        { id: "AB", sign: -1, value: 9.5, label: "edge AB (cell 2 side, inconsistent)" },
+        { id: "out3", sign: 1, value: 7, label: "outer edge 3" },
+      ];
+      const report = cancelContributions(contributions);
+      expect(report.cancellingCount).toBe(0);
+      expect(report.survivors.map((s) => s.id).sort()).toEqual(["AB", "AB", "out1", "out3"]);
+    });
+  });
 });

@@ -770,15 +770,34 @@ export interface GenericCancellationReport {
 }
 
 /**
- * Cancel contributions purely by id and sign — no interval, no order, no
+ * The magnitude tolerance `cancelContributions` uses to decide whether two
+ * opposite-signed contributions are the SAME shared value (and therefore
+ * genuinely cancel) or merely share an id by coincidence. The interval case
+ * (`intervalContributions`) needs no slack at all — both occurrences call the
+ * same pure `F` on the identical bit-pattern input, so they are `===`. This
+ * default exists for the case the interval adapter doesn't hit: a future
+ * shared-edge caller (`greens-theorem`) where each side of the edge is
+ * computed independently (e.g. by two different cells' own quadrature), so
+ * floating-point drift can make an honestly-equal pair only approximately
+ * equal.
+ */
+export const CANCELLATION_MAGNITUDE_TOLERANCE = 1e-9;
+
+/**
+ * Cancel contributions by id, sign, AND magnitude — no interval, no order, no
  * notion of "adjacent". A contribution cancels iff exactly one other
- * contribution shares its id and their signs sum to zero; everything else
- * survives, including an id that appears once, three or more times, or twice
- * with the SAME sign (which is a bookkeeping error the caller should see, not
- * a silent cancellation).
+ * contribution shares its id, their signs sum to zero, AND their `value`s
+ * agree within `tolerance`. Everything else survives: an id that appears
+ * once, three or more times, twice with the SAME sign (a bookkeeping error
+ * the caller should see, not a silent cancellation), or twice with opposite
+ * sign but DIFFERENT magnitude — the case a shared-edge/shared-face reuse
+ * (`greens-theorem`, `stokes-theorem`, `divergence-theorem`) must not treat as
+ * cancelling, since an edge traversed with unequal contributions from its two
+ * sides is a real inconsistency, not a telescoping identity.
  */
 export function cancelContributions(
   contributions: readonly SignedContribution[],
+  tolerance = CANCELLATION_MAGNITUDE_TOLERANCE,
 ): GenericCancellationReport {
   if (contributions.length === 0) {
     throw new Error("cancelContributions: need at least one contribution.");
@@ -793,7 +812,10 @@ export function cancelContributions(
   let cancellingCount = 0;
   for (const group of byId.values()) {
     const net = group.reduce((sum, c) => sum + c.sign, 0);
-    if (group.length === 2 && net === 0) {
+    const magnitudesAgree =
+      group.length === 2 &&
+      Math.abs(group[0]!.value - group[1]!.value) <= tolerance;
+    if (group.length === 2 && net === 0 && magnitudesAgree) {
       cancellingCount += 1;
     } else {
       survivors.push(...group);
