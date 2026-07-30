@@ -736,6 +736,96 @@ export function cancellationReport(
   };
 }
 
+/* ---------------------------------------------------- generic cancellation */
+
+/**
+ * One signed contribution to a telescoping sum: `sign * value`, tagged by an
+ * `id` shared with the OTHER contribution it cancels against.
+ *
+ * `telescopingTerms`/`cancellationReport` above assume the special case of a
+ * single ordered chain over a 1D interval, where "cancelling pair" and
+ * "shared interior partition point" are the same thing — the survivor count
+ * is always the two ends because a chain always has exactly two ends. That
+ * assumption is exactly what breaks for `greens-theorem` (L34): two adjacent
+ * cells of a subdivided region share an INTERIOR EDGE, traversed once in each
+ * orientation, and interior edges are not consecutive terms of any single 1D
+ * order — the "chain" is a graph, not a line. `cancelContributions` makes no
+ * assumption about order, arity, or what a "position" even is beyond "two
+ * contributions sharing an id and summing to zero cancel" — the general
+ * statement of what telescoping actually is, of which the interval case
+ * (`intervalContributions`, below) is one instance among others.
+ */
+export interface SignedContribution {
+  readonly id: string;
+  readonly sign: 1 | -1;
+  readonly value: number;
+  /** Learner-facing label, e.g. `"F(x_2)"` or `"edge AB"`. */
+  readonly label: string;
+}
+
+export interface GenericCancellationReport {
+  readonly termCount: number;
+  readonly cancellingCount: number;
+  readonly survivors: readonly SignedContribution[];
+}
+
+/**
+ * Cancel contributions purely by id and sign — no interval, no order, no
+ * notion of "adjacent". A contribution cancels iff exactly one other
+ * contribution shares its id and their signs sum to zero; everything else
+ * survives, including an id that appears once, three or more times, or twice
+ * with the SAME sign (which is a bookkeeping error the caller should see, not
+ * a silent cancellation).
+ */
+export function cancelContributions(
+  contributions: readonly SignedContribution[],
+): GenericCancellationReport {
+  if (contributions.length === 0) {
+    throw new Error("cancelContributions: need at least one contribution.");
+  }
+  const byId = new Map<string, SignedContribution[]>();
+  for (const c of contributions) {
+    const group = byId.get(c.id);
+    if (group) group.push(c);
+    else byId.set(c.id, [c]);
+  }
+  const survivors: SignedContribution[] = [];
+  let cancellingCount = 0;
+  for (const group of byId.values()) {
+    const net = group.reduce((sum, c) => sum + c.sign, 0);
+    if (group.length === 2 && net === 0) {
+      cancellingCount += 1;
+    } else {
+      survivors.push(...group);
+    }
+  }
+  return { termCount: contributions.length, cancellingCount, survivors };
+}
+
+/**
+ * The interval telescoping identity for `F(points[last]) - F(points[0])`,
+ * expressed as generic contributions rather than as a hard-coded chain — the
+ * adapter from THIS lesson's 1D case onto `cancelContributions`, so the same
+ * engine that drives this lesson's picture is the one L34 re-runs over shared
+ * interior edges instead of shared endpoints.
+ */
+export function intervalContributions(
+  F: RealFunction,
+  points: readonly number[],
+): readonly SignedContribution[] {
+  if (points.length < 2) {
+    throw new Error("intervalContributions: need at least two points.");
+  }
+  const out: SignedContribution[] = [];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const lo = points[i]!;
+    const hi = points[i + 1]!;
+    out.push({ id: `x${i}`, sign: -1, value: F(lo), label: `F(x_{${i}})` });
+    out.push({ id: `x${i + 1}`, sign: 1, value: F(hi), label: `F(x_{${i + 1}})` });
+  }
+  return out;
+}
+
 /* ---------------------------------------------------------------- fixtures */
 
 const TAU_DECAY = 1.5;
@@ -976,6 +1066,26 @@ export const EX_POWER: CalculusFixture = {
   turningPoints: [EX_POWER_T1, EX_POWER_T2],
 };
 
+/**
+ * The standing "no elementary antiderivative" counterexample (`fundamental-theorem`,
+ * spine L4). The Fundamental Theorem still applies — `runningTotal`/`riemannSum`
+ * compute \(\int_0^x e^{-t^2}\,dt\) numerically like any other fixture — but no
+ * `antiderivative` is declared here, because none exists in closed form. That
+ * absence is the content: the theorem promises existence, not a formula.
+ */
+export const EX_GAUSSIAN: CalculusFixture = {
+  id: "ex-gaussian",
+  label: "e^(-x²) — no elementary antiderivative",
+  f: (x) => Math.exp(-x * x),
+  domain: [0, 2],
+  derivative: (x) => -2 * x * Math.exp(-x * x),
+  // Strictly decreasing on [0, 2]: f'(x) = -2x e^{-x^2} < 0 for every x > 0, and
+  // 0 only at the left endpoint, so the whole domain is one certified stretch.
+  monotone: true,
+  monotoneIntervals: [[0, 2]],
+  modulus: { omega: (d) => d, label: "\\delta" },
+};
+
 export const CALCULUS_FIXTURES: readonly CalculusFixture[] = [
   EX_DRIVE,
   EX_PARABOLA,
@@ -991,6 +1101,7 @@ export const CALCULUS_FIXTURES: readonly CalculusFixture[] = [
   EX_NON_MONOTONE,
   EX_CURRENT,
   EX_POWER,
+  EX_GAUSSIAN,
 ];
 
 export function getCalculusFixture(id: string): CalculusFixture {
