@@ -492,7 +492,9 @@ describe("generic cancellation (parameterized over cancelling pairs, not interva
     const points = partitionPoints(0, 2, 5, "unequal");
     const contributions = intervalContributions(EX_PARABOLA.antiderivative!, points);
     const report = cancelContributions(contributions);
-    expect(report.termCount).toBe(contributions.length);
+    // Two raw contributions per piece (once as a term's "to", once as the next
+    // term's "from"), so termCount is 2*(pieces), not the piece count itself.
+    expect(report.termCount).toBe(2 * (points.length - 1));
     expect(report.cancellingCount).toBe(points.length - 2); // interior points
     expect(report.survivors).toHaveLength(2);
     const survivorValues = report.survivors.map((s) => s.value).sort((a, b) => a - b);

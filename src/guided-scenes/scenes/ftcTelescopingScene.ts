@@ -245,7 +245,12 @@ export const ftcTelescopingScene = makeScene2D(function* (view) {
 
   const counter = tex(
     () =>
-      `\\begin{gathered} n = ${CANCELLATION.termCount} \\\\ n{-}1 = ${CANCELLATION.cancellingCount} \\\\ \\text{survivors} = ${CANCELLATION.survivors.length} \\end{gathered}`,
+      // n is the piece/term count (STAIRCASE_N), NOT the raw contribution count:
+      // each of the n terms F(x_{i+1})-F(x_i) supplies two raw contributions
+      // (once as a "to", once as the next term's "from"), so `CANCELLATION`'s
+      // own `termCount` is 2n, not n. The narrative "n contributions, n-1
+      // cancellations, two survivors" means n TERMS.
+      `\\begin{gathered} n = ${STAIRCASE_N} \\\\ n{-}1 = ${CANCELLATION.cancellingCount} \\\\ \\text{survivors} = ${CANCELLATION.survivors.length} \\end{gathered}`,
     18,
     ROLE.basis1,
   );

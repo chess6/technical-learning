@@ -1,0 +1,33 @@
+.ftc-explorer__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.ftc-explorer__table caption {
+  text-align: left;
+  padding-bottom: 0.35rem;
+  color: var(--color-text-muted);
+}
+
+.ftc-explorer__table th,
+.ftc-explorer__table td {
+  text-align: right;
+  padding: 0.2rem 0.6rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.ftc-explorer__table th:first-child,
+.ftc-explorer__table td:first-child {
+  text-align: left;
+}
+
+.ftc-explorer__note {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--role-invariant);
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
