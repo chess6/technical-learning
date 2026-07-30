@@ -46,6 +46,21 @@ describe("FundamentalTheoremExplorer", () => {
     expect(after).toContain("2.6667");
   });
 
+  it("shows the per-piece error as a visible nonzero quantity (ledger check P3)", () => {
+    const { container } = render(<FundamentalTheoremExplorer />);
+    fireEvent.click(
+      [...container.querySelectorAll("input")].find((i) => i.id === "error")!,
+    );
+    const rows = [...container.querySelectorAll(".ftc-explorer__table tbody tr")];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const eCell = row.querySelectorAll("td")[2];
+      const value = Number(eCell?.textContent);
+      expect(Number.isFinite(value), row.textContent ?? "").toBe(true);
+      expect(value, `E_i in row: ${row.textContent}`).not.toBe(0);
+    }
+  });
+
   it("the survivor count is 2 whether the partition is equal or unequal", () => {
     const { container } = render(<FundamentalTheoremExplorer />);
     fireEvent.click(

@@ -464,6 +464,21 @@ describe("the Fundamental Theorem (L4)", () => {
     }
   });
 
+  it("keeps the one-step error visibly nonzero on every piece of an unequal partition (ledger check P3)", () => {
+    // Clip 2's `one-step` beat and the explorer's error table both draw
+    // E_i = [F(x_{i+1}) - F(x_i)] - f(x_i) * dx_i on this exact partition
+    // shape. F(x) = x^3/3 is genuinely curved, so no piece may show E_i = 0 --
+    // a zero would silently teach that the local-linear model is exact.
+    const points = partitionPoints(0, 2, 5, "unequal");
+    const F = EX_PARABOLA.antiderivative!;
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const x0 = points[i]!;
+      const dx = points[i + 1]! - x0;
+      const e = residual(F, x0, EX_PARABOLA.f(x0), dx);
+      expect(Math.abs(e), `piece ${i}`).toBeGreaterThan(0);
+    }
+  });
+
   it("applies to e^(-x^2): the theorem holds numerically with no elementary antiderivative", () => {
     // The standing counterexample (`not-a-recipe`, clip 2). No `antiderivative`
     // is declared — none exists in closed form — so the only route to a number

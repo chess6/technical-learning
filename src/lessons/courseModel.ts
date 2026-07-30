@@ -173,13 +173,7 @@ export const CURRICULUM: readonly Subject[] = [
               { kind: "lesson", lessonId: "limits-continuity" },
               { kind: "lesson", lessonId: "derivative-local-linearity" },
               { kind: "lesson", lessonId: "integral-accumulation" },
-              {
-                kind: "future",
-                id: "fundamental-theorem",
-                title: "The Fundamental Theorem of Calculus",
-                subtitle:
-                  "Everything in the middle cancels; only the two ends survive",
-              },
+              { kind: "lesson", lessonId: "fundamental-theorem" },
             ],
           },
         ],

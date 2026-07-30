@@ -367,6 +367,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "limits-continuity",
       "derivative-local-linearity",
       "integral-accumulation",
+      "fundamental-theorem",
     ]);
   });
 
