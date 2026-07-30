@@ -76,15 +76,22 @@ test("names no antiderivative anywhere on the rendered page (ledger check P1)", 
     await toggle.click({ timeout: 2000 }).catch(() => {});
   }
 
-  // Scoped to the lesson article, not the whole page. The course sidebar names
-  // the NEXT lesson — "The Fundamental Theorem of Calculus" — and it is right to:
-  // the spine is navigation, and hiding the next node's title would be a
+  // Scoped to the lesson article, not the whole page — and within it, with the
+  // `.lesson-nav` Prev/Next footer excluded. The course sidebar AND this
+  // in-article footer both name the NEXT lesson — "The Fundamental Theorem of
+  // Calculus" — and it is right for both to: they are navigation chrome, not
+  // content this lesson teaches, and hiding the next node's title would be a
   // different kind of dishonesty. P1 is about what this lesson teaches.
   //
   // `textContent`, not `innerText`: a term inside a collapsed panel is still a
   // term the lesson ships, and this check is about the lesson, not the viewport.
-  const text = ((await page.locator("article.lesson-layout").textContent()) ?? "")
-    .toLowerCase();
+  const text = (
+    await page.locator("article.lesson-layout").evaluate((el) => {
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.querySelector(".lesson-nav")?.remove();
+      return clone.textContent ?? "";
+    })
+  ).toLowerCase();
   expect(text.length, "the page rendered too little to be a real check").toBeGreaterThan(
     3000,
   );
