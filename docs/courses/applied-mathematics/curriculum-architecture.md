@@ -10,9 +10,10 @@ The **encoding-facing** companion to the [course spine](course-spine.md):
 6. the **platform gaps**, recorded and *not* scheduled.
 
 > **Scope note (durable).** Architecture, not an authoring reopening. Every
-> lesson is a `future` node **except `limits-continuity` and
-> `derivative-local-linearity`, which are built** (Package A, slices A1–A2).
-> Listing the rest does not authorize building them.
+> lesson is a `future` node **except `limits-continuity`,
+> `derivative-local-linearity`, `integral-accumulation`, and
+> `fundamental-theorem`, which are built** (Package A, slices A1–A4 — the
+> complete package). Listing the rest does not authorize building them.
 
 ---
 
@@ -31,8 +32,8 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | B1 | Radians and the rotating point | `radians-rotation` | `entry-bridges` | B0 |
 | L1 | What "approaches" means | `limits-continuity` | `calculus-foundations` | **A** ✅ |
 | L2 | The derivative as local linearity | `derivative-local-linearity` | `calculus-foundations` | **A** ✅ |
-| L3 | The integral as accumulation | `integral-accumulation` | `calculus-foundations` | **A** |
-| L4 | The Fundamental Theorem of Calculus | `fundamental-theorem` | `calculus-foundations` | **A** |
+| L3 | The integral as accumulation | `integral-accumulation` | `calculus-foundations` | **A** ✅ |
+| L4 | The Fundamental Theorem of Calculus | `fundamental-theorem` | `calculus-foundations` | **A** ✅ |
 | L5 | The chain rule | `chain-rule` | `calculus-technique` | B |
 | L6 | Deciding with the derivative | `optimization-approximation` | `calculus-technique` | B |
 | L7 | Two techniques, both derived | `substitution-parts` | `calculus-technique` | B |
@@ -425,12 +426,16 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **APPROVED — A0–A3 built; A4 open** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **BUILT — A0–A4 complete, pending package-level semantic review** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
-> 2026-07-28. A0–A3 are built; A4 (`fundamental-theorem`) remains, with complete
-> Mode B artifacts.
+> 2026-07-28. A0–A4 are all built: `limits-continuity`, `derivative-local-linearity`,
+> `integral-accumulation`, and `fundamental-theorem` are complete lessons, each
+> passing Gate 8 on its lesson-owned outcomes. The package's single Opus
+> semantic review (`AGENTS.md` model routing) and the Gate 9 module assessment
+> for `calculus-foundations` are the two remaining, separate steps — neither is
+> in scope here. **B** is the next package recommended to enter Mode B.
 
 ### 6.2 Suggested Mode B order
 
@@ -463,15 +468,20 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A, slice A4.** A0 (the calculus layer, the course registration, and the
-`function-plot` family), A1 (`limits-continuity`), A2
-(`derivative-local-linearity`, with the `local-linearity-zoom` family) and A3
-(`integral-accumulation`, with the `accumulation-strip` family) are built and
-accepted. `fundamental-theorem` remains, with complete Mode B artifacts and no
-open curriculum questions.
+**Package A is complete.** A0 (the calculus layer, the course registration, and
+the `function-plot` family), A1 (`limits-continuity`), A2
+(`derivative-local-linearity`, with the `local-linearity-zoom` family), A3
+(`integral-accumulation`, with the `accumulation-strip` family), and A4
+(`fundamental-theorem`, with the `telescoping-cancellation` family) are all built.
+Package A's single Opus semantic review is the remaining step before the
+package is accepted; the Gate 9 module assessment for `calculus-foundations`
+is a separate, later Mode D pass, open by design.
 
-A4 creates `telescoping-cancellation`, which ledger check **P2** requires to be
-parameterized over the cancelling pairs rather than hard-coded to interval
-endpoints — Packages I–K re-run that family with shared interior edges and faces.
-`telescopingTerms` and `cancellationReport` already take an arbitrary point list
-for that reason.
+A4 created `telescoping-cancellation` parameterized over the cancelling pairs
+rather than hard-coded to interval endpoints (ledger check **P2**) — Packages
+I–K re-run that family with shared interior edges and faces. The underlying
+`cancelContributions`/`intervalContributions` primitives (and the pre-existing
+`telescopingTerms`/`cancellationReport`) take an arbitrary pairing for that
+reason, proven by a regression that feeds the family a non-interval pairing.
+
+**B (`calculus-technique`)** is the next package recommended to enter Mode B.

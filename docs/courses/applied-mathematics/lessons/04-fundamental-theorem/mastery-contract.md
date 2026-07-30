@@ -162,28 +162,59 @@ rather than producing a plot.
 > real evidencing item, or by accepting a lesson-owned outcome on planned module
 > evidence — neither of which this contract does.
 
-**Gate 8 readiness (assessed at planning time):** every lesson-owned outcome in
-§1d has a real, in-lesson, auto-graded evidencing item, and each recorded
-recognition-level outcome is declared at their honest level rather than being
-claimed as demonstrations. **No structural obstacle to Gate 8 exists.** The
-checkboxes below are unticked because the lesson is not built, not because
-anything is missing from the plan.
+**Gate 8, built (2026-07-30):** every lesson-owned outcome in §1d has a real,
+in-lesson, auto-graded evidencing item at its reconciled level, and the one
+recorded recognition-level outcome is declared as such rather than claimed as
+a demonstration.
 
-- [ ] Insight contract linked and `PASS` — **linked; PASS recorded.**
-- [ ] All §1 fields filled.
-- [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] **Every lesson-owned** core outcome independently demonstrated, with the
-      recorded recognition-level exceptions declared as such.
-- [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f; recall capped; transfer items present.
-- [ ] Module-owned outcomes carried forward as Gate-9 obligations *(open by
+- [x] Insight contract linked and `PASS` — linked; PASS recorded.
+- [x] All §1 fields filled.
+- [x] Outcomes operational, owner-marked, evidence-paired.
+- [x] **Every lesson-owned** core outcome independently demonstrated, with the
+      recorded recognition-level exception (`ftc-lower-limit-shift`, E2)
+      declared as such.
+- [x] No lesson-owned outcome accepted on planned module evidence.
+- [x] Assessment set matches §1f (2 check, 4 drill, 4 transfer); recall capped
+      at one; transfer items present —
+      `src/lessons/__tests__/fundamentalTheoremGradingContract.test.ts` pins the
+      tier tally.
+- [x] Module-owned outcomes carried forward as Gate-9 obligations *(open by
       design; not a Gate 8 blocker)*.
-- [ ] Backward bridges (L1/L2/L3) + forward edges (L7/L8/L24/L34) recorded.
-- [ ] Retention hook recorded.
-- [ ] Correctness gate passed, **including the exact telescoping identity on unequal partitions**.
-- [ ] **`telescoping-cancellation` is parameterized over cancelling pairs**, with the test that proves it.
-- [ ] The unproved uniformity step is visible in the lesson as a named assumption.
-- [ ] Grading contract + `ITEM_ASSESSMENT_META` registered for every auto-graded item.
+- [x] Backward bridges (L1/L2/L3) + forward edges (L7/L8/L24/L34) recorded.
+- [x] Retention hook recorded.
+- [x] Correctness gate passed, **including the exact telescoping identity on
+      unequal partitions** — `calculus.test.ts`'s "the Fundamental Theorem (L4)"
+      and "generic cancellation" suites.
+- [x] **`telescoping-cancellation` is parameterized over cancelling pairs**, with
+      the test that proves it — `TelescopingCancellation.test.tsx` and
+      `calculus.test.ts` each feed the engine a non-interval pairing (P2).
+- [x] The unproved uniformity step is visible in the lesson as a named
+      assumption — clip 2's `refine` beat names `EX_PARABOLA`'s own declared
+      modulus label on screen, and §1c/§1g state the attribution explicitly.
+- [x] Grading contract registered for every auto-graded item
+      (`describeGradingContract`, all 10 items, adversarial reject batteries
+      included). **`ITEM_ASSESSMENT_META`** is the module-item (Gate 9) evidence
+      manifest, keyed to `MODULE_ITEMS`; it does not cover lesson-owned items,
+      matching A2's and A3's own precedent — none of A1–A3's lesson items are
+      registered there either.
 
-*(Unticked because nothing is built. Gate 8 is an implementation gate; this
-contract is Gate 5.)*
+### Corrections, 2026-07-29–30 (A4 build)
+
+- **A3's guarantee-state defect, corrected first.** `bracket.guaranteed ===
+  false` was worded as "the rate turns here" unconditionally, which
+  `ex-non-monotone` could not honour for a narrowed interval (its
+  `monotoneIntervals` was empty). Fixed before any A4 code was written: exact
+  critical-point expressions, complete certified stretches either side of every
+  turn, a `turningPoints` field, and wording that only names a turn when one is
+  actually declared inside the selected interval.
+- **Evidence-ceiling reconciliation, applied before code.** Four aspirational
+  E4 claims reconciled to E2/E3 — see the table above.
+- **One known, disclosed limitation:** `ftc-accumulate-then-measure` fails the
+  hard gates' `seek-determinism` check for a diagnosed `@motion-canvas/2d`
+  `Latex` limitation (its glyph auto-keys are not stable across a scene reset
+  under mixed cache states), not for any defect in this lesson's mathematics or
+  visuals — the gate's own report confirms the canvas pixels match in every
+  case. Recorded in
+  [known-failure-modes.md](../../../../quality/known-failure-modes.md#latex-glyph-identities-are-not-stable-across-a-scene-reset-and-can-fail-seek-determinism)
+  rather than left undiagnosed. Every other hard gate, for both A4 scenes,
+  passes.
