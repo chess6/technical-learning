@@ -77,9 +77,13 @@ convention):
   several, spread out.
 - **Callout** — a misconception, historical belief-and-break, or aside placed at
   a chosen point in the argument via `{ kind: "callout", calloutId }`, rather than
-  left to automatic placement. `AuthoredCallout`'s `belief` / `confront` /
-  `resolve` fields are the same shape a historical breakthrough needs (a
-  plausible belief, what broke it, what replaced it) — an optional `attribution`
+  left to automatic placement. **Decide how many beats it needs before you
+  write it** (`vision.md` §12.1): `AuthoredCallout.moves` is an ordered list of
+  beats, each with an optional lead-in, so a naming correction can be one
+  unlabelled sentence while a historical episode is three announced moves.
+  `belief` / `confront` / `resolve` remain as shorthand for the genuine
+  predict-watch-repair case — use them when that is the shape, not by default.
+  An optional `attribution`
   names who and when, when the callout is historical — this is the mechanism a
   historical-breakthrough experience (e.g. `karatsuba`) uses to place "the field
   believed \(O(n^2)\) was optimal" and "three products instead of four" in the

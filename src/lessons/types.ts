@@ -134,16 +134,40 @@ export type WorkedExample = {
 };
 
 /**
- * Flexible authored callout (misconception, aside, etc.).
- * Not a rigid DSL — slots are optional; authors compose what they need.
+ * One beat of a callout: a paragraph, optionally announced by a short lead-in.
+ * Omit `label` when the prose carries itself — a one-line correction usually
+ * does, and a bare "Repair." in front of it is noise.
+ */
+export type CalloutMove = {
+  label?: string;
+  body: string;
+};
+
+/**
+ * Flexible authored callout (misconception, historical episode, aside).
  *
- * `belief` / `confront` / `resolve` are also the shape a historical
- * breakthrough needs (a plausible belief, what broke it, what replaced it) —
- * `attribution` names who and when for a callout used that way.
+ * **How many moves a callout makes is a per-callout judgment**, exactly like
+ * every other form decision in this codebase (`vision.md` §0 principle 2,
+ * §12.1). A field-wide belief that took a decade to break genuinely has three
+ * beats; "call them subrectangles, not squares" has one. Forcing the second
+ * into three labeled paragraphs pads it into significance it does not have.
+ *
+ * Prefer `moves` — it says what this specific misconception needs. The
+ * `belief` / `confront` / `resolve` triple is retained shorthand for the case
+ * where the three-act shape is genuinely right (a real prediction, watched to
+ * fail, then repaired), and it is a common case — but it is not the default
+ * shape, and reaching for it reflexively is what made all 47 callouts in this
+ * course read identically.
  */
 export type AuthoredCallout = {
   id: string;
   title: string;
+  /**
+   * The callout's beats, in order. Authors choose how many and what (if
+   * anything) announces each. Takes precedence over `belief`/`confront`/
+   * `resolve` when present.
+   */
+  moves?: readonly CalloutMove[];
   belief?: string;
   confront?: string;
   resolve?: string;

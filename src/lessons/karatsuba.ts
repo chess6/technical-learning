@@ -212,12 +212,23 @@ export const karatsubaLesson: LessonDefinition = {
     {
       id: "o-n-squared-belief",
       title: "For decades, $\\Theta(n^2)$ seemed unavoidable",
-      belief:
-        "Every known method for multiplying two $n$-digit numbers used $\\Theta(n^2)$ single-digit products — splitting the numbers and combining four sub-products, the way FOIL does, seemed to be the only structure available.",
-      confront:
-        "In 1960, Anatoly Karatsuba — then a student attending Andrey Kolmogorov's seminar on computational complexity, where $\\Omega(n^2)$ was conjectured to be a hard lower bound — found that two of those four products are redundant.",
-      resolve:
-        "Three products, not four, suffice. Because the saving recurs at every level of the recursion, it does not just save a constant fraction: it changes the exponent itself, from $2$ to $\\log_2 3\\approx1.585$.",
+      // A research consensus with Kolmogorov's conjectured lower bound behind
+      // it — genuinely three beats, but historical ones. "Tempting belief."
+      // would frame the field's standing position as a learner's slip.
+      moves: [
+        {
+          label: "What the field believed.",
+          body: "Every known method for multiplying two $n$-digit numbers used $\\Theta(n^2)$ single-digit products — splitting the numbers and combining four sub-products, the way FOIL does, seemed to be the only structure available.",
+        },
+        {
+          label: "Where it broke.",
+          body: "In 1960, Anatoly Karatsuba — then a student attending Andrey Kolmogorov's seminar on computational complexity, where $\\Omega(n^2)$ was conjectured to be a hard lower bound — found that two of those four products are redundant.",
+        },
+        {
+          label: "What changed.",
+          body: "Three products, not four, suffice. Because the saving recurs at every level of the recursion, it does not just save a constant fraction: it changes the exponent itself, from $2$ to $\\log_2 3\\approx1.585$.",
+        },
+      ],
       attribution: {
         who: "Anatoly Karatsuba",
         when: "1960",
@@ -227,6 +238,9 @@ export const karatsubaLesson: LessonDefinition = {
     {
       id: "all-four-needed",
       title: "Not all four products are needed",
+      // Left on the triad deliberately: this is a real prediction the learner
+      // makes, watched to fail, then repaired. When the three-act shape fits,
+      // using it is correct — varying it here would be variety for its own sake.
       belief: "You must compute all four FOIL products.",
       confront:
         "The answer only ever uses $AD$ and $BC$ as the sum $AD+BC$.",
@@ -236,37 +250,67 @@ export const karatsubaLesson: LessonDefinition = {
     {
       id: "twenty-five-percent",
       title: "Not a 25% speedup",
-      belief: "Saving one of four is a 25% speedup.",
-      confront:
-        "Measured cost is $n^{1.585}$ vs $n^2$, far more than 25%.",
-      resolve:
-        "Because the saving recurs, the recursion tree has branching factor 3, so it's an exponent change, not a constant.",
+      // Three genuine beats — but an arithmetic estimate, a measurement that
+      // disagrees, and the mechanism behind the gap. The learner can run the
+      // middle one, so it is an instruction, not a reveal.
+      moves: [
+        {
+          label: "The arithmetic you'd expect.",
+          body: "Saving one of four is a 25% speedup.",
+        },
+        {
+          label: "Now measure it.",
+          body: "Measured cost is $n^{1.585}$ vs $n^2$, far more than 25%.",
+        },
+        {
+          label: "Why the gap.",
+          body: "Because the saving recurs, the recursion tree has branching factor 3, so it's an exponent change, not a constant.",
+        },
+      ],
     },
     {
       id: "wider-is-carrying",
       title: "Wider $A+B$ is not fixed by carrying",
-      belief:
-        "The extra digit in $A+B$ is fixed by carrying / adds a fourth multiply.",
-      confront:
-        "$A+B$ being wider affects the *operands* of $(A+B)(C+D)$, not the output digits.",
-      resolve:
-        "Operand width is absorbed by padding / uneven widths. Output carrying is the separate step that normalizes the $z_i$. Neither adds a multiplication.",
+      // Two things are being conflated, so this is a conflation and its
+      // separation — two beats. A third "repair" would only restate the second.
+      moves: [
+        {
+          label: "The conflation.",
+          body: "The extra digit in $A+B$ looks like something carrying must fix, or like it forces a fourth multiplication.",
+        },
+        {
+          label: "Two different things.",
+          body: "Operand width and output carrying are separate. $A+B$ being wider affects the *operands* of $(A+B)(C+D)$ — absorbed by padding and uneven widths. Carrying is the later step that normalizes the $z_i$. Neither adds a multiplication.",
+        },
+      ],
     },
     {
       id: "corner-squares",
       title: "Subrectangles, not squares",
-      belief: "$AC$ and $BD$ are corner squares.",
-      confront: "Their side lengths differ in general ($A\\neq C$).",
-      resolve: "They're subrectangles; call them that.",
+      // One naming correction. It needs one sentence and no lead-in at all —
+      // three labeled paragraphs would pad it into an importance it lacks.
+      moves: [
+        {
+          body: "$AC$ and $BD$ are subrectangles, not corner squares: their side lengths differ in general, since $A\\neq C$. Call them subrectangles.",
+        },
+      ],
     },
     {
       id: "three-coeffs-force-three",
       title: "Three coefficients do not force three multiplications",
-      belief: "Three coefficients force exactly three multiplications.",
-      confront:
-        "Three coefficients mean three *evaluations* determine the quadratic.",
-      resolve:
-        "Sufficiency comes from the explicit construction; that three is also a lower bound is the separate rank result (expert layer).",
+      // A logical over-reach: sufficiency read as necessity. Two beats — what
+      // the premise licenses, and what it leaves open. There is no "repair"
+      // here, because the open half is genuinely still open at this point.
+      moves: [
+        {
+          label: "What the premise gives.",
+          body: "Three coefficients mean three *evaluations* determine the quadratic — so three multiplications **suffice**, by the explicit construction above.",
+        },
+        {
+          label: "What it does not give.",
+          body: "It does not follow that three are **necessary**. That three is also a lower bound is a separate rank argument, and it is not proved here.",
+        },
+      ],
     },
   ],
   exercises: [

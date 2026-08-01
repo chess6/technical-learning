@@ -90,3 +90,45 @@ describe("emphasis markers never straddle inline math", () => {
     expect(offenders([{ path: "x", text: scoped }])).toHaveLength(0);
   });
 });
+
+/**
+ * Guards the sibling failure mode documented in
+ * `docs/quality/known-failure-modes.md` § "`$$display$$` math in prose inverts
+ * every span after it".
+ *
+ * `ProseWithMath` understands ONE delimiter: `$...$`. Its pattern
+ * (`/\$([^$]+)\$/g`) cannot match `$$`, so a `$$display$$` block leaves one
+ * unconsumed `$` behind. That orphan becomes the OPENING delimiter of the next
+ * span, and from there every math/text boundary is off by one for the rest of
+ * the string: prose renders as garbled math and LaTeX renders as literal text.
+ * Nothing throws. Found live in `chain-rule`'s "The honest repair" section,
+ * where the entire remainder of the derivation was inverted.
+ *
+ * Display math belongs in a structural slot (`LessonSection.equation`,
+ * `EquationSequence`), never in a prose string.
+ */
+function hasDoubleDollar(text: string): boolean {
+  return text.includes("$$");
+}
+
+describe("prose never contains $$ display-math delimiters", () => {
+  it("holds for every learner-facing prose string in every lesson", () => {
+    const problems = lessons.flatMap((lesson) =>
+      collectLessonProse(lesson)
+        .filter(({ text }) => hasDoubleDollar(text))
+        .map(({ path, text }) => `  ${path}\n    ${text.slice(0, 160)}`),
+    );
+    expect(
+      problems,
+      `"$$" found in prose. ProseWithMath only parses $...$; a $$ block ` +
+        `orphans one delimiter and inverts every span after it. Move display ` +
+        `math into a structural slot (section.equation / EquationSequence):\n${problems.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("detects a $$ block, and accepts inline math", () => {
+    // Proves the check bites rather than trivially passing.
+    expect(hasDoubleDollar("and\n$$f(x) = y.$$\nThen $h$ works.")).toBe(true);
+    expect(hasDoubleDollar("and $f(x) = y$. Then $h$ works.")).toBe(false);
+  });
+});

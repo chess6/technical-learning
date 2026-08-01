@@ -79,6 +79,7 @@ export function LessonPage() {
     <MisconceptionCallout
       key={callout.id}
       title={callout.title}
+      moves={callout.moves}
       belief={callout.belief}
       confront={callout.confront}
       resolve={callout.resolve}

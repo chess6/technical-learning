@@ -192,6 +192,47 @@ The walker is shared with the KaTeX validator via
 `LessonDefinition` must be added there**, or both validators will silently
 stop covering it.
 
+## `$$display$$` math in prose inverts every span after it
+
+**Seen in:** `chainRule.ts`'s "The honest repair" section, from the day L5
+shipped until 2026-08-01. Reported by the repository owner as "broken LaTeX"
+on `/lesson/chain-rule` — it survived L5's independent review, that review's
+16 findings, and three later self-review passes over the same branch.
+
+`ProseWithMath` understands exactly **one** delimiter: `$...$`, matched by
+`/\$([^$]+)\$/g`. That pattern cannot match `$$`, because `[^$]+` refuses the
+second dollar. So a `$$display$$` block is consumed asymmetrically: the
+opening `$$` contributes one delimiter to the *preceding* span and leaves the
+other stranded, and from that point on **every math/text boundary is off by
+one for the rest of the string**. Prose gets rendered as math (KaTeX garbles
+it — em-dashes and ordinary words become `unknownSymbol` warnings) and the
+real LaTeX gets rendered as literal text. In `chain-rule` this inverted the
+entire remainder of the derivation, roughly 900 characters.
+
+It throws nothing. KaTeX only *warns* on unrecognized Unicode, and warnings
+do not fail a build or a test, so the page ships looking plausible to anyone
+not reading the mathematics closely.
+
+**Two lessons worth generalizing:**
+
+- **A delimiter parser must be checked against the delimiter set it actually
+  supports, not the one LaTeX supports.** `$$` is universal in LaTeX and
+  entirely absent from this renderer.
+- **Warnings are not diagnostics.** The KaTeX `unknownSymbol` warnings were
+  being emitted on every render of this lesson and nobody saw them. The scan
+  that found this rendered every math span with `throwOnError` and inspected
+  the warning stream.
+
+**The fix is structural, not a parser change:** display math belongs in a
+structural slot — `LessonSection.equation`, or an `EquationSequence` — never
+inside a prose string. Where the slot is already occupied (as it was here, by
+the lesson's final result), restate the step as inline `$...$`.
+
+**Now enforced.** `src/lessons/__tests__/proseEmphasis.test.ts` fails on any
+`$$` in runtime lesson prose, carrying its own positive/negative case so it
+cannot silently stop biting. It shares the `lessonProse.ts` walker with the
+checks above, so it covers every learner-facing field automatically.
+
 ## A named route target that resolves to nothing drops content silently
 
 **Seen in:** the `visual` + `sceneId` placement used by `eigenvectors`,

@@ -801,6 +801,56 @@ naturally arises**, not in a terminal "common mistakes" appendix; (2) prefer
 has personally watched fail is corrected; one they have merely been warned about
 is not.
 
+### 12.1 A confrontation is not automatically three paragraphs
+
+Every misconception callout in this course — all 47 — rendered exactly three
+labeled paragraphs: `Tempting belief.` / `But watch.` / `Repair.` The strings
+were baked into the renderer, so the three-beat shape was not an authoring
+choice at all. It was the only shape available.
+
+That is §0 principle 2 violated at close range. The same three boxes were
+holding a **decades-long research consensus that Kolmogorov had conjectured as
+a lower bound**, and the observation that `AC` and `BD` should be called
+subrectangles rather than squares. The second is one sentence. Padded into
+belief-confront-resolve, it acquires a gravity it has not earned, and the
+learner who reads six of these in a lesson learns to skim the shape rather
+than read the content.
+
+**How many beats a callout has, and whether they need announcing at all, is a
+per-callout judgment** — the same judgment the rest of this document demands
+about media, route order, and depth layers. `AuthoredCallout.moves` is an
+ordered list of beats, each with an optional lead-in. Some real shapes:
+
+| The misconception is… | What it needs |
+| --- | --- |
+| A prediction the learner makes and watches fail | Three beats — this is what `belief`/`confront`/`resolve` is *for* |
+| A historical consensus that broke | Three, but historical: *what the field believed / where it broke / what changed* |
+| An estimate contradicted by measurement | *the arithmetic you'd expect / now measure it / why the gap* — the middle beat is an instruction, not a reveal |
+| Two things being conflated | Two: the conflation, then the separation. A third beat only restates the second |
+| Sufficiency mistaken for necessity | Two: what the premise licenses, what it leaves open — and no "repair", because the open half is genuinely still open |
+| A naming slip | **One sentence, no lead-in.** |
+
+Three rules:
+
+- **Fit, never variety.** When the three-act shape is genuinely right, use it,
+  with its default words. `all-four-needed` in `karatsuba` is left exactly as
+  it was for this reason. Rewriting all 47 to differ would be the same defect
+  wearing new paint.
+- **A lead-in must earn its place.** `Repair.` in front of a single corrective
+  sentence adds nothing. Omit `label` and let the prose carry itself.
+- **Do not delete the confrontation.** Collapsing a genuine
+  prediction-then-failure into one explanatory paragraph removes the
+  mechanism §12 is built on. Fewer beats is not automatically better; *fitted*
+  is better.
+
+Compare the deleted per-step *Object / Invariant / Picture / Why-next /
+What-you-learned* template (§0, `EquationSequence`). There the fixed structure
+was the whole defect and was removed outright. Here the three-act structure is
+sometimes exactly right — the defect was that it was **mandatory**. Telling
+those two cases apart is the skill; the wrong repair in either direction is to
+apply one rule to every instance, which is how this happened in the first
+place.
+
 ---
 
 ## 13. Information layering
