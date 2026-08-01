@@ -322,8 +322,9 @@ const modCalcfoundTransferBracketWindow: ExerciseDefinition = {
   prompt:
     "A rate $w(t) = t^2 - 6t + 5$ is given on $[0, 6]$. Construct an interval " +
     "$[a, b] \\subseteq [0, 6]$, of width at most $1$, on which the " +
-    "left-endpoint and right-endpoint sums are guaranteed to tell you " +
-    "NOTHING about $\\int_a^b w$. Enter $(a, b)$.",
+    "left-endpoint and right-endpoint sums carry NO GUARANTEE about " +
+    "$\\int_a^b w$ — they may still land close to it, but nothing certifies " +
+    "that they bracket it. Enter $(a, b)$.",
   config: {
     target: "vector2",
     check: {

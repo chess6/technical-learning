@@ -64,23 +64,28 @@ makes D9/D13 module-mandatory.
 each request **E5**. `mod-calcfound-limit-in-derivative` uses `vector`
 (ceiling E3); `mod-calcfound-mixed-rate-total` uses `matrix-entry` (ceiling
 E3) — see
-[`evidence.ts`](../../../../../src/lessons/evidence.ts). Neither
-`solution-set` nor `elimination-solution` (the only other E5-ceiling
-capabilities) fit calculus-shaped content; they are linear-algebra-shaped.
-The honest options were a human-scored E5 surface or a new capability. This
-module spends its **one** E5 slot on `mod-calcfound-mixed-ftc` (L4's own
-outcome, the strongest integration case) and declares these two rows
-**partially discharged**: integration is measurable, integration *at E5* is
-not, for the capabilities this module's content can use.
+[`evidence.ts`](../../../../../src/lessons/evidence.ts). `evidence.ts`
+registers three E5-ceiling capabilities: `solution-set`,
+`elimination-solution`, and `self-check`. The first two are
+linear-algebra-shaped and do not fit calculus content; `self-check` does fit,
+but is human-scored, and this module's grading-contract test suite can only
+machine-verify auto-graded capabilities. This module spends its **one**
+human-scored E5 slot on `mod-calcfound-mixed-ftc` (L4's own outcome, the
+strongest integration case) and declares these two rows **partially
+discharged**: integration is measurable and machine-verified at E3;
+integration *at E5* would require a second human-scored surface, not taken
+here.
 
 **Level note on the D12 rows (a deliberate downgrade, not an oversight).**
 The four lesson contracts each ask for **E3** under delayed retrieval. These
-items are **multiple-choice, and therefore E1** — recognition is all a
-picker can record. That is the right form *for a retention check* on
-outcomes that already carry produced evidence in-lesson, matching the
-`structure` and `systems-elimination` modules' own precedent. The D12 rows
-are **partially** discharged: retention is measurable, retention *at E3* is
-not.
+items are **multiple-choice** — `evidence.ts` caps that capability's ceiling
+at **E2** — and the claim made here is lower still, **E1**: recognition after
+a delay is the honest description of what is being measured, not the
+ceiling the capability could in principle support. That is the right form
+*for a retention check* on outcomes that already carry produced evidence
+in-lesson, matching the `structure` and `systems-elimination` modules' own
+precedent. The D12 rows are **partially** discharged: retention is
+measurable, retention *at E3* is not.
 
 ### Class B — cumulative reassessment of **lesson-owned** outcomes (ownership stays with the lesson)
 

@@ -1,5 +1,5 @@
 import type { LessonDefinition } from "./types";
-import { EXERCISE_SEQUENCE_ID } from "./capabilities";
+import { EXERCISE_SEQUENCE_ID, SELF_CHECK_ID } from "./capabilities";
 import { numericDerivative } from "../math";
 
 /**
@@ -19,8 +19,12 @@ import { numericDerivative } from "../math";
  *
  * Evidence discipline, applied before any code was written (the same
  * preflight A2-A4 applied): `multiple-choice` is capped at E2 and
- * `exercise-sequence`/`numeric` at E3; this lesson builds no
- * `construct-in-explorer` item, so no lesson-owned claim exceeds E3.
+ * `exercise-sequence`/`numeric` at E3. One item, `chain-derive-fresh`, uses
+ * `self-check` (ceiling E5) and claims E4 — human-scored, produced written
+ * reproduction of the substitution derivation on a fresh pair, the only real
+ * evidence for M2 ("the chain rule is an independent fact to memorize"),
+ * which no numeric/MC item can test since it requires PRODUCING the
+ * argument, not applying its conclusion.
  */
 
 /* ---------------------------------------------------------------- numbers */
@@ -61,6 +65,18 @@ const SELECT_A = 1;
 const SELECT_B = SELECT_G(SELECT_A); // 2
 const SELECT_ANSWER = SELECT_F_PRIME(SELECT_B) * SELECT_G_PRIME; // 240
 
+/** `chain-derive-fresh`: g(x) = x^2+3, f(u) = u^2+1, a = 1 — a fresh pair, distinct from every other exercise. */
+const DERIVE_G = (x: number) => x * x + 3;
+const DERIVE_G_PRIME = (x: number) => 2 * x;
+const DERIVE_F_PRIME = (u: number) => 2 * u;
+const DERIVE_A = 1;
+const DERIVE_B = DERIVE_G(DERIVE_A); // 4
+const DERIVE_ANSWER = DERIVE_F_PRIME(DERIVE_B) * DERIVE_G_PRIME(DERIVE_A); // 16
+const DERIVE_COMPOSITE = (x: number) => {
+  const u = DERIVE_G(x);
+  return u * u + 1;
+};
+
 /** Sanity: the prose's numbers are the code's numbers. */
 if (Math.abs(numericDerivative(FRESH_COMPOSITE, FRESH_A) - FRESH_ANSWER) > 1e-4) {
   throw new Error("chainRule: the fresh composite's chain-rule value disagrees with its direct derivative.");
@@ -76,6 +92,9 @@ if (
 }
 if (Math.abs(SELECT_ANSWER - 240) > 1e-9) {
   throw new Error("chainRule: (3x-1)^5 differentiated at a=1 should give 240.");
+}
+if (Math.abs(numericDerivative(DERIVE_COMPOSITE, DERIVE_A) - DERIVE_ANSWER) > 1e-4) {
+  throw new Error("chainRule: chain-derive-fresh's chain-rule value disagrees with its direct derivative.");
 }
 if (Math.abs(numericDerivative(ZERO_G, ZERO_A)) > 1e-4) {
   throw new Error("chainRule: g'(3) should be 0 for the zero-predict fixture.");
@@ -352,6 +371,19 @@ export const chainRuleLesson: LessonDefinition = {
         ],
       },
     },
+    {
+      id: "chain-derive-fresh",
+      type: "custom",
+      capabilityId: SELF_CHECK_ID,
+      tier: "transfer",
+      prompt: `Let $g(x) = x^2+3$ and $f(u) = u^2+1$, so $h(x) = (x^2+3)^2+1$. Reproduce the SUBSTITUTION derivation of $h'(${DERIVE_A})$ — not just the answer: state both local-linear models with their error terms, form $k(h)=g(${DERIVE_A}+h)-g(${DERIVE_A})$, substitute it into $f$'s identity, and say explicitly why no division by $\\Delta u$ was needed anywhere.`,
+      config: {
+        modelAnswer: `$b=g(${DERIVE_A})=${DERIVE_B}$. By L2 C5: $g(${DERIVE_A}+h) = ${DERIVE_B} + ${DERIVE_G_PRIME(DERIVE_A)}h + E_g(h)$ with $E_g(h)/h\\to0$, and $f(${DERIVE_B}+k) = ${DERIVE_B * DERIVE_B + 1} + ${DERIVE_F_PRIME(DERIVE_B)}k + E_f(k)$ with $E_f(k)/k\\to0$ (and $E_f(0)=0$ automatically). Setting $k(h)=g(${DERIVE_A}+h)-g(${DERIVE_A})$, substituting gives $f(g(${DERIVE_A}+h)) = ${DERIVE_B * DERIVE_B + 1} + ${DERIVE_F_PRIME(DERIVE_B)}[${DERIVE_G_PRIME(DERIVE_A)}h+E_g(h)] + E_f(k(h))$ — an identity holding for every $h$, including where $k(h)=0$, since $E_f(0)=0$ needs no division to reach. Dividing by $h$ and letting $h\\to0$: the constant term is $${DERIVE_F_PRIME(DERIVE_B)}\\times${DERIVE_G_PRIME(DERIVE_A)} = ${DERIVE_ANSWER}$, the $E_g(h)/h$ term vanishes, and $E_f(k(h))/h$ vanishes because it factors into $[E_f(k(h))/k(h)]\\cdot[k(h)/h]$, a vanishing factor times a bounded one. So $h'(${DERIVE_A}) = ${DERIVE_ANSWER}$. No division by $\\Delta u$ occurred anywhere — the argument only ever substituted $k(h)$, never divided by it.`,
+        rubricId: "chain-derive-fresh",
+        rubricVersion: 1,
+        rubricText: `PASS requires the SUBSTITUTION argument reproduced, not just the product ${DERIVE_ANSWER} stated: (a) both local-linear models written with their error terms (E_g(h), E_f(k)); (b) k(h) formed as g(${DERIVE_A}+h)-g(${DERIVE_A}) and substituted into f's identity, not divided; (c) the identity's validity at k(h)=0 (via E_f(0)=0) stated explicitly; (d) the final division-by-h step reaching ${DERIVE_ANSWER}; (e) an explicit statement that no division by Delta-u occurred anywhere in the argument. Stating "h'(${DERIVE_A}) = ${DERIVE_ANSWER} because you multiply the two derivatives" with no substitution argument shown is NOT a pass — that is exactly M2, the misconception this item exists to catch.`,
+      },
+    },
   ],
 
   keyTakeaway:
@@ -375,5 +407,9 @@ export const chainRuleLesson: LessonDefinition = {
       "The same substitution argument, unchanged, is the multivariable chain rule once f'(g(a)) and g'(a) become real matrices.",
   },
 
-  exampleId: "chain-worked",
+  // No `exampleId`: the guided scene and explorer each hardcode their own
+  // fixtures (g and f are not single-function `CalculusFixture`s the way
+  // L1-L4's shared example is), so there is no single id to point at —
+  // matching karatsuba's precedent of omitting the field rather than
+  // inventing one nothing would resolve.
 };

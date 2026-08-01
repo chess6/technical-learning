@@ -41,6 +41,17 @@ export type ItemAssessmentMeta = {
   methodSelection: boolean;
   /** Cue terms permitted in this item's prompt despite protection (escape hatch). */
   cueAllowlist?: readonly string[];
+  /**
+   * Required for every `methodSelection: true` item. Names (from
+   * `cueLint.test.ts`'s `METHOD_CUE_PATTERNS`) that the item's post-commitment
+   * text (`modelAnswer`/`rubricText`) must name. Deliberately per-item, not
+   * "any pattern in the shared list" — a loose "any" check lets an unrelated
+   * cue word (e.g. a calculus item's post-commitment text tripping a
+   * linear-algebra pattern by coincidence) silently satisfy the guard without
+   * the item ever naming ITS OWN candidate method, which defeats the guard's
+   * purpose of closing the loop on which method was efficient.
+   */
+  requiredPostCommitmentCues?: readonly string[];
   /** The affirmative grounds for the claim. */
   evidenceBasis: EvidenceBasis;
 };
@@ -50,6 +61,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   "mod-select-method": {
     evidenceTarget: "E3",
     methodSelection: true,
+    requiredPostCommitmentCues: ["elimination"],
     evidenceBasis: {
       freshness: "fresh-instance",
       unfamiliarity: "transfer",
@@ -251,6 +263,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   "mod-struct-select-method": {
     evidenceTarget: "E3",
     methodSelection: true,
+    requiredPostCommitmentCues: ["elimination"],
     evidenceBasis: {
       freshness: "fresh-instance",
       unfamiliarity: "transfer",
@@ -390,6 +403,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   "mod-calcfound-select-method": {
     evidenceTarget: "E3",
     methodSelection: true,
+    requiredPostCommitmentCues: ["antiderivative"],
     evidenceBasis: {
       freshness: "fresh-instance",
       unfamiliarity: "transfer",

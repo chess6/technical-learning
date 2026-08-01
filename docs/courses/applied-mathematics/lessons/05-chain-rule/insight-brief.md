@@ -185,13 +185,23 @@ new prerequisite-wise and is worth leading with.
 
 ## 1e. Continuity decision recorded here
 
-- **Canonical examples:** a fresh polynomial-inside-polynomial composite for
-  the main worked derivation (distinct from every L1–L4 fixture); a
-  trigonometric composite (\(\sin\) of a polynomial) for the "recognize the
-  decomposition, differentiate instantly" prediction beat (R9); \(|x|\)
-  composed inside/outside a smooth function for the corner edge case (L2's
-  `ex-abs` already carries the corner — reused as the *inner* function here,
-  a genuinely new role for it, not a repeated example).
+- **Canonical examples:** a polynomial-inside-polynomial composite for the
+  main worked derivation — \(g(x)=x^2+1\) is fresh; its outer function,
+  \(f(u)=u^3\), coincides with L2/L4's `ex-cubic-inflection`, reused here in a
+  new role (as an *outer* function being composed, not displayed on its own),
+  which is honestly a reuse, not a fresh function — the composite
+  \((x^2+1)^3\) as an object is still new; \(|x|\) composed inside/outside a
+  smooth function for the corner edge case (L2's `ex-abs` already carries the
+  corner — reused as the *inner* function here, a genuinely new role for it,
+  not a repeated example).
+  **Descoped at build time:** a trigonometric composite for R9's
+  "recognize the decomposition, differentiate instantly" prediction was
+  planned here but not shipped — the guided scene's actual `predict` beat
+  asks a different, genuine question instead (what decides \(f'(g(a))\),
+  with \(f'(2)\) withheld from the panel until `zoomOuter` reveals it), and
+  R9's underlying payoff (recognize a decomposition and differentiate on
+  sight) is discharged instead by `chain-differentiate-fresh`
+  (a polynomial composite, not a trig one).
 - **Reuses:** `local-linearity-zoom` (L2's family), as **two linked panels** —
   exactly the reuse `LocalLinearityZoom.tsx`'s own module docstring already
   anticipates. `function-plot` (L1's family) for the composite's graph, with

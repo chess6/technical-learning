@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { chainRuleLesson } from "../chainRule";
 import { describeGradingContract, type NamedAnswer } from "./gradingContract";
-import { resolveCapabilityId } from "../capabilities";
+import { requiresHumanScore, resolveCapabilityId } from "../capabilities";
 import { CAPABILITY_EVIDENCE_CEILING } from "../evidence";
+import { snapshotItem } from "../attemptSnapshot";
 import type { ExerciseDefinition } from "../types";
 
 /**
  * Grading contracts for `chain-rule` (spine L5, Package B's first lesson).
  *
  * Evidence discipline, applied before coding (the same preflight A2-A4 used):
- * this lesson builds no `construct-in-explorer` item, so every claim rests at
- * E3 (`numeric`/`exercise-sequence`) or E2 (`multiple-choice`) — the
- * `resolveCapabilityId`/ceiling check below asserts that structurally.
+ * `multiple-choice` is capped at E2, `numeric`/`exercise-sequence` at E3. One
+ * item, `chain-derive-fresh`, uses `self-check` (ceiling E5) and claims E4 —
+ * human-scored, so it is exempt from the auto-grading contract battery below
+ * (matching `structureModuleItems.test.ts`'s precedent) and checked instead
+ * for a real, versioned rubric.
  */
 
 function byId(id: string): ExerciseDefinition {
@@ -112,14 +115,19 @@ describe("chain-rule grading-contract coverage", () => {
     "chain-zero-predict",
     "chain-select-method",
   ]);
+  const HUMAN_SCORED = new Set(["chain-derive-fresh"]);
 
   const items = chainRuleLesson.exercises ?? [];
 
   it("contracts every auto-graded exercise, and nothing else", () => {
-    expect(items.length).toBe(CONTRACTED.size);
+    expect(items.length).toBe(CONTRACTED.size + HUMAN_SCORED.size);
     for (const item of items) {
       expect(item.type === "prediction").toBe(false);
-      expect(CONTRACTED.has(item.id), `missing contract for "${item.id}"`).toBe(true);
+      if (requiresHumanScore(item)) {
+        expect(HUMAN_SCORED.has(item.id), `unexpected human-scored item "${item.id}"`).toBe(true);
+      } else {
+        expect(CONTRACTED.has(item.id), `missing contract for "${item.id}"`).toBe(true);
+      }
     }
     const ids = new Set(items.map((i) => i.id));
     for (const id of CONTRACTED) {
@@ -127,16 +135,16 @@ describe("chain-rule grading-contract coverage", () => {
     }
   });
 
-  it("keeps the declared tier mix: 2 check, 3 drill, 2 transfer", () => {
+  it("keeps the declared tier mix: 2 check, 3 drill, 3 transfer", () => {
     const tally = (t: string) => items.filter((i) => i.tier === t).length;
     expect(tally("check")).toBe(2);
     expect(tally("drill")).toBe(3);
-    expect(tally("transfer")).toBe(2);
+    expect(tally("transfer")).toBe(3);
     // Recall capped at two bare multiple-choice checks.
     expect(items.filter((i) => i.type === "multiple-choice")).toHaveLength(2);
   });
 
-  it("claims no E4: no item is built as construct-in-explorer, so E3 is the honest ceiling", () => {
+  it("claims no E5, and E4 only on the human-scored derivation item", () => {
     const open = items.filter(
       (i) => i.type === "custom" && i.capabilityId === "construct-in-explorer",
     );
@@ -144,6 +152,18 @@ describe("chain-rule grading-contract coverage", () => {
     expect(CAPABILITY_EVIDENCE_CEILING["exercise-sequence"]).toBe("E3");
     expect(CAPABILITY_EVIDENCE_CEILING["multiple-choice"]).toBe("E2");
     expect(CAPABILITY_EVIDENCE_CEILING["numeric"]).toBe("E3");
+    expect(CAPABILITY_EVIDENCE_CEILING["self-check"]).toBe("E5");
+  });
+
+  it("routes chain-derive-fresh to human scoring, with a real versioned rubric", () => {
+    const item = byId("chain-derive-fresh");
+    expect(requiresHumanScore(item)).toBe(true);
+    const snap = snapshotItem(item);
+    expect(snap.requiresReview).toBe(true);
+    expect(snap.rubric).toBeDefined();
+    expect(snap.rubric!.rubricId).toBe("chain-derive-fresh");
+    expect(snap.rubric!.rubricVersion).toBeGreaterThanOrEqual(1);
+    expect(snap.rubric!.rubricText.length).toBeGreaterThan(20);
   });
 
   it("resolves a real capability for every item", () => {

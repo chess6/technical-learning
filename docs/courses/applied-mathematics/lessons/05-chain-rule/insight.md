@@ -241,7 +241,7 @@ the rule iterates.
 
 | # | Misconception | Where it is broken |
 | --- | --- | --- |
-| M1 | "Cancel the \(du\)'s" is a valid proof. | C4–C7: the identity in C5 never divides by \(\Delta u\); graded by asking what fails in the cancellation argument specifically at \(g'(a)=0\). |
+| M1 | "Cancel the \(du\)'s" is a valid proof. | C4–C7: the identity in C5 never divides by \(\Delta u\); graded by asking what specifically fails in the cancellation argument (`chain-du-cancel-fails`) — the general mechanism, not the \(g'(a)=0\) case, which M3 owns separately. |
 | M2 | The chain rule is a new, independent fact to memorize. | C9: the derivation is L2's own model substituted into itself; graded by requiring the derivation reproduced for a fresh pair \(f,g\), not just applied. |
 | M3 | \(g'(a)=0\) is a special/exceptional case needing separate handling. | C12: it falls out of C8 directly; graded by a predict-before-compute item. |
 | M4 | The rule only concerns numbers multiplying; there is no deeper structure. | C10: the \(1\times1\)-matrix reading, connected forward to real matrix multiplication. |

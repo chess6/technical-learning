@@ -19,8 +19,11 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
  * `derivative-local-linearity` keeps for one panel: both curves are always
  * the real sampled fixture, re-drawn from `G_F`/`F_F` every frame — no code
  * path substitutes a straight line for either curve. `E_F(k(h))` in the
- * `residual-compose` beat is drawn as a labelled, nonzero quantity, never
- * hidden inside an "approximately equals".
+ * `residualCompose` beat is drawn as a labelled, nonzero quantity, never
+ * hidden inside an "approximately equals". The `predict` beat asks what
+ * decides f's slope BEFORE `fMagLabel` (f'(2) = 12) is revealed — its reveal
+ * is deferred to `zoomOuter` for exactly this reason; revealing it earlier
+ * would make the question rhetorical.
  *
  * The point `a = 1` (and therefore `b = g(a) = 2`) is fixed for the whole
  * clip — this scene tells the derivation once, at one worked example; the
@@ -29,7 +32,11 @@ import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
 
 const SCENE_ID = "chain-rule";
 
-/** g(x) = x^2 + 1, f(u) = u^3. Fresh, distinct from every L1-L4 fixture. */
+/**
+ * g(x) = x^2 + 1, f(u) = u^3. g is fresh; f coincides with L2/L4's
+ * ex-cubic-inflection (a reuse, in a new role as an outer function rather
+ * than displayed alone) -- the composite (x^2+1)^3 as an object is still new.
+ */
 const A_POINT = 1;
 const G_F = (x: number) => x * x + 1;
 const G_PRIME = (x: number) => 2 * x;
@@ -223,7 +230,10 @@ export const chainRuleScene = makeScene2D(function* (view) {
       const b = beats("twoRates");
       yield* say(title, roman("Two rates you already know"), b.title!);
       yield* all(gLabel.opacity(1, b.drawG!), gMagLabel.opacity(1, b.drawG!));
-      yield* all(fLabel.opacity(1, b.drawF!), fMagLabel.opacity(1, b.drawF!));
+      // f's slope (fMagLabel) is deliberately NOT revealed here — it is
+      // exactly what the `predict` beat asks about, before `zoomOuter`
+      // reveals it. Only f's formula is shown at this point.
+      yield* fLabel.opacity(1, b.drawF!);
       yield* say(
         caption,
         roman("each is already its own local-linear model — L2, recalled"),
@@ -276,7 +286,7 @@ export const chainRuleScene = makeScene2D(function* (view) {
         b.title!,
       );
       yield* fPanel.halfWidth(0.02, b.magnify!, easeInOutCubic);
-      yield* fPanel.tangent.opacity(1, b.reveal!);
+      yield* all(fPanel.tangent.opacity(1, b.reveal!), fMagLabel.opacity(1, b.reveal!));
       yield* say(
         caption,
         `f(${B_POINT}+k) \\approx f(${B_POINT}) + ${F_SLOPE}k`,

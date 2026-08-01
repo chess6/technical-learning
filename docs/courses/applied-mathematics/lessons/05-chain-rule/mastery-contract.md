@@ -28,16 +28,23 @@ First lesson of Package B (`calculus-technique`).
   differentiated single functions built from one formula; what happens when
   a function is built by feeding one function's output into another?*
 - **Motivating need:** *You already know \(d(x^2)/dx\) and you already know
-  \(d(\sin u)/du\). What is \(d\bigl(\sin(x^2)\bigr)/dx\), and why isn't the
+  \(d(u^3)/du\). What is \(d\bigl((x^2+1)^3\bigr)/dx\), and why isn't the
   answer just "multiply the two rules you know"?*
 
 ## 1c. Content to teach
 - **Definitions (D2):** composition of functions, \(f\circ g\); the chain
   rule statement \((f\circ g)'(a)=f'(g(a))g'(a)\).
-- **Objects:** a fresh polynomial-inside-polynomial composite (main worked
-  example, distinct from every L1–L4 fixture); a trigonometric-of-polynomial
-  composite (the "recognize and differentiate on sight" prediction beat);
-  `ex-abs` (L2's corner) reused as an **inner** function, a new role for it.
+- **Objects:** a polynomial-inside-polynomial composite (main worked example)
+  — \(g(x)=x^2+1\) is fresh; its outer function \(f(u)=u^3\) coincides with
+  L2/L4's `ex-cubic-inflection`, reused in a new role (composed, not
+  displayed alone), honestly a reuse rather than a fresh function, while the
+  composite \((x^2+1)^3\) is still a new object; `ex-abs` (L2's corner) reused
+  as an **inner** function, a new role for it. A trigonometric-of-polynomial
+  composite was planned for the "recognize and differentiate on sight"
+  prediction beat but descoped at build time — the guided scene's `predict`
+  beat instead withholds \(f'(2)\) until `zoomOuter`, and
+  `chain-differentiate-fresh` discharges the recognize-and-differentiate
+  outcome on the polynomial composite instead.
 - **Procedures (D3):** decompose a composite into outer/inner functions;
   differentiate a composite via the chain rule; verify a chain-rule result by
   an independent direct-expansion computation where one is available.
@@ -79,24 +86,29 @@ First lesson of Package B (`calculus-technique`).
 | Verify a chain-rule result by an independent direct-expansion route, and say why agreement counts as evidence | D10 | lesson | E3 | `chain-corroborate` (`exercise-sequence`: chain-rule value (`numeric`) → expanded-and-differentiated value (`numeric`) → why it's evidence (`multiple-choice`)) | planned |
 | Compute a compound magnification from two zoom factors | D6 | lesson | E3 | `chain-compound-zoom` (`numeric`) | planned |
 | Select the efficient route (direct expansion vs. chain rule) on a fresh composite, unprompted | D8/D9 | lesson | E3 | `chain-select-method` (`exercise-sequence`: efficient route (`multiple-choice`, prompt does not name either route) → the answer (`numeric`)) | planned |
+| Reproduce the substitution derivation on a fresh pair — not just apply the rule | D6 | lesson | E4 | `chain-derive-fresh` (`self-check`, human-scored: both local-linear models, the substitution, the \(k(h)=0\) case, and the final division-by-\(h\) step) | planned |
 | State what can and cannot be concluded when the inner function has a corner | D7 | lesson | E2 | `chain-corner-not-necessary` (`multiple-choice`) | planned |
 | Retain "cancel the \(du\)" is not sufficient justification, under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-du-not-proof` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
 | Integrate the chain rule with the \(1\times1\)-matrix reading and LA matrix composition on one mixed item | D10 | **module** | E5 | `mod-calctech-mixed-chain-matrix` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
 
-**Transfer:** two transfer-tier items, `chain-zero-predict` (predict before
+**Transfer:** three transfer-tier items. `chain-zero-predict` (predict before
 computing — D9) and `chain-select-method` (method selection folded into
-transfer — D8+D9, per [insight §11](insight.md#11-transfer-assessment)).
-Both **E3**: `numeric` and `exercise-sequence` cap there, and both keep a
-genuine produced numeric answer as the outcome's substance. Recall is capped
-at one item (`chain-du-cancel-fails`, a targeted misconception check, D13).
+transfer — D8+D9, per [insight §11](insight.md#11-transfer-assessment)) are
+**E3**: `numeric` and `exercise-sequence` cap there, and both keep a genuine
+produced numeric answer as the outcome's substance. `chain-derive-fresh` is
+**E4**, human-scored `self-check` — the only item that requires PRODUCING the
+substitution argument rather than applying its conclusion, which is what M2
+(the lesson's central misconception) actually needs. Recall is capped at two
+bare `multiple-choice` checks (`chain-du-cancel-fails`, `chain-corner-not-necessary`).
 
 **Evidence-ceiling preflight (applied before coding, per A2–A4's own
 precedent).** Every level above is already recorded at its capability's
-ceiling — `multiple-choice`→E2, `numeric`/`exercise-sequence`→E3 — so no
-reconciliation is anticipated at build time. If a build-time defect is found
-(a claim exceeding its capability, or a step converted to `multiple-choice`
-that changes an item's honest level), it is corrected in this table with a
-dated note, matching L1–L4's own practice, not silently.
+ceiling — `multiple-choice`→E2, `numeric`/`exercise-sequence`→E3,
+`self-check`→E5 (claimed at E4, one item) — so no reconciliation is
+anticipated at build time. If a build-time defect is found (a claim exceeding
+its capability, or a step converted to `multiple-choice` that changes an
+item's honest level), it is corrected in this table with a dated note,
+matching L1–L4's own practice, not silently.
 
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome (planned). Not yet
@@ -109,10 +121,11 @@ completed at Gate 8, once the lesson exists.
   composition (C10); L1's continuity used in C7. The strongest connection of
   any lesson so far to a **cross-course** result: LA `matrix-composition`
   (C10, C13).
-- **Assessment:** 3 check/drill, 2 transfer (planned); recall capped at one
-  (`chain-du-cancel-fails`). Every graded item uses a composite distinct from
-  the guided scene's own worked example, except `chain-corroborate`, whose
-  entire point is cross-checking the lesson's own main example.
+- **Assessment:** 5 check/drill, 3 transfer (planned); recall capped at two
+  (`chain-du-cancel-fails`, `chain-corner-not-necessary`). Every graded item
+  uses a composite distinct from the guided scene's own worked example,
+  except `chain-corroborate`, whose entire point is cross-checking the
+  lesson's own main example.
 - **Retention (D12):** "cancel the \(du\)" is not sufficient justification —
   the claim most likely to erode back into treating the mnemonic as the
   proof.
@@ -185,8 +198,8 @@ obligations Mode C must discharge, not an acceptance already granted.
       `chain-corner-not-necessary` — both **E2** by design, targeting a
       misconception via recognition among structured distractors).
 - [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f (3 check/drill, 2 transfer); recall capped
-      at one; transfer items present — a grading-contract test must pin the
+- [ ] Assessment set matches §1f (5 check/drill, 3 transfer); recall capped
+      at two; transfer items present — a grading-contract test must pin the
       tier tally, matching `fundamentalTheoremGradingContract.test.ts`'s
       precedent.
 - [ ] Module-owned outcomes carried forward as Gate-9 obligations for

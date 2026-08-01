@@ -36,19 +36,24 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 ## Motivating question
 > You already know \(\frac{d}{dx}x^2\) and you already know
-> \(\frac{d}{du}\sin u\). What is \(\frac{d}{dx}\sin(x^2)\) — and why isn't
+> \(\frac{d}{du}u^3\). What is \(\frac{d}{dx}(x^2+1)^3\) — and why isn't
 > the answer just "multiply the two rules you already know"?
 
 ## Shared examples
-- **Main example id:** a fresh polynomial-inside-polynomial composite,
-  \(f(u)=u^3\), \(g(x)=x^2+1\), evaluated at \(a=1\) — distinct from every
-  L1–L4 fixture (insight §7's worked derivation).
+- **Main example id:** the composite \(f(u)=u^3\), \(g(x)=x^2+1\), evaluated
+  at \(a=1\) (insight §7's worked derivation). \(g\) is fresh; \(f(u)=u^3\)
+  coincides with L2/L4's `ex-cubic-inflection`, reused here in a new role
+  (composed, not displayed alone) — a reuse, honestly, not a fresh function;
+  the composite as an object is still new.
 - **Corroboration:** the same composite, expanded directly to
   \(x^6+3x^4+3x^2+1\) and differentiated termwise — both routes must appear
   on screen together, agreeing at \(24\).
-- **Prediction example:** a trigonometric-of-polynomial composite (e.g.
-  \(\sin(x^2-4x)\)) at the point where the inner rate is zero, for the
-  predict-before-computing beat.
+- **Prediction example:** the guided scene's own `predict` beat, on the main
+  worked composite — \(f'(2)\) is withheld from f's panel until `zoomOuter`,
+  so "what decides f's slope" has a real, undisplayed answer when asked. (A
+  trigonometric-of-polynomial composite was planned here at Gate 3/4 but
+  descoped at build time; `chain-differentiate-fresh` carries the
+  recognize-and-differentiate outcome instead, on a polynomial composite.)
 - **Corner example:** `ex-abs` (L2's corner), reused as the **inner**
   function — a new role for a carried fixture, not a repeated one.
 - **Fresh, practice only:** composites the guided scene never shows.
@@ -63,18 +68,22 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 | Step id | Name (learner-facing) | Idea revealed | Notation synced |
 | --- | --- | --- | --- |
-| `two-rates` | Two rates you already know | \(g(x)=x^2+1\) and \(f(u)=u^3\), each shown as its own local-linear model (L2, recalled). | \(g'(a)\), \(f'(b)\) |
-| `feed-through` | One feeds the other | \(f\circ g\): \(g\)'s output becomes \(f\)'s input. Composition, no derivative yet. | \(b=g(a)\) |
-| `zoom-inner` | Zoom into \(g\) | Magnify \(g\) at \(a\); the window narrows to a line of slope \(g'(a)\). | \(g(a+h)\approx g(a)+g'(a)h\) |
-| `zoom-outer` | Zoom into \(f\), using the first zoom's output | The first window's content, near \(b=g(a)\), is exactly what a second zoom (into \(f\)) magnifies. | \(f(b+k)\approx f(b)+f'(b)k\) |
+| `twoRates` | Two rates you already know | \(g(x)=x^2+1\) and \(f(u)=u^3\), each shown as its own local-linear model (L2, recalled). | \(g'(a)\), \(f'(b)\) |
+| `feedThrough` | One feeds the other | \(f\circ g\): \(g\)'s output becomes \(f\)'s input. Composition, no derivative yet. | \(b=g(a)\) |
+| `zoomInner` | Zoom into \(g\) | Magnify \(g\) at \(a\); the window narrows to a line of slope \(g'(a)\). | \(g(a+h)\approx g(a)+g'(a)h\) |
+| `predict` | **Prediction beat** | *f's panel is about to be magnified too — what decides its slope?* Nothing moves; \(f'(2)\) is not yet on screen. | — |
+| `zoomOuter` | Zoom into \(f\), using the first zoom's output | The first window's content, near \(b=g(a)\), is exactly what a second zoom (into \(f\)) magnifies. | \(f(b+k)\approx f(b)+f'(b)k\) |
 | `compound` | Two magnifications, one number | The compound magnification is a **product**, not a sum — displayed live as the two factors multiply. | \(f'(b)\cdot g'(a)\) |
-| `du-cancel-fails` | The popular proof, examined | "Cancel the \(du\)'s" regroups \(\Delta y/\Delta x\) as \((\Delta y/\Delta u)(\Delta u/\Delta x)\) — which silently needs \(\Delta u\neq0\). Flagged, not dismissed. | \(\Delta u = g(a+h)-g(a)\) |
-| `residual-compose` | The honest repair | Substitute \(g\)'s model as \(f\)'s input in the **identity** \(f(b+k)=f(b)+f'(b)k+E_f(k)\) — never a division, and \(E_f(0)=0\) automatically. | \(E_f(k(h))\), \(k(h)=g(a+h)-g(a)\) |
+| `duCancelFails` | The popular proof, examined | "Cancel the \(du\)'s" regroups \(\Delta y/\Delta x\) as \((\Delta y/\Delta u)(\Delta u/\Delta x)\) — which silently needs \(\Delta u\neq0\). Flagged, not dismissed. | \(\Delta u = g(a+h)-g(a)\) |
+| `residualCompose` | The honest repair | Substitute \(g\)'s model as \(f\)'s input in the **identity** \(f(b+k)=f(b)+f'(b)k+E_f(k)\) — never a division, and \(E_f(0)=0\) automatically. | \(E_f(k(h))\), \(k(h)=g(a+h)-g(a)\) |
 | `result` | The rule, earned | \((f\circ g)'(a)=f'(g(a))g'(a)\). Checked live at \(g'(a)=0\): the result is \(0\), directly, no special case. | \((f\circ g)'(a)=f'(g(a))g'(a)\) |
 
-- **Pauses / dimming:** `du-cancel-fails` is a true hold — the scene shows the
-  regrouping step and waits before revealing what it silently assumes.
-- **Honest labelling:** `residual-compose` draws \(E_f(k(h))\) as a **visible
+- **Pauses / dimming:** `predict` is a true hold — nothing moves while the
+  question stands, and \(f'(2)\) is not revealed until `zoomOuter`, so the
+  question has a real, undisplayed answer at the moment it is asked.
+  `duCancelFails` is also a true hold — the scene shows the regrouping step
+  and waits before revealing what it silently assumes.
+- **Honest labelling:** `residualCompose` draws \(E_f(k(h))\) as a **visible
   labelled quantity**, the same discipline L2 used for \(E(h)\), never hidden
   inside an "approximately equals."
 - **Visual family:** this scene **reuses** `local-linearity-zoom` as **two
@@ -110,9 +119,12 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 ## Exercises (Practice)
 
 Tiers and evidence levels below are recorded at their capability's ceiling
-from the start (mastery-contract §1d's preflight) — `check`/`drill` (3),
-`transfer` (2); no item exceeds its capability's ceiling, so this lesson
-claims no E4.
+from the start (mastery-contract §1d's preflight) — `check` (2), `drill`
+(3), `transfer` (3). One item, `chain-derive-fresh`, claims E4 on
+`self-check` (human-scored) — the only item requiring the substitution
+argument to be PRODUCED, not applied, which M2 (the lesson's central
+misconception) needs; every other item stays at its capability's E2/E3
+ceiling.
 
 | # | Objective | Type | Tier / evidence | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- | --- |
@@ -122,26 +134,27 @@ claims no E4.
 | 4 | `chain-corroborate` — cross-check a chain-rule value against direct expansion | `exercise-sequence` (chain-rule value, `numeric` → expanded value, `numeric` → why it's evidence, `multiple-choice`) | drill / E3 | both values equal; agreement counts because expansion never used the chain rule | Mirrors L4's corroboration item — independence of the two routes is the point. |
 | 5 | `chain-compound-zoom` — compute a compound magnification | `numeric` | drill / E3 | the product of the two given factors | Targets M5: compounding is multiplicative, not additive. |
 | 6 | `chain-select-method` — choose the efficient route on a fresh composite | `exercise-sequence` (route, `multiple-choice`, names neither route → the answer, `numeric`) | transfer / E3 | efficient route depends on whether the composite is expandable; the numeric value | The prompt never says "chain rule" or "expand" — the learner must judge which applies. |
-| 7 | `chain-corner-not-necessary` — what follows when the inner function has a corner? | `multiple-choice` | check / E2 | the composite MAY still be differentiable there — the hypothesis is sufficient, not necessary | Rejects "the composite cannot be differentiable" — refuted by \(f(u)=u^2\), \(g(x)=|x|\), whose composite is \(x^2\). |
+| 7 | `chain-derive-fresh` — reproduce the substitution derivation on a fresh pair | `self-check`, human-scored | transfer / E4 | both local-linear models, the substitution, the \(k(h)=0\) case, the final division-by-\(h\) step | Targets M2 directly: stating the product with no substitution argument shown is NOT a pass. |
+| 8 | `chain-corner-not-necessary` — what follows when the inner function has a corner? | `multiple-choice` | check / E2 | the composite MAY still be differentiable there — the hypothesis is sufficient, not necessary | Rejects "the composite cannot be differentiable" — refuted by \(f(u)=u^2\), \(g(x)=|x|\), whose composite is \(x^2\). |
 
 ## Insight traceability
 
 | Contract obligation | Learner-facing location | Evidence of understanding |
 | --- | --- | --- |
-| C1 composition, no derivatives yet | `feed-through` | Ex. 1 |
-| C2 \(g\)'s local-linear model (cites L2 C5) | `zoom-inner` | Ex. 1 |
-| C3 \(f\)'s local-linear model, \(E_f(0)=0\) forced | `zoom-outer` | Ex. 1 |
-| C4 \(k(h)=\Delta u\) as a term, not a divisor | `du-cancel-fails` (the contrast) | Ex. 3 |
-| C5 the substitution identity | `residual-compose` | Ex. 1, Ex. 4 |
-| C6 dividing by \(h\), separating three terms | `residual-compose` (continued) | Ex. 4 |
-| C7 the composed-limits step (cites L1, L2 C11) | `residual-compose` caption | — *(named, not separately graded)* |
+| C1 composition, no derivatives yet | `feedThrough` | Ex. 1 |
+| C2 \(g\)'s local-linear model (cites L2 C5) | `zoomInner` | Ex. 1, Ex. 7 |
+| C3 \(f\)'s local-linear model, \(E_f(0)=0\) forced | `zoomOuter` | Ex. 1, Ex. 7 |
+| C4 \(k(h)=\Delta u\) as a term, not a divisor | `duCancelFails` (the contrast) | Ex. 3, Ex. 7 |
+| C5 the substitution identity | `residualCompose` | Ex. 1, Ex. 4, Ex. 7 |
+| C6 dividing by \(h\), separating three terms | `residualCompose` (continued) | Ex. 4, Ex. 7 |
+| C7 the composed-limits step (cites L1, L2 C11); the level-of-formality disclosure itself | `residualCompose` caption; the "the-repair" section's closing sentence | — *(named, not separately graded)* |
 | C8 the result | `result` | Ex. 1, Ex. 2 |
-| C9 the compression — L2's model substituted into itself | `zoom-inner`/`zoom-outer` combined | Ex. 4 |
-| C10 \(1\times1\)-matrix reading (cites L2 C9, LA `matrix-composition`) | Explorer readout (the two factors and their product) | — *(stated; forward connection, not graded here)* |
+| C9 the compression — L2's model substituted into itself | `zoomInner`/`zoomOuter` combined | Ex. 4, **Ex. 7 (the direct evidence — reproduces the substitution, not just its result)** |
+| C10 \(1\times1\)-matrix reading (cites L2 C9, LA `matrix-composition`) | Explorer readout (the two factors and their product) | — *(stated; forward connection, not graded here — M4)* |
 | C11 two zooms compound to one | `compound` | Ex. 5 |
-| C12 \(g'(a)=0\) needs no special case | `result` (checked live) | Ex. 2, Checkpoint |
+| C12 \(g'(a)=0\) needs no special case | `predict` (asked) → `result` (checked live) | Ex. 2, Checkpoint |
 | C13 forward to L7/`partial-derivatives-gradient`/`vector-fields-line-integrals` | a `looking-ahead` layer, one paragraph | — *(promise, not assessed)* |
-| **Bridge** two zooms, resumed from L2 | `zoom-inner`, `zoom-outer` | Ex. 5 |
+| **Bridge** two zooms, resumed from L2 | `zoomInner`, `zoomOuter` | Ex. 5 |
 | **Analogy limit** compounding is multiplicative, not additive | `compound` caption | Ex. 5 |
 | **Abstraction return** | Checkpoint | Predicts \(0\) at \(g'(a)=0\) with no reference to zooming |
 
@@ -194,10 +207,12 @@ claims no E4.
 - [ ] Component tests: explorer readouts (the two factors, their product,
       the compound magnification), preset switching, the cancel-\(du\)/
       residual-composition toggle
-- [ ] Grading contracts for all seven lesson-owned items, with the
-      adversarial reject battery (a wrong decomposition; the two derivative
-      values swapped; the compound magnification computed additively instead
-      of multiplicatively; the corner-composite item's distractor answers)
+- [ ] Grading contracts for all seven auto-graded lesson-owned items (the
+      eighth, `chain-derive-fresh`, is human-scored and exempt, matching
+      `structureModuleItems.test.ts`'s precedent), with the adversarial
+      reject battery (a wrong decomposition; the two derivative values
+      swapped; the compound magnification computed additively instead of
+      multiplicatively; the corner-composite item's distractor answers)
 - [ ] Route test: the placed `visual`/`watch` block renders `chain-rule`
 - [ ] Browser test: readouts correct, no console errors —
       `e2e/lesson-chain-rule.spec.ts`
