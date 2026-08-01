@@ -1,0 +1,201 @@
+# Lesson Mastery Contract — The Chain Rule: Rates Compose (spine L5)
+
+Gate 5 for **`chain-rule`**, after [insight.md](insight.md) reached `PASS`.
+First lesson of Package B (`calculus-technique`).
+
+## 1a. Placement & upstream links
+- **Spine:** L5, unit `calculus-technique` (Package B), first lesson of the
+  package, immediately following Package A's complete arc.
+- **Profile:** P2 primary. **No P3 bar claimed** — the composition-of-limits
+  step in C7 is stated conceptually, at the same level of formality L2 uses
+  for its own error term, not spelled out with full \(\varepsilon\)-\(\delta\)
+  bookkeeping. That is declared here and in the lesson.
+- **Insight contract:** [insight.md](insight.md) — `PASS`.
+- **Concepts introduced:** `chain-rule`. **Reused:** `derivative`,
+  `local-linearity` (L2); `limit`, `continuity` (L1); `matrix-composition`
+  (LA L6, cross-course).
+
+## 1b. Role, bridge, need
+- **Role:** the first technique lesson, and the one that shows a technique
+  can be *derived* from L2's own definition rather than handed down as a new
+  rule. Sets the pattern Package B's later lessons (substitution, parts,
+  improper integrals) follow: a computational tool, earned.
+- **Retrieve:** L2's local-linear model and its error term (C5); L2's
+  \(1\times1\)-matrix reading of the derivative (C9); L1's continuity.
+- **Bridge from Package A:** Package A closed with a complete arc — a rate,
+  its meaning, its total, and the theorem binding them. Package B opens by
+  asking the next question that arc leaves open: *the four lessons
+  differentiated single functions built from one formula; what happens when
+  a function is built by feeding one function's output into another?*
+- **Motivating need:** *You already know \(d(x^2)/dx\) and you already know
+  \(d(\sin u)/du\). What is \(d\bigl(\sin(x^2)\bigr)/dx\), and why isn't the
+  answer just "multiply the two rules you know"?*
+
+## 1c. Content to teach
+- **Definitions (D2):** composition of functions, \(f\circ g\); the chain
+  rule statement \((f\circ g)'(a)=f'(g(a))g'(a)\).
+- **Objects:** a fresh polynomial-inside-polynomial composite (main worked
+  example, distinct from every L1–L4 fixture); a trigonometric-of-polynomial
+  composite (the "recognize and differentiate on sight" prediction beat);
+  `ex-abs` (L2's corner) reused as an **inner** function, a new role for it.
+- **Procedures (D3):** decompose a composite into outer/inner functions;
+  differentiate a composite via the chain rule; verify a chain-rule result by
+  an independent direct-expansion computation where one is available.
+- **Results (D5):** \((f\circ g)'(a)=f'(g(a))g'(a)\), derived by substituting
+  local-linear models (C1–C8); the \(1\times1\)-matrix reading (C10).
+  **Explicitly denied:** that "cancel the \(du\)'s" is a proof; that
+  \(g'(a)=0\) is a special case requiring separate handling; that
+  \(g\) failing to be differentiable at \(a\) always forces \(f\circ g\) to
+  fail too (§1c edge cases).
+- **Proof depth (D6):** **fully derived on screen** (C1–C8) via substitution
+  of local-linear models, with the \(\Delta u=0\) case handled by the
+  identity itself (never a division) rather than assumed away. The
+  composition-of-limits step (C7) is stated conceptually — **no P3 bar
+  claimed**, flagged in §1a.
+- **Representations (D4):** the two-linked-zoom picture (visual); the
+  substituted-model algebra (symbolic); "feed one approximation's output into
+  the other" (verbal); the \(1\times1\)-matrix composition (structural); a
+  compounding-conversion-factor reading, e.g. miles/gal \(\times\) gal/hr
+  (applied, first-contact only — flagged in the insight as insufficient
+  alone, §1d P4).
+- **Translations:** magnification factor ↔ derivative value; compound
+  magnification ↔ product of two slopes; window collapsing to a point ↔
+  \(g'(a)=0\).
+- **Edge/degenerate cases (D7):** \(g'(a)=0\) (C12 — falls out directly, no
+  special handling); \(g=|x|\) composed as the inner function, where the
+  chain rule's hypothesis (both pieces differentiable) turns out to be
+  **sufficient, not necessary** — a composite can still be differentiable at
+  a point where the inner function is not.
+- **Misconceptions (D13):** M1–M5 of
+  [insight §Prerequisites](insight.md#prerequisites-limitations-likely-misconceptions).
+
+## 1d. Outcomes with evidence
+
+| Outcome | Dim | Owner | Level | Evidence | Attainment |
+| --- | --- | --- | --- | --- | --- |
+| Decompose a fresh composite and differentiate it via the chain rule | D3 | lesson | E3 | `chain-differentiate-fresh` (`exercise-sequence`: identify the decomposition (`multiple-choice`) → compute \((f\circ g)'(a)\) (`numeric`)) | planned |
+| Predict \((f\circ g)'(a)\) at a point where \(g'(a)=0\), without full computation | D9 | lesson | E3 | `chain-zero-predict` (`numeric`) | planned |
+| Identify exactly what fails in "cancel the \(du\)'s" when \(\Delta u=0\) | D13 | lesson | E2 | `chain-du-cancel-fails` (`multiple-choice`, four candidate diagnoses) | planned |
+| Verify a chain-rule result by an independent direct-expansion route, and say why agreement counts as evidence | D10 | lesson | E3 | `chain-corroborate` (`exercise-sequence`: chain-rule value (`numeric`) → expanded-and-differentiated value (`numeric`) → why it's evidence (`multiple-choice`)) | planned |
+| Compute a compound magnification from two zoom factors | D6 | lesson | E3 | `chain-compound-zoom` (`numeric`) | planned |
+| Select the efficient route (direct expansion vs. chain rule) on a fresh composite, unprompted | D8/D9 | lesson | E3 | `chain-select-method` (`exercise-sequence`: efficient route (`multiple-choice`, prompt does not name either route) → the answer (`numeric`)) | planned |
+| State what can and cannot be concluded when the inner function has a corner | D7 | lesson | E2 | `chain-corner-not-necessary` (`multiple-choice`) | planned |
+| Retain "cancel the \(du\)" is not sufficient justification, under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-du-not-proof` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
+| Integrate the chain rule with the \(1\times1\)-matrix reading and LA matrix composition on one mixed item | D10 | **module** | E5 | `mod-calctech-mixed-chain-matrix` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
+
+**Transfer:** two transfer-tier items, `chain-zero-predict` (predict before
+computing — D9) and `chain-select-method` (method selection folded into
+transfer — D8+D9, per [insight §11](insight.md#11-transfer-assessment)).
+Both **E3**: `numeric` and `exercise-sequence` cap there, and both keep a
+genuine produced numeric answer as the outcome's substance. Recall is capped
+at one item (`chain-du-cancel-fails`, a targeted misconception check, D13).
+
+**Evidence-ceiling preflight (applied before coding, per A2–A4's own
+precedent).** Every level above is already recorded at its capability's
+ceiling — `multiple-choice`→E2, `numeric`/`exercise-sequence`→E3 — so no
+reconciliation is anticipated at build time. If a build-time defect is found
+(a claim exceeding its capability, or a step converted to `multiple-choice`
+that changes an item's honest level), it is corrected in this table with a
+dated note, matching L1–L4's own practice, not silently.
+
+## 1e. Coverage status
+Taught: all of §1c. Practiced: every lesson-owned outcome (planned). Not yet
+built, so nothing is yet independently demonstrated — this section will be
+completed at Gate 8, once the lesson exists.
+
+## 1f. Connections, assessment, retention
+- **Cumulative (D10):** L2's error term (C5) reused verbatim in the
+  derivation (C1–C8); L2's \(1\times1\)-matrix reading (C9) extended to
+  composition (C10); L1's continuity used in C7. The strongest connection of
+  any lesson so far to a **cross-course** result: LA `matrix-composition`
+  (C10, C13).
+- **Assessment:** 3 check/drill, 2 transfer (planned); recall capped at one
+  (`chain-du-cancel-fails`). Every graded item uses a composite distinct from
+  the guided scene's own worked example, except `chain-corroborate`, whose
+  entire point is cross-checking the lesson's own main example.
+- **Retention (D12):** "cancel the \(du\)" is not sufficient justification —
+  the claim most likely to erode back into treating the mnemonic as the
+  proof.
+- **Forward:** L7 `substitution-parts` (this rule read backwards),
+  `partial-derivatives-gradient` (C10 promoted to real matrix multiplication
+  of Jacobians), `vector-fields-line-integrals` (the same C1–C8 structure,
+  parameterizing a path).
+
+## 1g. Correctness & scope
+- **Correctness checks:** every displayed derivative, magnification, and
+  corroboration value must come from `src/math` (a `chainRule`-style
+  composition of the existing derivative/residual helpers, or plain
+  composed closed-form derivatives — a Mode C implementation decision, not
+  fixed here). Property tests required at build: the chain-rule value agrees
+  with a direct-expansion derivative wherever both are computable, to machine
+  tolerance; \((f\circ g)'(a)=0\) exactly when \(g'(a)=0\), for a battery of
+  fixtures; the corner-composite example (\(g=|x|\)) is checked both ways —
+  a case where the composite IS differentiable at 0 despite \(g\) not being,
+  and (if included) a case where it is not.
+- **Generalization requirement (structural):** none — this lesson's
+  machinery does not feed a later lesson's generic engine the way
+  `telescoping-cancellation` does. The one forward *conceptual* requirement
+  is that C10's \(1\times1\)-matrix framing must be stated in a form that
+  literally generalizes (a linear map's matrix), not as a numerical
+  coincidence, so `partial-derivatives-gradient` can promote it without
+  re-deriving it.
+- **Declared unproved step:** the composition-of-limits argument in C7
+  (\(E_f(k(h))/h\to0\)) is stated conceptually, at L2's own level of
+  formality, not with full \(\varepsilon\)-\(\delta\) bookkeeping. Named as a
+  scoping choice in [insight.md's Audit A](insight.md#mathematical-audit-audit-a),
+  not a genuine gap — but it must be visible in the lesson as a stated
+  choice, the way L1's modulus and L4's uniform continuity are named.
+- **Scope exclusions:** implicit differentiation and related rates (stated as
+  applications, not developed); the multivariable chain rule / Jacobians
+  (named as a forward destination only); triple compositions beyond one
+  remark that the rule iterates; product and quotient rules (L2's scope, not
+  repeated here).
+- **Abstraction return:** insight §14; to be evidenced by
+  `chain-zero-predict`, which requires predicting the answer at \(g'(a)=0\)
+  from C12 directly, with no reference to zooming.
+
+## 6. Acceptance record (Gate 8)
+
+> **Gate 8 is scoped to this lesson's own outcomes.** Per
+> [mastery-standard §9](../../../../authoring/mastery-standard.md#9-workflow-integration),
+> Gate 8 confirms that every **lesson-owned** core outcome is independently
+> demonstrated with real in-lesson evidence, and that module-owned outcomes
+> are **carried forward as planned Gate-9 obligations**. The presence of open
+> Gate-9 obligations is the normal state of an accepted lesson and does
+> **not** block Gate 8. Gate 8 would be blocked only by a *lesson-owned*
+> outcome with no real evidencing item, or by accepting a lesson-owned
+> outcome on planned module evidence — neither of which this contract does.
+
+**Gate 8: NOT YET ATTEMPTED — lesson not built.** This section records the
+obligations Mode C must discharge, not an acceptance already granted.
+
+- [ ] Insight contract linked and `PASS` — linked; `PASS` recorded (this much
+      is already true; the remaining items require the lesson to exist).
+- [ ] All §1 fields filled — done at Gate 5; subject to the same
+      evidence-ceiling preflight/reconciliation discipline A2–A4 used if a
+      build-time defect is found.
+- [ ] Outcomes operational, owner-marked, evidence-paired.
+- [ ] **Every lesson-owned** core outcome independently demonstrated, with
+      recognition-level outcomes declared as such (`chain-du-cancel-fails`,
+      `chain-corner-not-necessary` — both **E2** by design, targeting a
+      misconception via recognition among structured distractors).
+- [ ] No lesson-owned outcome accepted on planned module evidence.
+- [ ] Assessment set matches §1f (3 check/drill, 2 transfer); recall capped
+      at one; transfer items present — a grading-contract test must pin the
+      tier tally, matching `fundamentalTheoremGradingContract.test.ts`'s
+      precedent.
+- [ ] Module-owned outcomes carried forward as Gate-9 obligations for
+      `calculus-technique` *(open by design; not a Gate 8 blocker)*.
+- [ ] Backward bridges (L1/L2/LA `matrix-composition`) + forward edges
+      (L7/`partial-derivatives-gradient`/`vector-fields-line-integrals`)
+      recorded.
+- [ ] Retention hook recorded.
+- [ ] Correctness gate passed, including the chain-rule/direct-expansion
+      cross-check and the \(g'(a)=0\)/corner-composite fixture battery.
+- [ ] The composition-of-limits scoping choice (C7) is visible in the lesson
+      as a named assumption, not silently assumed rigorous.
+- [ ] Grading contract registered for every auto-graded item
+      (`describeGradingContract`, adversarial reject batteries included).
+      `ITEM_ASSESSMENT_META` is the module-item (Gate 9) manifest and does
+      not cover these lesson-owned items, matching every prior lesson's
+      precedent.
