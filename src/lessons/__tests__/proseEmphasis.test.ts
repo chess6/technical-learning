@@ -1,0 +1,92 @@
+import { describe, expect, it } from "vitest";
+import { lessons } from "../registry";
+import { MODULE_ITEMS } from "../moduleItems";
+import { collectLessonProse, type ProseString } from "./lessonProse";
+
+/**
+ * Guards the failure mode documented in
+ * `docs/quality/known-failure-modes.md` § "A `**bold**` span that straddles
+ * inline math silently loses its markers".
+ *
+ * `ProseWithMath` extracts every `$...$` token from the whole string FIRST,
+ * then looks for `**bold**` / `*italic*` markers independently in each text
+ * segment *between* math tokens. So a bold span whose opening and closing
+ * markers land in two different segments can never be paired: each segment
+ * sees one lone marker, finds no partner, and emits the literal asterisks as
+ * plain text. It throws nothing — the learner just sees `**` on the page.
+ *
+ * This replicates that exact parsing order rather than pattern-matching the
+ * source, and it runs over RUNTIME strings, so concatenated prose is checked
+ * as the learner receives it.
+ */
+
+/** Split on `$...$` exactly as `ProseWithMath.splitMath` does. */
+function nonMathSegments(text: string): string[] {
+  const pattern = /\$([^$]+)\$/g;
+  const segments: string[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    segments.push(text.slice(last, match.index));
+    last = match.index + match[0].length;
+  }
+  segments.push(text.slice(last));
+  return segments;
+}
+
+/**
+ * A segment is clean when removing every *pairable* marker leaves no `*`
+ * behind — mirroring `splitEmphasis`'s `**bold**` alternative-first regex.
+ * A leftover `*` is a marker whose partner is on the far side of a math
+ * token, i.e. one that will render literally.
+ */
+function strandedMarker(segment: string): boolean {
+  return segment
+    .replace(/\*\*([^*]+)\*\*|\*([^*]+)\*/g, "")
+    .includes("*");
+}
+
+function offenders(strings: readonly ProseString[]): string[] {
+  return strings
+    .filter(({ text }) => nonMathSegments(text).some(strandedMarker))
+    .map(({ path, text }) => `  ${path}\n    ${text.slice(0, 160)}`);
+}
+
+describe("emphasis markers never straddle inline math", () => {
+  it("holds for every learner-facing prose string in every lesson", () => {
+    const problems = lessons.flatMap((lesson) =>
+      offenders(collectLessonProse(lesson)),
+    );
+    expect(
+      problems,
+      `Emphasis markers stranded by a $...$ token — these render as literal ` +
+        `asterisks. Keep each **bold** span inside one text run:\n${problems.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("holds for module-owned assessment items too", () => {
+    // Module items are learner-facing but live outside `lessons`, so the
+    // lesson walker never sees them.
+    const strings: ProseString[] = MODULE_ITEMS.flatMap((item) => {
+      const p = `moduleItem:${item.id}`;
+      const out: ProseString[] = [{ path: `${p}.prompt`, text: item.prompt }];
+      if (item.type === "multiple-choice") {
+        item.choices.forEach((c, i) =>
+          out.push({ path: `${p}.choices[${i}]`, text: c }),
+        );
+        out.push({ path: `${p}.explanation`, text: item.explanation });
+      }
+      return out;
+    });
+    const problems = offenders(strings);
+    expect(problems, problems.join("\n")).toEqual([]);
+  });
+
+  it("detects a stranded marker, and accepts a correctly-scoped one", () => {
+    // Proves the check bites rather than trivially passing.
+    const stranded = "**The images $A\\mathbf{w}_j$ span the space:** and so on.";
+    const scoped = "**The images span the space:** $A\\mathbf{w}_j$ and so on.";
+    expect(offenders([{ path: "x", text: stranded }])).toHaveLength(1);
+    expect(offenders([{ path: "x", text: scoped }])).toHaveLength(0);
+  });
+});

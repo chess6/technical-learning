@@ -170,16 +170,48 @@ span $\operatorname{Col}(A)$:**"` renders as literal `**` characters around
 correctly-rendered math, with no bold applied — silent, not a thrown error,
 so it is easy to ship and hard to notice in review.
 
-**The fix is authoring discipline, not (yet) a parser change:** keep every
+**The fix is authoring discipline, not a parser change:** keep every
 `**...**` span inside a single text run with no `$...$` token inside it. If a
 symbol must be referenced in a bolded lead-in, either restate the clause
 without the inline math (`"**The images span the column space:**"` instead of
-naming `$A\mathbf{w}_j$` inside the bold) or drop the bold and let the
-sentence structure carry the emphasis. A one-off script that replays
-`splitMath` then checks each segment for an unpaired `*` will catch this
-class of defect; it was not added as a permanent repo-wide test in R3 because
-it surfaces five pre-existing, unrelated lessons that are their own
-narrow-correction commits, not part of this package.
+naming `$A\mathbf{w}_j$` inside the bold) or move the math just outside the
+markers (`"**the solution** of $A\mathbf{x} = \mathbf{e}_j$"`).
+
+**Now enforced.** `src/lessons/__tests__/proseEmphasis.test.ts` replays
+`splitMath`'s exact ordering over **runtime** lesson data (so concatenated
+prose is checked as the learner receives it, which source-level pattern
+matching gets wrong) and fails on any segment left holding an unpaired `*`.
+It covers lesson prose and module-owned assessment items, and carries its own
+positive/negative case so it cannot silently stop biting. The nine
+occurrences it found on first run — across `change-of-basis`, `determinants`
+(×2), `matrix-composition` (×2), `red-black-trees` (×2), `subspaces-rank`,
+`systems`, and one `calculus-foundations` module item — are all fixed.
+
+The walker is shared with the KaTeX validator via
+`src/lessons/__tests__/lessonProse.ts`; **a new learner-facing prose field on
+`LessonDefinition` must be added there**, or both validators will silently
+stop covering it.
+
+## A named route target that resolves to nothing drops content silently
+
+**Seen in:** the `visual` + `sceneId` placement used by `eigenvectors`,
+`fundamental-theorem`, and `derivative-local-linearity` — unvalidated from the
+day it shipped until 2026-08.
+
+`LessonLayout` renders a `visual` block naming a `sceneId` as **that scene or
+nothing** — it deliberately never falls back to the lesson's own clip, because
+falling back would quietly put the *wrong* animation where the route asked for
+a specific one. Correct, but it means a typo'd or renamed `sceneId` removes
+the animation from the page with no error, no console warning, and no failing
+test. The lesson still renders; the learner just never sees the clip. Package
+R1's `explore` + `explorationId` placement copied the same shape.
+
+**Prevention rule:** every route block that names a target by id must have its
+target resolved in `contentValidation.test.ts`. That now covers `visual`
+(`sceneId`), `explore` (`explorationId`), `callout`, `proof`, `composed`,
+`section`, `formal`, `worked`, and `handoff`. When you add a route-block kind
+that references content by id, add its resolution check in the same commit —
+the renderer's own `return null` is not a safety net, it is the failure mode.
 
 ## Marginal caption clipping, revealed only when webfont metrics differ
 

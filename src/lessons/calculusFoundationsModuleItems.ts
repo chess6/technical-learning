@@ -269,7 +269,7 @@ const modCalcfoundDiagnoseSignedSplit: ExerciseDefinition = {
     "an antiderivative of $h$.\" (2) \"$h = 3(t-2)(t-4)$ is zero at $t=2$ and " +
     "$t=4$, so I split $\\int_0^2 + \\int_2^4 + \\int_4^6$.\" (3) " +
     "\"$\\int_0^2 = H(2)-H(0) = 20$; $\\int_2^4 = H(4)-H(2) = -4$; " +
-    "$\\int_4^6 = H(6)-H(4) = 20$.\" (4) \"**Total $= 20 + 4 + 20 = 44$ kJ**, " +
+    "$\\int_4^6 = H(6)-H(4) = 20$.\" (4) \"**Total** $= 20 + 4 + 20 = 44$ kJ, " +
     "because energy transferred can't be negative.\" Identify the EXACT step " +
     "that is wrong, explain why it is invalid, give the correct net total, and " +
     "produce a computation that shows $44$ cannot be right. Finally, say what " +

@@ -228,7 +228,7 @@ export const subspacesRankLesson: LessonDefinition = {
       kind: "proposition",
       label: "One row reduction, read three ways",
       statement:
-        "Row-reduce $A$. Then (i) $\\operatorname{rank}A$ is the number of pivots; (ii) the columns of **$A$ itself** in the pivot positions form a basis of $\\operatorname{Col}(A)$; (iii) setting one free variable to $1$ and the rest to $0$ produces one basis vector of $\\operatorname{Null}(A)$ per free variable.",
+        "Row-reduce $A$. Then (i) $\\operatorname{rank}A$ is the number of pivots; (ii) the columns of $A$ **itself** in the pivot positions form a basis of $\\operatorname{Col}(A)$; (iii) setting one free variable to $1$ and the rest to $0$ produces one basis vector of $\\operatorname{Null}(A)$ per free variable.",
       interpretation:
         "A single elimination answers everything this lesson asks. The one thing you must not do is read the column-space basis off the *reduced* matrix.",
       visibility: "revealed",

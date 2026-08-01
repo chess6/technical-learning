@@ -146,7 +146,7 @@ export const matrixCompositionLesson: LessonDefinition = {
     {
       id: "undo",
       title: "Running the question backwards",
-      body: "Now the question Lesson 5 set up. To undo $A$ we need a map $A^{-1}$ with $A^{-1}A = I$, where $I = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$ is the do-nothing map. Ask our one question about $A^{-1}$: where must **its** columns be? Since $AA^{-1} = I$ means $A\\,\\operatorname{col}_j(A^{-1}) = \\mathbf{e}_j$, column $j$ of $A^{-1}$ is precisely **the solution of $A\\mathbf{x} = \\mathbf{e}_j$**. Building an inverse is therefore solving two systems you already know how to solve.",
+      body: "Now the question Lesson 5 set up. To undo $A$ we need a map $A^{-1}$ with $A^{-1}A = I$, where $I = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$ is the do-nothing map. Ask our one question about $A^{-1}$: where must **its** columns be? Since $AA^{-1} = I$ means $A\\,\\operatorname{col}_j(A^{-1}) = \\mathbf{e}_j$, column $j$ of $A^{-1}$ is precisely **the solution** of $A\\mathbf{x} = \\mathbf{e}_j$. Building an inverse is therefore solving two systems you already know how to solve.",
       equation:
         "\\operatorname{col}_j(A^{-1}) \\text{ solves } A\\mathbf{x} = \\mathbf{e}_j, \\qquad A^{-1}A = AA^{-1} = I",
       observation:
@@ -446,7 +446,7 @@ export const matrixCompositionLesson: LessonDefinition = {
       type: "vector",
       tier: "drill",
       prompt:
-        "Let $M = " + M_TEX + "$ and $N = " + N_TEX + "$. Compute the **first column of $MN$** by applying $M$ to $N$'s first column. Enter both coordinates.",
+        "Let $M = " + M_TEX + "$ and $N = " + N_TEX + "$. Compute the **first column** of $MN$ by applying $M$ to $N$'s first column. Enter both coordinates.",
       expected: [FRESH.product[0][0], FRESH.product[1][0]],
       tolerance: 1e-9,
       explanation:

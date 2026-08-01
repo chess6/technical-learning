@@ -188,7 +188,7 @@ export const determinantsLesson: LessonDefinition = {
     {
       id: "row-ops",
       title: "What elimination does to the determinant",
-      body: "Lesson 4's row operations turn out to have simple, *derivable* effects. Each operation is itself a matrix — an **elementary matrix** $E$ — applied on the left, so multiplicativity does all the work: $\\det(EA) = \\det(E)\\det(A)$. Adding a multiple of one row to another has $\\det E = 1$, so the determinant is **unchanged**. Swapping two rows has $\\det E = -1$, so the sign **flips**. Scaling a row by $k$ has $\\det E = k$, so the determinant is **multiplied by $k$**. These are not three more rules to memorize; they are one rule read three times.",
+      body: "Lesson 4's row operations turn out to have simple, *derivable* effects. Each operation is itself a matrix — an **elementary matrix** $E$ — applied on the left, so multiplicativity does all the work: $\\det(EA) = \\det(E)\\det(A)$. Adding a multiple of one row to another has $\\det E = 1$, so the determinant is **unchanged**. Swapping two rows has $\\det E = -1$, so the sign **flips**. Scaling a row by $k$ has $\\det E = k$, so the determinant is **multiplied by that same factor**. These are not three more rules to memorize; they are one rule read three times.",
       equation:
         "\\det\\begin{bmatrix} 1 & 0 \\\\ k & 1 \\end{bmatrix} = 1, \\qquad \\det\\begin{bmatrix} 0 & 1 \\\\ 1 & 0 \\end{bmatrix} = -1, \\qquad \\det\\begin{bmatrix} k & 0 \\\\ 0 & 1 \\end{bmatrix} = k",
       observation:
@@ -476,7 +476,7 @@ export const determinantsLesson: LessonDefinition = {
       id: "det-product-fresh",
       type: "numeric",
       tier: "drill",
-      prompt: `For $M = \\begin{bmatrix} ${M[0][0]} & ${M[0][1]} \\\\ ${M[1][0]} & ${M[1][1]} \\end{bmatrix}$ and $N = \\begin{bmatrix} ${N[0][0]} & ${N[0][1]} \\\\ ${N[1][0]} & ${N[1][1]} \\end{bmatrix}$, compute $\\det(MN)$ **without forming $MN$**.`,
+      prompt: `For $M = \\begin{bmatrix} ${M[0][0]} & ${M[0][1]} \\\\ ${M[1][0]} & ${M[1][1]} \\end{bmatrix}$ and $N = \\begin{bmatrix} ${N[0][0]} & ${N[0][1]} \\\\ ${N[1][0]} & ${N[1][1]} \\end{bmatrix}$, compute $\\det(MN)$ — **without forming the product**.`,
       expected: detMN,
       tolerance: 1e-9,
       explanation: `$\\det(M) = ${detM}$ and $\\det(N) = ${detN}$, so $\\det(MN) = ${detM}\\cdot${detN} = ${detMN}$. Forming $MN$ first and taking its determinant gives the same number — multiplicativity just saves the work.`,

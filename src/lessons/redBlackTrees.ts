@@ -201,7 +201,7 @@ export const redBlackTreesLesson: LessonDefinition = {
         {
           kind: "math-note",
           title: "Where the hypothesis is used",
-          body: "The path must enter **through $g$**, from outside the cluster. Count from $g$ downward instead — excluding $g$ itself — and the two numbers are 1 and 2, and the claim is false. The qualifier is not decoration; it is the theorem.",
+          body: "The path must **enter through** $g$, from outside the cluster. Count from $g$ downward instead — excluding $g$ itself — and the two numbers are 1 and 2, and the claim is false. The qualifier is not decoration; it is the theorem.",
         },
       ],
     },
@@ -492,7 +492,7 @@ export const redBlackTreesLesson: LessonDefinition = {
         modelAnswer:
           "Let $g$ be the black representative with red children $p$ and $u$, and take any path that reaches the subtree from above — so it enters through $g$. Before the split, $g$ is black and contributes 1, and whichever of $p, u$ the path continues through is red and contributes 0: total 1 from the cluster. After the split, $g$ is red and contributes 0, and whichever of $p, u$ the path takes is now black and contributes 1: total 1 again. Every path through the subtree crosses the same number of black nodes as before, so the subtree's external black height is unchanged and the equal-black-height property still holds below. What has changed is that $g$ is now red, so if $g$'s parent is red there is a violation one level up — which is exactly the promoted key arriving in the parent's node. Drop 'external' and the claim is false: measured from $g$ downward, excluding $g$ itself, the count goes from 1 to 2, because the child that used to be red is now black. The theorem is about paths entering through $g$, not about paths starting at it.",
         rubric:
-          "A strong answer counts black nodes on a path entering **through $g$** (so $g$'s own colour is included), gets 1 before and 1 after, and concludes external black height is preserved. It must then note that $g$ turning red is what can create a violation one level up — the split does not fix the problem, it relocates it. Full credit needs the final part: measuring from $g$ exclusive gives 1 and 2, so the qualifier 'external' is load-bearing rather than decorative.",
+          "A strong answer counts black nodes on a path **entering through** $g$ (so $g$'s own colour is included), gets 1 before and 1 after, and concludes external black height is preserved. It must then note that $g$ turning red is what can create a violation one level up — the split does not fix the problem, it relocates it. Full credit needs the final part: measuring from $g$ exclusive gives 1 and 2, so the qualifier 'external' is load-bearing rather than decorative.",
       },
     },
     {

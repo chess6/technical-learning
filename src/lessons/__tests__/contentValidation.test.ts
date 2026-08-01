@@ -11,6 +11,7 @@ import type {
 import { hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { hasSolutionVisual } from "../../components/lesson/solutionVisuals/registry";
 import { getLessonVisual } from "../../components/lesson/lessonVisuals";
+import { hasExplorer } from "../../explorations/registry";
 import { getBlockComponent } from "../../components/lesson/blockComponents";
 import { getBlockAnchorId } from "../toc";
 
@@ -272,6 +273,21 @@ describe("content validation across all registered lessons", () => {
         } else if (block.kind === "practice" && !block.exerciseIds) {
           if ((lesson.exercises ?? []).length === 0) {
             problems.push(`${where}: "practice" block but the lesson has no exercises`);
+          }
+        } else if (block.kind === "visual" && block.sceneId) {
+          // A `visual` naming a scene renders THAT scene or NOTHING — it never
+          // falls back to the lesson's own clip (LessonLayout, deliberately).
+          // So a typo'd sceneId silently drops the animation off the page with
+          // nothing failing. Three lessons place named clips this way.
+          if (!hasGuidedScene(block.sceneId)) {
+            problems.push(`${where}: "visual" block references unregistered sceneId "${block.sceneId}"`);
+          }
+        } else if (block.kind === "explore" && block.explorationId) {
+          // Same hazard, same rule, for the named-explorer placement added in
+          // package R1 — resolved against the registry's own id list so this
+          // stays a pure-data check (no React import into a lessons test).
+          if (!hasExplorer(block.explorationId)) {
+            problems.push(`${where}: "explore" block references unregistered explorationId "${block.explorationId}"`);
           }
         } else if (block.kind === "callout") {
           if (!calloutIds.has(block.calloutId)) {

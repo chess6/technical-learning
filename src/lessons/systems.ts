@@ -71,7 +71,7 @@ export const systemsLesson: LessonDefinition = {
       statement:
         "For a matrix $A = \\begin{bmatrix} \\mathbf{a}_1 & \\mathbf{a}_2 \\end{bmatrix}$ with columns $\\mathbf{a}_1, \\mathbf{a}_2$ and a target $\\mathbf{b}$, the equation $A\\mathbf{x} = \\mathbf{b}$ is one object with several equivalent readings: the two scalar equations (its **rows**); two **lines** whose intersection is the solution set; and — by the columns rule — the **vector equation** $x\\,\\mathbf{a}_1 + y\\,\\mathbf{a}_2 = \\mathbf{b}$.",
       interpretation:
-        "The row viewpoint asks: *which $(x, y)$ satisfy every constraint at once?* The column viewpoint asks: *which coefficients combine the columns to reach $\\mathbf{b}$?* They are not rival explanations — they are the same equation, and they always agree on the solutions.",
+        "The row viewpoint asks: *which points satisfy every constraint at once?* The column viewpoint asks: *which coefficients combine the columns to reach the target?* They are not rival explanations — they are the same equation, and they always agree on the solutions.",
       visibility: "visible",
       layers: [
         {

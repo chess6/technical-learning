@@ -117,7 +117,7 @@ export const changeOfBasisLesson: LessonDefinition = {
     {
       id: "direction",
       title: "Which way does $P$ go?",
-      body: "Build $P$ by putting the new basis vectors in as columns, **written in standard coordinates**: $P = " + P_TEX + "$ for Lesson 1's basis. Now you never have to remember which direction it converts, because you can read it off. Feed $P$ the vector $\\mathbf{e}_1$ — which is the *$B$-coordinate* description of $\\mathbf{b}_1$, one step along the first basis vector and none along the second — and it returns $\\mathbf{b}_1 = (1,2)$ in standard coordinates. So $P$ takes $B$-coordinates **to** standard coordinates, and $P^{-1}$ goes back.",
+      body: "Build $P$ by putting the new basis vectors in as columns, **written in standard coordinates**: $P = " + P_TEX + "$ for Lesson 1's basis. Now you never have to remember which direction it converts, because you can read it off. Feed $P$ the vector $\\mathbf{e}_1$ — which is the $B$-coordinate description of $\\mathbf{b}_1$, one step along the first basis vector and none along the second — and it returns $\\mathbf{b}_1 = (1,2)$ in standard coordinates. So $P$ takes $B$-coordinates **to** standard coordinates, and $P^{-1}$ goes back.",
       equation:
         "\\mathbf{x} = P\\,[\\mathbf{x}]_B, \\qquad [\\mathbf{x}]_B = P^{-1}\\mathbf{x}",
       observation:
