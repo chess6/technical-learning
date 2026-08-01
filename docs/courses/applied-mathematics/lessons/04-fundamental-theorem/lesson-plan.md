@@ -207,7 +207,7 @@ no E4.
 - [x] Invariant tests (the list above, including the parameterization test)
 - [x] Component tests: explorer difference readout, survivor count, equal/unequal toggle, \(C\) control, reset — `FundamentalTheoremExplorer.test.tsx`
 - [x] Grading contracts for all ten items — `fundamentalTheoremGradingContract.test.ts`. **No `ITEM_ASSESSMENT_META` entry**: that manifest is scoped to `MODULE_ITEMS` (Gate 9), not lesson-owned items — see the contract's §6, matching A2's and A3's precedent.
-- [x] Guided-scene hard gates + chapter seek for **both** clips — green except the disclosed `ftc-accumulate-then-measure` `seek-determinism` limitation (known-failure-modes.md), unrelated to this lesson's content
+- [ ] Guided-scene hard gates + chapter seek for **both** clips fully green. **Not checked:** `ftc-accumulate-then-measure` fails `seek-determinism` for a disclosed, pre-existing `@motion-canvas/2d` limitation (known-failure-modes.md) — the root cause is unrelated to this lesson's content, but the clip itself is this lesson's, so the failure is not waived away here. Every other hard gate for both clips is green. Left unchecked pending a formally approved waiver (see the module ledger's §7).
 - [x] Route test: the placed `visual` block renders `ftc-telescoping` — `lessonWiring.test.ts`
 - [x] Browser test: readouts correct, no console errors — `e2e/lesson-fundamental-theorem.spec.ts`
 

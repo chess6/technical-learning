@@ -263,9 +263,9 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 - [x] **Each lesson passes Gate 8 on its lesson-owned outcomes**, with module-owned
       outcomes recorded as open Gate-9 obligations.
 - [x] P1–P5 verified, each by a test rather than by inspection.
-- [x] `./check.sh --e2e` green, re-confirmed 2026-07-30 after the correction pass
-      below. **Two known, pre-existing exceptions, both already recorded in
-      [known-failure-modes.md](../../../../quality/known-failure-modes.md):**
+- [ ] `./check.sh --e2e` fully green. **Not checked, by design:** two known,
+      pre-existing exceptions, both already recorded in
+      [known-failure-modes.md](../../../../quality/known-failure-modes.md):
       `ftc-accumulate-then-measure` — an A4 scene, inside this package — fails
       the hard gates' `seek-determinism` check for a diagnosed `@motion-canvas/2d`
       `Latex` limitation; the failure's *root cause* is external to this
@@ -276,6 +276,11 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
       `text-clipping` intermittently under webfont-metric variance. Every other
       check, including every other hard gate for both A4 scenes, is green —
       `npm run typecheck`, `npm run lint`, and `npm run build` all pass clean.
+      An external root cause does not make a binary gate green: this item
+      stays unchecked pending a formally approved waiver from an independent
+      reviewer or the user — the same self-certification discipline as the
+      semantic-review item below, not something the correcting agent can
+      grant itself.
 - [ ] Package-level semantic review (Opus) requested and passed. **Status:**
       the review has run twice — once at the original scope (2026-07-29,
       found the defects this ledger's per-slice notes describe) and once
