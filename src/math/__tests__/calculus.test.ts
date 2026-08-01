@@ -589,6 +589,24 @@ describe("boundaryAwareDerivative — no symmetric difference reaching past a do
     expect(() => boundaryAwareDerivative((x) => x, 0, [0, 1e-7], 1e-5)).toThrow(/narrower/);
   });
 
+  it("rejects a domain narrower than TWICE the step size, instead of mis-reporting an interior point as outside the domain", () => {
+    // Regression: a width of 1.5h sits between h and 2h. The old guard
+    // (`hi - lo < h`) let this through, and the interior point at this
+    // domain's midpoint has neither a valid left nor right step — it fell
+    // through to a bogus "outside domain" error for a point well inside
+    // [0, 1.5h].
+    const h = 1e-5;
+    const domain: [number, number] = [0, 1.5 * h];
+    expect(() => boundaryAwareDerivative((x) => x, 0.75 * h, domain, h)).toThrow(/narrower/);
+  });
+
+  it("computes a one-sided difference at the midpoint of a domain exactly twice the step size", () => {
+    const h = 1e-5;
+    const domain: [number, number] = [0, 2 * h];
+    const f = (x: number) => x * x;
+    expect(boundaryAwareDerivative(f, h, domain, h)).toBeCloseTo(numericDerivative(f, h), 8);
+  });
+
   it("rejects an x outside the domain", () => {
     expect(() => boundaryAwareDerivative((x) => x, 5, [0, 2])).toThrow(/outside domain/);
   });
