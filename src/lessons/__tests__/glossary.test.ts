@@ -7,6 +7,7 @@ import {
 } from "../glossary";
 import { getLessonById } from "../registry";
 import { isValidIdSyntax } from "../../platform/identity";
+import { CONCEPTS } from "../../curriculum/concepts";
 
 const REQUIRED_SEED_IDS = [
   "vector",
@@ -16,7 +17,7 @@ const REQUIRED_SEED_IDS = [
   "linear-transformation",
   "column-space",
   "consistency",
-  "independence",
+  "linear-independence",
   "invertibility",
   "determinant",
   "eigenvector",
@@ -25,7 +26,7 @@ const REQUIRED_SEED_IDS = [
 describe("glossary data integrity", () => {
   it("seeds the required first-class terms (8–11+)", () => {
     expect(GLOSSARY_TERMS.length).toBeGreaterThanOrEqual(8);
-    const ids = new Set(GLOSSARY_TERMS.map((t) => t.id));
+    const ids: ReadonlySet<string> = new Set(GLOSSARY_TERMS.map((t): string => t.id));
     for (const id of REQUIRED_SEED_IDS) {
       expect(ids.has(id)).toBe(true);
     }
@@ -56,6 +57,34 @@ describe("glossary data integrity", () => {
         expect(ref).not.toBe(term.id);
       }
     }
+  });
+
+  it("never spells a curriculum concept differently from its catalog id", () => {
+    // Catches drift like the glossary's old "independence" sitting next to
+    // the curriculum catalog's "linear-independence" for the same idea: a
+    // glossary id whose hyphen-words are a contiguous run inside a DIFFERENT
+    // curriculum concept id's hyphen-words is almost certainly the same
+    // concept, spelled two ways.
+    const conceptIds = CONCEPTS.map((c) => c.id);
+    const wordsOf = (id: string) => id.split("-");
+    const isContiguousSubrun = (needle: string[], haystack: string[]) => {
+      for (let start = 0; start + needle.length <= haystack.length; start++) {
+        if (needle.every((word, i) => haystack[start + i] === word)) return true;
+      }
+      return false;
+    };
+
+    const suspiciousPairs: string[] = [];
+    for (const term of GLOSSARY_TERMS) {
+      if (conceptIds.includes(term.id)) continue; // exact match — no drift
+      const termWords = wordsOf(term.id);
+      for (const conceptId of conceptIds) {
+        if (isContiguousSubrun(termWords, wordsOf(conceptId))) {
+          suspiciousPairs.push(`glossary "${term.id}" vs. catalog "${conceptId}"`);
+        }
+      }
+    }
+    expect(suspiciousPairs).toEqual([]);
   });
 
   it("points firstLessonIntroduced at a registered lesson", () => {

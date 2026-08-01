@@ -18,6 +18,7 @@ import { LessonHeader } from "../lesson/LessonHeader";
 import { FormalStatement } from "../lesson/FormalStatement";
 import { LessonTableOfContents } from "../lesson/LessonTableOfContents";
 import { renderBlockComponent } from "../lesson/blockComponents";
+import { CurriculumConnections } from "../lesson/CurriculumConnections";
 import { LessonNavigation } from "./LessonNavigation";
 import "./LessonLayout.css";
 
@@ -451,6 +452,8 @@ export function LessonLayout({
       {resolved.map((entry) => (
         <Fragment key={entry.key}>{entry.node}</Fragment>
       ))}
+
+      <CurriculumConnections lessonId={lesson.id} />
 
       <LessonNavigation previous={previous} next={next} onReset={onReset} />
     </article>

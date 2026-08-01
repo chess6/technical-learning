@@ -66,29 +66,44 @@ observed to fail, reverted), not merely observed to pass.
 
 **Open:**
 
-- [ ] **Independent semantic review of R0–R3.** A *self*-review has run and
-      found four real defects; that does not discharge the self-certification
-      gap ADR-002 names. This is the same class of obligation as Stream 1's,
-      and Stream 1's experience — an independent reviewer catching a genuine
-      mathematical gap that self-review had certified as valid — is the
-      argument for taking it seriously.
+- [ ] **Independent semantic review of R0–R4.** A *self*-review has run and
+      found real defects at every package so far; that does not discharge the
+      self-certification gap ADR-002 names. This is the same class of
+      obligation as Stream 1's, and Stream 1's experience — an independent
+      reviewer catching a genuine mathematical gap that self-review had
+      certified as valid — is the argument for taking it seriously.
 - [ ] Two in-session deviations from the plan text, reasoned through and
       recorded in code comments/ADRs but never separately confirmed:
       `review` as a `UnitItem` kind is **deferred to R6** (no per-module
       scheduler data exists to back it); Karatsuba ends on an
       **open-question section**, not a `handoff` (no built lesson to point at).
-- [ ] Recorded, deliberately unfixed: the named `explore`/`explorationId`
-      path has no render test; the ToC/layout divergence for unresolvable
-      named targets is mirrored from `visual` rather than repaired. Neither is
-      triggered by any current lesson.
-- [ ] Five **pre-existing** `**bold**`-straddling-math occurrences in
-      unrelated lessons (`determinants`, `matrixComposition`, `redBlackTrees`,
-      `structureModuleItems`, `subspacesRank`) — see `known-failure-modes.md`.
-      Each is its own narrow-correction commit.
 
-**Not started:** R4 (curriculum graph as data), R5 (course split + `/map`),
-R6 (mastery derivation), R7+ (content expansion). Per the plan, none should
-begin before the review gate above passes.
+Two defect classes recorded here as "deliberately unfixed" earlier are now
+closed, with permanent guards proven to bite (deliberately broken, observed to
+fail with a precise message, reverted): the bold-straddling-math failure mode
+(9 real occurrences found via a runtime walker over live lesson objects —
+`src/lessons/__tests__/lessonProse.ts`/`proseEmphasis.test.ts` — a materially
+different, more accurate set than an earlier source-literal scan had found);
+and unvalidated named `visual`/`explore` route targets (`contentValidation.test.ts`
+now resolves `sceneId`/`explorationId` against the real registries). See
+`docs/quality/known-failure-modes.md` for both.
+
+**R4 (curriculum graph as data) is now built** on this branch, ahead of what's
+merged to `master` — see "Repository state" below. `src/curriculum/` (`concepts.ts`:
+83 concepts; `edges.ts`: 342 edges across all six ADR-005 types; `lessonRoster.ts`;
+`labels.ts`; `__tests__/graph.test.ts`: DAG validation, referential integrity,
+edge-consumer test). Real consumers: `CurriculumConnections` (new, wired into
+`LessonLayout`) for `requires`/`recommended-before`/`same-structure-as`/
+`refresher-for`; `GlossaryTermCard` extended for `application-of`/`revisited-by`.
+`GlossaryTerm.prerequisites`/`relatedTerms` migrated to `ConceptId`; the
+`independence`/`linear-independence` drift is fixed, with a generic
+drift-detection test guarding against the same class recurring. Not yet done:
+independent review (see above); R5's `/map` page is where these edges get a
+dedicated UI beyond the lesson/glossary footnotes shipped here.
+
+**Not started:** R5 (course split + `/map`), R6 (mastery derivation), R7+
+(content expansion). Per the plan, R5 should not begin before the review gate
+above passes.
 **Plan:** `/home/thomas/.claude/plans/plan-a-major-pedagogical-linked-pinwheel.md`
 
 ---
@@ -106,9 +121,12 @@ pre-change baselines by both streams independently.
 
 ## Repository state
 
-`master` now contains both streams and has been pushed to `origin`.
-`feature/l5-chain-rule` and its worktree are deleted;
-`feature/experience-architecture` is merged.
+`master` contains both streams as of the merge described above and has been
+pushed to `origin`. `feature/l5-chain-rule` and its worktree are deleted.
 
-`CLAUDE.md` carries a pre-existing "Session continuation" diff from an earlier
-session (origin unknown) — still undecided: commit, keep editing, or discard.
+`feature/experience-architecture` is **not** fully merged: it carries R4
+(above) plus the two closed defect-class fixes, both landed *after* the merge
+to `master` recorded here. `master` does not yet have R4. Before merging again,
+re-run the cross-stream compatibility check the first merge did (new
+lessons/tests on `master` since must satisfy this branch's validators, and
+vice versa) rather than assuming the first merge's clearance still holds.

@@ -130,6 +130,11 @@
   border-color: var(--color-accent);
 }
 
+.glossary-card__chip--static {
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
 .glossary-card__lesson-link {
   color: var(--color-accent);
   font-size: var(--text-sm);

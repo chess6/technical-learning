@@ -345,6 +345,17 @@ export function activeCourse(lessonId?: string): Course {
   return courseForLesson(lessonId) ?? DEFAULT_COURSE;
 }
 
+/** A not-yet-built lesson node by id, or `undefined` if it isn't scheduled. */
+export function getFutureLessonById(
+  id: string,
+  curriculum: readonly Subject[] = CURRICULUM,
+): FutureLessonRef | undefined {
+  return allUnits(curriculum)
+    .flatMap((unit) => unit.items)
+    .filter((item): item is FutureLessonRef => item.kind === "future")
+    .find((item) => item.id === id);
+}
+
 /** Position of a lesson within its own course path, or -1 when unplaced. */
 export function getLessonIndex(lessonId: string): number {
   const course = courseForLesson(lessonId);

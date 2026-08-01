@@ -9,12 +9,18 @@
  * returning learner can rejoin the story anywhere.
  *
  * All notation is KaTeX-in-prose (`$...$`), rendered through `ProseWithMath`.
- * Term ids are `ConceptId`-style lowercase slugs (see `src/platform/identity`).
+ * Term ids are `ConceptId`s (see `src/platform/identity`) — the same brand
+ * `src/curriculum/concepts.ts` uses, so a term that names the same idea as a
+ * curriculum concept must spell it identically (no `independence` next to
+ * the curriculum catalog's `linear-independence`; see
+ * `src/lessons/__tests__/glossary.test.ts`'s drift-detection test).
  */
 
+import { asConceptId, type ConceptId } from "../platform/identity";
+
 export type GlossaryTerm = {
-  /** ConceptId-style lowercase slug (unique). */
-  id: string;
+  /** ConceptId (unique). */
+  id: ConceptId;
   /** Display name. */
   term: string;
   /** The precise, textbook-grade definition (KaTeX-in-prose). */
@@ -32,12 +38,19 @@ export type GlossaryTerm = {
   /** Lesson id where the term is first introduced (resolved via the registry). */
   firstLessonIntroduced?: string;
   /** Prerequisite term ids (must be understood first). */
-  prerequisites?: string[];
+  prerequisites?: ConceptId[];
   /** Concrete positive examples (KaTeX-in-prose). */
   examples?: string[];
   /** Instructive non-examples — cases the term does *not* cover. */
   nonExamples?: string[];
   /** Related term ids (neighbors in the concept graph). */
+  relatedTerms?: ConceptId[];
+};
+
+/** Authoring shape: plain strings, for ergonomic literals below. */
+type RawGlossaryTerm = Omit<GlossaryTerm, "id" | "prerequisites" | "relatedTerms"> & {
+  id: string;
+  prerequisites?: string[];
   relatedTerms?: string[];
 };
 
@@ -55,7 +68,7 @@ export const GLOSSARY_NOTATION_GUIDANCE =
   "Read a coordinate tuple, a matrix, or a component list as *a description under a chosen basis*, " +
   "never as the object itself — the object does not move when you re-describe it.";
 
-export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
+const RAW_GLOSSARY_TERMS: readonly RawGlossaryTerm[] = [
   {
     id: "vector",
     term: "Vector",
@@ -91,10 +104,10 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     nonExamples: [
       "A dependent pair $\\mathbf{w} = 2\\mathbf{v}$ spans only a line, not the plane",
     ],
-    relatedTerms: ["vector", "basis", "independence", "column-space"],
+    relatedTerms: ["vector", "basis", "linear-independence", "column-space"],
   },
   {
-    id: "independence",
+    id: "linear-independence",
     term: "Linear independence",
     definition:
       "Vectors are linearly independent when no nontrivial combination equals $\\mathbf{0}$ — equivalently, none is a linear combination of the others. In the plane, two vectors are independent iff neither is a scalar multiple of the other.",
@@ -118,7 +131,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     intuition: "A minimal coordinate language for the space.",
     notation: "$B = (\\mathbf{v}, \\mathbf{w})$",
     firstLessonIntroduced: "vectors",
-    prerequisites: ["span", "independence"],
+    prerequisites: ["span", "linear-independence"],
     examples: [
       "The standard basis $(\\mathbf{e}_1, \\mathbf{e}_2)$",
       "$B = ((1, 2), (3, -1))$ — independent and spanning, though not perpendicular",
@@ -127,7 +140,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
       "A dependent pair (spans only a line — fails to span)",
       "Three vectors in the plane (spanning but not independent)",
     ],
-    relatedTerms: ["independence", "span", "coordinates", "vector"],
+    relatedTerms: ["linear-independence", "span", "coordinates", "vector"],
   },
   {
     id: "coordinates",
@@ -199,7 +212,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     nonExamples: [
       "$\\mathbf{b}$ off a dependent column line \u2192 *inconsistent*, no solution",
     ],
-    relatedTerms: ["column-space", "invertibility", "independence"],
+    relatedTerms: ["column-space", "invertibility", "linear-independence"],
   },
   {
     id: "invertibility",
@@ -211,7 +224,7 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     // Introduced in L6, where the inverse is BUILT (its columns solve
     // A x = e_j). Determinants (L7) then names the number that detects it.
     firstLessonIntroduced: "matrix-composition",
-    prerequisites: ["linear-transformation", "independence", "consistency"],
+    prerequisites: ["linear-transformation", "linear-independence", "consistency"],
     examples: [
       "A rotation is invertible — rotate back by the same angle",
     ],
@@ -230,14 +243,14 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     notationNote:
       "$|\\det A|$ is the area factor; the *sign* is orientation (a handedness flip), not a negative amount of area.",
     firstLessonIntroduced: "determinants",
-    prerequisites: ["linear-transformation", "independence"],
+    prerequisites: ["linear-transformation", "linear-independence"],
     examples: [
       "$\\det\\begin{bmatrix} 2 & 1 \\\\ 0 & 1 \\end{bmatrix} = 2$ — area doubled, orientation preserved",
     ],
     nonExamples: [
       "$\\det = 0$ is not \u201ca small number\u201d — it is collapse: the columns are dependent and the map is singular",
     ],
-    relatedTerms: ["invertibility", "independence", "eigenvector"],
+    relatedTerms: ["invertibility", "linear-independence", "eigenvector"],
   },
   {
     id: "eigenvector",
@@ -358,6 +371,19 @@ export const GLOSSARY_TERMS: readonly GlossaryTerm[] = [
     relatedTerms: ["red-black-encoding", "tree-height"],
   },
 ];
+
+/**
+ * The branded, consumed export. `asConceptId` is the only sanctioned way to
+ * turn a raw string into a `ConceptId` (`src/platform/identity.ts`) — it also
+ * asserts slug syntax, so a malformed id fails at module load rather than
+ * silently passing through as a plain string.
+ */
+export const GLOSSARY_TERMS: readonly GlossaryTerm[] = RAW_GLOSSARY_TERMS.map((t) => ({
+  ...t,
+  id: asConceptId(t.id),
+  prerequisites: t.prerequisites?.map(asConceptId),
+  relatedTerms: t.relatedTerms?.map(asConceptId),
+}));
 
 /** Terms indexed by id, for lookups and referential-integrity checks. */
 export const GLOSSARY_BY_ID: ReadonlyMap<string, GlossaryTerm> = new Map(

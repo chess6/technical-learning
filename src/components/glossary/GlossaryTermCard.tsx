@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import type { GlossaryTerm } from "../../lessons/glossary";
 import { getGlossaryTerm } from "../../lessons/glossary";
 import { getLessonById } from "../../lessons/registry";
+import { edgesFrom } from "../../curriculum/edges";
+import { getConcept } from "../../curriculum/concepts";
+import { lessonLabel } from "../../curriculum/labels";
 import { ProseWithMath } from "../lesson/ProseWithMath";
 import "./GlossaryTermCard.css";
 
@@ -46,6 +49,17 @@ export function GlossaryTermCard({
   const lesson = term.firstLessonIntroduced
     ? getLessonById(term.firstLessonIntroduced)
     : undefined;
+
+  const applications = edgesFrom(term.id, "application-of")
+    .map((edge) => getConcept(edge.to))
+    .filter((concept): concept is NonNullable<typeof concept> => concept !== undefined);
+
+  const revisitedIn = edgesFrom(term.id, "revisited-by")
+    .map((edge) => ({ id: edge.to, label: lessonLabel(edge.to) }))
+    .filter(
+      (row): row is { id: string; label: NonNullable<typeof row.label> } =>
+        row.label !== undefined,
+    );
 
   return (
     <article className="glossary-card" id={term.id} aria-labelledby={`${term.id}-name`}>
@@ -116,6 +130,40 @@ export function GlossaryTermCard({
         )}
         {term.relatedTerms && term.relatedTerms.length > 0 && (
           <TermRefs ids={term.relatedTerms} label="Related" />
+        )}
+        {applications.length > 0 && (
+          <div className="glossary-card__refs">
+            <span className="glossary-card__refs-label">Applications</span>
+            <ul className="glossary-card__refs-list">
+              {applications.map((concept) => (
+                <li key={concept.id}>
+                  <span className="glossary-card__chip glossary-card__chip--static">
+                    {concept.title}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {revisitedIn.length > 0 && (
+          <div className="glossary-card__refs">
+            <span className="glossary-card__refs-label">Comes up again in</span>
+            <ul className="glossary-card__refs-list">
+              {revisitedIn.map(({ id, label }) => (
+                <li key={id}>
+                  {label.href ? (
+                    <Link className="glossary-card__chip" to={label.href}>
+                      {label.title}
+                    </Link>
+                  ) : (
+                    <span className="glossary-card__chip glossary-card__chip--static">
+                      {label.title}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         {lesson && (
           <div className="glossary-card__refs">
