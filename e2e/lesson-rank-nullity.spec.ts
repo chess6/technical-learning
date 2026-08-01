@@ -69,6 +69,50 @@ test("Rank–Nullity: the ledger balances at n for every shape", async ({ page }
   expect(errors, `console errors:\n${errors.join("\n")}`).toEqual([]);
 });
 
+/**
+ * Package R3 (ADR-004): the proof is the lesson's MAIN LINE, placed by its own
+ * `proof` route block — not a collapsed depth layer, and not a second copy of
+ * the theorem. This is the assertion that was missing when R3 shipped: the
+ * proof rendering had been verified only by a manual screenshot, so a
+ * regression in `FormalStatement`'s proof variant would have failed nothing.
+ */
+test("Rank–Nullity: the proof renders as the main line, distinct from the statement", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/lesson/rank-nullity");
+
+  const statement = page.getByTestId("formal-thm-rank-nullity");
+  const proof = page.getByTestId("proof-thm-rank-nullity");
+
+  // Both exist, and they are DIFFERENT elements with distinct anchors.
+  await expect(statement).toBeVisible();
+  await expect(proof).toBeVisible();
+  await expect(page.locator("#formal-thm-rank-nullity")).toHaveCount(1);
+  await expect(page.locator("#proof-thm-rank-nullity")).toHaveCount(1);
+
+  // The proof is expanded prose, not a <details> the learner must open.
+  await expect(proof.locator("details")).toHaveCount(0);
+  await expect(proof).toContainText("Proof (Theorem — Rank–Nullity).");
+  await expect(proof).toContainText("independent");
+  await expect(proof.locator(".formal-statement__proof-end")).toContainText("∎");
+
+  // It does NOT repeat what the statement block already said — the redundancy
+  // defect the first R1 design shipped and the R3 review caught.
+  await expect(proof).not.toContainText("In words.");
+  await expect(statement).not.toContainText("Proof (");
+
+  // Both bold lead-ins survive as real <strong>, not literal asterisks (the
+  // ProseWithMath bold-straddling-math hazard in known-failure-modes.md).
+  await expect(proof).not.toContainText("**");
+  await expect(
+    proof.locator("strong", { hasText: "The images span the column space:" }),
+  ).toHaveCount(1);
+  await expect(
+    proof.locator("strong", { hasText: "They are independent:" }),
+  ).toHaveCount(1);
+});
+
 test("Rank–Nullity stays usable at a narrow viewport", async ({ page }) => {
   const errors = collectConsoleErrors(page);
   await page.setViewportSize({ width: 390, height: 844 });

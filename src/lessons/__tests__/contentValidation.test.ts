@@ -12,6 +12,7 @@ import { hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { hasSolutionVisual } from "../../components/lesson/solutionVisuals/registry";
 import { getLessonVisual } from "../../components/lesson/lessonVisuals";
 import { getBlockComponent } from "../../components/lesson/blockComponents";
+import { getBlockAnchorId } from "../toc";
 
 /**
  * Content validator (expressed as a test). Runs over ALL registered lessons and
@@ -224,6 +225,32 @@ describe("content validation across all registered lessons", () => {
   it("has globally-unique exercise ids (learner state is keyed by exercise id)", () => {
     const allIds = lessons.flatMap((l) => (l.exercises ?? []).map((e) => e.id));
     expect(duplicates(allIds), "colliding exercise ids across lessons").toEqual([]);
+  });
+
+  /**
+   * Every route block becomes a DOM `id` (LessonLayout) and an in-page anchor
+   * target (the table of contents, the course sidebar's sublist). Several
+   * anchor schemes are keyed by CONTENT id rather than route position —
+   * `formal-<formalId>`, and since package R3 also `callout-<calloutId>` and
+   * `proof-<formalId>` — so placing the same formal block, callout, or proof
+   * twice in one route silently emits duplicate DOM ids: invalid HTML, and
+   * every anchor link to it lands on whichever came first. Nothing else
+   * catches this; the page still renders.
+   */
+  it("produces a unique anchor id for every route block in every lesson", () => {
+    const problems: string[] = [];
+    for (const lesson of lessons) {
+      const anchors = (lesson.route ?? []).map((block, i) =>
+        getBlockAnchorId(block, i),
+      );
+      const dupes = duplicates(anchors);
+      if (dupes.length > 0) {
+        problems.push(
+          `${lesson.id}: duplicate route anchor ids ${JSON.stringify(dupes)}`,
+        );
+      }
+    }
+    expect(problems, problems.join("\n")).toEqual([]);
   });
 
   it("resolves implicit route targets and handoff destinations", () => {

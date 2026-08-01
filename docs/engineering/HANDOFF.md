@@ -32,7 +32,35 @@ feature/experience-architecture`) — each of the four packages above is its
 own commit with a detailed message serving as that package's record; no
 separate ledger file was created for this (small, single-agent) slice.
 
-## Two real defects found and fixed during the work (not pre-existing)
+## Slice self-review pass (after R3, before requesting independent review)
+
+A critical re-read of the whole R0–R3 diff found **four more real defects**,
+all fixed in that pass (full write-up in
+[quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md)'s
+"Slice review pass" section):
+
+1. **`objectives` had no consumer** — `objectiveCoverage.test.ts` asserted
+   nothing, because no lesson declared `objectives`. R1's acceptance criterion
+   "objective coverage is validated from data" was not actually met, and this
+   contradicted the reasoning used to defer the `review` node kind. Fixed by
+   migrating `karatsuba`; two of its six objectives are honestly
+   `course-owned` (evidence exists only in the checkpoint/scene, and
+   Algorithmic Thinking has no module set) — a real coverage gap the model
+   now surfaces instead of hiding.
+2. **ADR-006 claimed an `ITEM_ASSESSMENT_META` extension that never happened.**
+   Corrected, including the real R6 consequence: `transferred` cannot be
+   derived without `evidenceBasis`, so extending the manifest is R6 work.
+3. **The `proof` block render was asserted nowhere** — verified only by a
+   manual screenshot. Added a dedicated e2e spec.
+4. **No global anchor-uniqueness check** — `callout-`/`proof-` anchors are
+   content-keyed, so double-placement silently emits duplicate DOM ids. Added
+   a repo-wide validator.
+
+Both new validators were **proven to bite** (deliberately broken, observed to
+fail with a precise message, then reverted) rather than merely observed to
+pass.
+
+## Two real defects found and fixed during the original R2/R3 work
 
 1. `FormalStatement`'s first `proof`-variant design repeated the entire
    theorem statement/interpretation/trap-layer verbatim before the proof —
@@ -67,7 +95,18 @@ the `calculus-foundations` package ledger). Concretely, still open:
 
 - [ ] Independent semantic review of R0–R3 (constitution, experience model,
       Karatsuba rebuild, node types/routes/proof retrofit) — mathematical,
-      pedagogical, and architectural soundness.
+      pedagogical, and architectural soundness. A **self**-review pass has run
+      (see above) and found four real defects; that is not a substitute for
+      independent review, and specifically does not discharge the
+      self-certification gap ADR-002 names.
+- [ ] Known-but-unfixed, recorded in the checklist's "reviewed and
+      deliberately left alone" list: the named `explore`/`explorationId` path
+      has no render test, and the ToC/layout divergence for unresolvable named
+      targets is mirrored from `visual` rather than fixed. Neither is
+      triggered by any current lesson.
+- [ ] Five pre-existing `**bold**`-straddling-math occurrences in unrelated
+      lessons (see `known-failure-modes.md`) remain unfixed by design — each
+      is its own narrow-correction commit.
 - [ ] User sign-off on the two things this session decided that deviate from
       the original plan text, both reasoned through in-session and recorded
       in code comments / ADRs, but not separately re-confirmed:

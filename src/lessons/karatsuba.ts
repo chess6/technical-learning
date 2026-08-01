@@ -28,6 +28,62 @@ export const karatsubaLesson: LessonDefinition = {
     "Distinguish output carrying (normalizing the $z_i$) from operand-width growth in $(A+B)(C+D)$",
     "Predict that three-way recursion changes the exponent from $\\log_2 4$ to $\\log_2 3$",
   ],
+  /**
+   * The same six objectives above, with their evidence obligations stated
+   * (ADR-004). This is the first lesson to declare `objectives`, so
+   * `objectiveCoverage.test.ts` validates a real lesson rather than an empty
+   * set.
+   *
+   * Two are deliberately NOT `lesson-owned`: the four-pieces expansion and
+   * the shared-weight argument are exercised only by the checkpoint and the
+   * guided scene, neither of which is a graded `ExerciseDefinition`. Marking
+   * them `course-owned` records an OPEN obligation — Algorithmic Thinking has
+   * no module assessment set yet — rather than quietly claiming evidence the
+   * lesson does not produce. Surfacing that gap is the point of the model;
+   * the old "at least two exercises" quota hid it.
+   */
+  objectives: [
+    {
+      id: "kara-obj-expand",
+      text: "Expand $(10A+B)(10C+D)$ into its four weighted pieces",
+      evidence: "course-owned",
+      evidenceLevel: "E2",
+    },
+    {
+      id: "kara-obj-shared-weight",
+      text: "Explain why $AD$ and $BC$ are needed only through the sum $AD+BC$",
+      evidence: "course-owned",
+      evidenceLevel: "E2",
+    },
+    {
+      id: "kara-obj-recover-middle",
+      text: "Recover $AD+BC$ as $(A+B)(C+D)-AC-BD$ using one extra multiplication",
+      evidence: "lesson-owned",
+      evidenceLevel: "E3",
+      itemIds: ["karatsuba-z1"],
+    },
+    {
+      id: "kara-obj-reassemble",
+      text: "Reassemble the exact product as $100\\,z_2+10\\,z_1+z_0$",
+      evidence: "lesson-owned",
+      evidenceLevel: "E3",
+      itemIds: ["karatsuba-product-carry"],
+    },
+    {
+      id: "kara-obj-carry-vs-width",
+      text: "Distinguish output carrying from operand-width growth in $(A+B)(C+D)$",
+      evidence: "lesson-owned",
+      evidenceLevel: "E2",
+      itemIds: ["karatsuba-width-vs-carry", "karatsuba-output-carry"],
+    },
+    {
+      id: "kara-obj-exponent",
+      text: "Predict that three-way recursion changes the exponent from $\\log_2 4$ to $\\log_2 3$",
+      evidence: "lesson-owned",
+      evidenceLevel: "E2",
+      itemIds: ["karatsuba-exponent", "karatsuba-strassen-transfer"],
+    },
+  ],
   motivatingQuestion:
     "$12 \\times 13$ splits into four little products the way FOIL expands $(10+2)(10+3)$. Two of those four are secretly doing the *same* job. Which two — and can we get away with three multiplications instead of four?",
   // The history is in the argument, not an aside: the O(n²) belief and its

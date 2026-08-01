@@ -32,9 +32,11 @@ any single number is displayed as "mastery."
 now)` returning one of six labelled states — `unseen`, `exposed`, `completed`,
 `performed`, `retained`, `transferred` — derived entirely from the *existing*
 `LearnerState` fields (`lessonProgress`, `exerciseAttempts`) cross-referenced
-against `ITEM_ASSESSMENT_META`'s evidence levels
-(`src/lessons/assessmentManifest.ts`) and the objective's own claimed
-`evidenceLevel` (ADR-004). No `SCHEMA_VERSION` bump; no new persisted field.
+against the objective's own claimed `evidenceLevel` (ADR-004), the capability
+ceiling that bounds it (`src/lessons/evidence.ts`), and — where the item has
+one — `ITEM_ASSESSMENT_META`'s affirmative `evidenceBasis`
+(`src/lessons/assessmentManifest.ts`; module items only today, see the
+consequence below). No `SCHEMA_VERSION` bump; no new persisted field.
 
 The derivation enforces the anti-completion rule structurally rather than by
 convention: `completed` cannot produce `performed` (a completed lesson with no
@@ -61,7 +63,16 @@ exists — R6 depends on R4 for this reason.
   percentage or a single "mastery score." A future package that wants a single
   number for display purposes must get an explicit, separately-reviewed
   exception to this ADR, not a quiet addition to `mastery.ts`.
-- Extending `ITEM_ASSESSMENT_META` coverage from module items only (its
-  current scope) to lesson exercises is a prerequisite for `objectiveState` to
-  work for `lesson-owned` objectives — tracked as part of R1's
-  `objectiveCoverage.test.ts`, not deferred to R6.
+- **`ITEM_ASSESSMENT_META` still covers module items only, and R6 must not
+  assume otherwise.** `objectiveCoverage.test.ts` (shipped in R1, given its
+  first real consumer in the R3 review pass) validates an objective's claimed
+  `evidenceLevel` against `CAPABILITY_EVIDENCE_CEILING` — the *necessary*
+  bound that a capability's capture interface could ever support. That is a
+  genuinely weaker check than `ITEM_ASSESSMENT_META`'s *affirmative*
+  `evidenceBasis` warrant, which exists for `MODULE_ITEMS` and for nothing
+  else (`evidenceCeiling.test.ts` asserts exactly that coverage).
+  Consequently `objectiveState` can honestly derive `performed` for a
+  `lesson-owned` objective from a graded attempt plus the ceiling check, but
+  it **cannot** derive `transferred` for one — that needs the freshness /
+  unfamiliarity signals only `evidenceBasis` carries. Extending the manifest
+  to lesson exercises is therefore real R6 work, not something R1 completed.

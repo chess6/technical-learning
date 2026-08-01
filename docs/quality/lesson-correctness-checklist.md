@@ -1752,3 +1752,97 @@ route block). Package R3 of `feature/experience-architecture`.
       same deferred-feedback `ModuleRunner` (no immediate-feedback practice
       mode exists yet) — the beta banner and code comments say so explicitly,
       rather than implying a distinction the runtime doesn't yet deliver.
+
+---
+
+## Slice review pass — R0–R3 self-review findings (2026-08)
+
+A critical re-read of the whole R0–R3 diff before requesting independent
+review. Four real defects found; all four fixed in the same pass.
+
+### 1. `objectives` shipped with no consumer — the validator asserted nothing
+
+`objectiveCoverage.test.ts` (77 lines, shipped in R1) iterates
+`lesson.objectives ?? []`. **No lesson declared `objectives`**, so every
+assertion in it was vacuous, and R1's stated acceptance criterion
+("objective coverage is validated from data") was not actually met. This
+also contradicted the reasoning used to *defer* the `review` node kind in
+R3 — "a node without a consumer is exactly what ADR-005 rejects" — applied
+to one addition but not the other.
+
+- [x] **Fixed** by migrating `karatsuba` to declare `objectives`, giving the
+      validator a real consumer. Four objectives are `lesson-owned` with
+      resolvable `itemIds` at honest levels (numeric items claim E3,
+      multiple-choice items claim E2 — never above
+      `CAPABILITY_EVIDENCE_CEILING`); **two are `course-owned`**, because the
+      four-pieces expansion and the shared-weight argument are exercised only
+      by the checkpoint and the guided scene, neither of which is a graded
+      `ExerciseDefinition`, and Algorithmic Thinking has no module assessment
+      set. That is a real, previously-invisible coverage gap — the model
+      surfacing it is the intended behavior, not a failure.
+- [x] **Verified the validator bites**, not merely passes: temporarily
+      raising one objective's claim from E2 to E4 (above the multiple-choice
+      ceiling) fails with a precise message naming the objective, the lesson,
+      and the claimed level. Reverted after confirming.
+
+### 2. ADR-006 asserted something the code does not do
+
+The ADR claimed `ITEM_ASSESSMENT_META` coverage had been extended from module
+items to lesson exercises "as part of R1's `objectiveCoverage.test.ts`". It
+had not: that test uses `CAPABILITY_EVIDENCE_CEILING` (the *necessary* bound),
+and the manifest still covers `MODULE_ITEMS` only — as `evidenceCeiling.test.ts`
+independently asserts.
+
+- [x] **Fixed** ADR-006's Decision and Consequences sections to state what the
+      code actually does, and to record the real consequence for R6:
+      `objectiveState` can derive `performed` from a ceiling check, but
+      **cannot** derive `transferred` without the freshness/unfamiliarity
+      signals only `evidenceBasis` carries. Extending the manifest is real R6
+      work, not something R1 completed.
+
+### 3. The `proof` block render — R3's headline deliverable — was asserted nowhere
+
+`e2e/lesson-rank-nullity.spec.ts` never mentioned the proof. The only
+verification the proof rendering ever received was a manual browser
+screenshot during development; a regression in `FormalStatement`'s proof
+variant would have failed no test.
+
+- [x] **Fixed** with a dedicated spec asserting the statement and proof are
+      distinct elements with distinct anchors, the proof is expanded prose
+      (no `<details>`), it ends in ∎, it does **not** repeat "In words." (the
+      redundancy defect the first R1 design shipped), and — guarding the
+      `known-failure-modes.md` hazard directly — that both bold lead-ins
+      survive as real `<strong>` with no literal `**` reaching the DOM.
+
+### 4. No global anchor-uniqueness check
+
+`callout-<calloutId>` and `proof-<formalId>` (added in R1) are keyed by
+content id, not route position, so placing the same callout or proof twice
+in one route silently emits duplicate DOM ids — invalid HTML, and every
+anchor link to it lands on whichever came first. The pre-existing
+`formal-<formalId>` scheme had the same latent hazard; R1 widened it. The
+only uniqueness test in the repo covered `chapter0Lesson` alone.
+
+- [x] **Fixed** with a repo-wide check in `contentValidation.test.ts` over
+      every route block of every lesson. **Verified it bites**: duplicating
+      one `callout` placement in `karatsuba` fails with the lesson id and the
+      colliding anchor named. Reverted after confirming.
+
+### Reviewed and deliberately left alone
+
+- **`RouteBlock.practice.scaffold`** is authoring-only data with no runtime
+  effect, documented as such in `types.ts` and `lesson-design.md`. Unlike
+  `objectives` it carries no validator implying it is enforced, so it is a
+  declared-but-inert field rather than a false claim. It stays.
+- **Named `explore` + `explorationId` placement** is implemented and
+  ToC-tested but unused by any lesson and has no render test. It mirrors the
+  `visual` + `sceneId` precedent, which *is* used, so the symmetry the type
+  comment promises is worth keeping — but it is untested at the render layer
+  and is recorded here as such rather than claimed as covered.
+- **ToC/layout divergence for named targets:** `getBlockTocLabel` returns a
+  label for a named `visual`/`explore` block without checking the target
+  resolves, while `LessonLayout` drops the block when it doesn't — so an
+  unresolvable named target yields a ToC row pointing at nothing. Pre-existing
+  for `visual`; mirrored for `explore`. Not triggered by any current lesson
+  (LessonPage always populates the map, falling back to a placeholder panel).
+  Recorded, not fixed.
