@@ -147,6 +147,50 @@ above passes.
 
 ---
 
+## Two owner-reported findings and their follow-through (2026-08-01)
+
+The repository owner reviewed `/lesson/chain-rule` and `/lesson/karatsuba` in
+a browser and reported two real defects neither self-review nor R4/R5's
+independent-review gate had caught yet, because they predate this branch and
+sit outside R4's scope. Both are fixed and closed out:
+
+**chain-rule's math rendered garbled.** A `$$display$$` block in prose —
+`ProseWithMath` only parses `$...$`, so `$$` orphans a delimiter and inverts
+every span after it, silently (see `known-failure-modes.md`). Fixed, and a
+repo-wide check confirmed this was isolated: every `$...$` span the parser
+recognizes as math rendered clean in KaTeX strict mode (2849 spans, zero
+warnings), and no other prose string has an unpaired `$`. Two permanent
+guards now exist in `proseEmphasis.test.ts` — no `$$`, and no odd `$`
+count — both proven to bite on injected regressions.
+
+**All 47 misconception callouts read identically** — `Tempting belief.` /
+`But watch.` / `Repair.` were baked into the renderer, so the three-beat
+shape was never actually an authoring choice. `AuthoredCallout.moves` now
+lets a callout be however many beats it needs, each with an optional
+lead-in; the triple survives as shorthand for the genuine case. `vision.md`
+§12.1 states the rule and warns against the exact failure mode a mechanical
+fix would produce: rewriting every callout to be different is the same
+defect in new paint.
+
+That warning was tested immediately. A per-callout review of the other 41
+callouts across 18 lessons (`vectors` through `red-black-trees` — every
+lesson except `karatsuba`) found that **all 41 already have the shape that
+fits**: each is a genuine prediction, refuted by a concrete counterexample or
+demonstration, then repaired — exactly what `belief`/`confront`/`resolve`
+was built for. Two read quieter than the rest on first pass
+(`systems.two-pictures-one-problem`, `elimination.elim-not-tricks` — neither
+turns on a numeric counterexample) and were checked closely rather than
+reshaped on suspicion; both still confront a real prediction with a real
+demonstration and name the actual principle in `resolve`, not a restatement
+of the belief. **Nothing was changed.** `karatsuba` needed reshaping because
+it is deliberately the atypical archetype (R2's historical-breakthrough
+design test); the other 18 are the ordinary conceptual/technique archetype
+the triad was designed for, and it shows. This is the intended outcome of
+doing the review seriously, not a shortcut — record it here so the next
+agent doesn't redo it from scratch or, worse, "fix" what already fits.
+
+---
+
 ## Test state
 
 Run live rather than trusting any summary older than the newest commit.
