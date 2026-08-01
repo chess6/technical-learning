@@ -265,16 +265,17 @@ Mark in-progress **as the first implementation commit** (`AGENTS.md`).
 - [x] P1–P5 verified, each by a test rather than by inspection.
 - [x] `./check.sh --e2e` green, re-confirmed 2026-07-30 after the correction pass
       below. **Two known, pre-existing exceptions, both already recorded in
-      [known-failure-modes.md](../../../../quality/known-failure-modes.md) and
-      outside this package:** `ftc-accumulate-then-measure` fails the hard
-      gates' `seek-determinism` check for a diagnosed `@motion-canvas/2d`
-      `Latex` limitation (unrelated to this lesson's content — confirmed
-      unrelated to any 2026-07-30 code change, since that scene calls none of
-      the functions this pass touched); `solution-sets` (a linear-algebra
-      scene) fails `text-clipping` intermittently under webfont-metric
-      variance. Every other check, including every other hard gate for both
-      A4 scenes, is green — `npm run typecheck`, `npm run lint`, and
-      `npm run build` all pass clean.
+      [known-failure-modes.md](../../../../quality/known-failure-modes.md):**
+      `ftc-accumulate-then-measure` — an A4 scene, inside this package — fails
+      the hard gates' `seek-determinism` check for a diagnosed `@motion-canvas/2d`
+      `Latex` limitation; the failure's *root cause* is external to this
+      package's code (unrelated to this lesson's content — confirmed unrelated
+      to any 2026-07-30 code change, since that scene calls none of the
+      functions this pass touched), but the scene itself is not. `solution-sets`
+      (a linear-algebra scene) genuinely is outside this package, and fails
+      `text-clipping` intermittently under webfont-metric variance. Every other
+      check, including every other hard gate for both A4 scenes, is green —
+      `npm run typecheck`, `npm run lint`, and `npm run build` all pass clean.
 - [ ] Package-level semantic review (Opus) requested and passed. **Status:**
       the review has run twice — once at the original scope (2026-07-29,
       found the defects this ledger's per-slice notes describe) and once
