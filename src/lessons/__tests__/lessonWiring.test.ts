@@ -981,15 +981,21 @@ describe("Rank–Nullity lesson (spine L9)", () => {
     expect(opening.body).toMatch(/\\mathbb\{R\}\^3.*\\mathbb\{R\}\^2/);
   });
 
-  it("proves the theorem, showing BOTH spanning and independence", () => {
+  it("proves the theorem, showing BOTH spanning and independence, as the route's main line", () => {
     const lesson = getLessonById("rank-nullity")!;
     const thm = (lesson.formalBlocks ?? []).find((f) => f.id === "thm-rank-nullity")!;
     expect(thm.kind).toBe("theorem");
-    const proof = (thm.layers ?? []).find((l) => l.kind === "math-note")!;
+    // Package R3: the proof is a `.proof` field, placed by a `proof` route
+    // block (main line) — no longer a collapsed `math-note` depth layer.
+    const proof = thm.proof!;
+    expect(proof).toBeTruthy();
     // Both halves must be present: a proof that only shows the images span has
     // not established the count.
-    expect(proof.body.toLowerCase()).toContain("span");
-    expect(proof.body.toLowerCase()).toContain("independent");
+    expect(proof.toLowerCase()).toContain("span");
+    expect(proof.toLowerCase()).toContain("independent");
+    expect((lesson.route ?? []).some((b) => b.kind === "proof" && b.formalId === thm.id)).toBe(
+      true,
+    );
     // The basis extension must be flagged as a CHOICE, not a decomposition.
     expect((thm.layers ?? []).some((l) => l.kind === "trap")).toBe(true);
   });

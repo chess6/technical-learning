@@ -83,6 +83,7 @@ export const rankNullityLesson: LessonDefinition = {
     { kind: "formal", formalId: "def-dimension" },
     { kind: "formal", formalId: "ref-dimension-well-defined" },
     { kind: "formal", formalId: "thm-rank-nullity" },
+    { kind: "proof", formalId: "thm-rank-nullity" },
     { kind: "worked", workedId: "wex-proof-walkthrough" },
     { kind: "check" },
     { kind: "section", sectionId: "forbids" },
@@ -194,12 +195,16 @@ export const rankNullityLesson: LessonDefinition = {
       interpretation:
         "Every input dimension is accounted for exactly once: it either survives into the image or collapses into the null space. The right-hand side is the **input** dimension $n$; the output dimension $m$ never appears.",
       visibility: "visible",
+      // The proof (below) is the lesson's main line, placed by its own
+      // `{ kind: "proof" }` route block — not a collapsed aside. It was a
+      // `math-note` depth layer before package R3; the argument is unchanged,
+      // only its presentation (main line vs. optional) moved.
+      // Bold clauses below never wrap a `$...$` token: ProseWithMath extracts
+      // math before emphasis, so a `**bold**` span that straddles a math
+      // token loses its markers (see known-failure-modes.md's entry on this).
+      proof:
+        "Let $k = \\operatorname{nullity}A$ and choose a basis $\\{\\mathbf{u}_1,\\dots,\\mathbf{u}_k\\}$ of $\\operatorname{Null}(A)$. Extend it to a basis of the whole input space by adding $\\{\\mathbf{w}_1,\\dots,\\mathbf{w}_r\\}$, so $k + r = n$. **The images span the column space:** any $\\mathbf{x}$ is $\\sum c_i\\mathbf{u}_i + \\sum d_j\\mathbf{w}_j$, and applying $A$ kills the first sum, leaving $A\\mathbf{x} = \\sum d_j A\\mathbf{w}_j$ — so $\\{A\\mathbf{w}_j\\}$ spans $\\operatorname{Col}(A)$. **They are independent:** if $\\sum d_j A\\mathbf{w}_j = \\mathbf{0}$ then $A(\\sum d_j\\mathbf{w}_j) = \\mathbf{0}$, so $\\sum d_j\\mathbf{w}_j$ lies in $\\operatorname{Null}(A)$ and is therefore some $\\sum c_i\\mathbf{u}_i$; but the $\\mathbf{u}$'s and $\\mathbf{w}$'s together form a basis, so every $c_i$ and $d_j$ is zero. Hence $\\{A\\mathbf{w}_j\\}$ is a basis of $\\operatorname{Col}(A)$ and $\\operatorname{rank}A = r$. Therefore $\\operatorname{rank}A + \\operatorname{nullity}A = r + k = n$.",
       layers: [
-        {
-          kind: "math-note",
-          title: "The proof, in full",
-          body: "Let $k = \\operatorname{nullity}A$ and choose a basis $\\{\\mathbf{u}_1,\\dots,\\mathbf{u}_k\\}$ of $\\operatorname{Null}(A)$. Extend it to a basis of the whole input space by adding $\\{\\mathbf{w}_1,\\dots,\\mathbf{w}_r\\}$, so $k + r = n$. **The images $A\\mathbf{w}_j$ span $\\operatorname{Col}(A)$:** any $\\mathbf{x}$ is $\\sum c_i\\mathbf{u}_i + \\sum d_j\\mathbf{w}_j$, and applying $A$ kills the first sum, leaving $A\\mathbf{x} = \\sum d_j A\\mathbf{w}_j$. **They are independent:** if $\\sum d_j A\\mathbf{w}_j = \\mathbf{0}$ then $A(\\sum d_j\\mathbf{w}_j) = \\mathbf{0}$, so $\\sum d_j\\mathbf{w}_j$ lies in $\\operatorname{Null}(A)$ and is therefore some $\\sum c_i\\mathbf{u}_i$; but the $\\mathbf{u}$'s and $\\mathbf{w}$'s together form a basis, so every $c_i$ and $d_j$ is zero. Hence $\\{A\\mathbf{w}_j\\}$ is a basis of $\\operatorname{Col}(A)$ and $\\operatorname{rank}A = r$. Therefore $\\operatorname{rank}A + \\operatorname{nullity}A = r + k = n$. $\\blacksquare$",
-        },
         {
           kind: "trap",
           title: "The split is a choice, not a decomposition",
@@ -271,7 +276,7 @@ export const rankNullityLesson: LessonDefinition = {
       confront:
         "$" + WIDE_TEX + "$ is onto $\\mathbb{R}^2$ but has a nontrivial null space, so it is not one-to-one. And $\\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\\\ 5 & 6\\end{bmatrix}$ is one-to-one but its image is a plane inside $\\mathbb{R}^3$, so it is not onto.",
       resolve:
-        "They coincide **only when $m = n$**. There, rank maximal means both at once. For any other shape the law forces them apart: $n > m$ kills one-to-one, and $n < m$ kills onto. Lesson 6's equivalence list was a square-matrix theorem.",
+        "**They coincide only for square maps**, $m = n$. There, rank maximal means both at once. For any other shape the law forces them apart: $n > m$ kills one-to-one, and $n < m$ kills onto. Lesson 6's equivalence list was a square-matrix theorem.",
     },
     {
       id: "not-a-decomposition",

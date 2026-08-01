@@ -77,9 +77,13 @@ test("package G applied set: produced elimination evidence grades and replays on
 
   await page.goto("/dev/assessment");
   await page.evaluate(() => window.localStorage.clear());
-  // Both Package G sets are reachable from the dev index.
-  await expect(page.getByRole("link", { name: /transfer & selection/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /cumulative & applied/i })).toBeVisible();
+  // Both Package G sets are reachable from the dev index. Scoped to the
+  // index's own content (not the course sidebar, which since package R3 also
+  // links these same sets — as `/set/...` workshop/assessment nodes — under a
+  // near-identical accessible name).
+  const devIndex = page.locator(".dev-assessment-index");
+  await expect(devIndex.getByRole("link", { name: /transfer & selection/i })).toBeVisible();
+  await expect(devIndex.getByRole("link", { name: /cumulative & applied/i })).toBeVisible();
 
   await page.goto("/dev/module/systems-elimination-applied");
   await expect(page.getByTestId("module-submit")).toBeVisible();

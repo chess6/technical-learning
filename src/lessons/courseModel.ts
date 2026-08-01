@@ -31,6 +31,7 @@ import {
   resolveId,
 } from "../platform/identity";
 import { getLessonById } from "./registry";
+import { getModuleSet } from "./moduleSets";
 import type { LessonDefinition } from "./types";
 
 /* --------------------------------------------------------------------------
@@ -47,7 +48,29 @@ export type FutureLessonRef = {
   subtitle?: string;
 };
 
-export type UnitItem = LessonRef | FutureLessonRef;
+/**
+ * A fluency-building node over an existing `ModuleSet` (ADR-004) — no new
+ * exercises, no new grading. `workshop` and `assessment` currently render
+ * through the SAME `ModuleRunner` (deferred-feedback exam capture); the
+ * distinction today is curriculum framing (low-stakes practice vs. a
+ * certifying checkpoint), not yet a different learner experience — an
+ * immediate-feedback practice mode is real future work, not claimed here.
+ */
+export type WorkshopRef = { kind: "workshop"; setId: string };
+
+/** A certifying checkpoint over an existing `ModuleSet` — see `WorkshopRef`. */
+export type AssessmentRef = { kind: "assessment"; setId: string };
+
+/**
+ * `review` (cumulative spaced retrieval as a curriculum node) is deliberately
+ * NOT added here yet: the spaced scheduler is still hardcoded to one module
+ * (`platform/spacedConfig.ts`'s `SPACED_MODULE_ID`), so there is no per-module
+ * data a `review` node could honestly point to. It is scheduled for R6,
+ * alongside the scheduler's generalization (ADR-006) — adding the node kind
+ * first would be exactly the "edge/node without a consumer" ADR-005 already
+ * rejects for the curriculum graph.
+ */
+export type UnitItem = LessonRef | FutureLessonRef | WorkshopRef | AssessmentRef;
 
 export type Unit = {
   id: string;
@@ -108,6 +131,11 @@ export const CURRICULUM: readonly Subject[] = [
               { kind: "lesson", lessonId: "systems" },
               { kind: "lesson", lessonId: "elimination" },
               { kind: "lesson", lessonId: "solution-sets" },
+              // Package R3: zero new items — both reuse existing Package G/I
+              // module sets, now reachable from the curriculum (not just
+              // `dev/module/:setId`). See ADR-004.
+              { kind: "workshop", setId: "systems-elimination-transfer" },
+              { kind: "assessment", setId: "systems-elimination-mock" },
             ],
           },
           {
@@ -392,6 +420,12 @@ export function validateCurriculum(
             if (!isExperimentalId(canonical) && !getLessonById(canonical)) {
               throw new Error(
                 `Curriculum references unknown lesson id "${item.lessonId}".`,
+              );
+            }
+          } else if (item.kind === "workshop" || item.kind === "assessment") {
+            if (!getModuleSet(item.setId)) {
+              throw new Error(
+                `Curriculum references unknown module set "${item.setId}" (${item.kind}).`,
               );
             }
           } else {

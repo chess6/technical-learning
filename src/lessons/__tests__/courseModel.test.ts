@@ -131,6 +131,8 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
   const SPINE: readonly (
     | { built: string }
     | { future: string }
+    | { workshop: string }
+    | { assessment: string }
   )[] = [
     { built: "why-linear-algebra" }, // Ch 0
     { built: "vectors" }, // L1
@@ -138,6 +140,9 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
     { built: "systems" }, // L3
     { built: "elimination" }, // L4
     { built: "solution-sets" }, // L5
+    // Package R3 (ADR-004): zero-new-item nodes over existing module sets.
+    { workshop: "systems-elimination-transfer" },
+    { assessment: "systems-elimination-mock" },
     { built: "matrix-composition" }, // L6
     { built: "determinants" }, // L7
     { built: "subspaces-rank" }, // L8
@@ -154,9 +159,12 @@ describe("linear-algebra course spine (Chapter 0 + Lessons 1–14)", () => {
       (c) => c.id === "linear-algebra",
     )!;
     const items = courseUnits(laCourse).flatMap((u) => u.items);
-    const actual = items.map((item) =>
-      item.kind === "lesson" ? { built: item.lessonId } : { future: item.id },
-    );
+    const actual = items.map((item) => {
+      if (item.kind === "lesson") return { built: item.lessonId };
+      if (item.kind === "workshop") return { workshop: item.setId };
+      if (item.kind === "assessment") return { assessment: item.setId };
+      return { future: item.id };
+    });
     expect(actual).toEqual(SPINE);
   });
 

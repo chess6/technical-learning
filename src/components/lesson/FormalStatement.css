@@ -58,14 +58,15 @@
   margin-top: 0.75rem;
 }
 
-.formal-statement__proof {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border);
+/* A `proof` route block is its own, distinct box (never repeats the
+   statement/interpretation of the `formal` block it proves) — a muted
+   accent keeps it visually related without reading as a second theorem. */
+.formal-statement--proof {
+  border-left-color: var(--color-divider-strong);
 }
 
 .formal-statement__proof-label {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.55rem;
   font-weight: 650;
   font-style: italic;
   color: var(--color-text);
@@ -74,6 +75,7 @@
 .formal-statement__proof-body {
   margin: 0;
   line-height: 1.6;
+  font-size: 1.02rem;
 }
 
 .formal-statement__proof-end {

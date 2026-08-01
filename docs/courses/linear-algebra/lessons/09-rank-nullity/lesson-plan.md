@@ -100,7 +100,7 @@ law's content.
 | Obligation | Location | Evidence |
 | --- | --- | --- |
 | §6a dimension well defined | formal `ref-dimension` | — (reference) |
-| §6b–e the proof | formal `thm-rank-nullity` + `math-note` layer, worked `wex-proof-walkthrough` | `rn-prove-theorem` |
+| §6b–e the proof | formal `thm-rank-nullity` + `proof` route block (package R3: moved from a collapsed `math-note` layer to the main line — same argument), worked `wex-proof-walkthrough` | `rn-prove-theorem` |
 | §6f pivot/free is the same thing | section `bookkeeping` | `rn-complete-ledger-fresh` |
 | §6g what it forbids | section `forbids`, formal `cor-consequences`, scene `ceiling`/`forbidden` | `rn-impossible-map`, `rn-rank-ceiling` |
 | §6h trichotomy explained | `connection` layer | `rn-square-only` |

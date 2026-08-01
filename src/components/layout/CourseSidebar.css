@@ -164,6 +164,35 @@
   overflow-wrap: anywhere;
 }
 
+/* Workshop / assessment nodes (ADR-004): not part of the numbered lesson
+   sequence, so a lettered square badge instead of the numbered circle. */
+.course-sidebar__kind-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: var(--color-sidebar-bg);
+  border: 1.5px solid var(--color-divider-strong);
+  color: var(--color-text-faint);
+}
+
+.course-sidebar__kind-badge[data-kind="assessment"] {
+  border-color: color-mix(in srgb, var(--accent-coral) 55%, var(--color-divider-strong));
+  color: var(--accent-coral);
+}
+
+.course-sidebar__beta-tag {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-faint);
+  font-style: italic;
+}
+
 .course-sidebar__sublist {
   margin: var(--space-1) 0 var(--space-2);
   padding: 0 0 0 calc(1.6rem + var(--space-3));

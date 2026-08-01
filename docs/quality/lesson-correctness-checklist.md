@@ -1671,3 +1671,84 @@ or exercise content changed — only route order, callout placement, one new
       the FFT connection explicitly deferred).
 - [x] `docs/quality/known-failure-modes.md` — no new entry needed; no
       math/visualization bug was fixed, only route composition.
+
+---
+
+## Package R3 — node types, production routes, and the first `proof` retrofit (2026-08)
+
+Scope: `src/lessons/courseModel.ts` (`workshop`/`assessment` `UnitItem` kinds),
+`src/app/routes.tsx` + `src/pages/ModuleSetPage.tsx` (production `/set/:setId`
+route), `src/components/layout/CourseSidebar.tsx` (rendering), and
+`src/lessons/rankNullity.ts` (retrofitting `thm-rank-nullity` to a `proof`
+route block). Package R3 of `feature/experience-architecture`.
+
+### Mathematical review
+
+- [x] The rank–nullity proof moved into `FormalBlock.proof` is **byte-identical
+      in mathematical content** to the `math-note` depth layer it replaced
+      (spanning basis extension, spanning argument, independence argument,
+      conclusion) — only two bold-emphasis clauses were reworded (see below),
+      never the mathematical claims themselves.
+- [x] `workshop`/`assessment` nodes reuse existing, already-reviewed
+      `ModuleSet`s (`systems-elimination-transfer`, `systems-elimination-mock`)
+      verbatim — zero new exercises, zero new grading logic.
+
+### Visual review
+
+- [x] **Found and fixed:** the first `FormalStatement` design (R1) rendered a
+      `proof` route block as the FULL statement/interpretation/layers block
+      again, with the proof merely appended — so a theorem followed
+      immediately by its `proof` block showed the statement, "In words," and
+      the "COMMON TRAP" callout **twice** in a row. Caught by a manual browser
+      screenshot (not by any test, since R1's component tests only checked a
+      single block in isolation, not the two-block route sequence). Redesigned
+      so `variant="proof"` renders a distinct, minimal block — just the proof,
+      labeled "Proof (Theorem — …)", ending in ∎ — never repeating what the
+      preceding `formal` block already showed. `data-testid` was also
+      colliding (`formal-<id>` used by both renderings); now
+      `proof-<id>`/`formal-<id>` are distinct, matching `toc.ts`'s existing
+      anchor-id convention.
+- [x] **Found and fixed:** two `**bold**` spans in the relocated proof text
+      (and one pre-existing, unrelated one elsewhere in the same lesson file)
+      wrapped an inline `$...$` token, which `ProseWithMath` cannot render
+      (documented as a new `known-failure-modes.md` entry) — the markers
+      rendered as literal, un-bolded asterisks. Reworded both clauses to keep
+      bold spans clear of math tokens; content/meaning unchanged. Five more
+      pre-existing occurrences were found in other, unrelated lessons
+      (`determinants.ts`, `matrixComposition.ts`, `redBlackTrees.ts`,
+      `structureModuleItems.ts`, `subspacesRank.ts`) and are recorded, not
+      fixed here — outside this package's scope.
+- [x] Workshop/assessment sidebar entries use a lettered square badge (not the
+      numbered lesson circle) and a "(beta)" tag, distinguishing them from
+      numbered lessons without a false claim of production polish.
+
+### Testing review
+
+- [x] `courseModel.test.ts` extended: the linear-algebra spine test now proves
+      the two new nodes resolve to the expected `ModuleSet`s at the expected
+      position, and `validateCurriculum` rejects an unknown `setId` for
+      `workshop`/`assessment` (referential integrity, mirroring the existing
+      lesson-id check).
+- [x] `FormalStatement.test.tsx` rewritten for the new proof-only rendering:
+      asserts the proof block never repeats the statement/interpretation/
+      layers, and that variant="proof" with no `.proof` field renders nothing.
+- [x] `lessonWiring.test.ts`'s rank-nullity proof test updated to read
+      `thm.proof` (not a `math-note` layer) and to assert the `proof` route
+      block is present.
+- [x] `e2e/module-set-production-route.spec.ts` (new) — the sidebar links
+      resolve to the right URLs and load; the timed-mock countdown renders;
+      the production route rejects a spaced one-item set exactly like the dev
+      route does.
+- [x] Full unit suite (2140 tests) and `./check.sh --e2e` green (only the two
+      pre-existing, documented, waived failures present — see the R2 entry
+      above for the baseline reproduction).
+
+### Teaching review
+
+- [x] The proof is now the lesson's stated main line (per its own scope note:
+      "The proof is shown in full"), not an optional aside — consistent with
+      vision.md §0 principle 9 ("proof … is the main line, not a disclosure").
+- [x] Workshop/assessment framing is honest: both currently render through the
+      same deferred-feedback `ModuleRunner` (no immediate-feedback practice
+      mode exists yet) — the beta banner and code comments say so explicitly,
+      rather than implying a distinction the runtime doesn't yet deliver.

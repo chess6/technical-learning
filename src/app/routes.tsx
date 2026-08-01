@@ -3,6 +3,7 @@ import { AppShell } from "../components/layout/AppShell";
 import { GlossaryPage } from "../pages/GlossaryPage";
 import { HomePage } from "../pages/HomePage";
 import { LazyLessonRoute } from "./LazyLessonRoute";
+import { LazyModuleSetRoute } from "./LazyModuleSetRoute";
 
 /**
  * Development-only routes (technical spikes/demos) are excluded from the
@@ -115,6 +116,11 @@ export const router = createBrowserRouter([
       {
         path: "lesson/:lessonId",
         element: <LazyLessonRoute />,
+      },
+      {
+        // Workshop / assessment curriculum nodes (ADR-004, package R3).
+        path: "set/:setId",
+        element: <LazyModuleSetRoute />,
       },
       {
         path: "glossary",

@@ -150,6 +150,37 @@ scrambled words mid-tween — snap captions and spend the time as a hold.
 3. Let the test and the commit carry the detailed story — do not paste a full
    post-mortem here.
 
+## A `**bold**` span that straddles inline math silently loses its markers
+
+**Seen in:** `rankNullity.ts`'s rank–nullity proof (introduced when the proof
+moved from a collapsed `math-note` layer to the lesson's main line as a
+`proof` route block, package R3) and, on inspection, pre-existing in
+`determinants.ts`, `matrixComposition.ts`, `redBlackTrees.ts`,
+`structureModuleItems.ts`, and `subspacesRank.ts` — not fixed there; those
+lessons are outside this package's scope.
+
+`ProseWithMath.splitMath` extracts every `$...$` token from the whole string
+**before** `splitEmphasis` looks for `**bold**`/`*italic*` markers, and then
+runs emphasis-detection independently on each text segment *between* math
+tokens. A bold span whose opening `**` and closing `**` land in two different
+segments — because a `$...$` token sits between them — can never be
+detected: each segment sees only one of the two markers, finds no pair, and
+emits the literal asterisks as plain text. Example: `"**The images $A\mathbf{w}_j$
+span $\operatorname{Col}(A)$:**"` renders as literal `**` characters around
+correctly-rendered math, with no bold applied — silent, not a thrown error,
+so it is easy to ship and hard to notice in review.
+
+**The fix is authoring discipline, not (yet) a parser change:** keep every
+`**...**` span inside a single text run with no `$...$` token inside it. If a
+symbol must be referenced in a bolded lead-in, either restate the clause
+without the inline math (`"**The images span the column space:**"` instead of
+naming `$A\mathbf{w}_j$` inside the bold) or drop the bold and let the
+sentence structure carry the emphasis. A one-off script that replays
+`splitMath` then checks each segment for an unpaired `*` will catch this
+class of defect; it was not added as a permanent repo-wide test in R3 because
+it surfaces five pre-existing, unrelated lessons that are their own
+narrow-correction commits, not part of this package.
+
 ## Marginal caption clipping, revealed only when webfont metrics differ
 
 **Seen in:** `solution-sets`, at the beat where "homogeneous — varies" and

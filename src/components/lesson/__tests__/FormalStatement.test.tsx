@@ -59,19 +59,26 @@ describe("FormalStatement", () => {
     expect(screen.queryByText("Proof.")).toBeNull();
   });
 
-  it("renders `proof` expanded, labeled, and terminated with ∎ under variant=\"proof\"", () => {
+  it("renders `proof` as its OWN minimal block under variant=\"proof\" — never repeating the statement", () => {
     const withProof: FormalBlock = {
       ...theorem,
       id: "thm-with-proof-2",
       proof: "Suppose $a\\mathbf{v}+b\\mathbf{w}=a'\\mathbf{v}+b'\\mathbf{w}$.",
     };
     const { container } = render(<FormalStatement block={withProof} variant="proof" />);
-    expect(screen.getByText("Proof.")).toBeTruthy();
+    // Labeled by which theorem it proves, ends in ∎.
+    expect(
+      screen.getByText(/^Proof \(Theorem — Basis ⇔ unique representation\)\.$/),
+    ).toBeTruthy();
     expect(container.querySelector(".formal-statement__proof-end")?.textContent).toMatch(/∎/);
+    // No repeated statement/interpretation/layers — this is proof-only.
+    expect(container.textContent).not.toMatch(/one and only one representation/);
+    expect(container.textContent).not.toMatch(/Span gives existence/);
+    expect(container.querySelector("details")).toBeNull();
   });
 
-  it("renders nothing extra under variant=\"proof\" when the block has no proof field", () => {
-    render(<FormalStatement block={theorem} variant="proof" />);
-    expect(screen.queryByText("Proof.")).toBeNull();
+  it("renders nothing under variant=\"proof\" when the block has no proof field", () => {
+    const { container } = render(<FormalStatement block={theorem} variant="proof" />);
+    expect(container.firstChild).toBeNull();
   });
 });

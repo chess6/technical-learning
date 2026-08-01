@@ -7,6 +7,7 @@ import {
   getLessonNumber,
 } from "../../lessons/courseModel";
 import { getLessonById } from "../../lessons/registry";
+import { getModuleSet } from "../../lessons/moduleSets";
 import {
   flattenLessonToc,
   getLessonTocTree,
@@ -105,6 +106,34 @@ export function CourseSidebar({ open, onClose }: CourseSidebarProps) {
                             ) : null}
                           </span>
                         </span>
+                      </li>
+                    );
+                  }
+
+                  if (item.kind === "workshop" || item.kind === "assessment") {
+                    const set = getModuleSet(item.setId);
+                    if (!set) return null;
+                    return (
+                      <li key={item.setId} className="course-sidebar__item">
+                        <NavLink
+                          to={`/set/${item.setId}`}
+                          className="course-sidebar__link"
+                        >
+                          <span
+                            className="course-sidebar__kind-badge"
+                            data-kind={item.kind}
+                            aria-hidden="true"
+                          >
+                            {item.kind === "workshop" ? "W" : "A"}
+                          </span>
+                          <span className="course-sidebar__link-text">
+                            {set.title}
+                            <span className="course-sidebar__beta-tag">
+                              {" "}
+                              (beta)
+                            </span>
+                          </span>
+                        </NavLink>
                       </li>
                     );
                   }
