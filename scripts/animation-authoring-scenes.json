@@ -114,5 +114,10 @@
     "module": "ftcTelescopingScene",
     "exportName": "ftcTelescopingScene",
     "lessonId": "fundamental-theorem"
+  },
+  "chain-rule": {
+    "module": "chainRuleScene",
+    "exportName": "chainRuleScene",
+    "lessonId": "chain-rule"
   }
 }

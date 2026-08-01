@@ -25,6 +25,7 @@ import {
   CHANGE_OF_BASIS_SEGMENTS,
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
+  CHAIN_RULE_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -71,6 +72,7 @@ const DERIVATIVE_NAMES_STEPS = toSteps(DERIVATIVE_NAMES_SEGMENTS);
 const INTEGRAL_ACCUMULATION_STEPS = toSteps(INTEGRAL_ACCUMULATION_SEGMENTS);
 const FTC_ACCUMULATE_STEPS = toSteps(FTC_ACCUMULATE_SEGMENTS);
 const FTC_TELESCOPING_STEPS = toSteps(FTC_TELESCOPING_SEGMENTS);
+const CHAIN_RULE_STEPS = toSteps(CHAIN_RULE_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -530,6 +532,24 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "carry-vs-width",
       "branch",
       "exponent",
+    ]),
+  },
+  "chain-rule": {
+    id: "chain-rule",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation showing the chain rule as two linked zoom panels. On the left, g of x equals x squared plus one is magnified about x equals one until it becomes a line of slope two. On the right, f of u equals u cubed is magnified about u equals two, g's output at that point, until it becomes a line of slope twelve. A dashed connector shows g's output feeding f's input. The two magnification factors are multiplied on screen to twenty-four. The popular cancel-the-du proof is then shown and flagged: it silently regroups a limit as a product of two ratios, which needs the middle difference to be nonzero to even divide. The honest repair is shown next: substituting g's local-linear model as f's input in an identity that never divides, with the residual term drawn as a labelled, nonzero quantity that is automatically zero exactly where the identity is evaluated at zero. The rule is stated, and checked live at a point where the inner rate is zero: the result is zero directly, with no special case.",
+    steps: CHAIN_RULE_STEPS,
+    majorSteps: pickMajor(CHAIN_RULE_STEPS, [
+      "twoRates",
+      "feedThrough",
+      "zoomInner",
+      "predict",
+      "zoomOuter",
+      "compound",
+      "duCancelFails",
+      "residualCompose",
+      "result",
     ]),
   },
 };
