@@ -426,21 +426,23 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **BUILT — A0–A4 complete on `master`; package-level semantic review run twice, defects found and corrected, re-verified green** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
+| **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment plan opened** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
 | B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
 > 2026-07-28. A0–A4 are all built: `limits-continuity`, `derivative-local-linearity`,
 > `integral-accumulation`, and `fundamental-theorem` are complete lessons, each
 > passing Gate 8 on its lesson-owned outcomes, and all four are on `master`
-> (A4 merged 2026-07-30). The package's single Opus semantic review has run
-> once (2026-07-29) and a second, narrower re-review (2026-07-30) after a
-> follow-up correction pass; both found defects, all of which are corrected
-> with regressions — see the [ledger](modules/calculus-foundations/implementation-package.md)
-> §7 for the acceptance checklist and what remains before the package is
-> marked approved. The Gate 9 module assessment for `calculus-foundations` is
-> a separate, later step, open by design. **B** is the next package
-> recommended to enter Mode B once Package A's acceptance checklist closes.
+> (A4 merged 2026-07-30). The package's semantic review ran three times
+> (2026-07-29, -30, -31), found defects each time, all corrected with
+> regressions. The repository owner approved the package on 2026-07-31,
+> including a narrow E2E waiver scoped to `ftc-accumulate-then-measure`'s
+> `seek-determinism` check only — see the
+> [ledger](modules/calculus-foundations/implementation-package.md) §7 for the
+> exact approval record. The Gate 9 module assessment for `calculus-foundations`
+> is specified in its [assessment plan](modules/calculus-foundations/assessment-plan.md)
+> (not yet built or administered). **B** is the next package to enter Mode B;
+> its first lesson, `chain-rule` (L5), has Mode B artifacts in progress.
 
 ### 6.2 Suggested Mode B order
 
@@ -473,19 +475,22 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A is complete.** A0 (the calculus layer, the course registration, and
+**Package A is approved.** A0 (the calculus layer, the course registration, and
 the `function-plot` family), A1 (`limits-continuity`), A2
 (`derivative-local-linearity`, with the `local-linearity-zoom` family), A3
 (`integral-accumulation`, with the `accumulation-strip` family), and A4
 (`fundamental-theorem`, with the `telescoping-cancellation` family) are all
-built and merged to `master`. Package A's single Opus semantic review has run,
-found defects (evidence-level over-claims from a later MCQ-conversion pass, an
-`E_i` visualization defect, Gaussian-antiderivative overclaims, an endpoint
-derivative bug, and a generic-cancellation gap), and all are corrected with
-regressions; a verification pass is the remaining step before the package is
-marked approved (see the [ledger](modules/calculus-foundations/implementation-package.md)
-§7). The Gate 9 module assessment for `calculus-foundations` is a separate,
-later Mode D pass, open by design.
+built and merged to `master`. Package A's semantic review ran three times,
+found defects each time (evidence-level over-claims from a later
+MCQ-conversion pass, an `E_i` visualization defect, Gaussian-antiderivative
+overclaims, an endpoint derivative bug, a generic-cancellation gap, and — in
+the third pass — residual Gaussian-wording overclaims and a ledger wording
+defect), and all are corrected with regressions. The repository owner approved
+the package and a narrow E2E waiver on 2026-07-31 (see the
+[ledger](modules/calculus-foundations/implementation-package.md) §7). The Gate
+9 module assessment for `calculus-foundations` is specified in its
+[assessment plan](modules/calculus-foundations/assessment-plan.md) — not yet
+built or administered, a separate, later step.
 
 A4 created `telescoping-cancellation` parameterized over the cancelling pairs
 rather than hard-coded to interval endpoints (ledger check **P2**) — Packages
