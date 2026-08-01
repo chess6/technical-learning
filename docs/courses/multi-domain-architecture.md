@@ -414,8 +414,23 @@ path is unchanged.
 > Step 6 (learner progress + recommendations) is scheduled as R6, built on
 > **derived** mastery state rather than a new persisted field — see
 > [engineering/decisions/006-mastery-state-derivation.md](../engineering/decisions/006-mastery-state-derivation.md).
-> None of R3/R4/R6 is built yet; this note records the schedule, not the
-> shipped state.
+>
+> **Built since (2026-08-01).** R3 and R4 have shipped on
+> `feature/experience-architecture`: `UnitItem` carries `workshop`/`assessment`
+> (`review` deferred to R6 for want of per-module scheduler data), and
+> `src/curriculum/` now holds the concept catalog, the six-type edge graph with
+> typed `NodeRef` endpoints, and — as of R5 — `pathways.ts`. **Paths (§3's
+> third layer) are therefore real**, not deferred: four overlays
+> (`applied-stem`, `cs-algorithms`, `ee-signals`, `math-major`), each carrying
+> a shortest-viable `requiredNodeIds` and a `optionalNodeIds` enrichment set,
+> validated for prerequisite closure.
+>
+> The same package also acted on §3's premise that a course is a container and
+> a path is a traversal: the `applied-mathematics` **course** was renamed
+> `calculus`, because what is built under it is calculus and the wider applied
+> arc is the `applied-stem` *path*. The later spine units become their own
+> courses when their packages have content; declaring them empty now would be
+> decoration. R6 remains unbuilt.
 
 ### Step 0 — today (baseline)
 

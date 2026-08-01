@@ -140,10 +140,57 @@ Not yet done: independent review (see above); R5's `/map` page is where
 these edges get a dedicated UI beyond the lesson/glossary footnotes shipped
 here.
 
-**Not started:** R5 (course split + `/map`), R6 (mastery derivation), R7+
-(content expansion). Per the plan, R5 should not begin before the review gate
-above passes.
+**R5 is partially built** — everything except the `/map` page itself. See
+"R5 status" below. **Not started:** R6 (mastery derivation), R7+ (content
+expansion).
 **Plan:** `/home/thomas/.claude/plans/plan-a-major-pedagogical-linked-pinwheel.md`
+
+---
+
+## R5 status — data layer done, `/map` page not started
+
+Two findings changed R5's shape before any code was written, both verified
+against `courseModel.ts` rather than assumed:
+
+1. **The four-way course split would have created three empty courses.**
+   `courseModel.ts` declares only `calculus-foundations` and
+   `calculus-technique`; the other nine spine units (`series`, `signals`,
+   `fields`, …) deliberately do not exist there yet. Splitting as planned
+   would have produced Calculus with 5 built lessons and three courses
+   containing nothing. **Owner chose option (a): rename only.**
+   `applied-mathematics` → `calculus`, with the old id aliased in
+   `identity.ts` per its no-rename contract. The remaining courses appear when
+   their packages have content.
+2. **The planned readiness overlay depends on R6, which the plan schedules
+   *after* R5.** `lessonProgress`/`exerciseAttempts` still have zero
+   non-platform readers. Readiness therefore moves to R6, where the state is
+   actually wired; R6 then has no upstream dependency problem.
+
+**Shipped:** `src/curriculum/pathways.ts` (four overlays with
+required/optional node sets) and its validation suite; the `entry-bridges`
+unit, which makes the one `refresher-for` edge resolve and render on
+`/lesson/limits-continuity` instead of being dropped by `lessonLabel`; the
+course rename + alias; doc sync in `AGENTS.md` and
+`multi-domain-architecture.md`.
+
+The prerequisite-closure test earned its place immediately: it rejected the
+first pathway data with **nine real gaps** (`applied-stem` required
+`transformations` without `why-linear-algebra`, `math-major` required
+`substitution-parts` without `radians-rotation`, and so on). The fix was to
+compute the closure rather than hand-list it — and the computation also showed
+`elimination`, `solution-sets`, `subspaces-rank` and `rank-nullity` are
+genuinely *off* the applied route, which is the kind of saving a "shortest
+viable route" is supposed to find.
+
+**Still to do — the `/map` page.** Deliberately not attempted here. It is a new
+learner-facing surface with real design decisions (what focus mode reveals, how
+pathway entry reads, the a11y tree), and `AGENTS.md` routes "new capability"
+design to Opus. **Write the page contract first, then implement against it** —
+the four levels from plan §5.2 (goal-first entry → pathway track → focus mode →
+bridge offers), the nested `<ul>`/`<details>` DOM tree with real links, and any
+SVG decorative and `aria-hidden`. Readiness is explicitly *not* part of it.
+Pathway membership is a documented first cut and wants a domain owner's
+confirmation before it is presented to a learner as advice.
 
 ---
 

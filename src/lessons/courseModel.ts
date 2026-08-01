@@ -184,17 +184,53 @@ export const CURRICULUM: readonly Subject[] = [
         ],
       },
       {
-        id: "applied-mathematics",
-        title: "Applied Mathematics",
-        subtitle: "Change, fields, and transforms",
+        // Renamed from `applied-mathematics` (R5). "Applied Mathematics" was
+        // never a course — it is the *pathway* spanning calculus, signals,
+        // differential equations and multivariable, and it survives as the
+        // `applied-stem` overlay in `src/curriculum/pathways.ts`. What is
+        // actually built here is calculus, so the course says so.
+        //
+        // The remaining spine units (`series`, `signals`, `fields`, …) become
+        // their own courses **when their packages enter Mode B and have
+        // content** — declaring three empty courses now would be decoration.
+        // The old id is aliased in `identity.ts`, per its no-rename contract.
+        id: "calculus",
+        title: "Calculus",
+        subtitle: "Change, accumulation, and the theorem that binds them",
         // Units mirror the authoritative spine in
         // docs/courses/applied-mathematics/course-spine.md, where **one unit =
-        // one module directory = one implementation package**. `calculus-foundations`
-        // (Package A) and `calculus-technique` (Package B, L5 built so far) are
-        // planned in Mode B; the later units are added as their packages enter
-        // Mode B, so this list grows with the roadmap rather than declaring 39
-        // stubs up front.
+        // one module directory = one implementation package**. `entry-bridges`
+        // (Package B0), `calculus-foundations` (Package A) and
+        // `calculus-technique` (Package B, L5 built so far) are planned in
+        // Mode B; the later units are added as their packages enter Mode B, so
+        // this list grows with the roadmap rather than declaring 39 stubs up
+        // front. The doc directory keeps its `applied-mathematics` name — the
+        // split is a navigation-layer change, and the Mode B artifacts under
+        // it are untouched.
         units: [
+          {
+            // Diagnosed, not taught (course-spine §2.1–2.3): these are bounded
+            // refreshers a learner is routed to on a gap, never a prerequisite
+            // course. Declared so the `refresher-for` edge into
+            // `limits-continuity` resolves to an authored title and actually
+            // renders, instead of being dropped by `lessonLabel`.
+            id: "entry-bridges",
+            title: "Entry bridges — taken only if you need them",
+            items: [
+              {
+                kind: "future",
+                id: "functions-graphs-bridge",
+                title: "Functions, Graphs, and the Shapes You Keep Meeting",
+                subtitle: "The function vocabulary the rest of the course assumes",
+              },
+              {
+                kind: "future",
+                id: "radians-rotation",
+                title: "Radians and the Rotating Point",
+                subtitle: "Angle as arc length — the unit the calculus of waves needs",
+              },
+            ],
+          },
           {
             id: "calculus-foundations",
             title: "The two operations, and the theorem that binds them",

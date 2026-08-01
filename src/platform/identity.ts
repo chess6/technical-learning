@@ -101,13 +101,20 @@ export function asConceptId(id: string): ConceptId {
  *
  * When an entity is renamed, add old -> new here. Learner progress keyed by the
  * retired id then resolves forward, so a rename never silently erases progress.
- * Empty today by design: no id has been retired yet.
  * ------------------------------------------------------------------------ */
 
 export type AliasMap = Record<string, string>;
 
 const ALIASES: Record<EntityKind, AliasMap> = {
-  course: {},
+  course: {
+    // R5: "Applied Mathematics" was never a course — it is the pathway
+    // spanning calculus, signals, ODEs and multivariable (now the
+    // `applied-stem` overlay). What is built under it is calculus, so the
+    // course was renamed. Nothing persists a course id today, so no stored
+    // progress depends on this; the alias exists because the contract above
+    // forbids a bare rename, and because R6 may key readiness by course.
+    "applied-mathematics": "calculus",
+  },
   unit: {},
   lesson: {},
   exercise: {},
