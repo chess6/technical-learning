@@ -139,12 +139,17 @@ completed at Gate 8, once the lesson exists.
   literally generalizes (a linear map's matrix), not as a numerical
   coincidence, so `partial-derivatives-gradient` can promote it without
   re-deriving it.
-- **Declared unproved step:** the composition-of-limits argument in C7
-  (\(E_f(k(h))/h\to0\)) is stated conceptually, at L2's own level of
-  formality, not with full \(\varepsilon\)-\(\delta\) bookkeeping. Named as a
-  scoping choice in [insight.md's Audit A](insight.md#mathematical-audit-audit-a),
-  not a genuine gap — but it must be visible in the lesson as a stated
-  choice, the way L1's modulus and L4's uniform continuity are named.
+- **Declared unproved step:** within C7's argument for \(E_f(k(h))/h\to0\),
+  the *composition-of-limits* half (\(k(h)\to0\) composed with
+  \(E_f(k)/k\to0\), giving \(E_f(k(h))/k(h)\to0\)) is stated conceptually, at
+  L2's own level of formality, not with full \(\varepsilon\)-\(\delta\)
+  bookkeeping. Named as a scoping choice in
+  [insight.md's Audit A](insight.md#mathematical-audit-audit-a), not a
+  genuine gap — but it must be visible in the lesson as a stated choice, the
+  way L1's modulus and L4's uniform continuity are named. The OTHER half of
+  C7 (that \(k(h)/h\) stays bounded) is not a scoping choice — it is full
+  algebra, from \(g\)'s differentiability, and must not be silently dropped
+  the way an earlier draft of C7 dropped it.
 - **Scope exclusions:** implicit differentiation and related rates (stated as
   applications, not developed); the multivariable chain rule / Jacobians
   (named as a forward destination only); triple compositions beyond one

@@ -126,7 +126,7 @@ export const chainRuleLesson: LessonDefinition = {
     {
       id: "the-repair",
       title: "The honest repair",
-      body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nSubstitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and\n$$f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + E_f(k(h)).$$\nThis identity holds for **every** $h$ — including any $h$ where $k(h) = 0$, because then the last term is $E_f(0) = 0$ automatically. Nothing was ever divided by $\\Delta u$; it was only ever substituted. Divide the whole identity by $h$ and let $h \\to 0$: the middle term's $E_g(h)/h \\to 0$, the last term's ratio vanishes because $k(h) \\to 0$ (g is continuous — Lesson 1) while $E_f(k)/k \\to 0$, and what remains is $f'(g(a))\\,g'(a)$.",
+      body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nSubstitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and\n$$f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + E_f(k(h)).$$\nThis identity holds for **every** $h$ — including any $h$ where $k(h) = 0$, because then the last term is $E_f(0) = 0$ automatically. Nothing was ever divided by $\\Delta u$; it was only ever substituted. Divide the whole identity by $h$ and let $h \\to 0$: the middle term's $E_g(h)/h \\to 0$, and the last term's ratio $E_f(k(h))/h$ splits into $\\bigl[E_f(k(h))/k(h)\\bigr]\\cdot\\bigl[k(h)/h\\bigr]$ — a factor that vanishes ($k(h) \\to 0$ since $g$ is continuous — Lesson 1 — composed with $E_f(k)/k \\to 0$) times a factor that stays bounded ($k(h)/h \\to g'(a)$, from $g$'s differentiability, not merely its continuity). What remains is $f'(g(a))\\,g'(a)$. (This last step is stated here at the same level of formality Lesson 2 uses for its own error term, not spelled out with full quantifiers.)",
       equation: "(f\\circ g)'(a) = f'(g(a))\\,g'(a)",
       observation:
         "That is also why g'(a) = 0 needs no special case: the identity above never divided by g'(a) or by Δu to reach the answer.",
@@ -292,7 +292,7 @@ export const chainRuleLesson: LessonDefinition = {
             prompt: "Now expand h(x) = (x+2)³ directly and differentiate it, then evaluate at the same point.",
             expected: CORROBORATE_CHAIN,
             tolerance: 1e-6,
-            explanation: `(x+2)^3 = x^3+6x^2+12x+8$, so $h'(x) = 3x^2+12x+12$, and $h'(${CORROBORATE_A}) = ${CORROBORATE_CHAIN}$ — the same number, reached without composing anything.`,
+            explanation: `$(x+2)^3 = x^3+6x^2+12x+8$, so $h'(x) = 3x^2+12x+12$, and $h'(${CORROBORATE_A}) = ${CORROBORATE_CHAIN}$ — the same number, reached without composing anything.`,
           },
           {
             kind: "multiple-choice",
@@ -319,7 +319,7 @@ export const chainRuleLesson: LessonDefinition = {
       prompt: `g(x) = (x-${ZERO_A})² + 1, so g'(${ZERO_A}) = 0. For ANY differentiable f, what is (f∘g)'(${ZERO_A}) — without knowing f at all?`,
       expected: 0,
       tolerance: 1e-9,
-      explanation: `(f∘g)'(${ZERO_A}) = f'(g(${ZERO_A}))·g'(${ZERO_A}) = f'(g(${ZERO_A}))·0 = 0$, regardless of what $f$ is — the product of ANY finite number with 0 is 0.`,
+      explanation: `$(f\\circ g)'(${ZERO_A}) = f'(g(${ZERO_A}))\\cdot g'(${ZERO_A}) = f'(g(${ZERO_A}))\\cdot0 = 0$, regardless of what $f$ is — the product of ANY finite number with 0 is 0.`,
     },
     {
       id: "chain-select-method",

@@ -14,8 +14,14 @@ bridge to the multivariable case.
 > **Model-routing note.** AGENTS.md routes Mode B insight-contract authoring
 > to Opus; this contract was authored on Sonnet 5 per the user's explicit
 > instruction (see [insight-brief.md](insight-brief.md)'s note). The `PASS`
-> below reflects this session's own audit (Audit A/B), not an independent
-> reviewer's — the Review signoff section records that honestly.
+> below was originally certified by this same agent lineage's own Audit A/B —
+> not an independent reviewer's — and an independent review subsequently
+> found a real gap in exactly the step Audit A had certified clean (C7; see
+> Audit A below and the review-fix note in
+> [HANDOFF.md](../../../../engineering/HANDOFF.md)), which is precisely the
+> failure mode self-certification cannot catch. The gap is now fixed and
+> re-verified, but the `PASS` still reflects one round of independent review,
+> not a domain-owner's sign-off — see the Review signoff section below.
 
 ---
 
@@ -98,7 +104,7 @@ approximations, and their two errors, compose?"
 | C4 | Set \(k(h)=g(a+h)-g(a)=g'(a)h+E_g(h)\) — this is \(\Delta u\), now a term in an identity rather than a divisor. | C2 |
 | C5 | Substitute: \(f(g(a+h)) = f(g(a)) + f'(g(a))\bigl[g'(a)h+E_g(h)\bigr] + E_f(k(h))\). Holds for every \(h\), including where \(k(h)=0\) (C3). | C1, C3, C4 |
 | C6 | Divide by \(h\) and separate three terms: \(f'(g(a))g'(a)\) (constant), \(f'(g(a))\cdot E_g(h)/h\to0\) (C2), and \(E_f(k(h))/h\). | C5 |
-| C7 | \(g\) differentiable at \(a\) \(\Rightarrow\) continuous there (**L2 C11**), so \(k(h)\to0\) as \(h\to0\). Composing that with \(E_f(k)/k\to0\) as \(k\to0\) (C3) gives \(E_f(k(h))/h\to0\) — the case \(k(h)=0\) needs no separate argument, since \(E_f(0)=0\) makes that term identically \(0/h=0\). | C3, C4, L2 C11, **L1** (continuity) |
+| C7 | For \(h\) with \(k(h)\neq0\), write \(E_f(k(h))/h = \bigl[E_f(k(h))/k(h)\bigr]\cdot\bigl[k(h)/h\bigr]\). The first factor \(\to0\): \(g\) differentiable at \(a\) \(\Rightarrow\) continuous there (**L2 C11**), so \(k(h)\to0\) as \(h\to0\), and composing that with \(E_f(k)/k\to0\) as \(k\to0\) (C3) gives \(E_f(k(h))/k(h)\to0\). The second factor is **bounded**, in fact convergent: \(k(h)/h = g'(a)+E_g(h)/h \to g'(a)\) — this is C2/C4, differentiability of \(g\), not merely its continuity. A vanishing factor times a bounded one vanishes, so \(E_f(k(h))/h\to0\). Where \(k(h)=0\), no factoring is needed at all: \(E_f(0)=0\) makes the term identically \(0/h=0\). | C2, C3, C4, L2 C11 |
 | C8 | **The result.** \((f\circ g)'(a) = f'(g(a))\,g'(a)\) — every term in C6 accounted for, with the \(\Delta u=0\) case never requiring a division. | C6, C7 |
 | C9 | **The compression.** This is L2's own local-linear model, substituted into itself: \(f\circ g\)'s best local line at \(a\) is \(f\)'s best local line at \(b=g(a)\), fed \(g\)'s best local line at \(a\) as input. Nothing new was assumed beyond C5. | C5, L2 C8 |
 | C10 | **Rates multiply because \(1\times1\) matrices compose.** \(f'(g(a))\) and \(g'(a)\) are the \(1\times1\) matrices of the linear maps \(k\mapsto f'(g(a))k\) and \(h\mapsto g'(a)h\) (L2 C9); composing the maps composes the matrices, i.e. multiplies the numbers — the same fact LA `matrix-composition` teaches, here in dimension 1. | C8, **L2 C9**, LA `matrix-composition` |
@@ -250,13 +256,22 @@ the rule iterates.
   than division — checked independently: the \(k(h)=0\) case makes the last
   term of C6 identically \(0/h=0\) (since \(E_f(0)=0\) by \(E_f\)'s own
   definition, not an added convention), so no case is silently assumed away.
-- **Any false simplification?** The step "\(E_f(k(h))/h\to0\)" (C7) composes
-  two limits (\(k(h)\to0\) as \(h\to0\); \(E_f(k)/k\to0\) as \(k\to0\)) — a
-  standard, valid composition-of-limits argument, stated conceptually rather
-  than with full \(\varepsilon\)-\(\delta\) bookkeeping, at the same level of
-  formality L2 itself uses for \(E(h)/h\to0\). This is a scoping choice, not
-  a gap: nothing false is asserted, and the argument would survive being
-  spelled out in full.
+- **Any false simplification?** An earlier draft of C7 asserted
+  "\(k(h)\to0\), and \(E_f(k)/k\to0\), therefore \(E_f(k(h))/h\to0\)" — composing
+  those two limits alone only gives \(E_f(k(h))/k(h)\to0\), a genuinely
+  different (and weaker) statement than what C8 needs; a vanishing-numerator
+  argument with no matching factor of \(h\) does not by itself bound
+  \(E_f(k(h))/h\). (Concretely: take \(E_f(k)=k^{1.5}\) and \(k(h)=|h|^{0.5}\) —
+  both cited hypotheses hold, yet \(E_f(k(h))/h = |h|^{0.75}/h\to\infty\).)
+  C7 as written here closes that gap with the missing factor: \(k(h)/h\)
+  is **bounded**, in fact convergent to \(g'(a)\), by C2/C4 — differentiability
+  of \(g\), not merely its continuity — and a vanishing factor
+  (\(E_f(k(h))/k(h)\)) times a bounded one vanishes. The composition-of-limits
+  step that remains (\(k(h)\to0\) composed with \(E_f(k)/k\to0\)) is stated
+  conceptually rather than with full \(\varepsilon\)-\(\delta\) bookkeeping, at
+  the same level of formality L2 itself uses for \(E(h)/h\to0\) — that
+  narrower step is the genuine scoping choice; the algebraic factor is not
+  optional and is not omitted.
 - **Degenerate cases handled?** \(g'(a)=0\) (C12, falls out directly);
   \(g\) non-differentiable at \(a\) (no C2, so no chain rule — named, not
   worked); \(f\) non-differentiable at \(g(a)\) (symmetric, named).
@@ -304,11 +319,21 @@ the rule iterates.
       recorded.
 - [x] Audit A and Audit B complete; the one genuine scoping choice (level of
       formality for the composed-limits step) named rather than hidden.
-- [x] Misconception list targeted, each with a grading obligation.
+- [x] Misconception list targeted. M1, M2, M3, M5 each carry a grading
+      obligation; M4 (the \(1\times1\)-matrix reading) is addressed by C10 as
+      a stated forward connection, not by a dedicated graded item — recorded
+      as such in [lesson-plan.md](lesson-plan.md#insight-traceability)
+      rather than claimed as graded.
 - [x] Spine's inherited hypothesis (P2, "rates multiply / matrix
       composition") treated as competing, not assumed — see
       [insight-brief.md §1d](insight-brief.md#1d-ranking) for why it placed
       third rather than first.
+- [x] **Reviewer independence, recorded honestly.** Author and the two audits
+      below: same agent lineage — self-review, not independent. One
+      independent review has since run and found a real gap in C7 that the
+      self-certified Audit A had missed and certified clean; the fix is
+      reflected above. That review is not a substitute for a domain-owner's
+      sign-off, which remains outstanding.
 
 ## Gate result
 
