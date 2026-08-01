@@ -12,18 +12,19 @@
  * traversal, and the pair is what the `/map` page's shortest-vs-thorough
  * toggle reads (redesign plan §5.2).
  *
- * ## Membership is editorial, and this is a first cut
+ * ## Membership is editorial, and grounded rather than invented
  *
  * The four pathway *ids* come from the approved redesign plan §6. Which
- * lessons each one requires is a **curriculum-design judgment**, and it is
- * grounded here in what the roadmap already asserts rather than invented:
- * every grouping below cites the package table in
- * `docs/courses/applied-mathematics/curriculum-architecture.md` §6 (including
- * its "What it completes" column) or a hard `requires` edge in `edges.ts`.
+ * lessons each one requires is a **curriculum-design judgment**, grounded here
+ * in what the roadmap already asserts: every grouping below cites the package
+ * table in `docs/courses/applied-mathematics/curriculum-architecture.md` §6
+ * (including its "What it completes" column) or a hard `requires` edge in
+ * `edges.ts`.
  *
- * Even so, a domain owner should confirm the membership before it drives
- * anything a learner is told to do. What R5 needs is the mechanism and the
- * validated shape; the exact rosters are cheap to amend and are expected to be.
+ * Reviewed and accepted by the repository owner (2026-08-01) for use in this
+ * private instance. Rosters stay cheap to amend — the closure test in
+ * `__tests__/pathways.test.ts` is what keeps an amendment honest, by refusing
+ * any required lesson whose own hard prerequisites are not also required.
  */
 
 import { lesson, type LessonRef } from "./edges";

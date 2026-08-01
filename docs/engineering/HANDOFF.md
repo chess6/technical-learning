@@ -182,15 +182,26 @@ compute the closure rather than hand-list it — and the computation also showed
 genuinely *off* the applied route, which is the kind of saving a "shortest
 viable route" is supposed to find.
 
-**Still to do — the `/map` page.** Deliberately not attempted here. It is a new
-learner-facing surface with real design decisions (what focus mode reveals, how
-pathway entry reads, the a11y tree), and `AGENTS.md` routes "new capability"
-design to Opus. **Write the page contract first, then implement against it** —
-the four levels from plan §5.2 (goal-first entry → pathway track → focus mode →
-bridge offers), the nested `<ul>`/`<details>` DOM tree with real links, and any
-SVG decorative and `aria-hidden`. Readiness is explicitly *not* part of it.
-Pathway membership is a documented first cut and wants a domain owner's
-confirmation before it is presented to a learner as advice.
+**The `/map` page is specified and deliberately deferred** —
+[ADR-007](decisions/007-curriculum-map-page.md) is the full contract (entry,
+focus-mode one-hop rule, unbuilt-content honesty, shortest-vs-thorough, the
+a11y tree; readiness explicitly excluded and left to R6). Owner's call, and the
+right one: `applied-stem` requires 46 lessons and **13 are built**, so a map
+today would mostly render "not built yet" while `CourseSidebar` already handles
+20 lessons across three courses. ADR-007 names the trigger to build it.
+
+**Pathway membership is accepted** (owner, 2026-08-01) for this private
+instance — no further sign-off pending. The closure test is what keeps future
+amendments honest.
+
+**Known, time-boxed:** `pathways.ts` has no runtime consumer until `/map`
+ships. That is a knowing exception to ADR-005's no-decoration rule, permitted
+only because the consumer is specified and scheduled in ADR-007 — recorded
+there with the condition that it must not sit indefinitely.
+
+**The critical path is now content (R7+), not architecture.** Both live graph
+consumers — `CurriculumConnections` (15 of 20 lessons) and `GlossaryTermCard`
+(11 of 16 terms) — improve automatically as lessons land, with no code change.
 
 ---
 
