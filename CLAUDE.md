@@ -22,3 +22,12 @@ Task-scoped rules under `.cursor/rules/` are **not** imported (they are `globs`-
 not `alwaysApply`). Read the matching one when you touch its area:
 `explorations.mdc` (`src/explorations/`), `guided-scenes.mdc` (`src/guided-scenes/`,
 `GuidedScenePlayer`), `linear-transforms.mdc` (`src/math/`, explorers, guided scenes).
+
+## Session continuation
+
+Before planning or editing, read `docs/engineering/HANDOFF.md` when it shows active work.
+Then reconcile it against `git status`, the current plan, the package ledger, and relevant test output.
+If they disagree, actual repository state and test output win.
+
+Do not duplicate package status in the handoff. Link to the ledger and plan instead.
+Keep handoffs concise and replace them when the active work changes.
