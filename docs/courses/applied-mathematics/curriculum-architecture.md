@@ -427,7 +427,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 `chain-rule` built (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); L6–L8 remain `future`** | `feature/l5-chain-rule` | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md) |
+| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); Gate 8 not yet formally accepted (pending a domain-owner sign-off distinct from the implementing/reviewing agent lineage); L6–L8 remain `future`** | `master` (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted) | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md) |
 | C–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
@@ -444,15 +444,16 @@ before implementing it").
 > is [built in code](modules/calculus-foundations/assessment-plan.md) — 13
 > items, registered and machinery-verified — but not administered.
 >
-> **Package B is in progress**, on branch `feature/l5-chain-rule` (see
-> `docs/engineering/HANDOFF.md`) — not on `master`, and not yet accepted.
-> Its first lesson, `chain-rule` (L5), has all Mode B docs through
-> `Gate result: PASS` and full Mode C lesson code (guided scene, explorer,
-> exercises), verified by `./check.sh --e2e` on that branch. L5's Gate 8 is
-> not yet formally ticked — pending a reviewer outside this agent's lineage,
-> the same self-certification constraint as Package A's own semantic review.
-> Anyone starting Package B work should check this branch first (AGENTS.md's
-> "claim a package before implementing it") rather than reimplementing.
+> **Package B is in progress**, on `master` (merged from `feature/l5-chain-rule`,
+> 2026-08-01; see `docs/engineering/HANDOFF.md`) — built and merged, but not
+> yet accepted. Its first lesson, `chain-rule` (L5), has all Mode B docs
+> through `Gate result: PASS` and full Mode C lesson code (guided scene,
+> explorer, exercises), verified by `./check.sh --e2e` before merge. L5's
+> Gate 8 is not yet formally ticked — pending a reviewer outside this agent's
+> lineage, the same self-certification constraint as Package A's own semantic
+> review. Anyone starting further Package B work should check
+> `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a
+> package before implementing it") rather than reimplementing.
 
 ### 6.2 Suggested Mode B order
 
@@ -510,8 +511,10 @@ I–K re-run that family with shared interior edges and faces. The underlying
 `telescopingTerms`/`cancellationReport`) take an arbitrary pairing for that
 reason, proven by a regression that feeds the family a non-interval pairing.
 
-**B (`calculus-technique`) is in progress**, on branch `feature/l5-chain-rule`
-— not `master`. Its first lesson, `chain-rule` (L5), is fully built (Mode B
-docs through `Gate result: PASS`, plus Mode C lesson code) and verified on
-that branch; L6–L8 remain `future`. See §6.1's package-status ledger and
-`docs/engineering/HANDOFF.md` before starting further Package B work.
+**B (`calculus-technique`) is in progress**, merged to `master`
+(`feature/l5-chain-rule`, 2026-08-01; branch deleted). Its first lesson,
+`chain-rule` (L5), is fully built (Mode B docs through `Gate result: PASS`,
+plus Mode C lesson code) and verified; L6–L8 remain `future`. Gate 8
+acceptance is still pending a domain-owner sign-off — merging is not that
+sign-off. See §6.1's package-status ledger and `docs/engineering/HANDOFF.md`
+before starting further Package B work.

@@ -3,11 +3,13 @@
 ## Active goal
 Package A (`calculus-foundations`) is **approved** (repository owner,
 2026-07-31), including a narrow E2E waiver. Three things approved together
-are **built, independently reviewed, and re-verified** on this branch: (1)
+were **built, independently reviewed, and re-verified**, then **merged to
+`master`** (2026-08-01, fast-forward, `feature/l5-chain-rule` deleted): (1)
 the Gate 9 assessment for `calculus-foundations` (13 items, built in code,
 not administered); (2) Mode B docs for L5 `chain-rule` through
 `Gate result: PASS`; (3) L5's Mode C lesson code. What remains: a
-domain-owner's sign-off and merging this branch.
+domain-owner's sign-off on L5's Gate 8 — the merge itself is not that
+sign-off.
 
 ## Scope
 In scope: Gate 9 code implementation, L5's four Mode B docs, L5 lesson code,
@@ -72,16 +74,18 @@ Opus-authored.
   - Several smaller doc-overclaims and a dead `exampleId` reference.
   Full details in commit messages on this branch (search `git log` for
   "independent-review" / "finding #").
-- **Full verification, this session, on `feature/l5-chain-rule`, re-run after
-  the review-fix pass:** `./check.sh` — 2241/2241 tests, lint and typecheck
-  clean. `./check.sh --e2e` — 200 passed; 5 failures, **all pre-existing and
-  unrelated to this branch's changes**: three in `benchmark-lab.spec.ts`
-  (zero diff between this branch and the pre-session state — confirmed via
-  `git diff`), `ftc-accumulate-then-measure`'s `seek-determinism` gate (the
-  exact, already-waived Package A failure — see ledger §7), and
-  `solution-sets` (the other known, intermittent failure). `chain-rule`
-  itself is clean, including its hard gates, re-verified directly after the
-  predict-beat fix.
+- **Full verification, this session, run on `feature/l5-chain-rule` before
+  merge, re-run after the review-fix pass:** `./check.sh` — 2241/2241 tests,
+  lint and typecheck clean. `./check.sh --e2e` — 200 passed; 5 failures, **all
+  pre-existing and unrelated to this branch's changes**: three in
+  `benchmark-lab.spec.ts` (zero diff between this branch and the pre-session
+  state — confirmed via `git diff`), `ftc-accumulate-then-measure`'s
+  `seek-determinism` gate (the exact, already-waived Package A failure — see
+  ledger §7), and `solution-sets` (the other known, intermittent failure).
+  `chain-rule` itself is clean, including its hard gates, re-verified directly
+  after the predict-beat fix. The merge to `master` was a clean fast-forward
+  (no new commits on `master` since the branch point), so these results carry
+  over unchanged; not re-run again post-merge.
 - Manual browser verification (Playwright MCP, dev server): the guided scene
   renders both panels, labels, the connector, tangent lines, and every
   equation correctly across several chapters; the explorer's chain-rule value
@@ -105,14 +109,21 @@ Opus-authored.
 - Task routing: `AGENTS.md`
 
 ## Branch / worktree
-`feature/l5-chain-rule`, checked out at
-`/home/thomas/Dev/technical-learning-l5-chain-rule`. `master` is at `888c0a0`
-(the pre-session state) — every commit from this session lives only on this
-branch until reviewed and merged. Per AGENTS.md's package/branch discipline,
-continue work here, not on `master`; announce this branch if picking work
-back up in a new session. `CLAUDE.md` still has a pre-existing "Session
-continuation" diff from an earlier session (origin unknown) — still
+Merged to `master` (2026-08-01, fast-forward from `feature/l5-chain-rule`
+at `888c0a0..12d959e`); the branch and its worktree
+(`/home/thomas/Dev/technical-learning-l5-chain-rule`) have been deleted. Local
+`master` is not yet pushed to `origin` (10 commits ahead, including this
+work) — pushing is a separate decision. `CLAUDE.md` still has a pre-existing
+"Session continuation" diff from an earlier session (origin unknown) — still
 undecided: commit, keep editing, or discard.
+
+**Note for future sessions:** the primary checkout
+(`/home/thomas/Dev/technical-learning`) may be on a different branch doing
+unrelated work — as of 2026-08-01 it was on `feature/experience-architecture`
+(another agent's in-progress work, unrelated to this module). Check
+`git branch --show-current` and `git worktree list` before assuming the
+primary checkout reflects this module's state; use a scratch worktree for
+`master`-only operations rather than disturbing another branch's checkout.
 
 ## Next actions
 1. Get an independent reviewer or the user to formally accept L5's Gate 8 and
@@ -120,11 +131,13 @@ undecided: commit, keep editing, or discard.
    agent lineage (same ADR-002 constraint as Package A's own semantic
    review). One independent review has already run and is reflected in the
    fixes above; a domain-owner's sign-off is the remaining, different thing.
-2. Decide whether/when to merge `feature/l5-chain-rule` into `master`.
-3. After that: the Gate 9 items remain unadministered (tracked in the
-   assessment plan, not a blocker to merging); Package B's remaining lessons
-   (L6–L8, currently `future` stubs in `courseModel.ts`) are the next Mode B
-   work once L5 is accepted.
+   Merging to `master` was the user's explicit instruction but is not itself
+   that sign-off.
+2. Decide whether/when to push `master` to `origin`.
+3. The Gate 9 items remain unadministered (tracked in the assessment plan,
+   not a blocker to merging); Package B's remaining lessons (L6–L8, currently
+   `future` stubs in `courseModel.ts`) are the next Mode B work once L5 is
+   accepted.
 
 ## Test results
 See "Verified state" above — this section intentionally does not duplicate

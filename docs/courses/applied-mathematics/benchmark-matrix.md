@@ -16,8 +16,8 @@ applied-mathematics particulars live here.
 > (planned)*. What the matrix fixes is **how deep** each module must go before it
 > can be called done, and a module's lessons being built does not by itself move
 > its bar — that needs the module's own Gate 9 assessment, which for
-> `calculus-foundations` is built in code (13 items, on branch
-> `feature/l5-chain-rule` pending merge) but not yet administered (§3).
+> `calculus-foundations` is built in code (13 items, merged to `master`) but
+> not yet administered (§3).
 
 ---
 
@@ -115,17 +115,18 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 
 ## 3. Course-level gap summary
 
-**Coverage: four lessons on `master`, a fifth on a pending branch.**
+**Coverage: five lessons on `master`.**
 `limits-continuity`, `derivative-local-linearity`, `integral-accumulation`,
 and `fundamental-theorem` (all of `calculus-foundations`, Package A,
 approved) are built and each passes Gate 8 on its lesson-owned outcomes.
-`chain-rule` (L5, `calculus-technique`) is fully built on branch
-`feature/l5-chain-rule`, not yet merged or Gate-8-accepted. Every other
-lesson is `future`, and **no module bar in §2 is formally certified** — a
-module's bar is judged on its whole set via its own Gate 9 assessment. Gate 9
-for `calculus-foundations` is [built in code](modules/calculus-foundations/assessment-plan.md)
-(13 items, on the same pending branch), a separate later step from the four
-lessons' Gate 8 passes, but not yet administered.
+`chain-rule` (L5, `calculus-technique`) is fully built and merged to
+`master`, but not yet Gate-8-accepted (pending a domain-owner sign-off).
+Every other lesson is `future`, and **no module bar in §2 is formally
+certified** — a module's bar is judged on its whole set via its own Gate 9
+assessment. Gate 9 for `calculus-foundations` is
+[built in code](modules/calculus-foundations/assessment-plan.md) (13 items,
+merged to `master`), a separate later step from the four lessons' Gate 8
+passes, but not yet administered.
 
 **Highest-risk P2 bars** — the ones most likely to be quietly missed:
 
