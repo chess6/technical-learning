@@ -16,7 +16,8 @@ applied-mathematics particulars live here.
 > (planned)*. What the matrix fixes is **how deep** each module must go before it
 > can be called done, and a module's lessons being built does not by itself move
 > its bar — that needs the module's own Gate 9 assessment, which for
-> `calculus-foundations` is specified but not yet built or administered (§3).
+> `calculus-foundations` is built in code (13 items, on branch
+> `feature/l5-chain-rule` pending merge) but not yet administered (§3).
 
 ---
 
@@ -98,7 +99,7 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 | Module | P1 bar | **P2 bar (target)** | P3 bar (not targeted) | Current |
 | --- | --- | --- | --- | --- |
 | **M0 `entry-bridges`** | Radians and the unit circle usable. | Same, plus reading a phasor diagram cold. | — | none (planned) |
-| **M1 `calculus-foundations`** | Riemann sums; the FTC applied. [ext-18.01SC] | Limits as a **local tolerance guarantee**, with a modulus of continuity as the quantitative control; local linearity as the *meaning* of the derivative; the FTC **derived by telescoping**. | \(\varepsilon\)–\(\delta\); uniform continuity proved on a compact interval; integrability theory. | **4 of 4 lessons built** (Package A, approved): the tolerance guarantee, the modulus, local linearity, accumulation, and the FTC's telescoping derivation are all delivered. The module bar is not yet **certified** — that needs Gate 9's own assessment; a plan is now [specified](modules/calculus-foundations/assessment-plan.md) but not built or administered. |
+| **M1 `calculus-foundations`** | Riemann sums; the FTC applied. [ext-18.01SC] | Limits as a **local tolerance guarantee**, with a modulus of continuity as the quantitative control; local linearity as the *meaning* of the derivative; the FTC **derived by telescoping**. | \(\varepsilon\)–\(\delta\); uniform continuity proved on a compact interval; integrability theory. | **4 of 4 lessons built** (Package A, approved): the tolerance guarantee, the modulus, local linearity, accumulation, and the FTC's telescoping derivation are all delivered. The module bar is not yet **certified** — that needs Gate 9's own assessment, which is [built in code](modules/calculus-foundations/assessment-plan.md) (13 items) but not yet administered. |
 | **M2 `calculus-technique`** | Substitution, parts, standard improper integrals. [ext-Stewart] | Techniques **derived** from the chain and product rules; parts recognised as Theme 1's boundary term; improper convergence judged by decay rate. | Comparison and limit-comparison proved; conditional convergence. | none (planned) |
 | **M3 `series`** | Convergence tests applied; Taylor polynomials computed. [ext-18.01SC] | Series as the limit of partial sums; absolute vs conditional convergence and why rearrangement is unsafe; radius of convergence as a property of the coefficients. | Uniform convergence; term-by-term differentiation justified; Weierstrass M-test. | none (planned) |
 | **M4 `complex-oscillation`** | \(a+bi\) arithmetic; Euler's formula stated. | Complex multiplication as rotate-and-scale; Euler **derived** (twice — from the ODE and from the series); phasor arithmetic used to add sinusoids and read impedance. [ext-18.03SC] | Complex differentiability; the exponential defined rigorously. | none (planned) |
@@ -114,15 +115,17 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 
 ## 3. Course-level gap summary
 
-**Coverage: four lessons — one complete module's worth.** `limits-continuity`,
-`derivative-local-linearity`, `integral-accumulation`, and `fundamental-theorem`
-(all of `calculus-foundations`, Package A, approved) are built and each passes
-Gate 8 on its lesson-owned outcomes. Every other lesson is `future`, and **no
-module bar in §2 is formally certified** — a module's bar is judged on its
-whole set via its own Gate 9 assessment. Gate 9 for `calculus-foundations` is
-now [specified](modules/calculus-foundations/assessment-plan.md), a separate
-later step from the four lessons' Gate 8 passes, but not yet built or
-administered.
+**Coverage: four lessons on `master`, a fifth on a pending branch.**
+`limits-continuity`, `derivative-local-linearity`, `integral-accumulation`,
+and `fundamental-theorem` (all of `calculus-foundations`, Package A,
+approved) are built and each passes Gate 8 on its lesson-owned outcomes.
+`chain-rule` (L5, `calculus-technique`) is fully built on branch
+`feature/l5-chain-rule`, not yet merged or Gate-8-accepted. Every other
+lesson is `future`, and **no module bar in §2 is formally certified** — a
+module's bar is judged on its whole set via its own Gate 9 assessment. Gate 9
+for `calculus-foundations` is [built in code](modules/calculus-foundations/assessment-plan.md)
+(13 items, on the same pending branch), a separate later step from the four
+lessons' Gate 8 passes, but not yet administered.
 
 **Highest-risk P2 bars** — the ones most likely to be quietly missed:
 
