@@ -1700,12 +1700,7 @@
     },
     "feedThrough": {
       "title": "text",
-      "connect": {
-        "intent": "geometry",
-        "targets": [
-          "semantic:chainrule:connector"
-        ]
-      },
+      "connect": "transition",
       "caption": "text",
       "hold": "hold"
     },
@@ -1717,12 +1712,7 @@
           "semantic:chainrule:curve:g"
         ]
       },
-      "reveal": {
-        "intent": "geometry",
-        "targets": [
-          "semantic:chainrule:tangent:g"
-        ]
-      },
+      "reveal": "transition",
       "caption": "text",
       "hold": "hold"
     },
@@ -1738,12 +1728,7 @@
           "semantic:chainrule:curve:f"
         ]
       },
-      "reveal": {
-        "intent": "geometry",
-        "targets": [
-          "semantic:chainrule:tangent:f"
-        ]
-      },
+      "reveal": "transition",
       "caption": "text",
       "hold": "hold"
     },
