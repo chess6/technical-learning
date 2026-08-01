@@ -269,7 +269,7 @@ export function FundamentalTheoremExplorer() {
           {showCancellation && !contributions && (
             <ProseWithMath
               className="ftc-explorer__note"
-              text="No elementary formula for F, so no telescoping identity to display — the identity is written in terms of F's values, and this integrand's antiderivative has none in closed form (though it still exists, and the numerical running total is still an antiderivative witness)."
+              text="The telescoping identity itself holds for any F, closed-form or not — it is this explorer's DISPLAY that needs a closed-form F to evaluate at each partition point, and this integrand's antiderivative has none (though it still exists, and the numerical running total is still an antiderivative witness). No independent closed-form computation is available here to show."
             />
           )}
 
@@ -297,7 +297,7 @@ export function FundamentalTheoremExplorer() {
           {showError && !errors && (
             <ProseWithMath
               className="ftc-explorer__note"
-              text="No elementary formula for F, so no local-linear error to report against — E_i is defined relative to F's closed form, and this integrand's antiderivative has none (numerical accumulation is still available as A(x))."
+              text="E_i is well-defined for any F, closed-form or not — this explorer just has no closed-form F to compute it from for this integrand (numerical accumulation is still available as A(x)). No independent closed-form residual is available here to report."
             />
           )}
         </>
