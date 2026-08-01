@@ -99,7 +99,7 @@ it), `der-differentiable-definition`, `der-residual-remains`, and
   whose point is that it is the scene's own drive trace read two ways.
 - **Retention (D12):** differentiable ⇒ continuous but not conversely — the fact
   most likely to invert on recall.
-- **Forward:** L3 (composition of these lines), L4 (linearization as a tool),
+- **Forward:** L5 (composition of these lines, the chain rule), L4 (linearization as a tool),
   **L4 (C5 is the telescoping step)**, L22 (equations about \(f'\)), L28 (the
   zoom in several directions).
 
@@ -119,7 +119,7 @@ it), `der-differentiable-definition`, `der-residual-remains`, and
   This is the lesson's principal known-failure-mode risk and its principal
   invariant.
 - **Scope exclusions:** the differentiation rulebook beyond \(x^n\) small \(n\),
-  constants and sums; the chain rule (L3); implicit differentiation; higher-order
+  constants and sums; the chain rule (L5); implicit differentiation; higher-order
   Taylor (L4 states first order only); the mean value theorem; nowhere-
   differentiable functions beyond a one-sentence existence remark.
 - **Abstraction return:** insight §14; evidenced by `der-tangent-crosses`, which
