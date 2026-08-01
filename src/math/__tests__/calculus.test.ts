@@ -600,7 +600,7 @@ describe("boundaryAwareDerivative — no symmetric difference reaching past a do
     expect(() => boundaryAwareDerivative((x) => x, 0.75 * h, domain, h)).toThrow(/narrower/);
   });
 
-  it("computes a one-sided difference at the midpoint of a domain exactly twice the step size", () => {
+  it("computes a centered difference at the midpoint of a domain exactly twice the step size", () => {
     const h = 1e-5;
     const domain: [number, number] = [0, 2 * h];
     const f = (x: number) => x * x;
