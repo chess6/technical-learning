@@ -9,13 +9,16 @@
  *
  * `from`/`to` are plain strings because an edge endpoint may be a concept id
  * (`src/curriculum/concepts.ts`) or a lesson id (`src/curriculum/lessonRoster.ts`,
- * `src/lessons/registry.ts`) depending on what the edge naturally relates —
- * e.g. `requires` connects LESSONS (course-sequencing), `revisited-by`
- * connects a CONCEPT to the LESSON that revisits it. Referential integrity
- * for both spaces is checked by `src/curriculum/__tests__/graph.test.ts`.
+ * `src/lessons/registry.ts`) depending on what the edge naturally relates.
+ * Which namespace each `EdgeType` uses on each side is NOT ad hoc — it is
+ * declared exactly once in `EDGE_NAMESPACE` below, and
+ * `src/curriculum/__tests__/graph.test.ts` asserts every edge's endpoints
+ * resolve in THAT namespace specifically (not "either namespace"), so a
+ * `requires` edge naming a concept id, or a `revisited-by` edge whose `from`
+ * isn't a concept, fails loudly instead of silently passing a looser check.
  *
  * Sources:
- * - `docs/courses/linear-algebra/curriculum-architecture.md` §2.1 (24 hard
+ * - `docs/courses/linear-algebra/curriculum-architecture.md` §2.1 (25 hard
  *   prerequisite edges), §3 (Reuses column → `revisited-by`)
  * - `docs/courses/applied-mathematics/curriculum-architecture.md` §2.1 (9
  *   cross-course edges), §2.2 (64 within-course edges), §3 (Reused-by column
@@ -37,6 +40,25 @@ export type CurriculumEdge = {
   to: string;
   type: EdgeType;
   note?: string;
+};
+
+export type EdgeNamespace = "concept" | "lesson";
+
+/**
+ * The id space each `EdgeType` connects, on each side. `requires` /
+ * `recommended-before` / `refresher-for` / `same-structure-as` are all
+ * lesson-sequencing relationships (course-spine positions); `application-of`
+ * and `revisited-by` are concept-anchored. A new edge whose endpoints don't
+ * fit this table is a sign the edge belongs to a DIFFERENT type, not that
+ * this table should widen to "either."
+ */
+export const EDGE_NAMESPACE: Record<EdgeType, { from: EdgeNamespace; to: EdgeNamespace }> = {
+  requires: { from: "lesson", to: "lesson" },
+  "recommended-before": { from: "lesson", to: "lesson" },
+  "refresher-for": { from: "lesson", to: "lesson" },
+  "same-structure-as": { from: "lesson", to: "lesson" },
+  "application-of": { from: "concept", to: "concept" },
+  "revisited-by": { from: "concept", to: "lesson" },
 };
 
 /* --------------------------------------------------------------------------
@@ -183,12 +205,17 @@ const APPLICATION_OF: readonly CurriculumEdge[] = [
   { from: "singular-value-decomposition", to: "image-compression", type: "application-of", note: "Keeping only the largest singular values approximates a matrix cheaply." },
   { from: "diagonalization", to: "dynamical-systems", type: "application-of", note: "Long-run behavior of a repeated linear map is read off the eigenbasis." },
   { from: "eigenvector", to: "dynamical-systems", type: "application-of", note: "Eigen-directions are the modes a repeated map preserves." },
-  { from: "first-order-odes", to: "exponential-growth-decay", type: "application-of", note: "y' = ky is the growth/decay equation, solved by separation." },
+  { from: "differential-equation", to: "exponential-growth-decay", type: "application-of", note: "y' = ky is the growth/decay equation, solved by separation." },
 ];
 
 /* --------------------------------------------------------------------------
  * revisited-by — callback, derived directly from each concept catalog's own
  * Reuses / Reused-by column. Concept -> lesson that fires it again.
+ *
+ * `vector`'s LA catalog row reads "L2, L3, L12, L13, all" — the trailing
+ * "all" is not a single lesson id and cannot become one edge without
+ * inventing an "every lesson" node, so it is intentionally dropped here
+ * rather than silently rounded to a nearby lesson.
  * ------------------------------------------------------------------------ */
 
 const REVISITED_BY: readonly CurriculumEdge[] = [

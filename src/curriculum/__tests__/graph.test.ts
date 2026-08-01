@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CONCEPTS } from "../concepts";
-import { CURRICULUM_EDGES, type EdgeType } from "../edges";
+import { CURRICULUM_EDGES, EDGE_NAMESPACE, type EdgeNamespace, type EdgeType } from "../edges";
 import { LESSON_ROSTER, isKnownLessonId } from "../lessonRoster";
 import { assertUniqueIds } from "../../platform/identity";
 
@@ -18,8 +18,17 @@ const EDGE_TYPES: readonly EdgeType[] = [
 
 const DAG_EDGE_TYPES: readonly EdgeType[] = ["requires", "recommended-before"];
 
-function isKnownNodeId(id: string): boolean {
-  return CONCEPTS.some((c) => c.id === id) || isKnownLessonId(id);
+const conceptIds = new Set(CONCEPTS.map((c) => String(c.id)));
+
+/**
+ * Resolves an id in the SPECIFIC namespace `EDGE_NAMESPACE` declares for that
+ * side of that edge type — not "either space." A `requires` edge naming a
+ * concept id, or a `revisited-by` edge whose `from` isn't a concept, must
+ * fail here even though the id might be a perfectly valid id in the OTHER
+ * namespace.
+ */
+function resolvesInNamespace(id: string, namespace: EdgeNamespace): boolean {
+  return namespace === "concept" ? conceptIds.has(id) : isKnownLessonId(id);
 }
 
 describe("curriculum concept catalog", () => {
@@ -37,14 +46,19 @@ describe("curriculum concept catalog", () => {
 });
 
 describe("curriculum edge referential integrity", () => {
-  it("resolves every edge endpoint to a known concept or lesson id", () => {
+  it("resolves every edge endpoint in the namespace EDGE_NAMESPACE declares for it", () => {
     const problems: string[] = [];
     for (const edge of CURRICULUM_EDGES) {
-      if (!isKnownNodeId(edge.from)) {
-        problems.push(`${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.from}" is not a known concept or lesson id`);
+      const { from: fromNamespace, to: toNamespace } = EDGE_NAMESPACE[edge.type];
+      if (!resolvesInNamespace(edge.from, fromNamespace)) {
+        problems.push(
+          `${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.from}" is not a known ${fromNamespace} id`,
+        );
       }
-      if (!isKnownNodeId(edge.to)) {
-        problems.push(`${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.to}" is not a known concept or lesson id`);
+      if (!resolvesInNamespace(edge.to, toNamespace)) {
+        problems.push(
+          `${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.to}" is not a known ${toNamespace} id`,
+        );
       }
     }
     expect(problems).toEqual([]);

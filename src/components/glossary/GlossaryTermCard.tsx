@@ -137,7 +137,10 @@ export function GlossaryTermCard({
             <ul className="glossary-card__refs-list">
               {applications.map((concept) => (
                 <li key={concept.id}>
-                  <span className="glossary-card__chip glossary-card__chip--static">
+                  <span
+                    className="glossary-card__chip glossary-card__chip--static"
+                    title={concept.blurb}
+                  >
                     {concept.title}
                   </span>
                 </li>
