@@ -34,6 +34,13 @@
   color: var(--color-text-muted);
 }
 
+.misconception-callout__attribution {
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
 .misconception-callout__visual {
   min-width: 0;
 }

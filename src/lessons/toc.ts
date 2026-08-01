@@ -69,6 +69,12 @@ function workedTitleById(lesson: LessonDefinition): Map<string, string> {
   );
 }
 
+function calloutTitleById(lesson: LessonDefinition): Map<string, string> {
+  return new Map(
+    (lesson.callouts ?? []).map((callout) => [callout.id, callout.title]),
+  );
+}
+
 /**
  * Stable anchor id for a route block — must match `LessonLayout` so in-page
  * links and the course-sidebar sublist land on the same elements.
@@ -93,6 +99,17 @@ export function getBlockAnchorId(block: RouteBlock, index: number): string {
       // A lesson may place more than one clip, so the scene names the anchor
       // when there is one; the lesson's own visual keeps the positional id.
       return block.sceneId ? `visual-${block.sceneId}` : `visual-${index}`;
+    case "explore":
+      // Mirrors "visual": a named explorationId gets its own stable anchor.
+      return block.explorationId
+        ? `explore-${block.explorationId}`
+        : `explore-${index}`;
+    case "callout":
+      return `callout-${block.calloutId}`;
+    case "proof":
+      return `proof-${block.formalId}`;
+    case "composed":
+      return `composed-${block.componentId}-${index}`;
     default:
       return `${block.kind}-${index}`;
   }
@@ -122,6 +139,7 @@ export function getBlockTocLabel(
   const formals = formalById(lesson);
   const sections = sectionTitleById(lesson);
   const worked = workedTitleById(lesson);
+  const callouts = calloutTitleById(lesson);
 
   switch (block.kind) {
     case "handoff":
@@ -173,9 +191,29 @@ export function getBlockTocLabel(
       return lesson.motivatingQuestion ? authoredLabel(block) : null;
     case "watch":
     case "visual":
+      // A named sceneId (block.sceneId on "visual") resolves independently of
+      // the lesson's own guidedSceneId; the combined "watch"/default "visual"
+      // needs the lesson's own scene to exist.
+      if (block.kind === "visual" && block.sceneId) return authoredLabel(block);
       return lesson.guidedSceneId ? authoredLabel(block) : null;
     case "explore":
-      // LessonLayout always renders an explore slot (live explorer or placeholder).
+      // A named explorationId resolves independently of the lesson's own
+      // explorationId; the combined explore slot needs the lesson's own
+      // explorer to exist — otherwise the row would point at content
+      // LessonLayout never renders (no exploration prop reaches it).
+      if (block.explorationId) return authoredLabel(block);
+      return lesson.explorationId ? authoredLabel(block) : null;
+    case "callout": {
+      const title = callouts.get(block.calloutId);
+      return title ? plainTocLabel(title) : null;
+    }
+    case "proof": {
+      const formal = formals.get(block.formalId);
+      if (!formal || !formal.proof) return null;
+      const name = formal.label ?? FORMAL_KIND_LABEL[formal.kind] ?? "Statement";
+      return plainTocLabel(`Proof — ${name}`);
+    }
+    case "composed":
       return authoredLabel(block);
     case "summary":
       return lesson.keyTakeaway || lesson.structuredSummary

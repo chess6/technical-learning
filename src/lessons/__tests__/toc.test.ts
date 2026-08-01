@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { chapter0Lesson } from "../chapter0";
 import { vectorsLesson } from "../vectors";
 import { lessons } from "../registry";
-import { flattenLessonToc, getLessonTocTree } from "../toc";
+import { flattenLessonToc, getLessonTocTree, getBlockTocLabel } from "../toc";
+import type { LessonDefinition } from "../types";
 
 /**
  * The internal block names. A lesson's `route` still uses them, and they still
@@ -81,5 +82,101 @@ describe("no lesson surfaces a generic phase name", () => {
     const labels = flattenLessonToc(getLessonTocTree(vectorsLesson)).map((i) => i.label);
     expect(labels).toContain("Worked examples");
     expect(labels).toContain("Practice");
+  });
+});
+
+describe("callout / proof / composed / named-explore ToC labels (ADR-004)", () => {
+  const base: LessonDefinition = {
+    id: "toc-fixture",
+    title: "Fixture",
+    subtitle: "Fixture",
+    learningObjectives: ["x"],
+    sections: [],
+  };
+
+  it("names a callout block by the callout's own title", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      callouts: [{ id: "belief", title: "A field's plausible belief" }],
+      route: [{ kind: "callout", calloutId: "belief" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBe(
+      "A field's plausible belief",
+    );
+  });
+
+  it("returns null for a callout block whose calloutId does not resolve", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      route: [{ kind: "callout", calloutId: "missing" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBeNull();
+  });
+
+  it("names a proof block 'Proof — <formal label>', only when the formal has a proof", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      formalBlocks: [
+        {
+          id: "thm",
+          kind: "theorem",
+          label: "Rank-nullity",
+          statement: "s",
+          interpretation: "i",
+          visibility: "visible",
+          proof: "p",
+        },
+      ],
+      route: [{ kind: "proof", formalId: "thm" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBe("Proof — Rank-nullity");
+  });
+
+  it("returns null for a proof block whose formal has no proof field", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      formalBlocks: [
+        {
+          id: "thm",
+          kind: "theorem",
+          statement: "s",
+          interpretation: "i",
+          visibility: "visible",
+        },
+      ],
+      route: [{ kind: "proof", formalId: "thm" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBeNull();
+  });
+
+  it("names a composed block only when it authors a heading", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      route: [{ kind: "composed", componentId: "some-lab", heading: "A computational lab" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBe("A computational lab");
+
+    const unlabeled: LessonDefinition = {
+      ...base,
+      route: [{ kind: "composed", componentId: "some-lab" }],
+    };
+    expect(getBlockTocLabel(unlabeled, unlabeled.route![0]!)).toBeNull();
+  });
+
+  it("labels a named-explorationId block independently of the lesson's own explorationId", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      // No lesson-level explorationId — only a placed, named explore block.
+      route: [{ kind: "explore", explorationId: "second-explorer", heading: "A second explorer" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBe("A second explorer");
+  });
+
+  it("suppresses the combined explore block's label when the lesson has no explorationId", () => {
+    const lesson: LessonDefinition = {
+      ...base,
+      route: [{ kind: "explore", heading: "Try it yourself (never shown)" }],
+    };
+    expect(getBlockTocLabel(lesson, lesson.route![0]!)).toBeNull();
   });
 });

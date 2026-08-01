@@ -7,25 +7,44 @@ import "./MisconceptionCallout.css";
  * Authors compose belief / confront / resolve slots (or custom children)
  * depending on what the misconception needs: MC commitment, diagram,
  * counterexample, two-stage reveal, or no learner input.
+ *
+ * The same belief/confront/resolve shape doubles as a historical
+ * belief-and-break (a field's plausible belief, what broke it, what replaced
+ * it) — `attribution` names who/when/source for that use (vision.md §0
+ * principle 10; the design test is Karatsuba's O(n²)-was-optimal belief).
  */
 type MisconceptionCalloutProps = {
   title?: string;
   belief?: string;
   confront?: string;
   resolve?: string;
+  attribution?: { who?: string; when?: string; source?: string };
   /** Custom content when the three-slot pattern is not enough. */
   children?: ReactNode;
   visual?: ReactNode;
 };
+
+function formatAttribution(attribution: {
+  who?: string;
+  when?: string;
+  source?: string;
+}): string {
+  const parts = [attribution.who, attribution.when].filter(Boolean);
+  const whoWhen = parts.join(", ");
+  if (whoWhen && attribution.source) return `${whoWhen} — ${attribution.source}`;
+  return whoWhen || attribution.source || "";
+}
 
 export function MisconceptionCallout({
   title = "Common trap",
   belief,
   confront,
   resolve,
+  attribution,
   children,
   visual,
 }: MisconceptionCalloutProps) {
+  const attributionText = attribution ? formatAttribution(attribution) : "";
   return (
     <aside
       className="misconception-callout"
@@ -54,6 +73,9 @@ export function MisconceptionCallout({
               <span className="misconception-callout__label">Repair.</span>{" "}
               <ProseWithMath text={resolve} />
             </p>
+          )}
+          {attributionText && (
+            <p className="misconception-callout__attribution">{attributionText}</p>
           )}
           {children}
         </div>

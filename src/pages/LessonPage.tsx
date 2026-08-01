@@ -82,6 +82,7 @@ export function LessonPage() {
       belief={callout.belief}
       confront={callout.confront}
       resolve={callout.resolve}
+      attribution={callout.attribution}
       visual={
         callout.solutionVisualId ? (
           <EigenSolutionDiagram
