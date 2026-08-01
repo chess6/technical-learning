@@ -35,20 +35,20 @@ const seq = (
 /* ------------------------------------------------------------------ items */
 
 describeGradingContract(byId("chain-du-cancel-fails"), {
-  mustAccept: [{ name: "silently needs Δu ≠ 0", answer: { choice: 0 } }],
+  mustAccept: [{ name: "Δu can be 0 arbitrarily near a", answer: { choice: 0 } }],
   mustReject: [
-    { name: "\"inelegant\", not a real gap", answer: { choice: 1 } },
-    { name: "thinks it's polynomial-specific", answer: { choice: 2 } },
-    { name: "thinks it gives the wrong sign", answer: { choice: 3 } },
+    { name: "TRUE but not the break — g's continuity is a hypothesis, not the failing step", answer: { choice: 1 } },
+    { name: "right shape, wrong variable — blames Δx not Δu", answer: { choice: 2 } },
+    { name: "misplaces the gap as circularity", answer: { choice: 3 } },
   ],
 });
 
 describeGradingContract(byId("chain-corner-not-necessary"), {
-  mustAccept: [{ name: "may still be differentiable — sufficient, not necessary", answer: { choice: 0 } }],
+  mustAccept: [{ name: "may still be differentiable; the corner does not settle it", answer: { choice: 0 } }],
   mustReject: [
-    { name: "claims it cannot be differentiable", answer: { choice: 1 } },
-    { name: "claims it's always differentiable, for any f", answer: { choice: 2 } },
-    { name: "claims nothing can be said", answer: { choice: 3 } },
+    { name: "the target misconception — corner in g forces non-differentiability", answer: { choice: 1 } },
+    { name: "over-restricts — demands f constant near g(0)", answer: { choice: 2 } },
+    { name: "claims nothing follows without an explicit f", answer: { choice: 3 } },
   ],
 });
 

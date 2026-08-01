@@ -145,7 +145,7 @@ export const chainRuleLesson: LessonDefinition = {
     {
       id: "the-repair",
       title: "The honest repair",
-      body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nSubstitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and $f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + E_f(k(h))$. This identity holds for **every** $h$ — including any $h$ where $k(h) = 0$, because then the last term is $E_f(0) = 0$ automatically. Nothing was ever divided by $\\Delta u$; it was only ever substituted. Divide the whole identity by $h$ and let $h \\to 0$: the middle term's $E_g(h)/h \\to 0$, and the last term's ratio $E_f(k(h))/h$ splits into $\\bigl[E_f(k(h))/k(h)\\bigr]\\cdot\\bigl[k(h)/h\\bigr]$ — a factor that vanishes ($k(h) \\to 0$ since $g$ is continuous — Lesson 1 — composed with $E_f(k)/k \\to 0$) times a factor that stays bounded ($k(h)/h \\to g'(a)$, from $g$'s differentiability, not merely its continuity). What remains is $f'(g(a))\\,g'(a)$. (This last step is stated here at the same level of formality Lesson 2 uses for its own error term, not spelled out with full quantifiers.)",
+      body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nOne more definition does the real work. Let $\\varepsilon_f(k) = E_f(k)/k$ for $k \\neq 0$, and set $\\varepsilon_f(0) = 0$. Two things follow at once: $E_f(k) = \\varepsilon_f(k)\\,k$ for **every** $k$ — including $k = 0$, where both sides are $0$ — and $\\varepsilon_f(k) \\to 0 = \\varepsilon_f(0)$ as $k \\to 0$, which is just $E_f(k)/k \\to 0$ restated. That second fact says $\\varepsilon_f$ is *continuous at zero*.\n\nNow substitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and $f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + \\varepsilon_f(k(h))\\,k(h)$. Divide by $h$ and let $h \\to 0$. The middle term carries $E_g(h)/h \\to 0$. The last term is the **product** $\\varepsilon_f(k(h)) \\cdot \\frac{k(h)}{h}$, never a quotient by $k(h)$: $g$ is differentiable and so continuous, giving $k(h) \\to 0$, and because $\\varepsilon_f$ is continuous at $0$ this forces $\\varepsilon_f(k(h)) \\to \\varepsilon_f(0) = 0$; meanwhile $k(h)/h \\to g'(a)$, which needs $g$'s *differentiability*, not merely its continuity. The product tends to $0 \\cdot g'(a) = 0$. What remains is $f'(g(a))\\,g'(a)$.\n\nEvery step is defined at every $h$, including any $h$ where $k(h) = 0$. That is the whole difference: $\\Delta u$ never once appears in a denominator, so there is no case to exclude and none to patch.",
       equation: "(f\\circ g)'(a) = f'(g(a))\\,g'(a)",
       observation:
         "That is also why $g'(a) = 0$ needs no special case: the identity above never divided by $g'(a)$ or by $\\Delta u$ to reach the answer.",
@@ -153,7 +153,7 @@ export const chainRuleLesson: LessonDefinition = {
         {
           kind: "why",
           title: "Why this counts as a repair, not a restatement",
-          body: "The naive argument and this one reach the same formula, but only one of them is defined at every step. \"Cancel the $du$'s\" asks $\\frac{\\Delta y}{\\Delta u}$ to exist, which fails wherever $\\Delta u = 0$ — a real possibility even when $g$ is perfectly smooth. The substitution above never forms that ratio at all.",
+          body: "The naive argument and this one reach the same formula, but only one of them is defined at every step. \"Cancel the $du$'s\" asks $\\frac{\\Delta y}{\\Delta u}$ to exist, which fails wherever $\\Delta u = 0$ — a real possibility even when $g$ is perfectly smooth. The substitution above never forms that ratio at all: replacing $E_f(k)$ by $\\varepsilon_f(k)\\,k$ turns the one place a quotient could appear into a product, and $\\varepsilon_f$ is *defined* at $0$ rather than divided around it.",
         },
       ],
     },
@@ -224,14 +224,14 @@ export const chainRuleLesson: LessonDefinition = {
       tier: "check",
       prompt: "What exactly fails in \"cancel the du's\" as a proof of the chain rule?",
       choices: [
-        "It silently regroups the limit as a product, which requires $\\Delta u \\neq 0$ to even divide",
-        "It is correct, but considered inelegant by mathematicians",
-        "It only works when f and g are polynomials",
-        "It works, but gives the wrong sign in some cases",
+        "It forms $\\Delta y/\\Delta u$, and $\\Delta u$ can be $0$ arbitrarily near $a$",
+        "It needs $g$ continuous, so that $\\Delta u \\to 0$ whenever $\\Delta x \\to 0$",
+        "It divides by $\\Delta x$, which is itself $0$ at the point in question",
+        "It assumes the composite is differentiable — the very thing to be shown",
       ],
       correctChoice: 0,
       explanation:
-        "The step $\\frac{\\Delta y}{\\Delta x} = \\frac{\\Delta y}{\\Delta u}\\cdot\\frac{\\Delta u}{\\Delta x}$ needs $\\Delta u \\neq 0$ to form the first ratio — a real gap, not a matter of taste, and one the honest substitution argument never opens.",
+        "The step $\\frac{\\Delta y}{\\Delta x} = \\frac{\\Delta y}{\\Delta u}\\cdot\\frac{\\Delta u}{\\Delta x}$ cannot form its first ratio when $\\Delta u = 0$, and $\\Delta u$ may be $0$ at points arbitrarily close to $a$ — even for a perfectly smooth $g$. Note that $g$'s continuity really is needed too, but that is a *hypothesis the argument gets*, not the step that breaks; the break is the division. The substitution derivation never forms the ratio, so it has nothing to exclude.",
     },
     {
       id: "chain-corner-not-necessary",
@@ -240,14 +240,14 @@ export const chainRuleLesson: LessonDefinition = {
       prompt:
         "g(x) = |x| has a corner at x = 0. What follows about f(g(x)) at x = 0, for a smooth f?",
       choices: [
-        "The composite MAY still be differentiable there — the chain rule's hypothesis is sufficient, not necessary",
-        "The composite cannot possibly be differentiable at x = 0",
-        "The composite is always differentiable there, for any f",
-        "Nothing can be said without knowing f explicitly, in every case",
+        "It may still be differentiable; the corner alone does not settle it",
+        "It cannot be differentiable, because $g$ is not differentiable there",
+        "It is differentiable only if $f$ is constant near $g(0)$",
+        "Nothing at all follows here until $f$ is specified explicitly",
       ],
       correctChoice: 0,
       explanation:
-        "For $f(u) = u^2$, $f(g(x)) = |x|^2 = x^2$ — differentiable everywhere, despite $g$'s corner. The chain rule's hypothesis licenses its conclusion; it is not required for the composite itself to be differentiable.",
+        "For $f(u) = u^2$, $f(g(x)) = |x|^2 = x^2$ — differentiable everywhere, despite $g$'s corner. The chain rule's hypothesis is *sufficient*, not necessary: it licenses the conclusion when it holds, and says nothing when it fails. Sharper, for this $g$: $f(|x|)$ is differentiable at $0$ exactly when $f'(0) = 0$, since the one-sided slopes are $f'(0)$ and $-f'(0)$.",
     },
 
     /* ---- drill ------------------------------------------------------------ */

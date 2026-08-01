@@ -184,36 +184,99 @@ completed at Gate 8, once the lesson exists.
 > outcome with no real evidencing item, or by accepting a lesson-owned
 > outcome on planned module evidence — neither of which this contract does.
 
-**Gate 8: NOT YET ATTEMPTED — lesson not built.** This section records the
-obligations Mode C must discharge, not an acceptance already granted.
+**Gate 8: ACCEPTED — 2026-08-01, by the repository owner** (the domain owner,
+reviewing the built lesson at `/lesson/chain-rule`). This is the sign-off the
+package ledger recorded as outstanding: an acceptance from outside the
+implementing/reviewing agent lineage.
 
-- [ ] Insight contract linked and `PASS` — linked; `PASS` recorded (this much
-      is already true; the remaining items require the lesson to exist).
-- [ ] All §1 fields filled — done at Gate 5; subject to the same
-      evidence-ceiling preflight/reconciliation discipline A2–A4 used if a
-      build-time defect is found.
-- [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] **Every lesson-owned** core outcome independently demonstrated, with
+- [x] Insight contract linked and `PASS` — [insight.md](insight.md), "Gate
+      result: **PASS**".
+- [x] All §1 fields filled — done at Gate 5, reconciled at build.
+- [x] Outcomes operational, owner-marked, evidence-paired.
+- [x] **Every lesson-owned** core outcome independently demonstrated, with
       recognition-level outcomes declared as such (`chain-du-cancel-fails`,
-      `chain-corner-not-necessary` — both **E2** by design, targeting a
-      misconception via recognition among structured distractors).
-- [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f (5 check/drill, 3 transfer); recall capped
-      at two; transfer items present — a grading-contract test must pin the
-      tier tally, matching `fundamentalTheoremGradingContract.test.ts`'s
+      `chain-corner-not-necessary` — both **E2** by design). Both were
+      **rewritten at acceptance** (see "Changes made at Gate 8" below); they
+      remain E2 recognition items, now with distractors that are real rival
+      diagnoses rather than obviously-wrong foils.
+- [x] No lesson-owned outcome accepted on planned module evidence.
+- [x] Assessment set matches §1f — **pinned by test**: 2 check + 3 drill +
+      3 transfer (`chainRuleGradingContract.test.ts`, "keeps the declared tier
+      mix"), matching the `fundamentalTheoremGradingContract.test.ts`
       precedent.
-- [ ] Module-owned outcomes carried forward as Gate-9 obligations for
+- [x] Module-owned outcomes carried forward as Gate-9 obligations for
       `calculus-technique` *(open by design; not a Gate 8 blocker)*.
-- [ ] Backward bridges (L1/L2/LA `matrix-composition`) + forward edges
+- [x] Backward bridges (L1/L2/LA `matrix-composition`) + forward edges
       (L7/`partial-derivatives-gradient`/`vector-fields-line-integrals`)
-      recorded.
-- [ ] Retention hook recorded.
-- [ ] Correctness gate passed, including the chain-rule/direct-expansion
-      cross-check and the \(g'(a)=0\)/corner-composite fixture battery.
-- [ ] The composition-of-limits scoping choice (C7) is visible in the lesson
-      as a named assumption, not silently assumed rigorous.
-- [ ] Grading contract registered for every auto-graded item
-      (`describeGradingContract`, adversarial reject batteries included).
-      `ITEM_ASSESSMENT_META` is the module-item (Gate 9) manifest and does
-      not cover these lesson-owned items, matching every prior lesson's
-      precedent.
+      recorded — now also as `requires` edges in `src/curriculum/edges.ts`.
+- [x] Retention hook recorded.
+- [x] Correctness gate passed, including the chain-rule/direct-expansion
+      cross-check and the \(g'(a)=0\)/corner-composite fixture battery
+      (module-load assertions in `chainRule.ts`).
+- [x] The composition-of-limits scoping choice (C7) — **superseded at
+      acceptance.** The derivation no longer needs a scoping caveat; see below.
+- [x] Grading contract registered for every auto-graded item
+      (`chainRuleGradingContract.test.ts`, 40 tests, adversarial reject
+      batteries included; `chain-derive-fresh` routed to human scoring with a
+      versioned rubric). `ITEM_ASSESSMENT_META` is the module-item (Gate 9)
+      manifest and does not cover these lesson-owned items, matching every
+      prior lesson's precedent.
+
+### Changes made at Gate 8 (2026-08-01)
+
+Acceptance review surfaced one **mathematical defect** and one **assessment
+weakness**. Both were fixed before acceptance; the lesson as accepted is the
+fixed one.
+
+1. **The derivation contradicted the lesson's own thesis.** The lesson claims
+   throughout — in the subtitle, the observation, the theorem's
+   interpretation, and a depth layer asserting "the substitution above never
+   forms that ratio at all" — that it *never divides by \(\Delta u\)*. But the
+   final step split \(E_f(k(h))/h\) into
+   \(\bigl[E_f(k(h))/k(h)\bigr]\cdot\bigl[k(h)/h\bigr]\), which divides by
+   \(k(h)\) — i.e. by \(\Delta u\) — and is undefined at exactly the
+   \(k(h)=0\) case the lesson makes a virtue of handling. The independent
+   review had caught a *different* gap here (differentiability vs continuity);
+   this one survived it.
+
+   **Repaired by the standard Carathéodory move**: define
+   \(\varepsilon_f(k) = E_f(k)/k\) for \(k \neq 0\) and \(\varepsilon_f(0)=0\).
+   Then \(E_f(k) = \varepsilon_f(k)\,k\) for *every* \(k\) (at \(k=0\) both
+   sides vanish), and \(\varepsilon_f(k)\to 0=\varepsilon_f(0)\) is precisely
+   \(E_f(k)/k \to 0\) restated — i.e. \(\varepsilon_f\) is continuous at zero.
+   The error term is then the **product**
+   \(\varepsilon_f(k(h))\cdot k(h)/h\), never a quotient by \(k(h)\). The
+   lesson now *delivers* the claim it makes rather than asserting it.
+
+2. **C7's scoping caveat is no longer needed and was removed.** It hedged the
+   final limit step as "stated at the same level of formality Lesson 2 uses,
+   not spelled out with full quantifiers." With \(\varepsilon_f\) continuous
+   at zero, the composition \(\varepsilon_f(k(h)) \to 0\) is licensed by
+   continuity at the outer point — the exact hazard the naive argument trips
+   on — so the step is complete as written. The checklist item's intent
+   (nothing silently assumed rigorous) is satisfied more strongly by proving
+   it than by flagging it.
+
+3. **Both E2 recognition items had unusable distractors.** In each, the
+   correct choice was conspicuously the longest and most technical, and the
+   three foils were transparently wrong ("considered inelegant by
+   mathematicians", "only works for polynomials", "gives the wrong sign"),
+   so the item was answerable by test-taking instinct alone. Rewritten with
+   length-balanced choices and rival diagnoses a learner could actually hold —
+   including, for `chain-du-cancel-fails`, a distractor that is **true but is
+   not the failure** (\(g\)'s continuity is genuinely needed, but it is a
+   hypothesis the argument receives, not the step that breaks). The
+   `chain-corner-not-necessary` explanation also now gives the sharper fact
+   that \(f(|x|)\) is differentiable at \(0\) exactly when \(f'(0)=0\).
+   Reject-battery names in the grading contract were updated to match; the
+   accepted answer index is unchanged, and all 40 contract tests pass.
+
+**Verification at acceptance:** `./check.sh` green (146 files, 2300 tests);
+`/lesson/chain-rule` confirmed in-browser to render 40 KaTeX spans in the
+repaired section with zero KaTeX errors and no stray `$` or `*`.
+
+**Not independent, and recorded as such:** the agent that made changes 1–3 also
+proposed them. The owner's acceptance is of the rendered lesson; the
+mathematical argument in change 1 is standard (Carathéodory) and checkable
+against any analysis text, which is the intended safeguard against that
+non-independence.
