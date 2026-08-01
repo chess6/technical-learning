@@ -407,6 +407,8 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "derivative-local-linearity",
       "integral-accumulation",
       "fundamental-theorem",
+      // Unit `calculus-technique`.
+      "chain-rule",
     ]);
   });
 

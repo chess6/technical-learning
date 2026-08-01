@@ -1,0 +1,23 @@
+/* Notes that carry a claim rather than a caption: the corroboration readout,
+   the corner-hypothesis explanation, and the cancel-du / repair toggle. */
+.chain-explorer__note {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--role-selected);
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+/* The two linked zoom panels, side by side above the breakpoint where a
+   stacked layout would make the compound-magnification story harder to see
+   at once. */
+.chain-explorer__panels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chain-explorer__panels > * {
+  flex: 1 1 280px;
+  min-width: 0;
+}

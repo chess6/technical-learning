@@ -27,6 +27,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.FundamentalTheoremExplorer,
     })),
   ),
+  "chain-rule": lazy(() =>
+    import("./ChainRuleExplorer").then((m) => ({
+      default: m.ChainRuleExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,
