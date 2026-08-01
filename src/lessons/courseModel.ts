@@ -189,10 +189,11 @@ export const CURRICULUM: readonly Subject[] = [
         subtitle: "Change, fields, and transforms",
         // Units mirror the authoritative spine in
         // docs/courses/applied-mathematics/course-spine.md, where **one unit =
-        // one module directory = one implementation package**. Only
-        // `calculus-foundations` (Package A) is planned in Mode B; the later
-        // units are added as their packages enter Mode B, so this list grows
-        // with the roadmap rather than declaring 39 stubs up front.
+        // one module directory = one implementation package**. `calculus-foundations`
+        // (Package A) and `calculus-technique` (Package B, L5 built so far) are
+        // planned in Mode B; the later units are added as their packages enter
+        // Mode B, so this list grows with the roadmap rather than declaring 39
+        // stubs up front.
         units: [
           {
             id: "calculus-foundations",
@@ -202,6 +203,31 @@ export const CURRICULUM: readonly Subject[] = [
               { kind: "lesson", lessonId: "derivative-local-linearity" },
               { kind: "lesson", lessonId: "integral-accumulation" },
               { kind: "lesson", lessonId: "fundamental-theorem" },
+            ],
+          },
+          {
+            id: "calculus-technique",
+            title: "Techniques, each one derived",
+            items: [
+              { kind: "lesson", lessonId: "chain-rule" },
+              {
+                kind: "future",
+                id: "optimization-approximation",
+                title: "Deciding with the Derivative",
+                subtitle: "Optimization and approximation, from the local-linear model",
+              },
+              {
+                kind: "future",
+                id: "substitution-parts",
+                title: "Two Techniques, Both Derived",
+                subtitle: "Substitution is the chain rule backwards",
+              },
+              {
+                kind: "future",
+                id: "improper-integrals",
+                title: "Accumulating Forever",
+                subtitle: "An improper integral is a limit of proper ones",
+              },
             ],
           },
         ],

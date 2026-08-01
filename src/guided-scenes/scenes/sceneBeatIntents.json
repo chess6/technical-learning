@@ -1689,5 +1689,75 @@
       "caption": "text",
       "hold": "hold"
     }
+  },
+  "chain-rule": {
+    "twoRates": {
+      "title": "text",
+      "drawG": "transition",
+      "drawF": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "feedThrough": {
+      "title": "text",
+      "connect": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "zoomInner": {
+      "title": "text",
+      "magnify": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:chainrule:curve:g"
+        ]
+      },
+      "reveal": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predict": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "zoomOuter": {
+      "title": "text",
+      "magnify": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:chainrule:curve:f"
+        ]
+      },
+      "reveal": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "compound": {
+      "title": "text",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "duCancelFails": {
+      "title": "text",
+      "reveal": "text",
+      "flag": "emphasis",
+      "hold": "hold"
+    },
+    "residualCompose": {
+      "clear": "transition",
+      "title": "text",
+      "reveal": "text",
+      "label": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "result": {
+      "clear": "transition",
+      "title": "text",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    }
   }
 }

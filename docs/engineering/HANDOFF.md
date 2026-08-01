@@ -1,131 +1,114 @@
-# Session handoff — `feature/experience-architecture`
+# Handoff
 
-**Active goal.** Implement the pedagogical & product-architecture redesign
-plan (major redesign request, 2026-08-01): a flexible experience model
-replacing the implicit universal lesson grammar, a curriculum graph, and a
-learner model — landed incrementally as packages R0–R7+, each independently
-verified. This session completed the **first vertical slice, R0–R3**, exactly
-as the plan's roadmap scoped it, and stopped at the slice's own review gate.
+Two independent work streams landed on `master` on 2026-08-01. Neither is
+fully signed off; each has a *different* open obligation. Package status is
+not duplicated here — follow the links.
 
-## What is built (R0–R3, all committed on this branch)
+---
+
+## Stream 1 — Package A / L5 `chain-rule` (applied mathematics)
+
+**State.** Package A (`calculus-foundations`) approved by the repository owner
+2026-07-31 under a narrow E2E waiver. Three approved items were built,
+independently reviewed, re-verified, and merged (`feature/l5-chain-rule`,
+fast-forward, branch and worktree since deleted): the Gate 9 assessment for
+`calculus-foundations` (13 items, **built, not administered**), L5's Mode B
+docs through `Gate result: PASS`, and L5's Mode C lesson code.
+
+**Independent review ran** and reported 16 confirmed findings, all fixed —
+most seriously **a real gap in the chain-rule derivation** (C7 claimed
+`g` continuous + `E_f(k)/k→0 ⇒ E_f(k(h))/h→0`, but that composition alone
+gives only `E_f(k(h))/k(h)→0`; the missing factor `k(h)/h→g'(a)` needs `g`'s
+*differentiability*. A counterexample confirmed it). Fixed in `insight.md`
+(including Audit A, which had certified the flawed version), `chainRule.ts`,
+and `mastery-contract.md`. Details in the commit messages
+(`git log`, search "finding #").
+
+**Open:** a domain-owner's sign-off on L5's **Gate 8**. The merge is not that
+sign-off, and the independent review — while real — is a different thing.
+Gate 9 items remain unadministered.
+
+**References:** module ledger §6–§8
+(`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
+· `modules/calculus-foundations/assessment-plan.md` ·
+`lessons/05-chain-rule/`
+
+---
+
+## Stream 2 — Experience architecture, slice R0–R3
+
+**State.** The first vertical slice of the pedagogical & product-architecture
+redesign, merged from `feature/experience-architecture`:
 
 - **R0** — Pedagogical constitution as doctrine amendments (`vision.md` §0,
-  `lesson-design.md`'s extended block palette, ADR-004/005/006). Docs only.
-- **R1** — The experience model: `guidedSceneId`/`explorationId` optional on
-  `LessonDefinition`; `LessonObjective` (evidence-typed, additive alongside
-  `learningObjectives`); three new route blocks — `callout`, `proof`,
-  `composed` (+ a `blockComponents.tsx` lazy registry). Verified: all 19
-  existing lessons render byte-identically, full e2e suite unchanged.
+  extended block palette in `lesson-design.md`, ADR-004/005/006). Docs only.
+- **R1** — The experience model: `guidedSceneId`/`explorationId` **optional**
+  (the mechanism that had forced every concept through the same media pair);
+  evidence-typed `LessonObjective`; three route blocks — `callout`, `proof`,
+  `composed` — plus a `blockComponents.tsx` lazy registry. All 19 then-existing
+  lessons verified byte-identical, e2e unchanged.
 - **R2** — Karatsuba rebuilt as the historical-breakthrough archetype: the
-  field's O(n²) belief and its 1960 break are `callout` blocks in the
-  argument (not a depth-layer aside); a new `composed` block
-  (`KaratsubaThreeEvaluationsLab`) makes the already-approved "three
-  evaluations of a quadratic" connection concrete; the lesson ends on an
-  open question (Toom-Cook → FFT), not a generic summary.
-- **R3** — `workshop`/`assessment` `UnitItem` kinds (courseModel.ts), reusing
-  two existing `systems-elimination` module sets with zero new items; a
-  production route `/set/:setId` (`ModuleSetPage`, beta-labeled); one
+  field's O(n²) belief and its 1960 break are `callout` blocks *in the
+  argument*; a `composed` block makes the approved "three evaluations"
+  connection concrete; the lesson ends on an open question, not a summary.
+- **R3** — `workshop`/`assessment` `UnitItem` kinds over existing module sets
+  (zero new items); production route `/set/:setId` (beta-labeled); one
   theorem (`rank-nullity`) retrofitted to a `proof` route block.
 
-**Package status ledger:** see the commit messages on this branch (`git log
-feature/experience-architecture`) — each of the four packages above is its
-own commit with a detailed message serving as that package's record; no
-separate ledger file was created for this (small, single-agent) slice.
+**A self-review pass found four more real defects**, all fixed — full write-up
+in `docs/quality/lesson-correctness-checklist.md` § "Slice review pass":
+`objectives` had shipped with **no consumer** (its validator asserted nothing,
+and R1's own acceptance criterion was unmet); ADR-006 claimed an
+`ITEM_ASSESSMENT_META` extension that never happened; the `proof` render — R3's
+headline — was **asserted nowhere**; and there was no global anchor-uniqueness
+check. Both new validators were **proven to bite** (deliberately broken,
+observed to fail, reverted), not merely observed to pass.
 
-## Slice self-review pass (after R3, before requesting independent review)
+**Open:**
 
-A critical re-read of the whole R0–R3 diff found **four more real defects**,
-all fixed in that pass (full write-up in
-[quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md)'s
-"Slice review pass" section):
+- [ ] **Independent semantic review of R0–R3.** A *self*-review has run and
+      found four real defects; that does not discharge the self-certification
+      gap ADR-002 names. This is the same class of obligation as Stream 1's,
+      and Stream 1's experience — an independent reviewer catching a genuine
+      mathematical gap that self-review had certified as valid — is the
+      argument for taking it seriously.
+- [ ] Two in-session deviations from the plan text, reasoned through and
+      recorded in code comments/ADRs but never separately confirmed:
+      `review` as a `UnitItem` kind is **deferred to R6** (no per-module
+      scheduler data exists to back it); Karatsuba ends on an
+      **open-question section**, not a `handoff` (no built lesson to point at).
+- [ ] Recorded, deliberately unfixed: the named `explore`/`explorationId`
+      path has no render test; the ToC/layout divergence for unresolvable
+      named targets is mirrored from `visual` rather than repaired. Neither is
+      triggered by any current lesson.
+- [ ] Five **pre-existing** `**bold**`-straddling-math occurrences in
+      unrelated lessons (`determinants`, `matrixComposition`, `redBlackTrees`,
+      `structureModuleItems`, `subspacesRank`) — see `known-failure-modes.md`.
+      Each is its own narrow-correction commit.
 
-1. **`objectives` had no consumer** — `objectiveCoverage.test.ts` asserted
-   nothing, because no lesson declared `objectives`. R1's acceptance criterion
-   "objective coverage is validated from data" was not actually met, and this
-   contradicted the reasoning used to defer the `review` node kind. Fixed by
-   migrating `karatsuba`; two of its six objectives are honestly
-   `course-owned` (evidence exists only in the checkpoint/scene, and
-   Algorithmic Thinking has no module set) — a real coverage gap the model
-   now surfaces instead of hiding.
-2. **ADR-006 claimed an `ITEM_ASSESSMENT_META` extension that never happened.**
-   Corrected, including the real R6 consequence: `transferred` cannot be
-   derived without `evidenceBasis`, so extending the manifest is R6 work.
-3. **The `proof` block render was asserted nowhere** — verified only by a
-   manual screenshot. Added a dedicated e2e spec.
-4. **No global anchor-uniqueness check** — `callout-`/`proof-` anchors are
-   content-keyed, so double-placement silently emits duplicate DOM ids. Added
-   a repo-wide validator.
+**Not started:** R4 (curriculum graph as data), R5 (course split + `/map`),
+R6 (mastery derivation), R7+ (content expansion). Per the plan, none should
+begin before the review gate above passes.
+**Plan:** `/home/thomas/.claude/plans/plan-a-major-pedagogical-linked-pinwheel.md`
 
-Both new validators were **proven to bite** (deliberately broken, observed to
-fail with a precise message, then reverted) rather than merely observed to
-pass.
-
-## Two real defects found and fixed during the original R2/R3 work
-
-1. `FormalStatement`'s first `proof`-variant design repeated the entire
-   theorem statement/interpretation/trap-layer verbatim before the proof —
-   caught by manual browser screenshot review, not by any test. Redesigned:
-   `variant="proof"` now renders a distinct, minimal block.
-2. Two `**bold**` spans wrapping inline `$...$` math silently lost their
-   markers (`ProseWithMath` extracts math before emphasis). Fixed in
-   `rankNullity.ts`; documented as a new `known-failure-modes.md` entry.
-   **Five more pre-existing occurrences were found in unrelated lessons**
-   (`determinants.ts`, `matrixComposition.ts`, `redBlackTrees.ts`,
-   `structureModuleItems.ts`, `subspacesRank.ts`) and are recorded there,
-   **not fixed** — outside this slice's scope; each is its own
-   narrow-correction commit.
+---
 
 ## Test state
 
-`./check.sh --e2e` and the full unit suite (2140 tests) are green as of the
-R3 commit, with exactly two pre-existing, already-documented, formally-waived
-failures present (`solution-sets` text-clipping flake,
-`ftc-accumulate-then-measure` seek-determinism) — both reproduced identically
-against the pre-R1 baseline, confirmed unrelated to this branch's changes.
-Do not trust a summary older than the R3 commit over live test output.
+Run live rather than trusting any summary older than the newest commit.
 
-## What is NOT done — the actual next step
+At the merge of the two streams, `./check.sh --e2e` is green apart from the
+**two known, documented, waived** failures — `solution-sets` text-clipping
+(intermittent, webfont-metric dependent) and `ftc-accumulate-then-measure`
+`seek-determinism` (the Package A waiver, ledger §7). Both are recorded in
+`docs/quality/known-failure-modes.md` and were reproduced identically against
+pre-change baselines by both streams independently.
 
-Per the plan (see the "Slice review gate" row in the roadmap): **an
-independent Opus package-level semantic review of R0–R3, before any R4+ work
-begins.** This was deliberately not self-certified in this session — the
-same agent that builds a package should not also tick its own review box
-(the precedent is ADR-002's self-certification gap, applied identically in
-the `calculus-foundations` package ledger). Concretely, still open:
+## Repository state
 
-- [ ] Independent semantic review of R0–R3 (constitution, experience model,
-      Karatsuba rebuild, node types/routes/proof retrofit) — mathematical,
-      pedagogical, and architectural soundness. A **self**-review pass has run
-      (see above) and found four real defects; that is not a substitute for
-      independent review, and specifically does not discharge the
-      self-certification gap ADR-002 names.
-- [ ] Known-but-unfixed, recorded in the checklist's "reviewed and
-      deliberately left alone" list: the named `explore`/`explorationId` path
-      has no render test, and the ToC/layout divergence for unresolvable named
-      targets is mirrored from `visual` rather than fixed. Neither is
-      triggered by any current lesson.
-- [ ] Five pre-existing `**bold**`-straddling-math occurrences in unrelated
-      lessons (see `known-failure-modes.md`) remain unfixed by design — each
-      is its own narrow-correction commit.
-- [ ] User sign-off on the two things this session decided that deviate from
-      the original plan text, both reasoned through in-session and recorded
-      in code comments / ADRs, but not separately re-confirmed:
-      - `review` (cumulative spaced retrieval) as a `UnitItem` kind is
-        **deferred to R6**, not built in R3 — no per-module scheduler data
-        exists yet to back it (ADR-004/005 "no consumer" rule).
-      - Karatsuba's ending is an **open-question section**, not a `handoff`
-        block — no built lesson exists yet to hand off to (the Fourier/FFT
-        lesson is unbuilt), and a `handoff.to` must resolve to a real lesson.
+`master` now contains both streams and has been pushed to `origin`.
+`feature/l5-chain-rule` and its worktree are deleted;
+`feature/experience-architecture` is merged.
 
-**Not started:** R4 (curriculum graph as data), R5 (course split + `/map`
-page), R6 (mastery derivation), R7+ (content expansion). Per the plan, none
-of these should begin before the slice review gate above passes.
-
-## Coordination with `feature/l5-chain-rule`
-
-That branch (separate worktree, `../technical-learning-l5-chain-rule`) was
-not touched by this session. Overlap risk is confined to `moduleSets.ts`
-(this branch widened nothing there — R3 only *added* two nodes referencing
-*existing* sets) and `capabilities.ts`/`assessmentManifest.ts` (untouched
-here). Check `git log master..feature/l5-chain-rule` for its current state
-before merging either branch.
+`CLAUDE.md` carries a pre-existing "Session continuation" diff from an earlier
+session (origin unknown) — still undecided: commit, keep editing, or discard.

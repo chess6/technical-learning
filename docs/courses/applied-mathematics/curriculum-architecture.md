@@ -426,21 +426,34 @@ before implementing it").
 
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
-| **A** | **BUILT — A0–A4 complete on `master`; package-level semantic review run twice, defects found and corrected, re-verified green** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets |
-| B0, B–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
+| **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
+| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); Gate 8 not yet formally accepted (pending a domain-owner sign-off distinct from the implementing/reviewing agent lineage); L6–L8 remain `future`** | `master` (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted) | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md) |
+| C–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
 > 2026-07-28. A0–A4 are all built: `limits-continuity`, `derivative-local-linearity`,
 > `integral-accumulation`, and `fundamental-theorem` are complete lessons, each
 > passing Gate 8 on its lesson-owned outcomes, and all four are on `master`
-> (A4 merged 2026-07-30). The package's single Opus semantic review has run
-> once (2026-07-29) and a second, narrower re-review (2026-07-30) after a
-> follow-up correction pass; both found defects, all of which are corrected
-> with regressions — see the [ledger](modules/calculus-foundations/implementation-package.md)
-> §7 for the acceptance checklist and what remains before the package is
-> marked approved. The Gate 9 module assessment for `calculus-foundations` is
-> a separate, later step, open by design. **B** is the next package
-> recommended to enter Mode B once Package A's acceptance checklist closes.
+> (A4 merged 2026-07-30). The package's semantic review ran three times
+> (2026-07-29, -30, -31), found defects each time, all corrected with
+> regressions. The repository owner approved the package on 2026-07-31,
+> including a narrow E2E waiver scoped to `ftc-accumulate-then-measure`'s
+> `seek-determinism` check only — see the
+> [ledger](modules/calculus-foundations/implementation-package.md) §7 for the
+> exact approval record. The Gate 9 module assessment for `calculus-foundations`
+> is [built in code](modules/calculus-foundations/assessment-plan.md) — 13
+> items, registered and machinery-verified — but not administered.
+>
+> **Package B is in progress**, on `master` (merged from `feature/l5-chain-rule`,
+> 2026-08-01; see `docs/engineering/HANDOFF.md`) — built and merged, but not
+> yet accepted. Its first lesson, `chain-rule` (L5), has all Mode B docs
+> through `Gate result: PASS` and full Mode C lesson code (guided scene,
+> explorer, exercises), verified by `./check.sh --e2e` before merge. L5's
+> Gate 8 is not yet formally ticked — pending a reviewer outside this agent's
+> lineage, the same self-certification constraint as Package A's own semantic
+> review. Anyone starting further Package B work should check
+> `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a
+> package before implementing it") rather than reimplementing.
 
 ### 6.2 Suggested Mode B order
 
@@ -473,19 +486,23 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A is complete.** A0 (the calculus layer, the course registration, and
+**Package A is approved.** A0 (the calculus layer, the course registration, and
 the `function-plot` family), A1 (`limits-continuity`), A2
 (`derivative-local-linearity`, with the `local-linearity-zoom` family), A3
 (`integral-accumulation`, with the `accumulation-strip` family), and A4
 (`fundamental-theorem`, with the `telescoping-cancellation` family) are all
-built and merged to `master`. Package A's single Opus semantic review has run,
-found defects (evidence-level over-claims from a later MCQ-conversion pass, an
-`E_i` visualization defect, Gaussian-antiderivative overclaims, an endpoint
-derivative bug, and a generic-cancellation gap), and all are corrected with
-regressions; a verification pass is the remaining step before the package is
-marked approved (see the [ledger](modules/calculus-foundations/implementation-package.md)
-§7). The Gate 9 module assessment for `calculus-foundations` is a separate,
-later Mode D pass, open by design.
+built and merged to `master`. Package A's semantic review ran three times,
+found defects each time (evidence-level over-claims from a later
+MCQ-conversion pass, an `E_i` visualization defect, Gaussian-antiderivative
+overclaims, an endpoint derivative bug, a generic-cancellation gap, and — in
+the third pass — residual Gaussian-wording overclaims and a ledger wording
+defect), and all are corrected with regressions. The repository owner approved
+the package and a narrow E2E waiver on 2026-07-31 (see the
+[ledger](modules/calculus-foundations/implementation-package.md) §7). The Gate
+9 module assessment for `calculus-foundations` is
+[built in code](modules/calculus-foundations/assessment-plan.md) — 13 items,
+registered and machinery-verified — but not administered, a separate, later
+step.
 
 A4 created `telescoping-cancellation` parameterized over the cancelling pairs
 rather than hard-coded to interval endpoints (ledger check **P2**) — Packages
@@ -494,4 +511,10 @@ I–K re-run that family with shared interior edges and faces. The underlying
 `telescopingTerms`/`cancellationReport`) take an arbitrary pairing for that
 reason, proven by a regression that feeds the family a non-interval pairing.
 
-**B (`calculus-technique`)** is the next package recommended to enter Mode B.
+**B (`calculus-technique`) is in progress**, merged to `master`
+(`feature/l5-chain-rule`, 2026-08-01; branch deleted). Its first lesson,
+`chain-rule` (L5), is fully built (Mode B docs through `Gate result: PASS`,
+plus Mode C lesson code) and verified; L6–L8 remain `future`. Gate 8
+acceptance is still pending a domain-owner sign-off — merging is not that
+sign-off. See §6.1's package-status ledger and `docs/engineering/HANDOFF.md`
+before starting further Package B work.

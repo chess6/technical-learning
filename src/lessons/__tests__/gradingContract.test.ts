@@ -837,6 +837,142 @@ const CONTRACTS: { id: string; spec: GradingContractSpec }[] = [
       ],
     },
   },
+  /* ---------------------------------------------------------------------- */
+  /* `calculus-foundations` module (Gate 9).                                  */
+  /* ---------------------------------------------------------------------- */
+  {
+    // vector · h(x) = (x^3-27)/(x-3): forced continuity value 27, then h'(3) = 9.
+    id: "mod-calcfound-limit-in-derivative",
+    spec: {
+      mustAccept: [{ name: "continuity value 27, then h'(3) = 9", answer: [27, 9] }],
+      mustReject: [
+        { name: "0/0 read as 0 for the continuity value", answer: [0, 9] },
+        { name: "the numerator's own derivative reused as the slope too", answer: [27, 27] },
+        { name: "the two values swapped", answer: [9, 27] },
+        { name: "correct continuity value, wrong slope", answer: [27, 3] },
+      ],
+    },
+  },
+  {
+    // matrix-entry · mod-ex-dialysis f(t) = 3t^2-24t+36, V(0)=50: [net, argmax t, max V, fastest-fall t].
+    id: "mod-calcfound-mixed-rate-total",
+    spec: {
+      mustAccept: [
+        { name: "net 0, argmax t=2, max V=82, fastest-fall t=4", answer: { entries: [[0, 2, 82, 4]] } },
+      ],
+      mustReject: [
+        { name: "net change via the area model (64 instead of 0)", answer: { entries: [[64, 2, 82, 4]] } },
+        {
+          name: "argmax confused with the rate's OTHER zero (t=6, a local min of V)",
+          answer: { entries: [[0, 6, 50, 4]] },
+        },
+        { name: "max V as the bare integral, dropping V(0)=50", answer: { entries: [[0, 2, 32, 4]] } },
+        {
+          name: "fastest-fall confused with where the rate is merely zero again (t=6)",
+          answer: { entries: [[0, 2, 82, 6]] },
+        },
+        { name: "all zeros", answer: { entries: [[0, 0, 0, 0]] } },
+        { name: "wrong dimensions (missing the 4th answer)", answer: { entries: [[0, 2, 82]] } },
+      ],
+    },
+  },
+  {
+    // construct-in-explorer · mod-ex-turbine w(t) = t^2-6t+5, turn at t=3, domain [0,6], maxWidth 1.
+    id: "mod-calcfound-transfer-bracket-window",
+    spec: {
+      mustAccept: [
+        { name: "[2.6, 3.4] straddles the turn, width 0.8", answer: { vector: [2.6, 3.4] } },
+        { name: "[2.5, 3.5] straddles the turn, width exactly 1", answer: { vector: [2.5, 3.5] } },
+      ],
+      mustReject: [
+        { name: "inside a certified monotone stretch, no turn inside", answer: { vector: [1.5, 2.4] } },
+        { name: "the turn sits at the right endpoint, not strictly inside", answer: { vector: [2, 3] } },
+        { name: "the whole domain — guarantee fails here too, but width exceeds 1", answer: { vector: [0, 6] } },
+        { name: "endpoints reversed", answer: { vector: [3.4, 2.6] } },
+        { name: "outside the domain", answer: { vector: [5.5, 6.5] } },
+      ],
+    },
+  },
+  {
+    id: "mod-calcfound-retain-point-value",
+    spec: {
+      mustAccept: [{ name: "the limit is 7", answer: { choice: 0 } }],
+      mustReject: [
+        { name: "the declared value 100", answer: { choice: 1 } },
+        { name: "'does not exist'", answer: { choice: 2 } },
+        { name: "0 (0/0 misread)", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    id: "mod-calcfound-retain-diff-cont",
+    spec: {
+      mustAccept: [{ name: "not differentiable, though continuous", answer: { choice: 0 } }],
+      mustReject: [
+        { name: "the averaged-slope fabrication", answer: { choice: 1 } },
+        { name: "'cannot be continuous either'", answer: { choice: 2 } },
+        { name: "'the two conditions are the same'", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    id: "mod-calcfound-retain-signed",
+    spec: {
+      mustAccept: [{ name: "net -6 L", answer: { choice: 0 } }],
+      mustReject: [
+        { name: "+42 (magnitudes added, the area model)", answer: { choice: 1 } },
+        { name: "+18 (outflow ignored)", answer: { choice: 2 } },
+        { name: "0 L", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    id: "mod-calcfound-retain-existence",
+    spec: {
+      mustAccept: [{ name: "existence, not a formula", answer: { choice: 0 } }],
+      mustReject: [
+        { name: "a formula exists and algebra would find it", answer: { choice: 1 } },
+        { name: "the theorem doesn't apply to a piecewise definition", answer: { choice: 2 } },
+        { name: "the integral cannot be computed at all", answer: { choice: 3 } },
+      ],
+    },
+  },
+  {
+    // numeric · d/dx(1/x) at x=1 via the limit definition.
+    id: "mod-calcfound-mock-limit",
+    spec: {
+      mustAccept: [{ name: "-1", answer: { value: -1 } }],
+      mustReject: [
+        { name: "0/0 read as 0", answer: { value: 0 } },
+        { name: "sign lost", answer: { value: 1 } },
+        { name: "off-magnitude guess", answer: { value: -0.5 } },
+      ],
+    },
+  },
+  {
+    // numeric · mod-ex-reactor c(t) = 8-2t on [0,6]: net accumulation.
+    id: "mod-calcfound-mock-total",
+    spec: {
+      mustAccept: [{ name: "12", answer: { value: 12 } }],
+      mustReject: [
+        { name: "the area model (16 + 4 = 20)", answer: { value: 20 } },
+        { name: "only the rising piece (16)", answer: { value: 16 } },
+        { name: "only the falling piece, sign flipped (-4)", answer: { value: -4 } },
+      ],
+    },
+  },
+  {
+    // vector · mod-ex-reactor: (A(4), A'(4)) = (16, 0).
+    id: "mod-calcfound-mock-slope-of-total",
+    spec: {
+      mustAccept: [{ name: "(16, 0)", answer: [16, 0] }],
+      mustReject: [
+        { name: "the rate's own derivative used as A'(4) (-2)", answer: [16, -2] },
+        { name: "the whole-interval integral used as A(4) (12)", answer: [12, 0] },
+        { name: "the two values swapped", answer: [0, 16] },
+      ],
+    },
+  },
 ];
 
 for (const { id, spec } of CONTRACTS) {

@@ -76,6 +76,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./bstLiftScene").then((m) => m.bstLiftScene),
   "red-black-encoding": () =>
     import("./redBlackEncodingScene").then((m) => m.redBlackEncodingScene),
+  "chain-rule": () =>
+    import("./chainRuleScene").then((m) => m.chainRuleScene),
 };
 
 export function getSceneDescription(sceneId: string): Promise<unknown> {

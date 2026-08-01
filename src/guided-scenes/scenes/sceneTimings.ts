@@ -1508,6 +1508,28 @@ export const FTC_TELESCOPING_SEGMENTS: readonly SceneSegment[] = [
     summary: "e^(-x^2): the theorem applies, but no elementary antiderivative exists — numerical accumulation stays the method." },
 ];
 
+/** `chain-rule` — the one clip. Two linked zoom panels, g then f. */
+export const CHAIN_RULE_SEGMENTS: readonly SceneSegment[] = [
+  { id: "twoRates", title: "Two rates you already know", duration: 7,
+    summary: "g(x) = x^2+1 and f(u) = u^3, each shown as its own local-linear model — L2, recalled." },
+  { id: "feedThrough", title: "One feeds the other", duration: 5,
+    summary: "f composed with g: g's output becomes f's input. Composition, no derivative yet." },
+  { id: "zoomInner", title: "Zoom into g", duration: 7,
+    summary: "Magnify g at a = 1; the window narrows to a line of slope g'(1) = 2." },
+  { id: "predict", title: "Predict: will f's zoom look any different?", duration: 5.5,
+    summary: "Nothing moves. Magnifying f will also produce a line — but what decides ITS slope?" },
+  { id: "zoomOuter", title: "Zoom into f, using the first zoom's output", duration: 7,
+    summary: "Magnify f at b = g(1) = 2; the window narrows to a line of slope f'(2) = 12." },
+  { id: "compound", title: "Two magnifications, one number", duration: 5,
+    summary: "The compound magnification is a product, not a sum: 12 x 2 = 24." },
+  { id: "duCancelFails", title: "The popular proof, examined", duration: 7,
+    summary: "\"Cancel the du's\" regroups the limit as a product of two ratios, which silently needs delta-u nonzero to even divide." },
+  { id: "residualCompose", title: "The honest repair", duration: 8,
+    summary: "Substitute g's local model as f's input in the identity f(b+k) = f(b) + f'(b)k + E_f(k) — never a division, and E_f(0) = 0 automatically." },
+  { id: "result", title: "The rule, earned", duration: 7,
+    summary: "(f composed g)'(a) = f'(g(a)) g'(a). Checked live at g'(a) = 0: the result is 0, directly, no special case." },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1534,6 +1556,7 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "bst-lift-from-array": BST_LIFT_SEGMENTS,
   "red-black-encoding": RED_BLACK_SEGMENTS,
   "transform-spike": SPIKE_SEGMENTS,
+  "chain-rule": CHAIN_RULE_SEGMENTS,
 };
 
 /**
@@ -2058,6 +2081,18 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     identity: { hold: 0.3 },
     transform: { morph: 1.8 },
     result: { hold: 0.45 },
+  },
+
+  "chain-rule": {
+    twoRates: { title: 0.4, drawG: 0.6, drawF: 0.6, caption: 0.5, hold: 4.8 },
+    feedThrough: { title: 0.4, connect: 0.8, caption: 0.4, hold: 3.3 },
+    zoomInner: { title: 0.4, magnify: 3.0, reveal: 0.5, caption: 0.4, hold: 2.6 },
+    predict: { ask: 0.5, think: 4.5 },
+    zoomOuter: { title: 0.4, magnify: 3.0, reveal: 0.5, caption: 0.4, hold: 2.6 },
+    compound: { title: 0.4, reveal: 0.6, caption: 0.4, hold: 3.5 },
+    duCancelFails: { title: 0.4, reveal: 0.6, flag: 0.5, hold: 5.4 },
+    residualCompose: { clear: 0.4, title: 0.4, reveal: 0.8, label: 0.5, caption: 0.4, hold: 5.4 },
+    result: { clear: 0.4, title: 0.4, reveal: 0.6, caption: 0.4, hold: 5.1 },
   },
 };
 

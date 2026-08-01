@@ -390,9 +390,13 @@ export function boundaryAwareDerivative(
   h = 1e-5,
 ): number {
   const [lo, hi] = domain;
-  if (hi - lo < h) {
+  // Must reject below `2h`, not `h`: an interior point within `h` of BOTH
+  // ends (possible whenever `hi - lo < 2h`) has neither `canStepLeft` nor
+  // `canStepRight` below, which previously fell through to "outside domain"
+  // for a point that is very much inside it.
+  if (hi - lo < 2 * h) {
     throw new Error(
-      `boundaryAwareDerivative: domain [${lo}, ${hi}] is narrower than the step size ${h}.`,
+      `boundaryAwareDerivative: domain [${lo}, ${hi}] is narrower than twice the step size ${h}.`,
     );
   }
   if (x < lo || x > hi) {

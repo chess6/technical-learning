@@ -21,6 +21,7 @@
 
 import type { SolutionSetConfig } from "./capabilities";
 import { ELIMINATION_ID, SELF_CHECK_ID, SOLUTION_SET_ID } from "./capabilities";
+import { CALCULUS_FOUNDATIONS_MODULE_ITEMS } from "./calculusFoundationsModuleItems";
 import { STRUCTURE_MODULE_ITEMS } from "./structureModuleItems";
 import type { ExerciseDefinition } from "./types";
 
@@ -567,4 +568,5 @@ export const SYSTEMS_ELIMINATION_ITEMS: readonly ExerciseDefinition[] = [
 export const MODULE_ITEMS: readonly ExerciseDefinition[] = [
   ...SYSTEMS_ELIMINATION_ITEMS,
   ...STRUCTURE_MODULE_ITEMS,
+  ...CALCULUS_FOUNDATIONS_MODULE_ITEMS,
 ];

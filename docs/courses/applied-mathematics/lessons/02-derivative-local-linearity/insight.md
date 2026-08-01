@@ -76,7 +76,7 @@ and the learner can *see* that rather than being told it.
 | C10 | **Failure is visible.** \(\lvert x\rvert\) at 0 never straightens: the left and right magnified pictures are different lines, so no single line satisfies C5 and \(f'(0)\) does not exist. | C3, C5 |
 | C11 | Differentiability implies continuity: C5 forces \(f(a+h)\to f(a)\). The converse fails (C10). | C5, L1 C9 |
 | C12 | Reading the slope at **every** point gives a new function \(f'\). For `ex-parabola`, \(f'(x)=2x\) — derived from C2, not recalled. | C2 |
-| C13 | Forward: L3 composes these lines; L4 uses C5 as a computational tool; **L4 uses C5 as the approximation step in the telescoping argument**; L22 writes equations about \(f'\); L28 runs C3 in several directions at once. | C5, C12 |
+| C13 | Forward: L5 composes these lines (the chain rule); L4 uses C5 as a computational tool; **L4 uses C5 as the approximation step in the telescoping argument**; L22 writes equations about \(f'\); L28 runs C3 in several directions at once. | C5, C12 |
 
 ### 7. Minimal formal derivation
 
@@ -174,7 +174,7 @@ for C9, as a connection only. Entry algebra for the binomial expansion in §7.
 **Limitations / scope:** the differentiation rulebook is not derived — only
 \(x^n\) for small \(n\) (from §7's argument) and the constant/sum rules. Product
 and quotient rules are **stated for use** and flagged as stated. The chain rule is
-L3's entire subject and is not previewed. No implicit differentiation, no
+L5's entire subject and is not previewed. No implicit differentiation, no
 higher-order Taylor, no mean value theorem, no \(f''\) beyond one naming.
 
 **Likely misconceptions, each explicitly targeted:**
