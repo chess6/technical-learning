@@ -132,3 +132,42 @@ describe("prose never contains $$ display-math delimiters", () => {
     expect(hasDoubleDollar("and $f(x) = y$. Then $h$ works.")).toBe(false);
   });
 });
+
+/**
+ * A cheaper, more general guard for the same root cause: `ProseWithMath`
+ * pairs `$` characters left to right with no concept of "this one is
+ * escaped" or "this one is a literal dollar sign, not a delimiter." ANY odd
+ * number of `$` in a prose string — not just a `$$` block — leaves one
+ * unpaired, and from that point every span boundary for the rest of the
+ * string is wrong, the same silent-not-thrown failure the `$$` guard above
+ * documents. A stray currency sign ("costs $5 to run") would trigger this
+ * exactly as a `$$` block does.
+ *
+ * A repo-wide scan confirmed this branch currently has zero such strings
+ * (2026-08) — this guard exists so the next one is caught before it ships,
+ * not found later by an owner reading the rendered page.
+ */
+function hasUnpairedDollar(text: string): boolean {
+  return (text.match(/\$/g)?.length ?? 0) % 2 !== 0;
+}
+
+describe("prose never contains an unpaired $ (odd count)", () => {
+  it("holds for every learner-facing prose string in every lesson", () => {
+    const problems = lessons.flatMap((lesson) =>
+      collectLessonProse(lesson)
+        .filter(({ text }) => hasUnpairedDollar(text))
+        .map(({ path, text }) => `  ${path}\n    ${text.slice(0, 160)}`),
+    );
+    expect(
+      problems,
+      `An odd number of "$" found in prose — one is unpaired, and every math/text ` +
+        `boundary after it will be wrong. Escape a literal dollar sign, or pair the math:\n${problems.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("detects an unpaired $, and accepts correctly paired math", () => {
+    // Proves the check bites rather than trivially passing.
+    expect(hasUnpairedDollar("It costs $5 to run this, and $E=mc^2$ too.")).toBe(true);
+    expect(hasUnpairedDollar("This costs a lot, and $E=mc^2$ too.")).toBe(false);
+  });
+});

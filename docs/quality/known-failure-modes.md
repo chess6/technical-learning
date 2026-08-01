@@ -233,6 +233,19 @@ the lesson's final result), restate the step as inline `$...$`.
 cannot silently stop biting. It shares the `lessonProse.ts` walker with the
 checks above, so it covers every learner-facing field automatically.
 
+**Checked for elsewhere.** Finding this raised the question of whether it was
+one instance or a symptom: every `$...$` span the app's own parser currently
+recognizes as math was rendered through KaTeX in strict mode (2849 distinct
+spans, repo-wide) with zero errors and zero warnings, and every learner-facing
+prose string was checked for `$` parity. Both were clean — this was isolated,
+not systemic. The same pass added a second, more general test alongside the
+`$$`-specific one: **any odd number of `$` in a prose string**, not just a
+`$$` block, leaves one delimiter unpaired and corrupts every span after it the
+same way — a stray literal dollar sign ("costs $5 to run") would trigger it
+identically. That guard found nothing live but is proven to bite (a synthetic
+regression injected and reverted) so the next occurrence is caught before
+shipping rather than found later by an owner reading the page.
+
 ## A named route target that resolves to nothing drops content silently
 
 **Seen in:** the `visual` + `sceneId` placement used by `eigenvectors`,
