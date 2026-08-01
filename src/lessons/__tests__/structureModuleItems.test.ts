@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getGradingCapability, requiresHumanScore } from "../capabilities";
+import { CALCULUS_FOUNDATIONS_MODULE_ITEMS } from "../calculusFoundationsModuleItems";
 import { MODULE_ITEMS, SYSTEMS_ELIMINATION_ITEMS } from "../moduleItems";
 import {
   STRUCTURE_MODULE_ITEMS,
@@ -53,7 +54,11 @@ describe("structure module items — registration", () => {
   it("is included in MODULE_ITEMS without colliding with another module", () => {
     const all = MODULE_ITEMS.map((e) => e.id);
     expect(new Set(all).size).toBe(all.length);
-    expect(all).toHaveLength(SYSTEMS_ELIMINATION_ITEMS.length + STRUCTURE_MODULE_ITEMS.length);
+    expect(all).toHaveLength(
+      SYSTEMS_ELIMINATION_ITEMS.length +
+        STRUCTURE_MODULE_ITEMS.length +
+        CALCULUS_FOUNDATIONS_MODULE_ITEMS.length,
+    );
     for (const id of EXPECTED_IDS) expect(all).toContain(id);
   });
 

@@ -341,4 +341,169 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "auto",
     },
   },
+
+  /* ---------------------------------------------------------------------- */
+  /* `calculus-foundations` module (L1-L4) — Gate 9.                          */
+  /* ---------------------------------------------------------------------- */
+
+  // Inherited D10 request was E5; `vector`'s ceiling is E3 — partially
+  // discharged (see the module's assessment plan for the honest level note).
+  "mod-calcfound-limit-in-derivative": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // Inherited D10 request was E5; `matrix-entry`'s ceiling is E3 — partially
+  // discharged.
+  "mod-calcfound-mixed-rate-total": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // The module's ONE E5 item: nothing auto-graded reaches self-check's
+  // ceiling for calculus-shaped content (solution-set/elimination-solution
+  // are linear-algebra-shaped). Human-scored, so the E5 claim is contingent
+  // on real scoring against the snapshotted rubric, not on this test suite.
+  "mod-calcfound-mixed-ftc": {
+    evidenceTarget: "E5",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  "mod-calcfound-select-method": {
+    evidenceTarget: "E3",
+    methodSelection: true,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  "mod-calcfound-diagnose-signed-split": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "human-scored",
+    },
+  },
+  // D9 transfer, produced: the learner locates the fixture's turn (an L2
+  // computation) and constructs a narrow interval (an L3 restriction) —
+  // raised from L3's own recognition-only (E2) item to E4, produced.
+  "mod-calcfound-transfer-bracket-window": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // Delayed retention: recognition is the measurement, so E1 is the claim
+  // against contracts that request E3 — partially discharged, not a
+  // shortfall in what recognition can honestly measure.
+  "mod-calcfound-retain-point-value": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-calcfound-retain-diff-cont": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-calcfound-retain-signed": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-calcfound-retain-existence": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // D11 timed mock — fresh instances under a time limit, all auto-graded (a
+  // deferred-feedback timed set with a human in the loop returns nothing in
+  // time to be a mock).
+  "mod-calcfound-mock-limit": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-calcfound-mock-total": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "mod-calcfound-mock-slope-of-total": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
 };

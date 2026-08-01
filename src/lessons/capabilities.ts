@@ -308,6 +308,24 @@ export type ConstructCheck =
        */
       kind: "signed-total";
       halfDuration: number;
+    }
+  | {
+      /**
+       * An interval `[a, b]` (the learner's committed vector, read as endpoints)
+       * on which the left/right-sum bracketing guarantee provably does NOT
+       * apply: narrow (`b - a <= maxWidth`) and straddling a declared turn.
+       *
+       * Infinitely many intervals work, which is what makes this a construction
+       * (the learner must locate the turn from the rate's formula) rather than a
+       * lookup. Passes iff `a < b`, `[a, b]` sits inside `domain`, the width is
+       * at most `maxWidth`, and some `turningPoints` entry lies STRICTLY inside
+       * `(a, b)` — a turn sitting exactly at an endpoint is where two certified
+       * monotone stretches meet, not an interval the guarantee fails on.
+       */
+      kind: "interval-without-bracket-guarantee";
+      domain: readonly [number, number];
+      turningPoints: readonly number[];
+      maxWidth: number;
     };
 
 export type ConstructInExplorerConfig = {
@@ -479,6 +497,34 @@ export function evaluateConstructCheck(
             : !finite
               ? "a limit that is not a finite number is not a limit"
               : "the limit and the value agree, so that point is continuous",
+      };
+    }
+    case "interval-without-bracket-guarantee": {
+      // The pair is (a, b): the committed interval's endpoints. The zero-vector
+      // guard does not apply — a genuine interval can straddle zero.
+      const [a, b] = vector;
+      const [lo, hi] = check.domain;
+      const finite = Number.isFinite(a) && Number.isFinite(b);
+      const ordered = finite && a < b;
+      const inDomain = ordered && a >= lo - tolerance && b <= hi + tolerance;
+      const width = b - a;
+      const withinWidth = ordered && width <= check.maxWidth + tolerance;
+      const turnsInside =
+        ordered && check.turningPoints.some((t) => t > a + tolerance && t < b - tolerance);
+      const pass = finite && ordered && inDomain && withinWidth && turnsInside;
+      return {
+        pass,
+        because: !finite
+          ? "both endpoints must be finite numbers"
+          : !ordered
+            ? "the first number must be strictly less than the second"
+            : !inDomain
+              ? `the interval must lie inside [${lo}, ${hi}]`
+              : !withinWidth
+                ? `the interval must be no wider than ${check.maxWidth}`
+                : !turnsInside
+                  ? "no declared turn lies strictly inside that interval, so the guarantee actually holds there"
+                  : "a turn lies strictly inside an interval this narrow, so no bracketing guarantee applies",
       };
     }
   }

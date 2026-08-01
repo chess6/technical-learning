@@ -208,6 +208,73 @@ const STRUCTURE_RETENTION: ModuleSet = {
   ],
 };
 
+/* -------------------------------------------------------------------------- */
+/* The `calculus-foundations` module (L1 limits-continuity, L2                 */
+/* derivative-local-linearity, L3 integral-accumulation, L4                    */
+/* fundamental-theorem) — Gate 9. Three sets, DISJOINT membership: a           */
+/* cumulative/interleaved review, a delayed-retention set, and a timed mock.   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cumulative & interleaved across L1-L4. Auto-graded and human-scored items
+ * STRICTLY ALTERNATE, so no run of one kind cues the next. Four distinct
+ * rate fixtures across the set, so no item's answer is a stepping stone to
+ * another's inside one sitting.
+ */
+const CALCULUS_FOUNDATIONS_REVIEW: ModuleSet = {
+  id: "calculus-foundations-review",
+  version: 1,
+  moduleId: "calculus-foundations",
+  title: "Calculus Foundations — cumulative review",
+  mode: "exam",
+  itemIds: [
+    "mod-calcfound-limit-in-derivative", // L1+L2 · limit repair -> derivative (auto)
+    "mod-calcfound-select-method", // D8 · method selection (human)
+    "mod-calcfound-transfer-bracket-window", // D9 · produced bracket-failure interval (auto)
+    "mod-calcfound-diagnose-signed-split", // D13 · error diagnosis (human)
+    "mod-calcfound-mixed-rate-total", // L2+L3 · rate/total mixed questions (auto)
+    "mod-calcfound-mixed-ftc", // L2+L3+L4 · two routes + bracket + FTC (human)
+  ],
+};
+
+/**
+ * Delayed retention (D12). NOT a platform "spaced set": the scheduler is
+ * scoped to a single `SPACED_MODULE_ID` (`platform/spacedConfig.ts`), so
+ * nothing seeds these automatically — administered manually after a delay,
+ * a tracked gap recorded in the module's assessment plan, not faked here.
+ */
+const CALCULUS_FOUNDATIONS_RETENTION: ModuleSet = {
+  id: "calculus-foundations-retention",
+  version: 1,
+  moduleId: "calculus-foundations",
+  title: "Calculus Foundations — delayed retention",
+  mode: "exam",
+  itemIds: [
+    "mod-calcfound-retain-point-value", // L1 · the declared value never moves the limit
+    "mod-calcfound-retain-diff-cont", // L2 · differentiable ⇒ continuous, not conversely
+    "mod-calcfound-retain-signed", // L3 · net change is signed, not the area model
+    "mod-calcfound-retain-existence", // L4 · existence, not a formula
+  ],
+};
+
+/**
+ * The timed mock (D11): a short exam-mode set under a time limit, all
+ * auto-graded — a deferred-feedback timed set with a human in the loop
+ * returns nothing in time to be a mock. The profile is P2 with no P3
+ * override (course-spine.md §0), so no proof set is required, and this is
+ * where that budget goes instead — otherwise the course would have no timed
+ * surface at all.
+ */
+const CALCULUS_FOUNDATIONS_MOCK: ModuleSet = {
+  id: "calculus-foundations-mock",
+  version: 1,
+  moduleId: "calculus-foundations",
+  title: "Calculus Foundations — timed mock",
+  mode: "exam",
+  timeLimitSec: 600, // 10 minutes for three items — an authored guess, not a measured norm
+  itemIds: ["mod-calcfound-mock-limit", "mod-calcfound-mock-total", "mod-calcfound-mock-slope-of-total"],
+};
+
 export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_REVIEW,
   SYSTEMS_ELIMINATION_TRANSFER,
@@ -219,6 +286,9 @@ export const MODULE_SETS: readonly ModuleSet[] = [
   STRUCTURE_REVIEW,
   STRUCTURE_PROOF,
   STRUCTURE_RETENTION,
+  CALCULUS_FOUNDATIONS_REVIEW,
+  CALCULUS_FOUNDATIONS_RETENTION,
+  CALCULUS_FOUNDATIONS_MOCK,
 ];
 
 /* -------------------------------------------------------------------------- */
