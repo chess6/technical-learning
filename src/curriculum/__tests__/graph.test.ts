@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CONCEPTS } from "../concepts";
-import { CURRICULUM_EDGES, EDGE_NAMESPACE, type EdgeNamespace, type EdgeType } from "../edges";
+import { CURRICULUM_EDGES, type EdgeType, type NodeRef } from "../edges";
 import { LESSON_ROSTER, isKnownLessonId } from "../lessonRoster";
 import { assertUniqueIds } from "../../platform/identity";
 
@@ -21,14 +21,19 @@ const DAG_EDGE_TYPES: readonly EdgeType[] = ["requires", "recommended-before"];
 const conceptIds = new Set(CONCEPTS.map((c) => String(c.id)));
 
 /**
- * Resolves an id in the SPECIFIC namespace `EDGE_NAMESPACE` declares for that
- * side of that edge type — not "either space." A `requires` edge naming a
- * concept id, or a `revisited-by` edge whose `from` isn't a concept, must
- * fail here even though the id might be a perfectly valid id in the OTHER
- * namespace.
+ * Resolves a ref against the catalog its OWN `kind` names. Because the ref
+ * carries its space, this is unambiguous even for the eight ids that name
+ * both a concept and a lesson — the case a bare-string check could never
+ * decide. The type layer already rejects a wrong-kind endpoint at compile
+ * time; this is the matching runtime check that the id actually exists.
  */
-function resolvesInNamespace(id: string, namespace: EdgeNamespace): boolean {
-  return namespace === "concept" ? conceptIds.has(id) : isKnownLessonId(id);
+function resolves(ref: NodeRef): boolean {
+  return ref.kind === "concept" ? conceptIds.has(ref.id) : isKnownLessonId(ref.id);
+}
+
+/** Stable "kind:id" key — two nodes collide only within the same space. */
+function nodeKey(ref: NodeRef): string {
+  return `${ref.kind}:${ref.id}`;
 }
 
 describe("curriculum concept catalog", () => {
@@ -46,26 +51,28 @@ describe("curriculum concept catalog", () => {
 });
 
 describe("curriculum edge referential integrity", () => {
-  it("resolves every edge endpoint in the namespace EDGE_NAMESPACE declares for it", () => {
+  it("resolves every endpoint in the catalog its own ref kind names", () => {
     const problems: string[] = [];
     for (const edge of CURRICULUM_EDGES) {
-      const { from: fromNamespace, to: toNamespace } = EDGE_NAMESPACE[edge.type];
-      if (!resolvesInNamespace(edge.from, fromNamespace)) {
-        problems.push(
-          `${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.from}" is not a known ${fromNamespace} id`,
-        );
-      }
-      if (!resolvesInNamespace(edge.to, toNamespace)) {
-        problems.push(
-          `${edge.type} edge "${edge.from}" -> "${edge.to}": "${edge.to}" is not a known ${toNamespace} id`,
-        );
+      for (const [side, ref] of [
+        ["from", edge.from],
+        ["to", edge.to],
+      ] as const) {
+        if (!resolves(ref)) {
+          problems.push(
+            `${edge.type} edge ${nodeKey(edge.from)} -> ${nodeKey(edge.to)}: ` +
+              `${side} "${ref.id}" is not a known ${ref.kind} id`,
+          );
+        }
       }
     }
     expect(problems).toEqual([]);
   });
 
   it("has no self-loop edges", () => {
-    const selfLoops = CURRICULUM_EDGES.filter((edge) => edge.from === edge.to);
+    const selfLoops = CURRICULUM_EDGES.filter(
+      (edge) => nodeKey(edge.from) === nodeKey(edge.to),
+    );
     expect(selfLoops).toEqual([]);
   });
 
@@ -73,7 +80,7 @@ describe("curriculum edge referential integrity", () => {
     const seen = new Set<string>();
     const duplicates: string[] = [];
     for (const edge of CURRICULUM_EDGES) {
-      const key = `${edge.type}:${edge.from}->${edge.to}`;
+      const key = `${edge.type}:${nodeKey(edge.from)}->${nodeKey(edge.to)}`;
       if (seen.has(key)) duplicates.push(key);
       seen.add(key);
     }
@@ -84,15 +91,17 @@ describe("curriculum edge referential integrity", () => {
 describe("curriculum DAG validation (requires + recommended-before)", () => {
   it("is acyclic — a topological sort exists", () => {
     const dagEdges = CURRICULUM_EDGES.filter((edge) => DAG_EDGE_TYPES.includes(edge.type));
+    // Keyed by "kind:id" so the concept `elimination` and the lesson
+    // `elimination` could never be conflated into one graph node.
     const nodes = new Set<string>();
     for (const edge of dagEdges) {
-      nodes.add(edge.from);
-      nodes.add(edge.to);
+      nodes.add(nodeKey(edge.from));
+      nodes.add(nodeKey(edge.to));
     }
 
     const adjacency = new Map<string, string[]>();
     for (const node of nodes) adjacency.set(node, []);
-    for (const edge of dagEdges) adjacency.get(edge.from)!.push(edge.to);
+    for (const edge of dagEdges) adjacency.get(nodeKey(edge.from))!.push(nodeKey(edge.to));
 
     const WHITE = 0;
     const GRAY = 1;

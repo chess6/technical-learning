@@ -7,25 +7,28 @@
  * types (`generalizes-to`, `special-case-of`, etc.) are listed there, not
  * here — adding one requires a new ADR, not just extending this union.
  *
- * `from`/`to` are plain strings because an edge endpoint may be a concept id
- * (`src/curriculum/concepts.ts`) or a lesson id (`src/curriculum/lessonRoster.ts`,
- * `src/lessons/registry.ts`) depending on what the edge naturally relates.
- * Which namespace each `EdgeType` uses on each side is NOT ad hoc — it is
- * declared exactly once in `EDGE_NAMESPACE` below, and
- * `src/curriculum/__tests__/graph.test.ts` asserts every edge's endpoints
- * resolve in THAT namespace specifically rather than in "either namespace."
+ * An edge endpoint may live in the concept space (`src/curriculum/concepts.ts`)
+ * or the lesson space (`src/curriculum/lessonRoster.ts`, `src/lessons/registry.ts`)
+ * depending on what the edge relates, and **eight ids name BOTH** —
+ * `elimination`, `matrix-composition`, `rank-nullity`, `change-of-basis`,
+ * `orthogonality`, `least-squares`, `series-convergence`, `laplace-transform`.
+ * A bare string endpoint therefore cannot say which is meant, and a
+ * resolution check over bare strings cannot verify it: about 15% of endpoints
+ * resolve in either space, so a wrong-space id among those eight would pass
+ * silently. (That was the state before this refactor, and it was real: one
+ * `application-of` edge shipped with a lesson id where it needed a concept.)
  *
- * KNOWN LIMIT — this check is necessary, not sufficient. Eight ids are valid
- * in BOTH namespaces (`elimination`, `matrix-composition`, `rank-nullity`,
- * `change-of-basis`, `orthogonality`, `least-squares`, `series-convergence`,
- * `laplace-transform` each name a concept AND a lesson), so roughly 15% of
- * endpoints resolve either way and the test cannot tell a correct one from a
- * wrong one. It catches an id that is only valid in the *other* space; it
- * does not catch one of those eight used with the wrong meaning. Closing that
- * gap needs structurally typed endpoints (`{ kind: "concept", id }`) or
- * disambiguating renames — the LA catalog already set the rename precedent by
- * spelling `linear-independence` rather than `independence`. Both are
- * curriculum-owner decisions, so neither is taken here.
+ * Endpoints are therefore `NodeRef`s that carry their space explicitly, and
+ * `CurriculumEdge` is a union discriminated on `type`. This closes the gap at
+ * BOTH layers:
+ *
+ * - **Compile time** — the union pins each edge type's endpoint spaces, so
+ *   `{ type: "requires", from: concept("elimination"), ... }` is a `tsc`
+ *   error. The ambiguity cannot be authored in the first place.
+ * - **Run time** — `kind` survives into the data, so
+ *   `src/curriculum/__tests__/graph.test.ts` resolves each endpoint against
+ *   the catalog its own `kind` names, and a collision id is no longer
+ *   ambiguous to the checker.
  *
  * Sources:
  * - `docs/courses/linear-algebra/curriculum-architecture.md` §2.1 (25 hard
@@ -37,6 +40,8 @@
  *   thread (→ `application-of`, five new application-domain concepts)
  */
 
+import { asConceptId, asLessonId, type ConceptId, type LessonId } from "../platform/identity";
+
 export type EdgeType =
   | "requires"
   | "recommended-before"
@@ -45,133 +50,143 @@ export type EdgeType =
   | "same-structure-as"
   | "application-of";
 
-export type CurriculumEdge = {
-  from: string;
-  to: string;
-  type: EdgeType;
-  note?: string;
-};
+export type ConceptRef = { kind: "concept"; id: ConceptId };
+export type LessonRef = { kind: "lesson"; id: LessonId };
+export type NodeRef = ConceptRef | LessonRef;
 
-export type EdgeNamespace = "concept" | "lesson";
+/** Tag an id as living in the concept space. Validates slug syntax as it goes. */
+export function concept(id: string): ConceptRef {
+  return { kind: "concept", id: asConceptId(id) };
+}
+
+/** Tag an id as living in the lesson space. Validates slug syntax as it goes. */
+export function lesson(id: string): LessonRef {
+  return { kind: "lesson", id: asLessonId(id) };
+}
+
+/** True when two refs name the same node in the same space. */
+export function sameNode(a: NodeRef, b: NodeRef): boolean {
+  return a.kind === b.kind && a.id === b.id;
+}
 
 /**
- * The id space each `EdgeType` connects, on each side. `requires` /
- * `recommended-before` / `refresher-for` / `same-structure-as` are all
- * lesson-sequencing relationships (course-spine positions); `application-of`
- * and `revisited-by` are concept-anchored. A new edge whose endpoints don't
- * fit this table is a sign the edge belongs to a DIFFERENT type, not that
- * this table should widen to "either."
+ * Edges, discriminated on `type` so each type pins the id space of each
+ * endpoint. `requires` / `recommended-before` / `refresher-for` /
+ * `same-structure-as` sequence LESSONS; `application-of` relates CONCEPTS;
+ * `revisited-by` runs from a CONCEPT to the LESSON that fires it again.
+ *
+ * An edge whose endpoints don't fit its type is a sign it belongs to a
+ * different type — not that a type should widen to accept either space.
  */
-export const EDGE_NAMESPACE: Record<EdgeType, { from: EdgeNamespace; to: EdgeNamespace }> = {
-  requires: { from: "lesson", to: "lesson" },
-  "recommended-before": { from: "lesson", to: "lesson" },
-  "refresher-for": { from: "lesson", to: "lesson" },
-  "same-structure-as": { from: "lesson", to: "lesson" },
-  "application-of": { from: "concept", to: "concept" },
-  "revisited-by": { from: "concept", to: "lesson" },
-};
+export type CurriculumEdge =
+  | { type: "requires"; from: LessonRef; to: LessonRef; note?: string }
+  | { type: "recommended-before"; from: LessonRef; to: LessonRef; note?: string }
+  | { type: "refresher-for"; from: LessonRef; to: LessonRef; note?: string }
+  | { type: "same-structure-as"; from: LessonRef; to: LessonRef; note?: string }
+  | { type: "application-of"; from: ConceptRef; to: ConceptRef; note?: string }
+  | { type: "revisited-by"; from: ConceptRef; to: LessonRef; note?: string };
 
 /* --------------------------------------------------------------------------
  * requires — hard, gating, must stay acyclic.
  * ------------------------------------------------------------------------ */
 
 const LA_REQUIRES: readonly CurriculumEdge[] = [
-  { from: "why-linear-algebra", to: "vectors", type: "requires", note: "Motivates \"four numbers move space\"; vectors are the first object." },
-  { from: "vectors", to: "transformations", type: "requires", note: "Columns rule is derived from unique standard-basis coordinates." },
-  { from: "transformations", to: "systems", type: "requires", note: "Column picture of Ax=b reuses \"columns are images of the basis.\"" },
-  { from: "vectors", to: "systems", type: "requires", note: "Row/column pictures reuse span, dependence, unique coordinates." },
-  { from: "systems", to: "elimination", type: "requires", note: "Elimination rewrites a system while preserving its solution set." },
-  { from: "elimination", to: "solution-sets", type: "requires", note: "You must reduce before reading off free variables / null directions." },
-  { from: "transformations", to: "matrix-composition", type: "requires", note: "\"Apply B then A\" composes two transformations." },
-  { from: "systems", to: "matrix-composition", type: "requires", note: "Inverses are motivated as \"solve Ax=b by undoing A.\"" },
-  { from: "matrix-composition", to: "determinants", type: "requires", note: "Invertibility should be wanted before the determinant detects it." },
-  { from: "systems", to: "determinants", type: "requires", note: "Determinant zero = the non-unique/collapse case met in systems." },
-  { from: "matrix-composition", to: "subspaces-rank", type: "requires", note: "Column/null space formalize composition & solvability." },
-  { from: "systems", to: "subspaces-rank", type: "requires", note: "Column space = reachable b; null space = non-uniqueness." },
-  { from: "subspaces-rank", to: "rank-nullity", type: "requires", note: "Conservation law counts the rank/nullity just named." },
-  { from: "vectors", to: "change-of-basis", type: "requires", note: "Pays off \"coordinates are a choice, not the vector.\"" },
-  { from: "transformations", to: "change-of-basis", type: "requires", note: "A map's matrix is re-expressed in a new basis." },
-  { from: "transformations", to: "eigenvectors", type: "requires", note: "Eigen-directions are directions the map only scales." },
-  { from: "determinants", to: "eigenvectors", type: "requires", note: "det(A - λI) = 0 reuses \"det = 0 is collapse.\"" },
-  { from: "change-of-basis", to: "eigenvectors", type: "requires", note: "Diagonalization = the basis where the matrix is diagonal." },
-  { from: "vectors", to: "orthogonality", type: "requires", note: "Dot product / projection act on vectors." },
-  { from: "systems", to: "least-squares", type: "requires", note: "Least squares is the inconsistent-Ax=b rescue." },
-  { from: "subspaces-rank", to: "least-squares", type: "requires", note: "Project b onto the column space." },
-  { from: "orthogonality", to: "least-squares", type: "requires", note: "Projection is the engine of the normal equations." },
-  { from: "transformations", to: "svd", type: "requires", note: "SVD = rotate -> scale -> rotate (composition of maps)." },
-  { from: "subspaces-rank", to: "svd", type: "requires", note: "Singular values count rank; reunifies structure." },
-  { from: "orthogonality", to: "svd", type: "requires", note: "U and V are orthonormal; geometry of the factorization." },
+  { from: lesson("why-linear-algebra"), to: lesson("vectors"), type: "requires", note: "Motivates \"four numbers move space\"; vectors are the first object." },
+  { from: lesson("vectors"), to: lesson("transformations"), type: "requires", note: "Columns rule is derived from unique standard-basis coordinates." },
+  { from: lesson("transformations"), to: lesson("systems"), type: "requires", note: "Column picture of Ax=b reuses \"columns are images of the basis.\"" },
+  { from: lesson("vectors"), to: lesson("systems"), type: "requires", note: "Row/column pictures reuse span, dependence, unique coordinates." },
+  { from: lesson("systems"), to: lesson("elimination"), type: "requires", note: "Elimination rewrites a system while preserving its solution set." },
+  { from: lesson("elimination"), to: lesson("solution-sets"), type: "requires", note: "You must reduce before reading off free variables / null directions." },
+  { from: lesson("transformations"), to: lesson("matrix-composition"), type: "requires", note: "\"Apply B then A\" composes two transformations." },
+  { from: lesson("systems"), to: lesson("matrix-composition"), type: "requires", note: "Inverses are motivated as \"solve Ax=b by undoing A.\"" },
+  { from: lesson("matrix-composition"), to: lesson("determinants"), type: "requires", note: "Invertibility should be wanted before the determinant detects it." },
+  { from: lesson("systems"), to: lesson("determinants"), type: "requires", note: "Determinant zero = the non-unique/collapse case met in systems." },
+  { from: lesson("matrix-composition"), to: lesson("subspaces-rank"), type: "requires", note: "Column/null space formalize composition & solvability." },
+  { from: lesson("systems"), to: lesson("subspaces-rank"), type: "requires", note: "Column space = reachable b; null space = non-uniqueness." },
+  { from: lesson("subspaces-rank"), to: lesson("rank-nullity"), type: "requires", note: "Conservation law counts the rank/nullity just named." },
+  { from: lesson("vectors"), to: lesson("change-of-basis"), type: "requires", note: "Pays off \"coordinates are a choice, not the vector.\"" },
+  { from: lesson("transformations"), to: lesson("change-of-basis"), type: "requires", note: "A map's matrix is re-expressed in a new basis." },
+  { from: lesson("transformations"), to: lesson("eigenvectors"), type: "requires", note: "Eigen-directions are directions the map only scales." },
+  { from: lesson("determinants"), to: lesson("eigenvectors"), type: "requires", note: "det(A - λI) = 0 reuses \"det = 0 is collapse.\"" },
+  { from: lesson("change-of-basis"), to: lesson("eigenvectors"), type: "requires", note: "Diagonalization = the basis where the matrix is diagonal." },
+  { from: lesson("vectors"), to: lesson("orthogonality"), type: "requires", note: "Dot product / projection act on vectors." },
+  { from: lesson("systems"), to: lesson("least-squares"), type: "requires", note: "Least squares is the inconsistent-Ax=b rescue." },
+  { from: lesson("subspaces-rank"), to: lesson("least-squares"), type: "requires", note: "Project b onto the column space." },
+  { from: lesson("orthogonality"), to: lesson("least-squares"), type: "requires", note: "Projection is the engine of the normal equations." },
+  { from: lesson("transformations"), to: lesson("svd"), type: "requires", note: "SVD = rotate -> scale -> rotate (composition of maps)." },
+  { from: lesson("subspaces-rank"), to: lesson("svd"), type: "requires", note: "Singular values count rank; reunifies structure." },
+  { from: lesson("orthogonality"), to: lesson("svd"), type: "requires", note: "U and V are orthonormal; geometry of the factorization." },
 ];
 
 const AM_CROSS_COURSE_REQUIRES: readonly CurriculumEdge[] = [
-  { from: "vectors", to: "inner-products-projection", type: "requires", note: "Dot product, span, coordinates generalized, not introduced." },
-  { from: "vectors", to: "complex-rotation", type: "requires", note: "The complex plane is R^2 with a multiplication." },
-  { from: "transformations", to: "complex-rotation", type: "requires", note: "Multiplication by a+bi is a 2x2 map fixed by where the basis lands." },
-  { from: "transformations", to: "partial-derivatives-gradient", type: "requires", note: "The Jacobian is the matrix of a linear map, read by the columns rule." },
-  { from: "matrix-composition", to: "chain-rule", type: "requires", note: "Composing local linear models is composing matrices." },
-  { from: "determinants", to: "change-of-variables-jacobian", type: "requires", note: "The Jacobian determinant is the same area/volume scale factor." },
-  { from: "eigenvectors", to: "second-order-odes", type: "requires", note: "e^{st} is an eigenfunction of d/dt; the characteristic polynomial is the same object." },
+  { from: lesson("vectors"), to: lesson("inner-products-projection"), type: "requires", note: "Dot product, span, coordinates generalized, not introduced." },
+  { from: lesson("vectors"), to: lesson("complex-rotation"), type: "requires", note: "The complex plane is R^2 with a multiplication." },
+  { from: lesson("transformations"), to: lesson("complex-rotation"), type: "requires", note: "Multiplication by a+bi is a 2x2 map fixed by where the basis lands." },
+  { from: lesson("transformations"), to: lesson("partial-derivatives-gradient"), type: "requires", note: "The Jacobian is the matrix of a linear map, read by the columns rule." },
+  { from: lesson("matrix-composition"), to: lesson("chain-rule"), type: "requires", note: "Composing local linear models is composing matrices." },
+  { from: lesson("determinants"), to: lesson("change-of-variables-jacobian"), type: "requires", note: "The Jacobian determinant is the same area/volume scale factor." },
+  { from: lesson("eigenvectors"), to: lesson("second-order-odes"), type: "requires", note: "e^{st} is an eigenfunction of d/dt; the characteristic polynomial is the same object." },
 ];
 
 const AM_WITHIN_COURSE_REQUIRES: readonly CurriculumEdge[] = [
-  { from: "limits-continuity", to: "derivative-local-linearity", type: "requires", note: "The derivative is a limit." },
-  { from: "limits-continuity", to: "integral-accumulation", type: "requires", note: "The integral is a limit of sums." },
-  { from: "derivative-local-linearity", to: "fundamental-theorem", type: "requires", note: "The theorem is about the derivative; its proof uses the local model." },
-  { from: "integral-accumulation", to: "fundamental-theorem", type: "requires", note: "The theorem is about the accumulation." },
-  { from: "derivative-local-linearity", to: "chain-rule", type: "requires", note: "Composing the local linear models." },
-  { from: "derivative-local-linearity", to: "optimization-approximation", type: "requires", note: "\"Flat local model\" is the criterion." },
-  { from: "chain-rule", to: "substitution-parts", type: "requires", note: "Substitution is the chain rule backwards." },
-  { from: "fundamental-theorem", to: "substitution-parts", type: "requires", note: "Techniques evaluate definite integrals via antiderivatives." },
-  { from: "limits-continuity", to: "improper-integrals", type: "requires", note: "An improper integral is a limit of proper ones." },
-  { from: "fundamental-theorem", to: "improper-integrals", type: "requires", note: "Each finite piece is evaluated by the FTC." },
-  { from: "radians-rotation", to: "substitution-parts", type: "requires", note: "Trigonometric antiderivatives and substitutions." },
-  { from: "limits-continuity", to: "sequences-limits", type: "requires", note: "The same tolerance guarantee, with \"far enough along\" for the window." },
-  { from: "sequences-limits", to: "series-convergence", type: "requires", note: "A series is the limit of its sequence of partial sums." },
-  { from: "improper-integrals", to: "series-convergence", type: "requires", note: "The integral test, and the p-series comparison." },
-  { from: "series-convergence", to: "power-taylor-series", type: "requires", note: "A power series converges or does not, on a radius." },
-  { from: "optimization-approximation", to: "power-taylor-series", type: "requires", note: "Linearization is the first two terms." },
-  { from: "radians-rotation", to: "complex-rotation", type: "requires", note: "Rotation is measured in radians." },
-  { from: "complex-rotation", to: "eulers-formula", type: "requires", note: "i as a quarter turn is the premise." },
-  { from: "derivative-local-linearity", to: "eulers-formula", type: "requires", note: "The derivation asks what function's derivative is i times itself." },
-  { from: "eulers-formula", to: "waves-phasors", type: "requires", note: "The phasor is Ae^{iφ}e^{iωt}." },
-  { from: "integral-accumulation", to: "inner-products-projection", type: "requires", note: "The function inner product is an integral of a product." },
-  { from: "inner-products-projection", to: "orthogonal-families", type: "requires", note: "Orthogonality is defined by the inner product." },
-  { from: "waves-phasors", to: "orthogonal-families", type: "requires", note: "The family in question is the sinusoids." },
-  { from: "orthogonal-families", to: "fourier-series", type: "requires", note: "Coefficients separate because the family is orthogonal." },
-  { from: "series-convergence", to: "fourier-series", type: "requires", note: "\"An infinite sum of sinusoids\" needs a meaning." },
-  { from: "fourier-series", to: "fourier-transform", type: "requires", note: "The transform is the period-to-infinity limit." },
-  { from: "improper-integrals", to: "fourier-transform", type: "requires", note: "The transform integral is improper." },
-  { from: "fourier-transform", to: "convolution-filtering", type: "requires", note: "The convolution theorem is a statement about transforms." },
-  { from: "convolution-filtering", to: "sampling-aliasing", type: "requires", note: "Sampling is multiplication by a comb; spectra convolve." },
-  { from: "sampling-aliasing", to: "dft-fft", type: "requires", note: "The DFT is the transform of a sampled, finite record." },
-  { from: "derivative-local-linearity", to: "first-order-odes", type: "requires", note: "An ODE is a statement about a derivative." },
-  { from: "substitution-parts", to: "first-order-odes", type: "requires", note: "Separation of variables integrates both sides." },
-  { from: "first-order-odes", to: "second-order-odes", type: "requires", note: "The same \"guess an exponential\" move, one order up." },
-  { from: "eulers-formula", to: "second-order-odes", type: "requires", note: "Complex roots give oscillation." },
-  { from: "improper-integrals", to: "laplace-transform", type: "requires", note: "The Laplace integral is improper." },
-  { from: "substitution-parts", to: "laplace-transform", type: "requires", note: "The derivative rule is integration by parts, and its boundary term carries the initial conditions." },
-  { from: "second-order-odes", to: "laplace-transform", type: "requires", note: "The problems Laplace is for." },
-  { from: "laplace-transform", to: "inverse-laplace", type: "requires", note: "You must transform before you invert." },
-  { from: "inverse-laplace", to: "transfer-impulse-response", type: "requires", note: "The impulse response is an inverse transform." },
-  { from: "transfer-impulse-response", to: "circuits-control-stability", type: "requires", note: "Poles live in the transfer function." },
-  { from: "derivative-local-linearity", to: "partial-derivatives-gradient", type: "requires", note: "A partial derivative is a derivative." },
-  { from: "chain-rule", to: "partial-derivatives-gradient", type: "requires", note: "The multivariable chain rule composes the local models." },
-  { from: "integral-accumulation", to: "multiple-integrals", type: "requires", note: "Same accumulation, iterated." },
-  { from: "partial-derivatives-gradient", to: "change-of-variables-jacobian", type: "requires", note: "The Jacobian is built from partials." },
-  { from: "multiple-integrals", to: "change-of-variables-jacobian", type: "requires", note: "The factor multiplies an iterated integral." },
-  { from: "partial-derivatives-gradient", to: "vector-fields-line-integrals", type: "requires", note: "The gradient is the first vector field met." },
-  { from: "chain-rule", to: "vector-fields-line-integrals", type: "requires", note: "Parameterize the path and differentiate the composition." },
-  { from: "vector-fields-line-integrals", to: "circulation-flux", type: "requires", note: "Both are line integrals with different integrands." },
-  { from: "circulation-flux", to: "divergence-curl", type: "requires", note: "Local versions of the global quantities." },
-  { from: "divergence-curl", to: "greens-theorem", type: "requires", note: "The theorem relates the local density to the boundary total." },
-  { from: "multiple-integrals", to: "greens-theorem", type: "requires", note: "The left side is a double integral." },
-  { from: "fundamental-theorem", to: "greens-theorem", type: "requires", note: "Theme 1: the same cancellation argument, re-run." },
-  { from: "change-of-variables-jacobian", to: "surface-integrals", type: "requires", note: "The area element is the coordinate-change factor on a surface." },
-  { from: "greens-theorem", to: "stokes-theorem", type: "requires", note: "Stokes is Green lifted off the plane." },
-  { from: "surface-integrals", to: "stokes-theorem", type: "requires", note: "The curl is integrated over a surface." },
-  { from: "surface-integrals", to: "divergence-theorem", type: "requires", note: "The flux is a surface integral." },
-  { from: "divergence-curl", to: "divergence-theorem", type: "requires", note: "The local density is the divergence." },
-  { from: "fundamental-theorem", to: "divergence-theorem", type: "requires", note: "Theme 1: the same cancellation argument again, now with shared interior faces." },
+  { from: lesson("limits-continuity"), to: lesson("derivative-local-linearity"), type: "requires", note: "The derivative is a limit." },
+  { from: lesson("limits-continuity"), to: lesson("integral-accumulation"), type: "requires", note: "The integral is a limit of sums." },
+  { from: lesson("derivative-local-linearity"), to: lesson("fundamental-theorem"), type: "requires", note: "The theorem is about the derivative; its proof uses the local model." },
+  { from: lesson("integral-accumulation"), to: lesson("fundamental-theorem"), type: "requires", note: "The theorem is about the accumulation." },
+  { from: lesson("derivative-local-linearity"), to: lesson("chain-rule"), type: "requires", note: "Composing the local linear models." },
+  { from: lesson("derivative-local-linearity"), to: lesson("optimization-approximation"), type: "requires", note: "\"Flat local model\" is the criterion." },
+  { from: lesson("chain-rule"), to: lesson("substitution-parts"), type: "requires", note: "Substitution is the chain rule backwards." },
+  { from: lesson("fundamental-theorem"), to: lesson("substitution-parts"), type: "requires", note: "Techniques evaluate definite integrals via antiderivatives." },
+  { from: lesson("limits-continuity"), to: lesson("improper-integrals"), type: "requires", note: "An improper integral is a limit of proper ones." },
+  { from: lesson("fundamental-theorem"), to: lesson("improper-integrals"), type: "requires", note: "Each finite piece is evaluated by the FTC." },
+  { from: lesson("radians-rotation"), to: lesson("substitution-parts"), type: "requires", note: "Trigonometric antiderivatives and substitutions." },
+  { from: lesson("limits-continuity"), to: lesson("sequences-limits"), type: "requires", note: "The same tolerance guarantee, with \"far enough along\" for the window." },
+  { from: lesson("sequences-limits"), to: lesson("series-convergence"), type: "requires", note: "A series is the limit of its sequence of partial sums." },
+  { from: lesson("improper-integrals"), to: lesson("series-convergence"), type: "requires", note: "The integral test, and the p-series comparison." },
+  { from: lesson("series-convergence"), to: lesson("power-taylor-series"), type: "requires", note: "A power series converges or does not, on a radius." },
+  { from: lesson("optimization-approximation"), to: lesson("power-taylor-series"), type: "requires", note: "Linearization is the first two terms." },
+  { from: lesson("radians-rotation"), to: lesson("complex-rotation"), type: "requires", note: "Rotation is measured in radians." },
+  { from: lesson("complex-rotation"), to: lesson("eulers-formula"), type: "requires", note: "i as a quarter turn is the premise." },
+  { from: lesson("derivative-local-linearity"), to: lesson("eulers-formula"), type: "requires", note: "The derivation asks what function's derivative is i times itself." },
+  { from: lesson("eulers-formula"), to: lesson("waves-phasors"), type: "requires", note: "The phasor is Ae^{iφ}e^{iωt}." },
+  { from: lesson("integral-accumulation"), to: lesson("inner-products-projection"), type: "requires", note: "The function inner product is an integral of a product." },
+  { from: lesson("inner-products-projection"), to: lesson("orthogonal-families"), type: "requires", note: "Orthogonality is defined by the inner product." },
+  { from: lesson("waves-phasors"), to: lesson("orthogonal-families"), type: "requires", note: "The family in question is the sinusoids." },
+  { from: lesson("orthogonal-families"), to: lesson("fourier-series"), type: "requires", note: "Coefficients separate because the family is orthogonal." },
+  { from: lesson("series-convergence"), to: lesson("fourier-series"), type: "requires", note: "\"An infinite sum of sinusoids\" needs a meaning." },
+  { from: lesson("fourier-series"), to: lesson("fourier-transform"), type: "requires", note: "The transform is the period-to-infinity limit." },
+  { from: lesson("improper-integrals"), to: lesson("fourier-transform"), type: "requires", note: "The transform integral is improper." },
+  { from: lesson("fourier-transform"), to: lesson("convolution-filtering"), type: "requires", note: "The convolution theorem is a statement about transforms." },
+  { from: lesson("convolution-filtering"), to: lesson("sampling-aliasing"), type: "requires", note: "Sampling is multiplication by a comb; spectra convolve." },
+  { from: lesson("sampling-aliasing"), to: lesson("dft-fft"), type: "requires", note: "The DFT is the transform of a sampled, finite record." },
+  { from: lesson("derivative-local-linearity"), to: lesson("first-order-odes"), type: "requires", note: "An ODE is a statement about a derivative." },
+  { from: lesson("substitution-parts"), to: lesson("first-order-odes"), type: "requires", note: "Separation of variables integrates both sides." },
+  { from: lesson("first-order-odes"), to: lesson("second-order-odes"), type: "requires", note: "The same \"guess an exponential\" move, one order up." },
+  { from: lesson("eulers-formula"), to: lesson("second-order-odes"), type: "requires", note: "Complex roots give oscillation." },
+  { from: lesson("improper-integrals"), to: lesson("laplace-transform"), type: "requires", note: "The Laplace integral is improper." },
+  { from: lesson("substitution-parts"), to: lesson("laplace-transform"), type: "requires", note: "The derivative rule is integration by parts, and its boundary term carries the initial conditions." },
+  { from: lesson("second-order-odes"), to: lesson("laplace-transform"), type: "requires", note: "The problems Laplace is for." },
+  { from: lesson("laplace-transform"), to: lesson("inverse-laplace"), type: "requires", note: "You must transform before you invert." },
+  { from: lesson("inverse-laplace"), to: lesson("transfer-impulse-response"), type: "requires", note: "The impulse response is an inverse transform." },
+  { from: lesson("transfer-impulse-response"), to: lesson("circuits-control-stability"), type: "requires", note: "Poles live in the transfer function." },
+  { from: lesson("derivative-local-linearity"), to: lesson("partial-derivatives-gradient"), type: "requires", note: "A partial derivative is a derivative." },
+  { from: lesson("chain-rule"), to: lesson("partial-derivatives-gradient"), type: "requires", note: "The multivariable chain rule composes the local models." },
+  { from: lesson("integral-accumulation"), to: lesson("multiple-integrals"), type: "requires", note: "Same accumulation, iterated." },
+  { from: lesson("partial-derivatives-gradient"), to: lesson("change-of-variables-jacobian"), type: "requires", note: "The Jacobian is built from partials." },
+  { from: lesson("multiple-integrals"), to: lesson("change-of-variables-jacobian"), type: "requires", note: "The factor multiplies an iterated integral." },
+  { from: lesson("partial-derivatives-gradient"), to: lesson("vector-fields-line-integrals"), type: "requires", note: "The gradient is the first vector field met." },
+  { from: lesson("chain-rule"), to: lesson("vector-fields-line-integrals"), type: "requires", note: "Parameterize the path and differentiate the composition." },
+  { from: lesson("vector-fields-line-integrals"), to: lesson("circulation-flux"), type: "requires", note: "Both are line integrals with different integrands." },
+  { from: lesson("circulation-flux"), to: lesson("divergence-curl"), type: "requires", note: "Local versions of the global quantities." },
+  { from: lesson("divergence-curl"), to: lesson("greens-theorem"), type: "requires", note: "The theorem relates the local density to the boundary total." },
+  { from: lesson("multiple-integrals"), to: lesson("greens-theorem"), type: "requires", note: "The left side is a double integral." },
+  { from: lesson("fundamental-theorem"), to: lesson("greens-theorem"), type: "requires", note: "Theme 1: the same cancellation argument, re-run." },
+  { from: lesson("change-of-variables-jacobian"), to: lesson("surface-integrals"), type: "requires", note: "The area element is the coordinate-change factor on a surface." },
+  { from: lesson("greens-theorem"), to: lesson("stokes-theorem"), type: "requires", note: "Stokes is Green lifted off the plane." },
+  { from: lesson("surface-integrals"), to: lesson("stokes-theorem"), type: "requires", note: "The curl is integrated over a surface." },
+  { from: lesson("surface-integrals"), to: lesson("divergence-theorem"), type: "requires", note: "The flux is a surface integral." },
+  { from: lesson("divergence-curl"), to: lesson("divergence-theorem"), type: "requires", note: "The local density is the divergence." },
+  { from: lesson("fundamental-theorem"), to: lesson("divergence-theorem"), type: "requires", note: "Theme 1: the same cancellation argument again, now with shared interior faces." },
 ];
 
 /* --------------------------------------------------------------------------
@@ -179,7 +194,7 @@ const AM_WITHIN_COURSE_REQUIRES: readonly CurriculumEdge[] = [
  * ------------------------------------------------------------------------ */
 
 const REFRESHER_FOR: readonly CurriculumEdge[] = [
-  { from: "functions-graphs-bridge", to: "limits-continuity", type: "refresher-for", note: "A limit is about a function's values near a point — the one AM lesson marked \"conditional\" rather than hard." },
+  { from: lesson("functions-graphs-bridge"), to: lesson("limits-continuity"), type: "refresher-for", note: "A limit is about a function's values near a point — the one AM lesson marked \"conditional\" rather than hard." },
 ];
 
 /* --------------------------------------------------------------------------
@@ -187,12 +202,12 @@ const REFRESHER_FOR: readonly CurriculumEdge[] = [
  * ------------------------------------------------------------------------ */
 
 const SAME_STRUCTURE_AS: readonly CurriculumEdge[] = [
-  { from: "eigenvectors", to: "convolution-filtering", type: "same-structure-as", note: "Complex sinusoids are the eigenfunctions of LTI systems." },
-  { from: "karatsuba", to: "dft-fft", type: "same-structure-as", note: "The FFT is the same \"do the shared sub-work once\" move." },
-  { from: "power-taylor-series", to: "eulers-formula", type: "same-structure-as", note: "The alternative series derivation, given once the series exist." },
-  { from: "series-convergence", to: "laplace-transform", type: "same-structure-as", note: "The region of convergence is the same kind of object as a radius of convergence." },
-  { from: "fourier-transform", to: "laplace-transform", type: "same-structure-as", note: "Both are Theme-2 operator simplifications — but Laplace is not an orthogonal projection, so this is a comparison, not a dependency." },
-  { from: "stokes-theorem", to: "divergence-theorem", type: "same-structure-as", note: "The third costume of one statement." },
+  { from: lesson("eigenvectors"), to: lesson("convolution-filtering"), type: "same-structure-as", note: "Complex sinusoids are the eigenfunctions of LTI systems." },
+  { from: lesson("karatsuba"), to: lesson("dft-fft"), type: "same-structure-as", note: "The FFT is the same \"do the shared sub-work once\" move." },
+  { from: lesson("power-taylor-series"), to: lesson("eulers-formula"), type: "same-structure-as", note: "The alternative series derivation, given once the series exist." },
+  { from: lesson("series-convergence"), to: lesson("laplace-transform"), type: "same-structure-as", note: "The region of convergence is the same kind of object as a radius of convergence." },
+  { from: lesson("fourier-transform"), to: lesson("laplace-transform"), type: "same-structure-as", note: "Both are Theme-2 operator simplifications — but Laplace is not an orthogonal projection, so this is a comparison, not a dependency." },
+  { from: lesson("stokes-theorem"), to: lesson("divergence-theorem"), type: "same-structure-as", note: "The third costume of one statement." },
 ];
 
 /* --------------------------------------------------------------------------
@@ -200,7 +215,7 @@ const SAME_STRUCTURE_AS: readonly CurriculumEdge[] = [
  * ------------------------------------------------------------------------ */
 
 const RECOMMENDED_BEFORE: readonly CurriculumEdge[] = [
-  { from: "convolution-filtering", to: "transfer-impulse-response", type: "recommended-before", note: "The time-domain half; available if the Fourier branch was taken first." },
+  { from: lesson("convolution-filtering"), to: lesson("transfer-impulse-response"), type: "recommended-before", note: "The time-domain half; available if the Fourier branch was taken first." },
 ];
 
 /* --------------------------------------------------------------------------
@@ -210,12 +225,12 @@ const RECOMMENDED_BEFORE: readonly CurriculumEdge[] = [
  * ------------------------------------------------------------------------ */
 
 const APPLICATION_OF: readonly CurriculumEdge[] = [
-  { from: "least-squares", to: "regression", type: "application-of", note: "Best fit by minimizing squared error is regression." },
-  { from: "singular-value-decomposition", to: "principal-component-analysis", type: "application-of", note: "The directions of greatest variance are the top singular directions." },
-  { from: "singular-value-decomposition", to: "image-compression", type: "application-of", note: "Keeping only the largest singular values approximates a matrix cheaply." },
-  { from: "diagonalization", to: "dynamical-systems", type: "application-of", note: "Long-run behavior of a repeated linear map is read off the eigenbasis." },
-  { from: "eigenvector", to: "dynamical-systems", type: "application-of", note: "Eigen-directions are the modes a repeated map preserves." },
-  { from: "differential-equation", to: "exponential-growth-decay", type: "application-of", note: "y' = ky is the growth/decay equation, solved by separation." },
+  { from: concept("least-squares"), to: concept("regression"), type: "application-of", note: "Best fit by minimizing squared error is regression." },
+  { from: concept("singular-value-decomposition"), to: concept("principal-component-analysis"), type: "application-of", note: "The directions of greatest variance are the top singular directions." },
+  { from: concept("singular-value-decomposition"), to: concept("image-compression"), type: "application-of", note: "Keeping only the largest singular values approximates a matrix cheaply." },
+  { from: concept("diagonalization"), to: concept("dynamical-systems"), type: "application-of", note: "Long-run behavior of a repeated linear map is read off the eigenbasis." },
+  { from: concept("eigenvector"), to: concept("dynamical-systems"), type: "application-of", note: "Eigen-directions are the modes a repeated map preserves." },
+  { from: concept("differential-equation"), to: concept("exponential-growth-decay"), type: "application-of", note: "y' = ky is the growth/decay equation, solved by separation." },
 ];
 
 /* --------------------------------------------------------------------------
@@ -230,245 +245,245 @@ const APPLICATION_OF: readonly CurriculumEdge[] = [
 
 const REVISITED_BY: readonly CurriculumEdge[] = [
   // --- Linear Algebra (from curriculum-architecture.md §3 Reuses column) ---
-  { from: "vector", to: "transformations", type: "revisited-by" },
-  { from: "vector", to: "systems", type: "revisited-by" },
-  { from: "vector", to: "orthogonality", type: "revisited-by" },
-  { from: "vector", to: "least-squares", type: "revisited-by" },
-  { from: "linear-combination", to: "transformations", type: "revisited-by" },
-  { from: "linear-combination", to: "systems", type: "revisited-by" },
-  { from: "linear-combination", to: "subspaces-rank", type: "revisited-by" },
-  { from: "linear-combination", to: "orthogonality", type: "revisited-by" },
-  { from: "span", to: "systems", type: "revisited-by" },
-  { from: "span", to: "subspaces-rank", type: "revisited-by" },
-  { from: "span", to: "least-squares", type: "revisited-by" },
-  { from: "linear-independence", to: "systems", type: "revisited-by" },
-  { from: "linear-independence", to: "subspaces-rank", type: "revisited-by" },
-  { from: "linear-independence", to: "rank-nullity", type: "revisited-by" },
-  { from: "basis", to: "transformations", type: "revisited-by" },
-  { from: "basis", to: "change-of-basis", type: "revisited-by" },
-  { from: "basis", to: "eigenvectors", type: "revisited-by" },
-  { from: "basis", to: "orthogonality", type: "revisited-by" },
-  { from: "coordinates", to: "transformations", type: "revisited-by" },
-  { from: "coordinates", to: "change-of-basis", type: "revisited-by" },
-  { from: "coordinates", to: "eigenvectors", type: "revisited-by" },
-  { from: "linear-transformation", to: "systems", type: "revisited-by" },
-  { from: "linear-transformation", to: "matrix-composition", type: "revisited-by" },
-  { from: "linear-transformation", to: "determinants", type: "revisited-by" },
-  { from: "linear-transformation", to: "change-of-basis", type: "revisited-by" },
-  { from: "linear-transformation", to: "eigenvectors", type: "revisited-by" },
-  { from: "linear-transformation", to: "svd", type: "revisited-by" },
-  { from: "matrix-columns", to: "systems", type: "revisited-by" },
-  { from: "matrix-columns", to: "matrix-composition", type: "revisited-by" },
-  { from: "matrix-columns", to: "subspaces-rank", type: "revisited-by" },
-  { from: "matrix-columns", to: "svd", type: "revisited-by" },
-  { from: "linear-system", to: "elimination", type: "revisited-by" },
-  { from: "linear-system", to: "solution-sets", type: "revisited-by" },
-  { from: "linear-system", to: "matrix-composition", type: "revisited-by" },
-  { from: "linear-system", to: "subspaces-rank", type: "revisited-by" },
-  { from: "linear-system", to: "least-squares", type: "revisited-by" },
-  { from: "row-picture", to: "elimination", type: "revisited-by" },
-  { from: "row-picture", to: "solution-sets", type: "revisited-by" },
-  { from: "column-picture", to: "matrix-composition", type: "revisited-by" },
-  { from: "column-picture", to: "subspaces-rank", type: "revisited-by" },
-  { from: "column-picture", to: "least-squares", type: "revisited-by" },
-  { from: "consistency", to: "solution-sets", type: "revisited-by" },
-  { from: "consistency", to: "subspaces-rank", type: "revisited-by" },
-  { from: "consistency", to: "least-squares", type: "revisited-by" },
-  { from: "elimination", to: "solution-sets", type: "revisited-by" },
-  { from: "elimination", to: "matrix-composition", type: "revisited-by" },
-  { from: "elimination", to: "subspaces-rank", type: "revisited-by" },
-  { from: "echelon-form", to: "solution-sets", type: "revisited-by" },
-  { from: "echelon-form", to: "subspaces-rank", type: "revisited-by" },
-  { from: "pivot", to: "solution-sets", type: "revisited-by" },
-  { from: "pivot", to: "subspaces-rank", type: "revisited-by" },
-  { from: "pivot", to: "rank-nullity", type: "revisited-by" },
-  { from: "free-variable", to: "solution-sets", type: "revisited-by" },
-  { from: "free-variable", to: "subspaces-rank", type: "revisited-by" },
-  { from: "free-variable", to: "rank-nullity", type: "revisited-by" },
-  { from: "solution-set", to: "subspaces-rank", type: "revisited-by" },
-  { from: "solution-set", to: "least-squares", type: "revisited-by" },
-  { from: "homogeneous-system", to: "subspaces-rank", type: "revisited-by" },
-  { from: "homogeneous-system", to: "rank-nullity", type: "revisited-by" },
-  { from: "matrix-composition", to: "determinants", type: "revisited-by" },
-  { from: "matrix-composition", to: "change-of-basis", type: "revisited-by" },
-  { from: "matrix-composition", to: "eigenvectors", type: "revisited-by" },
-  { from: "matrix-composition", to: "svd", type: "revisited-by" },
-  { from: "invertibility", to: "determinants", type: "revisited-by" },
-  { from: "invertibility", to: "subspaces-rank", type: "revisited-by" },
-  { from: "invertibility", to: "rank-nullity", type: "revisited-by" },
-  { from: "determinant", to: "eigenvectors", type: "revisited-by" },
-  { from: "orientation", to: "svd", type: "revisited-by" },
-  { from: "subspace", to: "rank-nullity", type: "revisited-by" },
-  { from: "subspace", to: "change-of-basis", type: "revisited-by" },
-  { from: "subspace", to: "orthogonality", type: "revisited-by" },
-  { from: "subspace", to: "least-squares", type: "revisited-by" },
-  { from: "column-space", to: "rank-nullity", type: "revisited-by" },
-  { from: "column-space", to: "least-squares", type: "revisited-by" },
-  { from: "column-space", to: "svd", type: "revisited-by" },
-  { from: "null-space", to: "rank-nullity", type: "revisited-by" },
-  { from: "rank", to: "rank-nullity", type: "revisited-by" },
-  { from: "rank", to: "least-squares", type: "revisited-by" },
-  { from: "rank", to: "svd", type: "revisited-by" },
-  { from: "nullity", to: "svd", type: "revisited-by" },
-  { from: "rank-nullity", to: "svd", type: "revisited-by" },
-  { from: "dimension", to: "change-of-basis", type: "revisited-by" },
-  { from: "dimension", to: "svd", type: "revisited-by" },
-  { from: "change-of-basis", to: "eigenvectors", type: "revisited-by" },
-  { from: "change-of-basis", to: "orthogonality", type: "revisited-by" },
-  { from: "change-of-basis", to: "svd", type: "revisited-by" },
-  { from: "eigenvector", to: "svd", type: "revisited-by" },
-  { from: "eigenvalue", to: "svd", type: "revisited-by" },
-  { from: "eigenspace", to: "svd", type: "revisited-by" },
-  { from: "diagonalization", to: "svd", type: "revisited-by" },
-  { from: "dot-product", to: "least-squares", type: "revisited-by" },
-  { from: "dot-product", to: "svd", type: "revisited-by" },
-  { from: "orthogonality", to: "least-squares", type: "revisited-by" },
-  { from: "orthogonality", to: "svd", type: "revisited-by" },
-  { from: "projection", to: "least-squares", type: "revisited-by" },
-  { from: "projection", to: "svd", type: "revisited-by" },
-  { from: "orthonormal-basis", to: "svd", type: "revisited-by" },
-  { from: "least-squares", to: "svd", type: "revisited-by" },
+  { from: concept("vector"), to: lesson("transformations"), type: "revisited-by" },
+  { from: concept("vector"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("vector"), to: lesson("orthogonality"), type: "revisited-by" },
+  { from: concept("vector"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("linear-combination"), to: lesson("transformations"), type: "revisited-by" },
+  { from: concept("linear-combination"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("linear-combination"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("linear-combination"), to: lesson("orthogonality"), type: "revisited-by" },
+  { from: concept("span"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("span"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("span"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("linear-independence"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("linear-independence"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("linear-independence"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("basis"), to: lesson("transformations"), type: "revisited-by" },
+  { from: concept("basis"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("basis"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("basis"), to: lesson("orthogonality"), type: "revisited-by" },
+  { from: concept("coordinates"), to: lesson("transformations"), type: "revisited-by" },
+  { from: concept("coordinates"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("coordinates"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("matrix-composition"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("determinants"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("linear-transformation"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("matrix-columns"), to: lesson("systems"), type: "revisited-by" },
+  { from: concept("matrix-columns"), to: lesson("matrix-composition"), type: "revisited-by" },
+  { from: concept("matrix-columns"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("matrix-columns"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("linear-system"), to: lesson("elimination"), type: "revisited-by" },
+  { from: concept("linear-system"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("linear-system"), to: lesson("matrix-composition"), type: "revisited-by" },
+  { from: concept("linear-system"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("linear-system"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("row-picture"), to: lesson("elimination"), type: "revisited-by" },
+  { from: concept("row-picture"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("column-picture"), to: lesson("matrix-composition"), type: "revisited-by" },
+  { from: concept("column-picture"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("column-picture"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("consistency"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("consistency"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("consistency"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("elimination"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("elimination"), to: lesson("matrix-composition"), type: "revisited-by" },
+  { from: concept("elimination"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("echelon-form"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("echelon-form"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("pivot"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("pivot"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("pivot"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("free-variable"), to: lesson("solution-sets"), type: "revisited-by" },
+  { from: concept("free-variable"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("free-variable"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("solution-set"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("solution-set"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("homogeneous-system"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("homogeneous-system"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("matrix-composition"), to: lesson("determinants"), type: "revisited-by" },
+  { from: concept("matrix-composition"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("matrix-composition"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("matrix-composition"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("invertibility"), to: lesson("determinants"), type: "revisited-by" },
+  { from: concept("invertibility"), to: lesson("subspaces-rank"), type: "revisited-by" },
+  { from: concept("invertibility"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("determinant"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("orientation"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("subspace"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("subspace"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("subspace"), to: lesson("orthogonality"), type: "revisited-by" },
+  { from: concept("subspace"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("column-space"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("column-space"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("column-space"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("null-space"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("rank"), to: lesson("rank-nullity"), type: "revisited-by" },
+  { from: concept("rank"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("rank"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("nullity"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("rank-nullity"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("dimension"), to: lesson("change-of-basis"), type: "revisited-by" },
+  { from: concept("dimension"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("change-of-basis"), to: lesson("eigenvectors"), type: "revisited-by" },
+  { from: concept("change-of-basis"), to: lesson("orthogonality"), type: "revisited-by" },
+  { from: concept("change-of-basis"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("eigenvector"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("eigenvalue"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("eigenspace"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("diagonalization"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("dot-product"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("dot-product"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("orthogonality"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("orthogonality"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("projection"), to: lesson("least-squares"), type: "revisited-by" },
+  { from: concept("projection"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("orthonormal-basis"), to: lesson("svd"), type: "revisited-by" },
+  { from: concept("least-squares"), to: lesson("svd"), type: "revisited-by" },
   // --- Applied Mathematics (from curriculum-architecture.md §3 Reused-by column) ---
-  { from: "limit", to: "derivative-local-linearity", type: "revisited-by" },
-  { from: "limit", to: "integral-accumulation", type: "revisited-by" },
-  { from: "limit", to: "improper-integrals", type: "revisited-by" },
-  { from: "limit", to: "sequences-limits", type: "revisited-by" },
-  { from: "continuity", to: "derivative-local-linearity", type: "revisited-by" },
-  { from: "continuity", to: "integral-accumulation", type: "revisited-by" },
-  { from: "continuity", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "modulus-of-continuity", to: "integral-accumulation", type: "revisited-by" },
-  { from: "modulus-of-continuity", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "modulus-of-continuity", to: "multiple-integrals", type: "revisited-by" },
-  { from: "local-linearity", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "local-linearity", to: "chain-rule", type: "revisited-by" },
-  { from: "local-linearity", to: "optimization-approximation", type: "revisited-by" },
-  { from: "local-linearity", to: "power-taylor-series", type: "revisited-by" },
-  { from: "local-linearity", to: "partial-derivatives-gradient", type: "revisited-by" },
-  { from: "derivative", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "derivative", to: "chain-rule", type: "revisited-by" },
-  { from: "derivative", to: "optimization-approximation", type: "revisited-by" },
-  { from: "derivative", to: "first-order-odes", type: "revisited-by" },
-  { from: "derivative", to: "partial-derivatives-gradient", type: "revisited-by" },
-  { from: "riemann-sum", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "riemann-sum", to: "improper-integrals", type: "revisited-by" },
-  { from: "riemann-sum", to: "multiple-integrals", type: "revisited-by" },
-  { from: "riemann-sum", to: "vector-fields-line-integrals", type: "revisited-by" },
-  { from: "definite-integral", to: "fundamental-theorem", type: "revisited-by" },
-  { from: "definite-integral", to: "substitution-parts", type: "revisited-by" },
-  { from: "definite-integral", to: "improper-integrals", type: "revisited-by" },
-  { from: "definite-integral", to: "inner-products-projection", type: "revisited-by" },
-  { from: "definite-integral", to: "fourier-series", type: "revisited-by" },
-  { from: "definite-integral", to: "fourier-transform", type: "revisited-by" },
-  { from: "definite-integral", to: "laplace-transform", type: "revisited-by" },
-  { from: "definite-integral", to: "multiple-integrals", type: "revisited-by" },
-  { from: "definite-integral", to: "vector-fields-line-integrals", type: "revisited-by" },
-  { from: "definite-integral", to: "surface-integrals", type: "revisited-by" },
-  { from: "antiderivative", to: "substitution-parts", type: "revisited-by" },
-  { from: "antiderivative", to: "improper-integrals", type: "revisited-by" },
-  { from: "antiderivative", to: "first-order-odes", type: "revisited-by" },
-  { from: "ftc", to: "substitution-parts", type: "revisited-by" },
-  { from: "ftc", to: "improper-integrals", type: "revisited-by" },
-  { from: "ftc", to: "laplace-transform", type: "revisited-by" },
-  { from: "ftc", to: "greens-theorem", type: "revisited-by" },
-  { from: "ftc", to: "stokes-theorem", type: "revisited-by" },
-  { from: "ftc", to: "divergence-theorem", type: "revisited-by" },
-  { from: "improper-integral", to: "series-convergence", type: "revisited-by" },
-  { from: "improper-integral", to: "fourier-transform", type: "revisited-by" },
-  { from: "improper-integral", to: "laplace-transform", type: "revisited-by" },
-  { from: "sequence-limit", to: "series-convergence", type: "revisited-by" },
-  { from: "sequence-limit", to: "fourier-series", type: "revisited-by" },
-  { from: "series-convergence", to: "power-taylor-series", type: "revisited-by" },
-  { from: "series-convergence", to: "fourier-series", type: "revisited-by" },
-  { from: "series-convergence", to: "laplace-transform", type: "revisited-by" },
-  { from: "radius-of-convergence", to: "eulers-formula", type: "revisited-by" },
-  { from: "radius-of-convergence", to: "laplace-transform", type: "revisited-by" },
-  { from: "complex-multiplication", to: "eulers-formula", type: "revisited-by" },
-  { from: "complex-multiplication", to: "waves-phasors", type: "revisited-by" },
-  { from: "complex-multiplication", to: "fourier-transform", type: "revisited-by" },
-  { from: "complex-multiplication", to: "laplace-transform", type: "revisited-by" },
-  { from: "complex-exponential", to: "waves-phasors", type: "revisited-by" },
-  { from: "complex-exponential", to: "orthogonal-families", type: "revisited-by" },
-  { from: "complex-exponential", to: "fourier-series", type: "revisited-by" },
-  { from: "complex-exponential", to: "fourier-transform", type: "revisited-by" },
-  { from: "complex-exponential", to: "convolution-filtering", type: "revisited-by" },
-  { from: "complex-exponential", to: "sampling-aliasing", type: "revisited-by" },
-  { from: "complex-exponential", to: "dft-fft", type: "revisited-by" },
-  { from: "complex-exponential", to: "second-order-odes", type: "revisited-by" },
-  { from: "complex-exponential", to: "laplace-transform", type: "revisited-by" },
-  { from: "complex-exponential", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "phasor", to: "orthogonal-families", type: "revisited-by" },
-  { from: "phasor", to: "fourier-series", type: "revisited-by" },
-  { from: "phasor", to: "fourier-transform", type: "revisited-by" },
-  { from: "phasor", to: "convolution-filtering", type: "revisited-by" },
-  { from: "phasor", to: "sampling-aliasing", type: "revisited-by" },
-  { from: "phasor", to: "dft-fft", type: "revisited-by" },
-  { from: "phasor", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "phasor", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "inner-product", to: "orthogonal-families", type: "revisited-by" },
-  { from: "inner-product", to: "fourier-series", type: "revisited-by" },
-  { from: "inner-product", to: "fourier-transform", type: "revisited-by" },
-  { from: "orthogonal-projection", to: "orthogonal-families", type: "revisited-by" },
-  { from: "orthogonal-projection", to: "fourier-series", type: "revisited-by" },
-  { from: "orthogonal-family", to: "fourier-series", type: "revisited-by" },
-  { from: "orthogonal-family", to: "fourier-transform", type: "revisited-by" },
-  { from: "orthogonal-family", to: "dft-fft", type: "revisited-by" },
-  { from: "fourier-coefficient", to: "fourier-transform", type: "revisited-by" },
-  { from: "fourier-coefficient", to: "dft-fft", type: "revisited-by" },
-  { from: "mean-square-convergence", to: "fourier-transform", type: "revisited-by" },
-  { from: "mean-square-convergence", to: "sampling-aliasing", type: "revisited-by" },
-  { from: "spectrum", to: "convolution-filtering", type: "revisited-by" },
-  { from: "spectrum", to: "sampling-aliasing", type: "revisited-by" },
-  { from: "spectrum", to: "dft-fft", type: "revisited-by" },
-  { from: "spectrum", to: "laplace-transform", type: "revisited-by" },
-  { from: "spectrum", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "convolution", to: "sampling-aliasing", type: "revisited-by" },
-  { from: "convolution", to: "dft-fft", type: "revisited-by" },
-  { from: "convolution", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "lti-system", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "lti-system", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "sampling", to: "dft-fft", type: "revisited-by" },
-  { from: "aliasing", to: "dft-fft", type: "revisited-by" },
-  { from: "differential-equation", to: "second-order-odes", type: "revisited-by" },
-  { from: "differential-equation", to: "laplace-transform", type: "revisited-by" },
-  { from: "differential-equation", to: "inverse-laplace", type: "revisited-by" },
-  { from: "differential-equation", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "differential-equation", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "characteristic-equation", to: "laplace-transform", type: "revisited-by" },
-  { from: "characteristic-equation", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "laplace-transform", to: "inverse-laplace", type: "revisited-by" },
-  { from: "laplace-transform", to: "transfer-impulse-response", type: "revisited-by" },
-  { from: "laplace-transform", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "region-of-convergence", to: "inverse-laplace", type: "revisited-by" },
-  { from: "region-of-convergence", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "transfer-function", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "impulse-response", to: "circuits-control-stability", type: "revisited-by" },
-  { from: "partial-derivative", to: "multiple-integrals", type: "revisited-by" },
-  { from: "partial-derivative", to: "change-of-variables-jacobian", type: "revisited-by" },
-  { from: "partial-derivative", to: "vector-fields-line-integrals", type: "revisited-by" },
-  { from: "partial-derivative", to: "circulation-flux", type: "revisited-by" },
-  { from: "partial-derivative", to: "divergence-curl", type: "revisited-by" },
-  { from: "gradient", to: "vector-fields-line-integrals", type: "revisited-by" },
-  { from: "gradient", to: "divergence-curl", type: "revisited-by" },
-  { from: "jacobian", to: "surface-integrals", type: "revisited-by" },
-  { from: "vector-field", to: "circulation-flux", type: "revisited-by" },
-  { from: "vector-field", to: "divergence-curl", type: "revisited-by" },
-  { from: "vector-field", to: "greens-theorem", type: "revisited-by" },
-  { from: "vector-field", to: "surface-integrals", type: "revisited-by" },
-  { from: "vector-field", to: "stokes-theorem", type: "revisited-by" },
-  { from: "vector-field", to: "divergence-theorem", type: "revisited-by" },
-  { from: "line-integral", to: "circulation-flux", type: "revisited-by" },
-  { from: "line-integral", to: "greens-theorem", type: "revisited-by" },
-  { from: "line-integral", to: "stokes-theorem", type: "revisited-by" },
-  { from: "circulation", to: "divergence-curl", type: "revisited-by" },
-  { from: "circulation", to: "greens-theorem", type: "revisited-by" },
-  { from: "circulation", to: "stokes-theorem", type: "revisited-by" },
-  { from: "flux", to: "divergence-curl", type: "revisited-by" },
-  { from: "flux", to: "divergence-theorem", type: "revisited-by" },
-  { from: "curl", to: "greens-theorem", type: "revisited-by" },
-  { from: "curl", to: "stokes-theorem", type: "revisited-by" },
-  { from: "divergence", to: "divergence-theorem", type: "revisited-by" },
-  { from: "surface-integral", to: "stokes-theorem", type: "revisited-by" },
-  { from: "surface-integral", to: "divergence-theorem", type: "revisited-by" },
+  { from: concept("limit"), to: lesson("derivative-local-linearity"), type: "revisited-by" },
+  { from: concept("limit"), to: lesson("integral-accumulation"), type: "revisited-by" },
+  { from: concept("limit"), to: lesson("improper-integrals"), type: "revisited-by" },
+  { from: concept("limit"), to: lesson("sequences-limits"), type: "revisited-by" },
+  { from: concept("continuity"), to: lesson("derivative-local-linearity"), type: "revisited-by" },
+  { from: concept("continuity"), to: lesson("integral-accumulation"), type: "revisited-by" },
+  { from: concept("continuity"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("modulus-of-continuity"), to: lesson("integral-accumulation"), type: "revisited-by" },
+  { from: concept("modulus-of-continuity"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("modulus-of-continuity"), to: lesson("multiple-integrals"), type: "revisited-by" },
+  { from: concept("local-linearity"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("local-linearity"), to: lesson("chain-rule"), type: "revisited-by" },
+  { from: concept("local-linearity"), to: lesson("optimization-approximation"), type: "revisited-by" },
+  { from: concept("local-linearity"), to: lesson("power-taylor-series"), type: "revisited-by" },
+  { from: concept("local-linearity"), to: lesson("partial-derivatives-gradient"), type: "revisited-by" },
+  { from: concept("derivative"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("derivative"), to: lesson("chain-rule"), type: "revisited-by" },
+  { from: concept("derivative"), to: lesson("optimization-approximation"), type: "revisited-by" },
+  { from: concept("derivative"), to: lesson("first-order-odes"), type: "revisited-by" },
+  { from: concept("derivative"), to: lesson("partial-derivatives-gradient"), type: "revisited-by" },
+  { from: concept("riemann-sum"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("riemann-sum"), to: lesson("improper-integrals"), type: "revisited-by" },
+  { from: concept("riemann-sum"), to: lesson("multiple-integrals"), type: "revisited-by" },
+  { from: concept("riemann-sum"), to: lesson("vector-fields-line-integrals"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("fundamental-theorem"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("substitution-parts"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("improper-integrals"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("inner-products-projection"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("multiple-integrals"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("vector-fields-line-integrals"), type: "revisited-by" },
+  { from: concept("definite-integral"), to: lesson("surface-integrals"), type: "revisited-by" },
+  { from: concept("antiderivative"), to: lesson("substitution-parts"), type: "revisited-by" },
+  { from: concept("antiderivative"), to: lesson("improper-integrals"), type: "revisited-by" },
+  { from: concept("antiderivative"), to: lesson("first-order-odes"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("substitution-parts"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("improper-integrals"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("greens-theorem"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("ftc"), to: lesson("divergence-theorem"), type: "revisited-by" },
+  { from: concept("improper-integral"), to: lesson("series-convergence"), type: "revisited-by" },
+  { from: concept("improper-integral"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("improper-integral"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("sequence-limit"), to: lesson("series-convergence"), type: "revisited-by" },
+  { from: concept("sequence-limit"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("series-convergence"), to: lesson("power-taylor-series"), type: "revisited-by" },
+  { from: concept("series-convergence"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("series-convergence"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("radius-of-convergence"), to: lesson("eulers-formula"), type: "revisited-by" },
+  { from: concept("radius-of-convergence"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("complex-multiplication"), to: lesson("eulers-formula"), type: "revisited-by" },
+  { from: concept("complex-multiplication"), to: lesson("waves-phasors"), type: "revisited-by" },
+  { from: concept("complex-multiplication"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("complex-multiplication"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("waves-phasors"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("orthogonal-families"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("convolution-filtering"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("sampling-aliasing"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("second-order-odes"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("complex-exponential"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("orthogonal-families"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("convolution-filtering"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("sampling-aliasing"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("phasor"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("inner-product"), to: lesson("orthogonal-families"), type: "revisited-by" },
+  { from: concept("inner-product"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("inner-product"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("orthogonal-projection"), to: lesson("orthogonal-families"), type: "revisited-by" },
+  { from: concept("orthogonal-projection"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("orthogonal-family"), to: lesson("fourier-series"), type: "revisited-by" },
+  { from: concept("orthogonal-family"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("orthogonal-family"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("fourier-coefficient"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("fourier-coefficient"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("mean-square-convergence"), to: lesson("fourier-transform"), type: "revisited-by" },
+  { from: concept("mean-square-convergence"), to: lesson("sampling-aliasing"), type: "revisited-by" },
+  { from: concept("spectrum"), to: lesson("convolution-filtering"), type: "revisited-by" },
+  { from: concept("spectrum"), to: lesson("sampling-aliasing"), type: "revisited-by" },
+  { from: concept("spectrum"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("spectrum"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("spectrum"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("convolution"), to: lesson("sampling-aliasing"), type: "revisited-by" },
+  { from: concept("convolution"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("convolution"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("lti-system"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("lti-system"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("sampling"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("aliasing"), to: lesson("dft-fft"), type: "revisited-by" },
+  { from: concept("differential-equation"), to: lesson("second-order-odes"), type: "revisited-by" },
+  { from: concept("differential-equation"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("differential-equation"), to: lesson("inverse-laplace"), type: "revisited-by" },
+  { from: concept("differential-equation"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("differential-equation"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("characteristic-equation"), to: lesson("laplace-transform"), type: "revisited-by" },
+  { from: concept("characteristic-equation"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("laplace-transform"), to: lesson("inverse-laplace"), type: "revisited-by" },
+  { from: concept("laplace-transform"), to: lesson("transfer-impulse-response"), type: "revisited-by" },
+  { from: concept("laplace-transform"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("region-of-convergence"), to: lesson("inverse-laplace"), type: "revisited-by" },
+  { from: concept("region-of-convergence"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("transfer-function"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("impulse-response"), to: lesson("circuits-control-stability"), type: "revisited-by" },
+  { from: concept("partial-derivative"), to: lesson("multiple-integrals"), type: "revisited-by" },
+  { from: concept("partial-derivative"), to: lesson("change-of-variables-jacobian"), type: "revisited-by" },
+  { from: concept("partial-derivative"), to: lesson("vector-fields-line-integrals"), type: "revisited-by" },
+  { from: concept("partial-derivative"), to: lesson("circulation-flux"), type: "revisited-by" },
+  { from: concept("partial-derivative"), to: lesson("divergence-curl"), type: "revisited-by" },
+  { from: concept("gradient"), to: lesson("vector-fields-line-integrals"), type: "revisited-by" },
+  { from: concept("gradient"), to: lesson("divergence-curl"), type: "revisited-by" },
+  { from: concept("jacobian"), to: lesson("surface-integrals"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("circulation-flux"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("divergence-curl"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("greens-theorem"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("surface-integrals"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("vector-field"), to: lesson("divergence-theorem"), type: "revisited-by" },
+  { from: concept("line-integral"), to: lesson("circulation-flux"), type: "revisited-by" },
+  { from: concept("line-integral"), to: lesson("greens-theorem"), type: "revisited-by" },
+  { from: concept("line-integral"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("circulation"), to: lesson("divergence-curl"), type: "revisited-by" },
+  { from: concept("circulation"), to: lesson("greens-theorem"), type: "revisited-by" },
+  { from: concept("circulation"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("flux"), to: lesson("divergence-curl"), type: "revisited-by" },
+  { from: concept("flux"), to: lesson("divergence-theorem"), type: "revisited-by" },
+  { from: concept("curl"), to: lesson("greens-theorem"), type: "revisited-by" },
+  { from: concept("curl"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("divergence"), to: lesson("divergence-theorem"), type: "revisited-by" },
+  { from: concept("surface-integral"), to: lesson("stokes-theorem"), type: "revisited-by" },
+  { from: concept("surface-integral"), to: lesson("divergence-theorem"), type: "revisited-by" },
 ];
 
 export const CURRICULUM_EDGES: readonly CurriculumEdge[] = [
@@ -482,18 +497,39 @@ export const CURRICULUM_EDGES: readonly CurriculumEdge[] = [
   ...REVISITED_BY,
 ];
 
-export function edgesOfType(type: EdgeType): readonly CurriculumEdge[] {
-  return CURRICULUM_EDGES.filter((edge) => edge.type === type);
+/**
+ * The edge variant a given `EdgeType` names. Querying with a literal type
+ * narrows the result, so `edgesTo(ref, "requires")[0].from` is known to be a
+ * `LessonRef` — the practical payoff of discriminating the union.
+ */
+export type EdgeOfType<T extends EdgeType> = Extract<CurriculumEdge, { type: T }>;
+
+export function edgesOfType<T extends EdgeType>(type: T): readonly EdgeOfType<T>[] {
+  return CURRICULUM_EDGES.filter((edge): edge is EdgeOfType<T> => edge.type === type);
 }
 
-export function edgesFrom(id: string, type?: EdgeType): readonly CurriculumEdge[] {
+/**
+ * Edges leaving `ref`. Callers pass a `concept(...)` or `lesson(...)` ref, not
+ * a bare id, so asking for "edges from elimination" has to say WHICH
+ * elimination — the concept or the lesson.
+ */
+export function edgesFrom<T extends EdgeType = EdgeType>(
+  ref: NodeRef,
+  type?: T,
+): readonly EdgeOfType<T>[] {
   return CURRICULUM_EDGES.filter(
-    (edge) => edge.from === id && (type === undefined || edge.type === type),
+    (edge): edge is EdgeOfType<T> =>
+      sameNode(edge.from, ref) && (type === undefined || edge.type === type),
   );
 }
 
-export function edgesTo(id: string, type?: EdgeType): readonly CurriculumEdge[] {
+/** Edges arriving at `ref`. Same ref-not-bare-id contract as `edgesFrom`. */
+export function edgesTo<T extends EdgeType = EdgeType>(
+  ref: NodeRef,
+  type?: T,
+): readonly EdgeOfType<T>[] {
   return CURRICULUM_EDGES.filter(
-    (edge) => edge.to === id && (type === undefined || edge.type === type),
+    (edge): edge is EdgeOfType<T> =>
+      sameNode(edge.to, ref) && (type === undefined || edge.type === type),
   );
 }

@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-import { edgesTo, edgesFrom } from "../../curriculum/edges";
-import { lessonLabel } from "../../curriculum/labels";
+import { edgesTo, edgesFrom, lesson, type LessonRef } from "../../curriculum/edges";
+import { lessonLabel, type LessonLabel } from "../../curriculum/labels";
 import "./CurriculumConnections.css";
 
-type Row = { id: string; label: ReturnType<typeof lessonLabel> };
+type Row = { id: string; label: LessonLabel };
 
-function resolvedRows(ids: readonly string[]): Row[] {
-  return ids
-    .map((id) => ({ id, label: lessonLabel(id) }))
-    .filter((row): row is { id: string; label: NonNullable<Row["label"]> } => row.label !== undefined);
+/** Drop refs with no authored title rather than inventing one — see labels.ts. */
+function resolvedRows(refs: readonly LessonRef[]): Row[] {
+  return refs.flatMap((ref) => {
+    const label = lessonLabel(ref.id);
+    return label ? [{ id: ref.id, label }] : [];
+  });
 }
 
 function ConnectionList({ label, rows }: { label: string; rows: Row[] }) {
@@ -19,13 +21,13 @@ function ConnectionList({ label, rows }: { label: string; rows: Row[] }) {
       <ul className="curriculum-connections__list">
         {rows.map(({ id, label: entry }) => (
           <li key={id}>
-            {entry!.href ? (
-              <Link className="curriculum-connections__chip" to={entry!.href}>
-                {entry!.title}
+            {entry.href ? (
+              <Link className="curriculum-connections__chip" to={entry.href}>
+                {entry.title}
               </Link>
             ) : (
               <span className="curriculum-connections__chip curriculum-connections__chip--unbuilt">
-                {entry!.title}
+                {entry.title}
               </span>
             )}
           </li>
@@ -47,15 +49,16 @@ function ConnectionList({ label, rows }: { label: string; rows: Row[] }) {
  * guessing, matching `FutureLessonRef`'s existing convention.
  */
 export function CurriculumConnections({ lessonId }: { lessonId: string }) {
-  const buildsOn = resolvedRows(edgesTo(lessonId, "requires").map((e) => e.from));
+  const self = lesson(lessonId);
+  const buildsOn = resolvedRows(edgesTo(self, "requires").map((e) => e.from));
   const recommendedBefore = resolvedRows(
-    edgesTo(lessonId, "recommended-before").map((e) => e.from),
+    edgesTo(self, "recommended-before").map((e) => e.from),
   );
   const alsoSee = resolvedRows([
-    ...edgesFrom(lessonId, "same-structure-as").map((e) => e.to),
-    ...edgesTo(lessonId, "same-structure-as").map((e) => e.from),
+    ...edgesFrom(self, "same-structure-as").map((e) => e.to),
+    ...edgesTo(self, "same-structure-as").map((e) => e.from),
   ]);
-  const refreshers = resolvedRows(edgesTo(lessonId, "refresher-for").map((e) => e.from));
+  const refreshers = resolvedRows(edgesTo(self, "refresher-for").map((e) => e.from));
 
   const hasAny =
     buildsOn.length > 0 ||
@@ -72,7 +75,7 @@ export function CurriculumConnections({ lessonId }: { lessonId: string }) {
           {refreshers.map(({ id, label }, index) => (
             <span key={id}>
               {index > 0 && ", "}
-              {label!.href ? <Link to={label!.href}>{label!.title}</Link> : label!.title}
+              {label.href ? <Link to={label.href}>{label.title}</Link> : label.title}
             </span>
           ))}
         </p>

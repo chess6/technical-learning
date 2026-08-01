@@ -56,6 +56,40 @@ cycle detection naming the offending nodes); `same-structure-as` and
 `multi-domain-architecture.md` §3's existing distinction between hard and
 advisory edges.
 
+### Amendment (2026-08-01) — edge endpoints are typed refs, not bare ids
+
+Shipped first with bare-string endpoints. A review found that unsound: an
+endpoint may name a concept or a lesson, and **eight ids name both**
+(`elimination`, `matrix-composition`, `rank-nullity`, `change-of-basis`,
+`orthogonality`, `least-squares`, `series-convergence`, `laplace-transform`).
+About 15% of endpoints resolved in either space, so no check over bare strings
+could tell a correct endpoint from a wrong one. This was not hypothetical —
+one `application-of` edge shipped with a lesson id where a concept was
+required, unreachable by its only consumer.
+
+An intermediate fix declared the intended namespace per edge type in a lookup
+table and checked against it. That caught ids valid in only one space, but
+still could not decide the eight collisions, and the comment describing it
+overclaimed. It was replaced rather than kept.
+
+Endpoints are now `NodeRef = { kind: "concept" | "lesson"; id }`, built through
+`concept(...)` / `lesson(...)` (which also validate slug syntax via
+`identity.ts`), and `CurriculumEdge` is a **union discriminated on `type`** that
+pins each type's endpoint spaces. This closes the gap at both layers, which
+neither layer does alone:
+
+- **Compile time** — `{ type: "requires", from: concept("rank-nullity"), … }`
+  is a `tsc` error. The ambiguity cannot be authored.
+- **Run time** — `kind` survives into the data, so `graph.test.ts` resolves
+  each endpoint against the catalog its own `kind` names, and graph nodes are
+  keyed `kind:id` so the concept and the lesson `elimination` can never be
+  conflated into one DAG node.
+
+The general rule this sets: **when one string space carries two kinds of
+identity, make the kind part of the value.** A validation table describing
+what the strings are *supposed* to mean is weaker than a type that makes the
+wrong thing unwritable.
+
 ## Consequences
 
 - `src/curriculum/**` is new and depended on by nothing until the map page

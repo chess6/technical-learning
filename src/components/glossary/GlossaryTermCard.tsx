@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import type { GlossaryTerm } from "../../lessons/glossary";
 import { getGlossaryTerm } from "../../lessons/glossary";
 import { getLessonById } from "../../lessons/registry";
-import { edgesFrom } from "../../curriculum/edges";
+import { edgesFrom, concept } from "../../curriculum/edges";
 import { getConcept } from "../../curriculum/concepts";
 import { lessonLabel } from "../../curriculum/labels";
 import { ProseWithMath } from "../lesson/ProseWithMath";
@@ -50,16 +50,20 @@ export function GlossaryTermCard({
     ? getLessonById(term.firstLessonIntroduced)
     : undefined;
 
-  const applications = edgesFrom(term.id, "application-of")
-    .map((edge) => getConcept(edge.to))
-    .filter((concept): concept is NonNullable<typeof concept> => concept !== undefined);
+  // A glossary term id IS a concept id (see glossary.ts), so the term enters
+  // the graph in the concept space — never the lesson space, even for the
+  // eight ids that name both.
+  const self = concept(term.id);
 
-  const revisitedIn = edgesFrom(term.id, "revisited-by")
-    .map((edge) => ({ id: edge.to, label: lessonLabel(edge.to) }))
-    .filter(
-      (row): row is { id: string; label: NonNullable<typeof row.label> } =>
-        row.label !== undefined,
-    );
+  const applications = edgesFrom(self, "application-of").flatMap((edge) => {
+    const target = getConcept(edge.to.id);
+    return target ? [target] : [];
+  });
+
+  const revisitedIn = edgesFrom(self, "revisited-by").flatMap((edge) => {
+    const label = lessonLabel(edge.to.id);
+    return label ? [{ id: edge.to.id as string, label }] : [];
+  });
 
   return (
     <article className="glossary-card" id={term.id} aria-labelledby={`${term.id}-name`}>
