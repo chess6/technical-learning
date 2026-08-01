@@ -317,6 +317,18 @@ Borrowed from and made explicit against
 Only (4) licenses a mastery claim. (1)–(3) may inform recommendations but must
 be **labeled as what they are** in any UI or report.
 
+> **Implementation note (2026-08).** `courses/multi-domain-architecture.md`'s
+> deferred `mastery: number` is not being built. These four states — split
+> into six labelled states (`unseen`, `exposed`, `completed`, `performed`,
+> `retained`, `transferred`) to separate ordinary durable mastery from transfer
+> evidence specifically — are scheduled to be **derived** from the existing,
+> already-persisted `lessonProgress` / `exerciseAttempts` fields, with no new
+> schema version and no single number. See
+> [engineering/decisions/006-mastery-state-derivation.md](../engineering/decisions/006-mastery-state-derivation.md).
+> The course profiles in §3 and the evidence levels in §5 are what an
+> objective's `evidenceLevel` claim (`ADR-004`) is checked against when
+> deriving `performed` / `retained` / `transferred`.
+
 ---
 
 ## 6. Assessment architecture

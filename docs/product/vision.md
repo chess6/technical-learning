@@ -49,6 +49,110 @@ example, and should read like one.
 
 ---
 
+## 0. Pedagogical constitution
+
+The rest of this document is the canon for *explanation craft* — how a single
+lesson teaches. This section sits one level above it: it governs the
+**architecture** the explanation craft operates inside — which experiences exist,
+what an author owes a concept, and what the learner owes back. It does not
+replace §§1–17; it is the frame those principles already assumed. Where a rule
+below and a later section overlap (§5's ten principles, §11's practice
+philosophy, §14's concept graph), this section states the governing form and
+the later section keeps the worked-out detail.
+
+**These are durable principles, not a checklist.** Each is binding; none is a
+box every experience must tick. An experience satisfies this section by
+honoring the principles that apply to it, not by exercising all of them.
+
+1. **The app owns the intellectual architecture; the learner owns the
+   intellectual work.** Sequencing, prerequisites, precise definitions, and
+   honest feedback are the product's job. Predicting, retrieving, deriving,
+   choosing a method, justifying, and transferring are the learner's job, and
+   the product must never do them in the learner's place — a hint ladder that
+   answers before the learner attempts is not help, it is substitution.
+2. **A concept's intellectual character determines its presentation; the
+   presentation must never determine how the concept is taught.** No medium,
+   block, or node type is owed to a concept by convention. A concept that needs
+   no animation gets none; a concept that needs a proof as its main line gets a
+   proof as its main line, not a proof folded into a disclosure.
+3. **Clarity removes irrelevant difficulty; it must never remove productive
+   difficulty.** Scaffolding that eliminates the mathematical work eliminates
+   the learning the work was for (see §5.2's caution against a bare algorithm,
+   and §11's tiered reveals).
+4. **Motivation has no canonical opening move.** A practical problem, a
+   historical conflict, a surprising result, a failed intuition, a structural
+   connection, or an unresolved question can each open an experience. §5.3's
+   "every procedure answers why" is one instance of this, not the only one.
+5. **Representations are coordinated when coordination teaches**, never because
+   an experience owes symbolic + geometric + numeric coverage as a quota
+   (§5.1 already warns against this as a checklist failure).
+6. **Interaction must create an observation, decision, prediction, or
+   experiment that passive presentation could not** (§5.11). An explorer that
+   only replays the guided animation under learner control is not interaction.
+7. **Animate when change over time is the content.** Otherwise a static
+   diagram, an equation sequence, or prose is the honest medium — and is not a
+   lesser choice for being quieter (§5.4, §10).
+8. **Prose is the medium for sustained argument, history, qualification,
+   interpretation, and synthesis.** Motion adds nothing to those and should not
+   be reached for out of habit.
+9. **Proof appears at the maturity where it explains rather than decorates**,
+   and where it appears, it is the main line the learner follows — not
+   ornamentation added after the "real" explanation is done.
+10. **History is used when it explains the mathematics** — why a problem
+    mattered, why a plausible belief failed, why a definition was invented —
+    never as dates, biography, or trivia. The design test: could the belief
+    and its break be stated as `callout` blocks inside the argument (see
+    authoring/lesson-design.md's block palette), rather than filed away in a
+    collapsed `history` depth layer? If not, the history is decoration.
+11. **Scaffolding fades against demonstrated competence, not against position
+    in a sequence.** A learner who has already shown independence on a
+    prerequisite is not owed the coached version of the next idea merely
+    because it comes next.
+12. **Exposure, completion, current performance, and retained mastery are four
+    different states and must never be conflated or reported as one number**
+    (mastery-standard.md §5's anti-completion rule is the enforcement
+    mechanism; this is the pedagogical reason for it).
+13. **Every objective has evidence of mastery somewhere** — possibly outside
+    the experience that introduced it, but always named and always assessed.
+    An objective with no evidence path is a promise, not a taught idea.
+14. **Working experiences are preserved** unless a specific pedagogical or
+    architectural reason requires change. Novelty is not a reason.
+
+**Division of responsibility.** What the product provides and what it requires
+back, side by side:
+
+| The app provides | The learner is required to do |
+| --- | --- |
+| A coherent map of concepts and prerequisites | Predict before seeing a result |
+| A compelling reason for each idea to exist | Attempt before requesting help |
+| Precise definitions, theorems, assumptions, limitations | Retrieve prior knowledge without cues |
+| Coordinated representations, where coordination teaches | Choose a method without being told the topic |
+| Expert models where the learner lacks the schema | Complete missing calculations, derivations, proof steps |
+| Tasks that expose the important misconceptions | Explain and justify |
+| Meaningful feedback and optional hint ladders | Generate examples and counterexamples |
+| Targeted prerequisite remediation, bounded in scope | Diagnose incorrect reasoning |
+| Cross-course connections and callbacks | Solve mixed and cumulative problems |
+| Accessible alternatives preserving the mathematical objective | Transfer ideas into unfamiliar contexts |
+| Assessment that distinguishes recognition from mastery | Monitor and respond to their own gaps |
+
+**Scaffold policy.** The available moves, roughly in order of learner
+independence: expert modeling → self-explanation → partially completed
+examples → hint-supported attempts → independent solutions → mixed transfer.
+This is a *set of available moves*, not a required sequence every concept must
+walk. A novice may still need explicit instruction and a complete worked
+example before independence is productive — withholding that is not rigor, it
+is abandoning principle 3. Scaffolds respond to demonstrated state (principle
+11) and fade; they do not fade on a clock.
+
+**Archetypes are illustrative, never required.** Conceptual discovery,
+historical breakthrough, visual intuition, computational technique, theorem
+development, modeling case study, problem workshop, misconception clinic,
+synthesis, open investigation, and assessment are useful names for shapes an
+experience commonly takes. None is a template. An experience that matches none
+of them is not, for that reason, wrong.
+
+---
+
 ## 1. Purpose, audience, and north star
 
 **Audience.** College-level learners meeting linear algebra as a *conceptual*
@@ -155,17 +259,29 @@ future chapter will have its own.)*
 
 ---
 
-## 4. The learning model (the lesson beats, by pedagogical job)
+## 4. One archetype worked through: the guided-discovery beats
+
+**This section describes one archetype — guided conceptual discovery — not *the*
+learning model.** Per §0 principle 2, the concept's character determines its
+presentation; a historical breakthrough, a proof-development experience, or an
+applied modeling lab draws on a different subset of the same palette and owes
+this table nothing. It is kept because most of today's chapters *are* this
+archetype and the pedagogical job of each beat is worth naming precisely — not
+because every future experience must contain a Watch and an Explore.
 
 The named beats below are a **palette of pedagogical jobs**, not a fixed pipeline.
 authoring/lesson-design.md lists the same blocks (Motivate, Watch, Check, Explore, Practice,
-Summarize, plus formal statements and worked examples) and is explicit that each
-lesson **composes its own order** — blocks repeat, reorder, or drop out per
-lesson, with *guided Watch before learner Explore* as the strong default (see the
-contract-justified exception in product/semantic-page-grammar.md §2). Here each beat is
-described by its *pedagogical job* — what it is responsible for in the learner's
-head — independent of where it lands in any given lesson. (For the UI mechanics
-and the `route` mechanism, see authoring/lesson-design.md.)
+Summarize, plus formal statements and worked examples, and — per the same
+section's extended palette — Callout, Proof, and Composed for archetypes this
+table doesn't cover) and is explicit that each experience **composes its own
+order** — blocks repeat, reorder, drop out, or are drawn from entirely, per
+experience, with *guided Watch before learner Explore* as the strong default
+**when both are present** (see the contract-justified exception in
+product/semantic-page-grammar.md §2). Here each beat is described by its
+*pedagogical job* — what it is responsible for in the learner's head —
+independent of where it lands in any given experience, and independent of
+whether a given experience uses it at all. (For the UI mechanics and the
+`route` mechanism, see authoring/lesson-design.md.)
 
 The **beat name** below is an *internal* pedagogical label, not a visible heading.
 What the learner actually sees (content-specific headings, ToC entries) is owned

@@ -48,13 +48,18 @@ canonical order and no required set: pick the blocks the concept needs, arrange
 them to teach best, repeat a block when it helps, and omit any block a lesson does
 not need.
 
-Available blocks (all optional, any order, repeatable):
+Available blocks (all optional, any order, repeatable). **A guided scene and an
+explorer are not required** — `guidedSceneId` and `explorationId` are optional on
+`LessonDefinition`; an experience whose mathematics needs neither ships without
+them (per vision.md §0 principle 2, the concept's character decides, not
+convention):
 
 - **Motivate** — a concrete question / prediction / puzzle; establish why it
   matters; keep it brief; avoid opening with a formal definition unless necessary.
 - **Watch** — a guided **Motion Canvas** sequence; reveal **one conceptual change
   at a time**; synchronize geometry, notation, highlighting, prose. See
-  [Motion Canvas responsibilities](#motion-canvas-responsibilities).
+  [Motion Canvas responsibilities](#motion-canvas-responsibilities). Omit entirely
+  when nothing in the experience changes over time (vision.md §0 principle 7).
 - **Visual** — the guided clip standing on its own, with sections placed
   separately. A `visual` block may name a `sceneId`, which places **that** clip
   rather than the lesson's own — for a lesson whose mathematics genuinely needs
@@ -70,14 +75,49 @@ Available blocks (all optional, any order, repeatable):
 - **Worked example** — a derivation (a plain equation sequence, optionally an
   embedded clip), placed next to the idea it demonstrates; a lesson may have
   several, spread out.
+- **Callout** — a misconception, historical belief-and-break, or aside placed at
+  a chosen point in the argument via `{ kind: "callout", calloutId }`, rather than
+  left to automatic placement. `AuthoredCallout`'s `belief` / `confront` /
+  `resolve` fields are the same shape a historical breakthrough needs (a
+  plausible belief, what broke it, what replaced it) — an optional `attribution`
+  names who and when, when the callout is historical — this is the mechanism a
+  historical-breakthrough experience (e.g. `karatsuba`) uses to place "the field
+  believed \(O(n^2)\) was optimal" and "three products instead of four" in the
+  argument itself, rather than in a collapsed `history` depth layer.
+- **Proof** — a proof rendered as the main line of the argument (`{ kind: "proof",
+  formalId }`), not folded into a `FormalBlock`'s collapsed justification. Use
+  when the learner's maturity calls for following the proof itself, not a
+  gloss of it (vision.md §0 principle 9).
 - **Check** — a short conceptual checkpoint (predict / interpret, then reveal);
   avoid lengthy computation.
 - **Explore** — a **Mafs** interactive continuing the guided example. See
-  [Mafs responsibilities](#mafs--interactive-renderer-responsibilities).
+  [Mafs responsibilities](#mafs--interactive-renderer-responsibilities). An
+  `explore` block may name an `explorationId` to place a specific explorer,
+  the same way `visual` can name a `sceneId`.
 - **Practice** — deterministic exercises; feedback connects to the geometry and
-  explains *why*.
-- **Summarize** — one concise takeaway; do not repeat the whole lesson.
+  explains *why*. A `practice` block may set `scaffold: "coached" | "independent"`
+  to set the default hint-ladder visibility for that block (see
+  [mastery-standard.md](mastery-standard.md) §3's profiles) — the exercises
+  themselves are unchanged; only the default offer of help differs.
+- **Composed** — the escape hatch for a form the fixed palette doesn't name: a
+  computational laboratory, a simulation, a coached-attempt ladder, an open
+  investigation. `{ kind: "composed", componentId, config? }` resolves through
+  the lazy `blockComponents` registry
+  ([src/components/lesson/blockComponents.tsx](../../src/components/lesson/blockComponents.tsx)),
+  the same pattern as `lessonVisuals.tsx` and `explorations/registry.tsx` — a new
+  form ships as a registered component with typed, JSON-safe `config`, without
+  touching the `RouteBlock` union or `LessonLayout`'s switch. A registered
+  component requires an accessible label and its own tests
+  (`blockComponents.test.ts`); it is not a place to drop unreviewed one-offs.
+- **Summarize** — one concise takeaway; do not repeat the whole lesson. Not every
+  experience needs one — an experience that ends on an open question, an
+  application, or a bridge to a later topic (a `handoff`) does not owe a
+  generic close.
 - **Handoff** — a CTA link onward to another lesson.
+
+None of these six additions (Callout, Proof, Composed, plus the `scaffold` and
+named-target widenings on Practice/Explore) changes any existing lesson: every
+field is optional and every existing route composes exactly as before.
 
 **Visible naming is owned by the page grammar.**
 [semantic-page-grammar §1](../product/semantic-page-grammar.md#1-the-core-shift-infer-the-role-do-not-announce-it)
@@ -98,6 +138,9 @@ only** — not ToC entries and not visible headings (the four naming layers are 
 | Explore | explore |
 | Practice | practice |
 | Worked example | worked |
+| Callout | callout |
+| Proof | proof |
+| Composed | composed |
 | Summarize | summary |
 
 A Summarize block's **visible** heading names the actual synthesis ("The solution
@@ -188,6 +231,12 @@ learner-facing strings in a presentation layer (e.g. `src/lessons/eigenFormat.ts
 > adoption note is archived at
 > [archive/lesson-depth-pattern.md](../archive/lesson-depth-pattern.md); copy it in
 > spirit, not in medium.
+
+**Gate 6 requires a medium justification, not a medium inventory.** State why
+each medium the experience actually uses is the right one for that piece of
+mathematics. A medium the experience omits — no guided scene, no explorer, no
+worked example — needs no defence; the default is no longer "all of the above,"
+so absence is not a gap to explain.
 
 ---
 
@@ -374,11 +423,29 @@ visual exercises offer a numeric/parameter alternative. Reusable patterns:
 
 ## Required lesson artifacts
 
-Every production lesson should include: a typed `LessonDefinition`; shared examples
-by id (no duplicated constants); guided-scene and explorer registration; a
-motivating question; explanation sections; a checkpoint; **at least two**
-exercises; a key takeaway; unit/component + browser tests; and a completed
+Every production lesson should include: a typed `LessonDefinition`; shared
+examples by id (no duplicated constants); **objectives with named evidence** —
+each objective states where it is discharged (`lesson-owned`, `module-owned`, or
+`course-owned`) and, for `lesson-owned` objectives, at least one resolvable
+exercise or item at the claimed evidence level; unit/component + browser tests;
+and a completed
 [quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md).
+
+This replaces a fixed artifact quota ("at least two exercises and a
+checkpoint") with a requirement that means something: an experience with three
+objectives and one exercise fails because two objectives have no evidence, not
+because it undershot a count. An experience genuinely needs no exercises when
+every objective it owns is `module-owned` or `course-owned` — a pure historical
+or synthesis experience can be entirely prose and still pass, as long as its
+objectives are discharged somewhere named.
+
+Guided-scene and explorer registration are **no longer required of every
+lesson** — `guidedSceneId` and `explorationId` are optional (see
+[The block palette](#the-block-palette)). Register them when the experience
+actually uses a `watch`/`visual` or `explore` block; an experience that uses
+neither registers neither. A motivating question, explanation sections, a
+checkpoint, and a key takeaway remain the common case but are not owed by every
+experience — see [Composition & flexibility](#composition--flexibility).
 
 ---
 

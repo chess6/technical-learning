@@ -399,6 +399,23 @@ path is unchanged.
 > app-level brand is product-level (`src/platform/product.ts`) and each course's
 > title/subtitle renders contextually. Steps 4–6 (namespaced routing, the graph
 > model, learner progress) remain deferred exactly as written below.
+>
+> **Status (2026-08-01).** Step 5 is no longer "long-term, only when
+> interlinking is real" — it is **scheduled** as package R4 of the
+> `feature/experience-architecture` redesign (see
+> [engineering/decisions/005-curriculum-graph-as-data.md](../engineering/decisions/005-curriculum-graph-as-data.md)),
+> with a v1 edge set narrower than §3's speculative nine types: six types, each
+> required to have a named consumer (prerequisite diagnosis, review scheduling,
+> pathway filtering, ...) before it ships — see ADR-005 for which three of §3's
+> proposed types are deferred and why. `UnitItem` also grows three new node
+> kinds (`workshop`, `assessment`, `review`) in package R3, ahead of the graph
+> — see
+> [engineering/decisions/004-experience-node-ontology.md](../engineering/decisions/004-experience-node-ontology.md).
+> Step 6 (learner progress + recommendations) is scheduled as R6, built on
+> **derived** mastery state rather than a new persisted field — see
+> [engineering/decisions/006-mastery-state-derivation.md](../engineering/decisions/006-mastery-state-derivation.md).
+> None of R3/R4/R6 is built yet; this note records the schedule, not the
+> shipped state.
 
 ### Step 0 — today (baseline)
 
@@ -444,18 +461,26 @@ progress, `/lesson/:lessonId`. Working, correct for one course.
 - **Test**: legacy `/lesson/:id` redirects to the namespaced URL; namespaced URL
   renders the correct course frame.
 
-### Step 5 — graph model (long-term, only when interlinking is real)
+### Step 5 — graph model *(scheduled: R4 of the experience-architecture redesign)*
 
-- Introduce nodes + typed edges (§3) alongside the tree; the tree becomes a
-  *view* derived from `contains` edges. Add the DAG validator test **first**.
-- Add `LearningPath` records; make Prev/Next path-driven from the active path.
-- Add advisory `cross-domain-connection` edges and a UI affordance ("deeper
-  connection") that is purely optional.
+- Introduce concept nodes + a **six-type** edge set (narrower than §3's
+  speculative nine — see ADR-005) alongside the tree; the tree stays the source
+  of truth for `contains`-shaped structure, the graph adds `requires` /
+  `recommended-before` / `refresher-for` / `revisited-by` / `same-structure-as`
+  / `application-of`. Add the DAG validator test **first**.
+- Add `Pathway` records (the near-term analogue of `LearningPath`); make the
+  curriculum-map page (R5) goal-first and path-driven.
+- Advisory edges (`same-structure-as`, `application-of`) get a UI affordance
+  that is purely optional and never gates access.
 
-### Step 6 — learner progress + recommendations (long-term)
+### Step 6 — learner progress + recommendations *(scheduled: R6)*
 
-- Add `LearnerState` with local-first persistence; compute `nextBestLessons`
-  client-side. Introduce a backend only when progress must sync across devices.
+- Derive mastery **state** (five labelled states, never a single number) from
+  the existing `LearnerState` fields already shipped and unwired
+  (`lessonProgress`, `exerciseAttempts`) rather than adding a new persisted
+  `mastery: number` — see ADR-006. `nextBestLessons`-shaped recommendations
+  read the derived state plus the R4 graph, computed client-side. A backend
+  remains out of scope until progress must sync across devices.
 
 **Touch points summary:** `courseModel.ts` (Steps 1, 3, 5 — it replaced
 `curriculum.ts`), the navigation helpers that moved out of `registry.ts`

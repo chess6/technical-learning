@@ -19,7 +19,7 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
 > [Lesson Mastery Contract](lesson-mastery-contract.md) for this topic first
 > (workflow Gate 5). It fixes the coverage, rigor, practice, transfer, cumulative
 > connections, assessment evidence, and delayed-retention obligations this
-> template then implements. The **Learning objectives** below must be the
+> template then implements. The **Objectives (with evidence)** below must be the
 > contract's operational **outcomes-with-evidence**, not vague goals, and the
 > **Exercises** must match the contract's assessment set. Presentation follows
 > [product/semantic-page-grammar.md](../../product/semantic-page-grammar.md).
@@ -48,15 +48,24 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
 
 ## Route / ids
 - Route: `/lesson/<slug>`
-- `guidedSceneId`: `<...>`
-- `explorationId`: `<...>`
+- `guidedSceneId`: `<...>` (omit if this experience needs no guided scene — see
+  "Choosing the medium" in lesson-design.md; absence needs no justification)
+- `explorationId`: `<...>` (omit if this experience needs no explorer)
+- Medium justification: state *why* each medium used here is the right one for
+  this mathematics. A medium this experience omits needs no defence.
 
 ## Motivating question
 > One concrete question, prediction, or puzzle. Brief.
 
-## Learning objectives
-- [ ] ...
-- [ ] ...
+## Objectives (with evidence)
+> Each objective states where mastery of it is demonstrated. Not every
+> objective is discharged inside this lesson — a `module-owned` objective is
+> resolved by that module's assessment set instead.
+
+| # | Objective | Evidence owner | Evidence level | Discharged by |
+| --- | --- | --- | --- | --- |
+| 1 | ... | lesson-owned \| module-owned \| course-owned | E1–E7 | `<exercise/item id(s)>` |
+| 2 | ... | | | |
 
 ## Shared examples
 > Reference example **ids** from `src/math/examples.ts` / `src/lessons/exampleData.ts`.
@@ -91,8 +100,11 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
 - Clamp ranges: ...
 - Reset behavior: ...
 
-## Exercises (Practice) — at least two
-| # | Objective | Type | Deterministic answer | Feedback (why) |
+## Exercises (Practice)
+> Enough to discharge every `lesson-owned` objective above at its claimed
+> evidence level — not a fixed count. An experience whose objectives are all
+> `module-owned`/`course-owned` may have none.
+| # | Objective # | Type | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- |
 | 1 | ... | ... | ... | ... |
 | 2 | ... | ... | ... | ... |
@@ -149,6 +161,11 @@ Follow [authoring/lesson-design.md](../lesson-design.md) and
       learner-facing location and observable evidence
 - [ ] Intentional `route` composed from the block palette (no mandatory sequence;
       Watch precedes Explore by default — see lesson-design.md); any deviation noted
+- [ ] Every objective names its evidence owner and level, and every
+      `lesson-owned` objective resolves to at least one exercise/item at that
+      level (no orphaned objectives)
+- [ ] Medium justification states why each medium used is the right one;
+      omitted media (no guided scene, no explorer) need no justification
 - [ ] Visible headings + ToC are content-specific, not generic phase names
       ([semantic-page-grammar §1](../../product/semantic-page-grammar.md))
 - [ ] Guided-to-interactive continuity (same example/notation/roles)
