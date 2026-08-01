@@ -21,6 +21,15 @@ test("Karatsuba lesson loads, guided scene steps, explorer and exercises work", 
       name: "Karatsuba: three multiplications instead of four",
     }),
   ).toBeVisible();
+
+  // Historical-breakthrough archetype (R2): the field's belief and its break
+  // are explicit callouts in the argument, not a buried depth layer.
+  const historicalCallout = page.getByTestId("misconception-callout").filter({
+    hasText: "For decades",
+  });
+  await expect(historicalCallout).toContainText("Anatoly Karatsuba, 1960");
+  await expect(historicalCallout).toContainText("Karatsuba & Ofman, 1962");
+
   await expect(page.locator(".guided-scene-player__canvas canvas")).toBeVisible({
     timeout: 15000,
   });
@@ -48,6 +57,16 @@ test("Karatsuba lesson loads, guided scene steps, explorer and exercises work", 
     await page.getByRole("button", { name: beat }).click();
     await expect(stageTitle).toContainText(beat);
   }
+
+  // The "deeper connection" composed block (R2): concrete numbers from the
+  // same karatsubaStep the exercises use, not just prose in a depth layer.
+  const threeEvaluations = page.getByRole("region", {
+    name: "Three evaluations of a quadratic",
+  });
+  await expect(threeEvaluations).toBeVisible();
+  await expect(page.getByTestId("eval-t0")).toContainText("6");
+  await expect(page.getByTestId("eval-t1")).toContainText("12");
+  await expect(page.getByTestId("eval-leading")).toContainText("1");
 
   const explore = page.getByRole("region", {
     name: "Place-value rectangles and three products",

@@ -1587,3 +1587,87 @@ with summaries; `violation-moves-up` is reachable via Prev/Next.
       `sceneTimings.test.ts` monotonicity and `lessonWiring.test.ts`.
 - [x] Player controls (speed/theater/fullscreen/keyboard/chapters) covered by
       `GuidedScenePlayer.test.tsx`; verified at package tier with e2e.
+
+---
+
+## Karatsuba route restructuring — historical-breakthrough archetype (2026-08, R2)
+
+Scope: `src/lessons/karatsuba.ts` route restructuring (package R2 of
+`feature/experience-architecture`, see
+[courses/algorithms/lessons/karatsuba/lesson-plan.md](../courses/algorithms/lessons/karatsuba/lesson-plan.md)'s
+restructuring addendum). No guided scene, explorer, worked example, checkpoint,
+or exercise content changed — only route order, callout placement, one new
+`composed` block, and the closing section. No new math beyond what
+`karatsubaStep` already computes and tests.
+
+### Mathematical review
+
+- [x] `KaratsubaThreeEvaluationsLab` draws zero new arithmetic — every displayed
+      number (`z0`, `z1`, `z2`, `sumProduct`, `product`) comes directly from
+      `karatsubaStep`, the same tested pure function the lesson's exercises and
+      worked examples already use. No new formula was introduced.
+- [x] The reassembly weights ($100$/$10$ shown to the learner) are derived from
+      `step.base ** step.m`, not hardcoded, so the component stays correct if a
+      future config selects a different split point.
+- [x] The approved insight contract's causal chain (`insight.md` §4, items 1–11)
+      is unchanged in content; every obligation in the traceability table still
+      maps to the same content, only at a different route position.
+
+### Visual review
+
+- [x] `MisconceptionCallout`'s new `attribution` line renders only when
+      authored (`formatAttribution`); no existing callout in any of the other
+      18 lessons sets it, so their rendering is byte-identical.
+- [x] The `karatsuba-three-evaluations` composed block has its own accessible
+      region label ("Three evaluations of a quadratic") distinct from the
+      guided scene and explorer regions, so assistive tech never sees two
+      regions announcing the same thing.
+- [x] **Found and fixed by `./check.sh --e2e`:** the `o-n-squared-belief`
+      callout was originally placed directly after `motivate` (which renders
+      no heading), so the page's `h1` jumped straight to the callout's `h3`
+      title — `e2e/course-context-and-grammar.spec.ts`'s heading-hierarchy
+      check caught it. Fixed by moving the callout after the opening `visual`
+      block (which renders an `h2`); the general pitfall — a `callout` block
+      must never be the first heading-bearing route block — is now documented
+      in lesson-design.md's block palette.
+- [x] **Found and fixed by a strengthened component test:** two table cells in
+      `KaratsubaThreeEvaluationsLab` used raw `$z_0$`/`$z_2$` JSX text instead
+      of `ProseWithMath`, leaving literal, un-rendered KaTeX delimiters visible
+      in the DOM (caught visually via a manual browser screenshot, then given
+      a permanent regression test asserting no `$` reaches the rendered text).
+
+### Testing review
+
+- [x] `KaratsubaThreeEvaluationsLab.test.tsx` — 5 tests: accessible label;
+      values match `karatsubaStep` for the default preset; a configured
+      `exampleId` is honored when it resolves; an unresolved `exampleId` falls
+      back safely; switching presets via the picker recomputes correctly.
+- [x] `blockComponents.test.tsx` extended to resolve the real registered entry
+      end-to-end (lazy load + Suspense + accessible label).
+- [x] `MisconceptionCallout.test.tsx` (new) covers belief/confront/resolve
+      labels and the three attribution-formatting branches (both fields, one
+      field, source-only).
+- [x] `toc.ts` gained real cases for `callout`/`proof`/`composed` and a fixed
+      guard for named vs. combined `explore` placement (a latent gap from R1,
+      found while wiring this lesson) — covered by 7 new cases in
+      `toc.test.ts`.
+- [x] `lessonWiring.test.ts` and `contentValidation.test.ts` pass unchanged
+      against the restructured route (both are structural validators, not
+      pinned to Karatsuba's specific shape).
+- [x] Full unit suite green (2139 tests) and `./check.sh --e2e` green with
+      `e2e/lesson-karatsuba.spec.ts` updated to match the new route (see that
+      spec's diff for what changed: the callout/composed-block assertions
+      added, no assertion on the removed summary block since none existed).
+
+### Teaching review
+
+- [x] The historical callout (`o-n-squared-belief`) states only what its cited
+      source supports (Karatsuba & Ofman 1962; the seminar/1960 framing is
+      standard, widely-cited CS history per Knuth TAOCP Vol. 2) — no invented
+      or unverifiable biographical detail.
+- [x] The lesson ends on an explicitly unresolved question (Toom-Cook → FFT),
+      stated as *not built here*, not implied as solved — matches the
+      insight contract's own scope limits (sufficiency shown, optimality and
+      the FFT connection explicitly deferred).
+- [x] `docs/quality/known-failure-modes.md` — no new entry needed; no
+      math/visualization bug was fixed, only route composition.

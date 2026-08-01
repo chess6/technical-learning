@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
 import { getBlockComponent, renderBlockComponent } from "../blockComponents";
 
 /**
@@ -8,15 +9,13 @@ import { getBlockComponent, renderBlockComponent } from "../blockComponents";
  * otherwise it re-fragments the design the way an unconstrained per-lesson
  * block shell would.
  *
- * The registry (`LAZY_BLOCK_COMPONENTS`) is empty in this package (R1); no
- * lesson yet authors a `composed` block. There is deliberately no public
- * "list all ids" export (mirroring `lessonVisuals.tsx` / `explorations/
- * registry.tsx`, neither of which expose one either) — an id a lesson
- * references is proven to resolve via `contentValidation.test.ts`'s route-
- * target check instead. This suite exercises the lookup contract itself; the
- * first real entry (the Karatsuba recurrence-tree lab, package R2) must add
- * its OWN test asserting an accessible label, alongside this file's contract
- * tests — not replace them.
+ * There is deliberately no public "list all ids" export (mirroring
+ * `lessonVisuals.tsx` / `explorations/registry.tsx`, neither of which expose
+ * one either) — an id a lesson references is proven to resolve via
+ * `contentValidation.test.ts`'s route-target check instead. Each registered
+ * component additionally has its OWN dedicated test file asserting its
+ * content (e.g. `KaratsubaThreeEvaluationsLab.test.tsx`); this file's job is
+ * the shared lookup contract every entry must meet.
  */
 describe("blockComponents registry", () => {
   it("getBlockComponent returns undefined for an unregistered id", () => {
@@ -26,5 +25,15 @@ describe("blockComponents registry", () => {
   it("renderBlockComponent returns null for an unregistered id, never throws", () => {
     expect(renderBlockComponent("nonexistent-component-id")).toBeNull();
     expect(renderBlockComponent("nonexistent-component-id", { foo: "bar" })).toBeNull();
+  });
+
+  it("resolves the registered karatsuba-three-evaluations component with an accessible label", async () => {
+    expect(getBlockComponent("karatsuba-three-evaluations")).toBeDefined();
+    const node = renderBlockComponent("karatsuba-three-evaluations");
+    expect(node).not.toBeNull();
+    render(node);
+    expect(
+      await screen.findByRole("region", { name: "Three evaluations of a quadratic" }),
+    ).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { Suspense, type ComponentType, type ReactElement } from "react";
+import { lazy, Suspense, type ComponentType, type ReactElement } from "react";
 import type { JsonObject } from "../../platform/json";
 
 /** Props every registered block component receives. `config` is opaque and
@@ -23,11 +23,20 @@ export type BlockComponentProps = {
  * This is a deliberate bar: an unconstrained escape hatch re-fragments the
  * design the same way an unconstrained per-lesson block shell would.
  *
- * Empty in this package (R1) — no lesson yet authors a `composed` block. The
- * first entry ships with the Karatsuba historical-breakthrough rebuild (R2),
- * which needs a recurrence-tree laboratory no existing block names.
+ * The first entry ships with the Karatsuba historical-breakthrough rebuild
+ * (R2): the "three evaluations of a quadratic" deeper connection (recorded in
+ * the approved insight contract as C2) made concrete with real numbers,
+ * rather than staying prose-only in a depth layer. It draws no new
+ * arithmetic — every value comes from `karatsubaStep`, the same tested pure
+ * function the lesson's exercises and worked examples already use.
  */
-const LAZY_BLOCK_COMPONENTS: Record<string, ComponentType<BlockComponentProps>> = {};
+const LAZY_BLOCK_COMPONENTS: Record<string, ComponentType<BlockComponentProps>> = {
+  "karatsuba-three-evaluations": lazy(() =>
+    import("./KaratsubaThreeEvaluationsLab").then((m) => ({
+      default: m.KaratsubaThreeEvaluationsLab,
+    })),
+  ),
+};
 
 export function getBlockComponent(
   componentId: string,

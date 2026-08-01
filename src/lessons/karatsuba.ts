@@ -3,6 +3,17 @@ import type { LessonDefinition } from "./types";
 /**
  * Karatsuba multiplication lesson. Built around the approved insight contract
  * (docs/courses/algorithms/lessons/karatsuba/insight.md). Numbers live in karatsubaData.ts.
+ *
+ * Restructured (package R2 of feature/experience-architecture) as the
+ * historical-breakthrough archetype: the field's O(n²) belief and Karatsuba's
+ * break of it are explicit `callout` blocks placed in the argument, not
+ * buried in a depth layer; the "three evaluations of a quadratic" deeper
+ * connection (already recorded in the insight contract as C2) is a
+ * `composed` block with real numbers instead of prose-only; and the lesson
+ * ends on the still-open Toom-Cook/FFT question rather than a generic
+ * summary. No mathematical content changed — this is a route restructuring,
+ * not a new insight (see the docs/courses/algorithms/lessons/karatsuba/
+ * insight.md causal chain, which every section below still traces).
  */
 export const karatsubaLesson: LessonDefinition = {
   id: "karatsuba",
@@ -19,21 +30,35 @@ export const karatsubaLesson: LessonDefinition = {
   ],
   motivatingQuestion:
     "$12 \\times 13$ splits into four little products the way FOIL expands $(10+2)(10+3)$. Two of those four are secretly doing the *same* job. Which two — and can we get away with three multiplications instead of four?",
-  // Composed route: set up the two rectangles, check the key insight, work the
-  // examples, then place the cost-curve sections (carrying vs. width, then the
-  // exponent) *after* the worked examples — closer to the practice they feed.
+  // The history is in the argument, not an aside: the O(n²) belief and its
+  // break are `callout` blocks at the point where each is actually felt —
+  // the belief right after the opening visual raises the stakes (placed
+  // after "visual", not directly after "motivate", so the page's first
+  // subheading is the visual's own h2, not the callout's h3 — a callout has
+  // no heading of its own and must never be the first heading-bearing block);
+  // the break right after the weighted rectangle sets up the tension it
+  // resolves. The polynomial "deeper connection" (contract item C2) is a
+  // placed `composed` lab with real numbers, between the two rectangles and
+  // the checkpoint. The lesson ends on the still-open question, not a summary.
   route: [
     { kind: "motivate" },
     { kind: "visual", heading: "Where FOIL's four pieces land" },
+    { kind: "callout", calloutId: "o-n-squared-belief" },
     { kind: "section", sectionId: "weighted-rect" },
+    { kind: "callout", calloutId: "all-four-needed" },
     { kind: "section", sectionId: "aux-rect" },
     { kind: "check" },
+    {
+      kind: "composed",
+      componentId: "karatsuba-three-evaluations",
+      heading: "Three evaluations, one construction",
+    },
     { kind: "worked" },
     { kind: "section", sectionId: "carry-vs-width" },
     { kind: "section", sectionId: "exponent" },
     { kind: "explore", tocLabel: "Place-value rectangles and three products" },
     { kind: "practice" },
-    { kind: "summary", heading: "Three products instead of four" },
+    { kind: "section", sectionId: "open-question" },
   ],
   sections: [
     {
@@ -74,6 +99,11 @@ export const karatsubaLesson: LessonDefinition = {
       id: "exponent",
       title: "Three-way branching bends the exponent",
       body: "Applied recursively, each multiplication spawns three half-size multiplications instead of four. The conceptual recurrence $T(n)=3T(n/2)+\\Theta(n)$ has branching factor 3, so the leaf count is $n^{\\log_2 3}\\approx n^{1.585}$ instead of $n^2$. Saving one of four is an *exponent* change because it recurs — not a constant 25% speedup.",
+    },
+    {
+      id: "open-question",
+      title: "Does the trick stop at three?",
+      body: "Karatsuba's construction is one instance of a larger pattern: evaluate, multiply the evaluations, interpolate. Toom-Cook generalizes it to $k$-way splits — $2k-1$ products instead of $k^2$, at the cost of a larger interpolation. Carried far enough, the same evaluate-multiply-interpolate architecture, with complex roots of unity standing in for the evaluation points, is the Fast Fourier Transform — the route Schönhage and Strassen took in 1971 to reach $O(n\\log n\\log\\log n)$, and Harvey and van der Hoeven took in 2019 to reach the conjectured-optimal $O(n\\log n)$. None of that is built here: this lesson has shown that three multiplications *suffice*, not that they are the fewest *possible* — that is the separate rank question the expert layer above only states. The bridge from \"three products for one split\" to \"a transform for every frequency\" is real, and it is where this story picks back up.",
     },
   ],
   guidedSceneId: "karatsuba-cross-terms",
@@ -123,6 +153,21 @@ export const karatsubaLesson: LessonDefinition = {
     },
   ],
   callouts: [
+    {
+      id: "o-n-squared-belief",
+      title: "For decades, $\\Theta(n^2)$ seemed unavoidable",
+      belief:
+        "Every known method for multiplying two $n$-digit numbers used $\\Theta(n^2)$ single-digit products — splitting the numbers and combining four sub-products, the way FOIL does, seemed to be the only structure available.",
+      confront:
+        "In 1960, Anatoly Karatsuba — then a student attending Andrey Kolmogorov's seminar on computational complexity, where $\\Omega(n^2)$ was conjectured to be a hard lower bound — found that two of those four products are redundant.",
+      resolve:
+        "Three products, not four, suffice. Because the saving recurs at every level of the recursion, it does not just save a constant fraction: it changes the exponent itself, from $2$ to $\\log_2 3\\approx1.585$.",
+      attribution: {
+        who: "Anatoly Karatsuba",
+        when: "1960",
+        source: "Karatsuba & Ofman, 1962",
+      },
+    },
     {
       id: "all-four-needed",
       title: "Not all four products are needed",
@@ -266,6 +311,7 @@ export const karatsubaLesson: LessonDefinition = {
         "Three — a quadratic has three coefficients, so three suitable point-values determine it; Karatsuba's three products are three such evaluations. (Three coefficients alone don't force three multiplications — the construction does.)",
     },
   ],
-  keyTakeaway:
-    "FOIL's two middle pieces share a place-value column, so only their sum is needed; one extra multiplication recovers that sum, and three-way recursion turns $n^2$ into about $n^{1.585}$.",
+  // No `keyTakeaway` / `summary` block: the lesson ends on the open-question
+  // section instead of a generic compression (vision.md §0 principle 14 /
+  // the redesign brief's "experiences may end with an unresolved question").
 };

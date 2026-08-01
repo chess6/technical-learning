@@ -84,6 +84,12 @@ convention):
   historical-breakthrough experience (e.g. `karatsuba`) uses to place "the field
   believed \(O(n^2)\) was optimal" and "three products instead of four" in the
   argument itself, rather than in a collapsed `history` depth layer.
+  **Ordering pitfall:** a `callout` block carries no heading of its own — its
+  `MisconceptionCallout` title renders an `h3`, one level below a `Phase`
+  heading's `h2`. Never place a `callout` as the very first content-bearing
+  route block (before any `section`, `formal`, or headed `visual`/`worked`
+  establishes an `h2`): the page's `h1` would jump straight to that `h3` and
+  fail `e2e/course-context-and-grammar.spec.ts`'s heading-hierarchy check.
 - **Proof** — a proof rendered as the main line of the argument (`{ kind: "proof",
   formalId }`), not folded into a `FormalBlock`'s collapsed justification. Use
   when the learner's maturity calls for following the proof itself, not a

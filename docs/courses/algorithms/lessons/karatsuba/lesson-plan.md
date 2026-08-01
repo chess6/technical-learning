@@ -4,6 +4,50 @@ Implementation-ready plan produced from [authoring/templates/lesson-plan.md](../
 Stage 3 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md). This plan is
 detailed enough to implement directly without another design pass.
 
+> **Restructuring addendum (2026-08, package R2 of `feature/experience-architecture`).**
+> The lesson was rebuilt as the historical-breakthrough archetype without
+> changing any mathematical content or the approved insight below. What
+> changed, all in `route`:
+>
+> - Two `callout` route blocks replace automatic callout placement for the two
+>   most argument-critical misconceptions: a **new** callout `o-n-squared-belief`
+>   (the field's historical belief that $\Theta(n^2)$ was unavoidable, and
+>   Karatsuba's 1960 break of it, with `attribution`) placed right after the
+>   opening visual (not directly after `motivate` — a `callout` has no heading
+>   of its own, so it must follow something that already established an `h2`,
+>   per the ordering pitfall now noted in lesson-design.md's block palette),
+>   and `all-four-needed` placed right after the weighted
+>   rectangle sets up the tension. The other four callouts
+>   (`twenty-five-percent`, `wider-is-carrying`, `corner-squares`,
+>   `three-coeffs-force-three`) are unchanged — still auto-placed beside the
+>   combined worked block.
+> - A **new** `composed` block, `karatsuba-three-evaluations`
+>   (`src/components/lesson/KaratsubaThreeEvaluationsLab.tsx`), makes the
+>   "deeper connection" (contract §10 / brief C2 — three evaluations of a
+>   quadratic) concrete with real numbers from `karatsubaStep`, placed between
+>   the checkpoint and the worked examples. It draws no new arithmetic and
+>   does not replace the existing `connection` depth layer, which stays as
+>   optional collapsed reading.
+> - The closing `summary`/`keyTakeaway` is replaced by a **new** `open-question`
+>   section (Toom-Cook → Schönhage-Strassen → Harvey-van der Hoeven → FFT),
+>   ending the lesson on what is still unresolved rather than a compression.
+> - The six-phase acceptance line below ("Think → Watch → Check → Worked →
+>   Explore → Practice → Remember") is superseded — see
+>   [authoring/lesson-design.md](../../../../authoring/lesson-design.md)'s
+>   block palette; there is no required phase count or order.
+>
+> The insight-traceability table below is unaffected: every obligation still
+> maps to the same learner-facing locations (their route positions moved;
+> their content did not).
+>
+> **Historical source (`o-n-squared-belief` callout).** Karatsuba's 1960
+> discovery, presented in Andrey Kolmogorov's seminar at Moscow State
+> University, is standard, widely-cited computer science history (e.g. Knuth,
+> *The Art of Computer Programming* Vol. 2; Karatsuba & Ofman, "Multiplication
+> of Multidigit Numbers on Automata," *Doklady Akademii Nauk SSSR*, 1962). The
+> callout cites the paper as its `source`; no other biographical or numerical
+> claim beyond what that citation supports is made.
+
 > **Note on scope / architecture.** This repo's `src/math` and shared examples are
 > linear-algebra objects (`Matrix2x2`, `Vector2`). Karatsuba is a different domain,
 > so this lesson introduces its **own** pure-math module (`src/math/karatsuba.ts`)
@@ -267,6 +311,7 @@ Add `hints` and, where useful, `solutionReveal.prose` on exercises 1–2 and 5�
 
 | id | belief | confront | resolve |
 | --- | --- | --- | --- |
+| `o-n-squared-belief` *(new, R2)* | "Every known method used $\Theta(n^2)$ single-digit products — FOIL's four-piece structure seemed unavoidable." | "In 1960, Anatoly Karatsuba, attending Kolmogorov's seminar where $\Omega(n^2)$ was conjectured as a lower bound, found two of the four products redundant." | "Three products suffice, and because the saving recurs, it changes the exponent, from $2$ to $\log_2 3$." Carries `attribution: { who: "Anatoly Karatsuba", when: "1960", source: "Karatsuba & Ofman, 1962" }`. |
 | `all-four-needed` | "You must compute all four products." | "The answer only ever uses $AD$ and $BC$ as the sum $AD+BC$." | "So one product $(A+B)(C+D)$ minus the two known corners recovers exactly what's needed — three products total." |
 | `twenty-five-percent` | "Saving one of four is a 25% speedup." | "Measured cost is $n^{1.585}$ vs $n^2$, far more than 25%." | "Because the saving recurs, the recursion tree has branching factor 3, so it's an exponent change, not a constant." |
 | `wider-is-carrying` | "The extra digit in $A+B$ is fixed by carrying / adds a fourth multiply." | "$A+B$ being wider affects the *operands* of $(A+B)(C+D)$, not the output digits." | "Operand width is absorbed by padding / uneven widths (recurrence $T(n)\le 3T(\lceil n/2\rceil+1)+O(n)$). Output carrying is the separate step that normalizes the $z_i$. Neither adds a multiplication." |
@@ -529,8 +574,11 @@ evidence. Linking the contract is **not** sufficient on its own.
       sentence verbatim).
 - [ ] Insight-traceability table complete — every §4 obligation mapped to a
       location and observable evidence.
-- [ ] Six-phase flow present (Think → Watch → Check → Worked → Explore → Practice →
-      Remember) via `LessonLayout`.
+- [x] ~~Six-phase flow present (Think → Watch → Check → Worked → Explore → Practice →
+      Remember) via `LessonLayout`.~~ Superseded by the R2 restructuring
+      addendum above — the route composes callout/composed/open-question
+      blocks interleaved with the original six, per the block palette
+      (no required phase count or order).
 - [ ] The two rectangles are **visually and textually distinct** everywhere
       (scene, explorer, prose); neither is called "the rectangle" ambiguously.
 - [ ] Output carrying and operand-width growth are handled as **separate** ideas in
