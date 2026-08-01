@@ -7,8 +7,13 @@ import { getMatrixExample } from "../../math";
 import { requireKaratsubaExample } from "../karatsubaData";
 
 describe("lesson wiring for all registered lessons", () => {
-  it("resolves guided scenes for every registered lesson", () => {
+  // `guidedSceneId` is optional (ADR-004): a lesson whose mathematics needs no
+  // guided animation registers none. Every EXISTING lesson still declares one
+  // today, so this loop covers exactly the same 19 lessons it always did —
+  // the assertion only relaxes for a future lesson that legitimately omits it.
+  it("resolves guided scenes for every lesson that declares one", () => {
     for (const lesson of lessons) {
+      if (lesson.guidedSceneId === undefined) continue;
       expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
       expect(getSceneMeta(lesson.guidedSceneId).id).toBe(lesson.guidedSceneId);
       expect(SCENE_META[lesson.guidedSceneId]).toBeDefined();
@@ -26,8 +31,12 @@ describe("lesson wiring for all registered lessons", () => {
     }
   });
 
-  it("resolves explorers for every lesson", () => {
+  // `explorationId` is optional (ADR-004) for the same reason. As above, this
+  // covers all 19 existing lessons unchanged; it only relaxes for a future
+  // lesson that legitimately declares no explorer.
+  it("resolves explorers for every lesson that declares one", () => {
     for (const lesson of lessons) {
+      if (lesson.explorationId === undefined) continue;
       expect(getExplorer(lesson.explorationId)).toBeTypeOf("function");
     }
   });
@@ -141,7 +150,7 @@ describe("lesson wiring for all registered lessons", () => {
 
     // The lesson's own top-of-page clip is the accumulate-then-measure half.
     expect(lesson.guidedSceneId).toBe("ftc-accumulate-then-measure");
-    expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
+    expect(hasGuidedScene(lesson.guidedSceneId!)).toBe(true);
   });
 
   it("Lesson 4 worked computation is a clean ordered equation sequence", () => {
@@ -198,10 +207,10 @@ describe("Chapter 0 opening slice (walking skeleton)", () => {
     const chapter0 = getLessonById("why-linear-algebra")!;
     expect(chapter0.kind).toBe("intro");
     expect(chapter0.guidedSceneId).toBe("why-linear-algebra");
-    expect(hasGuidedScene(chapter0.guidedSceneId)).toBe(true);
-    expect(getSceneMeta(chapter0.guidedSceneId).id).toBe("why-linear-algebra");
+    expect(hasGuidedScene(chapter0.guidedSceneId!)).toBe(true);
+    expect(getSceneMeta(chapter0.guidedSceneId!).id).toBe("why-linear-algebra");
     // Reuses the existing matrix explorer for the bounded interaction.
-    expect(getExplorer(chapter0.explorationId)).toBeTypeOf("function");
+    expect(getExplorer(chapter0.explorationId!)).toBeTypeOf("function");
   });
 
   it("has no Practice or Summary, and asks the central mystery question", () => {
@@ -359,7 +368,7 @@ describe("Lesson 1 expanded to vectors, linear combinations, and basis", () => {
   it("keeps the single guided scene but adds basis + coordinates beats", () => {
     const lesson = getLessonById("vectors")!;
     expect(lesson.guidedSceneId).toBe("vectors-linear-combinations");
-    const meta = getSceneMeta(lesson.guidedSceneId);
+    const meta = getSceneMeta(lesson.guidedSceneId!);
     const stepIds = meta.steps.map((s) => s.id);
     expect(stepIds).toContain("basis");
     expect(stepIds).toContain("coordinates");
@@ -1332,8 +1341,8 @@ describe("Karatsuba lesson wiring", () => {
     const lesson = getLessonById("karatsuba")!;
     expect(lesson.guidedSceneId).toBe("karatsuba-cross-terms");
     expect(lesson.explorationId).toBe("karatsuba-cross-terms");
-    expect(hasGuidedScene(lesson.guidedSceneId)).toBe(true);
-    expect(getExplorer(lesson.explorationId)).toBeTypeOf("function");
+    expect(hasGuidedScene(lesson.guidedSceneId!)).toBe(true);
+    expect(getExplorer(lesson.explorationId!)).toBeTypeOf("function");
     expect(lesson.exampleId).toBeUndefined();
     expect(requireKaratsubaExample("karatsuba-clean").x).toBe(12);
     expect(requireKaratsubaExample("karatsuba-boundary").y).toBe(56);

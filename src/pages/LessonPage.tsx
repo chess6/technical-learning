@@ -21,6 +21,7 @@ import { LessonLayout } from "../components/layout/LessonLayout";
 import { getLessonById } from "../lessons/registry";
 import { getGuidedSceneFactory } from "../guided-scenes/registry";
 import { getExplorer } from "../explorations/registry";
+import type { AuthoredCallout } from "../lessons/types";
 
 const EIGEN_LESSON_ID = "eigenvectors";
 
@@ -44,7 +45,9 @@ export function LessonPage() {
     return <Navigate to="/" replace />;
   }
 
-  const Explorer = getExplorer(lesson.explorationId);
+  const Explorer = lesson.explorationId
+    ? getExplorer(lesson.explorationId)
+    : undefined;
 
   const renderSection = (section: (typeof lesson.sections)[number]) => {
     const visual = section.visualId ? getLessonVisual(section.visualId) : null;
@@ -72,7 +75,7 @@ export function LessonPage() {
     lesson.sections.map((section) => [section.id, renderSection(section)]),
   );
 
-  const callouts = (lesson.callouts ?? []).map((callout) => (
+  const renderCallout = (callout: AuthoredCallout) => (
     <MisconceptionCallout
       key={callout.id}
       title={callout.title}
@@ -90,7 +93,31 @@ export function LessonPage() {
         ) : undefined
       }
     />
-  ));
+  );
+
+  /**
+   * A callout named by an explicit `{ kind: "callout", calloutId }` route
+   * block renders exactly there and nowhere else — it is excluded from the
+   * auto-placement heuristic below so it never doubles up. No existing
+   * lesson uses this yet, so `explicitlyPlacedCalloutIds` is empty and every
+   * callout still falls through to the heuristic exactly as before.
+   */
+  const explicitlyPlacedCalloutIds = new Set(
+    (lesson.route ?? [])
+      .filter((block) => block.kind === "callout")
+      .map((block) => (block.kind === "callout" ? block.calloutId : ""))
+      .filter(Boolean),
+  );
+
+  const calloutsById = new Map(
+    (lesson.callouts ?? [])
+      .filter((callout) => explicitlyPlacedCalloutIds.has(callout.id))
+      .map((callout) => [callout.id, renderCallout(callout)]),
+  );
+
+  const autoCallouts = (lesson.callouts ?? [])
+    .filter((callout) => !explicitlyPlacedCalloutIds.has(callout.id))
+    .map(renderCallout);
 
   /**
    * Misconception callouts ride along with the COMBINED `worked` block. A lesson
@@ -103,6 +130,9 @@ export function LessonPage() {
    * exists. That keeps every existing lesson rendering exactly as before and
    * puts the callouts where a combined block would have put them — after the
    * worked material they respond to.
+   *
+   * Only AUTO-placed callouts (not named by an explicit `callout` block) ride
+   * along this way.
    */
   const workedBlockIds = (lesson.route ?? [])
     .filter((block) => block.kind === "worked")
@@ -113,7 +143,7 @@ export function LessonPage() {
     .reverse()
     .find((id): id is string => id !== undefined);
   const calloutsRideOnWorkedId =
-    !hasCombinedWorkedBlock && callouts.length > 0
+    !hasCombinedWorkedBlock && autoCallouts.length > 0
       ? lastPlacedWorkedId
       : undefined;
 
@@ -130,7 +160,7 @@ export function LessonPage() {
           // so the example's own title is the section heading.
           headingLevel={2}
         />
-        {calloutsRideOnWorkedId === example.id && callouts}
+        {calloutsRideOnWorkedId === example.id && autoCallouts}
       </div>,
     ]),
   );
@@ -174,6 +204,32 @@ export function LessonPage() {
     ),
   );
 
+  /**
+   * Explorers a route places by explorationId, mirroring `visualsBySceneId`
+   * above — for a lesson whose mathematics needs more than one explorer. No
+   * existing lesson uses this yet.
+   */
+  const explorationsById = new Map(
+    (lesson.route ?? []).flatMap((block) => {
+      if (block.kind !== "explore" || !block.explorationId) return [];
+      const explorationId = block.explorationId;
+      const NamedExplorer = getExplorer(explorationId);
+      const node = NamedExplorer ? (
+        <div key={`explore:${lesson.id}:${explorationId}:${resetToken}`}>
+          <NamedExplorer />
+        </div>
+      ) : (
+        <ExplorationPanel
+          key={`explore:${lesson.id}:${explorationId}:${resetToken}`}
+          explorationId={explorationId}
+          title="Interactive exploration"
+          description="This lesson's interactive exploration arrives in a later milestone."
+        />
+      );
+      return [[explorationId, node]] as [string, ReactNode][];
+    }),
+  );
+
   const allExercises = lesson.exercises ?? [];
   const renderExercises = (exerciseIds?: string[]) => {
     const subset = exerciseIds
@@ -196,21 +252,23 @@ export function LessonPage() {
       }
       explanation={lesson.sections.map(renderSection)}
       visualization={
-        isEigenLesson ? (
-          <EigenClipStage
-            key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
-            sceneId={lesson.guidedSceneId}
-            title={`Guided animation: ${lesson.title}`}
-            resetToken={resetToken}
-          />
-        ) : (
-          <GuidedScenePlayer
-            key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
-            sceneId={lesson.guidedSceneId}
-            createEngine={createEngine}
-            title={`Guided animation: ${lesson.title}`}
-          />
-        )
+        lesson.guidedSceneId ? (
+          isEigenLesson ? (
+            <EigenClipStage
+              key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
+              sceneId={lesson.guidedSceneId}
+              title={`Guided animation: ${lesson.title}`}
+              resetToken={resetToken}
+            />
+          ) : (
+            <GuidedScenePlayer
+              key={`${lesson.id}:${lesson.guidedSceneId}:${resetToken}`}
+              sceneId={lesson.guidedSceneId}
+              createEngine={createEngine}
+              title={`Guided animation: ${lesson.title}`}
+            />
+          )
+        ) : undefined
       }
       checkpoint={
         lesson.checkpoint && (
@@ -222,9 +280,10 @@ export function LessonPage() {
       }
       checkpointsById={checkpointsById}
       visualsBySceneId={visualsBySceneId}
+      calloutsById={calloutsById}
       workedExamples={
         (lesson.workedExamples && lesson.workedExamples.length > 0) ||
-        (lesson.callouts && lesson.callouts.length > 0) ? (
+        autoCallouts.length > 0 ? (
           <>
             {lesson.workedExamples && lesson.workedExamples.length > 0 && (
               <WorkedExamplePanel
@@ -233,24 +292,27 @@ export function LessonPage() {
                 enableEigenClipStage={isEigenLesson}
               />
             )}
-            {callouts}
+            {autoCallouts}
           </>
         ) : undefined
       }
       exploration={
-        Explorer ? (
-          <div key={`explore:${lesson.id}:${resetToken}`}>
-            <Explorer />
-          </div>
-        ) : (
-          <ExplorationPanel
-            key={`explore:${lesson.id}:${resetToken}`}
-            explorationId={lesson.explorationId}
-            title="Interactive exploration"
-            description="This lesson's interactive exploration arrives in a later milestone."
-          />
-        )
+        lesson.explorationId ? (
+          Explorer ? (
+            <div key={`explore:${lesson.id}:${resetToken}`}>
+              <Explorer />
+            </div>
+          ) : (
+            <ExplorationPanel
+              key={`explore:${lesson.id}:${resetToken}`}
+              explorationId={lesson.explorationId}
+              title="Interactive exploration"
+              description="This lesson's interactive exploration arrives in a later milestone."
+            />
+          )
+        ) : undefined
       }
+      explorationsById={explorationsById}
       renderExercises={renderExercises}
       summary={
         lesson.keyTakeaway || lesson.structuredSummary ? (

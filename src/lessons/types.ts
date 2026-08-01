@@ -1,5 +1,6 @@
 import type { Vector2 } from "../math/types";
 import type { JsonObject } from "../platform/json";
+import type { EvidenceLevel } from "./evidence";
 
 export type { Matrix2x2, MatrixExample, Vector2 } from "../math/types";
 
@@ -135,6 +136,10 @@ export type WorkedExample = {
 /**
  * Flexible authored callout (misconception, aside, etc.).
  * Not a rigid DSL — slots are optional; authors compose what they need.
+ *
+ * `belief` / `confront` / `resolve` are also the shape a historical
+ * breakthrough needs (a plausible belief, what broke it, what replaced it) —
+ * `attribution` names who and when for a callout used that way.
  */
 export type AuthoredCallout = {
   id: string;
@@ -145,6 +150,8 @@ export type AuthoredCallout = {
   solutionVisualId?: string;
   exampleId?: string;
   highlightLambda?: number;
+  /** Who/when/source, for a callout used as a historical belief-and-break. */
+  attribution?: { who?: string; when?: string; source?: string };
 };
 
 export type LessonSection = {
@@ -189,6 +196,14 @@ export type FormalBlock = {
    * in a collapsed <details>; reference = rendered muted (a named aside).
    */
   visibility: "visible" | "revealed" | "reference";
+  /**
+   * Optional proof body (KaTeX-in-prose), rendered only where a `proof` route
+   * block references this formalId with `variant="proof"` — a plain `formal`
+   * reference to the same block never renders it. This keeps a proof out of
+   * every place its theorem is merely cited, and places it deliberately where
+   * the argument follows it as the main line (vision.md §0 principle 9).
+   */
+  proof?: string;
   layers?: DepthLayer[];
 };
 
@@ -215,8 +230,24 @@ export type FormalBlock = {
  * - `worked` renders all worked examples + callouts, or one worked example by id.
  * - `check` renders the lesson's single `checkpoint`, or a specific one by
  *   `checkpointId` from `checkpoints` — so a lesson can pose more than one check.
+ * - `explore` renders the lesson's combined exploration, or a specific one by
+ *   `explorationId` — mirroring `visual`'s named `sceneId`, for a lesson that
+ *   places more than one explorer.
  * - `practice` renders all exercises, or only `exerciseIds` — so a lesson can
- *   split practice into more than one set placed where each fits.
+ *   split practice into more than one set placed where each fits. `scaffold`
+ *   is authoring data only in this package (see mastery-standard.md §3); it
+ *   sets no runtime behavior until the learner-profile system reads it.
+ * - `callout` renders one `AuthoredCallout` by id, at this exact route
+ *   position — an alternative to automatic placement, for a callout (a
+ *   misconception, or a historical belief-and-break) that belongs at a
+ *   specific point in the argument.
+ * - `proof` renders one `FormalBlock`'s `proof` field, expanded, as the main
+ *   line — never folded into a `formal` block's collapsed justification.
+ * - `composed` renders a registered block component
+ *   (`src/components/lesson/blockComponents.tsx`) by `componentId`, with
+ *   optional JSON-safe `config` — the escape hatch for a form the fixed
+ *   palette doesn't name (a computational lab, a simulation, an open
+ *   investigation), reached the same way a `custom` exercise capability is.
  * - `handoff` renders a CTA link to another lesson.
  */
 
@@ -258,9 +289,21 @@ export type RouteBlock =
   | { kind: "formal"; formalId: string }
   | ({ kind: "check"; checkpointId?: string } & AuthoredBlockLabels)
   | ({ kind: "worked"; workedId?: string } & AuthoredBlockLabels)
-  | ({ kind: "explore" } & AuthoredBlockLabels)
-  | ({ kind: "practice"; exerciseIds?: string[] } & AuthoredBlockLabels)
+  | ({ kind: "explore"; explorationId?: string } & AuthoredBlockLabels)
+  | ({
+      kind: "practice";
+      exerciseIds?: string[];
+      /** Authoring data only — see mastery-standard.md §3; no runtime effect yet. */
+      scaffold?: "coached" | "independent";
+    } & AuthoredBlockLabels)
   | ({ kind: "summary" } & AuthoredBlockLabels)
+  | { kind: "callout"; calloutId: string }
+  | { kind: "proof"; formalId: string }
+  | ({
+      kind: "composed";
+      componentId: string;
+      config?: JsonObject;
+    } & AuthoredBlockLabels)
   | { kind: "handoff"; to: string; label: string };
 
 /**
@@ -305,6 +348,35 @@ export type LessonCheckpoint = {
   solutionReveal?: SolutionReveal;
 };
 
+/**
+ * Where an objective's mastery evidence is demonstrated. A lesson is not
+ * required to discharge every objective it states — a `module-owned` or
+ * `course-owned` objective is resolved by that unit's module set instead (see
+ * ADR-004). This is what makes an experience with zero exercises legitimate:
+ * it has none because none of its objectives are `lesson-owned`, not because
+ * evidence was skipped.
+ */
+export type ObjectiveEvidence = "lesson-owned" | "module-owned" | "course-owned";
+
+/**
+ * One learning objective, with its evidence obligation stated explicitly
+ * rather than left as prose. Replaces "at least two exercises and a
+ * checkpoint" (a quota) with a requirement that means something:
+ * `objectiveCoverage.test.ts` asserts every `lesson-owned` objective resolves
+ * to at least one item (`itemIds`, cross-referenced against
+ * `ITEM_ASSESSMENT_META`) at or above its claimed `evidenceLevel`.
+ */
+export type LessonObjective = {
+  id: string;
+  text: string;
+  /** Resolves in the concept graph (ADR-005) once it exists; unused until R4. */
+  conceptId?: string;
+  evidence: ObjectiveEvidence;
+  evidenceLevel: EvidenceLevel;
+  /** Exercise or module-item ids that discharge this objective. */
+  itemIds?: readonly string[];
+};
+
 export type LessonDefinition = {
   id: string;
   title: string;
@@ -315,7 +387,19 @@ export type LessonDefinition = {
    * an ordinary numbered lesson.
    */
   kind?: "intro" | "lesson";
+  /**
+   * @deprecated Prefer `objectives` (evidence-typed). Kept required until every
+   * lesson migrates — an existing lesson with only `learningObjectives` is
+   * unaffected; `objectives` is additive, not a replacement in this package.
+   */
   learningObjectives: string[];
+  /**
+   * Objectives with named evidence obligations (ADR-004). Optional while
+   * lessons migrate from `learningObjectives`; a lesson that declares
+   * `objectives` is validated by `objectiveCoverage.test.ts`, one that
+   * doesn't yet is not.
+   */
+  objectives?: LessonObjective[];
   /** A prediction/motivating question shown before the explanation. */
   motivatingQuestion?: string;
   sections: LessonSection[];
@@ -328,8 +412,14 @@ export type LessonDefinition = {
   route?: RouteBlock[];
   /** Formal blocks referenced by a `formal` route block. */
   formalBlocks?: FormalBlock[];
-  guidedSceneId: string;
-  explorationId: string;
+  /**
+   * Registered only when the route actually contains a `watch`/`visual`
+   * block. Omit entirely when the experience's mathematics needs no guided
+   * animation (vision.md §0 principle 2) — there is no fallback scene.
+   */
+  guidedSceneId?: string;
+  /** Registered only when the route actually contains an `explore` block. */
+  explorationId?: string;
   /** The lesson's default/single checkpoint (used by a `check` block with no id). */
   checkpoint?: LessonCheckpoint;
   /**

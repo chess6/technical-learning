@@ -17,6 +17,7 @@ import {
 import { LessonHeader } from "../lesson/LessonHeader";
 import { FormalStatement } from "../lesson/FormalStatement";
 import { LessonTableOfContents } from "../lesson/LessonTableOfContents";
+import { renderBlockComponent } from "../lesson/blockComponents";
 import { LessonNavigation } from "./LessonNavigation";
 import "./LessonLayout.css";
 
@@ -42,7 +43,15 @@ type LessonLayoutProps = {
   workedExamples?: ReactNode;
   /** Individual worked examples by id (used by `worked` blocks with a workedId). */
   workedById?: Map<string, ReactNode>;
+  /** The lesson's single/combined exploration (used by an `explore` block with no id). */
   exploration?: ReactNode;
+  /**
+   * Explorers a route places by explorationId, mirroring `visualsBySceneId` —
+   * for a lesson whose mathematics genuinely needs more than one explorer.
+   */
+  explorationsById?: Map<string, ReactNode>;
+  /** Callouts placed explicitly by a `callout` route block, keyed by id. */
+  calloutsById?: Map<string, ReactNode>;
   /**
    * Renders a Practice panel. Called with no arguments for the full exercise set,
    * or with a subset of exercise ids when a lesson splits practice into more
@@ -152,6 +161,9 @@ const BLOCK_PRESENTATION: Record<
   explore: { region: "Exploration", variant: "explore" },
   practice: { region: "Practice", variant: "practice", defaultHeading: "Practice" },
   summary: { region: "Summary", variant: "remember" },
+  callout: { region: "Aside", variant: "callout" },
+  proof: { region: "Proof", variant: "proof" },
+  composed: { region: "Interactive", variant: "composed" },
 };
 
 export function LessonLayout({
@@ -166,6 +178,8 @@ export function LessonLayout({
   workedExamples,
   workedById,
   exploration,
+  explorationsById,
+  calloutsById,
   renderExercises,
   summary,
   onReset,
@@ -226,6 +240,51 @@ export function LessonLayout({
             <div id={anchorId} className="lesson-layout__formal" tabIndex={-1}>
               <FormalStatement block={formal} />
             </div>
+          ),
+        };
+      }
+      case "proof": {
+        const formal = formalById.get(block.formalId);
+        if (!formal || !formal.proof) return null;
+        return {
+          key: anchorId,
+          anchorId,
+          node: (
+            <div id={anchorId} className="lesson-layout__proof" tabIndex={-1}>
+              <FormalStatement block={formal} variant="proof" />
+            </div>
+          ),
+        };
+      }
+      case "callout": {
+        const content = calloutsById?.get(block.calloutId);
+        if (!content) return null;
+        return {
+          key: anchorId,
+          anchorId,
+          node: (
+            <div id={anchorId} className="lesson-layout__callout" tabIndex={-1}>
+              {content}
+            </div>
+          ),
+        };
+      }
+      case "composed": {
+        const content = renderBlockComponent(block.componentId, block.config);
+        if (!content) return null;
+        return {
+          key: anchorId,
+          anchorId,
+          node: (
+            <Phase
+              id={anchorId}
+              kind="composed"
+              heading={block.heading}
+              regionLabel={block.heading ?? BLOCK_PRESENTATION.composed!.region}
+              variant="composed"
+            >
+              {content}
+            </Phase>
           ),
         };
       }
@@ -319,6 +378,12 @@ export function LessonLayout({
           block.kind === "visual" && block.sceneId
             ? visualsBySceneId?.get(block.sceneId) ?? null
             : visualContent;
+        // A named `explorationId` renders THAT explorer or nothing — never the
+        // lesson's combined one — mirroring `visual`'s named-`sceneId` rule.
+        const placedExploration =
+          block.kind === "explore" && block.explorationId
+            ? explorationsById?.get(block.explorationId) ?? null
+            : exploreContent;
         const contentByKind: Partial<Record<RouteBlock["kind"], ReactNode>> = {
           motivate: motivation,
           watch: watchContent,
@@ -333,7 +398,14 @@ export function LessonLayout({
           check: block.kind === "check" && block.checkpointId
             ? checkpointsById?.get(block.checkpointId)
             : checkpoint,
-          explore: exploreContent,
+          explore:
+            block.kind === "explore" && block.explorationId && placedExploration ? (
+              <div className="lesson-layout__explore lesson-layout__explore--standalone">
+                {placedExploration}
+              </div>
+            ) : (
+              placedExploration
+            ),
           summary,
         };
         const content = contentByKind[block.kind];

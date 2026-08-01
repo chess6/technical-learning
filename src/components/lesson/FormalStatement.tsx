@@ -17,8 +17,21 @@ const KIND_LABEL: Record<FormalBlock["kind"], string> = {
  * A labeled, textbook-style formal block (definition / theorem / …). Reuses the
  * `ProseWithMath` + callout visual grammar. `revealed` justification lives in a
  * <details>; `reference` blocks render muted.
+ *
+ * `variant="proof"` (used only by a `proof` route block, never by a plain
+ * `formal` reference to the same block) additionally renders `block.proof`
+ * expanded, as the main line, labeled "Proof." and ending in ∎ — the
+ * semantic-page-grammar.md §5.2 proof treatment. A `formal` reference never
+ * renders `proof`, so a theorem's proof appears exactly where its `proof`
+ * route block places it, never wherever the theorem is merely cited.
  */
-export function FormalStatement({ block }: { block: FormalBlock }) {
+export function FormalStatement({
+  block,
+  variant = "statement",
+}: {
+  block: FormalBlock;
+  variant?: "statement" | "proof";
+}) {
   const kindLabel = KIND_LABEL[block.kind];
   const heading = block.label ? `${kindLabel} — ${block.label}` : kindLabel;
 
@@ -43,6 +56,18 @@ export function FormalStatement({ block }: { block: FormalBlock }) {
         <span className="formal-statement__interpretation-label">In words.</span>{" "}
         <ProseWithMath text={block.interpretation} />
       </p>
+      {variant === "proof" && block.proof && (
+        <div className="formal-statement__proof" aria-label="Proof">
+          <p className="formal-statement__proof-label">Proof.</p>
+          <p className="formal-statement__proof-body">
+            <ProseWithMath text={block.proof} />
+            <span className="formal-statement__proof-end" aria-hidden="true">
+              {" "}
+              ∎
+            </span>
+          </p>
+        </div>
+      )}
       {block.layers && block.layers.length > 0 && (
         <DepthLayerList layers={block.layers} />
       )}

@@ -57,3 +57,25 @@
 .formal-statement .depth-layer {
   margin-top: 0.75rem;
 }
+
+.formal-statement__proof {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.formal-statement__proof-label {
+  margin: 0 0 0.4rem;
+  font-weight: 650;
+  font-style: italic;
+  color: var(--color-text);
+}
+
+.formal-statement__proof-body {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.formal-statement__proof-end {
+  font-weight: 700;
+}

@@ -11,6 +11,7 @@ import type {
 import { hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { hasSolutionVisual } from "../../components/lesson/solutionVisuals/registry";
 import { getLessonVisual } from "../../components/lesson/lessonVisuals";
+import { getBlockComponent } from "../../components/lesson/blockComponents";
 
 /**
  * Content validator (expressed as a test). Runs over ALL registered lessons and
@@ -154,6 +155,7 @@ function collectLessonKatex(lesson: LessonDefinition, out: KatexFailure[]): void
     if (fb.label) collectFromProse(fb.label, `${p}.label`, out);
     collectFromProse(fb.statement, `${p}.statement`, out);
     collectFromProse(fb.interpretation, `${p}.interpretation`, out);
+    if (fb.proof) collectFromProse(fb.proof, `${p}.proof`, out);
     collectFromLayers(fb.layers, p, out);
   }
 
@@ -227,6 +229,9 @@ describe("content validation across all registered lessons", () => {
   it("resolves implicit route targets and handoff destinations", () => {
     const problems: string[] = [];
     for (const lesson of lessons) {
+      const calloutIds = new Set((lesson.callouts ?? []).map((c) => c.id));
+      const formalIds = new Set((lesson.formalBlocks ?? []).map((f) => f.id));
+      const formalById = new Map((lesson.formalBlocks ?? []).map((f) => [f.id, f]));
       for (const [i, block] of (lesson.route ?? []).entries()) {
         const where = `${lesson.id}.route[${i}]`;
         if (block.kind === "worked" && !block.workedId) {
@@ -240,6 +245,22 @@ describe("content validation across all registered lessons", () => {
         } else if (block.kind === "practice" && !block.exerciseIds) {
           if ((lesson.exercises ?? []).length === 0) {
             problems.push(`${where}: "practice" block but the lesson has no exercises`);
+          }
+        } else if (block.kind === "callout") {
+          if (!calloutIds.has(block.calloutId)) {
+            problems.push(`${where}: "callout" block references unknown calloutId "${block.calloutId}"`);
+          }
+        } else if (block.kind === "proof") {
+          if (!formalIds.has(block.formalId)) {
+            problems.push(`${where}: "proof" block references unknown formalId "${block.formalId}"`);
+          } else if (!formalById.get(block.formalId)?.proof) {
+            problems.push(
+              `${where}: "proof" block references formalId "${block.formalId}" which has no proof field`,
+            );
+          }
+        } else if (block.kind === "composed") {
+          if (!getBlockComponent(block.componentId)) {
+            problems.push(`${where}: "composed" block references unregistered componentId "${block.componentId}"`);
           }
         } else if (block.kind === "handoff") {
           // `to` is a route path like "/lesson/vectors"; resolve the lesson id.

@@ -48,4 +48,30 @@ describe("FormalStatement", () => {
       screen.getByTestId("formal-cor").getAttribute("data-visibility"),
     ).toBe("reference");
   });
+
+  it("never renders `proof` under the default statement variant", () => {
+    const withProof: FormalBlock = {
+      ...theorem,
+      id: "thm-with-proof",
+      proof: "Suppose $a\\mathbf{v}+b\\mathbf{w}=a'\\mathbf{v}+b'\\mathbf{w}$.",
+    };
+    render(<FormalStatement block={withProof} />);
+    expect(screen.queryByText("Proof.")).toBeNull();
+  });
+
+  it("renders `proof` expanded, labeled, and terminated with ∎ under variant=\"proof\"", () => {
+    const withProof: FormalBlock = {
+      ...theorem,
+      id: "thm-with-proof-2",
+      proof: "Suppose $a\\mathbf{v}+b\\mathbf{w}=a'\\mathbf{v}+b'\\mathbf{w}$.",
+    };
+    const { container } = render(<FormalStatement block={withProof} variant="proof" />);
+    expect(screen.getByText("Proof.")).toBeTruthy();
+    expect(container.querySelector(".formal-statement__proof-end")?.textContent).toMatch(/∎/);
+  });
+
+  it("renders nothing extra under variant=\"proof\" when the block has no proof field", () => {
+    render(<FormalStatement block={theorem} variant="proof" />);
+    expect(screen.queryByText("Proof.")).toBeNull();
+  });
 });
