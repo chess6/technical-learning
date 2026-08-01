@@ -39,8 +39,15 @@ for Package A's approval record — do not duplicate it here.
 - Task routing: `AGENTS.md`
 
 ## Branch / worktree
-`master`, no worktrees in play. `CLAUDE.md` still has a pre-existing
-uncommitted "Session continuation" diff from an earlier session (origin
+`feature/l5-chain-rule`, checked out at
+`/home/thomas/Dev/technical-learning-l5-chain-rule`. `master` is back at
+`888c0a0` (the pre-session state) — all ten of this session's commits
+(Package A approval, the Gate 9 build, the L2 stale-reference fix, and the L5
+Mode B docs) live only on this branch until reviewed and merged. Per
+AGENTS.md's package/branch discipline ("one package, one branch/worktree"),
+continue implementation work here, not on `master`, and announce this branch
+if picking the work back up in a new session. `CLAUDE.md` still has a
+pre-existing "Session continuation" diff from an earlier session (origin
 unknown) — still undecided: commit, keep editing, or discard.
 
 ## Test results
