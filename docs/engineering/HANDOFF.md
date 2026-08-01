@@ -3,11 +3,11 @@
 ## Active goal
 Package A (`calculus-foundations`) is **approved** (repository owner,
 2026-07-31), including a narrow E2E waiver. Three things approved together
-are now **built and verified** on this branch: (1) the Gate 9 assessment for
-`calculus-foundations` (specified and built in code, not administered); (2)
-Mode B docs for L5 `chain-rule` through `Gate result: PASS`; (3) L5's Mode C
-lesson code. What remains: a review pass over this new work, then merging
-this branch.
+are **built, independently reviewed, and re-verified** on this branch: (1)
+the Gate 9 assessment for `calculus-foundations` (13 items, built in code,
+not administered); (2) Mode B docs for L5 `chain-rule` through
+`Gate result: PASS`; (3) L5's Mode C lesson code. What remains: a
+domain-owner's sign-off and merging this branch.
 
 ## Scope
 In scope: Gate 9 code implementation, L5's four Mode B docs, L5 lesson code,
@@ -30,24 +30,58 @@ Opus-authored.
   See `modules/calculus-foundations/assessment-plan.md`.
 - L5 `chain-rule`: insight reached `Gate result: PASS`
   (`lessons/05-chain-rule/insight.md`); lesson code built (guided scene,
-  explorer, 7 exercises, courseModel/registry wiring). Gate 8 not yet
+  explorer, 8 exercises, courseModel/registry wiring). Gate 8 not yet
   attempted as a formal record — see `mastery-contract.md` §6's obligation
   checklist, still unticked pending a reviewer distinct from this agent
   lineage, matching Package A's own self-certification discipline.
-- **Full verification, this session, on `feature/l5-chain-rule`:**
-  `./check.sh` — 2239/2239 tests, lint and typecheck clean.
-  `./check.sh --e2e` — 201 passed; 4 failures, **all pre-existing and
+- **Independent review, this session:** a code-reviewer agent reviewed the
+  full range (`2e78ae4~1..HEAD`) and reported 16 confirmed findings, ranked.
+  All 16 fixed, most severe first:
+  - **A real gap in the chain-rule derivation itself** (C7 claimed
+    "g continuous + E_f(k)/k→0 ⇒ E_f(k(h))/h→0", but that composition alone
+    only gives E_f(k(h))/k(h)→0 — the missing factor, k(h)/h→g'(a), needs
+    g's *differentiability*, not just continuity; a concrete counterexample
+    confirmed the gap was real). Fixed in `insight.md` (C7 and Audit A, which
+    had certified the flawed version as "valid"), `chainRule.ts`'s prose, and
+    `mastery-contract.md`. This is exactly the class of error
+    self-certification cannot catch — recorded honestly in the Review
+    signoff.
+  - Two rendering bugs (unbalanced `$` delimiters inverting KaTeX rendering
+    in two exercise explanations).
+  - Stale router docs (AGENTS.md, curriculum-architecture.md,
+    benchmark-matrix.md still said Gate 9 unbuilt / Package B not started —
+    exactly the collision AGENTS.md's "claim a package" step exists to
+    prevent).
+  - A spoiled prediction beat (the guided scene revealed f'(2) a full beat
+    before asking the learner to predict it) — fixed by deferring the reveal
+    to `zoomOuter`.
+  - A false "fresh fixture" claim (f(u)=u³ is L2/L4's `ex-cubic-inflection`
+    under a different variable name) — corrected the claim rather than
+    changing the worked example and cascading through every hand-derived
+    number.
+  - A missing item for M2 (the lesson's central misconception — "the chain
+    rule is memorized, not derived" — had no item requiring the derivation
+    *produced*, only applied). Added `chain-derive-fresh` (self-check,
+    human-scored, E4) and reconciled exercise-tier counts across every doc
+    and the grading-contract test (now 2 check / 3 drill / 3 transfer / 8
+    items total, recall capped at two).
+  - A weakened cue-lint inverse guard (checked "any of 17 shared patterns,"
+    which an unrelated cue word could satisfy without an item naming its own
+    method) — added per-item `requiredPostCommitmentCues` to
+    `assessmentManifest.ts`.
+  - Several smaller doc-overclaims and a dead `exampleId` reference.
+  Full details in commit messages on this branch (search `git log` for
+  "independent-review" / "finding #").
+- **Full verification, this session, on `feature/l5-chain-rule`, re-run after
+  the review-fix pass:** `./check.sh` — 2241/2241 tests, lint and typecheck
+  clean. `./check.sh --e2e` — 200 passed; 5 failures, **all pre-existing and
   unrelated to this branch's changes**: three in `benchmark-lab.spec.ts`
-  (zero diff between this branch and the pre-session state in
-  `src/benchmark-lab/` or that spec — confirmed via `git diff`) and
-  `ftc-accumulate-then-measure`'s `seek-determinism` gate (the exact,
-  already-waived Package A failure — see ledger §7). `solution-sets`
-  (the other known, intermittent failure) did not trigger this run.
-  One real defect was found and fixed during this pass: the `chain-rule`
-  scene's `feedThrough.connect`/`zoomInner.reveal`/`zoomOuter.reveal` beats
-  were misclassified as `"geometry"` in `sceneBeatIntents.json` when they are
-  opacity-only reveals (`"transition"`) — caught by the hard-gates spec,
-  fixed, re-verified.
+  (zero diff between this branch and the pre-session state — confirmed via
+  `git diff`), `ftc-accumulate-then-measure`'s `seek-determinism` gate (the
+  exact, already-waived Package A failure — see ledger §7), and
+  `solution-sets` (the other known, intermittent failure). `chain-rule`
+  itself is clean, including its hard gates, re-verified directly after the
+  predict-beat fix.
 - Manual browser verification (Playwright MCP, dev server): the guided scene
   renders both panels, labels, the connector, tangent lines, and every
   equation correctly across several chapters; the explorer's chain-rule value
@@ -81,13 +115,13 @@ continuation" diff from an earlier session (origin unknown) — still
 undecided: commit, keep editing, or discard.
 
 ## Next actions
-1. Run a review pass over this branch's new work (Gate 9 code + L5) and fix
-   what it finds — the next step in this session.
-2. Get an independent reviewer or the user to formally accept L5's Gate 8 —
-   not self-certifiable from this agent lineage (same ADR-002 constraint as
-   Package A's semantic review).
-3. Decide whether/when to merge `feature/l5-chain-rule` into `master`.
-4. After that: the Gate 9 items remain unadministered (tracked in the
+1. Get an independent reviewer or the user to formally accept L5's Gate 8 and
+   sign off the insight contract's `PASS` — not self-certifiable from this
+   agent lineage (same ADR-002 constraint as Package A's own semantic
+   review). One independent review has already run and is reflected in the
+   fixes above; a domain-owner's sign-off is the remaining, different thing.
+2. Decide whether/when to merge `feature/l5-chain-rule` into `master`.
+3. After that: the Gate 9 items remain unadministered (tracked in the
    assessment plan, not a blocker to merging); Package B's remaining lessons
    (L6–L8, currently `future` stubs in `courseModel.ts`) are the next Mode B
    work once L5 is accepted.
