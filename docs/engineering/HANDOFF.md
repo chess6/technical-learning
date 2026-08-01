@@ -97,9 +97,30 @@ edge-consumer test). Real consumers: `CurriculumConnections` (new, wired into
 `refresher-for`; `GlossaryTermCard` extended for `application-of`/`revisited-by`.
 `GlossaryTerm.prerequisites`/`relatedTerms` migrated to `ConceptId`; the
 `independence`/`linear-independence` drift is fixed, with a generic
-drift-detection test guarding against the same class recurring. Not yet done:
-independent review (see above); R5's `/map` page is where these edges get a
-dedicated UI beyond the lesson/glossary footnotes shipped here.
+drift-detection test guarding against the same class recurring.
+
+**A self-review of R4 found and fixed five more real defects**, same
+discipline as the R0–R3 pass above: `edges.ts` mixed concept ids and lesson
+ids in one string space with no declared convention, and the referential
+test accepted either — now `EDGE_NAMESPACE` declares which namespace each
+`EdgeType` uses per side, and the test asserts that specifically (proven to
+bite: reverted the fix, confirmed a precise failure, restored it). One
+`application-of` edge used a lesson id where it needed a concept id (now
+`differential-equation`, not `first-order-odes`). `ConceptNode.blurb` had
+**zero consumers while its own doc comment claimed one** — the exact
+ADR-006 defect class from the R0–R3 pass, recommitted by not checking
+carefully enough the first time — now wired as a real `title` tooltip on
+`GlossaryTermCard`'s Applications chips, with a test file (there was none).
+13 blurbs had literal backticks/unrendered LaTeX that would've shown raw the
+moment a consumer existed; 5 auto-generated titles read wrong. All fixed.
+**Recorded, not fixed:** `application-of` edges sourced from Applied
+Mathematics concepts are unreachable via `GlossaryTermCard` because
+`glossary.ts` only covers Linear Algebra/Algorithms terms — a
+glossary-coverage gap, not a graph bug.
+
+Not yet done: independent review (see above); R5's `/map` page is where
+these edges get a dedicated UI beyond the lesson/glossary footnotes shipped
+here.
 
 **Not started:** R5 (course split + `/map`), R6 (mastery derivation), R7+
 (content expansion). Per the plan, R5 should not begin before the review gate
