@@ -13,9 +13,19 @@
  * Which namespace each `EdgeType` uses on each side is NOT ad hoc — it is
  * declared exactly once in `EDGE_NAMESPACE` below, and
  * `src/curriculum/__tests__/graph.test.ts` asserts every edge's endpoints
- * resolve in THAT namespace specifically (not "either namespace"), so a
- * `requires` edge naming a concept id, or a `revisited-by` edge whose `from`
- * isn't a concept, fails loudly instead of silently passing a looser check.
+ * resolve in THAT namespace specifically rather than in "either namespace."
+ *
+ * KNOWN LIMIT — this check is necessary, not sufficient. Eight ids are valid
+ * in BOTH namespaces (`elimination`, `matrix-composition`, `rank-nullity`,
+ * `change-of-basis`, `orthogonality`, `least-squares`, `series-convergence`,
+ * `laplace-transform` each name a concept AND a lesson), so roughly 15% of
+ * endpoints resolve either way and the test cannot tell a correct one from a
+ * wrong one. It catches an id that is only valid in the *other* space; it
+ * does not catch one of those eight used with the wrong meaning. Closing that
+ * gap needs structurally typed endpoints (`{ kind: "concept", id }`) or
+ * disambiguating renames — the LA catalog already set the rename precedent by
+ * spelling `linear-independence` rather than `independence`. Both are
+ * curriculum-owner decisions, so neither is taken here.
  *
  * Sources:
  * - `docs/courses/linear-algebra/curriculum-architecture.md` §2.1 (25 hard

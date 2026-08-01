@@ -7,11 +7,19 @@
  * truth. See `docs/engineering/decisions/005-curriculum-graph-as-data.md`.
  *
  * `blurb` is plain descriptive text (like `GlossaryTerm.definition` in intent,
- * but never routed through `ProseWithMath`): `GlossaryTermCard`'s
- * "Applications" section renders it as a native HTML `title` tooltip on the
- * target concept's chip. Because it is plain text, not markup, it carries no
- * `$...$` KaTeX and no `**bold**` markers — a blurb is written to read
- * correctly as-is, not to be parsed.
+ * but never routed through `ProseWithMath`). Because it is plain text, not
+ * markup, it carries no `$...$` KaTeX and no `**bold**` markers — a blurb is
+ * written to read correctly as-is, not to be parsed.
+ *
+ * Consumption is currently THIN, and saying so is the point: `GlossaryTermCard`
+ * renders it as a native HTML `title` tooltip on the "Applications" chips,
+ * which today is exactly ONE chip in the whole app (`eigenvector` →
+ * Dynamical Systems), and a `title` tooltip is not keyboard-reachable and is
+ * unreliable for screen readers. So `blurb` is best understood as data staged
+ * for R5's `/map` focus mode — where a concept needs a real one-line
+ * description in visible text — not as a field that earns its keep today.
+ * If R5 slips, the honest options are to give it a visible-text consumer or
+ * to drop it; leaving 88 blurbs behind one hover target is not a third option.
  */
 
 import { asConceptId, type ConceptId } from "../platform/identity";
@@ -47,7 +55,7 @@ const LINEAR_ALGEBRA_CONCEPTS: readonly ConceptNode[] = [
   { id: asConceptId("free-variable"), title: "Free Variable", blurb: "An unpivoted variable parameterizing the solution set.", introducedBy: "elimination" },
   { id: asConceptId("solution-set"), title: "Solution Set", blurb: "Particular solution + all null directions; affine vs linear.", introducedBy: "solution-sets" },
   { id: asConceptId("homogeneous-system"), title: "Homogeneous System", blurb: "Ax = 0; its solutions are the null directions.", introducedBy: "solution-sets" },
-  { id: asConceptId("matrix-composition"), title: "Matrix Composition", blurb: "\"Apply B then A\" is a new map `AB`; order matters.", introducedBy: "matrix-composition" },
+  { id: asConceptId("matrix-composition"), title: "Matrix Composition", blurb: "\"Apply B then A\" is a new map AB; order matters.", introducedBy: "matrix-composition" },
   { id: asConceptId("invertibility"), title: "Invertibility", blurb: "A map can be undone exactly when nothing collapses.", introducedBy: "matrix-composition" },
   { id: asConceptId("determinant"), title: "Determinant", blurb: "Signed area/volume scale; a detector of invertibility (zero = collapse).", introducedBy: "determinants" },
   { id: asConceptId("orientation"), title: "Orientation", blurb: "The sign of the determinant — handedness, not negative area.", introducedBy: "determinants" },
