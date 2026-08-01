@@ -103,17 +103,17 @@ if (Math.abs(numericDerivative(ZERO_G, ZERO_A)) > 1e-4) {
 export const chainRuleLesson: LessonDefinition = {
   id: "chain-rule",
   title: "The Chain Rule: Rates Compose",
-  subtitle: "Substitute one local-linear model into the other — never divide by Δu to get there",
+  subtitle: "Substitute one local-linear model into the other — never divide by $\\Delta u$ to get there",
   learningObjectives: [
     "Decompose a fresh composite and differentiate it via the chain rule",
-    "Predict (f∘g)'(a) at a point where g'(a) = 0, without full computation",
-    "Identify exactly what fails in \"cancel the du's\" when Δu = 0",
+    "Predict $(f\\circ g)'(a)$ at a point where $g'(a) = 0$, without full computation",
+    "Identify exactly what fails in \"cancel the du's\" when $\\Delta u = 0$",
     "Verify a chain-rule result by an independent direct-expansion route",
     "Select the efficient route — chain rule or direct expansion — on a fresh composite",
     "State what does and does not follow when the inner function has a corner",
   ],
   motivatingQuestion:
-    "You already know d(x²)/dx and you already know d(u³)/du. What is d((x²+1)³)/dx — and why isn't the answer just \"multiply the two rules you already know\"?",
+    "You already know $\\frac{d(x^2)}{dx}$ and you already know $\\frac{d(u^3)}{du}$. What is $\\frac{d\\bigl((x^2+1)^3\\bigr)}{dx}$ — and why isn't the answer just \"multiply the two rules you already know\"?",
 
   guidedSceneId: "chain-rule",
   explorationId: "chain-rule",
@@ -148,7 +148,7 @@ export const chainRuleLesson: LessonDefinition = {
       body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nSubstitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and $f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + E_f(k(h))$. This identity holds for **every** $h$ — including any $h$ where $k(h) = 0$, because then the last term is $E_f(0) = 0$ automatically. Nothing was ever divided by $\\Delta u$; it was only ever substituted. Divide the whole identity by $h$ and let $h \\to 0$: the middle term's $E_g(h)/h \\to 0$, and the last term's ratio $E_f(k(h))/h$ splits into $\\bigl[E_f(k(h))/k(h)\\bigr]\\cdot\\bigl[k(h)/h\\bigr]$ — a factor that vanishes ($k(h) \\to 0$ since $g$ is continuous — Lesson 1 — composed with $E_f(k)/k \\to 0$) times a factor that stays bounded ($k(h)/h \\to g'(a)$, from $g$'s differentiability, not merely its continuity). What remains is $f'(g(a))\\,g'(a)$. (This last step is stated here at the same level of formality Lesson 2 uses for its own error term, not spelled out with full quantifiers.)",
       equation: "(f\\circ g)'(a) = f'(g(a))\\,g'(a)",
       observation:
-        "That is also why g'(a) = 0 needs no special case: the identity above never divided by g'(a) or by Δu to reach the answer.",
+        "That is also why $g'(a) = 0$ needs no special case: the identity above never divided by $g'(a)$ or by $\\Delta u$ to reach the answer.",
       layers: [
         {
           kind: "why",
@@ -195,24 +195,24 @@ export const chainRuleLesson: LessonDefinition = {
       statement:
         "If $g$ is differentiable at $a$ and $f$ is differentiable at $g(a)$, then $f\\circ g$ is differentiable at $a$ and $(f\\circ g)'(a) = f'(g(a))\\,g'(a)$.",
       interpretation:
-        "Derived by substituting g's local-linear model into f's — never by dividing by Δu. That substitution is what makes the g'(a) = 0 case fall out with no special handling.",
+        "Derived by substituting $g$'s local-linear model into $f$'s — never by dividing by $\\Delta u$. That substitution is what makes the $g'(a) = 0$ case fall out with no special handling.",
       visibility: "visible",
     },
   ],
 
   checkpoint: {
     prompt:
-      "A composite f(g(x)) has g'(3) = 0. Without computing anything else, what is (f∘g)'(3) — and why doesn't \"cancel the du's\" make this obvious?",
+      "A composite $f(g(x))$ has $g'(3) = 0$. Without computing anything else, what is $(f\\circ g)'(3)$ — and why doesn't \"cancel the du's\" make this obvious?",
     answer:
-      "(f∘g)'(3) = f'(g(3))·0 = 0 directly from the rule; the cancellation story cannot approach this case because it would need to divide by Δu, which need not even be nonzero near x = 3.",
+      "$(f\\circ g)'(3) = f'(g(3))\\cdot 0 = 0$ directly from the rule; the cancellation story cannot approach this case because it would need to divide by $\\Delta u$, which need not even be nonzero near $x = 3$.",
   },
   checkpoints: [
     {
       id: "predict-zero",
       prompt:
-        "A composite f(g(x)) has g'(3) = 0. Without computing anything else, what is (f∘g)'(3) — and why doesn't \"cancel the du's\" make this obvious?",
+        "A composite $f(g(x))$ has $g'(3) = 0$. Without computing anything else, what is $(f\\circ g)'(3)$ — and why doesn't \"cancel the du's\" make this obvious?",
       answer:
-        "(f∘g)'(3) = f'(g(3))·0 = 0 directly from the rule; the cancellation story cannot approach this case because it would need to divide by Δu, which need not even be nonzero near x = 3.",
+        "$(f\\circ g)'(3) = f'(g(3))\\cdot 0 = 0$ directly from the rule; the cancellation story cannot approach this case because it would need to divide by $\\Delta u$, which need not even be nonzero near $x = 3$.",
     },
   ],
 
@@ -224,7 +224,7 @@ export const chainRuleLesson: LessonDefinition = {
       tier: "check",
       prompt: "What exactly fails in \"cancel the du's\" as a proof of the chain rule?",
       choices: [
-        "It silently regroups the limit as a product, which requires Δu ≠ 0 to even divide",
+        "It silently regroups the limit as a product, which requires $\\Delta u \\neq 0$ to even divide",
         "It is correct, but considered inelegant by mathematicians",
         "It only works when f and g are polynomials",
         "It works, but gives the wrong sign in some cases",
@@ -247,7 +247,7 @@ export const chainRuleLesson: LessonDefinition = {
       ],
       correctChoice: 0,
       explanation:
-        "For f(u) = u², f(g(x)) = |x|² = x² — differentiable everywhere, despite g's corner. The chain rule's hypothesis licenses its conclusion; it is not required for the composite itself to be differentiable.",
+        "For $f(u) = u^2$, $f(g(x)) = |x|^2 = x^2$ — differentiable everywhere, despite $g$'s corner. The chain rule's hypothesis licenses its conclusion; it is not required for the composite itself to be differentiable.",
     },
 
     /* ---- drill ------------------------------------------------------------ */
@@ -335,7 +335,7 @@ export const chainRuleLesson: LessonDefinition = {
       id: "chain-zero-predict",
       type: "numeric",
       tier: "transfer",
-      prompt: `g(x) = (x-${ZERO_A})² + 1, so g'(${ZERO_A}) = 0. For ANY differentiable f, what is (f∘g)'(${ZERO_A}) — without knowing f at all?`,
+      prompt: `$g(x) = (x-${ZERO_A})^2 + 1$, so $g'(${ZERO_A}) = 0$. For ANY differentiable $f$, what is $(f\\circ g)'(${ZERO_A})$ — without knowing $f$ at all?`,
       expected: 0,
       tolerance: 1e-9,
       explanation: `$(f\\circ g)'(${ZERO_A}) = f'(g(${ZERO_A}))\\cdot g'(${ZERO_A}) = f'(g(${ZERO_A}))\\cdot0 = 0$, regardless of what $f$ is — the product of ANY finite number with 0 is 0.`,
@@ -387,11 +387,11 @@ export const chainRuleLesson: LessonDefinition = {
   ],
 
   keyTakeaway:
-    "Feed one local-linear model's output into the other, and their slopes compound — never divide by Δu to get there, only substitute it. That is why the rule keeps working exactly where \"cancel the du's\" would need to divide by zero. Keep the substitution move: Package B's next techniques — substitution, parts — are this same move, read forwards and backwards.",
+    "Feed one local-linear model's output into the other, and their slopes compound — never divide by $\\Delta u$ to get there, only substitute it. That is why the rule keeps working exactly where \"cancel the du's\" would need to divide by zero. Keep the substitution move: Package B's next techniques — substitution, parts — are this same move, read forwards and backwards.",
 
   structuredSummary: {
     coreMentalModel:
-      "The chain rule substitutes one local-linear model into the other — composing error terms, never dividing by Δu.",
+      "The chain rule substitutes one local-linear model into the other — composing error terms, never dividing by $\\Delta u$.",
     definitionsIntroduced: ["Composition f∘g", "The chain rule"],
     mainResult: "(f∘g)'(a) = f'(g(a))·g'(a), derived by substitution, valid even where g'(a) = 0.",
     representationsConnected: [

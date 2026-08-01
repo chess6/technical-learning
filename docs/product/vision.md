@@ -821,23 +821,31 @@ per-callout judgment** — the same judgment the rest of this document demands
 about media, route order, and depth layers. `AuthoredCallout.moves` is an
 ordered list of beats, each with an optional lead-in. Some real shapes:
 
-| The misconception is… | What it needs |
+| The misconception is… | How many beats |
 | --- | --- |
-| A prediction the learner makes and watches fail | Three beats — this is what `belief`/`confront`/`resolve` is *for* |
-| A historical consensus that broke | Three, but historical: *what the field believed / where it broke / what changed* |
-| An estimate contradicted by measurement | *the arithmetic you'd expect / now measure it / why the gap* — the middle beat is an instruction, not a reveal |
+| A prediction the learner makes and watches fail | Three: the expectation, the refutation, the repair |
+| A historical consensus that broke | Three: what was believed, what broke it, what it changed |
+| An estimate contradicted by measurement | Three: the estimate, the measurement, the mechanism behind the gap |
 | Two things being conflated | Two: the conflation, then the separation. A third beat only restates the second |
-| Sufficiency mistaken for necessity | Two: what the premise licenses, what it leaves open — and no "repair", because the open half is genuinely still open |
-| A naming slip | **One sentence, no lead-in.** |
+| Sufficiency mistaken for necessity | Two: what the premise gives, what it does not — and no "repair", because the open half is genuinely still open |
+| A naming slip | **One sentence.** |
 
 Three rules:
 
-- **Fit, never variety.** When the three-act shape is genuinely right, use it,
-  with its default words. `all-four-needed` in `karatsuba` is left exactly as
-  it was for this reason. Rewriting all 47 to differ would be the same defect
-  wearing new paint.
-- **A lead-in must earn its place.** `Repair.` in front of a single corrective
-  sentence adds nothing. Omit `label` and let the prose carry itself.
+- **Default to no lead-in at all.** This is the strong form of the rule, and it
+  is where the first repair of this defect did not go far enough: replacing
+  `Tempting belief.` with `The arithmetic you'd expect.` swaps one piece of
+  meta-commentary for another. A lead-in that announces what the next sentence
+  is about is redundant with the sentence — "*The arithmetic you'd expect.*
+  Saving one product out of four looks like a 25% speedup" says it twice.
+  **Write the beat so it carries its own turn**: "It looks as though…", "But…",
+  "So…". Every callout in `karatsuba` now runs unlabelled for this reason.
+  Reach for `label` only when prose genuinely cannot signal the turn, and
+  expect that to be rare.
+- **Fit, never variety.** The shape follows the misconception. Rewriting
+  callouts to differ from each other is the same defect wearing new paint — a
+  review of the other 41 callouts in this course found all of them already
+  correctly three-beat, and changed none.
 - **Do not delete the confrontation.** Collapsing a genuine
   prediction-then-failure into one explanatory paragraph removes the
   mechanism §12 is built on. Fewer beats is not automatically better; *fitted*

@@ -213,19 +213,15 @@ export const karatsubaLesson: LessonDefinition = {
       id: "o-n-squared-belief",
       title: "For decades, $\\Theta(n^2)$ seemed unavoidable",
       // A research consensus with Kolmogorov's conjectured lower bound behind
-      // it — genuinely three beats, but historical ones. "Tempting belief."
-      // would frame the field's standing position as a learner's slip.
+      // it — three beats, and each says what it is without being announced.
       moves: [
         {
-          label: "What the field believed.",
-          body: "Every known method for multiplying two $n$-digit numbers used $\\Theta(n^2)$ single-digit products — splitting the numbers and combining four sub-products, the way FOIL does, seemed to be the only structure available.",
+          body: "Every known method for multiplying two $n$-digit numbers used $\\Theta(n^2)$ single-digit products. Splitting the numbers and combining four sub-products, the way FOIL does, seemed to be the only structure available.",
         },
         {
-          label: "Where it broke.",
           body: "In 1960, Anatoly Karatsuba — then a student attending Andrey Kolmogorov's seminar on computational complexity, where $\\Omega(n^2)$ was conjectured to be a hard lower bound — found that two of those four products are redundant.",
         },
         {
-          label: "What changed.",
           body: "Three products, not four, suffice. Because the saving recurs at every level of the recursion, it does not just save a constant fraction: it changes the exponent itself, from $2$ to $\\log_2 3\\approx1.585$.",
         },
       ],
@@ -238,33 +234,29 @@ export const karatsubaLesson: LessonDefinition = {
     {
       id: "all-four-needed",
       title: "Not all four products are needed",
-      // Left on the triad deliberately: this is a real prediction the learner
-      // makes, watched to fail, then repaired. When the three-act shape fits,
-      // using it is correct — varying it here would be variety for its own sake.
-      belief: "You must compute all four FOIL products.",
-      confront:
-        "The answer only ever uses $AD$ and $BC$ as the sum $AD+BC$.",
-      resolve:
-        "So one product $(A+B)(C+D)$ minus the two known corners recovers exactly what's needed — three products total.",
+      // A genuine prediction, refuted, then repaired — the three-beat shape is
+      // right here. The beats carry their own turns ("It looks as though…",
+      // "But…", "So…"), so nothing needs announcing.
+      moves: [
+        { body: "It looks as though all four FOIL products have to be computed." },
+        { body: "But the answer only ever uses $AD$ and $BC$ through their sum $AD+BC$." },
+        {
+          body: "So one product $(A+B)(C+D)$, minus the two corners already known, recovers exactly that sum — three products in total.",
+        },
+      ],
     },
     {
       id: "twenty-five-percent",
       title: "Not a 25% speedup",
-      // Three genuine beats — but an arithmetic estimate, a measurement that
-      // disagrees, and the mechanism behind the gap. The learner can run the
-      // middle one, so it is an instruction, not a reveal.
+      // An estimate, a measurement that disagrees, and the mechanism behind
+      // the gap — each stated rather than announced.
       moves: [
+        { body: "Saving one product out of four looks like a 25% speedup." },
         {
-          label: "The arithmetic you'd expect.",
-          body: "Saving one of four is a 25% speedup.",
+          body: "Measured, the cost is $n^{1.585}$ against $n^2$ — far more than 25%.",
         },
         {
-          label: "Now measure it.",
-          body: "Measured cost is $n^{1.585}$ vs $n^2$, far more than 25%.",
-        },
-        {
-          label: "Why the gap.",
-          body: "Because the saving recurs, the recursion tree has branching factor 3, so it's an exponent change, not a constant.",
+          body: "The saving recurs at every level, so the recursion tree has branching factor 3. That changes the exponent, not a constant factor.",
         },
       ],
     },
@@ -275,12 +267,10 @@ export const karatsubaLesson: LessonDefinition = {
       // separation — two beats. A third "repair" would only restate the second.
       moves: [
         {
-          label: "The conflation.",
           body: "The extra digit in $A+B$ looks like something carrying must fix, or like it forces a fourth multiplication.",
         },
         {
-          label: "Two different things.",
-          body: "Operand width and output carrying are separate. $A+B$ being wider affects the *operands* of $(A+B)(C+D)$ — absorbed by padding and uneven widths. Carrying is the later step that normalizes the $z_i$. Neither adds a multiplication.",
+          body: "But operand width and output carrying are separate concerns. $A+B$ being wider affects the *operands* of $(A+B)(C+D)$, and is absorbed by padding and uneven widths. Carrying is the later step that normalizes the $z_i$. Neither adds a multiplication.",
         },
       ],
     },
@@ -303,11 +293,9 @@ export const karatsubaLesson: LessonDefinition = {
       // here, because the open half is genuinely still open at this point.
       moves: [
         {
-          label: "What the premise gives.",
-          body: "Three coefficients mean three *evaluations* determine the quadratic — so three multiplications **suffice**, by the explicit construction above.",
+          body: "Three coefficients mean three *evaluations* determine the quadratic, so three multiplications **suffice** — that is what the construction above shows.",
         },
         {
-          label: "What it does not give.",
           body: "It does not follow that three are **necessary**. That three is also a lower bound is a separate rank argument, and it is not proved here.",
         },
       ],
