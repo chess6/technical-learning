@@ -58,7 +58,15 @@ export type FutureLessonRef = {
  */
 export type WorkshopRef = { kind: "workshop"; setId: string };
 
-/** A certifying checkpoint over an existing `ModuleSet` — see `WorkshopRef`. */
+/**
+ * A higher-stakes checkpoint over an existing `ModuleSet` — see `WorkshopRef`.
+ *
+ * "Higher-stakes" is **framing, not behavior**: it runs through the same
+ * runner with the same grading as a workshop. It is deliberately not called
+ * *certifying* — its written items are scored in a local, unauthenticated
+ * review queue, which cannot certify independent mastery (ADR-004,
+ * "Accepted target vs. implemented subset").
+ */
 export type AssessmentRef = { kind: "assessment"; setId: string };
 
 /**
@@ -379,6 +387,30 @@ export function courseForLesson(
 export function activeCourse(lessonId?: string): Course {
   if (lessonId === undefined) return DEFAULT_COURSE;
   return courseForLesson(lessonId) ?? DEFAULT_COURSE;
+}
+
+/**
+ * Whether a `ModuleSet` is placed in the curriculum as a workshop or an
+ * assessment, or `undefined` if no node references it.
+ *
+ * **The distinction is curriculum framing, not behavior.** Both kinds run
+ * through the same `ModuleRunner` with the same deferred-feedback capture —
+ * there is no separate practice engine (ADR-004 records this as deferred).
+ * Callers may use this to say what a node is *for*; they must not imply the
+ * two are graded differently.
+ */
+export function setNodeKind(
+  setId: string,
+  curriculum: readonly Subject[] = CURRICULUM,
+): "workshop" | "assessment" | undefined {
+  for (const unit of allUnits(curriculum)) {
+    for (const item of unit.items) {
+      if ((item.kind === "workshop" || item.kind === "assessment") && item.setId === setId) {
+        return item.kind;
+      }
+    }
+  }
+  return undefined;
 }
 
 /** A not-yet-built lesson node by id, or `undefined` if it isn't scheduled. */

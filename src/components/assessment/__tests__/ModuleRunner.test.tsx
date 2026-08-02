@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import type { ReactNode } from "react";
 import { LearnerStateProvider } from "../../../platform/useLearnerState";
 import {
@@ -25,7 +26,7 @@ afterEach(() => {
 });
 
 function renderRunner(children: ReactNode) {
-  return render(<LearnerStateProvider>{children}</LearnerStateProvider>);
+  return render(<MemoryRouter><LearnerStateProvider>{children}</LearnerStateProvider></MemoryRouter>);
 }
 
 const SET = "systems-elimination-review";
@@ -87,9 +88,9 @@ describe("ModuleRunner deferred feedback", () => {
 
     // A rerender must not re-dispatch (idempotent via the persisted marker).
     rerender(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     expect(onAttemptReleased).toHaveBeenCalledTimes(1);
   });

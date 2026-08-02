@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   makeAttemptItemResponse,
   makeAttemptSet,
@@ -289,8 +290,16 @@ export function ModuleRunner({
     <section className="module-runner" aria-label="Module assessment" data-status={attempt.status}>
       <header className="module-runner__head">
         <h1 className="module-runner__title">{resolved.set.title}</h1>
+        {/*
+          Describes BEHAVIOR, not a mode name. This runner hosts both workshop
+          and assessment nodes and treats them identically — deferred feedback,
+          no correctness shown until submit — so labelling it "Exam mode" told
+          a learner working through a low-stakes workshop that they were
+          sitting an exam. `data-mode` keeps the underlying attempt mode
+          available to tests and telemetry.
+        */}
         <p className="module-runner__mode" data-mode={attempt.mode}>
-          Exam mode · feedback after submit
+          Answers are recorded as you go · feedback after you submit
         </p>
         {timeLimitSec !== undefined && !released && remaining !== null && (
           <p
@@ -401,7 +410,7 @@ function ReviewView({
           ? "All written responses have been scored."
           : status === "REVIEW_FAILED"
             ? "Scored — one or more written responses did not pass."
-            : "Submitted. Written responses are awaiting review."}
+            : "Submitted. Written responses stay pending until scored in the local review queue."}
       </p>
       <ol className="module-runner__items">
         {attempt.items.map((item, index) => {
@@ -437,7 +446,16 @@ function ReviewView({
                     </p>
                   ) : (
                     <p className="module-runner__feedback" data-state="pending">
-                      Awaiting review.
+                      {/*
+                        "Awaiting review" alone implied someone was coming.
+                        Nobody is: scoring happens only when a person opens the
+                        local queue on this device. Say that, and link there.
+                      */}
+                      Awaiting review — saved on this device. Score it in the{" "}
+                      <Link to="/review" data-testid="pending-review-link">
+                        local review queue
+                      </Link>
+                      .
                     </p>
                   )}
                 </div>

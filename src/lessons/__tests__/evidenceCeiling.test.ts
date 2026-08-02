@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MODULE_ITEMS } from "../moduleItems";
+import { lessons } from "../registry";
 import { gradingCapabilities, resolveCapabilityId } from "../capabilities";
 import {
   CAPABILITY_EVIDENCE_CEILING,
@@ -11,10 +12,23 @@ import { ITEM_ASSESSMENT_META } from "../assessmentManifest";
 import { SUPPORTED_CAPTURE_KINDS } from "../../components/assessment/captureRenderers";
 
 describe("evidence ceilings are necessary upper bounds", () => {
-  it("the manifest covers exactly MODULE_ITEMS (no drift either direction)", () => {
-    expect(Object.keys(ITEM_ASSESSMENT_META).sort()).toEqual(
-      MODULE_ITEMS.map((i) => i.id).sort(),
+  /**
+   * The manifest covers module items PLUS the lesson exercises named by a
+   * lesson-owned objective's `itemIds`. It grew beyond `MODULE_ITEMS` when
+   * `objectiveCoverage.test.ts` stopped accepting a capability ceiling as
+   * evidence: an objective's evidencing item must now carry an explicit claim,
+   * and this manifest is the one place claims live. Keeping both kinds here
+   * rather than starting a second lesson-side registry is deliberate — two
+   * registries drift, and the drift would be silent.
+   */
+  it("covers exactly MODULE_ITEMS plus objective-referenced lesson exercises", () => {
+    const objectiveItemIds = lessons.flatMap((lesson) =>
+      (lesson.objectives ?? [])
+        .filter((o) => o.evidence === "lesson-owned")
+        .flatMap((o) => o.itemIds ?? []),
     );
+    const expected = [...new Set([...MODULE_ITEMS.map((i) => i.id), ...objectiveItemIds])].sort();
+    expect(Object.keys(ITEM_ASSESSMENT_META).sort()).toEqual(expected);
   });
 
   it("every registered grading capability declares an evidence ceiling", () => {

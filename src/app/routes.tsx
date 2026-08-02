@@ -4,6 +4,7 @@ import { GlossaryPage } from "../pages/GlossaryPage";
 import { HomePage } from "../pages/HomePage";
 import { LazyLessonRoute } from "./LazyLessonRoute";
 import { LazyModuleSetRoute } from "./LazyModuleSetRoute";
+import { LazyReviewQueueRoute } from "./LazyReviewQueueRoute";
 
 /**
  * Development-only routes (technical spikes/demos) are excluded from the
@@ -121,6 +122,15 @@ export const router = createBrowserRouter([
         // Workshop / assessment curriculum nodes (ADR-004, package R3).
         path: "set/:setId",
         element: <LazyModuleSetRoute />,
+      },
+      {
+        // Local human-scoring queue. In PRODUCTION deliberately: the runner
+        // tells a learner their written response is "awaiting review", and
+        // before this route the only reviewer UI was `dev/review`, which a
+        // production build drops — leaving every written response pending
+        // with no reachable way to score it.
+        path: "review",
+        element: <LazyReviewQueueRoute />,
       },
       {
         path: "glossary",

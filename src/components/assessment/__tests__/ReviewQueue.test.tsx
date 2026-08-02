@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { LearnerStateProvider } from "../../../platform/useLearnerState";
 import { STORAGE_KEY } from "../../../platform/persistence";
 import type { LearnerState } from "../../../platform/learnerState";
@@ -24,10 +25,10 @@ function storedReviews(): LearnerState["reviews"] {
 describe("ReviewQueue human scoring", () => {
   it("scores every pending proof, driving the attempt to REVIEW_COMPLETE", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
 
     await waitFor(() =>
@@ -65,10 +66,10 @@ describe("ReviewQueue human scoring", () => {
 
   it("requires a finite score before Save and rejects malformed scores", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     await waitFor(() =>
       expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
@@ -101,10 +102,10 @@ describe("ReviewQueue human scoring", () => {
 
   it("persists pass/score/feedback/reviewer/timestamp on the scored review", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     await waitFor(() =>
       expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
@@ -141,10 +142,10 @@ describe("ReviewQueue human scoring", () => {
 
   it("records a fail verdict with its score", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     await waitFor(() =>
       expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
@@ -174,10 +175,10 @@ describe("ReviewQueue human scoring", () => {
 describe("a failed reviewer save is not silently persisted", () => {
   it("surfaces the durable save-failure warning in the queue", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     await waitFor(() =>
       expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),
@@ -208,10 +209,10 @@ describe("a failed reviewer save is not silently persisted", () => {
 describe("blank required responses cannot be passed to completion", () => {
   it("auto-omits blank proofs so they never enter the queue or complete review", async () => {
     const { container } = render(
-      <LearnerStateProvider>
+      <MemoryRouter><LearnerStateProvider>
         <ModuleRunner setId={SET} />
         <ReviewQueue />
-      </LearnerStateProvider>,
+      </LearnerStateProvider></MemoryRouter>,
     );
     await waitFor(() =>
       expect(container.querySelector('[data-testid="module-submit"]')).toBeTruthy(),

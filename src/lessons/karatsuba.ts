@@ -135,11 +135,14 @@ export const karatsubaLesson: LessonDefinition = {
         "The weighted rectangle tells us *what* combined quantity is needed; the auxiliary coefficient rectangle tells us *how* to compute it with one multiplication.",
       layers: [
         {
-          kind: "connection",
-          title: "Three evaluations of a quadratic (optional)",
-          body: "Treat each number as a linear polynomial $x(t)=at+b$, $y(t)=ct+d$. The product is a quadratic determined by three suitable evaluations ($t=0,1,\\infty$). Karatsuba's three products are three such evaluations. This opens Toom-Cook and the evaluate → pointwise multiply → interpolate architecture shared with FFT multiplication — a deeper connection, not the prerequisite explanation. Three coefficients alone do not force three multiplications; the construction does.",
-        },
-        {
+          // A "Three evaluations of a quadratic (optional)" layer sat here
+          // until 2026-08. It is gone, not lost: the composed
+          // `karatsuba-three-evaluations` lab (two route blocks later) teaches
+          // the same polynomial-evaluation reading concretely on the running
+          // example; the `open-question` section carries the Toom-Cook / FFT
+          // architecture in more depth; and the sufficiency-vs-necessity point
+          // is now the `three-coeffs-force-three` callout. Restoring it would
+          // re-introduce a preview of a lab the learner is about to open.
           kind: "math-note",
           title: "Why not two? (expert)",
           body: "Multiplying two linear polynomials is a bilinear map whose structure tensor has rank exactly 3; Karatsuba realizes that rank. That two is impossible is an accepted advanced result in algebraic complexity — stated here, not proved. The same move appears in Strassen's $8\\to7$ matrix multiplication.",

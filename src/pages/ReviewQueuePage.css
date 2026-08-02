@@ -1,0 +1,21 @@
+.review-queue-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.review-queue-page__scope {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-divider);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.review-queue-page__scope strong {
+  color: var(--color-text);
+}

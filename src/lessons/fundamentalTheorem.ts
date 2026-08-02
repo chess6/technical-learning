@@ -568,7 +568,7 @@ export const fundamentalTheoremLesson: LessonDefinition = {
     ],
     commonMistake:
       "Treating the theorem as a restatement of a definition rather than a genuine claim — the identity holds for any $F$, and calculus enters only once, at the local linear model.",
-    canonicalExample: `\\int_0^2 x^2\\,dx = 8/3$, from L3's sum and from $[x^3/3]_0^2$ — the same number, two ways.`,
+    canonicalExample: `$\\int_0^2 x^2\\,dx = 8/3$, from Lesson 3's sum and from $[x^3/3]_0^2$ — the same number, two ways.`,
     oneProblemWorthRemembering: `$e^{-x^2}$: the theorem applies, and no elementary $F$ exists.`,
     whatThisUnlocksNext:
       "The same telescoping argument, re-run over a region instead of an interval — Green's theorem.",

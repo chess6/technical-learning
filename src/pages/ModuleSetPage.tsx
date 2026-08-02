@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ModuleRunner } from "../components/assessment/ModuleRunner";
 import { isSpacedSetId } from "../platform/spacedConfig";
 import "./ModuleSetPage.css";
@@ -11,7 +11,12 @@ import "./ModuleSetPage.css";
  * only from the spaced-review due list), plus a beta banner: this is the
  * first production exposure of `ModuleRunner`, and workshop/assessment nodes
  * both render through it identically today — an immediate-feedback practice
- * mode is real future work, not claimed here.
+ * mode is real future work, not claimed here (ADR-004 § implemented subset).
+ *
+ * The banner previously said written responses were "scored by a human after
+ * you submit", which was untrue in production: the only reviewer UI was
+ * dev-gated, so responses stayed pending forever. It now describes what
+ * actually happens and links to `/review`.
  */
 export function ModuleSetPage() {
   const { setId } = useParams<{ setId: string }>();
@@ -31,9 +36,10 @@ export function ModuleSetPage() {
   return (
     <div className="module-set-page">
       <p className="module-set-page__beta" role="note">
-        Beta — this assessment surface is new. Written responses are scored by
-        a human after you submit; feedback may take longer than the rest of
-        the app.
+        Beta — this surface is new. Written responses are saved{" "}
+        <strong>on this device</strong> and are not sent anywhere; they stay
+        pending until someone opens the{" "}
+        <Link to="/review">local review queue</Link> and scores them.
       </p>
       <ModuleRunner setId={setId} />
     </div>

@@ -54,6 +54,49 @@ objective has evidence nor permits an experience whose objectives are entirely
    `item.kind === "lesson"`, so this widening does not change any existing
    helper's behavior.
 
+## Accepted target vs. implemented subset (amended 2026-08-02)
+
+Item 4 above describes the **accepted target architecture**. Read on its own it
+overstated what exists, so the split is recorded explicitly here. A reader
+should be able to tell, without running the code, which half they are getting.
+
+| Element | Status |
+| --- | --- |
+| `workshop` node kind | **Implemented.** Placed in `courseModel.ts`, reachable at `/set/:setId`. |
+| `assessment` node kind | **Implemented**, same surface. |
+| `review` node kind | **Deferred — not implemented.** No `UnitItem` variant exists. It needs a per-module spaced scheduler, and the scheduler is still hardcoded to one module with fixed `[7, 30]` delays. Scheduled with R6, driven by `revisited-by` edges. |
+| `ModuleSet.mode: "practice"` | **Deferred — not implemented.** `mode` is still `"exam"` only, and every registered set declares it. |
+| Distinct workshop grading | **Does not exist.** Both node kinds run the same `ModuleRunner` with the same deferred-feedback capture. |
+
+**The distinction between a workshop and an assessment is therefore curriculum
+framing, not behavior** — what the node is *for*, not how it is graded. Surfaces
+may say which one a learner is on; they must not imply different engines.
+`courseModel.ts#setNodeKind` exists for exactly that framing and says so.
+
+This had a learner-visible consequence, now fixed: `ModuleRunner` rendered the
+fixed label *"Exam mode · feedback after submit"* for **both** kinds, telling
+someone working through a low-stakes workshop that they were sitting an exam.
+It now describes behavior instead — *"Answers are recorded as you go · feedback
+after you submit"* — which is true of both and claims nothing about a mode that
+does not exist.
+
+### Human review is local, and cannot certify independent mastery
+
+The runner marks written responses `requiresReview` and shows "awaiting
+review". That promise had **no production fulfilment** until `/review` shipped:
+`ReviewQueue` was reachable only from `dev/review`, which a production build
+eliminates, so every written response stayed pending forever.
+
+`/review` now hosts the queue in production. What it is **not**: authenticated,
+multi-user, remote, or automatic. Responses live in one browser's local
+storage; nobody is notified; a human has to open the page on that device and
+score them. Because there is no reviewer identity, **a pass recorded this way
+is a self-administered judgment, not independently certified mastery** — the
+page says so to the learner, and evidence language elsewhere must not claim
+otherwise (`mastery-standard.md` §6.3's honesty constraint). `objectiveCoverage`
+enforces the matching half in code: an item whose `evidenceBasis` is
+`self-marked` cannot cover a lesson-owned objective.
+
 ## Consequences
 
 - All 19 existing lessons compile and render unchanged: every field above is

@@ -1,77 +1,199 @@
 import { describe, expect, it } from "vitest";
 import { lessons } from "../registry";
 import { CAPABILITY_EVIDENCE_CEILING, withinCeiling } from "../evidence";
-import type { ExerciseDefinition } from "../types";
+import { ITEM_ASSESSMENT_META, type ItemAssessmentMeta } from "../assessmentManifest";
+import type { EvidenceLevel } from "../evidence";
+import type { ExerciseDefinition, LessonObjective } from "../types";
 
 /**
  * Objective coverage (ADR-004) — the replacement for the fixed exercise quota
- * "at least two exercises and a checkpoint". A `lesson-owned` objective must
- * resolve to at least one item whose capability ceiling reaches the
- * objective's claimed `evidenceLevel`; a `module-owned` or `course-owned`
- * objective is not required to name any lesson exercise at all, because its
- * evidence is discharged by that unit's module set instead.
+ * "at least two exercises and a checkpoint".
  *
- * No registered lesson declares `objectives` yet (all 19 still use the
- * required `learningObjectives: string[]`, which this validator does not
- * touch) — these tests exercise real logic against the (currently empty) set
- * of lessons that opt in, and will start asserting real coverage the moment a
- * lesson migrates.
+ * **A capability ceiling is NOT evidence.** `evidence.ts` says so explicitly:
+ * the ceiling is what a capture interface *could ever* support, "a *necessary*
+ * bound... emphatically NOT *sufficient*." An earlier version of this file
+ * checked only the ceiling, which meant a lesson-owned objective could claim
+ * E3 on the strength of a numeric input field being able, in principle, to
+ * record E3 — with no statement anywhere that this *particular* item does.
+ *
+ * Coverage now requires an item satisfying all five conditions:
+ *   1. resolves to a real exercise on the lesson;
+ *   2. has an explicit `ITEM_ASSESSMENT_META` entry (a deliberate claim, not an
+ *      inference from its input widget);
+ *   3. declares an `evidenceTarget` at least as high as the objective claims;
+ *   4. does not exceed its capability's ceiling;
+ *   5. has an `evidenceBasis` that does not contradict the claim.
+ *
+ * `ITEM_ASSESSMENT_META` is the single source of truth for both module items
+ * and lesson exercises — deliberately not a second registry, which would drift.
  */
 function capabilityIdFor(exercise: ExerciseDefinition): string {
   return exercise.type === "custom" ? exercise.capabilityId : exercise.type;
 }
 
+/**
+ * Contradictions that disqualify a claim, mirroring `evidenceCeiling.test.ts`'s
+ * filter. Applied at every level here, not only at E4/E5: an objective
+ * evidenced by a self-marked or heavily-scaffolded item is not independently
+ * demonstrated whatever level it claims.
+ */
+function contradictions(meta: ItemAssessmentMeta): string[] {
+  const b = meta.evidenceBasis;
+  const found: string[] = [];
+  if (b.scaffolding === "heavy") found.push("heavy scaffolding");
+  if (b.scoringAuthority === "self-marked") found.push("self-marked");
+  return found;
+}
+
+/** Why a given itemId fails to cover the objective, or `null` when it covers it. */
+export function coverageFailure(
+  objective: LessonObjective,
+  itemId: string,
+  exerciseById: Map<string, ExerciseDefinition>,
+  meta: Record<string, ItemAssessmentMeta> = ITEM_ASSESSMENT_META,
+): string | null {
+  const exercise = exerciseById.get(itemId);
+  if (!exercise) return `itemId "${itemId}" does not resolve to an exercise on this lesson`;
+
+  const itemMeta = meta[itemId];
+  if (!itemMeta) {
+    return `item "${itemId}" has no ITEM_ASSESSMENT_META entry — a capability ceiling alone is not evidence (see evidence.ts)`;
+  }
+
+  const ceiling = CAPABILITY_EVIDENCE_CEILING[capabilityIdFor(exercise)];
+  if (!ceiling) return `item "${itemId}" uses a capability with no declared ceiling`;
+
+  if (!withinCeiling(itemMeta.evidenceTarget, ceiling)) {
+    return `item "${itemId}" claims ${itemMeta.evidenceTarget} but its capability ceiling is ${ceiling}`;
+  }
+  if (!withinCeiling(objective.evidenceLevel, itemMeta.evidenceTarget)) {
+    return `item "${itemId}" declares evidenceTarget ${itemMeta.evidenceTarget}, below the objective's claimed ${objective.evidenceLevel}`;
+  }
+  const contra = contradictions(itemMeta);
+  if (contra.length > 0) {
+    return `item "${itemId}" has an evidenceBasis contradicting the claim (${contra.join(", ")})`;
+  }
+  return null;
+}
+
 describe("objective coverage for lessons that declare `objectives`", () => {
   it("has unique objective ids within each lesson", () => {
     for (const lesson of lessons) {
-      const objectives = lesson.objectives ?? [];
-      const ids = objectives.map((objective) => objective.id);
+      const ids = (lesson.objectives ?? []).map((o) => o.id);
       expect(new Set(ids).size, `Duplicate objective id in lesson "${lesson.id}"`).toBe(
         ids.length,
       );
     }
   });
 
-  it("resolves every lesson-owned objective to a resolvable item at or above its claimed level", () => {
+  it("covers every lesson-owned objective with an item carrying an explicit, sufficient, uncontradicted claim", () => {
+    const problems: string[] = [];
     for (const lesson of lessons) {
       const exerciseById = new Map<string, ExerciseDefinition>(
-        (lesson.exercises ?? []).map((exercise) => [exercise.id, exercise]),
+        (lesson.exercises ?? []).map((e) => [e.id, e]),
       );
-
       for (const objective of lesson.objectives ?? []) {
         if (objective.evidence !== "lesson-owned") continue;
-
         const itemIds = objective.itemIds ?? [];
-        expect(
-          itemIds.length,
-          `Objective "${objective.id}" in lesson "${lesson.id}" is lesson-owned but names no itemIds`,
-        ).toBeGreaterThan(0);
-
-        const meetsLevel = itemIds.some((itemId) => {
-          const exercise = exerciseById.get(itemId);
-          if (!exercise) return false;
-          const ceiling = CAPABILITY_EVIDENCE_CEILING[capabilityIdFor(exercise)];
-          if (!ceiling) return false;
-          return withinCeiling(objective.evidenceLevel, ceiling);
-        });
-
-        expect(
-          meetsLevel,
-          `Objective "${objective.id}" in lesson "${lesson.id}" claims ${objective.evidenceLevel} but no itemId resolves to an exercise whose capability ceiling reaches that level`,
-        ).toBe(true);
+        if (itemIds.length === 0) {
+          problems.push(`${lesson.id}/${objective.id}: lesson-owned but names no itemIds`);
+          continue;
+        }
+        const failures = itemIds.map((id) => coverageFailure(objective, id, exerciseById));
+        if (failures.every((f) => f !== null)) {
+          problems.push(
+            `${lesson.id}/${objective.id} (claims ${objective.evidenceLevel}) — no item covers it:\n` +
+              failures.map((f, i) => `      ${itemIds[i]}: ${f}`).join("\n"),
+          );
+        }
       }
     }
+    expect(problems, problems.join("\n")).toEqual([]);
   });
 
   it("does not require module-owned or course-owned objectives to name lesson exercises", () => {
     for (const lesson of lessons) {
       for (const objective of lesson.objectives ?? []) {
         if (objective.evidence === "lesson-owned") continue;
-        // No itemIds requirement — evidence lives in that unit's module set.
-        // This is a documentation-shaped assertion: it only confirms the
-        // field stays legitimately optional for these two evidence owners.
         expect(objective.evidence).toMatch(/^(module|course)-owned$/);
       }
     }
+  });
+});
+
+/**
+ * Negative cases. Each isolates one of the five conditions and proves coverage
+ * FAILS without it — otherwise a green suite would say nothing about whether
+ * the contract is actually enforced.
+ */
+describe("objective coverage rejects insufficient evidence", () => {
+  const objective = (level: EvidenceLevel): LessonObjective => ({
+    id: "obj",
+    text: "an objective",
+    evidence: "lesson-owned",
+    evidenceLevel: level,
+    itemIds: ["ex1"],
+  });
+
+  const numericExercise = {
+    id: "ex1",
+    type: "numeric",
+    tier: "drill",
+    prompt: "p",
+    answer: 1,
+    explanation: "e",
+  } as unknown as ExerciseDefinition;
+
+  const exerciseById = new Map<string, ExerciseDefinition>([["ex1", numericExercise]]);
+
+  const basis = {
+    freshness: "fresh-instance",
+    unfamiliarity: "near",
+    integration: "single-outcome",
+    scaffolding: "none",
+    scoringAuthority: "auto",
+  } as const;
+
+  it("fails when the capability ceiling is high enough but there is NO metadata", () => {
+    // `numeric` has ceiling E3, so a ceiling-only check would have PASSED this.
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {});
+    expect(failure).toMatch(/no ITEM_ASSESSMENT_META entry/);
+  });
+
+  it("fails when the explicit evidence target is below the objective's claim", () => {
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
+      ex1: { evidenceTarget: "E2", methodSelection: false, evidenceBasis: basis },
+    });
+    expect(failure).toMatch(/below the objective's claimed E3/);
+  });
+
+  it("fails when the evidence basis contradicts the claim", () => {
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
+      ex1: {
+        evidenceTarget: "E3",
+        methodSelection: false,
+        evidenceBasis: { ...basis, scoringAuthority: "self-marked" },
+      },
+    });
+    expect(failure).toMatch(/contradicting the claim \(self-marked\)/);
+  });
+
+  it("fails when the claimed target exceeds the capability ceiling", () => {
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
+      ex1: { evidenceTarget: "E5", methodSelection: false, evidenceBasis: basis },
+    });
+    expect(failure).toMatch(/capability ceiling is E3/);
+  });
+
+  it("fails when the itemId does not resolve", () => {
+    const failure = coverageFailure(objective("E3"), "missing", exerciseById, {});
+    expect(failure).toMatch(/does not resolve/);
+  });
+
+  it("passes only when every condition holds", () => {
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
+      ex1: { evidenceTarget: "E3", methodSelection: false, evidenceBasis: basis },
+    });
+    expect(failure).toBeNull();
   });
 });

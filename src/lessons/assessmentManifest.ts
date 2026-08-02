@@ -520,4 +520,94 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "auto",
     },
   },
+
+  /* ----------------------------------------------------------------------
+   * LESSON-owned exercises named by a lesson's `objectives[].itemIds`.
+   *
+   * Originally this manifest covered `MODULE_ITEMS` only, and
+   * `objectiveCoverage.test.ts` fell back to the capability CEILING to decide
+   * whether an item evidenced an objective. That is the exact inversion
+   * `evidence.ts` warns against: the ceiling is a NECESSARY bound, never a
+   * sufficient warrant. An item does not become E3 evidence because a numeric
+   * field could in principle capture E3.
+   *
+   * So the manifest is the single source of truth for BOTH kinds of item, and
+   * a lesson-owned objective is now covered only by an item with an explicit
+   * entry here. Adding an exercise to an objective's `itemIds` without adding
+   * it here fails `objectiveCoverage.test.ts` rather than silently passing on
+   * its capability.
+   * -------------------------------------------------------------------- */
+
+  // Recover the middle coefficient from the three products — the construction
+  // itself, computed on the lesson's running example.
+  "karatsuba-z1": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // Reassemble the product from the three coefficients, including carrying.
+  "karatsuba-product-carry": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
+      integration: "integrated",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // Recognition items: multiple-choice caps at E2, and each claims exactly E2.
+  "karatsuba-width-vs-carry": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "karatsuba-output-carry": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "karatsuba-exponent": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // Transfer-tier in the lesson's own tiering, but still recognition capture:
+  // the claim stays E2, which is what multiple-choice can actually support.
+  "karatsuba-strassen-transfer": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
 };

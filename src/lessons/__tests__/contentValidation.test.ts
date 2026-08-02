@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
 import katex from "katex";
 import { getLessonById, lessons } from "../registry";
-import type {
-  DepthLayer,
-  ExerciseDefinition,
-  LessonCheckpoint,
-  LessonDefinition,
-  SolutionReveal,
-} from "../types";
+import type { LessonDefinition } from "../types";
 import { hasGuidedScene } from "../../guided-scenes/scenes/sceneMeta";
 import { hasSolutionVisual } from "../../components/lesson/solutionVisuals/registry";
 import { getLessonVisual } from "../../components/lesson/lessonVisuals";
 import { hasExplorer } from "../../explorations/registry";
 import { getBlockComponent } from "../../components/lesson/blockComponents";
 import { getBlockAnchorId } from "../toc";
+import { collectLessonProse } from "./lessonProse";
 
 /**
  * Content validator (expressed as a test). Runs over ALL registered lessons and
@@ -75,118 +70,42 @@ function collectFromEquation(tex: string, path: string, out: KatexFailure[]): vo
   }
 }
 
-function collectFromLayers(
-  layers: DepthLayer[] | undefined,
-  path: string,
-  out: KatexFailure[],
-): void {
-  for (const [i, layer] of (layers ?? []).entries()) {
-    collectFromProse(layer.title, `${path}.layers[${i}].title`, out);
-    collectFromProse(layer.body, `${path}.layers[${i}].body`, out);
-  }
-}
-
-function collectFromReveal(
-  reveal: SolutionReveal | undefined,
-  path: string,
-  out: KatexFailure[],
-): void {
-  if (!reveal) return;
-  collectFromProse(reveal.prose, `${path}.prose`, out);
-  if (reveal.derivation) collectFromProse(reveal.derivation, `${path}.derivation`, out);
-  if (reveal.interpretation) collectFromProse(reveal.interpretation, `${path}.interpretation`, out);
-  if (reveal.connection) collectFromProse(reveal.connection, `${path}.connection`, out);
-}
-
-function collectFromCheckpoint(
-  cp: LessonCheckpoint,
-  path: string,
-  out: KatexFailure[],
-): void {
-  collectFromProse(cp.prompt, `${path}.prompt`, out);
-  collectFromProse(cp.answer, `${path}.answer`, out);
-  collectFromReveal(cp.solutionReveal, `${path}.solutionReveal`, out);
-}
-
-function collectFromExercise(
-  ex: ExerciseDefinition,
-  path: string,
-  out: KatexFailure[],
-): void {
-  collectFromProse(ex.prompt, `${path}.prompt`, out);
-  collectFromLayers(ex.layers, path, out);
-  collectFromReveal(ex.solutionReveal, `${path}.solutionReveal`, out);
-  for (const [i, hint] of (ex.hints ?? []).entries()) {
-    collectFromProse(hint, `${path}.hints[${i}]`, out);
-  }
-  if (ex.type === "multiple-choice") {
-    for (const [i, choice] of ex.choices.entries()) {
-      collectFromProse(choice, `${path}.choices[${i}]`, out);
-    }
-    collectFromProse(ex.explanation, `${path}.explanation`, out);
-  } else if (ex.type === "prediction") {
-    collectFromProse(ex.reveal, `${path}.reveal`, out);
-  } else if (ex.type !== "custom") {
-    collectFromProse(ex.explanation, `${path}.explanation`, out);
-  }
-}
-
-/** Every learner-facing KaTeX-bearing string in a lesson, walked into `out`. */
-function collectLessonKatex(lesson: LessonDefinition, out: KatexFailure[]): void {
+/**
+ * Raw display-equation fields — `section.equation` and `WorkedExample.equations`
+ * are whole-string TeX, NOT prose: they carry no `$` delimiters and no emphasis
+ * markers, so the shared prose collector deliberately excludes them and they
+ * are rendered here in display mode instead.
+ */
+function collectLessonEquations(lesson: LessonDefinition, out: KatexFailure[]): void {
   const id = lesson.id;
-  collectFromProse(lesson.subtitle, `${id}.subtitle`, out);
-  if (lesson.motivatingQuestion) {
-    collectFromProse(lesson.motivatingQuestion, `${id}.motivatingQuestion`, out);
-  }
-  if (lesson.keyTakeaway) collectFromProse(lesson.keyTakeaway, `${id}.keyTakeaway`, out);
-  for (const [i, obj] of lesson.learningObjectives.entries()) {
-    collectFromProse(obj, `${id}.learningObjectives[${i}]`, out);
-  }
-
   for (const section of lesson.sections) {
-    const p = `${id}.section:${section.id}`;
-    collectFromProse(section.title, `${p}.title`, out);
-    collectFromProse(section.body, `${p}.body`, out);
-    if (section.observation) collectFromProse(section.observation, `${p}.observation`, out);
-    if (section.equation) collectFromEquation(section.equation, `${p}.equation`, out);
-    collectFromLayers(section.layers, p, out);
-  }
-
-  for (const fb of lesson.formalBlocks ?? []) {
-    const p = `${id}.formal:${fb.id}`;
-    if (fb.label) collectFromProse(fb.label, `${p}.label`, out);
-    collectFromProse(fb.statement, `${p}.statement`, out);
-    collectFromProse(fb.interpretation, `${p}.interpretation`, out);
-    if (fb.proof) collectFromProse(fb.proof, `${p}.proof`, out);
-    collectFromLayers(fb.layers, p, out);
-  }
-
-  for (const we of lesson.workedExamples ?? []) {
-    const p = `${id}.worked:${we.id}`;
-    collectFromProse(we.title, `${p}.title`, out);
-    if (we.prompt) collectFromProse(we.prompt, `${p}.prompt`, out);
-    for (const [i, eq] of we.equations.entries()) {
-      collectFromEquation(eq, `${p}.equations[${i}]`, out);
+    if (section.equation) {
+      collectFromEquation(section.equation, `${id}.section:${section.id}.equation`, out);
     }
-    collectFromLayers(we.layers, p, out);
   }
+  for (const we of lesson.workedExamples ?? []) {
+    for (const [i, eq] of we.equations.entries()) {
+      collectFromEquation(eq, `${id}.worked:${we.id}.equations[${i}]`, out);
+    }
+  }
+}
 
-  for (const c of lesson.callouts ?? []) {
-    const p = `${id}.callout:${c.id}`;
-    collectFromProse(c.title, `${p}.title`, out);
-    if (c.belief) collectFromProse(c.belief, `${p}.belief`, out);
-    if (c.confront) collectFromProse(c.confront, `${p}.confront`, out);
-    if (c.resolve) collectFromProse(c.resolve, `${p}.resolve`, out);
+/**
+ * Every learner-facing KaTeX-bearing string in a lesson.
+ *
+ * Inline `$...$` prose comes from the SHARED collector
+ * (`lessonProse.ts#collectLessonProse`) — the same walker `proseEmphasis.test.ts`
+ * uses — so a field can never be validated for emphasis but not for KaTeX, or
+ * vice versa. This file previously maintained a second, drifting walker; it had
+ * fallen behind on `callout.moves`, `structuredSummary`, route headings and
+ * custom-exercise configs, which is how a broken model answer and an unpaired
+ * `$` shipped unseen.
+ */
+function collectLessonKatex(lesson: LessonDefinition, out: KatexFailure[]): void {
+  for (const { path, text } of collectLessonProse(lesson)) {
+    collectFromProse(text, path, out);
   }
-
-  if (lesson.checkpoint) collectFromCheckpoint(lesson.checkpoint, `${id}.checkpoint`, out);
-  for (const [i, cp] of (lesson.checkpoints ?? []).entries()) {
-    collectFromCheckpoint(cp, `${id}.checkpoints[${i}]`, out);
-  }
-
-  for (const ex of lesson.exercises ?? []) {
-    collectFromExercise(ex, `${id}.exercise:${ex.id}`, out);
-  }
+  collectLessonEquations(lesson, out);
 }
 
 function duplicates(ids: readonly string[]): string[] {
