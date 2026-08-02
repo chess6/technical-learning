@@ -20,11 +20,23 @@ import { numericDerivative } from "../math";
  * Evidence discipline, applied before any code was written (the same
  * preflight A2-A4 applied): `multiple-choice` is capped at E2 and
  * `exercise-sequence`/`numeric` at E3. One item, `chain-derive-fresh`, uses
- * `self-check` (ceiling E5) and claims E4 — human-scored, produced written
- * reproduction of the substitution derivation on a fresh pair, the only real
- * evidence for M2 ("the chain rule is an independent fact to memorize"),
- * which no numeric/MC item can test since it requires PRODUCING the
- * argument, not applying its conclusion.
+ * `self-check` and asks for a written reproduction of the substitution
+ * derivation on a fresh pair — the only item that requires PRODUCING the
+ * argument, not applying its conclusion, which is what M2 ("the chain rule
+ * is an independent fact to memorize") actually needs.
+ *
+ * Correction (2026-08-01, found during independent review of L6
+ * `optimization-approximation`'s Mode B artifacts, which had copied the
+ * same error): this item is **learner-self-marked in the lesson, not
+ * human-scored, and claims no evidence level**. `SelfCheckBody`
+ * (`ExercisePanel.tsx`) has the learner reveal a model answer and mark
+ * their own work; `/review` reads module `AttemptSet`s, not lesson
+ * exercises, so nothing here is ever reviewed by another person. Per
+ * ADR-004, a self-marked judgment is not independently certified mastery.
+ * The item stays as a practice event with a real model answer and a
+ * versioned rubric (see `chainRuleGradingContract.test.ts`) — worthwhile
+ * practice, and a live regression guard on the mathematics, but not
+ * evidence toward any objective.
  */
 
 /* ---------------------------------------------------------------- numbers */

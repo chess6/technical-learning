@@ -136,7 +136,7 @@ reached `PASS`. Second lesson of Package B (`calculus-technique`).
 | Classify a survivor with the second-derivative test, and return "silent" when \(f''(a)=0\) | D3/D7 | lesson | E3 | `opt-second-test-silent` (`exercise-sequence`: classify where \(f''\neq0\) (`multiple-choice`) → verdict where \(f''=0\) (`multiple-choice`) → pick the pair of functions separating the cases (`multiple-choice`)) | planned |
 | From a curvature bound, produce an interval on which a linearization meets a stated tolerance | D3/D4 | lesson | E3 | `opt-linearize-tolerance` (`numeric`, graded on \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\)) | planned |
 | Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **fresh** pair of functions, not the worked example: which route (`multiple-choice`, prompt names neither) → **why that route works here** (`multiple-choice`, rival justifications — the *justification is captured*, not left to feedback) → the extremum (`numeric`)) | planned |
-| Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on a fresh \(f,a\): which inequality licenses the sign claim (`multiple-choice`) → what \(h\)'s **second** sign establishes (`multiple-choice`) → the improving direction's value (`numeric`)) | planned |
+| Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on \(g(x)=x^2-4x+1\) at \(a=0\), a fresh pair used nowhere else: **(A)** which property of \(g\) licenses treating \(E(h)\) as smaller than \(\lvert mh\rvert\) for small \(h\) — differentiability, not mere continuity or boundedness (`multiple-choice`); **(B)** stepping with only \(h>0\), which single claim (max or min) that alone refutes (`multiple-choice`); **(C)** what property of \(a=0\) is what makes \(h<0\) *also* available, so the *other* claim gets refuted too — interiority, not differentiability again (`multiple-choice`); **(D)** the value at the step that actually improves (`numeric`)) | planned |
 | Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | n/a |
 | Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
 | Optimize a **composite** on an interval, requiring L5's chain rule to differentiate and L6's method to decide | D10 | **module** | E5 | `mod-calctech-mixed-optimize-composite` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
@@ -147,7 +147,14 @@ walkable reading and is scored on naming what fails, not on recognizing the
 shape — a learner who answers by matching to \(x^3\)/\(\lvert x\rvert\) must
 fail it, which constrains the fixture choice at build time. `opt-endpoint-fresh`,
 `opt-select-route` and `opt-derive-steps` all run on **functions the lesson never
-shows**.
+shows**. `opt-derive-steps` is designed so its four steps cannot be passed by
+conflating the two hypotheses: (A) isolates **differentiability** as the
+property that controls \(E(h)\) (a learner who picks "continuity" or
+"boundedness" fails it, even though continuity is a real, separate hypothesis
+the argument also uses via C7); (B)+(C) isolate **interiority** as the property
+that supplies the *second* sign of \(h\), and require recognizing that one
+sign only refutes one of {max, min} — checking both signs is what refutes
+*both* possibilities, not an arbitrary completeness gesture.
 
 **Freshness rule, and two items that are deliberately not evidence.** Every item
 carrying an evidence claim runs on inputs the guided scene and explorer never
@@ -177,7 +184,13 @@ quietly counted:
    So the item stays — writing the argument out is worth doing — but as a
    **practice event with no evidence claim**, and objective 9 is re-scoped to
    `opt-derive-steps`, which captures the argument's load-bearing choices at a
-   level the runtime can actually record (E3).
+   level the runtime can actually record (E3) — including, after a second
+   owner review pass, an explicit test that differentiability and interiority
+   are not interchangeable: one step can only be passed by naming
+   differentiability as the source of residual control, and another only by
+   naming interiority as what supplies the second sign of \(h\), so a learner
+   who conflates "the function is well-behaved here" with "both directions are
+   available" fails one half or the other.
 
    **What this costs, stated plainly: this lesson produces no E6 justification
    evidence, and none is obtainable in this repository today** — not in-lesson,

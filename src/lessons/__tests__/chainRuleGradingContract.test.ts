@@ -11,10 +11,18 @@ import type { ExerciseDefinition } from "../types";
  *
  * Evidence discipline, applied before coding (the same preflight A2-A4 used):
  * `multiple-choice` is capped at E2, `numeric`/`exercise-sequence` at E3. One
- * item, `chain-derive-fresh`, uses `self-check` (ceiling E5) and claims E4 —
- * human-scored, so it is exempt from the auto-grading contract battery below
- * (matching `structureModuleItems.test.ts`'s precedent) and checked instead
- * for a real, versioned rubric.
+ * item, `chain-derive-fresh`, uses `self-check`. It is exempt from the
+ * auto-grading contract battery below because it is **learner-self-marked**
+ * inside a lesson's `ExercisePanel` (`SelfCheckBody`: the learner reveals a
+ * model answer and marks their own work) — not because a human reviewer
+ * scores it. `/review` reads module `AttemptSet`s, not lesson exercises, so
+ * this item is never actually reviewed by anyone but the learner, and it
+ * claims no evidence level (corrected 2026-08-01 — an earlier version of
+ * this comment and the lesson's own docs called it "human-scored" and E4,
+ * neither of which the runtime supports; see `chainRule.ts` and
+ * `mastery-contract.md` §1d). What stays checked below is that it has a
+ * real, versioned rubric and model answer — the regression guard on the
+ * mathematics, independent of who (if anyone) reads the response.
  */
 
 function byId(id: string): ExerciseDefinition {
@@ -144,7 +152,7 @@ describe("chain-rule grading-contract coverage", () => {
     expect(items.filter((i) => i.type === "multiple-choice")).toHaveLength(2);
   });
 
-  it("claims no E5, and E4 only on the human-scored derivation item", () => {
+  it("claims no E5 and no open construction — chain-derive-fresh claims nothing at all", () => {
     const open = items.filter(
       (i) => i.type === "custom" && i.capabilityId === "construct-in-explorer",
     );
@@ -155,8 +163,15 @@ describe("chain-rule grading-contract coverage", () => {
     expect(CAPABILITY_EVIDENCE_CEILING["self-check"]).toBe("E5");
   });
 
-  it("routes chain-derive-fresh to human scoring, with a real versioned rubric", () => {
+  it("chain-derive-fresh has a real versioned rubric, though it is self-marked in the lesson (not routed to review)", () => {
     const item = byId("chain-derive-fresh");
+    // requiresHumanScore/snapshotItem describe the CAPABILITY's declarative
+    // shape (the kind of item an AttemptSet's /review queue would route to a
+    // human) — not what actually happens when ExercisePanel renders this item
+    // inside a lesson's `practice` block. There, `SelfCheckBody` always
+    // self-marks; /review reads AttemptSets, never a lesson's own exercises.
+    // So `requiresReview` being true here is a true fact about the item's
+    // type, not a claim that a human ever sees this particular response.
     expect(requiresHumanScore(item)).toBe(true);
     const snap = snapshotItem(item);
     expect(snap.requiresReview).toBe(true);

@@ -86,29 +86,46 @@ First lesson of Package B (`calculus-technique`).
 | Verify a chain-rule result by an independent direct-expansion route, and say why agreement counts as evidence | D10 | lesson | E3 | `chain-corroborate` (`exercise-sequence`: chain-rule value (`numeric`) → expanded-and-differentiated value (`numeric`) → why it's evidence (`multiple-choice`)) | planned |
 | Compute a compound magnification from two zoom factors | D6 | lesson | E3 | `chain-compound-zoom` (`numeric`) | planned |
 | Select the efficient route (direct expansion vs. chain rule) on a fresh composite, unprompted | D8/D9 | lesson | E3 | `chain-select-method` (`exercise-sequence`: efficient route (`multiple-choice`, prompt does not name either route) → the answer (`numeric`)) | planned |
-| Reproduce the substitution derivation on a fresh pair — not just apply the rule | D6 | lesson | E4 | `chain-derive-fresh` (`self-check`, human-scored: both local-linear models, the substitution, the \(k(h)=0\) case, and the final division-by-\(h\) step) | planned |
+| Reproduce the substitution derivation on a fresh pair — not just apply the rule | D6 | **none — see note** | — | `chain-derive-fresh` (`self-check`) — a **practice event, not evidence** | n/a |
 | State what can and cannot be concluded when the inner function has a corner | D7 | lesson | E2 | `chain-corner-not-necessary` (`multiple-choice`) | planned |
 | Retain "cancel the \(du\)" is not sufficient justification, under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-du-not-proof` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
 | Integrate the chain rule with the \(1\times1\)-matrix reading and LA matrix composition on one mixed item | D10 | **module** | E5 | `mod-calctech-mixed-chain-matrix` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
 
-**Transfer:** three transfer-tier items. `chain-zero-predict` (predict before
-computing — D9) and `chain-select-method` (method selection folded into
+**Transfer:** two transfer-tier evidence items. `chain-zero-predict` (predict
+before computing — D9) and `chain-select-method` (method selection folded into
 transfer — D8+D9, per [insight §11](insight.md#11-transfer-assessment)) are
 **E3**: `numeric` and `exercise-sequence` cap there, and both keep a genuine
-produced numeric answer as the outcome's substance. `chain-derive-fresh` is
-**E4**, human-scored `self-check` — the only item that requires PRODUCING the
-substitution argument rather than applying its conclusion, which is what M2
-(the lesson's central misconception) actually needs. Recall is capped at two
-bare `multiple-choice` checks (`chain-du-cancel-fails`, `chain-corner-not-necessary`).
+produced numeric answer as the outcome's substance. `chain-derive-fresh` is a
+**self-check practice event carrying no evidence claim** (corrected
+2026-08-01 — see the note below): an in-lesson `self-check` is
+**learner-self-marked**, not human-scored — `SelfCheckBody`
+(`ExercisePanel.tsx`) has the learner reveal a model answer and mark their own
+work "understood / not-yet", and `/review` reads module `AttemptSet`s, not
+lesson exercises, so no human ever scores it. [ADR-004](../../../../engineering/decisions/004-experience-node-ontology.md)
+is explicit that this kind of local judgment is not independently certified
+mastery, and `assessmentManifest.ts` bars an E4+ claim on self-marked scoring.
+The item is kept — reproducing the derivation is worthwhile practice, and the
+model answer plus its versioned rubric stay as a real regression guard on the
+mathematics — but it discharges no outcome. Recall is capped at two bare
+`multiple-choice` checks (`chain-du-cancel-fails`, `chain-corner-not-necessary`).
+
+> **Correction, 2026-08-01.** This row and the paragraph above originally
+> claimed `chain-derive-fresh` as a lesson-owned **E4** outcome, "human-scored."
+> Neither survives scrutiny against the runtime: the capability is self-marked
+> in a lesson context, and no E4+ claim on self-marked evidence is licensed.
+> Found during independent review of L6 `optimization-approximation`'s
+> Mode B artifacts, whose own draft carried the identical error — see
+> `docs/engineering/HANDOFF.md`. Fixed here to match; the exercise, its model
+> answer, and its rubric are unchanged.
 
 **Evidence-ceiling preflight (applied before coding, per A2–A4's own
 precedent).** Every level above is already recorded at its capability's
-ceiling — `multiple-choice`→E2, `numeric`/`exercise-sequence`→E3,
-`self-check`→E5 (claimed at E4, one item) — so no reconciliation is
-anticipated at build time. If a build-time defect is found (a claim exceeding
-its capability, or a step converted to `multiple-choice` that changes an
-item's honest level), it is corrected in this table with a dated note,
-matching L1–L4's own practice, not silently.
+ceiling — `multiple-choice`→E2, `numeric`/`exercise-sequence`→E3 — with
+`self-check` (`chain-derive-fresh`) carrying **no claim at all**, corrected
+above. If a build-time defect is found (a claim exceeding its capability, or a
+step converted to `multiple-choice` that changes an item's honest level), it is
+corrected in this table with a dated note, matching L1–L4's own practice, not
+silently — as this one was.
 
 ## 1e. Coverage status
 Taught: all of §1c. Practiced: every lesson-owned outcome (planned). Not yet
@@ -217,10 +234,25 @@ implementing/reviewing agent lineage.
       acceptance.** The derivation no longer needs a scoping caveat; see below.
 - [x] Grading contract registered for every auto-graded item
       (`chainRuleGradingContract.test.ts`, 40 tests, adversarial reject
-      batteries included; `chain-derive-fresh` routed to human scoring with a
-      versioned rubric). `ITEM_ASSESSMENT_META` is the module-item (Gate 9)
-      manifest and does not cover these lesson-owned items, matching every
-      prior lesson's precedent.
+      batteries included). `chain-derive-fresh` is exempt from the
+      auto-grading battery because it is **learner-self-marked**, not
+      human-scored — corrected 2026-08-01, see the note under §1d — and is
+      instead checked for a real, versioned model answer and rubric, which
+      remain the mathematical regression guard on that content.
+
+      **A second correction, same date.** This box previously claimed
+      `ITEM_ASSESSMENT_META` "does not cover these lesson-owned items,
+      matching every prior lesson's precedent." That precedent claim is
+      false: `karatsuba`'s lesson-owned exercises (`karatsuba-z1`,
+      `karatsuba-product-carry`, and four more) **are** registered in
+      `ITEM_ASSESSMENT_META`, contradicting the sentence at the time it was
+      written. Found during independent review of L6's Mode B artifacts,
+      which cited this exact sentence as the reason its own exercises were
+      left unregistered. **Not fixed here**: retroactively registering L5's
+      items is a change to an already-accepted, merged lesson and is out of
+      this correction's scope — recorded so the next agent does not repeat
+      the claim, and so `optimizationApproximation.ts` (L6) follows the real
+      precedent (registration) rather than the false one.
 
 ### Changes made at Gate 8 (2026-08-01)
 

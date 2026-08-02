@@ -120,11 +120,13 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 
 Tiers and evidence levels below are recorded at their capability's ceiling
 from the start (mastery-contract §1d's preflight) — `check` (2), `drill`
-(3), `transfer` (3). One item, `chain-derive-fresh`, claims E4 on
-`self-check` (human-scored) — the only item requiring the substitution
-argument to be PRODUCED, not applied, which M2 (the lesson's central
-misconception) needs; every other item stays at its capability's E2/E3
-ceiling.
+(3), `transfer` (2 evidence-bearing). One item, `chain-derive-fresh`, uses
+`self-check` and is the only item requiring the substitution argument to be
+PRODUCED rather than applied, which M2 (the lesson's central misconception)
+needs — but it is **learner-self-marked in the lesson, not human-scored, and
+claims no evidence level** (corrected 2026-08-01; see mastery-contract.md
+§1d). It stays in the exercise set as practice; every other item stays at its
+capability's E2/E3 ceiling and does carry a claim.
 
 | # | Objective | Type | Tier / evidence | Deterministic answer | Feedback (why) |
 | --- | --- | --- | --- | --- | --- |
@@ -134,7 +136,7 @@ ceiling.
 | 4 | `chain-corroborate` — cross-check a chain-rule value against direct expansion | `exercise-sequence` (chain-rule value, `numeric` → expanded value, `numeric` → why it's evidence, `multiple-choice`) | drill / E3 | both values equal; agreement counts because expansion never used the chain rule | Mirrors L4's corroboration item — independence of the two routes is the point. |
 | 5 | `chain-compound-zoom` — compute a compound magnification | `numeric` | drill / E3 | the product of the two given factors | Targets M5: compounding is multiplicative, not additive. |
 | 6 | `chain-select-method` — choose the efficient route on a fresh composite | `exercise-sequence` (route, `multiple-choice`, names neither route → the answer, `numeric`) | transfer / E3 | efficient route depends on whether the composite is expandable; the numeric value | The prompt never says "chain rule" or "expand" — the learner must judge which applies. |
-| 7 | `chain-derive-fresh` — reproduce the substitution derivation on a fresh pair | `self-check`, human-scored | transfer / E4 | both local-linear models, the substitution, the \(k(h)=0\) case, the final division-by-\(h\) step | Targets M2 directly: stating the product with no substitution argument shown is NOT a pass. |
+| 7 | `chain-derive-fresh` — reproduce the substitution derivation on a fresh pair | `self-check`, **learner-self-marked** | practice / **no evidence claim** | both local-linear models, the substitution, the \(k(h)=0\) case, the final division-by-\(h\) step | Targets M2 directly: stating the product with no substitution argument shown is NOT a pass. A real model answer and rubric guard the mathematics even though no one but the learner scores the attempt. |
 | 8 | `chain-corner-not-necessary` — what follows when the inner function has a corner? | `multiple-choice` | check / E2 | the composite MAY still be differentiable there — the hypothesis is sufficient, not necessary | Rejects "the composite cannot be differentiable" — refuted by \(f(u)=u^2\), \(g(x)=|x|\), whose composite is \(x^2\). |
 
 ## Insight traceability
@@ -208,11 +210,13 @@ ceiling.
       the compound magnification), preset switching, the cancel-\(du\)/
       residual-composition toggle
 - [ ] Grading contracts for all seven auto-graded lesson-owned items (the
-      eighth, `chain-derive-fresh`, is human-scored and exempt, matching
-      `structureModuleItems.test.ts`'s precedent), with the adversarial
-      reject battery (a wrong decomposition; the two derivative values
-      swapped; the compound magnification computed additively instead of
-      multiplicatively; the corner-composite item's distractor answers)
+      eighth, `chain-derive-fresh`, is **learner-self-marked and exempt for
+      that reason** — not because a human reviewer scores it; `/review`
+      reads module `AttemptSet`s, and a lesson's `ExercisePanel` never routes
+      a `self-check` item there), with the adversarial reject battery (a
+      wrong decomposition; the two derivative values swapped; the compound
+      magnification computed additively instead of multiplicatively; the
+      corner-composite item's distractor answers)
 - [ ] Route test: the placed `visual`/`watch` block renders `chain-rule`
 - [ ] Browser test: readouts correct, no console errors —
       `e2e/lesson-chain-rule.spec.ts`

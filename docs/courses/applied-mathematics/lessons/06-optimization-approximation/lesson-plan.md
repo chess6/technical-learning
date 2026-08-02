@@ -109,7 +109,7 @@ levels.
 | 6 | Classify a survivor, and return *silent* when \(f''(a)=0\) | lesson-owned | E3 | `opt-second-test-silent` |
 | 7 | From a curvature bound, produce an interval meeting a stated tolerance | lesson-owned | E3 | `opt-linearize-tolerance` |
 | 8 | Choose unprompted between the calculus route and an algebraic certificate, **and justify the choice** | lesson-owned | E3 | `opt-select-route` (fresh pair; the justification is a captured step) |
-| 9 | Identify the escape-route argument's load-bearing steps and what each hypothesis does | lesson-owned | E3 | `opt-derive-steps` (fresh \(f,a\)) |
+| 9 | Identify the escape-route argument's load-bearing steps and what each hypothesis does | lesson-owned | E3 | `opt-derive-steps` (\(g(x)=x^2-4x+1\) at \(a=0\), fresh) |
 | — | Write the argument out in full | **no evidence claim** — the runtime cannot record one (contract §1d) | — | `opt-derive-escape`, a practice event |
 | 10 | Retain "necessary is not sufficient" under delayed retrieval | **module-owned** | E3 | `mod-calctech-retain-necessary-not-sufficient` (Gate 9) |
 | 11 | Optimize a composite (chain rule + this method on one item) | **module-owned** | E5 | `mod-calctech-mixed-optimize-composite` (Gate 9) |
@@ -247,7 +247,7 @@ state (guided-to-interactive continuity).
 | 6 | 2 | `opt-endpoint-fresh` | `exercise-sequence` | where the max sits → its value | **Fresh function and interval.** Carries objective 2's E3 evidence, which the checkpoint cannot. |
 | 7 | 4 | `opt-which-hypothesis` | `exercise-sequence` | the unexamined point → the failed hypothesis | **Abstraction return.** Set on an \(f\) not shape-matchable to the lesson's examples. |
 | 8 | 8 | `opt-select-route` | `exercise-sequence` | route → **why that route works here** → value | **Fresh pair**, not the worked example. Prompt names neither route; a certificate exists for one function and not the other. The justification is a captured step, not feedback text. |
-| 9 | 9 | `opt-derive-steps` | `exercise-sequence` | which inequality licenses the sign claim → what \(h\)'s second sign establishes → the improving direction's value | Captures the argument's load-bearing choices at a level the runtime can record. |
+| 9 | 9 | `opt-derive-steps` | `exercise-sequence` | (A) which property of \(g\) licenses the sign inequality — differentiability, not continuity or boundedness → (B) what stepping with one sign of \(h\) alone refutes — one of {max, min}, not both → (C) what property of \(a=0\) supplies the *other* sign of \(h\), completing the refutation of the other one — interiority, not differentiability again → (D) the value at the improving step | Explicitly separates the two hypotheses: (A) tests differentiability as the source of residual control, (C) tests interiority as the source of the second sign, and a learner who conflates them fails one step or the other. |
 | — | — | `opt-derive-escape` | `self-check` (**learner-self-marked**) | model answer: residual bound, a sufficient \(\delta\) (not "the" \(\delta\)), both signs of \(h\), conclusion phrased as a refutation | **Practice event, no evidence claim.** Registered with no objective coverage — `assessmentManifest.ts` bars an E4+ claim on self-marked scoring, and `/review` reads `AttemptSet`s, not lesson exercises. |
 
 Declared mix: **1 check + 5 drill + 4 transfer** = 10 items. Drill: items 1–5.
@@ -267,8 +267,8 @@ function the lesson displays.**
 | --- | --- | --- |
 | **C1** local vs global extremum, with the window explicit | `section` after Watch; definition list | Learner distinguishes the interior local max from the global one in the checkpoint |
 | **C2** L2's local model retrieved | Watch `standSloped` | Learner reads \(m\) and \(E(h)\) off the panel as separate quantities |
-| **C3** escape-route lemma, with a sufficient \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner observes agreement break on a chosen fixture and distinguishes that observation from the certified radius; `opt-derive-steps` captures which inequality licenses the sign claim |
-| **C4** refutation needs both directions | Watch `sweep`; `proof` block | `opt-derive-steps` step 2 — what the **second** sign of \(h\) establishes (a learner holding "one direction is enough" fails it) |
+| **C3** escape-route lemma, with a sufficient \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner observes agreement break on a chosen fixture and distinguishes that observation from the certified radius; `opt-derive-steps` step (A) isolates differentiability, specifically, as what licenses the sign inequality |
+| **C4** refutation needs both directions | Watch `sweep`; `proof` block | `opt-derive-steps` steps (B)+(C) — one sign of \(h\) refutes only one of {max, min} (B), and interiority is what supplies the second sign that refutes the other (C); a learner holding "one direction is enough," or conflating interiority with differentiability, fails one of the two |
 | **C5** Fermat's condition | `formal` block | Learner states hypotheses and conclusion, and the direction |
 | **C6** the converse fails — this test refutes only, while \(f''\) still certifies | Watch `survivorFails`; `callout` M1; and the later second-derivative section, which is where the scope of C6 is made explicit | `opt-flat-not-extremum` — learner declines to conclude, and does **not** generalize to "derivatives cannot certify" (a distractor tests exactly that) |
 | **C7** hypothesis 1, interior | Watch `oneDirection`; `section` "two hypotheses and a converse" | `opt-which-hypothesis`; the checkpoint's endpoint reasoning |
@@ -355,7 +355,7 @@ tests:
 - [ ] The seven invariant tests above
 - [ ] Component tests: explorer readouts, the sign-agreement indicator, sweep, reset, endpoint-opening
 - [ ] Grading contract (`describeGradingContract`) for every auto-graded item, with the adversarial reject battery. `opt-derive-escape` is **not** auto-graded and is **not** routed to review — it is a self-marked practice event registered with no objective coverage, and a test must assert that it covers none
-- [ ] Tier-mix test pinning 1 check + 5 drill + 3 transfer
+- [ ] Tier-mix test pinning 1 check + 5 drill + 4 transfer
 - [ ] Browser test: learner-visible readouts, no console errors, KaTeX clean
 - [ ] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact vocabulary such as "C5" or "Package B" in learner prose)
 
