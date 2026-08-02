@@ -179,6 +179,26 @@ test("the linear preset reports no disagreement anywhere in the domain", async (
   expect(text).toContain("none in this domain");
 });
 
+test("the h slider drives live mh/E(h) readouts, and Run sweep colors the strip by the real candidate set", async ({
+  page,
+}) => {
+  await page.goto("/lesson/optimization-approximation");
+  const explorer = explorerOf(page);
+  await explorer.scrollIntoViewIfNeeded();
+
+  const hSlider = explorer.locator("#h");
+  await expect(hSlider).toBeVisible();
+  await hSlider.fill("-0.5");
+  const afterStep = (await explorer.textContent()) ?? "";
+  expect(afterStep).toContain("1.5"); // mh = -3 * -0.5
+  expect(afterStep).toContain("agrees — mh predicts the actual sign");
+
+  const runSweep = explorer.getByRole("button", { name: "Run sweep", exact: true });
+  await runSweep.click();
+  await expect(explorer.locator(".optapprox-explorer__sweep-dot--candidate").first()).toBeVisible();
+  await expect(explorer.locator(".optapprox-explorer__sweep-dot--refuted").first()).toBeVisible();
+});
+
 test("grades the first practice question (opt-candidate-set's step 1)", async ({
   page,
 }) => {

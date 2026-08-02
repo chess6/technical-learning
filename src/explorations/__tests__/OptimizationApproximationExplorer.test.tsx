@@ -154,4 +154,79 @@ describe("OptimizationApproximationExplorer", () => {
     expect(text).not.toContain("NaN");
     expect(text).not.toContain("L(a+0.3)");
   });
+
+  it("the signed h slider drives live mh / E(h) / sign-agreement readouts", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const before = container.textContent ?? "";
+    expect(before).toContain("h = 0 — take a step to check");
+
+    const hSlider = container.querySelector("#h") as HTMLInputElement;
+    expect(hSlider).toBeTruthy();
+    // Main cubic at a=0: m=-3. Stepping h=-0.5 (the improving direction)
+    // should read mh=1.5 and agree.
+    fireEvent.change(hSlider, { target: { value: "-0.5" } });
+    const after = container.textContent ?? "";
+    expect(after).toContain("1.5");
+    expect(after).toContain("agrees — mh predicts the actual sign");
+  });
+
+  it("a large enough h flips the sign-agreement readout to DISAGREES", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const hSlider = container.querySelector("#h") as HTMLInputElement;
+    // At a=0 on the main cubic, sign(mh) and the actual sign disagree once
+    // |h| exceeds sqrt(3) ≈ 1.732 (same crossing the guided scene's tooBig
+    // beat demonstrates) — -1.9 is within the domain [-2,3] from a=0.
+    fireEvent.change(hSlider, { target: { value: "-1.9" } });
+    const text = container.textContent ?? "";
+    expect(text).toContain("DISAGREES");
+  });
+
+  it("dragging the step past the domain edge clamps h rather than evaluating outside it", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const hSlider = container.querySelector("#h") as HTMLInputElement;
+    // From a=0 on [-2,3], h=-10 would reach x=-10, far outside the domain.
+    fireEvent.change(hSlider, { target: { value: "-10" } });
+    const text = container.textContent ?? "";
+    expect(text).not.toContain("NaN");
+  });
+
+  it("the sweep strip stays neutral until Run sweep is clicked, then colors by the real candidate set", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const before = container.textContent ?? "";
+    expect(before).toContain('Predict which of these');
+    expect(container.querySelectorAll(".optapprox-explorer__sweep-dot--candidate")).toHaveLength(0);
+    expect(container.querySelectorAll(".optapprox-explorer__sweep-dot--refuted")).toHaveLength(0);
+
+    const runButton = [...container.querySelectorAll("button")].find((b) => b.textContent === "Run sweep");
+    expect(runButton).toBeTruthy();
+    fireEvent.click(runButton!);
+
+    const after = container.textContent ?? "";
+    expect(after).toContain("Sweep over");
+    expect(container.querySelectorAll(".optapprox-explorer__sweep-dot--candidate").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".optapprox-explorer__sweep-dot--refuted").length).toBeGreaterThan(0);
+  });
+
+  it("narrowing the interval (p, q) genuinely changes the candidate set and existence guarantee", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    // Main cubic on [-2, 3]: narrow the right bound (q) to 0.5, excluding
+    // both the endpoint x=3 and the stationary point x=1 from candidacy.
+    const qSlider = container.querySelector("#sub-hi") as HTMLInputElement;
+    expect(qSlider).toBeTruthy();
+    fireEvent.change(qSlider, { target: { value: "0.5" } });
+    const text = container.textContent ?? "";
+    expect(text).not.toContain("x = 3 (endpoint)");
+    expect(text).not.toContain("x = 1 (stationary)");
+    expect(text).toContain("x = 0.5 (endpoint)");
+  });
+
+  it("narrowing the sub-interval default preserves the open-interval preset's own openness", () => {
+    // Regression: withSubInterval used to overwrite domainOpen with
+    // undefined whenever the sub-interval equalled the full domain, which
+    // silently turned OPT_OPEN_INTERVAL into a closed fixture by default.
+    const { container } = render(<OptimizationApproximationExplorer />);
+    pickPreset(container, "x on an open interval");
+    const text = container.textContent ?? "";
+    expect(text).toContain("no — the domain is open");
+  });
 });

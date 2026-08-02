@@ -7,3 +7,54 @@
   color: var(--color-text-muted);
   font-size: 0.92rem;
 }
+
+/* Interval + sweep controls, grouped so the "Run sweep" button sits directly
+   beside the p/q/resolution sliders it acts on. */
+.optapprox-explorer__sweep {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.optapprox-explorer__run-sweep {
+  align-self: flex-start;
+}
+
+/* The sweep strip — a row of sample dots, neutral until "Run sweep" is
+   clicked (the woven-Explore obligation: predict, then verify), then colored
+   by membership in the already-computed candidate set. */
+.optapprox-explorer__sweep-strip {
+  margin-top: 0.75rem;
+}
+
+.optapprox-explorer__sweep-prompt {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.optapprox-explorer__sweep-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.optapprox-explorer__sweep-dot {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--role-selected);
+  opacity: 0.5;
+}
+
+.optapprox-explorer__sweep-dot--candidate {
+  background: var(--role-selected);
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-on-role, transparent);
+}
+
+.optapprox-explorer__sweep-dot--refuted {
+  background: var(--role-intermediate);
+  opacity: 0.6;
+}
