@@ -429,7 +429,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); **Gate 8 ACCEPTED 2026-08-01** by the repository owner (a domain-owner sign-off distinct from the implementing/reviewing agent lineage), after acceptance review found and fixed a mathematical defect in the derivation — it divided by \\(\\Delta u\\) in the very step whose thesis is that it never does — and rewrote both E2 recognition items, whose distractors were answerable by test-taking instinct. See the [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8). L6 `optimization-approximation`: **Mode B planning complete and independently reviewed across two rounds** (2026-08-01), both Mode A amendments **resolved by the owner**, and **Mode C implementation now underway** on `feature/l6-optimization-approximation`, per the owner's explicit 2026-08-01 authorization to cross the Mode B → Mode C boundary. L7–L8 not started.** | `master` for L5 (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted); L6 in progress on `feature/l6-optimization-approximation`. | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md)<br>L6: [insight-brief](lessons/06-optimization-approximation/insight-brief.md) · [insight `PASS`](lessons/06-optimization-approximation/insight.md) · [contract](lessons/06-optimization-approximation/mastery-contract.md) · [plan](lessons/06-optimization-approximation/lesson-plan.md) — both Mode A amendments resolved; independent review complete |
+| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); **Gate 8 ACCEPTED 2026-08-01** by the repository owner (a domain-owner sign-off distinct from the implementing/reviewing agent lineage), after acceptance review found and fixed a mathematical defect in the derivation — it divided by \\(\\Delta u\\) in the very step whose thesis is that it never does — and rewrote both E2 recognition items, whose distractors were answerable by test-taking instinct. See the [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8). **L6 `optimization-approximation` is built** on `feature/l6-optimization-approximation` (Mode B docs through `Gate result: PASS`, independently reviewed across two rounds, plus full Mode C lesson code — guided scene, explorer, 9 auto-graded exercises + 1 self-marked practice event, all registered in the shared assessment manifest), per the owner's explicit 2026-08-01 authorization to cross the Mode B → Mode C boundary. `./check.sh`-tier verification green (full unit/component suite, typecheck, lint); **L6's own Gate 8 sign-off is still open**, pending independent review — see the acceptance record in [mastery-contract.md §6](lessons/06-optimization-approximation/mastery-contract.md#6-acceptance-record-gate-8). L7–L8 not started.** | `master` for L5 (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted); L6 built on `feature/l6-optimization-approximation`, not yet merged. | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md)<br>L6: [insight-brief](lessons/06-optimization-approximation/insight-brief.md) · [insight `PASS`](lessons/06-optimization-approximation/insight.md) · [contract](lessons/06-optimization-approximation/mastery-contract.md) · [plan](lessons/06-optimization-approximation/lesson-plan.md) — both Mode A amendments resolved; independent review complete; **implementation complete, Gate 8 open** |
 | C–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
@@ -455,10 +455,12 @@ before implementing it").
 > [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8),
 > which is the authoritative statement of that gate's status.
 >
-> **L6 `optimization-approximation` is planned, not built** (Mode B complete
-> 2026-08-01: brief, `PASS` contract, mastery contract, lesson plan). It is
-> still a `future` node; **writing its lesson code requires explicit owner
-> approval.** Both **Mode A amendments** its plan depended on were **resolved by
+> **L6 `optimization-approximation` is built** (Mode B complete 2026-08-01:
+> brief, `PASS` contract, mastery contract, lesson plan; Mode C — math layer,
+> lesson content, guided scene, explorer, grading contracts, curriculum
+> registration — complete on `feature/l6-optimization-approximation` the same
+> day, per the owner's explicit authorization to cross the Mode B → Mode C
+> boundary). Both **Mode A amendments** its plan depended on were **resolved by
 > the owner on 2026-08-01**:
 >
 > 1. the `fundamental-theorem → optimization-approximation` **hard edge is
@@ -474,10 +476,13 @@ before implementing it").
 >    Gate 5 consumed a calibrated target rather than being checked against one
 >    afterwards.
 >
-> **Still open before Mode C:** a further independent read of the Mode B
-> artifacts. Two owner review rounds have each found real defects the
-> self-audits passed — the second of them a core objective assigned to evidence
-> the runtime provably cannot produce.
+> **Still open: L6's own independent Gate 8 review**, from outside the
+> implementing/reviewing agent lineage — the same class of obligation Stream
+> 1 named for L5, discharged there by the repository owner's 2026-08-01
+> acceptance. L6's Mode B artifacts already carry two owner review rounds
+> (each finding real defects the self-audits passed); Mode C implementation
+> itself is self-verified only (`./check.sh`-tier suites green, no `--e2e`
+> browser confirmation yet) and has not had an independent pass.
 >
 > Anyone starting further Package B work should check
 > `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a
@@ -543,10 +548,13 @@ reason, proven by a regression that feeds the family a non-interval pairing.
 (`feature/l5-chain-rule`, 2026-08-01; branch deleted). Its first lesson,
 `chain-rule` (L5), is fully built (Mode B docs through `Gate result: PASS`,
 plus Mode C lesson code), verified, and **Gate 8 accepted by the repository
-owner on 2026-08-01**. **L6 `optimization-approximation`'s Mode B planning is
-complete and independently reviewed across two rounds**, both Mode A
-amendments **resolved**, and the owner gave explicit 2026-08-01 authorization
-to cross the Mode B → Mode C boundary — **implementation is now underway** on
-`feature/l6-optimization-approximation`. L7–L8 have not been started. See
-§6.1's package-status ledger and `docs/engineering/HANDOFF.md` before starting
-further Package B work.
+owner on 2026-08-01**. **L6 `optimization-approximation` is fully built** —
+Mode B planning complete and independently reviewed across two rounds, both
+Mode A amendments resolved, and, per the owner's explicit 2026-08-01
+authorization to cross the Mode B → Mode C boundary, Mode C implementation
+(math layer, lesson, guided scene, explorer, grading contracts, curriculum
+registration) complete the same day on `feature/l6-optimization-approximation`
+— **verified self-only** (unit/component suite and typecheck/lint green, no
+independent review, no `--e2e` browser confirmation yet). L7–L8 have not been
+started. See §6.1's package-status ledger and `docs/engineering/HANDOFF.md`
+before starting further Package B work.

@@ -1846,3 +1846,79 @@ only uniqueness test in the repo covered `chapter0Lesson` alone.
   for `visual`; mirrored for `explore`. Not triggered by any current lesson
   (LessonPage always populates the map, falling back to a placeholder panel).
   Recorded, not fixed.
+
+## Deciding with the Derivative — `optimization-approximation` (spine L6, 2026-08-01)
+
+Mode C implementation, self-verified only (no independent review, no
+`--e2e` browser pass yet). Recorded honestly: several items below need a
+browser to confirm and are left unticked for that reason, not overlooked.
+
+### Mathematical review
+
+- [x] Formulas independently verified — every displayed number is computed by
+      `src/math/optimization.ts` and checked against hand-derived values in
+      `optimization.test.ts` (the decay trust radius against insight.md's
+      hand-worked 0.2121; the main cubic's candidate values against a direct
+      evaluation).
+- [x] Shared utilities from `src/math` used throughout — the guided scene
+      imports `OPT_MAIN_CUBIC`/`OPT_CUBIC_SURVIVOR`/`OPT_ABS` directly rather
+      than reimplementing formulas (a hand-derived `E(h)=h^3` closed form was
+      caught and replaced with a computation from the actual fixture).
+- [x] No hardcoded geometry conflicting with the math model — the explorer's
+      `FunctionPlot` adapter reads `f`/`derivative` from the fixture; nothing
+      is drawn from a separately maintained formula.
+- [ ] Basis-column convention — not applicable (no linear-algebra transform in
+      this lesson).
+- [x] Degenerate cases checked: constant function (non-finite reduction),
+      open interval (withdrawn existence guarantee), the silence battery
+      (\(x^4\), \(-x^4\), \(x^3\)) — all covered by dedicated property tests.
+- [x] No animated interpolation stands in for real computation — the sweep is
+      explicitly captioned as a sampled visualization of the proven lemma,
+      never claimed to test every real point.
+
+### Visual review
+
+- [x] Labels match computed values in the guided scene (a load-time assertion
+      checks the four displayed candidate values against `f` itself).
+- [ ] Arrows/labels point to computed endpoints, no clipping — **needs a
+      browser pass**; not confirmed here.
+- [ ] Grid/label alignment at the safe frame — **needs a browser pass**.
+- [x] Screen-\(y\) inversion — handled by the same `px()` convention
+      `derivativeLocalLinearityScene.ts` already uses; no new risk introduced.
+- [x] Animation intermediate states labelled honestly — both true holds
+      (`predictStep`, and the verdict pause in `survivorNotAnswer`) leave the
+      withheld value genuinely off-screen, not just visually de-emphasized.
+
+### Testing review
+
+- [x] Unit tests for pure math helpers — `optimization.test.ts`, 31 tests.
+- [x] "Invariant" tests for this lesson's own properties (no shared
+      `invariants.ts` entries apply; the seven required property tests in
+      mastery-contract.md §1g are implemented instead, same role).
+- [x] Degenerate/singular cases covered (see Mathematical review above).
+- [x] Component test for learner-visible readouts —
+      `OptimizationApproximationExplorer.test.tsx`, 10 tests, including one
+      real bug caught on first run (`certifiedRadius` threw on `OPT_ABS`
+      because it unconditionally required a `secondDerivativeBound` that
+      fixture correctly omits — fixed by gating on the bound's presence).
+- [ ] Browser test for learner-visible readouts in the full page context —
+      **not run**; `./check.sh --e2e` has not been executed against this
+      branch.
+- [x] `known-failure-modes.md` — no new failure-mode CLASS was found (the
+      bugs above were caught by tests before shipping, which is what the
+      existing guards are for); nothing added.
+
+### Teaching review
+
+- [x] Readouts and explanation text agree — cross-checked by the grading
+      contract's mustAccept cases, which assert the exact displayed numbers.
+- [x] Learner-facing notation uses KaTeX consistently, matching L2's \(E(h)\)
+      (`proseEmphasis.test.ts` green: no unpaired `$`, no doc-internal
+      artifact vocabulary in learner prose).
+- [ ] "Visualization does not imply a false mathematical statement" — checked
+      as far as static review and the load-time assertions can confirm;
+      **the rendered page itself has not been read by anyone**. L5's own
+      acceptance review found a real presentation defect (doc-internal
+      citations reaching learner prose) that no automated test caught — the
+      same class of risk applies here until someone opens
+      `/lesson/optimization-approximation`.

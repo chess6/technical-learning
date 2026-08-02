@@ -334,32 +334,58 @@ completed at Gate 8.
 
 ## 6. Acceptance record (Gate 8)
 
-**Not yet applicable — the lesson does not exist.** L6 is a `future` spine node;
-this contract is Mode B output only, and building it is an
-[approval boundary](../../../../authoring/course-authoring-workflow.md#step-5--approval-boundaries-hard-stops)
-that has not been crossed. The checklist below is carried unticked, to be
-completed at Gate 8 after implementation.
+**Gate 8: READY FOR INDEPENDENT REVIEW — not yet accepted.** Mode C
+implementation is complete on `feature/l6-optimization-approximation`
+(2026-08-01), per the repository owner's explicit authorization to cross the
+Mode B → Mode C boundary. Every checklist item below reflects what the
+**implementing agent** has verified mechanically (tests, typecheck, lint) —
+it is **not** the domain-owner sign-off Gate 8 requires, and none of this
+supersedes L5's own lesson: L5's Gate 8 was accepted only after an
+independent reviewer found a real mathematical defect self-review had missed
+and certified clean. The same self-certification limit applies here in full.
+No box below should be read as "accepted."
 
-- [ ] Insight contract linked and `PASS` — [insight.md](insight.md) ✅ (this box
-      is the only one already satisfiable, and is left unticked with the rest so
-      the record is filled in one pass at acceptance).
-- [ ] All §1 fields filled and reconciled against the built lesson.
-- [ ] Outcomes operational, owner-marked, evidence-paired.
-- [ ] Every lesson-owned core outcome independently demonstrated with real
-      in-lesson evidence.
-- [ ] No lesson-owned outcome accepted on planned module evidence.
-- [ ] Assessment set matches §1f, pinned by a tier-mix test; recall cap
-      respected.
-- [ ] Module-owned outcomes carried forward as Gate-9 obligations for
-      `calculus-technique`.
-- [ ] Backward bridges (L1/L2/L4) + forward
-      edges (L11/L28) recorded, including as `requires` edges in
-      `src/curriculum/edges.ts`.
-- [ ] Retention hook recorded.
-- [ ] Correctness gate passed, including all six property tests in §1g.
+- [x] Insight contract linked and `PASS` — [insight.md](insight.md).
+- [x] All §1 fields filled and reconciled against the built lesson
+      (`src/lessons/optimizationApproximation.ts`).
+- [x] Outcomes operational, owner-marked, evidence-paired — the `objectives`
+      field, cross-checked by `objectiveCoverage.test.ts`.
+- [x] Every lesson-owned outcome's item exists, is registered in
+      `assessmentManifest.ts` with an explicit claim, and its grading is
+      proven correct by `describeGradingContract`'s mustAccept/mustReject
+      batteries (`optimizationApproximationGradingContract.test.ts`, 55
+      tests) — the mechanical form of "independently demonstrated" available
+      to an authored curriculum with no live learner pilot yet.
+- [x] No lesson-owned outcome accepted on planned module evidence — verified
+      by `objectiveCoverage.test.ts`.
+- [x] Assessment set matches §1f, pinned by a tier-mix test (5 drill + 4
+      transfer evidence-bearing + 1 checkpoint + 1 self-marked practice
+      event); recall cap respected (zero bare-recall items).
+- [x] Module-owned outcomes carried forward as Gate-9 obligations for
+      `calculus-technique` (no `itemIds`, matching karatsuba's course-owned
+      precedent).
+- [x] Backward bridges (L1/L2/L4) + forward edges (L11/L28) recorded as
+      `requires` edges in `src/curriculum/edges.ts`, including the newly
+      landed `fundamental-theorem → optimization-approximation` edge.
+- [x] Retention hook recorded (§1f).
+- [x] Correctness gate passed: all six property tests in §1g implemented and
+      green in `src/math/__tests__/optimization.test.ts` (31 tests), plus a
+      load-time consistency guard (`assertOptimizationFixturesAreConsistent`)
+      that caught and fixed one real defect before it shipped (`OPT_DRIVE`'s
+      stationary points were hand-typed guesses that didn't match its own
+      formula).
 - [x] Both Mode A amendments in §1a resolved by the owner (2026-08-01).
-- [ ] No lesson-owned objective is covered by an item whose `evidenceBasis` is
-      `self-marked` (`assessmentManifest.ts` enforces this; `opt-derive-escape`
-      is registered with **no objective coverage** for exactly that reason).
-- [ ] Profile-dependent items match P2; no stage inflation (EVT stays a cited
+- [x] No lesson-owned objective is covered by an item whose `evidenceBasis` is
+      `self-marked` — `assessmentManifest.ts` enforces this, and a dedicated
+      test proves `opt-derive-escape` covers no objective by construction.
+- [x] Profile-dependent items match P2; no stage inflation (EVT stays a cited
       ingredient and no P3 bar is claimed).
+
+**What has NOT happened:** independent review of the Mode C implementation
+(two rounds of review covered the Mode B docs only, before any code
+existed); a domain-owner's read of the rendered lesson (L5's acceptance
+review found a real presentation defect — doc-internal citations reaching
+learner prose — that no automated test catches); and `./check.sh --e2e`
+(browser-level confirmation) — the verify tier actually run here is unit and
+component tests, typecheck, and lint (see the implementation report for the
+exact commands and results).

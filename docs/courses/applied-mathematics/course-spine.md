@@ -185,8 +185,9 @@ M9–M11 are three branches, described in [§6](#6-the-three-branches).
 ## 4. The spine at a glance
 
 `Status`: all `future` except `limits-continuity`, `derivative-local-linearity`,
-`integral-accumulation`, and `fundamental-theorem`, which are **built**
-(Package A, complete).
+`integral-accumulation`, and `fundamental-theorem` (Package A, complete), and
+`chain-rule` and `optimization-approximation` (Package B, in progress), which
+are **built**.
 
 | Spine | Lesson | Central insight (the "not memorize X, but Y") | Unit | Curriculum id |
 | --- | --- | --- | --- | --- |
@@ -196,8 +197,8 @@ M9–M11 are three branches, described in [§6](#6-the-three-branches).
 | L2 | The derivative as local linearity **(built)** | Zoom far enough into a smooth curve and it **is** a line. "Rate of change", "slope of the tangent", and "best linear approximation" are one object read three ways. | `calculus-foundations` | `derivative-local-linearity` |
 | L3 | The integral as accumulation **(built)** | An integral is **the total of a rate**; "area under the curve" is what totalling a rate looks like when the thing you drew is the rate. | `calculus-foundations` | `integral-accumulation` |
 | L4 | The Fundamental Theorem of Calculus **(built)** | Measuring a rate and accumulating a rate are **inverse processes**, and the infinite sum collapses because interior contributions **telescope**. **Theme 1, in one dimension.** | `calculus-foundations` | `fundamental-theorem` |
-| L5 | The chain rule: rates compose | Composing functions composes their local linear models, so rates **multiply**. This is matrix composition (LA L6) in one dimension. | `calculus-technique` | `chain-rule` |
-| L6 | Deciding with the derivative | The derivative turns "find the best" into "find where the local model is flat", and "hard function" into "easy polynomial, near here". | `calculus-technique` | `optimization-approximation` |
+| L5 | The chain rule: rates compose **(built)** | Composing functions composes their local linear models, so rates **multiply**. This is matrix composition (LA L6) in one dimension. | `calculus-technique` | `chain-rule` |
+| L6 | Deciding with the derivative **(built)** | At an interior differentiable point, a nonzero derivative **refutes** a local extremum; a zero derivative only **survives** that one-point test — a survivor is not yet a winner, which is why the second-derivative test exists. Linearization is the same local model read as an approximation instead of a decision. | `calculus-technique` | `optimization-approximation` |
 | L7 | Two techniques, both derived | Substitution is the chain rule read backwards; parts is the product rule read backwards — and **parts is the boundary term of Theme 1**, which is why it reappears in both transforms. | `calculus-technique` | `substitution-parts` |
 | L8 | Accumulating forever | An integral over an infinite interval is a **limit of finite accumulations**; convergence is a question about **decay rate**. Licenses every transform integral in the course. | `calculus-technique` | `improper-integrals` |
 | L9 | Sequences and their limits | A sequence converges when its tail is eventually trapped in any tolerance — L1's guarantee with the window replaced by "far enough along". | `series` | `sequences-limits` |

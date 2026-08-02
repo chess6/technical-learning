@@ -71,12 +71,14 @@ generic block names below are internal metadata only.)*
   [Supporting tier](../../curriculum-architecture.md#51-visual-budget-flagship-vs-supporting).
 
 ### Authored `route`
-`motivate` → `watch` → `section` → `formal` (Fermat) → `proof` → `callout` (M1)
-→ `check` → `section` (two hypotheses and a converse) → `worked` (the main case) →
-`formal` (EVT, flagged unproved) → `callout` (M6) → `explore` → `section` (the
-silent model) → `formal` + `worked` (second-derivative test and its silence) →
-`section` + `worked` (how far a straight line can be trusted) → `practice` →
-`summarize`.
+`motivate` → `watch` → `section` → `formal` (definition of local/global
+extremum — inserted at build time, ahead of Fermat's, so "extremum" is
+defined before the theorem uses it) → `formal` (Fermat) → `proof` →
+`callout` (M1) → `check` → `section` (two hypotheses and a converse) →
+`worked` (the main case) → `formal` (EVT, flagged unproved) → `callout` (M6)
+→ `explore` → `section` (the silent model) → `formal` + `worked`
+(second-derivative test and its silence) → `section` + `worked` (how far a
+straight line can be trusted) → `practice` → `summarize`.
 
 Two deliberate choices:
 - A **`proof` block**, not a collapsed justification. The lesson's subject *is*
@@ -360,18 +362,24 @@ tests:
 - [ ] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact vocabulary such as "C5" or "Package B" in learner prose)
 
 ## Acceptance checklist
-- [ ] Insight Contract linked and `PASS`; exact sentence verbatim above; learner wording preserves meaning and causal chain
-- [ ] Insight traceability table complete, with the two ungraded obligations declared rather than hidden
-- [ ] Intentional `route` composed from the palette; the `proof` block and the absent `handoff` both justified above
-- [ ] Every objective names owner and level; every lesson-owned objective resolves to an item
-- [ ] Medium justification present for both media used
-- [ ] Content-specific headings and ToC entries
-- [ ] Guided-to-interactive continuity (same example, notation, roles)
-- [ ] Progressive disclosure applied (approximation panel collapsed by default)
-- [ ] KaTeX notation consistent with L2's \(E(h)\)
-- [ ] Accessibility: labels, focus, readouts, reduced motion
-- [ ] Diagrams labelled, unclipped, safe frame intact
-- [ ] Viewport/zoom checks
-- [ ] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed
+
+> Ticked items reflect what the implementing agent verified mechanically
+> (tests, typecheck, lint, static review) on 2026-08-01. None of this is
+> independent review or a domain-owner's read of the rendered page — see
+> mastery-contract.md §6 for the full status and what remains open.
+
+- [x] Insight Contract linked and `PASS`; exact sentence verbatim above; learner wording preserves meaning and causal chain
+- [x] Insight traceability table complete, with the two ungraded obligations declared rather than hidden
+- [x] Intentional `route` composed from the palette; the `proof` block and the absent `handoff` both justified above (the built route additionally inserts a `def-extremum` formal block before Fermat's, a refinement over this plan's original sequencing, noted here for consistency)
+- [x] Every objective names owner and level; every lesson-owned objective resolves to an item (`objectiveCoverage.test.ts` green)
+- [x] Medium justification present for both media used
+- [x] Content-specific headings and ToC entries (route blocks carry no generic phase-name headings)
+- [x] Guided-to-interactive continuity (same main fixture `OPT_MAIN_CUBIC`, same notation, same roles)
+- [x] Progressive disclosure applied (approximation panel collapsed by default, gated behind a toggle)
+- [x] KaTeX notation consistent with L2's \(E(h)\)
+- [ ] Accessibility: labels, focus, readouts, reduced motion — ariaLabel props present on both the scene and the explorer's `FunctionPlot`; **not confirmed with a screen reader or a real browser**
+- [ ] Diagrams labelled, unclipped, safe frame intact — **needs a browser pass**, see lesson-correctness-checklist.md
+- [ ] Viewport/zoom checks — **needs a browser pass**
+- [x] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed, with the browser-only items explicitly left open there rather than falsely ticked
 - [x] **Both Mode A amendments resolved** by the owner, 2026-08-01 — the L4 edge is approved, so C13/C15 are derived under an explicit continuous-\(f''\) hypothesis; the M2 bar is amended
-- [ ] All tests pass
+- [x] All automated tests pass: full `vitest run` (153 files, 2435 tests), `tsc -b` clean, `oxlint` clean. **`./check.sh --e2e` has not been run** — no Playwright/browser confirmation yet.

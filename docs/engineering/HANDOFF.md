@@ -34,8 +34,11 @@ that still read "pending" were stale and have been corrected.
 
 **Open:** Gate 9 items for `calculus-foundations` remain unadministered.
 
-**L6 `optimization-approximation` is planned, not built** (2026-08-01, this
-session — see Stream 3 below).
+**L6 `optimization-approximation` is built** on
+`feature/l6-optimization-approximation` (2026-08-01, this session — see
+Stream 3 below), per the owner's explicit authorization to cross the
+Mode B → Mode C boundary. Self-verified only: no independent review of the
+implementation, and `./check.sh --e2e` has not been run.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -258,14 +261,16 @@ agent doesn't redo it from scratch or, worse, "fix" what already fits.
 
 ---
 
-## Stream 3 — L6 `optimization-approximation`, planned only (2026-08-01)
+## Stream 3 — L6 `optimization-approximation` (2026-08-01)
 
-**Docs-only. No lesson code. L6 is still a `future` node.** A short prompt
-authorizes Mode B for a uniquely resolved next node and never Mode C, so
-planning ran and stopped at the boundary. Artifacts under
+**Originally planning-only** (see the unchanged narrative below); **Mode C
+implementation followed the same day** on `feature/l6-optimization-approximation`,
+per the owner's explicit authorization to cross the Mode B → Mode C boundary
+— see "Mode C implementation" further down for what was built and verified.
+Artifacts under
 `docs/courses/applied-mathematics/lessons/06-optimization-approximation/`:
 brief (Gate 3), contract (Gate 4, `PASS`), mastery contract (Gate 5), plan
-(Stage 3).
+(Stage 3) — all now reconciled against the built lesson.
 
 **The insight, and why it is not the spine's.** The spine says the derivative
 turns "find the best" into "find where the local model is flat". That wording is
@@ -343,6 +348,84 @@ were both checked and found sound**. The defects were in what the documents
 *claimed around* those derivations: the thesis, the evidence levels, the
 correctness oracles. That is the same failure mode L5 hit, one level up, and it
 is the argument for a further independent read before implementation.
+
+### Mode C implementation (2026-08-01, same session)
+
+The owner's next prompt was **explicit repository-owner authorization to
+cross the Mode B → Mode C boundary and build L6**. Branch
+`feature/l6-optimization-approximation`; no competing implementation found on
+`master`, any branch, or any worktree before starting.
+
+**Built:** `src/math/optimization.ts` (a new module, deliberately kept
+separate from `calculus.ts` — see its own docstring for why); the full
+`LessonDefinition` in `src/lessons/optimizationApproximation.ts`; a guided
+scene (`optimizationApproximationScene.ts`, registered across
+`sceneTimings.ts`/`sceneBeatIntents.json`/`sceneMeta.ts`/
+`sceneDescriptions.ts`/`animation-authoring-scenes.json` — five separate
+mechanical surfaces, not one); an explorer
+(`OptimizationApproximationExplorer.tsx`, reusing `FunctionPlot`); grading
+contracts and a tier-mix test
+(`optimizationApproximationGradingContract.test.ts`); and full curriculum
+registration (`registry.ts`, `courseModel.ts`, `lessonRoster.ts`, the
+approved FTC edge in `edges.ts`, and — the one genuinely new registration
+this lesson's items needed — entries in `assessmentManifest.ts`, following
+karatsuba's real precedent rather than L5's mistaken claim that lesson items
+aren't registered there; see the commit that fixed L5's stale claim).
+
+**Every commit ran the actual test suites and fixed what they found, rather
+than assuming green.** Nine real, distinct bugs surfaced this way across ten
+commits — not a sign the work was sloppy, but the expected shape of building
+something this size and actually checking it:
+
+1. `OPT_DRIVE`'s stationary points were hand-typed rounded guesses that
+   didn't match its own velocity formula — caught by the math layer's own
+   consistency guard before any test ran against it.
+2. A hand-derived `E(h)=h^3` closed form in the guided scene, replaced with a
+   computation from the actual fixture, per the MATH_CORRECTNESS rule.
+3. Four unpaired `$` in exercise explanation strings (a leading KaTeX
+   delimiter omitted), caught by `proseEmphasis.test.ts`.
+4. `certifiedRadius` unconditionally required a `secondDerivativeBound` that
+   `OPT_ABS` correctly omits — threw on ANY point of that preset, not just
+   the singular one. Caught by the explorer's own component test on first
+   run.
+5. `objectiveCoverage.test.ts`/`evidenceCeiling.test.ts` failed until the
+   nine `assessmentManifest.ts` entries actually landed — proof the coverage
+   gate bites, not just that it compiles.
+6. A registry-order snapshot test (`lessonWiring.test.ts`) needed the new
+   lesson id appended — the correct, expected update for a newly registered
+   lesson.
+7. `authoringSceneRegistry.test.ts` caught a THIRD scene-registration surface
+   (`scripts/animation-authoring-scenes.json`) missed by the first two
+   registration passes.
+8. `designSystem.test.ts` caught an undefined CSS custom property
+   (`--role-violation` does not exist; no violation-specific token exists at
+   all — used `--role-invariant` instead).
+9. `oxlint` caught three unused imports; fixing the third
+   (`OPT_NEG_QUARTIC`) exposed a real gap — the explorer's "quartic" preset
+   promised "x⁴ / −x⁴" but only ever showed x⁴. Added a genuine second
+   preset rather than silence the warning by deleting the reference.
+
+**Verification actually run:** full `vitest run` (153 files, 2435 tests,
+green), `tsc -b` (clean), `oxlint` (clean). **Not run:**
+`./check.sh --e2e` — no Playwright/browser confirmation of the rendered
+page. L5's own acceptance review found a real presentation defect (doc-internal
+citations reaching learner prose) that no automated test catches; the same
+class of risk is open here until someone actually opens
+`/lesson/optimization-approximation`.
+
+**Gate 8 is explicitly NOT claimed.** `mastery-contract.md` §6 records what
+the implementing agent verified mechanically and states plainly that this is
+not the domain-owner sign-off Gate 8 requires — the L5 precedent (self-review
+passed, an independent reviewer then found a real mathematical defect in
+exactly the step self-review had certified) is the reason to take that
+distinction seriously rather than as a formality.
+
+A minor Mode A-adjacent correction made alongside implementation, flagged
+rather than silently done: `course-spine.md`'s L6 row carried the spine's own
+imprecise sentence ("find where the local model is flat") verbatim, never
+repaired despite the insight-brief naming the repair as owed. Corrected to
+match the shipped insight, and L5's row (also missing its `**(built)**`
+marker since merge) fixed at the same time.
 
 ---
 
