@@ -126,18 +126,24 @@ reached `PASS`. Second lesson of Package B (`calculus-technique`).
 
 ## 1d. Outcomes with evidence
 
+> **Attainment column, read literally.** "Built" means the item exists, is
+> registered in `assessmentManifest.ts`, and its grading is proven correct by
+> `describeGradingContract`'s mustAccept/mustReject batteries
+> (`optimizationApproximationGradingContract.test.ts`). It is **not**
+> independent review, and it is not a live learner's success — see §6.
+
 | Outcome (operational) | Dim | Owner | Level | Evidence item | Attainment |
 | --- | --- | --- | --- | --- | --- |
-| Given a fresh \(f\) on a fresh closed interval, construct the complete candidate set and state why each non-stationary member is in it | D2/D3 | lesson | E3 | `opt-candidate-set` (`exercise-sequence`: the candidate points (`numeric`, count then values) → the reason for the non-stationary one (`multiple-choice`) → the global maximum (`numeric`)) | planned |
-| Predict, before computing, that the global maximum sits at an endpoint although an interior local maximum exists | D1/D9 | lesson | E3 | `opt-endpoint-fresh` (`exercise-sequence` on a **fresh** function and interval: where the max sits (`multiple-choice`) → its value (`numeric`)) | planned |
-| Decline to conclude an extremum from \(f'(a)=0\), and state what *does* follow | D13 | lesson | E2 | `opt-flat-not-extremum` (`multiple-choice`; distractors are rival diagnoses, incl. one **true but not the conclusion**) | planned |
-| On an unfamiliar function, name **which hypothesis** of the refutation argument fails at a given point | D9/D13 | lesson | E3 | `opt-which-hypothesis` (`exercise-sequence`: the unexamined extremum's location (`numeric`) → which hypothesis failed (`multiple-choice`)) | planned |
-| Say what the method returns on an open interval, and why that is correct rather than broken | D13/D5 | lesson | E2 | `opt-open-interval` (`multiple-choice`) | planned |
-| Classify a survivor with the second-derivative test, and return "silent" when \(f''(a)=0\) | D3/D7 | lesson | E3 | `opt-second-test-silent` (`exercise-sequence`: classify where \(f''\neq0\) (`multiple-choice`) → verdict where \(f''=0\) (`multiple-choice`) → pick the pair of functions separating the cases (`multiple-choice`)) | planned |
-| From a curvature bound, produce an interval on which a linearization meets a stated tolerance | D3/D4 | lesson | E3 | `opt-linearize-tolerance` (`numeric`, graded on \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\)) | planned |
-| Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **fresh** pair of functions, not the worked example: which route (`multiple-choice`, prompt names neither) → **why that route works here** (`multiple-choice`, rival justifications — the *justification is captured*, not left to feedback) → the extremum (`numeric`)) | planned |
-| Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on \(g(x)=x^2-4x+1\) at \(a=0\), a fresh pair used nowhere else: **(A)** which property of \(g\) licenses treating \(E(h)\) as smaller than \(\lvert mh\rvert\) for small \(h\) — differentiability, not mere continuity or boundedness (`multiple-choice`); **(B)** stepping with only \(h>0\), which single claim (max or min) that alone refutes (`multiple-choice`); **(C)** what property of \(a=0\) is what makes \(h<0\) *also* available, so the *other* claim gets refuted too — interiority, not differentiability again (`multiple-choice`); **(D)** the value at the step that actually improves (`numeric`)) | planned |
-| Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | n/a |
+| Given a fresh \(f\) on a fresh closed interval, construct the complete candidate set and state why each non-stationary member is in it | D2/D3 | lesson | E3 | `opt-candidate-set` (`exercise-sequence`, 6 steps: the count of interior stationary points → each of the three constructed individually, in increasing order → why BOTH endpoints belong (`multiple-choice`, the one shared reason) → the global maximum (`numeric`)) | built |
+| Predict, before computing, that the global maximum sits at an endpoint although an interior local maximum exists | D1/D9 | lesson | E3 | `opt-endpoint-fresh` (`exercise-sequence` on a **fresh** function and interval: where the max sits (`multiple-choice`) → its value (`numeric`)) | built |
+| Decline to conclude an extremum from \(f'(a)=0\), and state what *does* follow | D13 | lesson | E2 | `opt-flat-not-extremum` (`multiple-choice`; distractors are rival diagnoses, incl. one **true but not the conclusion**) | built |
+| On an unfamiliar function, name **which hypothesis** of the refutation argument fails at a given point | D9/D13 | lesson | E3 | `opt-which-hypothesis` (`exercise-sequence` on \(n(x)=\sqrt[3]{(x-2)^2}+1\) — no absolute-value notation, not shape-matchable to the lesson's own \(\lvert x\rvert\) example: the minimum's location and value (`numeric`) → which hypothesis failed (`multiple-choice`)) | built |
+| Say what the method returns on an open interval, and why that is correct rather than broken | D13/D5 | lesson | E2 | `opt-open-interval` (`multiple-choice`) | built |
+| Classify a survivor with the second-derivative test, and return "silent" when \(f''(a)=0\) | D3/D7 | lesson | E3 | `opt-second-test-silent` (`exercise-sequence`: classify where \(f''\neq0\) (`multiple-choice`) → verdict where \(f''=0\) (`multiple-choice`) → pick the pair of functions separating the cases (`multiple-choice`)) | built |
+| From a curvature bound, produce an interval on which a linearization meets a stated tolerance | D3/D4 | lesson | E3 | `opt-linearize-tolerance` (`numeric`, graded on \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\)) | built |
+| Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **genuine fresh pair**, \(p(x)=x^2+6x+11\) and \(q(x)=x^3-6x^2+9x+1\): which has an algebraic certificate (`multiple-choice`, choices name only the structural reason, never the completed identity or the answer) → \(p\)'s certified minimum (`numeric`) → why \(q\) has no such shortcut (`multiple-choice`, the captured justification) → \(q\)'s minimum via the full calculus route (`numeric`, landing at an ENDPOINT, not either interior stationary point)) | built |
+| Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on \(g(x)=x^2-4x+1\) at \(a=0\), a fresh pair used nowhere else: **(A)** which property of \(g\) licenses treating \(E(h)\) as smaller than \(\lvert mh\rvert\) for small \(h\) — differentiability, not mere continuity or boundedness (`multiple-choice`); **(B)** stepping with only \(h>0\), which single claim (max or min) that alone refutes (`multiple-choice`); **(C)** what property of \(a=0\) is what makes \(h<0\) *also* available, so the *other* claim gets refuted too — interiority, not differentiability again (`multiple-choice`); **(D)** the value at the step that actually improves (`numeric`)) | built |
+| Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | built (no evidence claim) |
 | Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
 | Optimize a **composite** on an interval, requiring L5's chain rule to differentiate and L6's method to decide | D10 | **module** | E5 | `mod-calctech-mixed-optimize-composite` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
 
@@ -232,9 +238,14 @@ budget (one item) is therefore **unspent**; if a bare definition item is added a
 build time it is the only one permitted.
 
 ## 1e. Coverage status
-Taught: all of §1c. Practiced: every lesson-owned outcome (planned). Nothing is
-yet independently demonstrated — the lesson does not exist. This section is
-completed at Gate 8.
+Taught: all of §1c, built in `src/lessons/optimizationApproximation.ts`.
+Practiced: every lesson-owned outcome has a built, tested item (§1d). What
+"independently demonstrated" can mean before any learner has used the lesson
+is the mechanical form: each item's grading is proven correct against a
+mustAccept/mustReject battery, not merely capable in principle — see the
+attainment-column note above §1d. That is not a substitute for a domain-owner
+reading the rendered page or a learner actually succeeding on it; both remain
+open, and Gate 8 (§6) records that distinction rather than closing over it.
 
 ## 1f. Connections, assessment, retention
 - **Cumulative (D10):** L2 C5 is not merely recalled, it is the **premise of the
@@ -248,8 +259,9 @@ completed at Gate 8.
   `opt-candidate-set`, `opt-flat-not-extremum`, `opt-second-test-silent`,
   `opt-linearize-tolerance`, `opt-open-interval`. Transfer:
   `opt-endpoint-fresh`, `opt-which-hypothesis`, `opt-select-route`,
-  `opt-derive-steps`. To be pinned by a tier-mix test at build, matching
-  `chainRuleGradingContract.test.ts` — and the test must count the two
+  `opt-derive-steps`. Pinned by a tier-mix test in
+  `optimizationApproximationGradingContract.test.ts`, matching
+  `chainRuleGradingContract.test.ts`'s pattern — the test counts the two
   non-evidencing events separately, so a later edit cannot quietly promote one
   into the evidence set. **Every evidence-bearing item uses a function the
   lesson never displays**, without exception.
@@ -336,14 +348,35 @@ completed at Gate 8.
 
 **Gate 8: READY FOR INDEPENDENT REVIEW — not yet accepted.** Mode C
 implementation is complete on `feature/l6-optimization-approximation`
-(2026-08-01), per the repository owner's explicit authorization to cross the
-Mode B → Mode C boundary. Every checklist item below reflects what the
-**implementing agent** has verified mechanically (tests, typecheck, lint) —
-it is **not** the domain-owner sign-off Gate 8 requires, and none of this
-supersedes L5's own lesson: L5's Gate 8 was accepted only after an
-independent reviewer found a real mathematical defect self-review had missed
-and certified clean. The same self-certification limit applies here in full.
-No box below should be read as "accepted."
+(2026-08-01 – 2026-08-02), per the repository owner's explicit authorization
+to cross the Mode B → Mode C boundary. Every checklist item below reflects
+what the **implementing agent** has verified mechanically (tests, typecheck,
+lint, a live e2e pass) — it is **not** the domain-owner sign-off Gate 8
+requires.
+
+**A first independent review of this implementation already ran, and found
+real defects self-verification had missed** — the same pattern the Mode B
+docs went through twice before this. Confirmed and fixed: `trustRadius`'s
+fixed-point iteration was genuinely broken (a ~10-order-of-magnitude wrong
+error bound on the quartic preset, hidden by the one hand-checked case
+happening to have a locally constant bound); the guided scene and explorer
+had silently dropped roughly half the approved plan's teaching beats and
+controls (`tooBig`, `oneDirection`, the signed-h slider, mh/E(h), the
+sign-agreement indicator, the sweep interaction, interval bounds); three
+exercises overclaimed what they captured or leaked their own answers
+(`opt-candidate-set` counted rather than constructed; `opt-select-route`'s
+correct choice spelled out the full identity; `opt-which-hypothesis`'s
+function was directly shape-matchable to the shown `|x|` example); the
+`opt-derive-escape` model answer contained a genuine arithmetic
+self-contradiction and an unjustified domain claim; and the checkpoint used
+a plain reveal toggle that records no commitment at all, contradicting its
+own documented description. All are fixed, with regression tests for each
+(see the implementation report for the exact commits). **This round of
+review is not a substitute for a second one** — L5's own Gate 8 needed an
+independent pass AFTER its self-review had already found and fixed real
+defects, and the same discipline applies here: passing one outside review
+is evidence the harness works, not evidence the second pass would find
+nothing. No box below should be read as "accepted."
 
 - [x] Insight contract linked and `PASS` — [insight.md](insight.md).
 - [x] All §1 fields filled and reconciled against the built lesson
@@ -353,14 +386,18 @@ No box below should be read as "accepted."
 - [x] Every lesson-owned outcome's item exists, is registered in
       `assessmentManifest.ts` with an explicit claim, and its grading is
       proven correct by `describeGradingContract`'s mustAccept/mustReject
-      batteries (`optimizationApproximationGradingContract.test.ts`, 55
-      tests) — the mechanical form of "independently demonstrated" available
+      batteries (`optimizationApproximationGradingContract.test.ts`, 63
+      tests, including the redesigned `opt-candidate-set`/`opt-select-route`/
+      `opt-which-hypothesis` contracts and the `opt-endpoint-predict`
+      committed-prediction contract added by the second independent-review
+      round) — the mechanical form of "independently demonstrated" available
       to an authored curriculum with no live learner pilot yet.
 - [x] No lesson-owned outcome accepted on planned module evidence — verified
       by `objectiveCoverage.test.ts`.
-- [x] Assessment set matches §1f, pinned by a tier-mix test (5 drill + 4
-      transfer evidence-bearing + 1 checkpoint + 1 self-marked practice
-      event); recall cap respected (zero bare-recall items).
+- [x] Assessment set matches §1f, pinned by a tier-mix test (1 real
+      committed-prediction check + 5 drill + 4 transfer evidence-bearing + 1
+      self-marked practice event); recall cap respected (zero bare-recall
+      items).
 - [x] Module-owned outcomes carried forward as Gate-9 obligations for
       `calculus-technique` (no `itemIds`, matching karatsuba's course-owned
       precedent).
@@ -369,7 +406,9 @@ No box below should be read as "accepted."
       landed `fundamental-theorem → optimization-approximation` edge.
 - [x] Retention hook recorded (§1f).
 - [x] Correctness gate passed: all six property tests in §1g implemented and
-      green in `src/math/__tests__/optimization.test.ts` (31 tests), plus a
+      green in `src/math/__tests__/optimization.test.ts` (33 tests, including
+      the `trustRadius` bisection regression and a per-fixture error-bound
+      sweep added by the second independent-review round), plus a
       load-time consistency guard (`assertOptimizationFixturesAreConsistent`)
       that caught and fixed one real defect before it shipped (`OPT_DRIVE`'s
       stationary points were hand-typed guesses that didn't match its own
@@ -382,14 +421,20 @@ No box below should be read as "accepted."
       ingredient and no P3 bar is claimed).
 
 **Browser-level verification, run after the checklist above.** A dedicated
-`e2e/lesson-optimization-approximation.spec.ts` (8 tests: page load and
-console-error-free clip playback; all eight guided-scene major steps
-reachable via Previous/Next; the `predictStep` hold genuinely holding;
-reduced-motion; the main cubic's endpoint maximum in the rendered explorer;
-the certified-radius and first-sampled-disagreement readouts rendering as
-separate, distinctly labelled items; the linear preset's "none in this
-domain"; and live grading of the practice set's first question) — all
-passing. The two existing cross-lesson specs
+`e2e/lesson-optimization-approximation.spec.ts` (12 tests: page load and
+console-error-free clip playback; all ten guided-scene major steps
+reachable via Previous/Next — including the `tooBig` and `oneDirection`
+beats restored by the second independent-review round, each confirmed
+independently reachable and correctly named; the `predictStep` hold
+genuinely holding; reduced-motion; the main cubic's endpoint maximum in the
+rendered explorer; the certified-radius and first-sampled-disagreement
+readouts rendering as separate, distinctly labelled items; the linear
+preset's "none in this domain"; the h slider driving live mh/E(h) readouts
+with Run sweep coloring the strip by the real candidate set; live grading of
+the practice set's first question; and `opt-endpoint-predict` genuinely
+recording a commitment — no feedback visible before Commit, scored correct
+after — proving it is not the plain reveal-toggle Checkpoint component) —
+all passing. The two existing cross-lesson specs
 (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21
 tests) also exercise this lesson and pass, including the heading-hierarchy
 check (confirms no `callout` block sits first) and a dedicated "renders all

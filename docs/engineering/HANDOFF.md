@@ -35,12 +35,18 @@ that still read "pending" were stale and have been corrected.
 **Open:** Gate 9 items for `calculus-foundations` remain unadministered.
 
 **L6 `optimization-approximation` is built** on
-`feature/l6-optimization-approximation` (2026-08-01, this session — see
-Stream 3 below), per the owner's explicit authorization to cross the
-Mode B → Mode C boundary. Self-verified only, but including a real e2e pass
-(this lesson's own 8-test spec plus two cross-lesson sweeps, 29 tests, all
-passing) — no independent review of the implementation, and the full 39-file
-`./check.sh --e2e` was not run in full.
+`feature/l6-optimization-approximation` (2026-08-01–02 — see Stream 3
+below), per the owner's explicit authorization to cross the Mode B → Mode C
+boundary. **A first independent review of the Mode C implementation has now
+run** (2026-08-02) and found real defects self-verification had missed — a
+mathematically broken `trustRadius`, roughly half the approved scene/explorer
+plan silently dropped, three exercises overclaiming what they captured, a
+self-check with a genuine arithmetic self-contradiction, and a checkpoint
+that recorded no real commitment. All confirmed and fixed, with regression
+tests for each (detail in Stream 3's "Second independent review" subsection).
+**A second independent pass has not yet run** — the same discipline L5's
+Gate 8 needed applies here: one clean review is evidence the harness works,
+not evidence a further pass would find nothing.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -407,9 +413,10 @@ something this size and actually checking it:
    promised "x⁴ / −x⁴" but only ever showed x⁴. Added a genuine second
    preset rather than silence the warning by deleting the reference.
 
-**Verification actually run:** full `vitest run` (153 files, 2435 tests,
-green), `tsc -b` (clean), `oxlint` (clean), plus a real Playwright pass — a
-dedicated `e2e/lesson-optimization-approximation.spec.ts` (8 tests: load and
+**Verification actually run (as of the initial Mode C build, 2026-08-01):**
+full `vitest run` (153 files, 2435 tests, green), `tsc -b` (clean), `oxlint`
+(clean), plus a real Playwright pass — a dedicated
+`e2e/lesson-optimization-approximation.spec.ts` (8 tests: load and
 console-error-free clip playback; all eight major steps reachable via
 Previous/Next; the prediction hold genuinely holding; reduced-motion; the
 endpoint maximum rendering correctly; the certified-radius and
@@ -422,7 +429,9 @@ the practice-grading test assumed the first rendered question would be
 multiple-choice (matching `chain-rule`'s exercise ordering); L6's practice UI
 paginates one question at a time, and the real first question is
 `opt-candidate-set`'s numeric step — corrected to match the actual UI, not
-the lesson.
+the lesson. **These counts are now superseded — see the review subsection
+below for the current totals (153 files, 2454 tests; 12 e2e tests, 33
+total).**
 
 **Not run:** the full 39-file `./check.sh --e2e` suite — scope was this
 lesson's own spec plus the cross-lesson sweeps that cover it, not every
@@ -436,7 +445,73 @@ the implementing agent verified mechanically and states plainly that this is
 not the domain-owner sign-off Gate 8 requires — the L5 precedent (self-review
 passed, an independent reviewer then found a real mathematical defect in
 exactly the step self-review had certified) is the reason to take that
-distinction seriously rather than as a formality.
+distinction seriously rather than as a formality. It repeated here: see the
+next subsection.
+
+### Second independent review of the Mode C implementation (2026-08-02)
+
+The owner independently reviewed the built lesson (not just the docs) and
+reported five P1 findings and one P2 finding, all confirmed against the
+actual code before fixing:
+
+1. **`trustRadius` was mathematically broken.** Its fixed-point iteration
+   diverged for `OPT_QUARTIC` at \(a=0,\ \epsilon=0.01\) — the returned
+   radius's own declared error bound was \(\sim1.67\times10^{19}\), not
+   \(\le0.01\). Root cause: composing a non-decreasing error-bound function
+   with \(r\mapsto\sqrt{2\epsilon/M}\) yields a *decreasing* map, and naive
+   fixed-point iteration on a decreasing map oscillates rather than
+   converges. Replaced with monotone bisection
+   (`src/math/optimization.ts`), re-verified against the closed form
+   \((0.01/6)^{1/4}\approx0.202\) and against every fixture with a declared
+   `secondDerivativeBound`, not just the one hand-checked case that had
+   hidden the bug.
+2. **Large parts of the approved scene/explorer contract were dropped.**
+   The guided scene was missing the `tooBig` and `oneDirection` beats; the
+   explorer was missing the signed-\(h\) control, interval bounds, sweep,
+   grid resolution, the sign-agreement indicator, and the candidate
+   comparison table; the planned committed-prediction checkpoint had been
+   replaced by a plain reveal-toggle (`Checkpoint.tsx`) that records no
+   commitment. All restored: both beats added to
+   `optimizationApproximationScene.ts`/`sceneTimings.ts`/
+   `sceneBeatIntents.json`/`sceneMeta.ts`; the explorer rebuilt with the
+   missing controls and a `withSubInterval` helper; the checkpoint replaced
+   with a real `opt-endpoint-predict` item on the `committed-prediction`
+   capability.
+3. **Three exercises overclaimed what they captured.** `opt-candidate-set`
+   asked only for a count, not the full construction; `opt-select-route`'s
+   first choice leaked the complete-square identity, so it was not
+   "unprompted"; `opt-which-hypothesis` used a shifted \(|x|\) corner,
+   directly shape-matchable to the lesson's own displayed example. All three
+   redesigned (new fixtures/consts, new exercise-sequence steps) and
+   `assessmentManifest.ts`'s `opt-select-route` entry corrected from
+   `methodSelection: false` to `true` — the comment already said the item
+   was method-selection; the metadata just hadn't matched it.
+4. **`opt-derive-escape`'s model answer contained false mathematics** — it
+   asserted "4/1·2=8" as a sufficient radius, then immediately derived
+   \(|h|<4\) (a direct contradiction), and assumed \(a=1\) was "interior to
+   any reasonable domain" without naming one. The rubric also rejected
+   "therefore \(a\) is not an extremum" even though refuting both local max
+   and local min logically implies exactly that. Rewritten with an explicit
+   domain, the correct (exact) threshold, and a corrected rubric.
+5. **Domain leaks.** Opening an endpoint left it still selectable; the
+   approximation panel evaluated \(a+0.3\) even outside the declared domain.
+   Fixed via a domain-width-scaled edge margin and a clamped step.
+6. **P2 — documentation honesty.** `mastery-contract.md` still marked
+   outcomes "planned" and described the lesson as not existing; the lesson
+   plan left most required-test boxes unticked while claiming completion
+   elsewhere. Both rewritten to reflect the actual (mechanically verified)
+   state, with an explicit note distinguishing mechanical verification from
+   independent review and from a live learner's success.
+
+**All six fixed, each with a regression test**, and re-verified live: full
+`vitest run` (153 files, 2454 tests, green), `tsc -b` clean, `oxlint` clean,
+and a live Playwright run of the full
+`e2e/lesson-optimization-approximation.spec.ts` (now 12 tests, including new
+coverage for both restored beats, the h-slider/sweep interaction, and
+`opt-endpoint-predict`'s genuine commit-before-reveal behavior) — 33 e2e
+tests total across this lesson's own spec and the two cross-lesson sweeps,
+all passing. **This review round is not a substitute for a further
+independent pass** — see `mastery-contract.md` §6 for the full record.
 
 A minor Mode A-adjacent correction made alongside implementation, flagged
 rather than silently done: `course-spine.md`'s L6 row carried the spine's own

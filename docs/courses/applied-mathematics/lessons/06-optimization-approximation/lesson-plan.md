@@ -341,25 +341,48 @@ installs the misconception if used unaltered.)*
 The generic matrix invariants do not apply. Lesson-specific, and each is one of
 [contract §1g](mastery-contract.md#1g-correctness--scope)'s required property
 tests:
-- [ ] the **declared certified radius** really works: \(\operatorname{sign}(f(a+h)-f(a))=\operatorname{sign}(f'(a)h)\) for all sampled \(0<\lvert h\rvert<\delta\) — and nothing claims it is maximal
-- [ ] the "first disagreement on this grid" readout is distinct from the certified radius, and reads *none in this domain* on a linear preset
-- [ ] each fixture's **analytically declared** stationary/singular points and exact expected candidate set agree with its declared derivative; a dense scan corroborates but is **not** the completeness oracle
-- [ ] \(\lvert f(a+h)-L(h)\rvert\le Mh^2/2\) holds on a dense grid **and** is not vacuous (within an order of magnitude at the trust radius)
-- [ ] the silence battery (\(x^4\), \(-x^4\), \(x^3\)) all return *silent*
-- [ ] the constant function reports a non-finite reduction rather than a list
-- [ ] the open interval returns an empty set and withdraws the existence guarantee
-- [ ] every displayed quantity originates in `src/math`, none in a scene or explorer
+- [x] the **declared certified radius** really works: \(\operatorname{sign}(f(a+h)-f(a))=\operatorname{sign}(f'(a)h)\) for all sampled \(0<\lvert h\rvert<\delta\) — and nothing claims it is maximal. Re-verified after the `trustRadius` rewrite: bisection replaced a fixed-point iteration that diverged on the quartic preset, and the check now runs against every fixture, not just the one hand-checked case that had hidden the bug.
+- [x] the "first disagreement on this grid" readout is distinct from the certified radius, and reads *none in this domain* on a linear preset
+- [x] each fixture's **analytically declared** stationary/singular points and exact expected candidate set agree with its declared derivative; a dense scan corroborates but is **not** the completeness oracle
+- [x] \(\lvert f(a+h)-L(h)\rvert\le Mh^2/2\) holds on a dense grid **and** is not vacuous (within an order of magnitude at the trust radius)
+- [x] the silence battery (\(x^4\), \(-x^4\), \(x^3\)) all return *silent*
+- [x] the constant function reports a non-finite reduction rather than a list
+- [x] the open interval returns an empty set and withdraws the existence guarantee
+- [x] every displayed quantity originates in `src/math`, none in a scene or explorer — confirmed by code review (the scene and explorer call into `optimization.ts`'s exported readouts; no local recomputation), not a dedicated unit test
 
 ## Required tests
-- [ ] Unit tests for the new `src/math` helpers (candidate set, **certified
+- [x] Unit tests for the new `src/math` helpers (candidate set, **certified
       sufficient radius**, first-sampled-disagreement, bound) — the second and
-      third are separate functions with separate names, not one "threshold" helper
-- [ ] The seven invariant tests above
-- [ ] Component tests: explorer readouts, the sign-agreement indicator, sweep, reset, endpoint-opening
-- [ ] Grading contract (`describeGradingContract`) for every auto-graded item, with the adversarial reject battery. `opt-derive-escape` is **not** auto-graded and is **not** routed to review — it is a self-marked practice event registered with no objective coverage, and a test must assert that it covers none
-- [ ] Tier-mix test pinning 1 check + 5 drill + 4 transfer
-- [x] Browser test: learner-visible readouts, no console errors, KaTeX clean — `e2e/lesson-optimization-approximation.spec.ts`, 8 tests, all passing
-- [ ] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact vocabulary such as "C5" or "Package B" in learner prose)
+      third are separate functions with separate names, not one "threshold" helper.
+      `src/math/__tests__/optimization.test.ts`, 33 tests — including a
+      regression for `trustRadius`, whose original fixed-point-iteration
+      implementation returned a radius with a ~10-orders-of-magnitude wrong
+      error bound on the quartic preset; replaced with bisection and re-verified
+      against every declared fixture, not just the one hand-checked case that
+      hid the bug.
+- [x] The seven invariant tests above — same file.
+- [x] Component tests: explorer readouts, the sign-agreement indicator, sweep,
+      reset, endpoint-opening — `OptimizationApproximationExplorer.test.tsx`,
+      19 tests, including the endpoint-selectability and interval-narrowing
+      regressions review found.
+- [x] Grading contract (`describeGradingContract`) for every auto-graded item,
+      with the adversarial reject battery. `opt-derive-escape` is **not**
+      auto-graded and is **not** routed to review — it is a self-marked
+      practice event registered with no objective coverage, and a test
+      asserts that it covers none.
+      `optimizationApproximationGradingContract.test.ts`, 63 tests.
+- [x] Tier-mix test pinning 1 committed-prediction check + 5 drill + 4
+      transfer + 1 self-marked practice event — same file.
+- [x] Browser test: learner-visible readouts, no console errors, KaTeX clean
+      — `e2e/lesson-optimization-approximation.spec.ts`, 12 tests, all
+      passing, including the guided scene's two restored beats (`tooBig`,
+      `oneDirection`), the explorer's h-slider/sweep interaction, and the
+      committed-prediction commit/reveal cycle.
+- [x] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact
+      vocabulary such as "C5" or "Package B" in learner prose) — green, after
+      fixing six unpaired-`$` authoring slips found across two review rounds
+      (a recurring mistake worth naming here so it isn't repeated a seventh
+      time: omitting the OPENING `$` before a KaTeX span that starts a string).
 
 ## Acceptance checklist
 
@@ -378,8 +401,8 @@ tests:
 - [x] Progressive disclosure applied (approximation panel collapsed by default, gated behind a toggle)
 - [x] KaTeX notation consistent with L2's \(E(h)\)
 - [x] Accessibility: labels, focus, readouts, reduced motion — ariaLabel props present on both the scene and the explorer's `FunctionPlot`; the reduced-motion frame confirmed live in a browser (`e2e/lesson-optimization-approximation.spec.ts`, "shows a reduced-motion frame"). **Not confirmed with an actual screen reader.**
-- [x] Diagrams labelled, unclipped, safe frame intact — confirmed live: the guided scene's canvas renders and plays through all eight major steps with zero console errors (`e2e/lesson-optimization-approximation.spec.ts`).
+- [x] Diagrams labelled, unclipped, safe frame intact — confirmed live: the guided scene's canvas renders and plays through all ten major steps (including the `tooBig` and `oneDirection` beats restored by the second independent-review round) with zero console errors (`e2e/lesson-optimization-approximation.spec.ts`).
 - [ ] Viewport/zoom checks — **not run** (no multi-viewport/zoom spec written for this lesson).
 - [x] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed, with the still-open browser items updated to reflect the e2e pass below rather than left as originally written
 - [x] **Both Mode A amendments resolved** by the owner, 2026-08-01 — the L4 edge is approved, so C13/C15 are derived under an explicit continuous-\(f''\) hypothesis; the M2 bar is amended
-- [x] All automated tests pass: full `vitest run` (153 files, 2435 tests), `tsc -b` clean, `oxlint` clean. **Browser confirmation:** a dedicated `e2e/lesson-optimization-approximation.spec.ts` (8 tests) plus the two cross-lesson sweeps (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21 tests) all pass — 29 e2e tests total. **The full `./check.sh --e2e` (39 spec files) was not run**; verification was scoped to this lesson's own spec plus the cross-lesson checks that exercise it.
+- [x] All automated tests pass: full `vitest run` (153 files, 2454 tests), `tsc -b` clean, `oxlint` clean. **Browser confirmation:** a dedicated `e2e/lesson-optimization-approximation.spec.ts` (12 tests) plus the two cross-lesson sweeps (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21 tests) all pass — 33 e2e tests total. **The full `./check.sh --e2e` (39 spec files) was not run**; verification was scoped to this lesson's own spec plus the cross-lesson checks that exercise it.
