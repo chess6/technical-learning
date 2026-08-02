@@ -25,6 +25,7 @@ import {
   firstSampledDisagreement,
   globalExtrema,
   linearize,
+  stepDecomposition,
   trustRadius,
   type CandidatePoint,
   type OptimizationFixture,
@@ -90,10 +91,15 @@ interface PresetEntry {
 
 const PRESETS: readonly PresetEntry[] = [
   { id: "main", label: "Main case: x³ − 3x", fixture: OPT_MAIN_CUBIC, defaultA: 0 },
-  { id: "survivor", label: "x³ — a survivor, not an answer", fixture: OPT_CUBIC_SURVIVOR, defaultA: -1 },
-  { id: "abs", label: "|x| — the unexamined minimum", fixture: OPT_ABS, defaultA: -1 },
-  { id: "quartic", label: "x⁴ — silent, but a real minimum", fixture: OPT_QUARTIC, defaultA: -1 },
-  { id: "neg-quartic", label: "−x⁴ — silent, but a real maximum", fixture: OPT_NEG_QUARTIC, defaultA: -1 },
+  // These four defaults land ON the advertised case (the survivor, the
+  // singular minimum, and each silent second-derivative-test point) so the
+  // case is visible on first render — a learner picking the preset should
+  // not have to already know to drag the point to x = 0 to see what the
+  // preset's own label promises.
+  { id: "survivor", label: "x³ — a survivor, not an answer", fixture: OPT_CUBIC_SURVIVOR, defaultA: 0 },
+  { id: "abs", label: "|x| — the unexamined minimum", fixture: OPT_ABS, defaultA: 0 },
+  { id: "quartic", label: "x⁴ — silent, but a real minimum", fixture: OPT_QUARTIC, defaultA: 0 },
+  { id: "neg-quartic", label: "−x⁴ — silent, but a real maximum", fixture: OPT_NEG_QUARTIC, defaultA: 0 },
   { id: "linear", label: "A linear function — never disagrees", fixture: OPT_LINEAR, defaultA: 1 },
   { id: "constant", label: "A constant function — degenerate", fixture: OPT_CONSTANT, defaultA: 0 },
   { id: "open", label: "x on an open interval — no maximum", fixture: OPT_OPEN_INTERVAL, defaultA: 0.5 },
@@ -208,18 +214,14 @@ export function OptimizationApproximationExplorer() {
 
   // The signed step h, clamped so a+h stays inside the SELECTABLE domain —
   // the learner's own manual escape-route demonstration, independent of the
-  // guided scene's scripted one.
+  // guided scene's scripted one. The decomposition itself (mh, E(h), the
+  // actual change, sign agreement) comes from `stepDecomposition` — the SAME
+  // math layer helper the guided scene reads, so this readout can never
+  // silently drift from what the scene shows for the same numbers.
   const hMax = selectableHi - clampedA;
   const hMin = selectableLo - clampedA;
   const clampedH = Math.min(Math.max(h, hMin), hMax);
-  const steppedValue = fixture.f(clampedA + clampedH);
-  const baseValue = fixture.f(clampedA);
-  const change = steppedValue - baseValue;
-  const mh = slope * clampedH;
-  const eh = change - mh;
-  const predictedSign = Math.sign(mh);
-  const actualSign = Math.sign(change);
-  const signAgrees = clampedH === 0 || isSingular || predictedSign === 0 || actualSign === predictedSign;
+  const { mh, eh, change, signAgrees } = stepDecomposition(fixture, clampedA, clampedH);
 
   const [epsilon] = useState(0.01);
   // The linearization demo step is clamped to stay inside the SELECTABLE

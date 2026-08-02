@@ -10,7 +10,7 @@ import {
 import { OPTIMIZATION_APPROXIMATION_SEGMENTS, requireBeats } from "./sceneTimings";
 import { ROLE, runSegment } from "./sceneKit";
 import { LABEL_BOTTOM_Y, LABEL_CENTER_X } from "./safeFrame";
-import { OPT_ABS, OPT_CUBIC_SURVIVOR, OPT_MAIN_CUBIC } from "../../math";
+import { OPT_ABS, OPT_CUBIC_SURVIVOR, OPT_MAIN_CUBIC, candidateSet, globalExtrema, stepDecomposition } from "../../math";
 
 /**
  * `optimization-approximation` — one panel. The escape-route step-and-check
@@ -59,18 +59,43 @@ const PLOT = new Vector2(0, 10);
 const PLOT_W = 640;
 const PLOT_H = 300;
 
-/** Sanity: the candidate values displayed in `decideGlobally` are real, not typed-in. */
-const CANDIDATE_CHECK: readonly [number, number][] = [
-  [-2, -2],
-  [-1, 2],
-  [1, -2],
-  [3, 18],
-];
-for (const [x, expected] of CANDIDATE_CHECK) {
-  if (Math.abs(MAIN_F(x) - expected) > 1e-9) {
-    throw new Error(`optimizationApproximationScene: f(${x}) disagrees with the displayed value ${expected}.`);
-  }
+/**
+ * The candidate set and global extrema for `decideGlobally`'s table and
+ * caption — READ from the math layer, not hand-typed and separately
+ * checked. A wrong number here would show up on screen, not just fail a
+ * silent load-time assertion.
+ */
+const MAIN_CANDIDATES = candidateSet(OPT_MAIN_CUBIC);
+if (MAIN_CANDIDATES.kind !== "finite") {
+  throw new Error("optimizationApproximationScene: OPT_MAIN_CUBIC's candidate set is not finite.");
 }
+// Hoisted out of the discriminated union right where it's narrowed — the
+// narrowing above does not survive into a function body (even a top-level
+// one), so `MAIN_CANDIDATES.points` itself is not usable from inside
+// `candidateValueAt`/`isCandidate` below.
+const MAIN_CANDIDATE_POINTS = MAIN_CANDIDATES.points;
+const MAIN_EXTREMA = globalExtrema(OPT_MAIN_CUBIC);
+if (!MAIN_EXTREMA.max || !MAIN_EXTREMA.min) {
+  throw new Error("optimizationApproximationScene: OPT_MAIN_CUBIC has no certified global extrema.");
+}
+const MAIN_MAX = MAIN_EXTREMA.max;
+
+/** Trims to 3 decimals and drops a trailing `-0`, for building tex labels from computed numbers. */
+function fmtNum(n: number): string {
+  const r = Math.round(n * 1000) / 1000;
+  return Object.is(r, -0) ? "0" : String(r);
+}
+
+function candidateValueAt(x: number): number {
+  const point = MAIN_CANDIDATE_POINTS.find((p) => Math.abs(p.x - x) < 1e-9);
+  if (!point) throw new Error(`optimizationApproximationScene: no candidate at x=${x}.`);
+  return point.value;
+}
+
+const CANDIDATE_TABLE_TEX = MAIN_CANDIDATE_POINTS.map((p) => `f(${fmtNum(p.x)}){=}${fmtNum(p.value)}`).join(",\\ ");
+const MAX_AT_TEX = MAIN_MAX.at.map(fmtNum).join(", ");
+const LOCAL_MAX_AT = -1;
+const LOCAL_MAX_VALUE = candidateValueAt(LOCAL_MAX_AT);
 
 /**
  * Sanity: `tooBig`'s claimed crossing. At a = 0, E(h) = h^3 (exact for this
@@ -87,11 +112,9 @@ if (!(TOO_BIG_TARGET < CROSSING)) {
   );
 }
 {
-  const beforeChange = MAIN_F(A_POINT + (CROSSING + 0.1)) - MAIN_F(A_POINT);
-  const beforeSign = Math.sign(M_SLOPE * (CROSSING + 0.1));
-  const afterChange = MAIN_F(A_POINT + TOO_BIG_TARGET) - MAIN_F(A_POINT);
-  const afterSign = Math.sign(M_SLOPE * TOO_BIG_TARGET);
-  if (Math.sign(beforeChange) !== beforeSign || Math.sign(afterChange) === afterSign) {
+  const before = stepDecomposition(OPT_MAIN_CUBIC, A_POINT, CROSSING + 0.1);
+  const after = stepDecomposition(OPT_MAIN_CUBIC, A_POINT, TOO_BIG_TARGET);
+  if (!before.signAgrees || after.signAgrees) {
     throw new Error("optimizationApproximationScene: tooBig's claimed sign crossing does not actually occur.");
   }
 }
@@ -244,23 +267,17 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   inner.add(oneSidedRay);
 
   /**
-   * `tooBig`'s live sign-agreement check — read directly off `MAIN_F` and
-   * `M_SLOPE`, the same quantities `mhLabel`/`eLabel` already read, so a
-   * frame where they disagree is a frame where this genuinely flips, not a
-   * scripted color change.
+   * `tooBig`'s live sign-agreement check — reads `stepDecomposition`, the
+   * SAME math-layer helper `mhLabel`/`eLabel` below read, so a frame where
+   * they disagree is a frame where this genuinely flips, not a scripted
+   * color change.
    */
-  const agrees = (): boolean => {
-    const change = MAIN_F(A_POINT + h()) - MAIN_F(A_POINT);
-    const predicted = Math.sign(M_SLOPE * h());
-    const actual = Math.sign(change);
-    return predicted === 0 || actual === predicted;
-  };
+  const agrees = (): boolean => stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).signAgrees;
 
   /** The sweep marker and the set of sample dots, greying out as the sweep passes. */
   const SAMPLE_XS = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3];
   const sweepProgress = createSignal(0); // 0..1 across MAIN_DOMAIN
-  const isCandidate = (x: number) =>
-    Math.abs(x - -2) < 1e-6 || Math.abs(x - -1) < 1e-6 || Math.abs(x - 1) < 1e-6 || Math.abs(x - 3) < 1e-6;
+  const isCandidate = (x: number) => MAIN_CANDIDATE_POINTS.some((p) => Math.abs(p.x - x) < 1e-6);
   const sampleDots = SAMPLE_XS.map(
     (x) =>
       new Circle({
@@ -306,15 +323,20 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   equationLabel.opacity(0);
   view.add(equationLabel);
 
-  const mhLabel = tex(() => `mh = ${(M_SLOPE * h()).toFixed(2)}`, 22, ROLE.transformed);
+  // mh and E(h) both read `stepDecomposition` — the SAME math-layer split
+  // `agrees()` above reads — never a hand-derived closed form that could
+  // silently drift from `OPT_MAIN_CUBIC.f`.
+  const mhLabel = tex(
+    () => `mh = ${stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).mh.toFixed(2)}`,
+    22,
+    ROLE.transformed,
+  );
   mhLabel.position(new Vector2(-220, 160));
   mhLabel.opacity(0);
   view.add(mhLabel);
 
-  // E(h) computed from the actual fixture — f(a+h) - f(a) - f'(a)h — never a
-  // hand-derived closed form that could silently drift from MAIN_F.
   const eLabel = tex(
-    () => `E(h) = ${(MAIN_F(A_POINT + h()) - MAIN_F(A_POINT) - M_SLOPE * h()).toFixed(3)}`,
+    () => `E(h) = ${stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).eh.toFixed(3)}`,
     22,
     ROLE.violation,
   );
@@ -492,7 +514,7 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
       // nothing on screen implies a leftward step is available.
       yield* oneSidedRay.opacity(1, b.arrow!);
       const slopeAtLeft = MAIN_DERIVATIVE(MAIN_DOMAIN[0]);
-      yield* say(equationLabel, `f'(-2) = ${slopeAtLeft} > 0`, b.label!);
+      yield* say(equationLabel, `f'(${fmtNum(MAIN_DOMAIN[0])}) = ${fmtNum(slopeAtLeft)} > 0`, b.label!);
       yield* say(
         caption,
         roman("stepping right refutes 'local maximum' — stepping left would leave the domain, so 'local minimum' is never tested"),
@@ -517,14 +539,12 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
       for (const dot of sampleDots) dot.opacity(1);
       yield* curve.opacity(1, b.reset!);
       yield* say(title, roman("Deciding, at last"), b.title!);
-      yield* say(
-        equationLabel,
-        "f(-2){=}-2,\\ f(-1){=}2,\\ f(1){=}-2,\\ f(3){=}18",
-        b.table!,
-      );
+      yield* say(equationLabel, CANDIDATE_TABLE_TEX, b.table!);
       yield* say(
         caption,
-        roman("the global maximum is 18, at the ENDPOINT x=3 — not the interior local max f(-1)=2"),
+        roman(
+          `the global maximum is ${fmtNum(MAIN_MAX.value)}, at the ENDPOINT x=${MAX_AT_TEX} — not the interior local max f(${LOCAL_MAX_AT})=${fmtNum(LOCAL_MAX_VALUE)}`,
+        ),
         b.markMax!,
       );
       yield* waitFor(b.hold!);

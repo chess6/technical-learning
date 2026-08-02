@@ -72,15 +72,40 @@ describe("OptimizationApproximationExplorer", () => {
     expect(text).toContain("no conclusion");
   });
 
-  it("classifies x³'s survivor as silent on the second-derivative test", () => {
+  it("opens x³'s preset already on the survivor point — silent on the second-derivative test, not an extremum", () => {
     const { container } = render(<OptimizationApproximationExplorer />);
     pickPreset(container, "x³ — a survivor");
-    // The preset's default point is a=-1, not the stationary point; drag to it.
-    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
-    expect(slider).toBeTruthy();
-    fireEvent.change(slider, { target: { value: "0" } });
     const text = container.textContent ?? "";
     expect(text).toContain("silent");
+    expect(text).not.toContain("NaN");
+  });
+
+  it("opens |x|'s preset already on the singular minimum — no dragging required", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    pickPreset(container, "|x| — the unexamined minimum");
+    const text = container.textContent ?? "";
+    expect(text).toContain("no single slope — singular");
+    expect(text).toContain("no local model");
+  });
+
+  it("opens x⁴'s preset already at the silent second-derivative test's real minimum", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    pickPreset(container, "x⁴ — silent, but a real minimum");
+    const text = container.textContent ?? "";
+    expect(text).toContain("silent");
+    expect(text).not.toContain("no conclusion");
+    // f(x) = x^4 on [-1.5, 1.5]: the real minimum is 0, at the stationary
+    // point the second-derivative test stayed silent about.
+    expect(text).toContain("0 at x = 0");
+  });
+
+  it("opens −x⁴'s preset already at the silent second-derivative test's real maximum", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    pickPreset(container, "−x⁴ — silent, but a real maximum");
+    const text = container.textContent ?? "";
+    expect(text).toContain("silent");
+    expect(text).not.toContain("no conclusion");
+    expect(text).toContain("0 at x = 0");
   });
 
   it("progressively discloses the linearization panel only when toggled", () => {
@@ -105,16 +130,6 @@ describe("OptimizationApproximationExplorer", () => {
     fireEvent.click(resetButton!);
     const text = container.textContent ?? "";
     expect(text).toContain("18");
-  });
-
-  it("marks |x|'s minimum as singular, with no local model", () => {
-    const { container } = render(<OptimizationApproximationExplorer />);
-    pickPreset(container, "|x| — the unexamined minimum");
-    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
-    fireEvent.change(slider, { target: { value: "0" } });
-    const text = container.textContent ?? "";
-    expect(text).toContain("no single slope — singular");
-    expect(text).toContain("no local model");
   });
 
   it("the slider's max excludes an opened right endpoint — the excluded point is not selectable", () => {
