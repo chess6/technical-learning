@@ -26,6 +26,7 @@ import {
   BST_LIFT_SEGMENTS,
   RED_BLACK_SEGMENTS,
   CHAIN_RULE_SEGMENTS,
+  OPTIMIZATION_APPROXIMATION_SEGMENTS,
   toSteps,
 } from "./sceneTimings";
 import { SCENE_SIZE } from "./safeFrame";
@@ -73,6 +74,7 @@ const INTEGRAL_ACCUMULATION_STEPS = toSteps(INTEGRAL_ACCUMULATION_SEGMENTS);
 const FTC_ACCUMULATE_STEPS = toSteps(FTC_ACCUMULATE_SEGMENTS);
 const FTC_TELESCOPING_STEPS = toSteps(FTC_TELESCOPING_SEGMENTS);
 const CHAIN_RULE_STEPS = toSteps(CHAIN_RULE_SEGMENTS);
+const OPTIMIZATION_APPROXIMATION_STEPS = toSteps(OPTIMIZATION_APPROXIMATION_SEGMENTS);
 const KARATSUBA_STEPS = toSteps(KARATSUBA_SEGMENTS);
 const BST_LIFT_STEPS = toSteps(BST_LIFT_SEGMENTS);
 const RED_BLACK_STEPS = toSteps(RED_BLACK_SEGMENTS);
@@ -550,6 +552,23 @@ export const SCENE_META: Record<string, GuidedSceneMeta> = {
       "duCancelFails",
       "residualCompose",
       "result",
+    ]),
+  },
+  "optimization-approximation": {
+    id: "optimization-approximation",
+    size: SCENE_SIZE,
+    ariaLabel:
+      "Guided animation for deciding with the derivative. F of x equals x cubed minus three x is plotted on the interval from minus two to three; sampled values appear, and the largest sample is flagged as not yet an answer. A point is placed where the slope is nonzero, with its local-linear model drawn. A step is taken in the improving direction, held before reveal; the linear term and the residual error are drawn as two separately labelled quantities, with the linear term dominating. A sweep then runs across the whole interval: every point where the slope is nonzero greys out, leaving four candidates. The animation flags this sweep as a sampled visualization of a proven theorem, not a test of every real point. The scene resets to x cubed at zero: flat, held before reveal, then shown to be neither a maximum nor a minimum — a survivor, not an answer. It resets again to the absolute value of x on minus two to two, showing the minimum sitting exactly where no local model exists, a point the sweep's argument cannot examine. Finally the scene returns to the main function and compares the full candidate set: the global maximum sits at the right endpoint, not at the interior local maximum.",
+    steps: OPTIMIZATION_APPROXIMATION_STEPS,
+    majorSteps: pickMajor(OPTIMIZATION_APPROXIMATION_STEPS, [
+      "theSearch",
+      "standSloped",
+      "predictStep",
+      "stepAndCheck",
+      "sweep",
+      "survivorNotAnswer",
+      "unexaminedMinimum",
+      "decideGlobally",
     ]),
   },
 };

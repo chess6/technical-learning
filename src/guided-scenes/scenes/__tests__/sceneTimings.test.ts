@@ -256,6 +256,7 @@ describe("scene timings (pure data)", () => {
       "ftc-accumulate-then-measure": { predict: "predict", reveal: "close" },
       "ftc-telescoping": { predict: "predict", reveal: "cancel" },
       "chain-rule": { predict: "predict", reveal: "zoomOuter" },
+      "optimization-approximation": { predict: "predictStep", reveal: "stepAndCheck" },
       "bst-lift-from-array": { predict: "predict-gap", reveal: "the-gap" },
       "red-black-encoding": { predict: "overflow", reveal: "split-is-recolour" },
       "karatsuba-cross-terms": { predict: "subtract", reveal: "subtract" },

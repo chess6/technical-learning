@@ -78,6 +78,8 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
     import("./redBlackEncodingScene").then((m) => m.redBlackEncodingScene),
   "chain-rule": () =>
     import("./chainRuleScene").then((m) => m.chainRuleScene),
+  "optimization-approximation": () =>
+    import("./optimizationApproximationScene").then((m) => m.optimizationApproximationScene),
 };
 
 export function getSceneDescription(sceneId: string): Promise<unknown> {

@@ -1759,5 +1759,67 @@
       "caption": "text",
       "hold": "hold"
     }
+  },
+  "optimization-approximation": {
+    "theSearch": {
+      "title": "text",
+      "samples": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "standSloped": {
+      "title": "text",
+      "drawPoint": "transition",
+      "tangent": "transition",
+      "label": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "predictStep": {
+      "ask": "text",
+      "think": "hold"
+    },
+    "stepAndCheck": {
+      "title": "text",
+      "step": "transition",
+      "mhLabel": "text",
+      "eLabel": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "sweep": {
+      "title": "text",
+      "sweepMotion": "transition",
+      "greyOut": "transition",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "survivorNotAnswer": {
+      "clear": "transition",
+      "reset": "transition",
+      "title": "text",
+      "flatLabel": "text",
+      "silence": "hold",
+      "reveal": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "unexaminedMinimum": {
+      "clear": "transition",
+      "reset": "transition",
+      "title": "text",
+      "cornerLabel": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "decideGlobally": {
+      "clear": "transition",
+      "reset": "transition",
+      "title": "text",
+      "table": "text",
+      "markMax": "emphasis",
+      "caption": "text",
+      "hold": "hold"
+    }
   }
 }

@@ -1530,6 +1530,31 @@ export const CHAIN_RULE_SEGMENTS: readonly SceneSegment[] = [
     summary: "(f composed g)'(a) = f'(g(a)) g'(a). Checked live at g'(a) = 0: the result is 0, directly, no special case." },
 ];
 
+/**
+ * `optimization-approximation` — one panel: f(x) = x^3-3x on [-2,3]. A step at
+ * a sloped point, held before the improving direction is revealed; a sweep
+ * across the interval, refuting points; two staged resets (x^3's survivor,
+ * |x|'s unexamined minimum); then a return to decide the main case globally.
+ */
+export const OPTIMIZATION_APPROXIMATION_SEGMENTS: readonly SceneSegment[] = [
+  { id: "theSearch", title: "An impossible amount of checking", duration: 6,
+    summary: "f(x) = x^3-3x on [-2,3]; sampled values appear. The largest sample is not an answer." },
+  { id: "standSloped", title: "Standing where the ground is sloped", duration: 6,
+    summary: "One point a; the local-linear model drawn over it, with a nonzero slope." },
+  { id: "predictStep", title: "Predict: which way improves?", duration: 6,
+    summary: "Nothing moves. The stepped value is not yet on screen." },
+  { id: "stepAndCheck", title: "The step pays off", duration: 7,
+    summary: "The step is taken; mh and E(h) are drawn as separately labelled quantities, and mh dominates." },
+  { id: "sweep", title: "Ruling points out", duration: 8,
+    summary: "The refutation sweeps the interval; every sloped point greys out. A sampled visualization of a proven theorem, not a test of every real point." },
+  { id: "survivorNotAnswer", title: "A survivor that is not an answer", duration: 8,
+    summary: "x^3 at 0: flat, and neither a maximum nor a minimum — a genuine hold before the verdict." },
+  { id: "unexaminedMinimum", title: "A winner the sweep never examined", duration: 7,
+    summary: "|x| on [-2,2]: the minimum sits exactly where no local model exists." },
+  { id: "decideGlobally", title: "Deciding, at last", duration: 8,
+    summary: "Back to the main case: the candidate set compared, and the global maximum sits at the endpoint." },
+];
+
 export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "why-linear-algebra": CHAPTER0_SEGMENTS,
   "vectors-linear-combinations": LINEAR_COMBINATION_SEGMENTS,
@@ -1557,6 +1582,7 @@ export const SCENE_SEGMENTS: Record<string, readonly SceneSegment[]> = {
   "red-black-encoding": RED_BLACK_SEGMENTS,
   "transform-spike": SPIKE_SEGMENTS,
   "chain-rule": CHAIN_RULE_SEGMENTS,
+  "optimization-approximation": OPTIMIZATION_APPROXIMATION_SEGMENTS,
 };
 
 /**
@@ -2093,6 +2119,17 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     duCancelFails: { title: 0.4, reveal: 0.6, flag: 0.5, hold: 5.4 },
     residualCompose: { clear: 0.4, title: 0.4, reveal: 0.8, label: 0.5, caption: 0.4, hold: 5.4 },
     result: { clear: 0.4, title: 0.4, reveal: 0.6, caption: 0.4, hold: 5.1 },
+  },
+
+  "optimization-approximation": {
+    theSearch: { title: 0.4, samples: 1.5, caption: 0.5, hold: 3.0 },
+    standSloped: { title: 0.4, drawPoint: 0.6, tangent: 0.6, label: 0.5, caption: 0.4, hold: 3.0 },
+    predictStep: { ask: 0.5, think: 4.5 },
+    stepAndCheck: { title: 0.4, step: 1.0, mhLabel: 0.5, eLabel: 0.5, caption: 0.5, hold: 3.0 },
+    sweep: { title: 0.4, sweepMotion: 3.0, greyOut: 1.0, caption: 0.6, hold: 2.5 },
+    survivorNotAnswer: { clear: 0.3, reset: 0.3, title: 0.4, flatLabel: 0.5, silence: 3.0, reveal: 0.6, caption: 0.5, hold: 1.5 },
+    unexaminedMinimum: { clear: 0.3, reset: 0.3, title: 0.4, cornerLabel: 0.5, caption: 0.5, hold: 3.0 },
+    decideGlobally: { clear: 0.3, reset: 0.3, title: 0.4, table: 1.0, markMax: 0.6, caption: 0.6, hold: 3.0 },
   },
 };
 
