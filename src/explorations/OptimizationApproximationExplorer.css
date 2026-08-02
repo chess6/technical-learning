@@ -3,7 +3,7 @@
 .optapprox-explorer__note {
   margin-top: 0.75rem;
   padding: 0.6rem 0.8rem;
-  border-left: 3px solid var(--role-violation);
+  border-left: 3px solid var(--role-invariant);
   color: var(--color-text-muted);
   font-size: 0.92rem;
 }

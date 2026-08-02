@@ -1,12 +1,10 @@
 import type { LessonDefinition } from "./types";
 import { EXERCISE_SEQUENCE_ID, SELF_CHECK_ID } from "./capabilities";
 import {
-  OPT_ABS,
   OPT_CUBIC_SURVIVOR,
   OPT_DECAY,
   OPT_MAIN_CUBIC,
   OPT_NEG_QUARTIC,
-  OPT_OPEN_INTERVAL,
   OPT_QUARTIC,
   classifyStationaryPoint,
   globalExtrema,
