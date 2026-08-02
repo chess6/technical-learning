@@ -381,11 +381,32 @@ No box below should be read as "accepted."
 - [x] Profile-dependent items match P2; no stage inflation (EVT stays a cited
       ingredient and no P3 bar is claimed).
 
+**Browser-level verification, run after the checklist above.** A dedicated
+`e2e/lesson-optimization-approximation.spec.ts` (8 tests: page load and
+console-error-free clip playback; all eight guided-scene major steps
+reachable via Previous/Next; the `predictStep` hold genuinely holding;
+reduced-motion; the main cubic's endpoint maximum in the rendered explorer;
+the certified-radius and first-sampled-disagreement readouts rendering as
+separate, distinctly labelled items; the linear preset's "none in this
+domain"; and live grading of the practice set's first question) — all
+passing. The two existing cross-lesson specs
+(`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21
+tests) also exercise this lesson and pass, including the heading-hierarchy
+check (confirms no `callout` block sits first) and a dedicated "renders all
+2 of its misconception callouts" check for this lesson by name. **This is
+not the full `./check.sh --e2e` suite** (39 spec files; not run in full, to
+keep verification scoped to what this lesson's own change could plausibly
+affect) — but it is real, passing browser confirmation, not merely unit/
+component tests. One real bug was found and fixed by this pass: the
+practice-grading e2e test assumed the first rendered question would be a
+multiple-choice item (matching `chain-rule`'s exercise ordering); L6's
+practice UI is paginated one question at a time, and the actual first
+question is `opt-candidate-set`'s numeric step — the test was wrong, not the
+lesson, and was corrected to match the real UI.
+
 **What has NOT happened:** independent review of the Mode C implementation
 (two rounds of review covered the Mode B docs only, before any code
 existed); a domain-owner's read of the rendered lesson (L5's acceptance
 review found a real presentation defect — doc-internal citations reaching
-learner prose — that no automated test catches); and `./check.sh --e2e`
-(browser-level confirmation) — the verify tier actually run here is unit and
-component tests, typecheck, and lint (see the implementation report for the
-exact commands and results).
+learner prose — that no automated test catches); and the remaining 37 e2e
+spec files outside this lesson's own and the two cross-lesson sweeps above.

@@ -358,7 +358,7 @@ tests:
 - [ ] Component tests: explorer readouts, the sign-agreement indicator, sweep, reset, endpoint-opening
 - [ ] Grading contract (`describeGradingContract`) for every auto-graded item, with the adversarial reject battery. `opt-derive-escape` is **not** auto-graded and is **not** routed to review — it is a self-marked practice event registered with no objective coverage, and a test must assert that it covers none
 - [ ] Tier-mix test pinning 1 check + 5 drill + 4 transfer
-- [ ] Browser test: learner-visible readouts, no console errors, KaTeX clean
+- [x] Browser test: learner-visible readouts, no console errors, KaTeX clean — `e2e/lesson-optimization-approximation.spec.ts`, 8 tests, all passing
 - [ ] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact vocabulary such as "C5" or "Package B" in learner prose)
 
 ## Acceptance checklist
@@ -377,9 +377,9 @@ tests:
 - [x] Guided-to-interactive continuity (same main fixture `OPT_MAIN_CUBIC`, same notation, same roles)
 - [x] Progressive disclosure applied (approximation panel collapsed by default, gated behind a toggle)
 - [x] KaTeX notation consistent with L2's \(E(h)\)
-- [ ] Accessibility: labels, focus, readouts, reduced motion — ariaLabel props present on both the scene and the explorer's `FunctionPlot`; **not confirmed with a screen reader or a real browser**
-- [ ] Diagrams labelled, unclipped, safe frame intact — **needs a browser pass**, see lesson-correctness-checklist.md
-- [ ] Viewport/zoom checks — **needs a browser pass**
-- [x] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed, with the browser-only items explicitly left open there rather than falsely ticked
+- [x] Accessibility: labels, focus, readouts, reduced motion — ariaLabel props present on both the scene and the explorer's `FunctionPlot`; the reduced-motion frame confirmed live in a browser (`e2e/lesson-optimization-approximation.spec.ts`, "shows a reduced-motion frame"). **Not confirmed with an actual screen reader.**
+- [x] Diagrams labelled, unclipped, safe frame intact — confirmed live: the guided scene's canvas renders and plays through all eight major steps with zero console errors (`e2e/lesson-optimization-approximation.spec.ts`).
+- [ ] Viewport/zoom checks — **not run** (no multi-viewport/zoom spec written for this lesson).
+- [x] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed, with the still-open browser items updated to reflect the e2e pass below rather than left as originally written
 - [x] **Both Mode A amendments resolved** by the owner, 2026-08-01 — the L4 edge is approved, so C13/C15 are derived under an explicit continuous-\(f''\) hypothesis; the M2 bar is amended
-- [x] All automated tests pass: full `vitest run` (153 files, 2435 tests), `tsc -b` clean, `oxlint` clean. **`./check.sh --e2e` has not been run** — no Playwright/browser confirmation yet.
+- [x] All automated tests pass: full `vitest run` (153 files, 2435 tests), `tsc -b` clean, `oxlint` clean. **Browser confirmation:** a dedicated `e2e/lesson-optimization-approximation.spec.ts` (8 tests) plus the two cross-lesson sweeps (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21 tests) all pass — 29 e2e tests total. **The full `./check.sh --e2e` (39 spec files) was not run**; verification was scoped to this lesson's own spec plus the cross-lesson checks that exercise it.

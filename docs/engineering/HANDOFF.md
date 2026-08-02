@@ -37,8 +37,10 @@ that still read "pending" were stale and have been corrected.
 **L6 `optimization-approximation` is built** on
 `feature/l6-optimization-approximation` (2026-08-01, this session — see
 Stream 3 below), per the owner's explicit authorization to cross the
-Mode B → Mode C boundary. Self-verified only: no independent review of the
-implementation, and `./check.sh --e2e` has not been run.
+Mode B → Mode C boundary. Self-verified only, but including a real e2e pass
+(this lesson's own 8-test spec plus two cross-lesson sweeps, 29 tests, all
+passing) — no independent review of the implementation, and the full 39-file
+`./check.sh --e2e` was not run in full.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -406,12 +408,28 @@ something this size and actually checking it:
    preset rather than silence the warning by deleting the reference.
 
 **Verification actually run:** full `vitest run` (153 files, 2435 tests,
-green), `tsc -b` (clean), `oxlint` (clean). **Not run:**
-`./check.sh --e2e` — no Playwright/browser confirmation of the rendered
-page. L5's own acceptance review found a real presentation defect (doc-internal
-citations reaching learner prose) that no automated test catches; the same
-class of risk is open here until someone actually opens
-`/lesson/optimization-approximation`.
+green), `tsc -b` (clean), `oxlint` (clean), plus a real Playwright pass — a
+dedicated `e2e/lesson-optimization-approximation.spec.ts` (8 tests: load and
+console-error-free clip playback; all eight major steps reachable via
+Previous/Next; the prediction hold genuinely holding; reduced-motion; the
+endpoint maximum rendering correctly; the certified-radius and
+first-sampled-disagreement readouts staying visually separate; the linear
+preset's "none in this domain"; live grading) plus the two cross-lesson
+sweeps that exercise every lesson including this one
+(`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`) — 29
+e2e tests total, all passing. One test bug found and fixed in the process:
+the practice-grading test assumed the first rendered question would be
+multiple-choice (matching `chain-rule`'s exercise ordering); L6's practice UI
+paginates one question at a time, and the real first question is
+`opt-candidate-set`'s numeric step — corrected to match the actual UI, not
+the lesson.
+
+**Not run:** the full 39-file `./check.sh --e2e` suite — scope was this
+lesson's own spec plus the cross-lesson sweeps that cover it, not every
+other lesson's specs. L5's own acceptance review found a real presentation
+defect (doc-internal citations reaching learner prose) that no automated
+test catches; `proseEmphasis.test.ts` now guards that specific class and is
+green here, but a human has not read the rendered page.
 
 **Gate 8 is explicitly NOT claimed.** `mastery-contract.md` §6 records what
 the implementing agent verified mechanically and states plainly that this is

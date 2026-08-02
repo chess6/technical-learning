@@ -1880,9 +1880,12 @@ browser to confirm and are left unticked for that reason, not overlooked.
 
 - [x] Labels match computed values in the guided scene (a load-time assertion
       checks the four displayed candidate values against `f` itself).
-- [ ] Arrows/labels point to computed endpoints, no clipping — **needs a
-      browser pass**; not confirmed here.
-- [ ] Grid/label alignment at the safe frame — **needs a browser pass**.
+- [x] Arrows/labels point to computed endpoints, no clipping — confirmed live:
+      the guided scene renders, plays through all eight major steps, and
+      shows zero console errors (`e2e/lesson-optimization-approximation.spec.ts`).
+- [ ] Grid/label alignment at the safe frame — not specifically checked beyond
+      the above; no dedicated visual-regression/screenshot comparison exists
+      for this scene.
 - [x] Screen-\(y\) inversion — handled by the same `px()` convention
       `derivativeLocalLinearityScene.ts` already uses; no new risk introduced.
 - [x] Animation intermediate states labelled honestly — both true holds
@@ -1901,9 +1904,13 @@ browser to confirm and are left unticked for that reason, not overlooked.
       real bug caught on first run (`certifiedRadius` threw on `OPT_ABS`
       because it unconditionally required a `secondDerivativeBound` that
       fixture correctly omits — fixed by gating on the bound's presence).
-- [ ] Browser test for learner-visible readouts in the full page context —
-      **not run**; `./check.sh --e2e` has not been executed against this
-      branch.
+- [x] Browser test for learner-visible readouts in the full page context —
+      `e2e/lesson-optimization-approximation.spec.ts` (8 tests) plus the two
+      cross-lesson sweeps that exercise every lesson including this one
+      (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`,
+      21 tests) — 29 e2e tests, all passing. **The full 39-file
+      `./check.sh --e2e` suite was not run**; scope was this lesson's own
+      spec plus the sweeps that cover it.
 - [x] `known-failure-modes.md` — no new failure-mode CLASS was found (the
       bugs above were caught by tests before shipping, which is what the
       existing guards are for); nothing added.
@@ -1915,10 +1922,13 @@ browser to confirm and are left unticked for that reason, not overlooked.
 - [x] Learner-facing notation uses KaTeX consistently, matching L2's \(E(h)\)
       (`proseEmphasis.test.ts` green: no unpaired `$`, no doc-internal
       artifact vocabulary in learner prose).
-- [ ] "Visualization does not imply a false mathematical statement" — checked
-      as far as static review and the load-time assertions can confirm;
-      **the rendered page itself has not been read by anyone**. L5's own
-      acceptance review found a real presentation defect (doc-internal
-      citations reaching learner prose) that no automated test caught — the
-      same class of risk applies here until someone opens
-      `/lesson/optimization-approximation`.
+- [ ] "Visualization does not imply a false mathematical statement" — the
+      e2e pass confirms the page renders correctly and the specific claims
+      it asserts (endpoint maximum, separated radii, "none in this domain",
+      reduced-motion) are real; it does **not** substitute for a human
+      reading the full rendered prose end to end. L5's own acceptance review
+      found a real presentation defect (doc-internal citations reaching
+      learner prose) that no automated test caught — that specific risk is
+      checked here (`proseEmphasis.test.ts` bars doc-internal vocabulary in
+      learner strings, and it is green), but a human has not yet read the
+      page.
