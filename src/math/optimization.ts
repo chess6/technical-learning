@@ -369,13 +369,28 @@ export function linearizationErrorBound(
 }
 
 /**
- * The radius on which a linearization is guaranteed accurate to `epsilon`:
- * solve `(M/2) r^2 = epsilon` for `r`, using `M` evaluated on `[a-r, a+r]`.
- * `M` is evaluated at the resulting `r` itself (a fixed point in one step) —
- * exact when `secondDerivativeBound` is non-decreasing in its radius
- * argument, which holds for every fixture this lesson declares; a safely
- * conservative (never optimistic) radius otherwise, since a larger declared
- * bound only shrinks the returned radius.
+ * The largest radius `r` on which `linearizationErrorBound(fixture, a, r) <=
+ * epsilon` — solved by BISECTION on `r`, not by fixed-point iteration.
+ *
+ * An earlier version iterated `r ↦ sqrt(2ε / M(a, r))` and called it
+ * conservative because `M(a, r)` is non-decreasing in `r` for every declared
+ * fixture. That reasoning was backwards: composing a non-decreasing `M` with
+ * `r ↦ sqrt(2ε/M)` produces a *decreasing* map, and naive fixed-point
+ * iteration on a decreasing map does not converge — it oscillates. Caught by
+ * review: for `OPT_QUARTIC` at `a = 0`, `epsilon = 0.01`, the iteration
+ * alternated between `r ≈ 4×10^4` and `r ≈ 10^-6` forever, and the value it
+ * happened to return had a declared error bound around `10^19`, nowhere near
+ * `epsilon`. It "worked" for the decay fixture used in the lesson's own
+ * worked example only because that fixture's bound is locally CONSTANT in
+ * `r` at `a = 0` (its window never crosses the fixture's own turning
+ * behaviour there), which made the false general reasoning invisible on the
+ * one case that was hand-checked.
+ *
+ * The map `r ↦ linearizationErrorBound(fixture, a, r)` genuinely IS
+ * non-decreasing in `r` for every fixture this file declares (`M(a, r)` is
+ * non-decreasing by each fixture's own construction, and `r²` is increasing),
+ * which is exactly the precondition bisection needs — unlike the fixed-point
+ * map above, monotone bisection on a monotone function cannot oscillate.
  */
 export function trustRadius(
   fixture: OptimizationFixture,
@@ -388,12 +403,28 @@ export function trustRadius(
   if (!(epsilon > 0)) {
     throw new Error(`trustRadius: epsilon must be positive, got ${epsilon}.`);
   }
-  let r = Math.sqrt((2 * epsilon) / Math.max(fixture.secondDerivativeBound(a, 1e-6), 1e-12));
-  for (let i = 0; i < 8; i += 1) {
-    const m = Math.max(fixture.secondDerivativeBound(a, r), 1e-12);
-    r = Math.sqrt((2 * epsilon) / m);
+  const errorBoundAt = (r: number): number => linearizationErrorBound(fixture, a, r);
+
+  // Grow hi until the error bound first exceeds epsilon, bracketing the root.
+  let hi = 1e-6;
+  let guard = 0;
+  while (errorBoundAt(hi) <= epsilon) {
+    hi *= 2;
+    guard += 1;
+    if (guard > 200) {
+      // The bound never grows enough to exceed epsilon anywhere reachable —
+      // a linear or constant fixture, whose curvature bound is exactly 0.
+      // The linearization is then exact (or as good as), arbitrarily far out.
+      return Infinity;
+    }
   }
-  return r;
+  let lo = hi / 2;
+  for (let i = 0; i < 80; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (errorBoundAt(mid) <= epsilon) lo = mid;
+    else hi = mid;
+  }
+  return lo;
 }
 
 /* --------------------------------------------------------------- fixtures */

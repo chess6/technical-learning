@@ -284,6 +284,53 @@ describe("linearization error bound — not violated, and not vacuous", () => {
     // (4/9)/2 * 0.2121^2 ≈ 0.010001
     expect(bound).toBeCloseTo((4 / 9 / 2) * 0.2121 * 0.2121, 6);
   });
+
+  it("trustRadius(OPT_QUARTIC, 0, 0.01) matches the hand-solved 6r^4 = epsilon regression, not the ~10^19-error value the earlier fixed-point iteration returned", () => {
+    // f(x) = x^4, secondDerivativeBound(0, r) = 12r^2 (a = 0 exactly, so
+    // |center|=0). errorBoundAt(r) = (12r^2/2) r^2 = 6 r^4. Solving
+    // 6 r^4 = 0.01 gives r = (0.01/6)^(1/4).
+    const expected = Math.pow(0.01 / 6, 1 / 4);
+    const radius = trustRadius(OPT_QUARTIC, 0, 0.01);
+    expect(radius).toBeCloseTo(expected, 6);
+    expect(radius).toBeCloseTo(0.20205, 4);
+    const bound = linearizationErrorBound(OPT_QUARTIC, 0, radius);
+    expect(bound).toBeLessThanOrEqual(0.01 + 1e-9);
+    // Not vacuous: at a flat point (f''(0) = 0), the returned radius must be
+    // the genuine root of the quartic error growth, not an artifact of the
+    // broken iteration — which returned a radius whose own declared bound
+    // was on the order of 10^19.
+    expect(bound).toBeGreaterThan(0.001);
+  });
+
+  it("trustRadius stays within epsilon and is not vacuously small, across every fixture and several points", () => {
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      if (!fixture.secondDerivativeBound) continue;
+      const [lo, hi] = fixture.domain;
+      for (const frac of [0.15, 0.4, 0.5, 0.65, 0.85]) {
+        const a = lo + (hi - lo) * frac;
+        const epsilon = 0.01;
+        const radius = trustRadius(fixture, a, epsilon);
+        if (!Number.isFinite(radius)) {
+          // Only licensed when the curvature bound is genuinely zero
+          // everywhere reachable (linear/constant fixtures).
+          expect(fixture.secondDerivativeBound(a, 1e6)).toBeCloseTo(0, 9);
+          continue;
+        }
+        expect(radius, `${fixture.id} at a=${a}`).toBeGreaterThan(0);
+        const bound = linearizationErrorBound(fixture, a, radius);
+        expect(
+          bound,
+          `${fixture.id} at a=${a}: trustRadius's own declared error bound exceeds epsilon`,
+        ).toBeLessThanOrEqual(epsilon + 1e-9);
+        // Not vacuous: bisection converged near the true boundary, not to a
+        // radius orders of magnitude smaller than necessary.
+        expect(
+          bound,
+          `${fixture.id} at a=${a}: bound is suspiciously far below epsilon — bisection may not have converged`,
+        ).toBeGreaterThan(epsilon * 0.9);
+      }
+    }
+  });
 });
 
 describe("the silence battery", () => {

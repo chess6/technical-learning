@@ -116,27 +116,51 @@ export function OptimizationApproximationExplorer() {
     setShowApproximation(false);
   }, []);
 
-  const slope = fixture.derivative(a);
-  const isSingular = (fixture.singularPoints ?? []).some((p) => Math.abs(p - a) < 1e-6);
+  // The SELECTABLE range — excludes an open endpoint by a small margin, so
+  // dragging or the slider can never actually land ON a point the fixture
+  // just declared ineligible. `a` itself is clamped into this range on every
+  // render (not just at toggle time), so it self-corrects if the preset or
+  // the endpoint toggle changes out from under a stale value.
+  const [domainLo, domainHi] = fixture.domain;
+  // A margin proportional to the domain's own width, not a fixed epsilon —
+  // large enough that the displayed point (rounded to 2 places) reads
+  // visibly short of the excluded endpoint rather than rounding back to it
+  // and looking selectable again.
+  const EDGE_MARGIN = (domainHi - domainLo) * 0.01;
+  const [openLeft, openRight] = fixture.domainOpen ?? [false, false];
+  const selectableLo = domainLo + (openLeft ? EDGE_MARGIN : 0);
+  const selectableHi = domainHi - (openRight ? EDGE_MARGIN : 0);
+  const clampedA = Math.min(Math.max(a, selectableLo), selectableHi);
+
+  const slope = fixture.derivative(clampedA);
+  const isSingular = (fixture.singularPoints ?? []).some((p) => Math.abs(p - clampedA) < 1e-6);
   const isStationary = !isSingular && Math.abs(slope) < 1e-9;
 
   const candidates = candidateSet(fixture);
   const extrema = globalExtrema(fixture);
   const guaranteed = existenceGuaranteed(fixture);
 
-  const verdict = isStationary && fixture.derivative2 ? classifyStationaryPoint(fixture, a) : null;
+  const verdict = isStationary && fixture.derivative2 ? classifyStationaryPoint(fixture, clampedA) : null;
 
   // certifiedRadius needs a declared secondDerivativeBound (the Taylor proof's
   // curvature bound) — OPT_ABS correctly declares none, since |x| has no
   // useful second derivative anywhere. firstSampledDisagreement needs only
   // `derivative` and runs regardless.
   const canCertify = !isStationary && !isSingular && Boolean(fixture.secondDerivativeBound);
-  const radius = canCertify ? certifiedRadius(fixture, a) : null;
-  const disagreement = !isStationary && !isSingular ? firstSampledDisagreement(fixture, a) : null;
+  const radius = canCertify ? certifiedRadius(fixture, clampedA) : null;
+  const disagreement = !isStationary && !isSingular ? firstSampledDisagreement(fixture, clampedA) : null;
 
   const [epsilon] = useState(0.01);
-  const lin = fixture.secondDerivativeBound ? linearize(fixture, a, 0.3) : null;
-  const radiusForTolerance = fixture.secondDerivativeBound ? trustRadius(fixture, a, epsilon) : null;
+  // The linearization demo step is clamped to stay inside the SELECTABLE
+  // domain — a fixed 0.3 previously ran straight past a preset's own
+  // boundary near an edge (e.g. a = 1.4 on [-1.5, 1.5]). Steps right when
+  // there is room; falls back to stepping left near the right edge.
+  const rightRoom = selectableHi - clampedA;
+  const leftRoom = clampedA - selectableLo;
+  const linStep =
+    rightRoom >= 0.05 ? Math.min(0.3, rightRoom * 0.9) : -Math.min(0.3, Math.max(leftRoom * 0.9, 1e-3));
+  const lin = fixture.secondDerivativeBound ? linearize(fixture, clampedA, linStep) : null;
+  const radiusForTolerance = fixture.secondDerivativeBound ? trustRadius(fixture, clampedA, epsilon) : null;
 
   return (
     <ExplorationPanel
@@ -162,10 +186,10 @@ export function OptimizationApproximationExplorer() {
               {
                 id: "a",
                 label: "a",
-                value: a,
-                min: fixture.domain[0],
-                max: fixture.domain[1],
-                step: (fixture.domain[1] - fixture.domain[0]) / 200,
+                value: clampedA,
+                min: selectableLo,
+                max: selectableHi,
+                step: (selectableHi - selectableLo) / 200,
                 onChange: setA,
               },
             ]}
@@ -195,7 +219,7 @@ export function OptimizationApproximationExplorer() {
             items={[
               {
                 id: "slope",
-                label: `f'(${fmt(a, 2)})`,
+                label: `f'(${fmt(clampedA, 2)})`,
                 value: isSingular ? "no single slope — singular" : fmt(slope),
               },
               {
@@ -269,7 +293,7 @@ export function OptimizationApproximationExplorer() {
             <SceneReadout
               title="Linearization"
               items={[
-                { id: "lin-value", label: "L(a+0.3)", value: fmt(lin.linearValue) },
+                { id: "lin-value", label: `L(a${linStep >= 0 ? "+" : ""}${fmt(linStep, 2)})`, value: fmt(lin.linearValue) },
                 { id: "true-error", label: "True error", value: fmt(lin.trueError, 6) },
                 { id: "bound", label: "Declared bound (M/2)h²", value: fmt(lin.bound, 6) },
                 {
@@ -305,11 +329,11 @@ export function OptimizationApproximationExplorer() {
           derivative: fixture.derivative,
           nonDifferentiable: fixture.singularPoints,
         }}
-        at={a}
-        onDragTo={setA}
+        at={clampedA}
+        onDragTo={(x) => setA(Math.min(Math.max(x, selectableLo), selectableHi))}
         tangent={isSingular ? undefined : { slope }}
         height={340}
-        ariaLabel={`${fixture.label}, with the point at x = ${fmt(a, 2)} and its local-linear model`}
+        ariaLabel={`${fixture.label}, with the point at x = ${fmt(clampedA, 2)} and its local-linear model`}
       />
     </ExplorationPanel>
   );

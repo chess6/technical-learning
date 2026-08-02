@@ -116,4 +116,42 @@ describe("OptimizationApproximationExplorer", () => {
     expect(text).toContain("no single slope — singular");
     expect(text).toContain("no local model");
   });
+
+  it("the slider's max excludes an opened right endpoint — the excluded point is not selectable", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const openToggle = toggle(container, "Open the right endpoint");
+    fireEvent.click(openToggle);
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    // Main cubic domain is [-2, 3]; with the right endpoint open, the slider
+    // must not offer x = 3 as a reachable value.
+    expect(Number(slider.max)).toBeLessThan(3);
+  });
+
+  it("dragging past the opened endpoint clamps inside the domain, never landing on the excluded point", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const openToggle = toggle(container, "Open the right endpoint");
+    fireEvent.click(openToggle);
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    fireEvent.change(slider, { target: { value: "3" } });
+    const text = container.textContent ?? "";
+    // f'(3) = 3*9-3 = 24 on the main cubic — if the excluded endpoint were
+    // reachable this would show up; instead the readout must reflect a
+    // clamped point strictly inside (-2, 3).
+    expect(text).not.toContain("f'(3)");
+  });
+
+  it("the linearization step never evaluates outside the fixture's own domain, near an edge", () => {
+    const { container } = render(<OptimizationApproximationExplorer />);
+    pickPreset(container, "x⁴ — silent, but a real minimum");
+    // OPT_QUARTIC's domain is [-1.5, 1.5]; drag close to the right edge.
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    fireEvent.change(slider, { target: { value: "1.4" } });
+    const approxToggle = toggle(container, "Show the linearization");
+    fireEvent.click(approxToggle);
+    const text = container.textContent ?? "";
+    // A step of the old hardcoded +0.3 from a=1.4 would read 1.7, outside
+    // the domain — must not appear; the panel must still render real numbers.
+    expect(text).not.toContain("NaN");
+    expect(text).not.toContain("L(a+0.3)");
+  });
 });

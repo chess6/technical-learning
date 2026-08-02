@@ -99,14 +99,34 @@ if (Math.abs(STEPS_VALUE - 1.84) > 1e-9) {
   throw new Error("optimizationApproximation: opt-derive-steps's fixture disagrees with the prose.");
 }
 
-/** `opt-derive-escape` (practice, no evidence claim): r(x) = x^2 + 2x - 3 at a = 1 — fresh, distinct from opt-derive-steps. */
+/**
+ * `opt-derive-escape` (practice, no evidence claim): r(x) = x^2 + 2x - 3 on
+ * [-2, 4], at a = 1 — fresh, distinct from opt-derive-steps. The domain is
+ * declared explicitly (review found the model answer asserting "a = 1 is
+ * interior to any reasonable domain" with no domain given at all — a real
+ * gap, since interiority is exactly one of the two hypotheses this argument
+ * is supposed to name) and chosen wide enough that h = ±0.3 both stay inside.
+ */
 const ESCAPE_R = (x: number) => x * x + 2 * x - 3;
+const ESCAPE_DOMAIN: readonly [number, number] = [-2, 4];
 const ESCAPE_A = 1;
 const ESCAPE_M = 4; // r'(1)
 const ESCAPE_H = 0.3; // the improving direction, since m > 0
+// E(h) = h^2 exactly for a quadratic, so the sign-agreement threshold is
+// exact too: h^2 < |m h| = 4|h| (for h != 0) iff |h| < 4. Not the general
+// C3-style conservative bound (|E(h)| <= |m||h|/2, giving |h| < 2) — the
+// exact one, since this residual has no higher-order terms to bound away.
+const ESCAPE_THRESHOLD = ESCAPE_M;
 const ESCAPE_VALUE = ESCAPE_R(ESCAPE_A + ESCAPE_H);
+const ESCAPE_VALUE_NEG = ESCAPE_R(ESCAPE_A - ESCAPE_H);
 if (Math.abs(ESCAPE_VALUE - (ESCAPE_R(ESCAPE_A) + ESCAPE_M * ESCAPE_H + ESCAPE_H * ESCAPE_H)) > 1e-9) {
   throw new Error("optimizationApproximation: opt-derive-escape's fixture disagrees with the prose.");
+}
+if (!(Math.abs(ESCAPE_H) < ESCAPE_THRESHOLD)) {
+  throw new Error("optimizationApproximation: opt-derive-escape's step exceeds its own claimed exact threshold.");
+}
+if (ESCAPE_A - ESCAPE_H <= ESCAPE_DOMAIN[0] || ESCAPE_A + ESCAPE_H >= ESCAPE_DOMAIN[1]) {
+  throw new Error("optimizationApproximation: opt-derive-escape's step leaves the declared domain.");
 }
 
 /** `opt-linearize-tolerance`: |f''| <= 8, epsilon = 0.002 -> |h| <= sqrt(2*0.002/8). */
@@ -711,12 +731,12 @@ export const optimizationApproximationLesson: LessonDefinition = {
       type: "custom",
       capabilityId: SELF_CHECK_ID,
       tier: "transfer",
-      prompt: `Let $r(x) = x^2 + 2x - 3$ at $a = ${ESCAPE_A}$. Reproduce the escape-route argument in full: state the residual bound, choose a step that improves $r$, run the argument for BOTH signs of $h$, and say explicitly which of the two hypotheses (interior, differentiable) each half of the argument used.`,
+      prompt: `Let $r(x) = x^2 + 2x - 3$ on $[${ESCAPE_DOMAIN[0]}, ${ESCAPE_DOMAIN[1]}]$, at $a = ${ESCAPE_A}$. Reproduce the escape-route argument in full: state the residual bound, choose a step that improves $r$, run the argument for BOTH signs of $h$, and say explicitly which of the two hypotheses (interior, differentiable) each half of the argument used.`,
       config: {
-        modelAnswer: `$r'(${ESCAPE_A}) = ${ESCAPE_M}$, so $m=${ESCAPE_M} \\neq 0$. By differentiability, $r(${ESCAPE_A}+h) - r(${ESCAPE_A}) = ${ESCAPE_M}h + E(h)$ with $E(h)=h^2$ (exact here, since r is a quadratic), and $E(h)/h = h \\to 0$ as $h\\to0$ — this is what licenses $|E(h)| < |${ESCAPE_M}h|$ once $|h|$ is small enough (specifically $|h| < ${ESCAPE_M}/1 \\cdot 2$ suffices, since $h^2 < ${ESCAPE_M}|h|$ iff $|h|<${ESCAPE_M}$). Since $m>0$, choosing $h=${ESCAPE_H}>0$ increases $r$: $r(${ESCAPE_A}+${ESCAPE_H}) = ${ESCAPE_VALUE.toFixed(2)} > r(${ESCAPE_A})=0$ — this refutes "$a=${ESCAPE_A}$ is a local maximum". Because $a=${ESCAPE_A}$ is INTERIOR to any reasonable domain, $h=-${ESCAPE_H}$ is also available: $r(${ESCAPE_A}-${ESCAPE_H})$ decreases $r$, refuting "$a=${ESCAPE_A}$ is a local minimum". Differentiability supplied the residual control that makes each individual step's sign trustworthy; interiority supplied the SECOND sign of $h$, without which only one of the two refutations could have been completed.`,
+        modelAnswer: `$r'(${ESCAPE_A}) = ${ESCAPE_M}$, so $m=${ESCAPE_M} \\neq 0$. By differentiability, $r(${ESCAPE_A}+h) - r(${ESCAPE_A}) = ${ESCAPE_M}h + E(h)$ with $E(h)=h^2$ — exact here, since $r$ is a quadratic and the residual has no higher-order terms to bound away. $E(h)/h = h \\to 0$ as $h\\to0$: this is what licenses treating $E(h)$ as smaller than $|${ESCAPE_M}h|$ once $|h|$ is small enough. Concretely: $h^2 < ${ESCAPE_M}|h|$ for every $h\\neq0$ with $|h|<${ESCAPE_THRESHOLD}$ (divide both sides by $|h|$), so any step inside that radius has a change whose sign matches $\\operatorname{sign}(${ESCAPE_M}h)$. Since $m>0$, choosing $h=${ESCAPE_H}>0$ increases $r$: $r(${ESCAPE_A}+${ESCAPE_H}) = ${ESCAPE_VALUE.toFixed(2)} > r(${ESCAPE_A})=0$ — this refutes "$a=${ESCAPE_A}$ is a local maximum". Because $a=${ESCAPE_A}$ is INTERIOR to the declared domain $[${ESCAPE_DOMAIN[0]}, ${ESCAPE_DOMAIN[1]}]$ (both $${ESCAPE_A} - ${ESCAPE_H}$ and $${ESCAPE_A} + ${ESCAPE_H}$ lie inside it), $h=-${ESCAPE_H}$ is also available: $r(${ESCAPE_A}-${ESCAPE_H}) = ${ESCAPE_VALUE_NEG.toFixed(2)} < r(${ESCAPE_A})=0$, refuting "$a=${ESCAPE_A}$ is a local minimum". Differentiability supplied the residual control that makes each individual step's sign trustworthy; interiority supplied the SECOND sign of $h$, without which only one of the two refutations could have been completed. Both possibilities for a local extremum are now refuted, so $a=${ESCAPE_A}$ is not a local extremum — that conclusion is licensed here only because BOTH signs were actually run; stating it without running both is the shortcut this item is designed to catch.`,
         rubricId: "opt-derive-escape",
-        rubricVersion: 1,
-        rubricText: `PASS requires: (a) the residual identity $r(a+h)-r(a)=mh+E(h)$ stated with $E(h)/h\\to0$ named as differentiability, not merely asserted; (b) BOTH signs of $h$ actually run, each with its own sign conclusion (not just one direction generalized); (c) each half of the argument explicitly tied to the hypothesis it uses — differentiability for the residual bound, interiority for the availability of the second sign; (d) the conclusion phrased as two REFUTATIONS (not a local max, not a local min), never as "therefore a is not an extremum" stated as a positive finding about the point's identity beyond what refutation supports. A response that states only "the derivative is 4 so it's not an extremum" with no residual argument, or that runs only one sign of h, is NOT a pass — reproducing the ARGUMENT is the point, not citing its conclusion.`,
+        rubricVersion: 2,
+        rubricText: `PASS requires: (a) the residual identity $r(a+h)-r(a)=mh+E(h)$ stated with $E(h)/h\\to0$ named as differentiability, not merely asserted; (b) BOTH signs of $h$ actually run, each with its own sign conclusion (not just one direction generalized), inside a domain the response itself states (interiority is not verifiable without a stated domain); (c) each half of the argument explicitly tied to the hypothesis it uses — differentiability for the residual bound, interiority for the availability of the second sign; (d) the two individual refutations (not a local max; not a local min) stated explicitly BEFORE any combined conclusion. A response may then correctly conclude "therefore $a$ is not a local extremum" — refuting both disjuncts of "local max or local min" really does establish that conjunction's negation — but ONLY as the conclusion of running both signs, never as a shortcut asserted from $f'(a)\\neq0$ alone with no residual argument shown. A response that states only "the derivative is 4 so it's not an extremum" with no residual argument, or that runs only one sign of h and still claims the full conclusion, is NOT a pass — reproducing the ARGUMENT is the point, not citing its conclusion.`,
       },
     },
   ],
