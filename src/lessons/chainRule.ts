@@ -124,6 +124,7 @@ export const chainRuleLesson: LessonDefinition = {
     { kind: "section", sectionId: "two-local-models" },
     { kind: "formal", formalId: "def-composition" },
     { kind: "section", sectionId: "the-repair" },
+    { kind: "worked", workedId: "chain-derivation" },
     { kind: "formal", formalId: "thm-chain-rule" },
     { kind: "section", sectionId: "matrix-reading" },
     { kind: "section", sectionId: "edge-cases" },
@@ -144,11 +145,11 @@ export const chainRuleLesson: LessonDefinition = {
     },
     {
       id: "the-repair",
-      title: "The honest repair",
-      body: "Write $b = g(a)$. By Lesson 2's C5, $g(a+h) = g(a) + g'(a)h + E_g(h)$ with $E_g(h)/h \\to 0$, and $f(b+k) = f(b) + f'(b)k + E_f(k)$ with $E_f(k)/k \\to 0$. Crucially, $E_f(0) = 0$ automatically — it is forced by $E_f$'s own definition, not assumed.\n\nOne more definition does the real work. Let $\\varepsilon_f(k) = E_f(k)/k$ for $k \\neq 0$, and set $\\varepsilon_f(0) = 0$. Two things follow at once: $E_f(k) = \\varepsilon_f(k)\\,k$ for **every** $k$ — including $k = 0$, where both sides are $0$ — and $\\varepsilon_f(k) \\to 0 = \\varepsilon_f(0)$ as $k \\to 0$, which is just $E_f(k)/k \\to 0$ restated. That second fact says $\\varepsilon_f$ is *continuous at zero*.\n\nNow substitute $g$'s approximation as $f$'s input: set $k(h) = g(a+h) - g(a)$, and $f(g(a+h)) = f(g(a)) + f'(g(a))\\bigl[g'(a)h + E_g(h)\\bigr] + \\varepsilon_f(k(h))\\,k(h)$. Divide by $h$ and let $h \\to 0$. The middle term carries $E_g(h)/h \\to 0$. The last term is the **product** $\\varepsilon_f(k(h)) \\cdot \\frac{k(h)}{h}$, never a quotient by $k(h)$: $g$ is differentiable and so continuous, giving $k(h) \\to 0$, and because $\\varepsilon_f$ is continuous at $0$ this forces $\\varepsilon_f(k(h)) \\to \\varepsilon_f(0) = 0$; meanwhile $k(h)/h \\to g'(a)$, which needs $g$'s *differentiability*, not merely its continuity. The product tends to $0 \\cdot g'(a) = 0$. What remains is $f'(g(a))\\,g'(a)$.\n\nEvery step is defined at every $h$, including any $h$ where $k(h) = 0$. That is the whole difference: $\\Delta u$ never once appears in a denominator, so there is no case to exclude and none to patch.",
-      equation: "(f\\circ g)'(a) = f'(g(a))\\,g'(a)",
+      title: "Deriving the rule by substitution",
+      body: "The previous section left a gap: \"cancel the $du$'s\" has to form $\\Delta y/\\Delta u$, which needs $\\Delta u \\neq 0$ — and $\\Delta u$ can be zero at points arbitrarily close to $a$, even for a perfectly smooth $g$. What follows is an argument with no such requirement, so there is no case it has to exclude.\n\nOne idea carries it. Lesson 2's local-linear model says the error $E_f(k)$ shrinks *faster* than $k$ — that is what differentiability means. So write the error as a **multiple** of $k$ rather than a fraction over it: let $\\varepsilon_f(k) = E_f(k)/k$ when $k \\neq 0$, and set $\\varepsilon_f(0) = 0$. Read $\\varepsilon_f$ as the *error per unit step*.\n\nTwo facts come free. First, $E_f(k) = \\varepsilon_f(k)\\,k$ for **every** $k$ — including $k = 0$, where both sides are zero. Second, $\\varepsilon_f(k) \\to 0$ as $k \\to 0$, which is just \"the error shrinks faster than $k$\" said again. From here on the error appears only multiplied by $k$, never divided by it.",
+      equation: "E_f(k) = \\varepsilon_f(k)\\,k \\quad \\text{for every } k, \\qquad \\varepsilon_f(k) \\to 0 \\ \\text{ as } k \\to 0",
       observation:
-        "That is also why $g'(a) = 0$ needs no special case: the identity above never divided by $g'(a)$ or by $\\Delta u$ to reach the answer.",
+        "That is also why $g'(a) = 0$ needs no special case: no step below divides by $g'(a)$ or by $\\Delta u$.",
       layers: [
         {
           kind: "why",
@@ -160,7 +161,7 @@ export const chainRuleLesson: LessonDefinition = {
     {
       id: "matrix-reading",
       title: "Rates multiply because 1×1 matrices compose",
-      body: "Lesson 2's C9 read $f'(a)$ as the $1\\times1$ matrix of the linear map $h \\mapsto f'(a)h$. Composing two linear maps composes their matrices — in one dimension, that is exactly multiplying the two numbers. This is the same fact linear algebra's `matrix-composition` lesson teaches; here it is the same statement one dimension down.",
+      body: "Lesson 2 read $f'(a)$ as the $1\\times1$ matrix of the linear map $h \\mapsto f'(a)h$. Composing two linear maps composes their matrices — in one dimension, that is exactly multiplying the two numbers. This is the same fact linear algebra's `matrix-composition` lesson teaches; here it is the same statement one dimension down.",
       observation:
         "This is also the forward bridge: with more than one input or output, f'(g(a)) and g'(a) become genuine matrices — Jacobians — and this same substitution argument, unchanged, is the multivariable chain rule.",
     },
@@ -175,6 +176,26 @@ export const chainRuleLesson: LessonDefinition = {
           body: "\"g is not differentiable at a, so f∘g cannot be\" is not a valid inference — it only says the chain-rule ROUTE is unavailable. Whether the composite is actually differentiable there is a separate question, answered directly if at all.",
         },
       ],
+    },
+  ],
+
+  workedExamples: [
+    {
+      id: "chain-derivation",
+      title: "The derivation, line by line",
+      prompt:
+        "Each line is defined for every $h$ — including any $h$ where the inner step $k(h)$ happens to be zero. Nothing is ever divided by $k(h)$.",
+      equations: [
+        "g(a+h) = g(a) + g'(a)h + E_g(h), \\qquad E_g(h)/h \\to 0",
+        "f(b+k) = f(b) + f'(b)k + E_f(k), \\qquad b = g(a)",
+        "k(h) = g(a+h) - g(a) = g'(a)h + E_g(h)",
+        "E_f(k) = \\varepsilon_f(k)\\,k \\quad\\text{with}\\quad \\varepsilon_f(k) \\to 0",
+        "f(g(a+h)) = f(g(a)) + f'(g(a))\\,k(h) + \\varepsilon_f(k(h))\\,k(h)",
+        "\\frac{f(g(a+h)) - f(g(a))}{h} = f'(g(a))\\,\\frac{k(h)}{h} + \\varepsilon_f(k(h))\\,\\frac{k(h)}{h}",
+        "\\frac{k(h)}{h} \\to g'(a) \\qquad\\text{and}\\qquad \\varepsilon_f(k(h)) \\to 0",
+        "(f \\circ g)'(a) = f'(g(a))\\,g'(a) + 0 \\cdot g'(a) = f'(g(a))\\,g'(a)",
+      ],
+      equationsAriaLabel: "Deriving the chain rule by substituting local-linear models",
     },
   ],
 
@@ -387,7 +408,7 @@ export const chainRuleLesson: LessonDefinition = {
   ],
 
   keyTakeaway:
-    "Feed one local-linear model's output into the other, and their slopes compound — never divide by $\\Delta u$ to get there, only substitute it. That is why the rule keeps working exactly where \"cancel the du's\" would need to divide by zero. Keep the substitution move: Package B's next techniques — substitution, parts — are this same move, read forwards and backwards.",
+    "Feed one local-linear model's output into the other, and their slopes compound — never divide by $\\Delta u$ to get there, only substitute it. That is why the rule keeps working exactly where \"cancel the du's\" would need to divide by zero. Keep the substitution move: the next techniques you meet — substitution and integration by parts — are this same move, read forwards and backwards.",
 
   structuredSummary: {
     coreMentalModel:

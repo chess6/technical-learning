@@ -171,3 +171,46 @@ describe("prose never contains an unpaired $ (odd count)", () => {
     expect(hasUnpairedDollar("This costs a lot, and $E=mc^2$ too.")).toBe(false);
   });
 });
+
+/**
+ * Doc-internal vocabulary must not reach the learner.
+ *
+ * The authoring artifacts number their content items (`C5`, `C9`), outcomes
+ * (`M2`), evidence levels (`E4`), workflow gates (`Gate 8`) and implementation
+ * packages (`Package B`). Those are indispensable *between* the contract and
+ * the build, and meaningless on the page: a learner reading "By Lesson 2's C5"
+ * has no way to resolve C5, because it names a row in a document they will
+ * never see.
+ *
+ * Found live in `chain-rule`, which shipped with `C5`, `C9` (twice) and
+ * "Package B's next techniques" in learner-facing prose — reported by the
+ * repository owner reading the page. Cite the *lesson* ("Lesson 2's
+ * local-linear model"), never the artifact's index.
+ */
+const DOC_JARGON =
+  /\b(?:C\d+|M\d+|E[1-7]\b|Gate \d+|Package [A-K]\b|slice [A-K]\d+)\b/;
+
+describe("doc-internal artifact vocabulary never reaches learner prose", () => {
+  it("holds for every learner-facing prose string in every lesson", () => {
+    const problems = lessons.flatMap((lesson) =>
+      collectLessonProse(lesson)
+        .map(({ path, text }) => {
+          const hit = text.match(DOC_JARGON);
+          return hit ? `  ${path}: "${hit[0]}"\n    ${text.slice(0, 140)}` : null;
+        })
+        .filter((x): x is string => x !== null),
+    );
+    expect(
+      problems,
+      `Authoring-artifact vocabulary found in learner prose. Cite the lesson ` +
+        `or the idea, not the contract's row number:\n${problems.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("detects an artifact citation, and accepts a plain lesson reference", () => {
+    // Proves the check bites rather than trivially passing.
+    expect("By Lesson 2's C5, the model is linear.").toMatch(DOC_JARGON);
+    expect("Package B's next techniques").toMatch(DOC_JARGON);
+    expect("By Lesson 2's local-linear model, the model is linear.").not.toMatch(DOC_JARGON);
+  });
+});

@@ -271,6 +271,24 @@ fixed one.
    Reject-battery names in the grading contract were updated to match; the
    accepted answer index is unchanged, and all 40 contract tests pass.
 
+4. **Presentation defects, reported by the owner on the page.** The derivation
+   cited `C5` and `C9` — row numbers from *these* authoring artifacts, which a
+   learner cannot resolve because they name lines in a document they never
+   see — and the key takeaway cited "Package B". All replaced with references
+   to the *lesson* ("Lesson 2's local-linear model"). A repo-wide guard now
+   fails on this whole class (`proseEmphasis.test.ts`, "doc-internal artifact
+   vocabulary never reaches learner prose"), proven to bite.
+
+   The derivation itself was one dense paragraph. It is now a section that
+   states *what is being repaired and why* in plain terms, followed by an
+   eight-line `EquationSequence` — the same structural slot every other worked
+   calculation uses. The \(\varepsilon_f\) device is kept, because the
+   lesson's thesis depends on it (without it the argument either divides by
+   \(\Delta u\) or hand-waves), but it is now introduced in words as *the
+   error per unit step* before it appears in symbols. The section title
+   "The honest repair" — which never said what was repaired — is now
+   "Deriving the rule by substitution".
+
 **Verification at acceptance:** `./check.sh` green (146 files, 2300 tests);
 `/lesson/chain-rule` confirmed in-browser to render 40 KaTeX spans in the
 repaired section with zero KaTeX errors and no stray `$` or `*`.
