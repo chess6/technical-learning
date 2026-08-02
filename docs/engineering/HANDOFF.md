@@ -37,16 +37,22 @@ that still read "pending" were stale and have been corrected.
 **L6 `optimization-approximation` is built** on
 `feature/l6-optimization-approximation` (2026-08-01–02 — see Stream 3
 below), per the owner's explicit authorization to cross the Mode B → Mode C
-boundary. **A first independent review of the Mode C implementation has now
-run** (2026-08-02) and found real defects self-verification had missed — a
+boundary. **Two independent review rounds have now run** (2026-08-02) and
+found real defects self-verification had missed each time — the first: a
 mathematically broken `trustRadius`, roughly half the approved scene/explorer
 plan silently dropped, three exercises overclaiming what they captured, a
 self-check with a genuine arithmetic self-contradiction, and a checkpoint
-that recorded no real commitment. All confirmed and fixed, with regression
-tests for each (detail in Stream 3's "Second independent review" subsection).
-**A second independent pass has not yet run** — the same discipline L5's
-Gate 8 needed applies here: one clean review is evidence the harness works,
-not evidence a further pass would find nothing.
+that recorded no real commitment. The second (a bounded repair, scoped to
+five specific findings): the first round's own bisection fix still started
+from an unverified `lo`, `trustRadius` never reconciled with the fixture's
+own domain, four explorer presets opened away from the case they advertised,
+`opt-select-route`'s outcome overclaimed "unprompted" selection, and the
+scene/explorer each independently re-derived the step decomposition and
+candidate-set values the math layer was supposed to own exclusively. All
+confirmed and fixed, with regression tests for each (detail in Stream 3's
+review subsections). **A third independent pass has not yet run** — the same
+discipline L5's Gate 8 needed applies here: passing review rounds is evidence
+the harness works, not evidence the next pass would find nothing.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -512,6 +518,86 @@ coverage for both restored beats, the h-slider/sweep interaction, and
 tests total across this lesson's own spec and the two cross-lesson sweeps,
 all passing. **This review round is not a substitute for a further
 independent pass** — see `mastery-contract.md` §6 for the full record.
+
+### Third review round — a bounded repair (2026-08-02)
+
+The owner reviewed the second round's own fixes and reported five specific,
+scoped findings — explicitly bounded ("do not begin L7 or redesign unrelated
+infrastructure"):
+
+1. **`trustRadius`'s bisection still had an unverified lower bound.** The
+   second round's fix started from `lo = hi / 2` (with `hi` seeded at `1e-6`
+   and doubled until infeasible) — feasible only by assumption, never
+   checked. For a small enough epsilon the true root sits BELOW that
+   unverified `lo` (regression: `OPT_QUARTIC`, `a=0`, `epsilon=1e-30` — true
+   root `~2×10⁻⁸`, old `lo` `~5×10⁻⁷`), so bisection could only search a
+   range that never reached it. Fixed: `lo = 0`, which needs no assumption —
+   the error bound at `r=0` is exactly `0`, `<=` any positive epsilon by
+   definition.
+2. **`trustRadius` never reconciled its answer with the fixture's own
+   domain** — it returned literal `Infinity` for a zero-curvature fixture
+   (linear/constant), overstating what a BOUNDED domain actually supports,
+   and had no upper bound tied to the fixture's own reach from `a` at all.
+   Fixed: the radius is now capped at `min(a - domainLo, domainHi - a)`
+   (or, when `a` sits exactly at one domain edge — `OPT_DECAY`'s worked
+   example at `a=0` — the one-sided reach on the side that exists, since a
+   symmetric claim past that point would step outside the domain entirely).
+   `trustRadius(OPT_DECAY, 0, 0.01)` still returns `≈0.2121`, unchanged,
+   since 8 units of room to the right was always more than enough.
+3. **Four explorer presets opened away from the case they advertised.** The
+   x³/|x|/x⁴/−x⁴ presets defaulted `a` to `-1`, not the stationary/singular
+   point at `0` their own labels promised ("a survivor", "the unexamined
+   minimum", "silent, but a real minimum/maximum") — a learner had to already
+   know to drag the point before seeing what the preset claimed. Fixed: all
+   four now default to `a = 0`, with component tests pinning the initial
+   (no-drag) readout of each.
+4. **`opt-select-route`'s outcome overclaimed "unprompted" selection** — the
+   exercise presents both named routes and asks the learner to pick between
+   them; "unprompted" implies free/uncued generation that never happened.
+   Corrected everywhere (learner-facing `learningObjectives`, the internal
+   `objectives` text, `mastery-contract.md`'s outcomes table, the lesson
+   plan) to: "Select between the presented calculus and algebraic-certificate
+   routes on fresh functions, and justify the selection." The E3 evidence
+   claim survives this correction — `exercise-sequence`'s ceiling does not
+   depend on whether the route choice itself was cued, and the item still
+   captures genuine multi-step production (a certified minimum via each
+   route, plus a captured justification) beyond the one cued pick.
+5. **The guided scene and explorer each independently re-derived math the
+   `src/math` layer was supposed to own exclusively** — the escape step's
+   `mh`/`E(h)`/sign-agreement split was computed inline, twice, with no
+   shared source; `decideGlobally`'s candidate table was a hand-typed string
+   checked against `OPT_MAIN_CUBIC.f` at load time rather than built FROM the
+   computed candidate set. Fixed: one new pure helper,
+   `stepDecomposition(fixture, a, h)` (`src/math/optimization.ts`), used by
+   both the scene and the explorer; the candidate table and the global-max
+   caption are now built from `candidateSet`/`globalExtrema`'s own points,
+   not retyped and separately verified.
+
+**All five fixed, each with regression tests** — `src/math/__tests__/optimization.test.ts`
+grew from 33 to 40 tests (the `lo=0` regression, a domain-reconciliation
+regression, a logarithmic epsilon sweep, and four `stepDecomposition` tests);
+`OptimizationApproximationExplorer.test.tsx` grew from 19 to 21 (the four
+initial-readout tests, net of one now-redundant drag-based test removed).
+Verified with the FULL tier this time, not scoped to this lesson alone: lint
+clean, `tsc -b` clean (this surfaced a real narrowing bug the initial
+`tsc --noEmit -p .` pass had NOT caught — a discriminated-union field
+accessed from inside a function body, where TypeScript's control-flow
+narrowing does not survive; `tsc -b`, the exact command `check.sh` runs, is
+the canonical check from here on, not `tsc --noEmit -p .` alone), full
+`vitest run` (153 files, 2463 tests, green), and the complete
+`./check.sh --e2e` (39 spec files, 224 Playwright tests) — the first time
+this lesson's Mode C work has run the FULL e2e suite rather than a scoped
+subset. `e2e/lesson-optimization-approximation.spec.ts` (12 tests), the
+`guided-scene-hard-gates` check for `optimization-approximation`, and both
+cross-lesson sweeps all passed with zero failures. Three failures elsewhere
+in the full suite are pre-existing and already documented in
+`docs/quality/known-failure-modes.md`, not caused by this repair:
+`solution-sets` and `ftc-accumulate-then-measure` hard-gate failures (the two
+waivers recorded in the module ledger §7) and a `benchmark-lab.spec.ts`
+"eigen" candidate clock-starvation timeout matching that doc's "media-heavy
+specs that fail only inside the full `--e2e` sweep" contention class — none
+touch any file this repair changed. **No new waiver was added.** This round,
+too, is not a substitute for a further independent pass.
 
 A minor Mode A-adjacent correction made alongside implementation, flagged
 rather than silently done: `course-spine.md`'s L6 row carried the spine's own

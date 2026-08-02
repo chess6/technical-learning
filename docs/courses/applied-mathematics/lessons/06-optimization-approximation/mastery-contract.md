@@ -141,7 +141,7 @@ reached `PASS`. Second lesson of Package B (`calculus-technique`).
 | Say what the method returns on an open interval, and why that is correct rather than broken | D13/D5 | lesson | E2 | `opt-open-interval` (`multiple-choice`) | built |
 | Classify a survivor with the second-derivative test, and return "silent" when \(f''(a)=0\) | D3/D7 | lesson | E3 | `opt-second-test-silent` (`exercise-sequence`: classify where \(f''\neq0\) (`multiple-choice`) → verdict where \(f''=0\) (`multiple-choice`) → pick the pair of functions separating the cases (`multiple-choice`)) | built |
 | From a curvature bound, produce an interval on which a linearization meets a stated tolerance | D3/D4 | lesson | E3 | `opt-linearize-tolerance` (`numeric`, graded on \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\)) | built |
-| Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **genuine fresh pair**, \(p(x)=x^2+6x+11\) and \(q(x)=x^3-6x^2+9x+1\): which has an algebraic certificate (`multiple-choice`, choices name only the structural reason, never the completed identity or the answer) → \(p\)'s certified minimum (`numeric`) → why \(q\) has no such shortcut (`multiple-choice`, the captured justification) → \(q\)'s minimum via the full calculus route (`numeric`, landing at an ENDPOINT, not either interior stationary point)) | built |
+| Select between the presented calculus and algebraic-certificate routes on fresh functions, and justify the selection | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **genuine fresh pair**, \(p(x)=x^2+6x+11\) and \(q(x)=x^3-6x^2+9x+1\): which has an algebraic certificate (`multiple-choice`, choices name only the structural reason, never the completed identity or the answer) → \(p\)'s certified minimum (`numeric`) → why \(q\) has no such shortcut (`multiple-choice`, the captured justification) → \(q\)'s minimum via the full calculus route (`numeric`, landing at an ENDPOINT, not either interior stationary point)) | built |
 | Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on \(g(x)=x^2-4x+1\) at \(a=0\), a fresh pair used nowhere else: **(A)** which property of \(g\) licenses treating \(E(h)\) as smaller than \(\lvert mh\rvert\) for small \(h\) — differentiability, not mere continuity or boundedness (`multiple-choice`); **(B)** stepping with only \(h>0\), which single claim (max or min) that alone refutes (`multiple-choice`); **(C)** what property of \(a=0\) is what makes \(h<0\) *also* available, so the *other* claim gets refuted too — interiority, not differentiability again (`multiple-choice`); **(D)** the value at the step that actually improves (`numeric`)) | built |
 | Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | built (no evidence claim) |
 | Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
@@ -378,6 +378,39 @@ defects, and the same discipline applies here: passing one outside review
 is evidence the harness works, not evidence the second pass would find
 nothing. No box below should be read as "accepted."
 
+**A second independent review (2026-08-02) found the first round's own fix
+incomplete, plus new defects the first round never touched.** `trustRadius`'s
+bisection replacement had itself started from an UNVERIFIED `lo = hi/2`
+(feasible only by assumption) rather than the always-valid `lo = 0` —
+infeasible for a small enough epsilon (regression: `OPT_QUARTIC`, `a=0`,
+`epsilon=1e-30`) — and never reconciled its answer with the fixture's own
+declared domain, returning literal `Infinity` for a zero-curvature fixture
+with a bounded domain. Both fixed: `lo=0` needs no assumption (the error
+bound at `r=0` is exactly `0`), and the radius now never exceeds what the
+fixture's domain allows from `a` (one-sided at a domain edge, symmetric
+otherwise), with a domain-reconciliation regression and a logarithmic
+epsilon sweep added. Separately: the |x|/x³/x⁴/−x⁴ explorer presets opened
+on a point OTHER than the case they advertised, requiring a drag before the
+silent/singular verdict the preset's own label promised was visible — fixed
+by defaulting each to the case itself, with component tests pinning the
+initial (no-drag) readout of all four. `opt-select-route`'s outcome claimed
+"choose, unprompted" when the exercise presents both named routes and asks
+the learner to select between them — corrected everywhere (learner-facing
+objectives, the mastery-contract outcomes table, the lesson plan) to "select
+between the presented ... routes ... and justify the selection"; the E3
+evidence claim survives this correction (the `exercise-sequence` ceiling
+does not depend on whether the route choice itself was cued, and the item
+still captures genuine multi-step production beyond the one cued pick). And
+the guided scene and explorer had each independently re-derived the escape
+step's `mh`/`E(h)`/sign-agreement split and the candidate-set values shown
+in `decideGlobally` — real, if easy to miss, violations of the "every
+displayed quantity originates in `src/math`" contract. Both now read ONE new
+shared helper, `stepDecomposition` (`src/math/optimization.ts`), and the
+candidate table is built from `candidateSet`/`globalExtrema`'s own computed
+points rather than a hand-typed, separately-checked string. **This round is
+not a substitute for a further one either** — the same discipline stated
+above still applies. No box below should be read as "accepted."
+
 - [x] Insight contract linked and `PASS` — [insight.md](insight.md).
 - [x] All §1 fields filled and reconciled against the built lesson
       (`src/lessons/optimizationApproximation.ts`).
@@ -406,9 +439,11 @@ nothing. No box below should be read as "accepted."
       landed `fundamental-theorem → optimization-approximation` edge.
 - [x] Retention hook recorded (§1f).
 - [x] Correctness gate passed: all six property tests in §1g implemented and
-      green in `src/math/__tests__/optimization.test.ts` (33 tests, including
-      the `trustRadius` bisection regression and a per-fixture error-bound
-      sweep added by the second independent-review round), plus a
+      green in `src/math/__tests__/optimization.test.ts` (40 tests, including
+      the `trustRadius` bisection regression and per-fixture error-bound sweep
+      added by the second review round, and the `lo=0` bisection-invariant
+      regression, domain-reconciliation regression, logarithmic epsilon
+      sweep, and `stepDecomposition` tests added by the third), plus a
       load-time consistency guard (`assertOptimizationFixturesAreConsistent`)
       that caught and fixed one real defect before it shipped (`OPT_DRIVE`'s
       stationary points were hand-typed guesses that didn't match its own
@@ -438,16 +473,27 @@ all passing. The two existing cross-lesson specs
 (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21
 tests) also exercise this lesson and pass, including the heading-hierarchy
 check (confirms no `callout` block sits first) and a dedicated "renders all
-2 of its misconception callouts" check for this lesson by name. **This is
-not the full `./check.sh --e2e` suite** (39 spec files; not run in full, to
-keep verification scoped to what this lesson's own change could plausibly
-affect) — but it is real, passing browser confirmation, not merely unit/
-component tests. One real bug was found and fixed by this pass: the
-practice-grading e2e test assumed the first rendered question would be a
-multiple-choice item (matching `chain-rule`'s exercise ordering); L6's
-practice UI is paginated one question at a time, and the actual first
-question is `opt-candidate-set`'s numeric step — the test was wrong, not the
-lesson, and was corrected to match the real UI.
+2 of its misconception callouts" check for this lesson by name. One real bug
+was found and fixed by this pass: the practice-grading e2e test assumed the
+first rendered question would be a multiple-choice item (matching
+`chain-rule`'s exercise ordering); L6's practice UI is paginated one
+question at a time, and the actual first question is `opt-candidate-set`'s
+numeric step — the test was wrong, not the lesson, and was corrected to
+match the real UI.
+
+**The full `./check.sh --e2e` suite (39 spec files, 224 Playwright tests) was
+run for the third review round's repair** (2026-08-02), not just this
+lesson's own spec — `tsc -b` clean, `oxlint` clean, `vitest run` green (153
+files, 2463 tests), and every spec covering this lesson (its own 12 tests,
+the `guided-scene-hard-gates` check for `optimization-approximation`, and
+both cross-lesson sweeps above) passed with zero failures. Three failures
+elsewhere in the full suite are pre-existing and documented in
+`docs/quality/known-failure-modes.md`, not caused by this repair:
+`solution-sets` and `ftc-accumulate-then-measure` hard-gate failures (the two
+waivers already recorded in the module ledger §7) and a `benchmark-lab.spec.ts`
+"eigen" candidate clock-starvation timeout matching that doc's documented
+"media-heavy specs that fail only inside the full `--e2e` sweep" contention
+class — none touch any file this repair changed.
 
 **What has NOT happened:** independent review of the Mode C implementation
 (two rounds of review covered the Mode B docs only, before any code

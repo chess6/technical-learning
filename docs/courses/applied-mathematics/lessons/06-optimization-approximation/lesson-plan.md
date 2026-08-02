@@ -110,7 +110,7 @@ levels.
 | 5 | Say what the method returns on an open interval, and why that is correct | lesson-owned | E2 | `opt-open-interval` |
 | 6 | Classify a survivor, and return *silent* when \(f''(a)=0\) | lesson-owned | E3 | `opt-second-test-silent` |
 | 7 | From a curvature bound, produce an interval meeting a stated tolerance | lesson-owned | E3 | `opt-linearize-tolerance` |
-| 8 | Choose unprompted between the calculus route and an algebraic certificate, **and justify the choice** | lesson-owned | E3 | `opt-select-route` (fresh pair; the justification is a captured step) |
+| 8 | Select between the presented calculus and algebraic-certificate routes on fresh functions, **and justify the selection** | lesson-owned | E3 | `opt-select-route` (fresh pair; the justification is a captured step) |
 | 9 | Identify the escape-route argument's load-bearing steps and what each hypothesis does | lesson-owned | E3 | `opt-derive-steps` (\(g(x)=x^2-4x+1\) at \(a=0\), fresh) |
 | — | Write the argument out in full | **no evidence claim** — the runtime cannot record one (contract §1d) | — | `opt-derive-escape`, a practice event |
 | 10 | Retain "necessary is not sufficient" under delayed retrieval | **module-owned** | E3 | `mod-calctech-retain-necessary-not-sufficient` (Gate 9) |
@@ -348,23 +348,31 @@ tests:
 - [x] the silence battery (\(x^4\), \(-x^4\), \(x^3\)) all return *silent*
 - [x] the constant function reports a non-finite reduction rather than a list
 - [x] the open interval returns an empty set and withdraws the existence guarantee
-- [x] every displayed quantity originates in `src/math`, none in a scene or explorer — confirmed by code review (the scene and explorer call into `optimization.ts`'s exported readouts; no local recomputation), not a dedicated unit test
+- [x] every displayed quantity originates in `src/math`, none in a scene or explorer — the candidate set and global extrema are read from `candidateSet`/`globalExtrema` in both places, and the step decomposition (`mh`, `E(h)`, the actual change, sign agreement) is read from ONE new shared helper, `stepDecomposition` (`src/math/optimization.ts`), from both the guided scene and the explorer — replacing two independent inline computations that a second review round found still duplicated the math. `stepDecomposition` has its own unit tests (`optimization.test.ts`, including a cross-check against `linearize`'s own residual, so the two can never silently drift apart) — no longer "confirmed by code review" only
 
 ## Required tests
 - [x] Unit tests for the new `src/math` helpers (candidate set, **certified
-      sufficient radius**, first-sampled-disagreement, bound) — the second and
-      third are separate functions with separate names, not one "threshold" helper.
-      `src/math/__tests__/optimization.test.ts`, 33 tests — including a
-      regression for `trustRadius`, whose original fixed-point-iteration
-      implementation returned a radius with a ~10-orders-of-magnitude wrong
-      error bound on the quartic preset; replaced with bisection and re-verified
-      against every declared fixture, not just the one hand-checked case that
-      hid the bug.
+      sufficient radius**, first-sampled-disagreement, bound, and the shared
+      step decomposition `stepDecomposition`) — the second and third are
+      separate functions with separate names, not one "threshold" helper.
+      `src/math/__tests__/optimization.test.ts`, 40 tests — including a
+      regression for `trustRadius`'s original fixed-point iteration (a
+      ~10-orders-of-magnitude wrong error bound on the quartic preset,
+      replaced with bisection), a THIRD-round regression for the bisection
+      fix's own `lo` invariant (`OPT_QUARTIC`, `epsilon = 1e-30` — an
+      unverified `lo = hi/2` was itself infeasible at that scale), a
+      domain-reconciliation regression (`trustRadius` no longer returns
+      `Infinity` for a zero-curvature fixture, and never claims a radius past
+      what a fixture's own domain allows from a given point), a logarithmic
+      epsilon sweep, and cross-checks tying `stepDecomposition` to
+      `linearize`'s own residual so the two can never silently drift apart.
 - [x] The seven invariant tests above — same file.
 - [x] Component tests: explorer readouts, the sign-agreement indicator, sweep,
       reset, endpoint-opening — `OptimizationApproximationExplorer.test.tsx`,
-      19 tests, including the endpoint-selectability and interval-narrowing
-      regressions review found.
+      21 tests, including the endpoint-selectability and interval-narrowing
+      regressions an earlier review found, and the initial (no-drag) readout
+      of all four silence/singularity presets (x³, |x|, x⁴, −x⁴), each now
+      defaulting its point directly onto the advertised case.
 - [x] Grading contract (`describeGradingContract`) for every auto-graded item,
       with the adversarial reject battery. `opt-derive-escape` is **not**
       auto-graded and is **not** routed to review — it is a self-marked
@@ -405,4 +413,4 @@ tests:
 - [ ] Viewport/zoom checks — **not run** (no multi-viewport/zoom spec written for this lesson).
 - [x] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed, with the still-open browser items updated to reflect the e2e pass below rather than left as originally written
 - [x] **Both Mode A amendments resolved** by the owner, 2026-08-01 — the L4 edge is approved, so C13/C15 are derived under an explicit continuous-\(f''\) hypothesis; the M2 bar is amended
-- [x] All automated tests pass: full `vitest run` (153 files, 2454 tests), `tsc -b` clean, `oxlint` clean. **Browser confirmation:** a dedicated `e2e/lesson-optimization-approximation.spec.ts` (12 tests) plus the two cross-lesson sweeps (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`, 21 tests) all pass — 33 e2e tests total. **The full `./check.sh --e2e` (39 spec files) was not run**; verification was scoped to this lesson's own spec plus the cross-lesson checks that exercise it.
+- [x] All automated tests pass: full `vitest run` (153 files, 2463 tests), `tsc -b` clean, `oxlint` clean. **The full `./check.sh --e2e` (39 spec files, 224 Playwright tests) WAS run** for this round's repair (a third review round; the first two rounds scoped verification to this lesson's own spec plus the cross-lesson checks, as recorded above and in the commit history) — `e2e/lesson-optimization-approximation.spec.ts` (12 tests), the `guided-scene-hard-gates` check for `optimization-approximation`, and the two cross-lesson sweeps (`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`) all passed with ZERO failures. Three unrelated failures elsewhere in the full suite are pre-existing and documented, not caused by this repair: `solution-sets` and `ftc-accumulate-then-measure` hard-gate failures (the two known waivers recorded in `docs/quality/known-failure-modes.md` and the module ledger §7) and a `benchmark-lab.spec.ts` "eigen" candidate timeout matching the documented "media-heavy specs that fail only inside the full `--e2e` sweep" contention class (same doc) — none touch `src/math/optimization.ts`, the explorer, the guided scene, or any file this repair changed.
