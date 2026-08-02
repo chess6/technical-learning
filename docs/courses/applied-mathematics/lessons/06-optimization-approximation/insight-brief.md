@@ -28,9 +28,9 @@ recalling the specific example rather than by naming which hypothesis failed.
 **Secondary: missing purpose — the learner cannot say what service the
 derivative actually performs here.** "Find the largest value of \(f\) on
 \([a,b]\)" is a search over uncountably many points. Nothing in the standard
-presentation says that the derivative's job is to **shrink that search to a
-finite list**, or that a separate fact (a maximum exists at all) is what makes
-comparing the list a valid method. Existence, location, and decision are three
+presentation says that the derivative's job is to **reduce that search to the
+critical set plus the eligible boundary points**, or that a separate fact (a
+maximum exists at all) is what makes comparing that set a valid method. Existence, location, and decision are three
 different jobs, run together as one procedure, so the learner cannot say which
 step would break on an open interval.
 
@@ -65,10 +65,10 @@ of why the second-derivative test exists.
 | # | Lead | Mechanism |
 | --- | --- | --- |
 | R1 | A nonzero slope is an **escape route**: L2's model \(f(a+h)=f(a)+f'(a)h+E(h)\) does not merely describe \(f\) near \(a\), it hands you a step that provably improves — because \(E(h)/h\to0\) forces \(f'(a)h\) to dominate \(E(h)\) once \(h\) is small enough. So "optimal" and "sloped" cannot both hold. | Predictive/causal reorganization |
-| R2 | The derivative test **refutes; it never certifies**. Every point with a nonzero slope is eliminated; \(f'(a)=0\) is what is *left over*. Surviving a refutation is not the same as being right — \(x^3\) at \(0\) survives and is no extremum. | Structural compression |
-| R3 | The three memorized warnings are the **three hypotheses of one argument**: two directions must be available (interior — fails at an endpoint), a local model must exist (differentiable — fails at \(\lvert x\rvert\)), and refutation is not certification (fails at \(x^3\)). Four rules collapse to one argument read carefully. | Structural compression |
+| R2 | The **one-point first-derivative condition refutes; it does not certify**. Every point with a nonzero slope is eliminated; \(f'(a)=0\) is what is *left over*. Surviving a refutation is not the same as being right — \(x^3\) at \(0\) survives and is no extremum. (Scope: this is about *that condition*, not about derivatives — a sign change of \(f'\), or \(f''\), does certify. See R7.) | Structural compression |
+| R3 | The three memorized warnings are **one argument's two hypotheses plus the failure of its converse**: two directions must be available (interior — fails at an endpoint) and a local model must exist (differentiable — fails at \(\lvert x\rvert\)); separately, refuting is not endorsing (fails at \(x^3\)). Four rules collapse to one argument read carefully — but the third is a *logical* limitation, not a hypothesis, and calling it one would be its own imprecision. | Structural compression |
 | R4 | Optimization is **three jobs, not one procedure**: *existence* (something attains the maximum), *location* (everywhere else is refuted), *decision* (compare what is left). Naming them makes "why is comparing the candidates allowed?" a question with an answer. | Operational grounding |
-| R5 | The derivative's real service is **cardinality**: an uncountable search becomes a finite list. That is what it is *for* here — not "it finds the answer". | Semantic grounding (purpose) |
+| R5 | The derivative's real service is **reduction of the search space**: an uncountable search collapses to the critical set plus the eligible boundary points — for ordinary functions, a handful. That is what it is *for* here — not "it finds the answer". (It is a *reduction*, not automatically a finite list: a constant function makes every point stationary.) | Semantic grounding (purpose) |
 | R6 | Sometimes there is **no maximum at all** — \(f(x)=x\) on \((0,1)\), or on \([0,\infty)\). The existence step is a real hypothesis that bites, not a formality; the method's honest output on an open interval is "no conclusion". | Predictive/causal reorganization |
 | R7 | At a critical point the linear model is **constant** — it has no opinion about max versus min. That **silence is what forces the next rung**: the second-derivative test is not a separate rule, it is the first term the linear model could not supply. | Structural compression + representational change |
 | R8 | One method, two questions. "Replace \(f\) near \(a\) by its local model and read the answer off the model" answers *where is the model flat* (optimize) and *what value does the model give* (approximate) — same object, same licence (\(E(h)/h\to0\)), two readings. | Structural compression |
@@ -116,13 +116,17 @@ the derivative change.
 
 ## Consolidated packages
 
-### P1 — "The derivative refutes; it never certifies" *(R1, R2, R3, R5, R12)*
+### P1 — "\(f'(a)\neq0\) refutes; \(f'(a)=0\) only survives" *(R1, R2, R3, R5, R12)*
 The local model is **actionable**: a nonzero slope hands you a step that
 improves, so a sloped point is *refuted* as optimal. Run that refutation
-everywhere and what remains is a **candidate list**, not an answer — nothing in
-the argument ever certifies a survivor. The three memorized warnings are the
-argument's own three hypotheses (interior, differentiable, refutation-only),
-each recoverable by asking which one the counterexample breaks.
+everywhere and what remains is a **candidate set**, not an answer — nothing in
+*this* argument certifies a survivor. The three memorized warnings are the
+argument's **two hypotheses** (interior, differentiable) **plus the failure of
+its converse**, each recoverable by asking what the counterexample breaks.
+**Scope, and the trap on the other side:** the claim is about the one-point
+first-derivative condition, not about derivatives in general — \(f''\) does
+certify (P3's rung), and saying "the derivative never certifies" would replace
+the spine's imprecision with a worse one.
 **Delivers:** Fermat's theorem, derived from L2 C5 with nothing new assumed;
 one account of \(x^3\), \(\lvert x\rvert\), and endpoints; the purpose (R5).
 **Does not deliver:** why comparing candidates is *valid* (that is P2), or
@@ -131,8 +135,9 @@ anything about the approximation half (P3).
 ### P2 — "Three jobs, not one procedure" *(R4, R6, R5)*
 Existence, location, decision are separable, and each can fail on its own. The
 Extreme Value Theorem supplies existence on a closed bounded interval; the
-refutation supplies location; comparing finitely many values supplies the
-decision — and *that* chain, not habit, is what licenses the method. Remove the
+refutation supplies location; comparing values over the candidate set supplies
+the decision — a comparison that terminates exactly when that set is finite,
+which is a property of the function, not of the method — and *that* chain, not habit, is what licenses the method. Remove the
 closed interval and the first link breaks with nothing else changing (R6).
 **Delivers:** the logical architecture, the honest "no conclusion" output, and
 method selection (a P2-profile bar).
@@ -180,13 +185,14 @@ not as a competing central model. Likewise the counterexample set
 
 | Rank | Package | Why |
 | --- | --- | --- |
-| 1 | **P1** | Highest surprise (the learner believes \(f'=0\) *detects* extrema and discovers it only ever *eliminates* them) and by far the strongest explanatory compression: four separately-memorized rules become the hypotheses of one argument. Mathematically exact, and derived from L2 C5 alone — no new prerequisite. Correctness is a gate here and P1 passes it cleanly, where the inherited hypothesis does not (see below). |
+| 1 | **P1** | Highest surprise (the learner believes \(f'=0\) *detects* extrema and discovers that it only ever *eliminates*) and by far the strongest explanatory compression: four separately-memorized rules become one argument's two hypotheses plus the failure of its converse. Mathematically exact, and derived from L2 C5 alone — no new prerequisite. Correctness is a gate here and P1 passes it cleanly, where the inherited hypothesis does not (see below). |
 | 2 | **P2** | Real and necessary: it is what makes "compare the candidates" a *method* rather than a habit, and R6 gives it a counterexample that bites. Ranked below P1 because on its own it is an **organizational relabel** — a learner handed "existence, location, decision" while still believing \(f'=0\) detects maxima has acquired a filing system, not a model. P1 is what makes P2's decision step necessary rather than ceremonial. |
 | 3 | **P3** | Carries the lesson's second half and the L11 bridge, and R7 is genuinely illuminating (most learners hold the second-derivative test and Taylor series as unrelated facts). Ranked third only because it *presupposes* P1: "look where the model is flat" is exactly the memorized converse unless the necessity has been earned first. |
 | 4 | **P4** | A correctness guardrail this course's ethos requires, and a clean repeat of L1's modulus move — but it sharpens an existing belief rather than replacing one, so it is a *component* of the lesson, not its spine. |
 | 5 | **P5** | Vivid and real, but it repairs nothing in 1a and imports convergence questions the course has declared out of scope. Kept as an optional closing remark at most. |
 
-**Selected: P1 primary** (refutation, and its three hypotheses), **P2
+**Selected: P1 primary** (refutation, its two hypotheses, and the failure of
+its converse), **P2
 secondary** (the architecture P1's refutation slots into, and the existence
 hypothesis that bites), **P3 tertiary** (the second half, the second-derivative
 test as a consequence, and the forward bridge to L11), **P4 as a named
@@ -234,8 +240,9 @@ predict-not-recall):
    is what makes \(E(h)/h\to0\) do visible work: the promise is local, and the
    learner locates its edge rather than being told it exists.)*
 4. **Sweep.** Run the refutation across the whole interval and watch the
-   eliminated points grey out. What is left? *(R2, R5 — the finite list appears
-   as an output, not an assertion.)*
+   eliminated points grey out. What is left? *(R2, R5 — the reduced candidate
+   set appears as an output, not an assertion. On the constant-function preset it
+   visibly fails to reduce, which is the honest case, not a bug.)*
 5. **A survivor that is not an answer.** \(x^3\) at \(0\) survived the sweep.
    Is it the maximum? *(Refutation ≠ certification, discovered.)*
 6. **A winner the sweep never examined.** \(\lvert x\rvert\) on \([-2,2]\): the

@@ -9,11 +9,13 @@ This is the course's calibration quarantine, as
 linear algebra's: the subject-agnostic standards stay unchanged, and the
 applied-mathematics particulars live here.
 
-> **A calibration target, not a claim.** **Four lessons of thirty-nine are
+> **A calibration target, not a claim.** **Five lessons of thirty-nine are
 > built** — `limits-continuity`, `derivative-local-linearity`,
-> `integral-accumulation`, and `fundamental-theorem`: all of `calculus-foundations`
-> (Package A, approved). Every other "current coverage" cell reads *none
-> (planned)*. What the matrix fixes is **how deep** each module must go before it
+> `integral-accumulation`, and `fundamental-theorem` (all of
+> `calculus-foundations`, Package A, approved), plus `chain-rule` (the first
+> lesson of `calculus-technique`, Gate 8 accepted 2026-08-01). Every "current
+> coverage" cell other than M1's and M2's reads *none (planned)*. What the
+> matrix fixes is **how deep** each module must go before it
 > can be called done, and a module's lessons being built does not by itself move
 > its bar — that needs the module's own Gate 9 assessment, which for
 > `calculus-foundations` is built in code (13 items, merged to `master`) but
@@ -100,7 +102,7 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 | --- | --- | --- | --- | --- |
 | **M0 `entry-bridges`** | Radians and the unit circle usable. | Same, plus reading a phasor diagram cold. | — | none (planned) |
 | **M1 `calculus-foundations`** | Riemann sums; the FTC applied. [ext-18.01SC] | Limits as a **local tolerance guarantee**, with a modulus of continuity as the quantitative control; local linearity as the *meaning* of the derivative; the FTC **derived by telescoping**. | \(\varepsilon\)–\(\delta\); uniform continuity proved on a compact interval; integrability theory. | **4 of 4 lessons built** (Package A, approved): the tolerance guarantee, the modulus, local linearity, accumulation, and the FTC's telescoping derivation are all delivered. The module bar is not yet **certified** — that needs Gate 9's own assessment, which is [built in code](modules/calculus-foundations/assessment-plan.md) (13 items) but not yet administered. |
-| **M2 `calculus-technique`** | Substitution, parts, standard improper integrals. [ext-Stewart] | Techniques **derived** from the chain and product rules; parts recognised as Theme 1's boundary term; improper convergence judged by decay rate. | Comparison and limit-comparison proved; conditional convergence. | none (planned) |
+| **M2 `calculus-technique`** | Substitution, parts, standard improper integrals; **locate extrema on a closed interval and use a linear approximation**. [ext-Stewart][ext-18.01SC] | Techniques **derived** from the chain and product rules; parts recognised as Theme 1's boundary term; improper convergence judged by decay rate. **Deciding with the derivative (L6), to this depth:** stationarity used as a **necessary filter**, never a detector; **existence, location, and decision** separated, with the Extreme Value Theorem named as the existence hypothesis; **endpoint, singular, and degenerate cases** handled as consequences of the argument's hypotheses rather than as remembered exceptions; the **second-derivative test and the \(Mh^2/2\) error bound both derived from the FTC** under an explicit continuous-\(f''\) hypothesis; **method selection** between derivative-based location and algebraic certification. | Comparison and limit-comparison proved; conditional convergence; Fermat and the second-derivative test proved from the Mean Value Theorem, with EVT proved from compactness. | **1 of 4 lessons built** — `chain-rule` (Gate 8 accepted 2026-08-01). `optimization-approximation` is planned (Mode B complete) but **not built**; `substitution-parts` and `improper-integrals` not started. The bar is not certified — that needs the module's own Gate 9 assessment, which does not exist. |
 | **M3 `series`** | Convergence tests applied; Taylor polynomials computed. [ext-18.01SC] | Series as the limit of partial sums; absolute vs conditional convergence and why rearrangement is unsafe; radius of convergence as a property of the coefficients. | Uniform convergence; term-by-term differentiation justified; Weierstrass M-test. | none (planned) |
 | **M4 `complex-oscillation`** | \(a+bi\) arithmetic; Euler's formula stated. | Complex multiplication as rotate-and-scale; Euler **derived** (twice — from the ODE and from the series); phasor arithmetic used to add sinusoids and read impedance. [ext-18.03SC] | Complex differentiability; the exponential defined rigorously. | none (planned) |
 | **M5 `projection-spectra`** | Fourier coefficient formulas applied to standard waves. [ext-BDM] | Coefficients as **projections**, with orthogonality verified; Parseval as energy; **mean-square vs pointwise convergence distinguished**, with Gibbs as the witness; the transform derived as the period-to-infinity limit, with Plancherel **stated** and the "orthonormal basis" language explicitly qualified. | \(L^2\) completeness proved; Carleson-type pointwise results named; the density argument behind Plancherel. | none (planned) |
@@ -121,10 +123,11 @@ and `fundamental-theorem` (all of `calculus-foundations`, Package A,
 approved) are built and each passes Gate 8 on its lesson-owned outcomes.
 `chain-rule` (L5, `calculus-technique`) is fully built, merged to `master`, and
 **Gate-8-accepted by the repository owner on 2026-08-01**. L6
-`optimization-approximation` is **planned but not built** (Mode B complete);
-its plan flags that **the M2 bar in §2 does not mention optimization or
-linearization at all**, so L6 has no depth bar to be validated against here —
-an open Mode A question for the owner, recorded rather than silently patched.
+`optimization-approximation` is **planned but not built** (Mode B complete).
+The M2 P1/P2 bars in §2 previously omitted optimization and linearization
+entirely, leaving L6 with no depth target to be planned or validated against;
+the owner amended them on 2026-08-01, **before** Mode C rather than before
+Gate 10, so that Gate 5 consumes a calibrated bar.
 Every other lesson is `future`, and **no module bar in §2 is formally
 certified** — a module's bar is judged on its whole set via its own Gate 9
 assessment. Gate 9 for `calculus-foundations` is

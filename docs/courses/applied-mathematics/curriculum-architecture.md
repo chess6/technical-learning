@@ -106,6 +106,7 @@ gating.
 | `integral-accumulation` | `fundamental-theorem` | hard | The theorem is *about* the accumulation. |
 | `derivative-local-linearity` | `chain-rule` | hard | Composing the local linear models. |
 | `derivative-local-linearity` | `optimization-approximation` | hard | "Flat local model" is the criterion. |
+| `fundamental-theorem` | `optimization-approximation` | hard | The second-derivative test and the \(Mh^2/2\) linearization error bound are both derived from \(f(a+h)-f(a)-f'(a)h=\int_a^{a+h}\!\int_a^{t}f''\) — the FTC applied twice, under an explicit **continuous \(f''\)** hypothesis. Added 2026-08-01; it is what lets L6 avoid introducing the Mean Value Theorem, which L2 and L4 both deliberately withhold. |
 | `chain-rule` | `substitution-parts` | hard | Substitution is the chain rule backwards. |
 | `fundamental-theorem` | `substitution-parts` | hard | Techniques evaluate definite integrals via antiderivatives. |
 | `limits-continuity` | `improper-integrals` | hard | An improper integral is a limit of proper ones. |
@@ -187,6 +188,7 @@ flowchart TD
   l2 --> l5[L5 chain-rule]
   lacomp --> l5
   l2 --> l6[L6 optimization-approximation]
+  l4 --> l6
   l5 --> l7[L7 substitution-parts]
   l4 --> l7
   b1 --> l7

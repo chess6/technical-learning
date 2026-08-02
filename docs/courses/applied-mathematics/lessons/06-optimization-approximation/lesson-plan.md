@@ -6,25 +6,31 @@ Stage 3. Consumes [insight.md](insight.md) (`PASS`) and
 > **This plan is not authorization to build.** L6 is a `future` spine node;
 > writing its lesson code crosses an
 > [approval boundary](../../../../authoring/course-authoring-workflow.md#step-5--approval-boundaries-hard-stops).
-> Two **Mode A amendments** ([contract §1a](mastery-contract.md#1a-placement--upstream-links))
-> are also unresolved, and the first of them decides whether the
-> second-derivative test and the error bound are *derived* or *cited* — so it
-> must be settled before Mode C, not during it.
+> The two **Mode A amendments** it depended on were **resolved by the owner on
+> 2026-08-01** ([contract §1a](mastery-contract.md#1a-placement--upstream-links)):
+> the FTC edge is approved, so C13/C15 are **derived** under an explicit
+> continuous-\(f''\) hypothesis, and the M2 depth bar is amended. That resolves
+> the planning blockers; it is **not** approval to implement.
 
 ## Approved insight (gate)
 - Insight Contract: [insight.md](insight.md)
 - [x] `Gate result: PASS` confirmed
 - Exact primary insight — **verbatim, planning metadata only**:
 
-  > The derivative never finds the best point — it **refutes** every point that
-  > is not, because a nonzero slope hands you a step that provably improves;
-  > \(f'(a)=0\) is what survives refutation, not what wins, and the three things
-  > that argument needs (two directions, a local model, and the fact that
-  > refuting is not endorsing) are exactly the three exceptions learners
-  > memorize.
+  > At an interior point where \(f\) is differentiable, \(f'(a)\neq0\)
+  > **refutes** a local extremum — the local model hands you a step that provably
+  > improves — while \(f'(a)=0\) merely **survives** that test rather than
+  > passing it. Interiorness and differentiability are the argument's two
+  > hypotheses; "a survivor need not win" is the failure of its converse; and
+  > those three facts are what the three memorized warnings are really about.
+  > Certifying a survivor takes a further argument, which is why the
+  > second-derivative test exists.
 
-- **Learner phrasing:** *"A slope is a way out. The derivative can only tell you
-  where you are not — what's left over still has to be checked."*
+- **Learner phrasing:** *"A slope is a way out. Where the slope is zero, this
+  test simply has nothing to say — deciding takes a further argument."*
+  **Do not** shorten this to "the derivative can only tell you where you are
+  not": \(f''\) certifies, later in this same lesson, and that wording would
+  install a fresh misconception while removing the spine's.
 - **Obstacle:** an incorrect prior model held with high confidence — \(f'(a)=0\)
   is believed to *detect* extrema (the converse of the true theorem), patched
   with three warnings held as unrelated exceptions.
@@ -55,16 +61,18 @@ generic block names below are internal metadata only.)*
   central object *changes over time in a way a static figure cannot show*: a
   refutation **sweeping** across an interval and points going out. The explorer
   is justified because the escape-route guarantee is **local**, and the only way
-  to stop that from being a slogan is to let the learner enlarge \(h\) until the
-  guarantee fails and read the threshold off the panel — an interaction that
-  produces a fact, not a demonstration. Both reuse existing families
+  to stop that from being a slogan is to let the learner enlarge \(h\) on a
+  fixture where agreement does break and watch it break — an interaction that
+  produces a fact, not a demonstration. What it produces is *an observed
+  disagreement on a sampling grid*, not a canonical threshold (see the readouts
+  below). Both reuse existing families
   (`function-plot` from L1, `local-linearity-zoom` from L2) with new data:
   **no new visual family**, per L6's
   [Supporting tier](../../curriculum-architecture.md#51-visual-budget-flagship-vs-supporting).
 
 ### Authored `route`
 `motivate` → `watch` → `section` → `formal` (Fermat) → `proof` → `callout` (M1)
-→ `check` → `section` (three hypotheses) → `worked` (the main case) →
+→ `check` → `section` (two hypotheses and a converse) → `worked` (the main case) →
 `formal` (EVT, flagged unproved) → `callout` (M6) → `explore` → `section` (the
 silent model) → `formal` + `worked` (second-derivative test and its silence) →
 `section` + `worked` (how far a straight line can be trusted) → `practice` →
@@ -94,14 +102,14 @@ levels.
 | # | Objective | Evidence owner | Level | Discharged by |
 | --- | --- | --- | --- | --- |
 | 1 | Construct the complete candidate set on a fresh closed interval and justify each non-stationary member | lesson-owned | E3 | `opt-candidate-set` |
-| 2 | Predict, before computing, a global max at an endpoint despite an interior local max | lesson-owned | E3 | `opt-endpoint-predict` |
+| 2 | Predict, before computing, a global max at an endpoint despite an interior local max | lesson-owned | E3 | `opt-endpoint-fresh` (**not** the checkpoint — see contract §1d) |
 | 3 | Decline to conclude an extremum from \(f'(a)=0\); state what does follow | lesson-owned | E2 | `opt-flat-not-extremum` |
 | 4 | On an unfamiliar \(f\), name which hypothesis of the argument fails | lesson-owned | E3 | `opt-which-hypothesis` |
 | 5 | Say what the method returns on an open interval, and why that is correct | lesson-owned | E2 | `opt-open-interval` |
 | 6 | Classify a survivor, and return *silent* when \(f''(a)=0\) | lesson-owned | E3 | `opt-second-test-silent` |
 | 7 | From a curvature bound, produce an interval meeting a stated tolerance | lesson-owned | E3 | `opt-linearize-tolerance` |
-| 8 | Choose unprompted between the calculus route and an algebraic certificate | lesson-owned | E3 | `opt-select-route` |
-| 9 | Reproduce the escape-route argument at a fresh sloped point | lesson-owned | E4 | `opt-derive-escape` |
+| 8 | Choose unprompted between the calculus route and an algebraic certificate | lesson-owned | E3 | `opt-select-route` (fresh pair) |
+| 9 | Reproduce the escape-route argument at a fresh sloped point | lesson-owned | **E5** (E6-class evidence, capped — contract §1d) | `opt-derive-escape` |
 | 10 | Retain "necessary is not sufficient" under delayed retrieval | **module-owned** | E3 | `mod-calctech-retain-necessary-not-sufficient` (Gate 9) |
 | 11 | Optimize a composite (chain rule + this method on one item) | **module-owned** | E5 | `mod-calctech-mixed-optimize-composite` (Gate 9) |
 
@@ -112,8 +120,9 @@ levels.
   (\(x=1\) and \(x=-2\)). Used by both the guided scene and the explorer.
 - **Certificate corroboration (same example):** \(f(x)+2=(x-1)^2(x+2)\ge0\) on
   \([-2,3]\), proving \(f\ge-2\) with equality exactly at \(x=1,-2\) —
-  **with no calculus**. It supplies the endorsement the derivative cannot
-  (insight C6), and it is the second half of `opt-select-route`.
+  **with no calculus**. It supplies the endorsement the *first-derivative
+  condition* cannot (insight C6). It is shown in the lesson as corroboration;
+  `opt-select-route` runs on a **different, unshown** pair of functions.
 - **`ex-cubic-inflection`** (\(x^3\)) — reused from L2/L4 in an **inverted
   role**: there a counterexample about what a *tangent* is, here the survivor
   that is not an extremum.
@@ -146,7 +155,7 @@ levels.
 | `standSloped` | Standing where the ground is sloped | One point \(a\); L2's local model drawn over it, slope \(m=f'(a)\neq0\). | \(f(a+h)=f(a)+f'(a)h+E(h)\) |
 | `predictStep` | **Prediction beat** | *Which way would you step to get higher?* True hold — nothing moves, and the stepped value is **not** on screen. | \(m\) shown; \(f(a+h)\) withheld |
 | `stepAndCheck` | The step pays off | Take the step. \(mh\) and \(E(h)\) are drawn as **separately labelled quantities** (L2's discipline), and \(mh\) visibly dominates. | \(f(a+h)-f(a)=mh+E(h)\) |
-| `tooBig` | The promise is only local | Enlarge \(h\) until \(E(h)\) overtakes \(mh\) and improvement fails; the threshold \(\delta\) is marked where the sign flips. | \(\lvert E(h)\rvert<\lvert mh\rvert\) for \(0<\lvert h\rvert<\delta\) |
+| `tooBig` | The promise is only local | On the main example, enlarge \(h\) until \(E(h)\) overtakes \(mh\) and improvement fails. The scene shows **a radius that works**, and says in words that it is *a* sufficient radius, not the largest one. | \(\lvert E(h)\rvert<\lvert mh\rvert\) for \(0<\lvert h\rvert<\delta\) |
 | `sweep` | Ruling points out | The refutation runs across the interval; every point with a nonzero slope greys out. **Points leave; none is ever selected.** | — |
 | `survivors` | What is left over | Four points remain: \(-1\), \(1\), and the two ends. The scene calls them *candidates*, never *answers*. | candidate set \(\{-2,-1,1,3\}\) |
 | `survivorFails` | A survivor that is not an answer | \(x^3\) at \(0\) is dropped in: it survives the sweep and is neither a max nor a min. True hold before the reveal. | \(f'(0)=0\) |
@@ -165,6 +174,13 @@ levels.
   must say so and must not imply every real point was tested. What is proven is
   the *lemma*, not the animation — a distinction the scene states rather than
   glosses.
+- **\(\delta\) honesty (a named failure mode for this lesson).** C3 supplies
+  *some* radius on which the sign agrees, not a canonical largest one. Agreement
+  can fail and later return, and on a linear \(f\) it never fails at all. So
+  `tooBig` runs on an explicitly chosen fixture where a disagreement does occur,
+  labels what it found as **the first disagreement this grid saw**, and never
+  labels it "the threshold". Copy that says "the point where the guarantee runs
+  out" is a defect.
 - **Visual family.** Reuses `function-plot` (L1's family) with new data;
   `local-linearity-zoom` (L2's) is reused in the approximation section. No new
   family.
@@ -173,12 +189,16 @@ levels.
 - **Prompt:** \(f(x)=x^3-3x\) on \([-2,3]\) has an interior local maximum at
   \(x=-1\). *Before computing anything:* where is the largest value of \(f\) on
   this interval, and what would you have to compare to be sure?
-- **Type:** `committed-prediction` (commit before reveal), then a `numeric`
-  answer.
+- **Type:** `committed-prediction` (commit before reveal). **One capability, one
+  item** — a committed-prediction step cannot be chained with a numeric step
+  inside an `exercise-sequence`; `SequenceStep` has no such kind.
 - **Reveal:** \(f(-1)=2\) but \(f(3)=18\). The interior local maximum is a local
   claim; the global one is decided by comparison over the whole candidate set,
   which is what the Extreme Value Theorem licenses.
-- **Item:** `opt-endpoint-predict` (objective 2, M4).
+- **Item:** `opt-endpoint-predict`. **This is a learning event, not evidence**:
+  its capability ceiling is E1, and it runs on the lesson's own worked example.
+  Objective 2's E3 evidence is `opt-endpoint-fresh`, on a function the lesson
+  never shows.
 
 ## Interactive controls (Explore) — `optimization-approximation`
 Initialized from the main example, so the explorer opens on the scene's closing
@@ -188,9 +208,13 @@ state (guided-to-interactive continuity).
   interval ends \(p,q\); **Run sweep**; function preset.
 - **Primary readouts:** \(f'(a)\); \(mh\); \(E(h)\); \(f(a+h)-f(a)\); a
   **sign-agreement indicator** (do \(f(a+h)-f(a)\) and \(mh\) agree?); the
-  threshold \(\delta\) where agreement fails; the candidate set as a list, each
-  member tagged *stationary* / *singular* / *endpoint*; the comparison table over
-  the candidate set.
+  candidate set as a list, each member tagged *stationary* / *singular* /
+  *endpoint*; the comparison table over the candidate set. Two **separate,
+  separately-labelled** radius readouts, which must never be merged into one
+  number: **"certified radius"** (declared per fixture, a radius on which
+  agreement provably holds) and **"first disagreement on this grid"** (an
+  observation, which reads **"none in this domain"** on a linear preset and may
+  legitimately be followed by agreement returning at larger \(h\)).
 - **Progressive disclosure (Display options):** the approximation panel — \(M\),
   the band \(\pm Mh^2/2\), the true error, and the trust radius
   \(\sqrt{2\varepsilon/M}\) for a chosen \(\varepsilon\); sweep grid resolution;
@@ -216,12 +240,15 @@ state (guided-to-interactive continuity).
 | 3 | 6 | `opt-second-test-silent` | `exercise-sequence` | classify → *silent* → the separating pair | The test's failure is not a verdict; \(x^4\) and \(x^3\) both have \(f''(0)=0\) and land differently. |
 | 4 | 7 | `opt-linearize-tolerance` | `numeric` | \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\) | Graded on the radius, not the approximation's value — the point is the bound. |
 | 5 | 5 | `opt-open-interval` | `multiple-choice` | "An empty candidate set and no existence guarantee — a correct output" | Separates "the method broke" from "no maximum exists". |
-| 6 | 4 | `opt-which-hypothesis` | `exercise-sequence` | the unexamined point → the failed hypothesis | **Abstraction return.** Set on an \(f\) not shape-matchable to the lesson's examples. |
-| 7 | 8 | `opt-select-route` | `exercise-sequence` | route → value | Prompt names neither route; the certificate is available on one function and not the other. |
-| 8 | 9 | `opt-derive-escape` | `self-check` (human-scored) | rubric: residual bound, choice of \(\delta\), both signs of \(h\), conclusion phrased as a refutation | The only item requiring the argument to be **produced**. |
+| 6 | 2 | `opt-endpoint-fresh` | `exercise-sequence` | where the max sits → its value | **Fresh function and interval.** Carries objective 2's E3 evidence, which the checkpoint cannot. |
+| 7 | 4 | `opt-which-hypothesis` | `exercise-sequence` | the unexamined point → the failed hypothesis | **Abstraction return.** Set on an \(f\) not shape-matchable to the lesson's examples. |
+| 8 | 8 | `opt-select-route` | `exercise-sequence` | route → value | **Fresh pair**, not the worked example. Prompt names neither route; a certificate exists for one function and not the other. |
+| 9 | 9 | `opt-derive-escape` | `self-check` (human-scored) | rubric: residual bound, a sufficient \(\delta\) (not "the" \(\delta\)), both signs of \(h\), conclusion phrased as a refutation | The only item requiring the argument to be **produced**. E6-class justification, recordable only at E5. |
 
-Plus the checkpoint (`opt-endpoint-predict`). Declared mix: **1 check + 5 drill +
-3 transfer**, to be pinned by a tier-mix test at build.
+Plus the checkpoint (`opt-endpoint-predict`) — a learning event, not evidence.
+Declared mix: **1 check + 4 drill + 4 transfer**, to be pinned by a tier-mix test
+at build. Items 1–5 are drill; 6–9 are transfer. **No graded item runs on a
+function the lesson displays.**
 
 ## Insight traceability (required)
 
@@ -229,13 +256,13 @@ Plus the checkpoint (`opt-endpoint-predict`). Declared mix: **1 check + 5 drill 
 | --- | --- | --- |
 | **C1** local vs global extremum, with the window explicit | `section` after Watch; definition list | Learner distinguishes the interior local max from the global one in the checkpoint |
 | **C2** L2's local model retrieved | Watch `standSloped` | Learner reads \(m\) and \(E(h)\) off the panel as separate quantities |
-| **C3** escape-route lemma, with its \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner locates \(\delta\) by enlarging \(h\) until the sign indicator fails; reproduces the bound in `opt-derive-escape` |
+| **C3** escape-route lemma, with a sufficient \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner observes agreement break on a chosen fixture and distinguishes that observation from the certified radius; reproduces the bound in `opt-derive-escape` |
 | **C4** refutation needs both directions | Watch `sweep`; `proof` block | Learner states the conclusion as elimination, not selection (`opt-derive-escape` rubric) |
 | **C5** Fermat's condition | `formal` block | Learner states hypotheses and conclusion, and the direction |
-| **C6** the argument only refutes | Watch `survivorFails`; `callout` M1 | `opt-flat-not-extremum` — learner declines to conclude |
-| **C7** hypothesis 1, interior | Watch `oneDirection`; `section` "three hypotheses" | `opt-which-hypothesis`; the checkpoint's endpoint reasoning |
+| **C6** the converse fails — this test refutes only, while \(f''\) still certifies | Watch `survivorFails`; `callout` M1; and the later second-derivative section, which is where the scope of C6 is made explicit | `opt-flat-not-extremum` — learner declines to conclude, and does **not** generalize to "derivatives cannot certify" (a distractor tests exactly that) |
+| **C7** hypothesis 1, interior | Watch `oneDirection`; `section` "two hypotheses and a converse" | `opt-which-hypothesis`; the checkpoint's endpoint reasoning |
 | **C8** hypothesis 2, a local model exists | Watch `unexamined`; same `section` | `opt-which-hypothesis` on an unfamiliar \(f\) |
-| **C9** the candidate set (and that it is a *reduction*, finite only for these functions) | `section`; Explore candidate list; constant-function preset | `opt-candidate-set` grades the set and each member's reason; the constant preset shows the list refuse to be finite |
+| **C9** the candidate set — a *reduction* to the critical set plus eligible boundary points, finite only for these functions | `section`; Explore candidate list; constant-function preset | `opt-candidate-set` grades the set and each member's reason; the constant preset visibly fails to reduce to a list |
 | **C10** EVT, **cited not proved** | `formal` block, flagged on screen | `opt-open-interval` — learner names which hypothesis is missing |
 | **C11** three jobs; the honest empty output | `callout` M6; Explore "open this endpoint" | `opt-open-interval`; the candidate list visibly withdrawing |
 | **C12** the linear model is silent at a survivor | `section` "when the model has no opinion" | Learner explains *why* another rung is needed, before the test is stated |
@@ -256,9 +283,9 @@ recording them here as ungraded is the honest alternative to claiming evidence
 that does not exist — the same treatment L5 gave its own M4.
 
 ## Key takeaway (Summarize)
-> The derivative cannot tell you where the best point is. It tells you where the
-> best point **is not** — and everything it fails to rule out still has to be
-> compared.
+> A nonzero slope rules a point out. A zero slope rules nothing **in** — what
+> survives still has to be decided, which is what the second derivative and the
+> comparison are for.
 
 *(This is the spine's own sentence, repaired: see
 [insight-brief §1d](insight-brief.md#1d-ranking) for why the spine's wording
@@ -281,6 +308,9 @@ installs the misconception if used unaltered.)*
 ## Edge cases
 - **Constant function** — every point stationary; the candidate list must report
   *not a finite reduction*, not an arbitrary list.
+- **Linear \(f\)** — \(E\equiv0\), so sign agreement **never** fails anywhere in
+  the domain. The explorer must read "none in this domain" rather than reporting
+  a spurious threshold, and the guided scene must not run `tooBig` here.
 - **Open / unbounded interval** — empty candidate set, existence guarantee
   withdrawn.
 - \(\lvert x\rvert\) at \(0\) — a candidate admitted by *singularity*, and the
@@ -297,8 +327,9 @@ installs the misconception if used unaltered.)*
 The generic matrix invariants do not apply. Lesson-specific, and each is one of
 [contract §1g](mastery-contract.md#1g-correctness--scope)'s required property
 tests:
-- [ ] the reported \(\delta\) really works: \(\operatorname{sign}(f(a+h)-f(a))=\operatorname{sign}(f'(a)h)\) for all sampled \(0<\lvert h\rvert<\delta\)
-- [ ] the candidate set contains a dense scan's argmax and argmin, within tolerance
+- [ ] the **declared certified radius** really works: \(\operatorname{sign}(f(a+h)-f(a))=\operatorname{sign}(f'(a)h)\) for all sampled \(0<\lvert h\rvert<\delta\) — and nothing claims it is maximal
+- [ ] the "first disagreement on this grid" readout is distinct from the certified radius, and reads *none in this domain* on a linear preset
+- [ ] each fixture's **analytically declared** stationary/singular points and exact expected candidate set agree with its declared derivative; a dense scan corroborates but is **not** the completeness oracle
 - [ ] \(\lvert f(a+h)-L(h)\rvert\le Mh^2/2\) holds on a dense grid **and** is not vacuous (within an order of magnitude at the trust radius)
 - [ ] the silence battery (\(x^4\), \(-x^4\), \(x^3\)) all return *silent*
 - [ ] the constant function reports a non-finite reduction rather than a list
@@ -328,5 +359,5 @@ tests:
 - [ ] Diagrams labelled, unclipped, safe frame intact
 - [ ] Viewport/zoom checks
 - [ ] [lesson-correctness-checklist](../../../../quality/lesson-correctness-checklist.md) completed
-- [ ] **Both Mode A amendments resolved** ([contract §1a](mastery-contract.md#1a-placement--upstream-links)) — the L4 edge decides whether C13/C15 are derived or cited
+- [x] **Both Mode A amendments resolved** by the owner, 2026-08-01 — the L4 edge is approved, so C13/C15 are derived under an explicit continuous-\(f''\) hypothesis; the M2 bar is amended
 - [ ] All tests pass

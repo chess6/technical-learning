@@ -3,9 +3,11 @@
 Stage 2 of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md),
 selecting from [insight-brief.md](insight-brief.md), with Audits A and B.
 
-Primary insight: **Package P1** — *the derivative does not find the best point;
-it **refutes** every point that isn't, and \(f'(a)=0\) is what survives. Three
-things the argument needs are exactly the three warnings learners memorize.*
+Primary insight: **Package P1** — *at an interior point where \(f\) is
+differentiable, \(f'(a)\neq0\) **refutes** a local extremum; \(f'(a)=0\) merely
+**survives** that test. Interiorness and differentiability are the argument's two
+hypotheses, and "a survivor need not win" is the failure of its converse — and
+those three facts are what the three memorized warnings are really about.*
 **P2** (existence, location, decision) is the architecture the refutation slots
 into and the reason comparing candidates is valid at all; **P3** (a flat model
 is silent, so the next rung must speak) carries the approximation half and the
@@ -25,9 +27,9 @@ derivative performs here, nor which step of the method would break on an open
 interval.
 
 ### 2. Insight mechanism(s)
-**Structural compression** (four memorized rules collapse into the hypotheses of
-one argument; the second-derivative test and Taylor's next term become one
-object) driven by **predictive/causal reorganization** (a nonzero slope is not a
+**Structural compression** (four memorized rules collapse into one argument's two
+hypotheses plus the failure of its converse; the second-derivative test and
+Taylor's next term become one object) driven by **predictive/causal reorganization** (a nonzero slope is not a
 description but an *action* — a step that provably improves), with a light
 **semantic grounding** (standing somewhere and stepping) whose own false
 intuition is the misconception being broken.
@@ -57,20 +59,29 @@ learner controls the sign of \(h\). Stepping one way strictly increases \(f\);
 stepping the other way strictly decreases it. So \(a\) is neither a local
 maximum nor a local minimum.
 
-Run that everywhere and it **eliminates** points. It never endorses one. What
-survives is a *candidate list*, and the learner's belief changes from
+Run that everywhere and it **eliminates** points. What survives is a *candidate
+list*, and the learner's belief changes from
 
 > "\(f'(a)=0\) means \(a\) is a maximum or a minimum"
 
 to
 
-> "\(f'(a)\neq0\) means \(a\) is **not** one — and that is the only thing the
-> derivative says. Surviving is not winning."
+> "\(f'(a)\neq0\) means \(a\) is **not** one. \(f'(a)=0\) means only that this
+> test had nothing to say. Surviving is not winning."
 
-The three warnings then stop being warnings. They are the three things the
-argument needed: **both directions available** (fails at an endpoint), **a local
-model to argue with** (fails at a corner), and **refutation is not
-certification** (fails at \(x^3\)).
+**Scope of the claim, stated precisely.** What refutes-only is *this test* — the
+first-derivative condition evaluated at a single point. It is emphatically **not**
+true that derivative information can never certify an extremum: a sign change of
+\(f'\) across \(a\) certifies one, and this lesson's own C13 certifies one from
+\(f''(a)\). The insight is that the *step from \(f'(a)=0\) to "extremum"* is
+unlicensed — certifying takes a further argument, and the lesson supplies one.
+
+The three warnings then stop being warnings, but they are not three of a kind.
+Two are the argument's **hypotheses** — **both directions available** (fails at
+an endpoint) and **a local model to argue with** (fails at a corner) — and the
+third is the **failure of the converse**: nothing in a refutation endorses a
+survivor (fails at \(x^3\)). Collapsing all three into "hypotheses" would be the
+same imprecision, in the other direction.
 
 ### 6. Full causal chain
 
@@ -81,12 +92,12 @@ certification** (fails at \(x^3\)).
 | C3 | **Escape-route lemma.** Let \(m=f'(a)\neq0\). Because \(E(h)/h\to0\), there is \(\delta>0\) with \(\lvert E(h)\rvert\le\tfrac{\lvert m\rvert\lvert h\rvert}{2}=\tfrac{\lvert mh\rvert}{2}\) for all \(0<\lvert h\rvert<\delta\). Then \(f(a+h)-f(a)=mh+E(h)\) and \(\lvert E(h)\rvert<\lvert mh\rvert\), so **the difference has the sign of \(mh\)**, and in magnitude at least \(\lvert mh\rvert/2\). | C2, **L1 C7** |
 | C4 | **Refutation.** If \(a\) is *interior* to \(D\), both \(a+h\) and \(a-h\) are in \(D\) for all small \(h>0\). Choose the sign of \(h\) making \(mh>0\): \(f\) strictly increases, so \(a\) is no local max. Choose the other: \(f\) strictly decreases, so \(a\) is no local min. \(a\) is refuted. | C1, C3 |
 | C5 | **Fermat's condition** (the contrapositive of C4). If \(a\) is an interior local extremum and \(f'(a)\) exists, then \(f'(a)=0\). Derived from C2 alone — no new machinery. | C4 |
-| C6 | **The argument only refutes.** C3–C5 say nothing whatever about a point with \(m=0\); C5 is one-way and its converse is false. Witness: \(f(x)=x^3\) at \(a=0\) has \(f'(0)=0\), yet every window contains points where \(f>0\) and points where \(f<0\), so \(0\) is neither. | C5, `ex-cubic-inflection` |
+| C6 | **The converse of C5 is false — this test refutes only.** C3–C5 say nothing whatever about a point with \(m=0\); C5 is one-way. Witness: \(f(x)=x^3\) at \(a=0\) has \(f'(0)=0\), yet every window contains points where \(f>0\) and points where \(f<0\), so \(0\) is neither. **This is a limitation of the one-point first-derivative condition, not of derivatives** — C13 certifies an extremum from \(f''(a)\), and a sign change of \(f'\) across \(a\) would certify one too. What is unlicensed is the *inference* \(f'(a)=0\Rightarrow\) extremum, not the use of derivative information to decide. | C5, `ex-cubic-inflection` |
 | C7 | **Hypothesis 1 — interior.** At a boundary point only one sign of \(h\) exists, so C4 runs half. At the left endpoint of \([a,b]\) with one-sided \(f'(a)>0\): \(f\) strictly increases, refuting "maximum" — and nothing refutes "minimum", which it is. Endpoint-checking **is** the missing direction. | C3, C4 |
 | C8 | **Hypothesis 2 — a local model exists.** If \(f'(a)\) does not exist, C2 fails, C3 never runs, and the point stands unrefuted by default. \(\lvert x\rvert\) on \([-2,2]\): the minimum is exactly there. | C2, `ex-abs` |
 | C9 | **The candidate set.** For \(f\) on \(D=[a,b]\), every point is (i) interior with \(f'\) existing and nonzero — refuted by C4; (ii) interior with \(f'=0\) (*stationary*); (iii) interior with \(f'\) undefined (*singular*); or (iv) an endpoint. So **every extremum lies in (ii) ∪ (iii) ∪ (iv)**. This is a reduction, not automatically a *finite* list — a constant function makes (ii) the whole interval — but for every function this lesson uses it is a handful of points. | C4, C7, C8 |
 | C10 | **Existence — the Extreme Value Theorem, cited not proved.** A continuous \(f\) on a **closed, bounded** interval attains a maximum and a minimum. Proving it needs completeness/compactness, which this course does not build; it is named on screen as an assumed ingredient, the same register as L1's modulus and L4's uniformity step. | Cited (P3 territory) |
-| C11 | **The method, complete, in three separable jobs.** *Existence* (C10) says the maximum is attained somewhere; *location* (C9) says it is not anywhere outside the candidate set; *decision* compares the finitely many values. Each link is needed: on \((0,1)\), \(f(x)=x\) has an **empty** candidate set and no maximum — C9 still holds, C10 fails, and the method's honest output is "no interior extremum, and no existence guarantee", not a wrong answer. | C9, C10 |
+| C11 | **The method, complete, in three separable jobs.** *Existence* (C10) says the maximum is attained somewhere; *location* (C9) says it is not anywhere outside the candidate set; *decision* compares the values over that set — which is a **terminating** comparison exactly when the candidate set is finite, a property of the function in hand and not of the method (C9). Each link is needed: on \((0,1)\), \(f(x)=x\) has an **empty** candidate set and no maximum — C9 still holds, C10 fails, and the method's honest output is "no interior extremum, and no existence guarantee", not a wrong answer. | C9, C10 |
 | C12 | **The linear model is silent at a survivor.** When \(f'(a)=0\) the local model is \(h\mapsto f(a)\), a **constant**. Whatever distinguishes a max from a min lives in the residual the linear model discards. Classification is therefore *forced* to a finer model — this is the structural reason a second-derivative test exists at all. | C5, C2 |
 | C13 | **The next rung, derived.** Assume \(f''\) continuous near \(a\). By **L4 C9** twice, \(f(a+h)-f(a)-f'(a)h=\int_a^{a+h}\!\bigl(f'(t)-f'(a)\bigr)dt=\int_a^{a+h}\!\!\int_a^{t}f''(s)\,ds\,dt\). If \(f'(a)=0\) and \(f''(a)>0\), continuity gives \(f''\ge c>0\) on a window, so the inner integral has the sign of \(t-a\) and magnitude \(\ge c\lvert t-a\rvert\); the outer integral is then \(\ge ch^2/2>0\) **for both signs of \(h\)**. So \(f(a+h)>f(a)\): a strict local minimum. \(f''(a)<0\) is symmetric. | C12, **L4 C9**, L1 (continuity) |
 | C14 | **The next rung refuses too.** \(f''(a)=0\) leaves C13 with nothing: \(x^4\) (minimum), \(-x^4\) (maximum) and \(x^3\) (neither) all have \(f'(0)=f''(0)=0\). The test is **silent, not negative** — C6's structure one rung up. | C13 |
@@ -235,36 +246,39 @@ graded items must separate these (see
   definition, which C3 is an inequality about) and C11.
 - **L1 `limits-continuity` — hard**, for C3's "there is a \(\delta\)" step and
   for the continuity hypothesis in C13.
-- **L4 `fundamental-theorem` — hard, and this is a new edge.** C13 and C15 are
-  derived from L4 C9 applied twice. See the amendment note below.
+- **L4 `fundamental-theorem` — hard.** C13 and C15 are derived from L4 C9
+  applied twice, under an explicit **continuous \(f''\)** hypothesis that must
+  be stated wherever they are used. The edge was **approved by the repository
+  owner on 2026-08-01** and is now in
+  [architecture §2.2](../../curriculum-architecture.md#22-within-course-edges)
+  and the DAG.
 - **Not** L5: the chain rule is used nowhere in C1–C17. L5 precedes L6 in the
   spine but is not a dependency, and the lesson must not imply otherwise.
 
-> **Two Mode A amendments this contract depends on — flagged, not
-> self-authorized.**
+> **Two Mode A amendments — both resolved by the repository owner, 2026-08-01.**
 >
-> 1. **A `fundamental-theorem → optimization-approximation` hard edge** in
->    [architecture §2.2](../../curriculum-architecture.md#22-within-course-edges).
+> 1. **`fundamental-theorem → optimization-approximation`, hard — APPROVED.**
 >    C13/C15 derive the second-derivative test and the error bound from the FTC
->    (twice), under the stated hypothesis that \(f''\) is continuous. The
->    alternative routes were compared: the **Mean Value Theorem** would also work
->    but L2 and L4 both explicitly withhold it, and adopting it would add a fifth
->    theorem to this lesson; **citing** the bound instead of deriving it would
->    conflict with the M2 P2 bar (*"techniques derived"*). The FTC route adds no
->    new theorem, reuses the course's own keystone, and — as a bonus — earns
->    "\(f'>0\) on an interval \(\Rightarrow\) increasing" the same way
->    (\(f(q)-f(p)=\int_p^q f'>0\)), which is the fact
+>    (twice), under the stated hypothesis that \(f''\) is continuous, which the
+>    owner required be kept explicit. The alternatives were compared and
+>    rejected: the **Mean Value Theorem** would also work but L2 and L4 both
+>    explicitly withhold it, and adopting it adds a fifth theorem to this lesson;
+>    **citing** the bound instead of deriving it conflicts with the M2 P2 bar.
+>    The FTC route adds no new theorem, reuses the course's own keystone, and
+>    earns "\(f'>0\) on an interval \(\Rightarrow\) increasing" the same way
+>    (\(f(q)-f(p)=\int_p^q f'>0\)) — the fact
 >    `CalculusFixture.monotoneIntervals` currently **declares** rather than
->    derives. The edge is the honest cost.
->    **Fallback if the edge is refused:** state C15's bound as a cited ingredient
->    alongside C10 (EVT) and drop C13's derivation to a stated test. C1–C12,
->    C14, C16 and the entire primary insight are **unaffected** — the dependency
->    is bounded to the secondary rung.
-> 2. **The M2 bar in [benchmark-matrix.md §2](../../benchmark-matrix.md#2-per-module-depth-bars)
->    does not mention this lesson's content at all** — its P1 and P2 rows cover
->    substitution, parts, and improper integrals only. That is a real gap in the
->    module's declared depth bar, not a defect in this contract; L6 cannot be
->    validated at Gate 10 against a bar that omits it. Recorded for the owner.
+>    derives.
+> 2. **The M2 depth bar — AMENDED**, in
+>    [benchmark-matrix §2](../../benchmark-matrix.md#2-per-module-depth-bars).
+>    Its P1/P2 rows previously covered substitution, parts, and improper
+>    integrals only, so L6 had no depth target. The owner amended it **before
+>    Mode C rather than before Gate 10**, on the grounds that Gate 5 is supposed
+>    to consume a calibrated bar, not merely be checked against one later. The P2
+>    obligations now named are the ones this contract carries: stationarity as a
+>    necessary filter; existence/location/decision; endpoint, singular, and
+>    degenerate cases; the second-derivative test and \(Mh^2/2\) bound derived
+>    from the FTC; and method selection.
 
 **Limitations / scope.** Only one variable, on an interval. Explicitly **not**
 developed: constrained optimization and Lagrange multipliers (declared off every
@@ -305,11 +319,19 @@ multivariable statement and saddle points (L28). The Extreme Value Theorem is
    stated explicitly: **C5 is necessary only**, and §9 lists the four inferences
    with which are valid. **C13 is a genuine sufficient condition** and is proved
    as one. **C14 is neither** — the failure of a sufficient condition is not a
-   refutation. An earlier draft of C9 claimed the search "becomes a finite list";
-   that is false in general (a constant function makes every point stationary),
-   and C9 now claims a **reduction to the critical set plus endpoints**, with
-   finiteness stated as a property of the functions used here rather than of the
-   method.
+   refutation. Two overclaims were caught and corrected here rather than left:
+   - An earlier draft of C9 claimed the search "becomes a finite list". False in
+     general — a constant function makes every point stationary. C9 now claims a
+     **reduction to the critical set plus eligible boundary points**, with
+     finiteness a property of the functions used here, not of the method.
+   - An earlier draft of the **primary insight sentence** said the derivative
+     "never finds the best point" and "only ever refutes". That overcorrects the
+     spine's imprecision into a second falsehood: a sign change of \(f'\)
+     certifies an extremum, and **C13 in this very contract certifies one from
+     \(f''\)**. The claim is now scoped to *the one-point first-derivative
+     condition*, which is what actually refutes-only. The same draft called the
+     three warnings "three hypotheses"; there are **two hypotheses** (interior,
+     differentiable) and **one failure of the converse**.
 3. **Structure-preserving analogy.** The step-and-check bridge preserves the
    operation exactly (§13). Its one dangerous import — "flat means summit" — is
    named, is misconception M1, and is broken on purpose rather than left to
@@ -334,7 +356,8 @@ multivariable statement and saddle points (L28). The Extreme Value Theorem is
 **More illuminating than a strong conventional explanation?** Yes. A strong
 conventional presentation states Fermat, notes it is necessary-not-sufficient,
 and lists the counterexamples. What it does not do is show that the three
-counterexamples are the argument's own three hypotheses, that the argument is
+counterexamples are the argument's own two hypotheses plus the failure of its
+converse, that the argument is
 L2 C5 doing work, or that the linear model's *silence* is what creates the
 second-derivative test. That is the compression this gate is for.
 
@@ -347,8 +370,8 @@ second-derivative test. That is the compression this gate is for.
    items in particular: naming the failed hypothesis on an unseen case, and
    predicting that the method correctly returns nothing on an open interval.
    Neither is answerable from the procedure.
-3. **Compression / purpose exposed?** Both. Four memorized rules → three
-   hypotheses of one argument; second-derivative test + Taylor's next term → one
+3. **Compression / purpose exposed?** Both. Four memorized rules → one
+   argument's two hypotheses plus the failure of its converse; second-derivative test + Taylor's next term → one
    object; optimization + approximation → one method with two questions (C16).
    Purpose: the derivative's service here is elimination (C9), not detection.
 4. **Genuine isomorphism (grounding).** The step-and-check operation *is*
@@ -378,30 +401,44 @@ second-derivative test. That is the compression this gate is for.
   arithmetic verification, not independent review.
 - **Pedagogical reviewer:** same agent lineage — **self-review, not
   independent**.
-- **User / domain-owner approval:** **not given.** This contract has not been
-  seen by the repository owner.
+- **Owner review round 1 — 2026-08-01.** The repository owner reviewed this
+  contract and the plan, **resolved both Mode A amendments** (above), and
+  returned findings that were **not** caught by the self-audits. The two that
+  changed this document:
+  - the primary-insight sentence **overcorrected the spine into a second
+    falsehood** ("never finds", "only ever refutes") and mislabelled the three
+    warnings as three hypotheses — both corrected, and recorded in Audit A #2 so
+    the error is visible rather than quietly overwritten;
+  - the finite-list overclaim, repaired in C9, **survived in C11 and in the
+    brief** (R5, P2, the discovery sequence) — corrected in all of them.
+
+  This is the outcome the signoff block exists to make possible: an audit that
+  passed its own checks and was still wrong in a way only an outside reader
+  found. Recording it here matters more than the fact that it was fixed.
+- **User / domain-owner approval of the contract as a whole:** **not given.**
+  Round 1 resolved the amendments and returned corrections; it was not an
+  approval to implement, and Mode C remains an open approval boundary.
 - **Outstanding concerns:**
-  1. The two **Mode A amendments** above (the L4 prerequisite edge; the M2
-     benchmark bar's omission of this lesson) are flagged for the owner and are
-     **not** self-authorized. The primary insight does not depend on either; the
-     bounded fallback for the first is stated.
-  2. **Self-certification.** L5's contract was self-certified and an independent
+  1. **Self-certification.** L5's contract was self-certified and an independent
      review later found a real mathematical gap in exactly the step Audit A had
-     passed. That precedent applies here in full — C3's \(\delta\) choice and
-     C13's two-sided sign argument are the analogous load-bearing steps, and are
-     where an independent reviewer should look first.
-  3. The spine's own sentence for L6 is imprecise (see
-     [insight-brief §1d](insight-brief.md#1d-ranking)); if this contract is
-     approved, the spine row is worth repairing to match — a Mode A edit, also
-     not made here.
+     passed. Round 1 confirmed the pattern again, on the thesis rather than the
+     mathematics. C3's \(\delta\) choice and C13's two-sided sign argument were
+     both checked in round 1 and found **sound**; the defects were in what the
+     document *claimed around* them, which is where a further reviewer should
+     look.
+  2. The spine's own sentence for L6 is imprecise (see
+     [insight-brief §1d](insight-brief.md#1d-ranking)); the spine row is worth
+     repairing to match — a Mode A edit, **not** made here.
 
 ## Gate result
 
 **Gate result: PASS**
 
 **Primary insight (exact sentence, kept verbatim in the plan's metadata):**
-*The derivative never finds the best point — it **refutes** every point that is
-not, because a nonzero slope hands you a step that provably improves; \(f'(a)=0\)
-is what survives refutation, not what wins, and the three things that argument
-needs (two directions, a local model, and the fact that refuting is not
-endorsing) are exactly the three exceptions learners memorize.*
+*At an interior point where \(f\) is differentiable, \(f'(a)\neq0\) **refutes** a
+local extremum — the local model hands you a step that provably improves — while
+\(f'(a)=0\) merely **survives** that test rather than passing it. Interiorness
+and differentiability are the argument's two hypotheses; "a survivor need not
+win" is the failure of its converse; and those three facts are what the three
+memorized warnings are really about. Certifying a survivor takes a further
+argument, which is why the second-derivative test exists.*
