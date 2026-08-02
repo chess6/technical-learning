@@ -32,6 +32,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.ChainRuleExplorer,
     })),
   ),
+  "optimization-approximation": lazy(() =>
+    import("./OptimizationApproximationExplorer").then((m) => ({
+      default: m.OptimizationApproximationExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,

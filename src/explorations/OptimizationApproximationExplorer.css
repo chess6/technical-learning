@@ -1,0 +1,9 @@
+/* Notes that carry a claim rather than a caption: the withdrawn existence
+   guarantee, and the constant-function's honest non-reduction. */
+.optapprox-explorer__note {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--role-violation);
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
