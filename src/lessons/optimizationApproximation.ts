@@ -1,5 +1,5 @@
 import type { LessonDefinition } from "./types";
-import { EXERCISE_SEQUENCE_ID, SELF_CHECK_ID } from "./capabilities";
+import { COMMITTED_PREDICTION_ID, EXERCISE_SEQUENCE_ID, SELF_CHECK_ID } from "./capabilities";
 import {
   OPT_CUBIC_SURVIVOR,
   OPT_DECAY,
@@ -60,11 +60,20 @@ if (
 const CAND_H = (x: number) => x * x * x * x - 4 * x * x + 2;
 const CAND_DOMAIN: readonly [number, number] = [-3, 2];
 const CAND_STATIONARY = [-Math.sqrt(2), 0, Math.sqrt(2)];
-const CAND_COUNT = CAND_STATIONARY.length + 2; // + both endpoints
 const CAND_MAX = CAND_H(CAND_DOMAIN[0]); // 47, at the endpoint x = -3
+const CAND_H_DERIVATIVE = (x: number) => 4 * x * x * x - 8 * x;
 if (Math.abs(CAND_MAX - 47) > 1e-9) {
   throw new Error("optimizationApproximation: opt-candidate-set's fresh fixture disagrees with the prose.");
 }
+for (const p of CAND_STATIONARY) {
+  if (Math.abs(CAND_H_DERIVATIVE(p)) > 1e-9) {
+    throw new Error(`optimizationApproximation: opt-candidate-set's claimed stationary point ${p} is not one.`);
+  }
+}
+// The two endpoints' own derivative values, quoted in the multiple-choice
+// explanation — computed here rather than hand-typed a second time.
+const CAND_H_PRIME_LEFT = CAND_H_DERIVATIVE(CAND_DOMAIN[0]);
+const CAND_H_PRIME_RIGHT = CAND_H_DERIVATIVE(CAND_DOMAIN[1]);
 
 /** `opt-endpoint-fresh`: k(x) = 2x^3 - 3x^2 - 12x + 5 on [-2, 4] — fresh, distinct coefficients from the main case. */
 const ENDPOINT_K = (x: number) => 2 * x * x * x - 3 * x * x - 12 * x + 5;
@@ -75,18 +84,72 @@ if (Math.abs(ENDPOINT_LOCAL_MAX - 12) > 1e-9 || Math.abs(ENDPOINT_GLOBAL_MAX - 3
   throw new Error("optimizationApproximation: opt-endpoint-fresh's fixture disagrees with the prose.");
 }
 
-/** `opt-which-hypothesis`: n(x) = |x-1| + (x-1)^2 on [-1, 3] — a fresh, non-picturable minimum at the corner x = 1. */
-const HYP_N = (x: number) => Math.abs(x - 1) + (x - 1) * (x - 1);
-const HYP_MIN = HYP_N(1); // 0
-if (Math.abs(HYP_MIN) > 1e-9) {
+/**
+ * `opt-which-hypothesis`: n(x) = cube-root of (x-2)^2, plus 1, on [-1, 5] —
+ * the abstraction-return item (insight §14). An earlier version used
+ * n(x)=|x-1|+(x-1)^2, which review correctly flagged as directly
+ * shape-matchable to the lesson's own |x| example (the literal term |x-1| is
+ * just |x| shifted). This version has no absolute-value notation anywhere:
+ * a genuine cusp (vertical tangent, not a corner) at x=2, where the
+ * derivative blows up rather than merely failing to exist in the |x| sense —
+ * still non-differentiable there in the standard meaning (no finite limit),
+ * but via unfamiliar notation with nothing to pattern-match against.
+ */
+const HYP_N = (x: number) => Math.cbrt((x - 2) * (x - 2)) + 1;
+const HYP_MIN_AT = 2;
+const HYP_MIN = HYP_N(HYP_MIN_AT); // 1
+const HYP_DOMAIN: readonly [number, number] = [-1, 5];
+if (Math.abs(HYP_MIN - 1) > 1e-9) {
   throw new Error("optimizationApproximation: opt-which-hypothesis's fixture disagrees with the prose.");
 }
+for (const x of HYP_DOMAIN) {
+  if (HYP_N(x) < HYP_MIN - 1e-9) {
+    throw new Error("optimizationApproximation: opt-which-hypothesis's minimum is not actually global on its domain.");
+  }
+}
+// Nearby points must be strictly larger — a genuine minimum, not a plateau.
+if (HYP_N(HYP_MIN_AT - 0.5) <= HYP_MIN || HYP_N(HYP_MIN_AT + 0.5) <= HYP_MIN) {
+  throw new Error("optimizationApproximation: opt-which-hypothesis's claimed minimum is not strict.");
+}
 
-/** `opt-select-route`: q(x) = x^2 - 8x + 20 on [0, 10] — completes the square cleanly, q(x) = (x-4)^2 + 4. */
-const SELECT_Q = (x: number) => x * x - 8 * x + 20;
-const SELECT_MIN = SELECT_Q(4); // 4
-if (Math.abs(SELECT_MIN - 4) > 1e-9) {
-  throw new Error("optimizationApproximation: opt-select-route's fixture disagrees with the prose.");
+/**
+ * `opt-select-route`: a genuine FRESH PAIR, neither shown elsewhere in the
+ * lesson. p(x) has a certificate route (completes the square cleanly); q(x)
+ * does not, and its calculus route is worked in full — including a global
+ * minimum that sits at an ENDPOINT, not either interior stationary point, a
+ * second reinforcement of the lesson's own thesis.
+ */
+const SELECT_P = (x: number) => x * x + 6 * x + 11; // = (x+3)^2 + 2
+const SELECT_P_DOMAIN: readonly [number, number] = [-5, 2];
+const SELECT_P_MIN_AT = -3;
+const SELECT_P_MIN = SELECT_P(SELECT_P_MIN_AT); // 2
+if (Math.abs(SELECT_P_MIN - 2) > 1e-9) {
+  throw new Error("optimizationApproximation: opt-select-route's p(x) disagrees with the prose.");
+}
+if (SELECT_P_MIN_AT <= SELECT_P_DOMAIN[0] || SELECT_P_MIN_AT >= SELECT_P_DOMAIN[1]) {
+  throw new Error("optimizationApproximation: opt-select-route's p(x) minimum is not interior to its domain.");
+}
+for (const x of SELECT_P_DOMAIN) {
+  if (SELECT_P(x) < SELECT_P_MIN - 1e-9) {
+    throw new Error("optimizationApproximation: opt-select-route's p(x) minimum is not actually global on its domain.");
+  }
+}
+
+const SELECT_Q = (x: number) => x * x * x - 6 * x * x + 9 * x + 1;
+const SELECT_Q_DOMAIN: readonly [number, number] = [-1, 5];
+// q'(x) = 3x^2-12x+9 = 3(x-1)(x-3): stationary at x=1 (local max), x=3
+// (local min). Candidate set is {-1, 1, 3, 5}; the global minimum sits at
+// the ENDPOINT x=-1, not either interior stationary point.
+const SELECT_Q_STATIONARY = [1, 3];
+const SELECT_Q_MIN_AT = -1;
+const SELECT_Q_MIN = SELECT_Q(SELECT_Q_MIN_AT); // -15
+if (Math.abs(SELECT_Q_MIN - -15) > 1e-9) {
+  throw new Error("optimizationApproximation: opt-select-route's q(x) disagrees with the prose.");
+}
+for (const x of [...SELECT_Q_STATIONARY, ...SELECT_Q_DOMAIN]) {
+  if (SELECT_Q(x) < SELECT_Q_MIN - 1e-9) {
+    throw new Error("optimizationApproximation: opt-select-route's q(x) minimum is not actually global.");
+  }
 }
 
 /** `opt-derive-steps`: g(x) = x^2 - 4x + 1 at a = 0 — fresh, used only here. */
@@ -261,7 +324,7 @@ export const optimizationApproximationLesson: LessonDefinition = {
     { kind: "formal", formalId: "thm-fermat" },
     { kind: "proof", formalId: "thm-fermat" },
     { kind: "callout", calloutId: "flat-means-summit" },
-    { kind: "check", checkpointId: "predict-endpoint" },
+    { kind: "practice", exerciseIds: ["opt-endpoint-predict"] },
     { kind: "section", sectionId: "two-hypotheses-and-a-converse" },
     { kind: "worked", workedId: "main-case" },
     { kind: "formal", formalId: "thm-evt" },
@@ -272,7 +335,21 @@ export const optimizationApproximationLesson: LessonDefinition = {
     { kind: "worked", workedId: "second-derivative-derivation" },
     { kind: "section", sectionId: "how-far-to-trust" },
     { kind: "worked", workedId: "decay-linearization" },
-    { kind: "practice" },
+    {
+      kind: "practice",
+      exerciseIds: [
+        "opt-candidate-set",
+        "opt-flat-not-extremum",
+        "opt-second-test-silent",
+        "opt-linearize-tolerance",
+        "opt-open-interval",
+        "opt-endpoint-fresh",
+        "opt-which-hypothesis",
+        "opt-select-route",
+        "opt-derive-steps",
+        "opt-derive-escape",
+      ],
+    },
     { kind: "summary" },
   ],
 
@@ -434,54 +511,88 @@ export const optimizationApproximationLesson: LessonDefinition = {
     },
   ],
 
-  checkpoint: {
-    prompt:
-      "$f(x) = x^3 - 3x$ on $[-2,3]$ has an interior local maximum at $x=-1$. Before computing anything: where is the largest value of $f$ on this interval, and what would you have to compare to be sure?",
-    answer:
-      "$f(-1)=2$, but $f(3)=18$ — the global maximum sits at the ENDPOINT, not the interior local maximum. An interior local maximum is a purely local claim; deciding the global one needs comparing every member of the whole candidate set, which is what the Extreme Value Theorem licenses.",
-  },
-  checkpoints: [
-    {
-      id: "predict-endpoint",
-      prompt:
-        "$f(x) = x^3 - 3x$ on $[-2,3]$ has an interior local maximum at $x=-1$. Before computing anything: where is the largest value of $f$ on this interval, and what would you have to compare to be sure?",
-      answer:
-        "$f(-1)=2$, but $f(3)=18$ — the global maximum sits at the ENDPOINT, not the interior local maximum. An interior local maximum is a purely local claim; deciding the global one needs comparing every member of the whole candidate set, which is what the Extreme Value Theorem licenses.",
-    },
-  ],
+  // No `checkpoint`/`checkpoints`: the plain reveal-toggle `Checkpoint`
+  // component records no commitment at all, which is not what a
+  // "committed-prediction" learning event requires. The predict-the-endpoint
+  // beat is instead a real exercise below (`opt-endpoint-predict`, capability
+  // `COMMITTED_PREDICTION_ID`) that genuinely records a choice before
+  // revealing the answer — matching the mastery contract's own description
+  // of this item, which the checkpoint implementation never actually gave it.
 
   exercises: [
+    /* ---- check (a real committed prediction, not a plain reveal) ---------- */
+    {
+      id: "opt-endpoint-predict",
+      type: "custom",
+      capabilityId: COMMITTED_PREDICTION_ID,
+      tier: "check",
+      prompt:
+        "Commit first. $f(x) = x^3 - 3x$ on $[-2,3]$ has an interior local maximum at $x=-1$. Before computing anything: where is the largest value of $f$ on this interval?",
+      config: {
+        options: [
+          "At $x=3$, the right endpoint",
+          "At $x=-1$, the interior local maximum",
+          "At $x=1$",
+          "At $x=-2$, the left endpoint",
+        ],
+        correctIndex: 0,
+        reveal:
+          "$f(-1)=2$, but $f(3)=18$ — the global maximum sits at the ENDPOINT, not the interior local maximum. An interior local maximum is a purely local claim; deciding the global one needs comparing every member of the whole candidate set, which is what the Extreme Value Theorem licenses.",
+      },
+    },
+
     /* ---- drill ------------------------------------------------------------ */
     {
       id: "opt-candidate-set",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
-      prompt: `Let $h(x) = x^4 - 4x^2 + 2$ on $[${CAND_DOMAIN[0]}, ${CAND_DOMAIN[1]}]$.`,
+      prompt: `Let $h(x) = x^4 - 4x^2 + 2$ on $[${CAND_DOMAIN[0]}, ${CAND_DOMAIN[1]}]$. Construct the COMPLETE candidate set, one member at a time.`,
       config: {
         steps: [
           {
             kind: "numeric",
-            prompt: "How many points are in the complete candidate set?",
-            expected: CAND_COUNT,
+            prompt: "How many interior points have $h'(x)=0$?",
+            expected: CAND_STATIONARY.length,
             tolerance: 0,
-            explanation: `$h'(x) = 4x^3 - 8x = 4x(x^2-2)$ has three interior zeros ($x=0,\\pm\\sqrt2$), plus both endpoints: ${CAND_COUNT} candidates total.`,
-          },
-          {
-            kind: "multiple-choice",
-            prompt: `The endpoint $x = ${CAND_DOMAIN[0]}$ is in the candidate set even though it is not stationary. Why?`,
-            choices: [
-              "It is an endpoint of the domain — one of the two hypotheses this method's argument needs is unavailable there",
-              "h'(-3) happens to equal 0, so it is secretly stationary too",
-              "It is where h is largest, and large values are always candidates",
-              "Endpoints are only included when the interior has no stationary points",
-            ],
-            correctChoice: 0,
-            explanation: "An endpoint is a candidate because only ONE direction is available there — the escape-route argument cannot run its full refutation, regardless of the derivative's value. It is not because h'(-3) = 0 (it does not).",
+            explanation: `$h'(x) = 4x^3 - 8x = 4x(x^2-2)$ has three real roots: $x=0$ and $x=\\pm\\sqrt2$.`,
           },
           {
             kind: "numeric",
-            prompt: "What is h's largest value on this interval?",
+            prompt: "State the SMALLEST stationary point.",
+            expected: CAND_STATIONARY[0],
+            tolerance: 1e-2,
+            explanation: `$-\\sqrt2 \\approx ${CAND_STATIONARY[0]!.toFixed(4)}$.`,
+          },
+          {
+            kind: "numeric",
+            prompt: "State the MIDDLE stationary point.",
+            expected: CAND_STATIONARY[1],
+            tolerance: 1e-6,
+            explanation: "The remaining real root of $4x(x^2-2)=0$ is $x=0$.",
+          },
+          {
+            kind: "numeric",
+            prompt: "State the LARGEST stationary point.",
+            expected: CAND_STATIONARY[2],
+            tolerance: 1e-2,
+            explanation: `$\\sqrt2 \\approx ${CAND_STATIONARY[2]!.toFixed(4)}$.`,
+          },
+          {
+            kind: "multiple-choice",
+            prompt: `Two more points join these three to complete the candidate set: $x=${CAND_DOMAIN[0]}$ and $x=${CAND_DOMAIN[1]}$, the endpoints — neither is stationary. Why do BOTH belong in the set?`,
+            choices: [
+              "Each is an endpoint of the domain — at an endpoint, one of the two hypotheses this method's argument needs is unavailable",
+              "Both happen to satisfy $h'(x)=0$ too, so they are secretly stationary as well",
+              "They are included because the interior has fewer than four stationary points",
+              "Only the larger of the two values needs to be checked, so only one endpoint truly belongs",
+            ],
+            correctChoice: 0,
+            explanation: `Both endpoints are candidates for the SAME reason — interiority fails there, so only one direction of the escape-route argument is available, regardless of the derivative's value at either one. (Neither endpoint is actually stationary: $h'(${CAND_DOMAIN[0]}) = ${CAND_H_PRIME_LEFT}$, $h'(${CAND_DOMAIN[1]}) = ${CAND_H_PRIME_RIGHT}$.)`,
+          },
+          {
+            kind: "numeric",
+            prompt: "What is h's largest value over the complete candidate set — its global maximum on this interval?",
             expected: CAND_MAX,
             tolerance: 1e-6,
             explanation: `$h(-3) = ${CAND_MAX}$, larger than every stationary value ($h(0)=2$, $h(\\pm\\sqrt2)=-2$) — the maximum sits at the endpoint the sweep's refutation could never rule out.`,
@@ -603,7 +714,7 @@ export const optimizationApproximationLesson: LessonDefinition = {
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
-      prompt: `Let $n(x) = |x-1| + (x-1)^2$ on $[-1, 3]$. The escape-route refutation never examines $x=1$.`,
+      prompt: `Let $n(x) = \\sqrt[3]{(x-2)^2} + 1$ on $[${HYP_DOMAIN[0]}, ${HYP_DOMAIN[1]}]$. The escape-route refutation never examines $x=${HYP_MIN_AT}$.`,
       config: {
         steps: [
           {
@@ -611,19 +722,19 @@ export const optimizationApproximationLesson: LessonDefinition = {
             prompt: "What is n's actual minimum value on this interval?",
             expected: HYP_MIN,
             tolerance: 1e-6,
-            explanation: `Both $|x-1|$ and $(x-1)^2$ are minimized (at $0$) exactly at $x=1$, and both are $\\ge0$ everywhere, so $n(1)=0$ is the global minimum.`,
+            explanation: `$(x-2)^2 \\ge 0$ always, with equality exactly at $x=${HYP_MIN_AT}$, and the cube root of $0$ is $0$ — so $n(${HYP_MIN_AT}) = ${HYP_MIN}$ is the global minimum.`,
           },
           {
             kind: "multiple-choice",
-            prompt: "Which hypothesis of the refutation argument fails at $x=1$?",
+            prompt: `Which hypothesis of the refutation argument fails at $x=${HYP_MIN_AT}$?`,
             choices: [
               "n is not differentiable there — no local model exists to argue with",
-              "x=1 is not interior to the domain",
+              `x=${HYP_MIN_AT} is not interior to the domain`,
               "The Extreme Value Theorem does not apply on this domain",
-              "n is not continuous at x=1",
+              `n is not continuous at x=${HYP_MIN_AT}`,
             ],
             correctChoice: 0,
-            explanation: "x=1 IS interior, and n IS continuous there (the absolute-value term has a corner, not a jump) — the domain is closed and bounded, so EVT applies fine. What fails is differentiability: |x-1| has no single slope at x=1, so the escape-route argument has no local model to run at all, and the point stands unrefuted.",
+            explanation: `x=${HYP_MIN_AT} IS interior, and n IS continuous there (the cube root of a squared quantity is continuous everywhere, including at $0$) — the domain is closed and bounded, so EVT applies fine. What fails is differentiability: as $x\\to${HYP_MIN_AT}$, the slope grows without bound in magnitude — no finite local model exists there, so the escape-route argument has nothing to run, and the point stands unrefuted by default.`,
           },
         ],
       },
@@ -633,39 +744,46 @@ export const optimizationApproximationLesson: LessonDefinition = {
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "transfer",
-      prompt: `Let $q(x) = x^2 - 8x + 20$ on $[0, 10]$. Find its minimum.`,
+      prompt: `Two functions, each asking for its own minimum: $p(x) = x^2+6x+11$ on $[${SELECT_P_DOMAIN[0]}, ${SELECT_P_DOMAIN[1]}]$, and $q(x) = x^3-6x^2+9x+1$ on $[${SELECT_Q_DOMAIN[0]}, ${SELECT_Q_DOMAIN[1]}]$.`,
       config: {
         steps: [
           {
             kind: "multiple-choice",
-            prompt: "Which route is more efficient here?",
+            prompt: "Which function has a minimum reachable by an algebraic identity alone, with no derivative needed?",
             choices: [
-              "Complete the square: $q(x) = (x-4)^2 + 4 \\ge 4$ directly, with equality at $x=4$",
-              "Differentiate, build the full candidate set, and compare all the values",
-              "Both routes take about the same effort",
-              "Neither route determines the minimum",
+              "p — its formula is a perfect square plus a constant",
+              "q — it is already given in factored-looking form",
+              "Both — every polynomial has a closed-form certificate for its minimum",
+              "Neither — both require the calculus route",
             ],
             correctChoice: 0,
-            explanation: "q is exactly a perfect square plus a constant — completing the square reads off the minimum in one line, with no derivative or candidate-set machinery needed at all.",
-          },
-          {
-            kind: "multiple-choice",
-            prompt: "Why does completing the square work here but not for every function?",
-            choices: [
-              "q happens to BE a sum of a square and a constant — most functions have no such closed form available",
-              "q is continuous everywhere",
-              "q is defined on a closed interval",
-              "q has a positive leading coefficient",
-            ],
-            correctChoice: 0,
-            explanation: "The certificate is available because of q's specific algebraic SHAPE, not because of continuity, domain type, or the sign of a coefficient (all true here, but none is why the trick works) — a cubic or a transcendental function will not offer this shortcut in general.",
+            explanation: "p(x) = x² + 6x + 11 is a sum of a square and a constant, though not written that way yet — recognizing that structure is the whole certificate. q is a genuine cubic with no such shortcut.",
           },
           {
             kind: "numeric",
-            prompt: "What is q's minimum value?",
-            expected: SELECT_MIN,
+            prompt: "Using that identity, what is p's minimum value?",
+            expected: SELECT_P_MIN,
             tolerance: 1e-6,
-            explanation: `$q(4) = ${SELECT_MIN}$, matching both routes.`,
+            explanation: `$p(x) = (x+3)^2 + 2 \\ge 2$, with equality at $x=${SELECT_P_MIN_AT}$ — interior to the domain, so this is the genuine minimum without differentiating at all.`,
+          },
+          {
+            kind: "multiple-choice",
+            prompt: "Why doesn't the same shortcut work for q?",
+            choices: [
+              "q is not a sum of a single square and a constant — no simple algebraic identity certifies its minimum directly",
+              "q is not continuous on its domain",
+              "q is not defined on a closed interval",
+              "q has a negative leading coefficient, so no minimum exists",
+            ],
+            correctChoice: 0,
+            explanation: "The certificate is about algebraic SHAPE, not continuity, domain type, or sign of a coefficient — all three distractors are also false here (q is continuous, its domain is closed, and its leading coefficient is +1). A cubic in general has no such shortcut.",
+          },
+          {
+            kind: "numeric",
+            prompt: "Using the calculus route instead, what is q's global minimum on its domain?",
+            expected: SELECT_Q_MIN,
+            tolerance: 1e-6,
+            explanation: `$q'(x)=3x^2-12x+9=3(x-1)(x-3)$ gives stationary points at $x=1,3$; the candidate set is $\\{-1,1,3,5\\}$. Comparing all four: $q(${SELECT_Q_MIN_AT})=${SELECT_Q_MIN}$ is the global minimum — at the ENDPOINT, not either interior stationary point.`,
           },
         ],
       },

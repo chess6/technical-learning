@@ -47,16 +47,36 @@ const seq = (
 
 /* ------------------------------------------------------------------ items */
 
-describeGradingContract(byId("opt-candidate-set"), {
-  mustAccept: [{ name: "5 candidates, endpoint reason, max 47", answer: seq(5, { choice: 0 }, 47) }],
+describeGradingContract(byId("opt-endpoint-predict"), {
+  mustAccept: [{ name: "the endpoint x=3, correctly committed", answer: { committedIndex: 0 } }],
   mustReject: [
-    { name: "incomplete count — endpoints forgotten", answer: seq(3, { choice: 0 }, 47) },
-    { name: "wrong reason for the endpoint's inclusion", answer: seq(5, { choice: 1 }, 47) },
+    { name: "commits to the interior local maximum", answer: { committedIndex: 1 } },
+    { name: "commits to a stationary point that isn't the max at all", answer: { committedIndex: 2 } },
+    { name: "commits to the other endpoint", answer: { committedIndex: 3 } },
+  ],
+});
+
+const SQRT2 = Math.sqrt(2);
+
+describeGradingContract(byId("opt-candidate-set"), {
+  mustAccept: [
     {
-      name: "a correct-LOOKING extremum chosen from an incomplete candidate set (a stationary value, not the true max)",
-      answer: seq(5, { choice: 0 }, 2),
+      name: "3 interior stationary points constructed in order, endpoint reason, global max 47",
+      answer: seq(3, -SQRT2, 0, SQRT2, { choice: 0 }, 47),
     },
-    { name: "blank final step", answer: seq(5, { choice: 0 }, NaN) },
+  ],
+  mustReject: [
+    { name: "wrong count of interior stationary points", answer: seq(2, -SQRT2, 0, SQRT2, { choice: 0 }, 47) },
+    {
+      name: "wrong middle stationary point — 1 instead of the real root 0",
+      answer: seq(3, -SQRT2, 1, SQRT2, { choice: 0 }, 47),
+    },
+    { name: "wrong reason for why both endpoints belong", answer: seq(3, -SQRT2, 0, SQRT2, { choice: 1 }, 47) },
+    {
+      name: "a correct-LOOKING extremum chosen from an incomplete comparison (a stationary value, not the true global max)",
+      answer: seq(3, -SQRT2, 0, SQRT2, { choice: 0 }, 2),
+    },
+    { name: "blank final step", answer: seq(3, -SQRT2, 0, SQRT2, { choice: 0 }, NaN) },
   ],
 });
 
@@ -112,24 +132,30 @@ describeGradingContract(byId("opt-endpoint-fresh"), {
 });
 
 describeGradingContract(byId("opt-which-hypothesis"), {
-  mustAccept: [{ name: "min 0, differentiability fails", answer: seq(0, { choice: 0 }) }],
+  mustAccept: [{ name: "min 1, differentiability fails", answer: seq(1, { choice: 0 }) }],
   mustReject: [
-    { name: "wrong minimum value", answer: seq(1, { choice: 0 }) },
-    { name: "claims x=1 is not interior (false)", answer: seq(0, { choice: 1 }) },
-    { name: "claims EVT fails (false — domain is closed)", answer: seq(0, { choice: 2 }) },
-    { name: "claims n is not continuous at x=1 (false)", answer: seq(0, { choice: 3 }) },
+    { name: "wrong minimum value", answer: seq(0, { choice: 0 }) },
+    { name: "claims x=2 is not interior (false)", answer: seq(1, { choice: 1 }) },
+    { name: "claims EVT fails (false — domain is closed)", answer: seq(1, { choice: 2 }) },
+    { name: "claims n is not continuous at x=2 (false)", answer: seq(1, { choice: 3 }) },
   ],
 });
 
 describeGradingContract(byId("opt-select-route"), {
-  mustAccept: [{ name: "certificate route, the real reason, minimum 4", answer: seq({ choice: 0 }, { choice: 0 }, 4) }],
+  mustAccept: [
+    { name: "p has the certificate (2), the real structural reason, q's calculus minimum (-15)", answer: seq({ choice: 0 }, 2, { choice: 0 }, -15) },
+  ],
   mustReject: [
-    { name: "chooses the inefficient route", answer: seq({ choice: 1 }, { choice: 0 }, 4) },
+    { name: "picks the wrong function as having the certificate", answer: seq({ choice: 1 }, 2, { choice: 0 }, -15) },
+    { name: "right function, wrong certified minimum", answer: seq({ choice: 0 }, 100, { choice: 0 }, -15) },
     {
-      name: "chooses a method WITHOUT supplying the correct captured justification (right route, wrong reason)",
-      answer: seq({ choice: 0 }, { choice: 1 }, 4),
+      name: "chooses correctly WITHOUT supplying the correct captured justification for q (right pick, wrong reason)",
+      answer: seq({ choice: 0 }, 2, { choice: 1 }, -15),
     },
-    { name: "right route and reason, wrong minimum", answer: seq({ choice: 0 }, { choice: 0 }, 100) },
+    {
+      name: "a correct-LOOKING value from an INCOMPLETE comparison — q's interior local min (1) instead of the true global min at the endpoint (-15)",
+      answer: seq({ choice: 0 }, 2, { choice: 0 }, 1),
+    },
   ],
 });
 
@@ -162,6 +188,7 @@ describeGradingContract(byId("opt-derive-steps"), {
 
 describe("optimization-approximation grading-contract coverage", () => {
   const CONTRACTED = new Set([
+    "opt-endpoint-predict",
     "opt-candidate-set",
     "opt-flat-not-extremum",
     "opt-second-test-silent",
@@ -192,7 +219,7 @@ describe("optimization-approximation grading-contract coverage", () => {
     }
   });
 
-  it("keeps the declared tier mix: 5 drill, 4 transfer (evidence-bearing), 1 checkpoint, 1 self-marked practice event", () => {
+  it("keeps the declared tier mix: 1 real committed-prediction check, 5 drill, 4 transfer (evidence-bearing), 1 self-marked practice event", () => {
     const tally = (t: string) => items.filter((i) => i.tier === t).length;
     // opt-derive-escape is tier "transfer" in its authored shape but carries
     // no evidence claim — excluded explicitly here so a later edit cannot
@@ -200,13 +227,26 @@ describe("optimization-approximation grading-contract coverage", () => {
     const transferEvidence = items.filter(
       (i) => i.tier === "transfer" && i.id !== "opt-derive-escape",
     ).length;
+    expect(tally("check")).toBe(1);
     expect(tally("drill")).toBe(5);
     expect(transferEvidence).toBe(4);
     expect(items.filter((i) => i.id === "opt-derive-escape")).toHaveLength(1);
-    expect(optimizationApproximationLesson.checkpoints).toHaveLength(1);
-    // No bare definition-recall item: every multiple-choice item/step is a
-    // diagnosis with rival answers, never a pure "what is the definition of X".
-    expect(tally("check")).toBe(0);
+    // The checkpoint mechanism (plain reveal, no commitment recorded) is
+    // deliberately unused — opt-endpoint-predict is a real exercise instead.
+    expect(optimizationApproximationLesson.checkpoint).toBeUndefined();
+    expect(optimizationApproximationLesson.checkpoints).toBeUndefined();
+  });
+
+  it("opt-endpoint-predict genuinely records a commitment — not the plain reveal-toggle Checkpoint component", () => {
+    const item = byId("opt-endpoint-predict");
+    expect(item.type === "custom" && item.capabilityId).toBe("committed-prediction");
+    expect(CAPABILITY_EVIDENCE_CEILING["committed-prediction"]).toBe("E1");
+    // Not counted toward any objective's E3 claim — it is the learning
+    // event, not the evidence (opt-endpoint-fresh carries that).
+    const covered = (optimizationApproximationLesson.objectives ?? []).some((o) =>
+      (o.itemIds ?? []).includes("opt-endpoint-predict"),
+    );
+    expect(covered, "opt-endpoint-predict must not appear in any objective's itemIds").toBe(false);
   });
 
   it("claims no E4+ anywhere, and matches every capability's ceiling", () => {
@@ -251,7 +291,12 @@ describe("optimization-approximation grading-contract coverage", () => {
     // fixtures — "x^3 - 3x^2" (opt-endpoint-fresh's genuinely different k)
     // must NOT false-positive against the main example "x^3 - 3x".
     const shownFragments = ["x^3 - 3x$", "= x^3$", "e^{-t/1.5}", "|x|"];
+    // opt-endpoint-predict is deliberately excluded: it is the E1 learning
+    // event on the lesson's OWN worked example (mastery-contract.md §1d) —
+    // opt-endpoint-fresh, not this item, carries the freshness-bearing E3
+    // evidence for the same objective.
     for (const id of CONTRACTED) {
+      if (id === "opt-endpoint-predict") continue;
       const item = byId(id);
       const promptText = item.type === "custom" ? item.prompt : "";
       for (const fragment of shownFragments) {

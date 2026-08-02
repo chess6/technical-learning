@@ -736,17 +736,18 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "opt-select-route": {
-    // Genuinely a method-selection item (calculus route vs. algebraic
-    // certificate), but `methodSelection: true` is left unset here:
-    // cue-lint (`cueLint.test.ts`) only walks `MODULE_ITEMS`, not lesson
-    // exercises, and its `requiredPostCommitmentCues` values are drawn from a
-    // shared pattern list with no entry for "complete the square" — adding
-    // one to cue an unrelated technique's list is out of this lesson's scope.
-    // The selection is still graded (D8, see the outcome table) via the
-    // captured justification step; this flag has no live enforcement for
-    // lesson items either way.
+    // A genuine method-selection item — TWO fresh functions, one with an
+    // algebraic certificate and one without, and the learner must recognize
+    // which is which. `methodSelection: true` is set honestly (a second
+    // review round flagged an earlier version of this entry recording
+    // `false` while its own comment admitted the item WAS method-selection —
+    // metadata that is technically unenforced is not thereby licensed to be
+    // false). `requiredPostCommitmentCues` is left unset: cue-lint
+    // (`cueLint.test.ts`) only walks `MODULE_ITEMS`, not lesson exercises, so
+    // no enforcement currently reaches this item either way, and its shared
+    // cue-pattern list has no entry for "complete the square" to name.
     evidenceTarget: "E3",
-    methodSelection: false,
+    methodSelection: true,
     evidenceBasis: {
       freshness: "fresh-instance",
       unfamiliarity: "transfer",

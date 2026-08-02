@@ -199,17 +199,48 @@ test("the h slider drives live mh/E(h) readouts, and Run sweep colors the strip 
   await expect(explorer.locator(".optapprox-explorer__sweep-dot--refuted").first()).toBeVisible();
 });
 
+test("opt-endpoint-predict genuinely records a commitment before revealing the answer", async ({
+  page,
+}) => {
+  await page.goto("/lesson/optimization-approximation");
+  const checkExercise = page
+    .getByRole("region", { name: "Practice exercises" })
+    .filter({ hasText: "of 1" })
+    .filter({ hasText: "Commit" });
+  await checkExercise.scrollIntoViewIfNeeded();
+
+  // Before commit: no feedback should be visible yet, and the reveal text
+  // must not already be on the page.
+  await expect(checkExercise.getByText(/global maximum sits at the ENDPOINT/i)).toHaveCount(0);
+
+  await checkExercise.locator('button[data-choice-index="0"]').click();
+  await checkExercise.getByRole("button", { name: "Commit answer" }).click();
+
+  // After commit: the reveal appears, and it is scored correct (choice 0 is
+  // the true endpoint answer).
+  await expect(checkExercise.getByText(/global maximum sits at the ENDPOINT/i)).toBeVisible();
+  await expect(
+    checkExercise.locator('.exercise-panel__choice[data-choice-index="0"][data-state="correct"]'),
+  ).toBeVisible();
+});
+
 test("grades the first practice question (opt-candidate-set's step 1)", async ({
   page,
 }) => {
   await page.goto("/lesson/optimization-approximation");
-  const practice = page.getByRole("region", { name: "Practice exercises" });
+  // Two "Practice exercises" regions exist — the committed-prediction check
+  // (opt-endpoint-predict) and the main drill/transfer set. Disambiguate by
+  // the one that starts at "Question 1 of 10".
+  const practice = page
+    .getByRole("region", { name: "Practice exercises" })
+    .filter({ hasText: "of 10" });
   await practice.scrollIntoViewIfNeeded();
   await expect(practice.getByText("Question 1 of 10")).toBeVisible();
 
-  // h(x) = x^4 - 4x^2 + 2 on [-3, 2]: 3 interior stationary points + 2
-  // endpoints = 5 candidates (optimizationApproximation.ts's CAND_COUNT).
-  await practice.getByLabel("Step 1 answer").fill("5");
+  // h(x) = x^4 - 4x^2 + 2 on [-3, 2]: opt-candidate-set's first step asks
+  // for the count of INTERIOR stationary points only (3), not the full
+  // candidate-set size — the exercise now builds the set member by member.
+  await practice.getByLabel("Step 1 answer").fill("3");
   await practice.getByRole("button", { name: "Check step" }).click();
-  await expect(practice.getByText(/interior zeros/i)).toBeVisible();
+  await expect(practice.getByText(/three real roots/i)).toBeVisible();
 });
