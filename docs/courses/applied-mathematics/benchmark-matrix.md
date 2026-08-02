@@ -119,8 +119,12 @@ pressure; P3 is recorded so a later override knows what it would sign up for.
 `limits-continuity`, `derivative-local-linearity`, `integral-accumulation`,
 and `fundamental-theorem` (all of `calculus-foundations`, Package A,
 approved) are built and each passes Gate 8 on its lesson-owned outcomes.
-`chain-rule` (L5, `calculus-technique`) is fully built and merged to
-`master`, but not yet Gate-8-accepted (pending a domain-owner sign-off).
+`chain-rule` (L5, `calculus-technique`) is fully built, merged to `master`, and
+**Gate-8-accepted by the repository owner on 2026-08-01**. L6
+`optimization-approximation` is **planned but not built** (Mode B complete);
+its plan flags that **the M2 bar in §2 does not mention optimization or
+linearization at all**, so L6 has no depth bar to be validated against here —
+an open Mode A question for the owner, recorded rather than silently patched.
 Every other lesson is `future`, and **no module bar in §2 is formally
 certified** — a module's bar is judged on its whole set via its own Gate 9
 assessment. Gate 9 for `calculus-foundations` is

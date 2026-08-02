@@ -24,9 +24,18 @@ gives only `E_f(k(h))/k(h)→0`; the missing factor `k(h)/h→g'(a)` needs `g`'s
 and `mastery-contract.md`. Details in the commit messages
 (`git log`, search "finding #").
 
-**Open:** a domain-owner's sign-off on L5's **Gate 8**. The merge is not that
-sign-off, and the independent review — while real — is a different thing.
-Gate 9 items remain unadministered.
+**L5's Gate 8 is closed.** The repository owner accepted it on 2026-08-01,
+after an acceptance review found and fixed a real mathematical defect (the
+derivation divided by \(\Delta u\) in the very step whose thesis is that it
+never does — repaired by the Carathéodory device) and rewrote both E2
+recognition items. The acceptance record in
+`lessons/05-chain-rule/mastery-contract.md` §6 is authoritative; three docs
+that still read "pending" were stale and have been corrected.
+
+**Open:** Gate 9 items for `calculus-foundations` remain unadministered.
+
+**L6 `optimization-approximation` is planned, not built** (2026-08-01, this
+session — see Stream 3 below).
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -246,6 +255,58 @@ design test); the other 18 are the ordinary conceptual/technique archetype
 the triad was designed for, and it shows. This is the intended outcome of
 doing the review seriously, not a shortcut — record it here so the next
 agent doesn't redo it from scratch or, worse, "fix" what already fits.
+
+---
+
+## Stream 3 — L6 `optimization-approximation`, planned only (2026-08-01)
+
+**Docs-only. No lesson code. L6 is still a `future` node.** A short prompt
+authorizes Mode B for a uniquely resolved next node and never Mode C, so
+planning ran and stopped at the boundary. Artifacts under
+`docs/courses/applied-mathematics/lessons/06-optimization-approximation/`:
+brief (Gate 3), contract (Gate 4, `PASS`), mastery contract (Gate 5), plan
+(Stage 3).
+
+**The insight, and why it is not the spine's.** The spine says the derivative
+turns "find the best" into "find where the local model is flat". That wording is
+**not quite true**, and its imprecision is the exact misconception the lesson
+exists to break — so leading with it would install the converse error in the
+lesson's own thesis. The selected insight instead: *a nonzero slope is an escape
+route, so the derivative only ever **refutes**; \(f'(a)=0\) is what survives, not
+what wins — and the three warnings learners memorize (check endpoints, check
+corners, a critical point may be neither) are the three hypotheses of that one
+argument.* Fermat's condition falls straight out of L2 C5 with nothing new
+assumed. The spine row is worth repairing to match — a Mode A edit, **not made**.
+
+**Three things the next session should not have to rediscover:**
+
+- **The Mean Value Theorem is not needed, and should not be added.** It was the
+  obvious route to the second-derivative test, monotonicity, and the error
+  bound, and L2/L4 both explicitly withhold it. All three follow instead from
+  the **FTC applied twice** (`f(a+h)-f(a)-f'(a)h = \int\!\!\int f''`), under a
+  stated continuity hypothesis — fewer theorems, all derived, reusing the
+  course's own keystone. It also earns "\(f'>0\Rightarrow\) increasing", which
+  `CalculusFixture.monotoneIntervals` currently **declares** rather than derives.
+- **Two Mode A amendments are open and are the owner's call**, recorded in the
+  contract §1a and the ledger §6.1: (1) a `fundamental-theorem →
+  optimization-approximation` hard edge, which the FTC route requires — a
+  bounded fallback exists, but the choice must be made **before** Mode C because
+  it decides whether two results are derived or cited; (2) the **M2 depth bar**
+  in the benchmark matrix omits optimization and linearization entirely, so L6
+  has nothing to be validated against at Gate 10.
+- **One overclaim was caught inside the contract and is worth not
+  re-introducing:** an earlier draft of C9 said the search "becomes a finite
+  list". It does not — a constant function makes every point stationary. The
+  claim is a *reduction to the critical set plus endpoints*, finite only for the
+  functions this lesson uses, and the correctness plan requires the helper to
+  report "not a finite reduction" rather than invent a list — the same honesty
+  `monotoneIntervals` already uses for "not certified".
+
+**Self-certified.** Author and both audits are one agent lineage. L5's precedent
+applies in full: its contract was self-certified and an independent review later
+found a real gap in exactly the step Audit A had passed. The analogous
+load-bearing steps here are **C3's choice of \(\delta\)** and **C13's two-sided
+sign analysis** — that is where a reviewer should look first.
 
 ---
 

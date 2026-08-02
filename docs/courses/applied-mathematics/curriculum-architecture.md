@@ -427,7 +427,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); **Gate 8 ACCEPTED 2026-08-01** by the repository owner (a domain-owner sign-off distinct from the implementing/reviewing agent lineage), after acceptance review found and fixed a mathematical defect in the derivation — it divided by \\(\\Delta u\\) in the very step whose thesis is that it never does — and rewrote both E2 recognition items, whose distractors were answerable by test-taking instinct. See the [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8). L6–L8 remain `future`** | `master` (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted) | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md) |
+| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); **Gate 8 ACCEPTED 2026-08-01** by the repository owner (a domain-owner sign-off distinct from the implementing/reviewing agent lineage), after acceptance review found and fixed a mathematical defect in the derivation — it divided by \\(\\Delta u\\) in the very step whose thesis is that it never does — and rewrote both E2 recognition items, whose distractors were answerable by test-taking instinct. See the [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8). L6 `optimization-approximation` has **Mode B planning complete** (2026-08-01) and remains `future` — no lesson code, and building it is an unresolved approval boundary. L7–L8 not started.** | `master` (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted). L6 planning is docs-only on `master`. | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md)<br>L6: [insight-brief](lessons/06-optimization-approximation/insight-brief.md) · [insight `PASS`](lessons/06-optimization-approximation/insight.md) · [contract](lessons/06-optimization-approximation/mastery-contract.md) · [plan](lessons/06-optimization-approximation/lesson-plan.md) — **two Mode A amendments open**, see below |
 | C–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > **Approval state.** Package A was explicitly approved for implementation on
@@ -445,13 +445,34 @@ before implementing it").
 > items, registered and machinery-verified — but not administered.
 >
 > **Package B is in progress**, on `master` (merged from `feature/l5-chain-rule`,
-> 2026-08-01; see `docs/engineering/HANDOFF.md`) — built and merged, but not
-> yet accepted. Its first lesson, `chain-rule` (L5), has all Mode B docs
-> through `Gate result: PASS` and full Mode C lesson code (guided scene,
-> explorer, exercises), verified by `./check.sh --e2e` before merge. L5's
-> Gate 8 is not yet formally ticked — pending a reviewer outside this agent's
-> lineage, the same self-certification constraint as Package A's own semantic
-> review. Anyone starting further Package B work should check
+> 2026-08-01; see `docs/engineering/HANDOFF.md`). Its first lesson, `chain-rule`
+> (L5), has all Mode B docs through `Gate result: PASS` and full Mode C lesson
+> code (guided scene, explorer, exercises), verified by `./check.sh --e2e`
+> before merge, and its **Gate 8 was accepted by the repository owner on
+> 2026-08-01** — see the
+> [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8),
+> which is the authoritative statement of that gate's status.
+>
+> **L6 `optimization-approximation` is planned, not built** (Mode B complete
+> 2026-08-01: brief, `PASS` contract, mastery contract, lesson plan). It is
+> still a `future` node; **writing its lesson code requires explicit owner
+> approval.** Two **Mode A amendments** its plan depends on are open and are
+> the owner's to decide:
+>
+> 1. a `fundamental-theorem → optimization-approximation` **hard edge** in §2.2 —
+>    L6's second-derivative test and its linearization error bound are derived
+>    from the FTC applied twice (the alternative routes, the Mean Value Theorem
+>    and simply citing the bound, were compared and rejected in the contract). A
+>    bounded fallback exists if the edge is refused, but the choice must be made
+>    **before** Mode C, because it decides whether those two results are derived
+>    or cited;
+> 2. the **M2 depth bar** in
+>    [benchmark-matrix §2](benchmark-matrix.md#2-per-module-depth-bars) covers
+>    substitution, parts, and improper integrals only — it does not mention
+>    optimization or linearization at all, so L6 cannot be validated at Gate 10
+>    against it as written.
+>
+> Anyone starting further Package B work should check
 > `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a
 > package before implementing it") rather than reimplementing.
 
@@ -514,7 +535,9 @@ reason, proven by a regression that feeds the family a non-interval pairing.
 **B (`calculus-technique`) is in progress**, merged to `master`
 (`feature/l5-chain-rule`, 2026-08-01; branch deleted). Its first lesson,
 `chain-rule` (L5), is fully built (Mode B docs through `Gate result: PASS`,
-plus Mode C lesson code) and verified; L6–L8 remain `future`. Gate 8
-acceptance is still pending a domain-owner sign-off — merging is not that
-sign-off. See §6.1's package-status ledger and `docs/engineering/HANDOFF.md`
-before starting further Package B work.
+plus Mode C lesson code), verified, and **Gate 8 accepted by the repository
+owner on 2026-08-01**. **L6 `optimization-approximation` is planned but not
+built** — Mode B is complete and its two open Mode A amendments are recorded in
+§6.1; L7–L8 have not been started. All three remain `future` nodes, and
+promoting any of them is an approval boundary. See §6.1's package-status ledger
+and `docs/engineering/HANDOFF.md` before starting further Package B work.
