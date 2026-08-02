@@ -640,4 +640,135 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "auto",
     },
   },
+
+  // Package B — `calculus-technique` — `optimization-approximation` (spine
+  // L6). The FIRST applied-mathematics lesson registered here: L1-L5's
+  // lesson-owned items were never entered into this manifest, on a claim in
+  // L5's mastery contract ("ITEM_ASSESSMENT_META does not cover lesson-owned
+  // items, matching every prior lesson's precedent") that review found FALSE
+  // — karatsuba's items above are the actual precedent. L6 follows karatsuba,
+  // not the mistaken claim. Every item below runs on a function the lesson
+  // never displays (mastery-contract.md §1d's freshness rule), so
+  // `freshness: "fresh-instance"` throughout; drill-tier items are "near"
+  // (same skill, a fresh instance), transfer-tier are "transfer" (a genuine
+  // conceptual leap — an unfamiliar shape, a captured method choice, or the
+  // abstraction-return item). No claim here reaches E4, so
+  // `evidenceContradictions` never actually scrutinizes these bases (it is a
+  // no-op below E4) — they are still filled in honestly, not left blank.
+  "opt-candidate-set": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-flat-not-extremum": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-second-test-silent": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-linearize-tolerance": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-open-interval": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-endpoint-fresh": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-which-hypothesis": {
+    // The abstraction-return item (insight.md §14) — set on a function with
+    // no walkable reading, deliberately not shape-matchable to the lesson's
+    // own |x|/x^3 examples.
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-select-route": {
+    // Genuinely a method-selection item (calculus route vs. algebraic
+    // certificate), but `methodSelection: true` is left unset here:
+    // cue-lint (`cueLint.test.ts`) only walks `MODULE_ITEMS`, not lesson
+    // exercises, and its `requiredPostCommitmentCues` values are drawn from a
+    // shared pattern list with no entry for "complete the square" — adding
+    // one to cue an unrelated technique's list is out of this lesson's scope.
+    // The selection is still graded (D8, see the outcome table) via the
+    // captured justification step; this flag has no live enforcement for
+    // lesson items either way.
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "opt-derive-steps": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // opt-derive-escape is deliberately ABSENT from this manifest: it is a
+  // self-marked practice event with no evidence claim (mastery-contract.md
+  // §1d), covers no objective, and objectiveCoverage.test.ts / a dedicated
+  // check in optimizationApproximationGradingContract.test.ts both hold that
+  // absence, so a future edit cannot silently promote it into evidence.
 };

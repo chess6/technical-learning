@@ -135,6 +135,7 @@ const AM_WITHIN_COURSE_REQUIRES: readonly CurriculumEdge[] = [
   { from: lesson("integral-accumulation"), to: lesson("fundamental-theorem"), type: "requires", note: "The theorem is about the accumulation." },
   { from: lesson("derivative-local-linearity"), to: lesson("chain-rule"), type: "requires", note: "Composing the local linear models." },
   { from: lesson("derivative-local-linearity"), to: lesson("optimization-approximation"), type: "requires", note: "\"Flat local model\" is the criterion." },
+  { from: lesson("fundamental-theorem"), to: lesson("optimization-approximation"), type: "requires", note: "The second-derivative test and the linearization error bound are both derived from the FTC applied twice." },
   { from: lesson("chain-rule"), to: lesson("substitution-parts"), type: "requires", note: "Substitution is the chain rule backwards." },
   { from: lesson("fundamental-theorem"), to: lesson("substitution-parts"), type: "requires", note: "Techniques evaluate definite integrals via antiderivatives." },
   { from: lesson("limits-continuity"), to: lesson("improper-integrals"), type: "requires", note: "An improper integral is a limit of proper ones." },

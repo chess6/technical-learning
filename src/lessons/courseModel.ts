@@ -254,12 +254,7 @@ export const CURRICULUM: readonly Subject[] = [
             title: "Techniques, each one derived",
             items: [
               { kind: "lesson", lessonId: "chain-rule" },
-              {
-                kind: "future",
-                id: "optimization-approximation",
-                title: "Deciding with the Derivative",
-                subtitle: "Optimization and approximation, from the local-linear model",
-              },
+              { kind: "lesson", lessonId: "optimization-approximation" },
               {
                 kind: "future",
                 id: "substitution-parts",

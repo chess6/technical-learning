@@ -46,7 +46,7 @@ const APPLIED_MATHEMATICS_SPINE: readonly RosterEntry[] = [
   { id: "integral-accumulation", status: "built" },
   { id: "fundamental-theorem", status: "built" },
   { id: "chain-rule", status: "built" },
-  { id: "optimization-approximation", status: "future" },
+  { id: "optimization-approximation", status: "built" },
   { id: "substitution-parts", status: "future" },
   { id: "improper-integrals", status: "future" },
   { id: "sequences-limits", status: "future" },
