@@ -8,7 +8,7 @@ import {
   withinCeiling,
   type EvidenceLevel,
 } from "../evidence";
-import { ITEM_ASSESSMENT_META } from "../assessmentManifest";
+import { ITEM_ASSESSMENT_META, evidenceContradictions } from "../assessmentManifest";
 import { SUPPORTED_CAPTURE_KINDS } from "../../components/assessment/captureRenderers";
 
 describe("evidence ceilings are necessary upper bounds", () => {
@@ -75,13 +75,8 @@ describe("evidenceBasis contradiction filter (rejects impossible claims; does NO
     const problems: string[] = [];
     for (const item of MODULE_ITEMS) {
       const meta = ITEM_ASSESSMENT_META[item.id]!;
-      if (EVIDENCE_ORDER[meta.evidenceTarget] < EVIDENCE_ORDER.E4) continue;
-      const b = meta.evidenceBasis;
-      const contradictions: string[] = [];
-      if (b.scaffolding === "heavy") contradictions.push("heavy scaffolding");
-      if (b.freshness === "reused-fixture") contradictions.push("reused fixture");
-      if (b.unfamiliarity === "familiar-drill") contradictions.push("familiar drill");
-      if (b.scoringAuthority === "self-marked") contradictions.push("self-marked");
+      // Shared with objectiveCoverage — one definition, level-aware.
+      const contradictions = evidenceContradictions(meta.evidenceTarget, meta.evidenceBasis);
       if (contradictions.length > 0) {
         problems.push(`${item.id} claims ${meta.evidenceTarget} but basis has: ${contradictions.join(", ")}`);
       }

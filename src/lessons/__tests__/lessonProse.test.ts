@@ -56,6 +56,27 @@ describe("collectLessonProse reaches every newly covered field", () => {
     expect(textAt(lesson, "fixture-lesson.callout:c1.moves[0].body")).toContain("\\notacommand");
   });
 
+  it("reaches lesson.title and callout.attribution.when", () => {
+    // Both were omitted until 2026-08; `title` renders in the header and the
+    // sidebar, and `when` renders in a historical callout's attribution line.
+    const lesson = baseLesson({
+      title: "Title with $\\badmacro{}$",
+      callouts: [
+        {
+          id: "c2",
+          title: "T",
+          belief: "b",
+          attribution: { who: "Someone", when: "1960", source: "A paper" },
+        },
+      ],
+    });
+    const paths = pathsOf(lesson);
+    expect(paths).toContain("fixture-lesson.title");
+    expect(paths).toContain("fixture-lesson.callout:c2.attribution.when");
+    expect(paths).toContain("fixture-lesson.callout:c2.attribution.who");
+    expect(paths).toContain("fixture-lesson.callout:c2.attribution.source");
+  });
+
   it("reaches every structuredSummary field, including array-valued ones", () => {
     const lesson = baseLesson({
       structuredSummary: {

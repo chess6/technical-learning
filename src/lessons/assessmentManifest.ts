@@ -12,7 +12,7 @@
  * `methodSelection` + `cueAllowlist`.
  */
 
-import type { EvidenceLevel } from "./evidence";
+import { EVIDENCE_ORDER, type EvidenceLevel } from "./evidence";
 
 /**
  * The affirmative grounds for an item's evidence claim. The evidence-ceiling test
@@ -55,6 +55,36 @@ export type ItemAssessmentMeta = {
   /** The affirmative grounds for the claim. */
   evidenceBasis: EvidenceBasis;
 };
+
+/**
+ * Grounds on which a claim at `level` is self-contradicted by its own basis.
+ *
+ * **Level-aware by design.** A reused fixture and a familiar drill are exactly
+ * what E2/E3 recognition and fluency items are *supposed* to be — flagging them
+ * everywhere would reject the whole drill tier. They only contradict a claim of
+ * TRANSFER (E4+), where the point is a fresh instance in an unfamiliar context.
+ *
+ * Passing this does NOT certify a claim; it only rules out impossible ones. The
+ * affirmative warrant is the contract reviewer's judgment (see `EvidenceBasis`).
+ *
+ * This is the SINGLE definition, shared by module-item validation
+ * (`evidenceCeiling.test.ts`) and lesson-objective coverage
+ * (`objectiveCoverage.test.ts`). They previously carried separate copies, and
+ * the lesson-side copy had drifted to only two of the four grounds — so an E4
+ * objective backed by a reused, familiar item was accepted.
+ */
+export function evidenceContradictions(
+  level: EvidenceLevel,
+  basis: EvidenceBasis,
+): string[] {
+  if (EVIDENCE_ORDER[level] < EVIDENCE_ORDER.E4) return [];
+  const found: string[] = [];
+  if (basis.scaffolding === "heavy") found.push("heavy scaffolding");
+  if (basis.freshness === "reused-fixture") found.push("reused fixture");
+  if (basis.unfamiliarity === "familiar-drill") found.push("familiar drill");
+  if (basis.scoringAuthority === "self-marked") found.push("self-marked");
+  return found;
+}
 
 export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   // Package G — produced / human-scored items.

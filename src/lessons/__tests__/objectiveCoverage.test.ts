@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { lessons } from "../registry";
 import { CAPABILITY_EVIDENCE_CEILING, withinCeiling } from "../evidence";
-import { ITEM_ASSESSMENT_META, type ItemAssessmentMeta } from "../assessmentManifest";
+import {
+  ITEM_ASSESSMENT_META,
+  evidenceContradictions,
+  type ItemAssessmentMeta,
+} from "../assessmentManifest";
 import type { EvidenceLevel } from "../evidence";
 import type { ExerciseDefinition, LessonObjective } from "../types";
 
@@ -31,20 +35,6 @@ function capabilityIdFor(exercise: ExerciseDefinition): string {
   return exercise.type === "custom" ? exercise.capabilityId : exercise.type;
 }
 
-/**
- * Contradictions that disqualify a claim, mirroring `evidenceCeiling.test.ts`'s
- * filter. Applied at every level here, not only at E4/E5: an objective
- * evidenced by a self-marked or heavily-scaffolded item is not independently
- * demonstrated whatever level it claims.
- */
-function contradictions(meta: ItemAssessmentMeta): string[] {
-  const b = meta.evidenceBasis;
-  const found: string[] = [];
-  if (b.scaffolding === "heavy") found.push("heavy scaffolding");
-  if (b.scoringAuthority === "self-marked") found.push("self-marked");
-  return found;
-}
-
 /** Why a given itemId fails to cover the objective, or `null` when it covers it. */
 export function coverageFailure(
   objective: LessonObjective,
@@ -69,7 +59,11 @@ export function coverageFailure(
   if (!withinCeiling(objective.evidenceLevel, itemMeta.evidenceTarget)) {
     return `item "${itemId}" declares evidenceTarget ${itemMeta.evidenceTarget}, below the objective's claimed ${objective.evidenceLevel}`;
   }
-  const contra = contradictions(itemMeta);
+  // Checked at the ITEM's own declared level, which is >= the objective's by
+  // the test just above — so an E4 objective forces an E4+ item, whose basis is
+  // then held to the E4 bar. Uses the SHARED definition, so this can no longer
+  // drift below what module items are held to.
+  const contra = evidenceContradictions(itemMeta.evidenceTarget, itemMeta.evidenceBasis);
   if (contra.length > 0) {
     return `item "${itemId}" has an evidenceBasis contradicting the claim (${contra.join(", ")})`;
   }
@@ -167,15 +161,74 @@ describe("objective coverage rejects insufficient evidence", () => {
     expect(failure).toMatch(/below the objective's claimed E3/);
   });
 
-  it("fails when the evidence basis contradicts the claim", () => {
-    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
-      ex1: {
-        evidenceTarget: "E3",
+  /**
+   * Contradiction cases. The rule is LEVEL-AWARE: a reused fixture and a
+   * familiar drill are what E2/E3 items are supposed to be, and only
+   * contradict a claim of transfer (E4+). These pin both halves — that the
+   * high bar bites, and that it does not wrongly reject the drill tier.
+   */
+  const constructExercise = {
+    id: "ex2",
+    type: "custom",
+    capabilityId: "construct-in-explorer", // ceiling E4
+    tier: "transfer",
+    prompt: "p",
+  } as unknown as ExerciseDefinition;
+  const constructById = new Map<string, ExerciseDefinition>([["ex2", constructExercise]]);
+
+  it("fails an E4 claim backed by a REUSED, FAMILIAR item", () => {
+    // The reviewer's adversarial case. The previous lesson-side filter checked
+    // only heavy scaffolding and self-marking, so this was accepted.
+    const failure = coverageFailure(objective("E4"), "ex2", constructById, {
+      ex2: {
+        evidenceTarget: "E4",
+        methodSelection: false,
+        evidenceBasis: {
+          ...basis,
+          freshness: "reused-fixture",
+          unfamiliarity: "familiar-drill",
+        },
+      },
+    });
+    expect(failure).toMatch(/reused fixture/);
+    expect(failure).toMatch(/familiar drill/);
+  });
+
+  it("fails an E4 claim that is self-marked or heavily scaffolded", () => {
+    const selfMarked = coverageFailure(objective("E4"), "ex2", constructById, {
+      ex2: {
+        evidenceTarget: "E4",
         methodSelection: false,
         evidenceBasis: { ...basis, scoringAuthority: "self-marked" },
       },
     });
-    expect(failure).toMatch(/contradicting the claim \(self-marked\)/);
+    expect(selfMarked).toMatch(/self-marked/);
+
+    const scaffolded = coverageFailure(objective("E4"), "ex2", constructById, {
+      ex2: {
+        evidenceTarget: "E4",
+        methodSelection: false,
+        evidenceBasis: { ...basis, scaffolding: "heavy" },
+      },
+    });
+    expect(scaffolded).toMatch(/heavy scaffolding/);
+  });
+
+  it("does NOT reject a reused, familiar item at E2/E3 — that is the drill tier", () => {
+    // Applying the E4 grounds at every level would reject every drill in the
+    // course, including the karatsuba items that legitimately evidence E2/E3.
+    const failure = coverageFailure(objective("E3"), "ex1", exerciseById, {
+      ex1: {
+        evidenceTarget: "E3",
+        methodSelection: false,
+        evidenceBasis: {
+          ...basis,
+          freshness: "reused-fixture",
+          unfamiliarity: "familiar-drill",
+        },
+      },
+    });
+    expect(failure).toBeNull();
   });
 
   it("fails when the claimed target exceeds the capability ceiling", () => {

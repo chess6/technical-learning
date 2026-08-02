@@ -1,5 +1,9 @@
 /**
- * ReviewQueue (Package F3) — the human-scoring surface (dev-gated).
+ * ReviewQueue (Package F3) — the human-scoring surface.
+ *
+ * Hosted in PRODUCTION at `/review` (and still at `dev/review`). It was
+ * dev-gated until 2026-08, which made the runner's "awaiting review"
+ * promise unfulfillable in a production build.
  *
  * Lists every PENDING review across attempt sets and lets a local reviewer score
  * it against the SNAPSHOTTED rubric (id + version + text + model answer captured

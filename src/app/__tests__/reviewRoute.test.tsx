@@ -85,10 +85,18 @@ describe("review-queue page copy is honest about what happens", () => {
   });
 });
 
-describe("a scored review updates the attempt's status", () => {
-  it("moves a pending review to scored through the queue's own control", async () => {
-    // Exercised through the real provider + queue rather than a stub, so this
-    // fails if the write path regresses.
+/**
+ * NOTE ON SCOPE: the pending -> scored TRANSITION is covered end to end by
+ * `e2e/module-set-production-route.spec.ts` ("a written response submitted on a
+ * production node can be scored at /review"), which submits real answers,
+ * follows the pending link, scores in the queue and asserts the attempt reaches
+ * REVIEW_COMPLETE. This file deliberately does NOT duplicate that; seeding a
+ * realistic attempt in jsdom would test the fixture more than the code. What it
+ * checks here is only that the queue MOUNTS in a production render with an
+ * empty state that reads as empty rather than broken.
+ */
+describe("the queue mounts in production with an honest empty state", () => {
+  it("renders the queue region and says there is nothing to review", async () => {
     render(
       <MemoryRouter initialEntries={["/review"]}>
         <LearnerStateProvider>
@@ -98,12 +106,11 @@ describe("a scored review updates the attempt's status", () => {
         </LearnerStateProvider>
       </MemoryRouter>,
     );
-    // With no attempts seeded there is nothing pending; the queue must say so
-    // rather than render an empty shell that looks broken.
     await waitFor(() => {
       expect(screen.getByLabelText("Review queue")).toBeTruthy();
     });
-    expect(document.body.textContent ?? "").toMatch(/review queue/i);
+    // An empty queue must SAY it is empty, not render a bare shell.
+    expect(document.body.textContent ?? "").toMatch(/no responses awaiting review/i);
   });
 });
 

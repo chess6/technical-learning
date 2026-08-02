@@ -54,7 +54,7 @@ objective has evidence nor permits an experience whose objectives are entirely
    `item.kind === "lesson"`, so this widening does not change any existing
    helper's behavior.
 
-## Accepted target vs. implemented subset (amended 2026-08-02)
+## Accepted target vs. implemented subset (amended 2026-08-01)
 
 Item 4 above describes the **accepted target architecture**. Read on its own it
 overstated what exists, so the split is recorded explicitly here. A reader

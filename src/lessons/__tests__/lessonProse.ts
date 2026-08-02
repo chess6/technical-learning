@@ -61,6 +61,30 @@ function pushReveal(
   push(out, `${path}.connection`, reveal.connection);
 }
 
+/**
+ * Exhaustiveness for `StructuredSummary`, enforced by the TYPE SYSTEM.
+ *
+ * `Record<keyof StructuredSummary, true>` must name every key: omit one and
+ * this object is a compile error. An earlier version used a
+ * `(keyof StructuredSummary)[]` array and claimed the same protection — it does
+ * not have it, because an array of valid keys is still valid when incomplete.
+ * A new summary field would have been silently uncollected.
+ */
+const STRUCTURED_SUMMARY_KEYS: Record<keyof StructuredSummary, true> = {
+  coreMentalModel: true,
+  definitionsIntroduced: true,
+  mainResult: true,
+  representationsConnected: true,
+  commonMistake: true,
+  canonicalExample: true,
+  oneProblemWorthRemembering: true,
+  whatThisUnlocksNext: true,
+};
+
+const STRUCTURED_SUMMARY_FIELDS = Object.keys(
+  STRUCTURED_SUMMARY_KEYS,
+) as (keyof StructuredSummary)[];
+
 /** Every `StructuredSummary` field is learner-facing; several accept arrays. */
 function pushStructuredSummary(
   summary: StructuredSummary | undefined,
@@ -68,19 +92,7 @@ function pushStructuredSummary(
   out: ProseString[],
 ): void {
   if (!summary) return;
-  // Listed explicitly (not Object.entries) so a NEW field is a type error here
-  // rather than silently uncollected.
-  const fields: (keyof StructuredSummary)[] = [
-    "coreMentalModel",
-    "definitionsIntroduced",
-    "mainResult",
-    "representationsConnected",
-    "commonMistake",
-    "canonicalExample",
-    "oneProblemWorthRemembering",
-    "whatThisUnlocksNext",
-  ];
-  for (const field of fields) {
+  for (const field of STRUCTURED_SUMMARY_FIELDS) {
     const value = summary[field];
     if (Array.isArray(value)) {
       value.forEach((v, i) => push(out, `${path}.${field}[${i}]`, v));
@@ -193,6 +205,7 @@ export function collectLessonProse(lesson: LessonDefinition): ProseString[] {
   const out: ProseString[] = [];
   const id = lesson.id;
 
+  push(out, `${id}.title`, lesson.title);
   push(out, `${id}.subtitle`, lesson.subtitle);
   push(out, `${id}.motivatingQuestion`, lesson.motivatingQuestion);
   push(out, `${id}.keyTakeaway`, lesson.keyTakeaway);
@@ -246,6 +259,7 @@ export function collectLessonProse(lesson: LessonDefinition): ProseString[] {
     const attribution = c.attribution;
     if (attribution) {
       push(out, `${p}.attribution.who`, attribution.who);
+      push(out, `${p}.attribution.when`, attribution.when);
       push(out, `${p}.attribution.source`, attribution.source);
     }
   }
