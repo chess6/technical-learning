@@ -270,43 +270,65 @@ brief (Gate 3), contract (Gate 4, `PASS`), mastery contract (Gate 5), plan
 **The insight, and why it is not the spine's.** The spine says the derivative
 turns "find the best" into "find where the local model is flat". That wording is
 **not quite true**, and its imprecision is the exact misconception the lesson
-exists to break — so leading with it would install the converse error in the
-lesson's own thesis. The selected insight instead: *a nonzero slope is an escape
-route, so the derivative only ever **refutes**; \(f'(a)=0\) is what survives, not
-what wins — and the three warnings learners memorize (check endpoints, check
-corners, a critical point may be neither) are the three hypotheses of that one
-argument.* Fermat's condition falls straight out of L2 C5 with nothing new
-assumed. The spine row is worth repairing to match — a Mode A edit, **not made**.
+exists to break. The selected insight: *at an interior point where \(f\) is
+differentiable, \(f'(a)\neq0\) **refutes** a local extremum; \(f'(a)=0\) merely
+**survives** that test. Interiorness and differentiability are the argument's two
+hypotheses; "a survivor need not win" is the failure of its converse; and those
+three facts are what the three memorized warnings are really about.* Fermat's
+condition falls straight out of L2 C5 with nothing new assumed. The spine row is
+worth repairing to match — a Mode A edit, **not made**.
 
-**Three things the next session should not have to rediscover:**
+**Both Mode A amendments are resolved** (owner, 2026-08-01): the
+`fundamental-theorem → optimization-approximation` hard edge is **approved** and
+in the DAG, so the second-derivative test and the \(Mh^2/2\) bound are *derived*
+from the FTC under an explicit continuous-\(f''\) hypothesis; and the **M2 depth
+bar is amended**, deliberately before Mode C rather than before Gate 10, so that
+Gate 5 consumed a calibrated target. Mode C itself is still an open approval
+boundary.
+
+**Four things the next session should not have to rediscover:**
 
 - **The Mean Value Theorem is not needed, and should not be added.** It was the
   obvious route to the second-derivative test, monotonicity, and the error
   bound, and L2/L4 both explicitly withhold it. All three follow instead from
-  the **FTC applied twice** (`f(a+h)-f(a)-f'(a)h = \int\!\!\int f''`), under a
-  stated continuity hypothesis — fewer theorems, all derived, reusing the
-  course's own keystone. It also earns "\(f'>0\Rightarrow\) increasing", which
-  `CalculusFixture.monotoneIntervals` currently **declares** rather than derives.
-- **Two Mode A amendments are open and are the owner's call**, recorded in the
-  contract §1a and the ledger §6.1: (1) a `fundamental-theorem →
-  optimization-approximation` hard edge, which the FTC route requires — a
-  bounded fallback exists, but the choice must be made **before** Mode C because
-  it decides whether two results are derived or cited; (2) the **M2 depth bar**
-  in the benchmark matrix omits optimization and linearization entirely, so L6
-  has nothing to be validated against at Gate 10.
-- **One overclaim was caught inside the contract and is worth not
-  re-introducing:** an earlier draft of C9 said the search "becomes a finite
-  list". It does not — a constant function makes every point stationary. The
-  claim is a *reduction to the critical set plus endpoints*, finite only for the
-  functions this lesson uses, and the correctness plan requires the helper to
-  report "not a finite reduction" rather than invent a list — the same honesty
-  `monotoneIntervals` already uses for "not certified".
+  the **FTC applied twice**. It also earns "\(f'>0\Rightarrow\) increasing",
+  which `CalculusFixture.monotoneIntervals` currently **declares** rather than
+  derives.
+- **Do not overcorrect the spine.** The first draft of this thesis said the
+  derivative "never finds the best point" and "only ever refutes" — false, since
+  \(f''\) certifies later in the same lesson — and called the three warnings
+  "three hypotheses" when there are two plus a failed converse. Owner review
+  caught both. The learner phrasing now carries an explicit do-not-shorten note
+  for exactly this reason.
+- **\(\delta\) is a sufficient radius, never a threshold.** The limit supplies
+  *some* radius that works, not a largest one; agreement can fail and later
+  return, and on a linear \(f\) it never fails. The certified radius, the first
+  sampled disagreement, and "none in this domain" are three separately labelled
+  things in the API, the explorer, and the scene copy.
+- **Two correctness oracles that look right and are not.** A dense scan cannot
+  certify candidate-set completeness — the fixture contract already says
+  sampling supports an observation and never a guarantee — so fixtures carry
+  analytically declared stationary/singular points and exact expected candidate
+  sets, with the scan kept as corroboration. And "the search becomes a finite
+  list" is false in general: a constant function makes every point stationary.
+  That overclaim was repaired in C9 and **survived in four other places** before
+  review caught it.
 
-**Self-certified.** Author and both audits are one agent lineage. L5's precedent
-applies in full: its contract was self-certified and an independent review later
-found a real gap in exactly the step Audit A had passed. The analogous
-load-bearing steps here are **C3's choice of \(\delta\)** and **C13's two-sided
-sign analysis** — that is where a reviewer should look first.
+**Evidence-level traps, all found in review and all now correct in the
+contract:** `committed-prediction` caps at **E1** (`src/lessons/evidence.ts`),
+not E3; `SequenceStep` has no committed-prediction kind, so it cannot be chained
+with a numeric step; `self-check` caps at **E5**, so `opt-derive-escape` — which
+is D6 justification, **E6** in the taxonomy — is claimed at E5 and **this lesson
+produces no E6 evidence**. Read the ceilings off the file rather than assuming
+them; L5's contract has an E4 self-check claim of the same shape.
+
+**Self-certified, and it showed.** Author and both audits were one agent
+lineage. Owner review found five real defects that the self-audits had passed —
+and notably, **C3's \(\delta\) derivation and C13's two-sided integral argument
+were both checked and found sound**. The defects were in what the documents
+*claimed around* those derivations: the thesis, the evidence levels, the
+correctness oracles. That is the same failure mode L5 hit, one level up, and it
+is the argument for a further independent read before implementation.
 
 ---
 
