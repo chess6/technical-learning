@@ -419,6 +419,7 @@ export type {
   GlobalExtremaResult,
   SampledDisagreement,
   LinearizationResult,
+  StepDecomposition,
 } from "./optimization";
 export {
   NO_DISAGREEMENT_IN_DOMAIN,
@@ -444,5 +445,6 @@ export {
   globalExtrema,
   linearize,
   linearizationErrorBound,
+  stepDecomposition,
   trustRadius,
 } from "./optimization";

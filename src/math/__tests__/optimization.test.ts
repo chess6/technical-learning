@@ -22,6 +22,7 @@ import {
   globalExtrema,
   linearize,
   linearizationErrorBound,
+  stepDecomposition,
   trustRadius,
 } from "../optimization";
 
@@ -310,26 +311,135 @@ describe("linearization error bound — not violated, and not vacuous", () => {
         const a = lo + (hi - lo) * frac;
         const epsilon = 0.01;
         const radius = trustRadius(fixture, a, epsilon);
-        if (!Number.isFinite(radius)) {
-          // Only licensed when the curvature bound is genuinely zero
-          // everywhere reachable (linear/constant fixtures).
-          expect(fixture.secondDerivativeBound(a, 1e6)).toBeCloseTo(0, 9);
-          continue;
-        }
+        // Always domain-bounded now — never Infinity, even for a fixture
+        // whose curvature bound is genuinely zero everywhere (that case is
+        // exercised directly by the domain-reconciliation test below).
+        expect(Number.isFinite(radius), `${fixture.id} at a=${a}`).toBe(true);
         expect(radius, `${fixture.id} at a=${a}`).toBeGreaterThan(0);
         const bound = linearizationErrorBound(fixture, a, radius);
         expect(
           bound,
           `${fixture.id} at a=${a}: trustRadius's own declared error bound exceeds epsilon`,
         ).toBeLessThanOrEqual(epsilon + 1e-9);
-        // Not vacuous: bisection converged near the true boundary, not to a
-        // radius orders of magnitude smaller than necessary.
+        // "Not vacuous" (bisection converged near the true boundary, not to
+        // a radius orders of magnitude smaller than necessary) only applies
+        // when the answer came FROM bisection. When the fixture's own domain
+        // runs out before the error bound gets anywhere near epsilon — a
+        // genuinely zero curvature (linear/constant), or simply not much
+        // room left at this `a` — the domain edge itself is correctly
+        // reported, and its bound has no reason to be close to epsilon.
+        const leftReach = a - lo;
+        const rightReach = hi - a;
+        const maxReach =
+          leftReach <= 1e-9 ? rightReach : rightReach <= 1e-9 ? leftReach : Math.min(leftReach, rightReach);
+        const domainCapped = Math.abs(radius - maxReach) < 1e-9;
+        if (domainCapped) continue;
         expect(
           bound,
           `${fixture.id} at a=${a}: bound is suspiciously far below epsilon — bisection may not have converged`,
         ).toBeGreaterThan(epsilon * 0.9);
       }
     }
+  });
+
+  it("never claims a radius past the fixture's own domain — the domain-reconciliation regression", () => {
+    // A zero-curvature fixture (OPT_LINEAR) used to make trustRadius return
+    // literal Infinity, overstating what a BOUNDED-domain fixture actually
+    // supports. It must now return exactly the fixture's own reach from `a`.
+    const a = 1;
+    const radius = trustRadius(OPT_LINEAR, a, 0.01);
+    const [lo, hi] = OPT_LINEAR.domain;
+    expect(radius).toBeCloseTo(Math.min(a - lo, hi - a), 9);
+
+    // A point sitting EXACTLY at a domain edge (OPT_DECAY's worked example,
+    // a = 0 on [0, 8]) has no room to the left at all — the honest claim is
+    // one-sided, reaching only as far as the domain's right edge allows, not
+    // zero (which a naive symmetric `min(a - lo, hi - a) = 0` would force).
+    const decayRadius = trustRadius(OPT_DECAY, 0, 1e-2);
+    expect(decayRadius).toBeCloseTo(0.21213, 4);
+    expect(decayRadius).toBeGreaterThan(0);
+
+    // An interior point close to one edge, where the UNCLAMPED root would
+    // genuinely overshoot the available room: OPT_DRIVE's constant bound
+    // gives an unclamped root of sqrt(0.01 / 0.9075) ≈ 0.10497 for
+    // epsilon = 0.01 — bigger than the 0.1 of domain actually left at
+    // a = 9.9 on [0, 10]. The reconciled radius must stop AT the domain
+    // edge, not leak past it.
+    const nearEdgeRadius = trustRadius(OPT_DRIVE, 9.9, 1e-2);
+    expect(nearEdgeRadius).toBeCloseTo(0.1, 9);
+    expect(nearEdgeRadius).toBeLessThanOrEqual(0.1 + 1e-9);
+  });
+
+  it("trustRadius(OPT_QUARTIC, 0, 1e-30) does not silently return an infeasible radius — the lo=0 bisection-invariant regression", () => {
+    // A first bisection fix (replacing the broken fixed-point iteration)
+    // started from an UNVERIFIED `lo = hi / 2`, with `hi` seeded at `1e-6`.
+    // For an epsilon this small, the true root (~2e-8) sits BELOW that
+    // unverified `lo` (~5e-7) — bisection could then only search a range
+    // that never reached the real answer, and returned an infeasible
+    // radius. `lo = 0` needs no such assumption: the error bound AT r=0 is
+    // exactly 0, which is `<= epsilon` for any positive epsilon.
+    const epsilon = 1e-30;
+    const radius = trustRadius(OPT_QUARTIC, 0, epsilon);
+    const bound = linearizationErrorBound(OPT_QUARTIC, 0, radius);
+    expect(bound, "trustRadius's own declared error bound must not exceed epsilon").toBeLessThanOrEqual(
+      epsilon + 1e-9,
+    );
+    // Matches the closed form: secondDerivativeBound(0, r) = 12r^2, so
+    // errorBoundAt(r) = 6r^4; solving 6r^4 = epsilon gives r = (epsilon/6)^(1/4).
+    const expected = Math.pow(epsilon / 6, 1 / 4);
+    const relativeError = Math.abs(radius - expected) / expected;
+    expect(relativeError, `radius=${radius}, expected=${expected}`).toBeLessThan(1e-6);
+  });
+
+  it("satisfies its own error bound across a logarithmic sweep of epsilon, for every fixture with a declared bound", () => {
+    const EPSILONS = [1e-2, 1e-6, 1e-10, 1e-16, 1e-22, 1e-30];
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      if (!fixture.secondDerivativeBound) continue;
+      const [lo, hi] = fixture.domain;
+      const a = lo + (hi - lo) * 0.5; // interior for every declared fixture
+      for (const epsilon of EPSILONS) {
+        const radius = trustRadius(fixture, a, epsilon);
+        expect(Number.isFinite(radius), `${fixture.id} at a=${a}, epsilon=${epsilon}`).toBe(true);
+        expect(radius, `${fixture.id} at a=${a}, epsilon=${epsilon}`).toBeGreaterThan(0);
+        const bound = linearizationErrorBound(fixture, a, radius);
+        expect(
+          bound,
+          `${fixture.id} at a=${a}, epsilon=${epsilon}: trustRadius's own error bound is violated`,
+        ).toBeLessThanOrEqual(epsilon + Math.max(epsilon, 1e-9) * 1e-6 + 1e-300);
+      }
+    }
+  });
+});
+
+describe("stepDecomposition", () => {
+  it("splits a step into mh and E(h) so mh + E(h) reconstructs the actual change", () => {
+    const step = stepDecomposition(OPT_MAIN_CUBIC, 0, -0.5);
+    expect(step.mh + step.eh).toBeCloseTo(step.change, 9);
+    expect(step.change).toBeCloseTo(OPT_MAIN_CUBIC.f(-0.5) - OPT_MAIN_CUBIC.f(0), 9);
+  });
+
+  it("agrees with linearize's own residual — the two must never drift apart", () => {
+    const a = 1.4;
+    const h = 0.2;
+    const step = stepDecomposition(OPT_QUARTIC, a, h);
+    const lin = linearize(OPT_QUARTIC, a, h);
+    expect(Math.abs(step.eh)).toBeCloseTo(lin.trueError, 9);
+  });
+
+  it("reports DISAGREES once the step is too large, matching the guided scene's tooBig crossing", () => {
+    // At a = 0 on the main cubic, sign(mh) and the actual sign disagree once
+    // |h| exceeds sqrt(3) — the same crossing `optimizationApproximationScene.ts`
+    // verifies at load time.
+    const before = stepDecomposition(OPT_MAIN_CUBIC, 0, -(Math.sqrt(3) - 0.1));
+    const after = stepDecomposition(OPT_MAIN_CUBIC, 0, -1.9);
+    expect(before.signAgrees).toBe(true);
+    expect(after.signAgrees).toBe(false);
+  });
+
+  it("treats h = 0 as trivially agreeing — nothing to disagree with", () => {
+    const step = stepDecomposition(OPT_MAIN_CUBIC, 0, 0);
+    expect(step.mh).toBeCloseTo(0, 9);
+    expect(step.signAgrees).toBe(true);
   });
 });
 

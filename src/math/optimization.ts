@@ -368,29 +368,84 @@ export function linearizationErrorBound(
   return (m / 2) * h * h;
 }
 
+export interface StepDecomposition {
+  /** The linear term `f'(a) h` — the escape-route argument's prediction. */
+  readonly mh: number;
+  /** The residual `f(a+h) - f(a) - mh` — what the linear term leaves out. */
+  readonly eh: number;
+  /** `f(a+h) - f(a)`, the actual change. */
+  readonly change: number;
+  readonly predictedSign: number;
+  readonly actualSign: number;
+  /**
+   * `true` whenever `predictedSign` is `0` (nothing to disagree with — the
+   * `h = 0` case included, since `mh = 0` then) or the two signs match.
+   */
+  readonly signAgrees: boolean;
+}
+
 /**
- * The largest radius `r` on which `linearizationErrorBound(fixture, a, r) <=
- * epsilon` — solved by BISECTION on `r`, not by fixed-point iteration.
+ * The escape-route step, split into its linear part and residual — the SAME
+ * decomposition `linearize`'s error bound is built from, computed once here
+ * so the guided scene and the explorer report identical numbers instead of
+ * each re-deriving `mh`/`E(h)`/sign agreement inline. Requires no declared
+ * `secondDerivativeBound` (unlike `linearize`) — the decomposition itself
+ * needs only `f` and `f'`, the bound is a separate claim about it.
+ */
+export function stepDecomposition(fixture: OptimizationFixture, a: number, h: number): StepDecomposition {
+  const mh = fixture.derivative(a) * h;
+  const change = fixture.f(a + h) - fixture.f(a);
+  const eh = change - mh;
+  const predictedSign = Math.sign(mh);
+  const actualSign = Math.sign(change);
+  const signAgrees = predictedSign === 0 || actualSign === predictedSign;
+  return { mh, eh, change, predictedSign, actualSign, signAgrees };
+}
+
+/**
+ * The largest radius `r` — never exceeding what `fixture`'s OWN DECLARED
+ * DOMAIN allows from `a` — on which `linearizationErrorBound(fixture, a, r)
+ * <= epsilon`. Solved by BISECTION on `r`, not by fixed-point iteration.
  *
- * An earlier version iterated `r ↦ sqrt(2ε / M(a, r))` and called it
- * conservative because `M(a, r)` is non-decreasing in `r` for every declared
- * fixture. That reasoning was backwards: composing a non-decreasing `M` with
- * `r ↦ sqrt(2ε/M)` produces a *decreasing* map, and naive fixed-point
- * iteration on a decreasing map does not converge — it oscillates. Caught by
- * review: for `OPT_QUARTIC` at `a = 0`, `epsilon = 0.01`, the iteration
- * alternated between `r ≈ 4×10^4` and `r ≈ 10^-6` forever, and the value it
- * happened to return had a declared error bound around `10^19`, nowhere near
- * `epsilon`. It "worked" for the decay fixture used in the lesson's own
- * worked example only because that fixture's bound is locally CONSTANT in
- * `r` at `a = 0` (its window never crosses the fixture's own turning
- * behaviour there), which made the false general reasoning invisible on the
- * one case that was hand-checked.
+ * **Two independent defects, found by review, fixed together:**
  *
- * The map `r ↦ linearizationErrorBound(fixture, a, r)` genuinely IS
- * non-decreasing in `r` for every fixture this file declares (`M(a, r)` is
- * non-decreasing by each fixture's own construction, and `r²` is increasing),
- * which is exactly the precondition bisection needs — unlike the fixed-point
- * map above, monotone bisection on a monotone function cannot oscillate.
+ * 1. An earlier version iterated `r ↦ sqrt(2ε / M(a, r))`, calling it
+ *    conservative because `M(a, r)` is non-decreasing in `r`. That reasoning
+ *    was backwards: composing a non-decreasing `M` with `r ↦ sqrt(2ε/M)`
+ *    produces a *decreasing* map, and fixed-point iteration on a decreasing
+ *    map does not converge — it oscillates. For `OPT_QUARTIC` at `a = 0`,
+ *    `epsilon = 0.01`, it alternated between `r ≈ 4×10^4` and `r ≈ 10^-6`
+ *    forever, returning a value whose own declared error bound was `~10^19`,
+ *    nowhere near `epsilon`.
+ * 2. The first bisection fix replaced that iteration but started from an
+ *    UNVERIFIED `lo = hi / 2` (with `hi` seeded at `1e-6` and doubled until
+ *    infeasible) — feasible only by assumption, never checked. For a small
+ *    enough `epsilon` the true root sits BELOW that unverified `lo`
+ *    (regression: `OPT_QUARTIC`, `a = 0`, `epsilon = 1e-30` — the true root
+ *    is `~2×10^-8`, smaller than the old `lo`'s `5×10^-7`), so bisection
+ *    could only search a range that never reached it, and returned an
+ *    infeasible radius. `lo = 0` is a fixed point that needs no such
+ *    assumption: `linearizationErrorBound(fixture, a, 0)` is exactly `0`,
+ *    which is `<= epsilon` for every `epsilon > 0` by definition.
+ *
+ * The map `r ↦ linearizationErrorBound(fixture, a, r)` is non-decreasing in
+ * `r` for every fixture this file declares (`M(a, r)` is non-decreasing by
+ * each fixture's own construction, and `r²` is increasing), which is exactly
+ * the precondition bisection needs — monotone bisection on a monotone
+ * function cannot oscillate, unlike the fixed-point map above.
+ *
+ * **Domain reconciliation.** `hi` starts at the fixture's own reach from `a`
+ * — `min(a - domainLo, domainHi - a)` when both directions stay inside the
+ * domain, or the ONE side that exists when `a` sits exactly at that domain's
+ * edge (a one-sided guarantee is the honest claim there: the other direction
+ * leaves the fixture's declared domain entirely, so no symmetric radius past
+ * `0` could ever be claimed). If the error bound already holds at that reach,
+ * the reach itself is the answer — there is no larger radius to report,
+ * since anything past it would claim validity for a point `a ± h` outside
+ * where the fixture says `f` is being considered. This replaces the earlier
+ * unconditional `return Infinity` for a zero-curvature fixture (linear or
+ * constant): that reported an unbounded radius for a fixture with a bounded
+ * domain, overstating what it actually supports.
  */
 export function trustRadius(
   fixture: OptimizationFixture,
@@ -403,22 +458,28 @@ export function trustRadius(
   if (!(epsilon > 0)) {
     throw new Error(`trustRadius: epsilon must be positive, got ${epsilon}.`);
   }
+  const [domainLo, domainHi] = fixture.domain;
+  if (a < domainLo - TOL || a > domainHi + TOL) {
+    throw new Error(`trustRadius: a=${a} is outside ${fixture.id}'s domain [${domainLo}, ${domainHi}].`);
+  }
+  const leftReach = a - domainLo;
+  const rightReach = domainHi - a;
+  const maxReach =
+    leftReach <= TOL ? rightReach : rightReach <= TOL ? leftReach : Math.min(leftReach, rightReach);
+  if (!(maxReach > 0)) {
+    throw new Error(`trustRadius: ${fixture.id} has no room to step from a=${a} in either domain direction.`);
+  }
+
   const errorBoundAt = (r: number): number => linearizationErrorBound(fixture, a, r);
 
-  // Grow hi until the error bound first exceeds epsilon, bracketing the root.
-  let hi = 1e-6;
-  let guard = 0;
-  while (errorBoundAt(hi) <= epsilon) {
-    hi *= 2;
-    guard += 1;
-    if (guard > 200) {
-      // The bound never grows enough to exceed epsilon anywhere reachable —
-      // a linear or constant fixture, whose curvature bound is exactly 0.
-      // The linearization is then exact (or as good as), arbitrarily far out.
-      return Infinity;
-    }
+  if (errorBoundAt(maxReach) <= epsilon) {
+    return maxReach;
   }
-  let lo = hi / 2;
+
+  // lo = 0 is always feasible; maxReach is confirmed infeasible above — a
+  // genuine bracket, not an assumed one.
+  let lo = 0;
+  let hi = maxReach;
   for (let i = 0; i < 80; i += 1) {
     const mid = (lo + hi) / 2;
     if (errorBoundAt(mid) <= epsilon) lo = mid;
