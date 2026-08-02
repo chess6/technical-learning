@@ -3,6 +3,7 @@ import {
   Vector2,
   all,
   createSignal,
+  easeInOutCubic,
   waitFor,
   type ThreadGenerator,
 } from "@motion-canvas/core";
@@ -68,6 +69,30 @@ const CANDIDATE_CHECK: readonly [number, number][] = [
 for (const [x, expected] of CANDIDATE_CHECK) {
   if (Math.abs(MAIN_F(x) - expected) > 1e-9) {
     throw new Error(`optimizationApproximationScene: f(${x}) disagrees with the displayed value ${expected}.`);
+  }
+}
+
+/**
+ * Sanity: `tooBig`'s claimed crossing. At a = 0, E(h) = h^3 (exact for this
+ * cubic), so sign(mh) and sign(f(a+h)-f(a)) = sign(mh + h^3) agree exactly
+ * while |h| < sqrt(3) and disagree beyond it (mh + h^3 = h(h^2 - 3) changes
+ * sign there since m = -3). The beat animates h out to -1.9, which must
+ * cross -sqrt(3) ≈ -1.732 for the disagreement to actually occur on screen.
+ */
+const TOO_BIG_TARGET = -1.9;
+const CROSSING = -Math.sqrt(3);
+if (!(TOO_BIG_TARGET < CROSSING)) {
+  throw new Error(
+    `optimizationApproximationScene: tooBig's target ${TOO_BIG_TARGET} does not cross the real disagreement point ${CROSSING}.`,
+  );
+}
+{
+  const beforeChange = MAIN_F(A_POINT + (CROSSING + 0.1)) - MAIN_F(A_POINT);
+  const beforeSign = Math.sign(M_SLOPE * (CROSSING + 0.1));
+  const afterChange = MAIN_F(A_POINT + TOO_BIG_TARGET) - MAIN_F(A_POINT);
+  const afterSign = Math.sign(M_SLOPE * TOO_BIG_TARGET);
+  if (Math.sign(beforeChange) !== beforeSign || Math.sign(afterChange) === afterSign) {
+    throw new Error("optimizationApproximationScene: tooBig's claimed sign crossing does not actually occur.");
   }
 }
 
@@ -201,6 +226,36 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   });
   inner.add(residualSegment);
 
+  /** One-sided ray for `oneDirection` — deliberately drawn to ONE side only, so no symmetric line implies a direction that is not actually available. */
+  const oneSidedRay = new Line({
+    key: "semantic:optapprox:onesided",
+    stroke: ROLE.transformed,
+    lineWidth: 4,
+    opacity: 0,
+    points: () => {
+      const a = centre();
+      const f = activeF();
+      const m = MAIN_DERIVATIVE(a);
+      const [lo, hi] = activeDomain();
+      const w = (hi - lo) * 0.28;
+      return [px(a, f(a)), px(a + w, f(a) + m * w)];
+    },
+  });
+  inner.add(oneSidedRay);
+
+  /**
+   * `tooBig`'s live sign-agreement check — read directly off `MAIN_F` and
+   * `M_SLOPE`, the same quantities `mhLabel`/`eLabel` already read, so a
+   * frame where they disagree is a frame where this genuinely flips, not a
+   * scripted color change.
+   */
+  const agrees = (): boolean => {
+    const change = MAIN_F(A_POINT + h()) - MAIN_F(A_POINT);
+    const predicted = Math.sign(M_SLOPE * h());
+    const actual = Math.sign(change);
+    return predicted === 0 || actual === predicted;
+  };
+
   /** The sweep marker and the set of sample dots, greying out as the sweep passes. */
   const SAMPLE_XS = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3];
   const sweepProgress = createSignal(0); // 0..1 across MAIN_DOMAIN
@@ -267,6 +322,15 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   eLabel.opacity(0);
   view.add(eLabel);
 
+  const agreementLabel = new Latex({
+    tex: (() => (agrees() ? "\\text{sign agrees}" : "\\text{SIGN DISAGREES}")) as never,
+    fontSize: 24,
+    fill: (() => (agrees() ? ROLE.transformed : ROLE.violation)) as never,
+  });
+  agreementLabel.position(new Vector2(LABEL_CENTER_X, 195));
+  agreementLabel.opacity(0);
+  view.add(agreementLabel);
+
   const say = function* (node: Latex, body: string, d: number): ThreadGenerator {
     node.tex(body);
     yield* node.opacity(1, d);
@@ -326,12 +390,30 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
       yield* waitFor(b.hold!);
     },
 
+    *tooBig() {
+      const b = beats("tooBig");
+      yield* say(title, roman("The promise is only local"), b.title!);
+      yield* agreementLabel.opacity(1, b.reveal!);
+      // Enlarge |h| (still stepping left, the improving direction) until the
+      // sign genuinely flips — at a = 0 on the main cubic, sign(mh) and
+      // sign(f(a+h)-f(a)) disagree once |h| exceeds sqrt(3) ≈ 1.732, a real
+      // crossing computed live by `agrees()`, not staged.
+      yield* h(-1.9, b.magnify!, easeInOutCubic);
+      yield* say(
+        caption,
+        roman("past a certain step the sign disagrees — a radius that works, never claimed the largest"),
+        b.caption!,
+      );
+      yield* waitFor(b.hold!);
+    },
+
     *sweep() {
       const b = beats("sweep");
       yield* all(
         equationLabel.opacity(0, 0.2),
         mhLabel.opacity(0, 0.2),
         eLabel.opacity(0, 0.2),
+        agreementLabel.opacity(0, 0.2),
         tangent.opacity(0, 0.2),
         linearSegment.opacity(0, 0.2),
         residualSegment.opacity(0, 0.2),
@@ -392,6 +474,33 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
       yield* waitFor(b.hold!);
     },
 
+    *oneDirection() {
+      const b = beats("oneDirection");
+      yield* all(
+        curve.opacity(0, b.clear!),
+        point.opacity(0, b.clear!),
+        equationLabel.opacity(0, b.clear!),
+        caption.opacity(0, b.clear!),
+      );
+      activeF(() => MAIN_F);
+      activeDomain(MAIN_DOMAIN);
+      centre(MAIN_DOMAIN[0]); // the left endpoint, a = -2
+      h(0);
+      yield* all(curve.opacity(1, b.reset!), point.opacity(1, b.reset!));
+      yield* say(title, roman("Only one way to step"), b.title!);
+      // Deliberately ONE-SIDED — no symmetric tangent is drawn here, so
+      // nothing on screen implies a leftward step is available.
+      yield* oneSidedRay.opacity(1, b.arrow!);
+      const slopeAtLeft = MAIN_DERIVATIVE(MAIN_DOMAIN[0]);
+      yield* say(equationLabel, `f'(-2) = ${slopeAtLeft} > 0`, b.label!);
+      yield* say(
+        caption,
+        roman("stepping right refutes 'local maximum' — stepping left would leave the domain, so 'local minimum' is never tested"),
+        b.caption!,
+      );
+      yield* waitFor(b.hold!);
+    },
+
     *decideGlobally() {
       const b = beats("decideGlobally");
       yield* all(
@@ -399,6 +508,7 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
         point.opacity(0, b.clear!),
         equationLabel.opacity(0, b.clear!),
         caption.opacity(0, b.clear!),
+        oneSidedRay.opacity(0, b.clear!),
       );
       activeF(() => MAIN_F);
       activeDomain(MAIN_DOMAIN);

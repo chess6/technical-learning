@@ -1532,9 +1532,11 @@ export const CHAIN_RULE_SEGMENTS: readonly SceneSegment[] = [
 
 /**
  * `optimization-approximation` — one panel: f(x) = x^3-3x on [-2,3]. A step at
- * a sloped point, held before the improving direction is revealed; a sweep
- * across the interval, refuting points; two staged resets (x^3's survivor,
- * |x|'s unexamined minimum); then a return to decide the main case globally.
+ * a sloped point, held before the improving direction is revealed; enlarging
+ * that step until the sign genuinely disagrees; a sweep across the interval,
+ * refuting points; two staged resets (x^3's survivor, |x|'s unexamined
+ * minimum); the left endpoint, where only one direction is available; then a
+ * return to decide the main case globally.
  */
 export const OPTIMIZATION_APPROXIMATION_SEGMENTS: readonly SceneSegment[] = [
   { id: "theSearch", title: "An impossible amount of checking", duration: 6,
@@ -1545,12 +1547,16 @@ export const OPTIMIZATION_APPROXIMATION_SEGMENTS: readonly SceneSegment[] = [
     summary: "Nothing moves. The stepped value is not yet on screen." },
   { id: "stepAndCheck", title: "The step pays off", duration: 7,
     summary: "The step is taken; mh and E(h) are drawn as separately labelled quantities, and mh dominates." },
+  { id: "tooBig", title: "The promise is only local", duration: 7,
+    summary: "Enlarging the step past a real crossing point, the sign genuinely disagrees — a radius that works, never claimed the largest." },
   { id: "sweep", title: "Ruling points out", duration: 8,
     summary: "The refutation sweeps the interval; every sloped point greys out. A sampled visualization of a proven theorem, not a test of every real point." },
   { id: "survivorNotAnswer", title: "A survivor that is not an answer", duration: 8,
     summary: "x^3 at 0: flat, and neither a maximum nor a minimum — a genuine hold before the verdict." },
   { id: "unexaminedMinimum", title: "A winner the sweep never examined", duration: 7,
     summary: "|x| on [-2,2]: the minimum sits exactly where no local model exists." },
+  { id: "oneDirection", title: "Only one way to step", duration: 7,
+    summary: "At the left endpoint, only one direction is available: 'not a maximum' follows, 'not a minimum' does not." },
   { id: "decideGlobally", title: "Deciding, at last", duration: 8,
     summary: "Back to the main case: the candidate set compared, and the global maximum sits at the endpoint." },
 ];
@@ -2126,9 +2132,11 @@ export const SCENE_BEATS: Record<string, SceneBeats> = {
     standSloped: { title: 0.4, drawPoint: 0.6, tangent: 0.6, label: 0.5, caption: 0.4, hold: 3.0 },
     predictStep: { ask: 0.5, think: 4.5 },
     stepAndCheck: { title: 0.4, step: 1.0, mhLabel: 0.5, eLabel: 0.5, caption: 0.5, hold: 3.0 },
+    tooBig: { title: 0.4, reveal: 0.4, magnify: 3.0, caption: 0.5, hold: 2.5 },
     sweep: { title: 0.4, sweepMotion: 3.0, greyOut: 1.0, caption: 0.6, hold: 2.5 },
     survivorNotAnswer: { clear: 0.3, reset: 0.3, title: 0.4, flatLabel: 0.5, silence: 3.0, reveal: 0.6, caption: 0.5, hold: 1.5 },
     unexaminedMinimum: { clear: 0.3, reset: 0.3, title: 0.4, cornerLabel: 0.5, caption: 0.5, hold: 3.0 },
+    oneDirection: { clear: 0.3, reset: 0.3, title: 0.4, arrow: 0.5, label: 0.5, caption: 0.5, hold: 3.0 },
     decideGlobally: { clear: 0.3, reset: 0.3, title: 0.4, table: 1.0, markMax: 0.6, caption: 0.6, hold: 3.0 },
   },
 };

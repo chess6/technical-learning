@@ -1787,6 +1787,19 @@
       "caption": "text",
       "hold": "hold"
     },
+    "tooBig": {
+      "title": "text",
+      "reveal": "transition",
+      "magnify": {
+        "intent": "geometry",
+        "targets": [
+          "semantic:optapprox:mh",
+          "semantic:optapprox:residual"
+        ]
+      },
+      "caption": "text",
+      "hold": "hold"
+    },
     "sweep": {
       "title": "text",
       "sweepMotion": "transition",
@@ -1809,6 +1822,15 @@
       "reset": "transition",
       "title": "text",
       "cornerLabel": "text",
+      "caption": "text",
+      "hold": "hold"
+    },
+    "oneDirection": {
+      "clear": "transition",
+      "reset": "transition",
+      "title": "text",
+      "arrow": "transition",
+      "label": "text",
       "caption": "text",
       "hold": "hold"
     },
