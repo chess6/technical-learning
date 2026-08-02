@@ -231,7 +231,7 @@ export const optimizationApproximationLesson: LessonDefinition = {
     "Say what the method returns on an open interval, and why that is correct rather than broken",
     "Classify a survivor with the second-derivative test, including its own honest silence",
     "From a curvature bound, produce an interval on which a linearization meets a stated tolerance",
-    "Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice",
+    "Select between the presented calculus and algebraic-certificate routes on fresh functions, and justify the selection",
   ],
   objectives: [
     {
@@ -285,7 +285,7 @@ export const optimizationApproximationLesson: LessonDefinition = {
     },
     {
       id: "opt-obj-select-route",
-      text: "Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice",
+      text: "Select between the presented calculus and algebraic-certificate routes on fresh functions, and justify the selection",
       evidence: "lesson-owned",
       evidenceLevel: "E3",
       itemIds: ["opt-select-route"],
