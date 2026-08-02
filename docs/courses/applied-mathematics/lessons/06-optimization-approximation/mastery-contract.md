@@ -135,57 +135,83 @@ reached `PASS`. Second lesson of Package B (`calculus-technique`).
 | Say what the method returns on an open interval, and why that is correct rather than broken | D13/D5 | lesson | E2 | `opt-open-interval` (`multiple-choice`) | planned |
 | Classify a survivor with the second-derivative test, and return "silent" when \(f''(a)=0\) | D3/D7 | lesson | E3 | `opt-second-test-silent` (`exercise-sequence`: classify where \(f''\neq0\) (`multiple-choice`) → verdict where \(f''=0\) (`multiple-choice`) → pick the pair of functions separating the cases (`multiple-choice`)) | planned |
 | From a curvature bound, produce an interval on which a linearization meets a stated tolerance | D3/D4 | lesson | E3 | `opt-linearize-tolerance` (`numeric`, graded on \(\lvert h\rvert\le\sqrt{2\varepsilon/M}\)) | planned |
-| Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **fresh** pair of functions, not the worked example: which route (`multiple-choice`, prompt names neither) → the extremum (`numeric`)) | planned |
-| Reproduce the escape-route argument at a fresh sloped point — derive, not apply | D6 | lesson | **E5 claimed** (see note) | `opt-derive-escape` (`self-check`, human-scored: the residual bound, the choice of a sufficient \(\delta\), both signs of \(h\), and the conclusion stated as a refutation) | planned |
+| Choose, unprompted, between the calculus route and an algebraic certificate, and justify the choice | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **fresh** pair of functions, not the worked example: which route (`multiple-choice`, prompt names neither) → **why that route works here** (`multiple-choice`, rival justifications — the *justification is captured*, not left to feedback) → the extremum (`numeric`)) | planned |
+| Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on a fresh \(f,a\): which inequality licenses the sign claim (`multiple-choice`) → what \(h\)'s **second** sign establishes (`multiple-choice`) → the improving direction's value (`numeric`)) | planned |
+| Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | n/a |
 | Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
 | Optimize a **composite** on an interval, requiring L5's chain rule to differentiate and L6's method to decide | D10 | **module** | E5 | `mod-calctech-mixed-optimize-composite` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
 
 **Transfer.** Four transfer-tier items. `opt-which-hypothesis` is the
 **abstraction-return** item (insight §14): it is set on a function with no
-walkable reading and is scored on naming the hypothesis, not on recognizing the
+walkable reading and is scored on naming what fails, not on recognizing the
 shape — a learner who answers by matching to \(x^3\)/\(\lvert x\rvert\) must
-fail it, which constrains the fixture choice at build time. `opt-endpoint-fresh`
-and `opt-select-route` both run on **functions the lesson never shows**;
-`opt-select-route` folds D8 in per
-[insight §11](insight.md#11-transfer-assessment). `opt-derive-escape` is the only
-item requiring the learner to **produce** the argument rather than apply its
-conclusion, which is what M1 actually needs.
+fail it, which constrains the fixture choice at build time. `opt-endpoint-fresh`,
+`opt-select-route` and `opt-derive-steps` all run on **functions the lesson never
+shows**.
 
-**Freshness rule, and one item that is deliberately not evidence.** Every item in
-the table above runs on inputs the guided scene and explorer never display.
-`opt-endpoint-predict` — the checkpoint on the lesson's *own* main example — is
-therefore **a learning event, not evidence**: it is a `committed-prediction`,
-whose capability ceiling is **E1** (`CAPABILITY_EVIDENCE_CEILING` in
-`src/lessons/evidence.ts`: "commit-before-reveal is still recognition"), and it
-reuses the worked function, so it could not carry an E3 claim on either count.
-The E3 obligation it was originally paired with is discharged by
-`opt-endpoint-fresh` instead.
+**Freshness rule, and two items that are deliberately not evidence.** Every item
+carrying an evidence claim runs on inputs the guided scene and explorer never
+display. Two items carry no claim at all, and both are declared here rather than
+quietly counted:
+
+1. **`opt-endpoint-predict`** — the checkpoint, on the lesson's own worked
+   example. `committed-prediction` has ceiling **E1**
+   (`CAPABILITY_EVIDENCE_CEILING`, `src/lessons/evidence.ts`: "commit-before-reveal
+   is still recognition"), and it reuses a shown function, so it could not carry
+   an E3 claim on either count. Objective 2's evidence is `opt-endpoint-fresh`.
+2. **`opt-derive-escape`** — the free-response derivation. **The runtime cannot
+   produce the evidence an earlier draft claimed from it**, on two independent
+   grounds, both checked against the code:
+   - An in-lesson `self-check` is **learner-self-marked**, not human-scored.
+     `SelfCheckBody` (`src/components/lesson/ExercisePanel.tsx`) has the learner
+     write, reveal a model answer, and mark understood / not-yet; its own
+     docstring says "Not machine-graded." Human review applies to a `self-check`
+     inside a **module attempt set** — `/review` reads `AttemptSet`s, not lesson
+     exercises — so calling a lesson item "human-scored" was simply wrong.
+   - Even in the module path, [ADR-004](../../../../engineering/decisions/004-experience-node-ontology.md)
+     is explicit that the local reviewer is unauthenticated and single-device, so
+     "a pass recorded this way is a self-administered judgment, not independently
+     certified mastery". `assessmentManifest.ts` enforces the matching half in
+     code: an **E4+ claim on `scoringAuthority: "self-marked"` fails**.
+
+   So the item stays — writing the argument out is worth doing — but as a
+   **practice event with no evidence claim**, and objective 9 is re-scoped to
+   `opt-derive-steps`, which captures the argument's load-bearing choices at a
+   level the runtime can actually record (E3).
+
+   **What this costs, stated plainly: this lesson produces no E6 justification
+   evidence, and none is obtainable in this repository today** — not in-lesson,
+   and not via the module queue either, per ADR-004. The genuine "reproduce the
+   argument unaided" obligation is therefore deferred to the
+   [validation pilot](../../../../authoring/insight-validation-protocol.md),
+   where a real human scores a real learner. No proof-ready or E6 claim may rest
+   on anything in this lesson.
 
 **Evidence-ceiling preflight** (applied before coding, per A2–A4 and L5's
 precedent), read off `src/lessons/evidence.ts` rather than assumed:
 
 | Capability | Ceiling | Claimed here |
 | --- | --- | --- |
-| `committed-prediction` | **E1** | E1 — checkpoint only, not an outcome's evidence |
+| `committed-prediction` | **E1** | E1 — checkpoint only, not evidence |
 | `multiple-choice` | E2 | E2 |
 | `numeric`, `exercise-sequence` | E3 | E3 |
-| `self-check` | **E5** | E5 (`opt-derive-escape`) |
+| `self-check` | E5, **but E4+ is barred on `self-marked` scoring** | **no claim** |
 
-Two corrections were made here after an owner review, and are recorded rather
-than silently applied:
+Three corrections were made here after owner review, and are recorded rather than
+silently applied:
 
-1. An earlier draft claimed **E3 for `committed-prediction`**. Its ceiling is
+1. An earlier draft claimed **E3 for `committed-prediction`**; its ceiling is
    **E1**. It also specified one item combining a committed-prediction step with
    a numeric step — **not implementable**: `SequenceStep`
    (`src/lessons/capabilities.ts`) admits `numeric`, `multiple-choice`, `vector`,
    `construct`, and short-text steps, and has no committed-prediction kind.
-2. `opt-derive-escape` was claimed at **E4 (Transfer)**. Reproducing an argument
-   and saying where a hypothesis is used is **D6 justification — E6** in
-   [the taxonomy](../../../../authoring/mastery-standard.md#5-evidence-levels).
-   The platform cannot record E6: `self-check` caps at **E5**. So the item is
-   claimed at **E5**, and **this lesson does not produce E6 evidence** — no
-   "proof-ready" claim may rest on it. That gap is a platform limitation, stated
-   here rather than papered over by relabelling the outcome as transfer.
+2. `opt-derive-escape` was claimed first at **E4**, then at **E5 "human-scored"**.
+   Both were wrong, for the reasons above. The second was worse than the first:
+   it named a scoring authority the lesson surface does not have.
+3. `opt-select-route`'s outcome required a **justification** that its planned
+   capture never recorded (route → value, with the reason left to feedback text).
+   Feedback the learner reads is not evidence the learner produced; a
+   justification step is now captured.
 
 **Recall cap.** Several `multiple-choice` items and steps appear, but **none is
 definition recall** — each is a diagnosis with rival answers. The D2 recall
@@ -204,16 +230,24 @@ completed at Gate 8.
   (approved 2026-08-01). `ex-cubic-inflection` and `ex-abs` return in
   **inverted roles**: in L2 they were counterexamples about what a *tangent* is;
   here they are counterexamples about what \(f'=0\) *means*.
-- **Assessment:** **1 check + 4 drill + 4 transfer** (planned), to be pinned by a
-  tier-mix test at build, matching `chainRuleGradingContract.test.ts`. **Every
-  graded item uses a function the lesson never displays** — no exceptions; the
-  one item on the worked example (`opt-endpoint-predict`) is the checkpoint, and
-  is declared a learning event rather than evidence (§1d).
+- **Assessment:** **1 check + 5 drill + 4 transfer** = 10 items, plus the
+  non-evidencing `opt-derive-escape` practice event. Drill:
+  `opt-candidate-set`, `opt-flat-not-extremum`, `opt-second-test-silent`,
+  `opt-linearize-tolerance`, `opt-open-interval`. Transfer:
+  `opt-endpoint-fresh`, `opt-which-hypothesis`, `opt-select-route`,
+  `opt-derive-steps`. To be pinned by a tier-mix test at build, matching
+  `chainRuleGradingContract.test.ts` — and the test must count the two
+  non-evidencing events separately, so a later edit cannot quietly promote one
+  into the evidence set. **Every evidence-bearing item uses a function the
+  lesson never displays**, without exception.
 - **Woven Explore:** the sweep explorer owes ≥1 prediction (which points survive
   on a chosen interval) verified against its own readouts, and ≥1 verification
   that the escape-route guarantee is **local** — the learner enlarges \(h\) until
-  improvement fails and reads the threshold off the panel. That second
-  interaction is what stops C3 from being a slogan.
+  improvement fails and reads **the first step at which this grid sees agreement
+  break** off the panel — an observation, explicitly distinct from the fixture's
+  certified sufficient radius, and absent entirely on the linear preset. That
+  second interaction is what stops C3 from being a slogan; calling what it finds
+  "the threshold" is the failure mode §1c names.
 - **Retention (D12):** "\(f'(a)=0\) is necessary, not sufficient" — the claim
   most likely to erode back into the procedure, and the one L8/L20/L27 all reuse
   the discipline of.
@@ -272,8 +306,8 @@ completed at Gate 8.
      candidate set and an explicit *no existence guarantee*, not a silent
      endpoint value.
 - **Declared unproved step:** the **Extreme Value Theorem** (C10), named on
-  screen as assumed. This is the lesson's only cited ingredient if the Mode A
-  edge is approved; two if it is refused (C15's bound joins it).
+  screen as assumed. With the Mode A edge approved it is the lesson's **only**
+  cited ingredient — C13 and C15 are derived.
 - **Scope exclusions:** constrained optimization and Lagrange multipliers
   (declared off every path in the benchmark matrix); Newton's method and its
   convergence; higher-order Taylor polynomials, Lagrange remainder, radius of
@@ -305,11 +339,14 @@ completed at Gate 8 after implementation.
       respected.
 - [ ] Module-owned outcomes carried forward as Gate-9 obligations for
       `calculus-technique`.
-- [ ] Backward bridges (L1/L2, and L4 if the amendment is approved) + forward
+- [ ] Backward bridges (L1/L2/L4) + forward
       edges (L11/L28) recorded, including as `requires` edges in
       `src/curriculum/edges.ts`.
 - [ ] Retention hook recorded.
 - [ ] Correctness gate passed, including all six property tests in §1g.
 - [x] Both Mode A amendments in §1a resolved by the owner (2026-08-01).
+- [ ] No lesson-owned objective is covered by an item whose `evidenceBasis` is
+      `self-marked` (`assessmentManifest.ts` enforces this; `opt-derive-escape`
+      is registered with **no objective coverage** for exactly that reason).
 - [ ] Profile-dependent items match P2; no stage inflation (EVT stays a cited
       ingredient and no P3 bar is claimed).

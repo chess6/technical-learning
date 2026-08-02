@@ -294,6 +294,11 @@ boundary.
   the **FTC applied twice**. It also earns "\(f'>0\Rightarrow\) increasing",
   which `CalculusFixture.monotoneIntervals` currently **declares** rather than
   derives.
+- **A fix to a claim does not reach the sentences that use it.** Round 1 fixed
+  the thesis; the rejected "derivatives never certify" wording survived in the
+  contract's §7 and §10, and "the threshold \(\delta\)" survived across the
+  plan's active instructions even after §1g forbade it. Round 2 found both.
+  After changing a claim, grep for its *consequences*.
 - **Do not overcorrect the spine.** The first draft of this thesis said the
   derivative "never finds the best point" and "only ever refutes" — false, since
   \(f''\) certifies later in the same lesson — and called the three warnings
@@ -315,12 +320,21 @@ boundary.
   review caught it.
 
 **Evidence-level traps, all found in review and all now correct in the
-contract:** `committed-prediction` caps at **E1** (`src/lessons/evidence.ts`),
-not E3; `SequenceStep` has no committed-prediction kind, so it cannot be chained
-with a numeric step; `self-check` caps at **E5**, so `opt-derive-escape` — which
-is D6 justification, **E6** in the taxonomy — is claimed at E5 and **this lesson
-produces no E6 evidence**. Read the ceilings off the file rather than assuming
-them; L5's contract has an E4 self-check claim of the same shape.
+contract.** Read these off the code, not the taxonomy:
+`committed-prediction` caps at **E1** (`src/lessons/evidence.ts`), not E3;
+`SequenceStep` has no committed-prediction kind, so it cannot be chained with a
+numeric step; and — the one that actually blocked a core objective — **an
+in-lesson `self-check` is learner-self-marked, not human-scored.**
+`SelfCheckBody` (`ExercisePanel.tsx`) has the learner mark their own work;
+`/review` reads `AttemptSet`s, so human review reaches module items only; and
+[ADR-004](decisions/004-experience-node-ontology.md) plus
+`assessmentManifest.ts` bar any **E4+ claim on `self-marked` scoring** outright.
+So the free-response derivation is now a **practice event with no evidence
+claim**, objective 9 is re-scoped to a structured E3 item, and **this lesson
+produces no E6 evidence — none is obtainable in this repository today**, so the
+unaided-reconstruction obligation is deferred to the validation pilot.
+**L5's contract has an E4 self-check claim of the same shape and is very likely
+wrong in the same way** — worth checking before it is cited as precedent.
 
 **Self-certified, and it showed.** Author and both audits were one agent
 lineage. Owner review found five real defects that the self-audits had passed —

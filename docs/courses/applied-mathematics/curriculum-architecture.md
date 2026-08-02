@@ -458,21 +458,26 @@ before implementing it").
 > **L6 `optimization-approximation` is planned, not built** (Mode B complete
 > 2026-08-01: brief, `PASS` contract, mastery contract, lesson plan). It is
 > still a `future` node; **writing its lesson code requires explicit owner
-> approval.** Two **Mode A amendments** its plan depends on are open and are
-> the owner's to decide:
+> approval.** Both **Mode A amendments** its plan depended on were **resolved by
+> the owner on 2026-08-01**:
 >
-> 1. a `fundamental-theorem → optimization-approximation` **hard edge** in §2.2 —
->    L6's second-derivative test and its linearization error bound are derived
->    from the FTC applied twice (the alternative routes, the Mean Value Theorem
->    and simply citing the bound, were compared and rejected in the contract). A
->    bounded fallback exists if the edge is refused, but the choice must be made
->    **before** Mode C, because it decides whether those two results are derived
->    or cited;
+> 1. the `fundamental-theorem → optimization-approximation` **hard edge is
+>    approved** and is in §2.2 and the DAG. L6's second-derivative test and its
+>    linearization error bound are therefore **derived** from the FTC applied
+>    twice, under a **continuous \(f''\)** hypothesis that must stay explicit at
+>    every use. The alternatives — the Mean Value Theorem (which L2 and L4 both
+>    deliberately withhold) and simply citing the bound — were compared and
+>    rejected, and the cite-instead fallback is **withdrawn**;
 > 2. the **M2 depth bar** in
->    [benchmark-matrix §2](benchmark-matrix.md#2-per-module-depth-bars) covers
->    substitution, parts, and improper integrals only — it does not mention
->    optimization or linearization at all, so L6 cannot be validated at Gate 10
->    against it as written.
+>    [benchmark-matrix §2](benchmark-matrix.md#2-per-module-depth-bars) is
+>    **amended**, deliberately before Mode C rather than before Gate 10, so that
+>    Gate 5 consumed a calibrated target rather than being checked against one
+>    afterwards.
+>
+> **Still open before Mode C:** a further independent read of the Mode B
+> artifacts. Two owner review rounds have each found real defects the
+> self-audits passed — the second of them a core objective assigned to evidence
+> the runtime provably cannot produce.
 >
 > Anyone starting further Package B work should check
 > `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a

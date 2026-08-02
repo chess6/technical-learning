@@ -59,8 +59,9 @@ learner controls the sign of \(h\). Stepping one way strictly increases \(f\);
 stepping the other way strictly decreases it. So \(a\) is neither a local
 maximum nor a local minimum.
 
-Run that everywhere and it **eliminates** points. What survives is a *candidate
-list*, and the learner's belief changes from
+Run that everywhere and it **eliminates** points. What survives is the
+*candidate set* — a set, not a list, because for a constant \(f\) it is the
+whole interval (C9) — and the learner's belief changes from
 
 > "\(f'(a)=0\) means \(a\) is a maximum or a minimum"
 
@@ -127,9 +128,13 @@ not be.
 
 **Corroboration, with no calculus at all.** \(f(x)+2=x^3-3x+2=(x-1)^2(x+2)\),
 which is \(\ge0\) for every \(x\ge-2\). Hence \(f(x)\ge-2\) on \([-2,3]\), with
-equality exactly at \(x=1\) and \(x=-2\). This confirms the minimum — and it does
-something the derivative never did: it **certifies**. The algebraic identity
-supplies the endorsement C6 says the derivative cannot give.
+equality exactly at \(x=1\) and \(x=-2\). This confirms the minimum, and it does
+so by **certifying** rather than eliminating: the algebraic identity supplies an
+endorsement that **the one-point first-derivative condition alone cannot**
+(C6) — over the whole interval, in one line, without a second-order hypothesis.
+It is *not* evidence that derivatives cannot certify: C13 certifies too, from
+\(f''\), and needs \(f''\) continuous to do it. The contrast worth drawing is
+which tool is cheaper here, not which tool is capable.
 
 **Approximation.** `ex-decay`, \(f(t)=e^{-t/\tau}\) with \(\tau=1.5\)
 (`TAU_DECAY` in `src/math/calculus.ts`). \(f(0)=1\), \(f'(0)=-1/\tau=-2/3\), so
@@ -167,9 +172,11 @@ extremum is **not**.
   refuse to name the answer from \(f'=0\) alone.
 - Predict that a global maximum sits at an endpoint even though an interior
   local maximum exists, and justify it by C9 + C10 rather than by inspection.
-- Shown an unfamiliar failing case, name **which hypothesis** of C3–C5 fails
-  (interior / differentiable / refutation-only) instead of recalling which
-  example it resembles.
+- Shown an unfamiliar failing case, say **what exactly fails** — hypothesis 1
+  (interior), hypothesis 2 (differentiable), or neither-hypothesis-but-the
+  converse (a survivor that is not an extremum) — instead of recalling which
+  example it resembles. The third option is deliberately *not* phrased as a
+  hypothesis, and an item that lists it as one would re-teach the error.
 - Predict that the method returns *nothing* on an open interval, and say that
   this is correct rather than broken.
 - Predict that the second-derivative test is silent when \(f''(a)=0\) and supply
@@ -221,8 +228,12 @@ exists to break, so it is introduced *and then broken on purpose*, not smuggled.
 1. **Grounded:** step-and-check at a sloped point; the model predicts the
    improving direction.
 2. **Correspondence:** the escape-route inequality on screen —
-   \(f(a+h)-f(a)=mh+E(h)\) with \(\lvert E(h)\rvert<\lvert mh\rvert\) — with the
-   threshold \(\delta\) located by the learner, not asserted.
+   \(f(a+h)-f(a)=mh+E(h)\) with \(\lvert E(h)\rvert<\lvert mh\rvert\) — with a
+   **sufficient radius** \(\delta\) shown as a certified interval rather than
+   asserted, and the learner separately locating **the first step at which this
+   grid sees agreement break**. Those are two different objects and the lesson
+   must not merge them: \(\delta\) is *some* radius that works, never the
+   largest, and on a linear \(f\) nothing ever breaks.
 3. **Unfamiliar:** a function with no walkable reading (a piecewise or
    symbolically-specified \(f\)) on a stated interval, plus the empty-candidate
    case on an open interval, where stepping intuition offers nothing.
@@ -308,9 +319,9 @@ multivariable statement and saddle points (L28). The Extreme Value Theorem is
 ## Mathematical audit (Audit A)
 
 1. **Does the conclusion follow from the derivation?** Yes, step by step, with
-   two ingredients explicitly **cited rather than proved** and named as such on
-   screen: the Extreme Value Theorem (C10) and — only if the Mode A edge above is
-   refused — C15's bound. Everything else is derived. C3's inequality is written
+   **one** ingredient explicitly **cited rather than proved** and named as such
+   on screen: the Extreme Value Theorem (C10). With the Mode A edge approved,
+   C13 and C15 are derived, not cited. Everything else is derived. C3's inequality is written
    with its explicit \(\lvert m\rvert/2\) tolerance choice rather than waved at:
    \(\lvert E(h)\rvert\le\lvert mh\rvert/2<\lvert mh\rvert\) is what forces the
    sign, and \(h\neq0\) is what makes \(\lvert mh\rvert>0\).
@@ -401,7 +412,7 @@ second-derivative test. That is the compression this gate is for.
   arithmetic verification, not independent review.
 - **Pedagogical reviewer:** same agent lineage — **self-review, not
   independent**.
-- **Owner review round 1 — 2026-08-01.** The repository owner reviewed this
+- **Owner review rounds 1 and 2 — 2026-08-01.** The repository owner reviewed this
   contract and the plan, **resolved both Mode A amendments** (above), and
   returned findings that were **not** caught by the self-audits. The two that
   changed this document:
@@ -412,8 +423,24 @@ second-derivative test. That is the compression this gate is for.
   - the finite-list overclaim, repaired in C9, **survived in C11 and in the
     brief** (R5, P2, the discovery sequence) — corrected in all of them.
 
-  This is the outcome the signoff block exists to make possible: an audit that
-  passed its own checks and was still wrong in a way only an outside reader
+  **Round 2** found the corrections themselves incomplete, which is the more
+  useful finding: the rejected "derivatives never certify" claim **survived in
+  §7 and §10** after the thesis was fixed, and \(\delta\) was still called "the
+  threshold" in §14 and throughout the plan's active instructions even though
+  §1g of the contract now forbade exactly that. A fix applied to the sentence
+  that states a claim does not reach the sentences that *use* it — both rounds
+  found the same shape of defect, and the second found it inside the first
+  round's own work.
+
+  Round 2 also found a Gate 5 defect this contract could not have caught by
+  reasoning: a core objective was assigned to evidence **the runtime cannot
+  produce** (an in-lesson `self-check` is learner-self-marked, and
+  `assessmentManifest.ts` bars an E4+ claim on self-marked scoring). Contract
+  claims must be checked against the implementation, not against the taxonomy
+  alone.
+
+  This is the outcome the signoff block exists to make possible: audits that
+  passed their own checks and were still wrong in ways only an outside reader
   found. Recording it here matters more than the fact that it was fixed.
 - **User / domain-owner approval of the contract as a whole:** **not given.**
   Round 1 resolved the amendments and returned corrections; it was not an

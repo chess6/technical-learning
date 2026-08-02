@@ -108,8 +108,9 @@ levels.
 | 5 | Say what the method returns on an open interval, and why that is correct | lesson-owned | E2 | `opt-open-interval` |
 | 6 | Classify a survivor, and return *silent* when \(f''(a)=0\) | lesson-owned | E3 | `opt-second-test-silent` |
 | 7 | From a curvature bound, produce an interval meeting a stated tolerance | lesson-owned | E3 | `opt-linearize-tolerance` |
-| 8 | Choose unprompted between the calculus route and an algebraic certificate | lesson-owned | E3 | `opt-select-route` (fresh pair) |
-| 9 | Reproduce the escape-route argument at a fresh sloped point | lesson-owned | **E5** (E6-class evidence, capped — contract §1d) | `opt-derive-escape` |
+| 8 | Choose unprompted between the calculus route and an algebraic certificate, **and justify the choice** | lesson-owned | E3 | `opt-select-route` (fresh pair; the justification is a captured step) |
+| 9 | Identify the escape-route argument's load-bearing steps and what each hypothesis does | lesson-owned | E3 | `opt-derive-steps` (fresh \(f,a\)) |
+| — | Write the argument out in full | **no evidence claim** — the runtime cannot record one (contract §1d) | — | `opt-derive-escape`, a practice event |
 | 10 | Retain "necessary is not sufficient" under delayed retrieval | **module-owned** | E3 | `mod-calctech-retain-necessary-not-sufficient` (Gate 9) |
 | 11 | Optimize a composite (chain rule + this method on one item) | **module-owned** | E5 | `mod-calctech-mixed-optimize-composite` (Gate 9) |
 
@@ -227,7 +228,10 @@ state (guided-to-interactive continuity).
 - **Woven Explore obligations** ([contract §1f](mastery-contract.md#1f-connections-assessment-retention)):
   (i) predict which points survive on a chosen interval, then verify against the
   candidate list; (ii) enlarge \(h\) until the sign-agreement indicator fails and
-  read \(\delta\) — the interaction that makes C3's locality a measured fact.
+  read **the first disagreement this grid saw** — the interaction that makes
+  C3's locality a measured fact. It must be labelled as an observation, shown
+  beside (never merged with) the certified radius, and it reads *none in this
+  domain* on the linear preset.
   Opening an endpoint must make the candidate list **shrink** and the existence
   guarantee **withdraw**, visibly.
 
@@ -242,12 +246,19 @@ state (guided-to-interactive continuity).
 | 5 | 5 | `opt-open-interval` | `multiple-choice` | "An empty candidate set and no existence guarantee — a correct output" | Separates "the method broke" from "no maximum exists". |
 | 6 | 2 | `opt-endpoint-fresh` | `exercise-sequence` | where the max sits → its value | **Fresh function and interval.** Carries objective 2's E3 evidence, which the checkpoint cannot. |
 | 7 | 4 | `opt-which-hypothesis` | `exercise-sequence` | the unexamined point → the failed hypothesis | **Abstraction return.** Set on an \(f\) not shape-matchable to the lesson's examples. |
-| 8 | 8 | `opt-select-route` | `exercise-sequence` | route → value | **Fresh pair**, not the worked example. Prompt names neither route; a certificate exists for one function and not the other. |
-| 9 | 9 | `opt-derive-escape` | `self-check` (human-scored) | rubric: residual bound, a sufficient \(\delta\) (not "the" \(\delta\)), both signs of \(h\), conclusion phrased as a refutation | The only item requiring the argument to be **produced**. E6-class justification, recordable only at E5. |
+| 8 | 8 | `opt-select-route` | `exercise-sequence` | route → **why that route works here** → value | **Fresh pair**, not the worked example. Prompt names neither route; a certificate exists for one function and not the other. The justification is a captured step, not feedback text. |
+| 9 | 9 | `opt-derive-steps` | `exercise-sequence` | which inequality licenses the sign claim → what \(h\)'s second sign establishes → the improving direction's value | Captures the argument's load-bearing choices at a level the runtime can record. |
+| — | — | `opt-derive-escape` | `self-check` (**learner-self-marked**) | model answer: residual bound, a sufficient \(\delta\) (not "the" \(\delta\)), both signs of \(h\), conclusion phrased as a refutation | **Practice event, no evidence claim.** Registered with no objective coverage — `assessmentManifest.ts` bars an E4+ claim on self-marked scoring, and `/review` reads `AttemptSet`s, not lesson exercises. |
 
-Plus the checkpoint (`opt-endpoint-predict`) — a learning event, not evidence.
-Declared mix: **1 check + 4 drill + 4 transfer**, to be pinned by a tier-mix test
-at build. Items 1–5 are drill; 6–9 are transfer. **No graded item runs on a
+Declared mix: **1 check + 5 drill + 4 transfer** = 10 items. Drill: items 1–5.
+Transfer: items 6–9. Check: `opt-endpoint-predict`. Plus **one non-evidencing
+practice event**, `opt-derive-escape`.
+
+Two items carry **no evidence claim** and the tier-mix test must count them
+separately, so a later edit cannot quietly promote either into the evidence set:
+the checkpoint (ceiling E1, and on a shown function) and `opt-derive-escape`
+(self-marked scoring — see [contract §1d](mastery-contract.md#1d-outcomes-with-evidence)
+for the two independent runtime grounds). **No evidence-bearing item runs on a
 function the lesson displays.**
 
 ## Insight traceability (required)
@@ -256,8 +267,8 @@ function the lesson displays.**
 | --- | --- | --- |
 | **C1** local vs global extremum, with the window explicit | `section` after Watch; definition list | Learner distinguishes the interior local max from the global one in the checkpoint |
 | **C2** L2's local model retrieved | Watch `standSloped` | Learner reads \(m\) and \(E(h)\) off the panel as separate quantities |
-| **C3** escape-route lemma, with a sufficient \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner observes agreement break on a chosen fixture and distinguishes that observation from the certified radius; reproduces the bound in `opt-derive-escape` |
-| **C4** refutation needs both directions | Watch `sweep`; `proof` block | Learner states the conclusion as elimination, not selection (`opt-derive-escape` rubric) |
+| **C3** escape-route lemma, with a sufficient \(\delta\) | Watch `stepAndCheck` + `tooBig`; `proof` block; Explore (ii) | Learner observes agreement break on a chosen fixture and distinguishes that observation from the certified radius; `opt-derive-steps` captures which inequality licenses the sign claim |
+| **C4** refutation needs both directions | Watch `sweep`; `proof` block | `opt-derive-steps` step 2 — what the **second** sign of \(h\) establishes (a learner holding "one direction is enough" fails it) |
 | **C5** Fermat's condition | `formal` block | Learner states hypotheses and conclusion, and the direction |
 | **C6** the converse fails — this test refutes only, while \(f''\) still certifies | Watch `survivorFails`; `callout` M1; and the later second-derivative section, which is where the scope of C6 is made explicit | `opt-flat-not-extremum` — learner declines to conclude, and does **not** generalize to "derivatives cannot certify" (a distractor tests exactly that) |
 | **C7** hypothesis 1, interior | Watch `oneDirection`; `section` "two hypotheses and a converse" | `opt-which-hypothesis`; the checkpoint's endpoint reasoning |
@@ -293,7 +304,8 @@ installs the misconception if used unaltered.)*
 
 ## Notation
 - \(a\) the point under test; \(h\) the step; \(m=f'(a)\); \(E(h)\) the residual
-  (**L2's symbol, unchanged**); \(\delta\) the threshold; \(L(h)=f(a)+f'(a)h\);
+  (**L2's symbol, unchanged**); \(\delta\) **a sufficient radius** — never "the
+  threshold", and never rendered as one; \(L(h)=f(a)+f'(a)h\);
   \(M\) a bound on \(\lvert f''\rvert\); \(\varepsilon\) the tolerance.
 - Key KaTeX:
   `f(a+h)=f(a)+f'(a)h+E(h)`,
@@ -337,10 +349,12 @@ tests:
 - [ ] every displayed quantity originates in `src/math`, none in a scene or explorer
 
 ## Required tests
-- [ ] Unit tests for the new `src/math` helpers (candidate set, threshold, bound)
+- [ ] Unit tests for the new `src/math` helpers (candidate set, **certified
+      sufficient radius**, first-sampled-disagreement, bound) — the second and
+      third are separate functions with separate names, not one "threshold" helper
 - [ ] The seven invariant tests above
 - [ ] Component tests: explorer readouts, the sign-agreement indicator, sweep, reset, endpoint-opening
-- [ ] Grading contract (`describeGradingContract`) for every auto-graded item, with the adversarial reject battery; `opt-derive-escape` routed to human scoring with a versioned rubric
+- [ ] Grading contract (`describeGradingContract`) for every auto-graded item, with the adversarial reject battery. `opt-derive-escape` is **not** auto-graded and is **not** routed to review — it is a self-marked practice event registered with no objective coverage, and a test must assert that it covers none
 - [ ] Tier-mix test pinning 1 check + 5 drill + 3 transfer
 - [ ] Browser test: learner-visible readouts, no console errors, KaTeX clean
 - [ ] `proseEmphasis` guards (no `$$`, no odd `$`, no doc-internal artifact vocabulary such as "C5" or "Package B" in learner prose)
