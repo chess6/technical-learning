@@ -96,12 +96,26 @@ observed to fail, reverted), not merely observed to pass.
 
 **Open:**
 
-- [ ] **Independent semantic review of R0–R4.** A *self*-review has run and
-      found real defects at every package so far; that does not discharge the
-      self-certification gap ADR-002 names. This is the same class of
-      obligation as Stream 1's, and Stream 1's experience — an independent
-      reviewer catching a genuine mathematical gap that self-review had
-      certified as valid — is the argument for taking it seriously.
+- [x] **Independent semantic review of R0–R4 — run 2026-08-10** by a fresh
+      agent lineage, on `feature/l6-optimization-approximation`. One confirmed
+      finding, again the repository's signature class: `blockComponents.tsx`
+      claimed its test "asserts every registered id here has both" an
+      accessible label and its own tests, while the test checked only the one
+      hardcoded id then registered — true-looking at one entry, silent at two.
+      Fixed by making the claim mechanically true (`BLOCK_COMPONENT_IDS` is
+      exported; the test now renders every entry and requires an accessible
+      region name), proven to bite against an injected unlabelled component,
+      and the unenforceable half ("carries its own tests") restated as the
+      review obligation it actually is.
+
+      The rest was checked and found sound — **do not redo it**: `objectives`
+      is genuinely consumed (`objectiveCoverage`/`evidenceCeiling` walk every
+      lesson and every objective, not a sample); the `proof` block validates
+      both its `formalId` and that the formal really has a `proof` field;
+      route anchor uniqueness is checked per lesson; `composed` componentIds
+      resolve against the real registry; `/set/:setId` and the
+      `workshop`/`assessment` `UnitItem` kinds are covered by e2e plus
+      `CourseSidebar`.
 - [ ] Two in-session deviations from the plan text, reasoned through and
       recorded in code comments/ADRs but never separately confirmed:
       `review` as a `UnitItem` kind is **deferred to R6** (no per-module
