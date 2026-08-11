@@ -33,12 +33,15 @@ resolution is ambiguous.
 ## Approval boundaries (stop and ask — do not self-authorize)
 
 - **Building or promoting** a `future` spine node — writing lesson code or
-  `future → built` (Mode C, closed per `project-core` Scope). *(Docs-only Mode B
-  planning for a uniquely resolved node is allowed, above.)*
+  `future → built` (Mode C, closed per `project-core` Scope) — without fresh
+  explicit approval or an accepted ADR granting explicit standing authorization
+  for the exact scope. ADR-008 currently covers applied-mathematics M2–M12 and
+  preserves every gate. *(Docs-only Mode B planning for a uniquely resolved node
+  is allowed, above.)*
 - Beginning **Gate 5 (the Lesson Mastery Contract)** without a `Gate result: PASS`
   insight contract. *(Gates 3–4 produce that `PASS`, so starting Gate 3 does not
   require one.)*
-- Writing lesson code before the user approves the Mode B plan.
+- Writing lesson code before Mode B is complete and gate-valid, or outside the scope of fresh approval / accepted standing authorization.
 - Deviating from a standard, or shipping an unverified math/visualization result.
 - Claiming a course profile/stage the assessments do not support.
 

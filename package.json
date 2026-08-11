@@ -19,6 +19,7 @@
     "test:grading": "vitest run src/lessons src/math src/components/assessment",
     "test:content": "vitest run src/lessons/__tests__/contentValidation.test.ts",
     "check:quick": "oxlint && tsc -b && npm run test:grading",
+    "context:task": "node scripts/task-context.mjs",
     "export:list": "node scripts/export-scene.mjs --list",
     "export:scene": "node scripts/export-scene.mjs"
   },

@@ -11,28 +11,16 @@ chain and product rules; parts recognized as Theme 1's boundary term.
 
 ## 1a. Diagnose the cognitive obstacle
 
-Differentiation is an **algorithm**: rules applied forward terminate on every
-elementary function. Integration is an **inverse problem**: there is no
-forward algorithm, only the question *"which differentiation produced this?"*
-Learners arrive expecting the first kind of activity and are handed the
-second without anyone saying so — so the techniques feel like an arbitrary
-bag of tricks, and `u`-substitution in particular degenerates into a
-symbol-pushing ritual (`du = g'(x)\,dx` treated as fraction cancellation)
-that works without being understood.
+Differentiation offers a compact forward rule system for the elementary expressions this course has used. Integration is an inverse-recognition problem: there is no comparably simple differentiation-like rule system guaranteed to produce an elementary antiderivative. More sophisticated symbolic-integration algorithms exist, so the lesson must not claim that integration literally has no forward algorithm. Learners nevertheless meet a real change of task: instead of applying a rule whose shape is visible, they must ask *“which differentiation could have produced this?”* Without that distinction, the techniques feel like an arbitrary bag of tricks, and `u`-substitution degenerates into a symbol-pushing ritual (`du = g'(x)\,dx` treated as fraction cancellation) that works without being understood.
 
 The obstacle, precisely: **the learner does not know what kind of problem
 they are solving.** Substitution is not an operation performed ON an
 integral; it is the *recognition* that the integrand already IS a chain-rule
-output, made explicit. Parts is the recognition that the integrand is half of
-a product-rule output, plus the honest accounting of the other half — and
-that other half is a **boundary term**, the same object Theme 1 has been
-tracking since the FTC.
+output, made explicit. Parts recognizes the integrand as one term in a product-rule output. Solving the integrated product rule for that term produces two distinct pieces: the boundary term \([uv]_a^b\) and the remaining integral. The lesson must keep those roles separate.
 
 Secondary obstacles, recorded for Gate 5's misconception work rather than as
 the insight: `+C` as ritual rather than as "antiderivatives form a family";
-the belief that every elementary integrand has an elementary antiderivative
-(it does not — `e^{-x^2}` — and saying so honestly is required by the
-no-overclaim floor); substitution bounds vs. back-substitution confusion on
+the belief that every elementary integrand has an elementary antiderivative (`e^{-x^2}` has an antiderivative, but not an elementary one; proving non-elementarity is beyond this lesson); substitution bounds vs. back-substitution confusion on
 definite integrals.
 
 ## 1b. Raw leads
@@ -57,10 +45,7 @@ definite integrals.
    product of unrelated factors (parts), or neither (leave it — honestly)?
    This is the `methodSelection: true` item shape the repo already grades,
    and M2's bar names it explicitly.
-5. **The failure case as first-class content.** `∫ e^{-x^2} dx` — the
-   recognition search *fails*, provably, and the lesson says so. Sets up
-   improper integrals (L8) and, much later, why the Gaussian needed its own
-   theory. Honest-limits principle applied to technique.
+5. **The limit case as first-class content.** For `∫ e^{-x^2} dx`, the taught chain/product-rule recognitions do not produce an elementary formula. The integrand still has antiderivatives; the lesson may state that none is elementary, but it does not attempt the advanced proof. This sets up improper integrals (L8) and the Gaussian’s later special treatment without presenting “method not found” as “antiderivative does not exist.”
 
 ## 1c. Conventional vs. alternative presentation
 
@@ -75,16 +60,12 @@ from the differentiation rules the learner has already mastered (L5's chain
 rule; the product rule is an entry assumption), with the FTC as the bridge —
 so "technique" is reframed as **running a known machine in reverse**, and
 the integral table becomes a set of recognitions rather than incantations.
-LIATE is deliberately not taught; choosing `u` is taught as "which factor
-gets simpler when differentiated," which is the actual content LIATE
-approximates.
+LIATE is deliberately not taught as an algorithm. “Choose a factor that gets simpler when differentiated” is introduced only as a heuristic, then confronted with a cyclic example such as `∫ e^x sin x dx`, where two integrations by parts return the original integral and algebra closes the cycle. Method selection must include recognizing that recurrence, not merely ranking factors.
 
 ## 1d. Ranking (provisional, for Gate 4 to confirm or refute)
 
 Selected insight candidate: **"Integration techniques are not new operations.
-Each is a differentiation rule read backwards: substitution is the chain rule
-recognized in an integrand, and parts is the product rule integrated — its
-extra term is the boundary term the FTC has been producing since L4. The
+Each starts from a differentiation rule read backwards: substitution recognizes a chain-rule output, while parts integrates the product rule and separates a boundary term from a remaining integral. The
 skill being trained is recognition and honest bookkeeping, not a new kind of
 calculation."**
 

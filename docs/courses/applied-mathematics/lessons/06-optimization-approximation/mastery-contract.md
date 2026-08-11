@@ -384,18 +384,6 @@ because no E6 evidence is obtainable in this repository today (§1d).
 The checklist items below were verified mechanically by the implementing agent
 before review; the acceptance above is the separate, human half.
 
-<details>
-<summary>Superseded pre-acceptance status (kept for the record)</summary>
-
-> **Gate 8: READY FOR INDEPENDENT REVIEW — not yet accepted.** Mode C
-> implementation is complete on `feature/l6-optimization-approximation`
-> (2026-08-01 – 2026-08-02), per the repository owner's explicit authorization
-> to cross the Mode B → Mode C boundary. Every checklist item below reflects
-> what the **implementing agent** has verified mechanically (tests, typecheck,
-> lint, a live e2e pass) — it is **not** the domain-owner sign-off Gate 8
-> requires.
-
-</details>
 
 **A first independent review of this implementation already ran, and found
 real defects self-verification had missed** — the same pattern the Mode B

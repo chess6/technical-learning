@@ -1,0 +1,742 @@
+> **Archived snapshot.** Superseded project history removed from the active handoff during the usage-efficiency correction.
+# Handoff
+
+Everything below is on `master` as of 2026-08-10. Package status is not
+duplicated here — follow the links.
+
+**Both of the obligations this handoff was built around are now discharged.**
+L6 `optimization-approximation` is Gate-8 accepted and merged; the independent
+semantic review of R0–R4 has run. What remains open is smaller and listed under
+each stream — chiefly `calculus-foundations`'s Gate 9 items, which are **built
+but never administered**, and two recorded R0–R3 plan deviations never
+separately confirmed.
+
+**Operating mode changed 2026-08-10 — read
+[ADR-008](decisions/008-autonomous-development-protocol.md) before anything
+else.** The owner issued a standing directive: develop the remaining spine
+end-to-end WITHOUT per-lesson owner review. ADR-008 records the authorization,
+the full-spine roadmap (waves 1–6, M2 through the new M12
+`nonlinear-dynamics`), the substitute review protocol (fresh-lineage
+adversarial + rendered-page passes replacing owner Gate 8), and the floors
+that did NOT relax (math correctness, evidence honesty, known-failure-modes,
+the package-claim rule). A session that builds a package must not also be the
+session that "independently" reviews it.
+
+**Current wave-1 state:** L7 `substitution-parts` Mode B is OPEN (Gate 3 brief
+drafted — see `lessons/07-substitution-parts/`). Remaining wave-1 items: L7
+Gates 4–5 + Mode C, L8 `improper-integrals` full pipeline, CI (GitHub Actions
+— no CI exists at all today; ADR-008 makes it a precondition for autonomous
+merges), and the scene-registration scaffolder.
+
+---
+
+## Stream 1 — Package A / L5 `chain-rule` (applied mathematics)
+
+**State.** Package A (`calculus-foundations`) approved by the repository owner
+2026-07-31 under a narrow E2E waiver. Three approved items were built,
+independently reviewed, re-verified, and merged (`feature/l5-chain-rule`,
+fast-forward, branch and worktree since deleted): the Gate 9 assessment for
+`calculus-foundations` (13 items, **built, not administered**), L5's Mode B
+docs through `Gate result: PASS`, and L5's Mode C lesson code.
+
+**Independent review ran** and reported 16 confirmed findings, all fixed —
+most seriously **a real gap in the chain-rule derivation** (C7 claimed
+`g` continuous + `E_f(k)/k→0 ⇒ E_f(k(h))/h→0`, but that composition alone
+gives only `E_f(k(h))/k(h)→0`; the missing factor `k(h)/h→g'(a)` needs `g`'s
+*differentiability*. A counterexample confirmed it). Fixed in `insight.md`
+(including Audit A, which had certified the flawed version), `chainRule.ts`,
+and `mastery-contract.md`. Details in the commit messages
+(`git log`, search "finding #").
+
+**L5's Gate 8 is closed.** The repository owner accepted it on 2026-08-01,
+after an acceptance review found and fixed a real mathematical defect (the
+derivation divided by \(\Delta u\) in the very step whose thesis is that it
+never does — repaired by the Carathéodory device) and rewrote both E2
+recognition items. The acceptance record in
+`lessons/05-chain-rule/mastery-contract.md` §6 is authoritative; three docs
+that still read "pending" were stale and have been corrected.
+
+**Open:** Gate 9 items for `calculus-foundations` remain unadministered.
+
+**L6 `optimization-approximation` is built, Gate-8 accepted (2026-08-10), and
+merged to `master`.** Built on `feature/l6-optimization-approximation`
+(2026-08-01–02 — see Stream 3 below), per the owner's explicit authorization
+to cross the Mode B → Mode C boundary. The authoritative acceptance record is
+`lessons/06-optimization-approximation/mastery-contract.md` §6; acceptance
+followed the owner's read of the **rendered lesson**, which is the step no
+automated tier substitutes for. **Two independent review rounds ran**
+(2026-08-02) and
+found real defects self-verification had missed each time — the first: a
+mathematically broken `trustRadius`, roughly half the approved scene/explorer
+plan silently dropped, three exercises overclaiming what they captured, a
+self-check with a genuine arithmetic self-contradiction, and a checkpoint
+that recorded no real commitment. The second (a bounded repair, scoped to
+five specific findings): the first round's own bisection fix still started
+from an unverified `lo`, `trustRadius` never reconciled with the fixture's
+own domain, four explorer presets opened away from the case they advertised,
+`opt-select-route`'s outcome overclaimed "unprompted" selection, and the
+scene/explorer each independently re-derived the step decomposition and
+candidate-set values the math layer was supposed to own exclusively. All
+confirmed and fixed, with regression tests for each (detail in Stream 3's
+review subsections). **A fourth round has now run too** (2026-08-10, fresh
+lineage) and again found real defects — this time the third round's own domain
+reconciliation had been applied to `trustRadius` while its two sibling
+functions carried the identical gaps. Four rounds, four that found something —
+which is the number worth remembering: the harness kept paying out right up to
+the last pass, so "the previous round was clean" was never evidence the next
+one would be. A bounded correctness patch then closed the remaining structural
+issues (one shared declared-domain assertion honouring `domainOpen` across all
+three point-claiming functions; `stepDecomposition` returning the positions the
+guided scene draws between; `NO_DISAGREEMENT_IN_DOMAIN` made unreachable
+without a complete grid walk), and the owner accepted on a rendered read. No
+fifth code review was required.
+
+**References:** module ledger §6–§8
+(`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
+· `modules/calculus-foundations/assessment-plan.md` ·
+`lessons/05-chain-rule/`
+
+---
+
+## Stream 2 — Experience architecture, slice R0–R3
+
+**State.** The first vertical slice of the pedagogical & product-architecture
+redesign, merged from `feature/experience-architecture`:
+
+- **R0** — Pedagogical constitution as doctrine amendments (`vision.md` §0,
+  extended block palette in `lesson-design.md`, ADR-004/005/006). Docs only.
+- **R1** — The experience model: `guidedSceneId`/`explorationId` **optional**
+  (the mechanism that had forced every concept through the same media pair);
+  evidence-typed `LessonObjective`; three route blocks — `callout`, `proof`,
+  `composed` — plus a `blockComponents.tsx` lazy registry. All 19 then-existing
+  lessons verified byte-identical, e2e unchanged.
+- **R2** — Karatsuba rebuilt as the historical-breakthrough archetype: the
+  field's O(n²) belief and its 1960 break are `callout` blocks *in the
+  argument*; a `composed` block makes the approved "three evaluations"
+  connection concrete; the lesson ends on an open question, not a summary.
+- **R3** — `workshop`/`assessment` `UnitItem` kinds over existing module sets
+  (zero new items); production route `/set/:setId` (beta-labeled); one
+  theorem (`rank-nullity`) retrofitted to a `proof` route block.
+
+**A self-review pass found four more real defects**, all fixed — full write-up
+in `docs/quality/lesson-correctness-checklist.md` § "Slice review pass":
+`objectives` had shipped with **no consumer** (its validator asserted nothing,
+and R1's own acceptance criterion was unmet); ADR-006 claimed an
+`ITEM_ASSESSMENT_META` extension that never happened; the `proof` render — R3's
+headline — was **asserted nowhere**; and there was no global anchor-uniqueness
+check. Both new validators were **proven to bite** (deliberately broken,
+observed to fail, reverted), not merely observed to pass.
+
+**Open:**
+
+- [x] **Independent semantic review of R0–R4 — run 2026-08-10** by a fresh
+      agent lineage, on `feature/l6-optimization-approximation`. One confirmed
+      finding, again the repository's signature class: `blockComponents.tsx`
+      claimed its test "asserts every registered id here has both" an
+      accessible label and its own tests, while the test checked only the one
+      hardcoded id then registered — true-looking at one entry, silent at two.
+      Fixed by making the claim mechanically true (`BLOCK_COMPONENT_IDS` is
+      exported; the test now renders every entry and requires an accessible
+      region name), proven to bite against an injected unlabelled component,
+      and the unenforceable half ("carries its own tests") restated as the
+      review obligation it actually is.
+
+      The rest was checked and found sound — **do not redo it**: `objectives`
+      is genuinely consumed (`objectiveCoverage`/`evidenceCeiling` walk every
+      lesson and every objective, not a sample); the `proof` block validates
+      both its `formalId` and that the formal really has a `proof` field;
+      route anchor uniqueness is checked per lesson; `composed` componentIds
+      resolve against the real registry; `/set/:setId` and the
+      `workshop`/`assessment` `UnitItem` kinds are covered by e2e plus
+      `CourseSidebar`.
+- [ ] Two in-session deviations from the plan text, reasoned through and
+      recorded in code comments/ADRs but never separately confirmed:
+      `review` as a `UnitItem` kind is **deferred to R6** (no per-module
+      scheduler data exists to back it); Karatsuba ends on an
+      **open-question section**, not a `handoff` (no built lesson to point at).
+
+Two defect classes recorded here as "deliberately unfixed" earlier are now
+closed, with permanent guards proven to bite (deliberately broken, observed to
+fail with a precise message, reverted): the bold-straddling-math failure mode
+(9 real occurrences found via a runtime walker over live lesson objects —
+`src/lessons/__tests__/lessonProse.ts`/`proseEmphasis.test.ts` — a materially
+different, more accurate set than an earlier source-literal scan had found);
+and unvalidated named `visual`/`explore` route targets (`contentValidation.test.ts`
+now resolves `sceneId`/`explorationId` against the real registries). See
+`docs/quality/known-failure-modes.md` for both.
+
+**R4 (curriculum graph as data) is now built** on this branch, ahead of what's
+merged to `master` — see "Repository state" below. `src/curriculum/` (`concepts.ts`:
+83 concepts; `edges.ts`: 342 edges across all six ADR-005 types; `lessonRoster.ts`;
+`labels.ts`; `__tests__/graph.test.ts`: DAG validation, referential integrity,
+edge-consumer test). Real consumers: `CurriculumConnections` (new, wired into
+`LessonLayout`) for `requires`/`recommended-before`/`same-structure-as`/
+`refresher-for`; `GlossaryTermCard` extended for `application-of`/`revisited-by`.
+`GlossaryTerm.prerequisites`/`relatedTerms` migrated to `ConceptId`; the
+`independence`/`linear-independence` drift is fixed, with a generic
+drift-detection test guarding against the same class recurring.
+
+**R4 went through two review rounds after its first commit**, and both found
+real problems — the sequence is worth reading before trusting any single
+commit message here.
+
+*Round 1* found five defects: an `application-of` edge using a lesson id where
+a concept was required; `ConceptNode.blurb` shipping with **zero consumers
+while its doc comment claimed one** (the exact ADR-006 defect class from the
+R0–R3 pass, repeated); 13 blurbs carrying literal backticks/LaTeX; 5 wrong
+auto-generated titles; and the concept/lesson namespace being undeclared.
+
+*Round 2 reviewed round 1's own fixes and found three overclaims in them* —
+one blurb was never actually cleaned (the finding grep's character class
+halted at an escaped quote), and two comments asserted more than the code
+did. Most significantly, round 1's namespace fix (a lookup table of intended
+namespaces) **could not decide the eight ids that name both a concept and a
+lesson** — ~15% of endpoints — while its comment implied it could.
+
+That is now properly closed: edge endpoints are `NodeRef`s
+(`concept(...)`/`lesson(...)`) and `CurriculumEdge` is a union discriminated
+on `type`, so a wrong-space endpoint is a **compile error**, and `kind`
+survives to runtime for the resolution check. Verified both ways: the
+previously-undetectable collision case now fails `tsc`, and a bad id fails
+the suite. See ADR-005's 2026-08-01 amendment. Pure refactor — edge counts
+(342) and rendered output (15/20 lessons, 11/16 glossary terms) unchanged.
+
+**The pattern is the takeaway:** three consecutive commits on this branch each
+carried a claim stronger than the code delivered. Verify claims mechanically
+before writing them down; prefer a type that makes the wrong thing unwritable
+over a comment describing what the strings are supposed to mean.
+
+**Recorded, not fixed:** `application-of` edges sourced from Applied
+Mathematics concepts are unreachable via `GlossaryTermCard` because
+`glossary.ts` only covers Linear Algebra/Algorithms terms — a
+glossary-coverage gap, not a graph bug. `blurb` is consumed by exactly one
+rendered tooltip today; it is staged for R5's map view, and if R5 slips it
+should get a visible-text consumer or be dropped.
+
+Not yet done: independent review (see above); R5's `/map` page is where
+these edges get a dedicated UI beyond the lesson/glossary footnotes shipped
+here.
+
+**R5 is partially built** — everything except the `/map` page itself. See
+"R5 status" below. **Not started:** R6 (mastery derivation), R7+ (content
+expansion).
+**Plan:** `/home/thomas/.claude/plans/plan-a-major-pedagogical-linked-pinwheel.md`
+
+---
+
+## R5 status — data layer done, `/map` page not started
+
+Two findings changed R5's shape before any code was written, both verified
+against `courseModel.ts` rather than assumed:
+
+1. **The four-way course split would have created three empty courses.**
+   `courseModel.ts` declares only `calculus-foundations` and
+   `calculus-technique`; the other nine spine units (`series`, `signals`,
+   `fields`, …) deliberately do not exist there yet. Splitting as planned
+   would have produced Calculus with 5 built lessons and three courses
+   containing nothing. **Owner chose option (a): rename only.**
+   `applied-mathematics` → `calculus`, with the old id aliased in
+   `identity.ts` per its no-rename contract. The remaining courses appear when
+   their packages have content.
+2. **The planned readiness overlay depends on R6, which the plan schedules
+   *after* R5.** `lessonProgress`/`exerciseAttempts` still have zero
+   non-platform readers. Readiness therefore moves to R6, where the state is
+   actually wired; R6 then has no upstream dependency problem.
+
+**Shipped:** `src/curriculum/pathways.ts` (four overlays with
+required/optional node sets) and its validation suite; the `entry-bridges`
+unit, which makes the one `refresher-for` edge resolve and render on
+`/lesson/limits-continuity` instead of being dropped by `lessonLabel`; the
+course rename + alias; doc sync in `AGENTS.md` and
+`multi-domain-architecture.md`.
+
+The prerequisite-closure test earned its place immediately: it rejected the
+first pathway data with **nine real gaps** (`applied-stem` required
+`transformations` without `why-linear-algebra`, `math-major` required
+`substitution-parts` without `radians-rotation`, and so on). The fix was to
+compute the closure rather than hand-list it — and the computation also showed
+`elimination`, `solution-sets`, `subspaces-rank` and `rank-nullity` are
+genuinely *off* the applied route, which is the kind of saving a "shortest
+viable route" is supposed to find.
+
+**The `/map` page is specified and deliberately deferred** —
+[ADR-007](decisions/007-curriculum-map-page.md) is the full contract (entry,
+focus-mode one-hop rule, unbuilt-content honesty, shortest-vs-thorough, the
+a11y tree; readiness explicitly excluded and left to R6). Owner's call, and the
+right one: `applied-stem` requires 46 lessons and **13 are built**, so a map
+today would mostly render "not built yet" while `CourseSidebar` already handles
+20 lessons across three courses. ADR-007 names the trigger to build it.
+
+**Pathway membership is accepted** (owner, 2026-08-01) for this private
+instance — no further sign-off pending. The closure test is what keeps future
+amendments honest.
+
+**Known, time-boxed:** `pathways.ts` has no runtime consumer until `/map`
+ships. That is a knowing exception to ADR-005's no-decoration rule, permitted
+only because the consumer is specified and scheduled in ADR-007 — recorded
+there with the condition that it must not sit indefinitely.
+
+**The critical path is now content (R7+), not architecture.** Both live graph
+consumers — `CurriculumConnections` (15 of 20 lessons) and `GlossaryTermCard`
+(11 of 16 terms) — improve automatically as lessons land, with no code change.
+
+---
+
+## Two owner-reported findings and their follow-through (2026-08-01)
+
+The repository owner reviewed `/lesson/chain-rule` and `/lesson/karatsuba` in
+a browser and reported two real defects neither self-review nor R4/R5's
+independent-review gate had caught yet, because they predate this branch and
+sit outside R4's scope. Both are fixed and closed out:
+
+**chain-rule's math rendered garbled.** A `$$display$$` block in prose —
+`ProseWithMath` only parses `$...$`, so `$$` orphans a delimiter and inverts
+every span after it, silently (see `known-failure-modes.md`). Fixed, and a
+repo-wide check confirmed this was isolated: every `$...$` span the parser
+recognizes as math rendered clean in KaTeX strict mode (2849 spans, zero
+warnings), and no other prose string has an unpaired `$`. Two permanent
+guards now exist in `proseEmphasis.test.ts` — no `$$`, and no odd `$`
+count — both proven to bite on injected regressions.
+
+**All 47 misconception callouts read identically** — `Tempting belief.` /
+`But watch.` / `Repair.` were baked into the renderer, so the three-beat
+shape was never actually an authoring choice. `AuthoredCallout.moves` now
+lets a callout be however many beats it needs, each with an optional
+lead-in; the triple survives as shorthand for the genuine case. `vision.md`
+§12.1 states the rule and warns against the exact failure mode a mechanical
+fix would produce: rewriting every callout to be different is the same
+defect in new paint.
+
+That warning was tested immediately. A per-callout review of the other 41
+callouts across 18 lessons (`vectors` through `red-black-trees` — every
+lesson except `karatsuba`) found that **all 41 already have the shape that
+fits**: each is a genuine prediction, refuted by a concrete counterexample or
+demonstration, then repaired — exactly what `belief`/`confront`/`resolve`
+was built for. Two read quieter than the rest on first pass
+(`systems.two-pictures-one-problem`, `elimination.elim-not-tricks` — neither
+turns on a numeric counterexample) and were checked closely rather than
+reshaped on suspicion; both still confront a real prediction with a real
+demonstration and name the actual principle in `resolve`, not a restatement
+of the belief. **Nothing was changed.** `karatsuba` needed reshaping because
+it is deliberately the atypical archetype (R2's historical-breakthrough
+design test); the other 18 are the ordinary conceptual/technique archetype
+the triad was designed for, and it shows. This is the intended outcome of
+doing the review seriously, not a shortcut — record it here so the next
+agent doesn't redo it from scratch or, worse, "fix" what already fits.
+
+---
+
+## Stream 3 — L6 `optimization-approximation` (2026-08-01)
+
+**Originally planning-only** (see the unchanged narrative below); **Mode C
+implementation followed the same day** on `feature/l6-optimization-approximation`,
+per the owner's explicit authorization to cross the Mode B → Mode C boundary
+— see "Mode C implementation" further down for what was built and verified.
+Artifacts under
+`docs/courses/applied-mathematics/lessons/06-optimization-approximation/`:
+brief (Gate 3), contract (Gate 4, `PASS`), mastery contract (Gate 5), plan
+(Stage 3) — all now reconciled against the built lesson.
+
+**The insight, and why it is not the spine's.** The spine says the derivative
+turns "find the best" into "find where the local model is flat". That wording is
+**not quite true**, and its imprecision is the exact misconception the lesson
+exists to break. The selected insight: *at an interior point where \(f\) is
+differentiable, \(f'(a)\neq0\) **refutes** a local extremum; \(f'(a)=0\) merely
+**survives** that test. Interiorness and differentiability are the argument's two
+hypotheses; "a survivor need not win" is the failure of its converse; and those
+three facts are what the three memorized warnings are really about.* Fermat's
+condition falls straight out of L2 C5 with nothing new assumed. The spine row is
+worth repairing to match — a Mode A edit, **not made**.
+
+**Both Mode A amendments are resolved** (owner, 2026-08-01): the
+`fundamental-theorem → optimization-approximation` hard edge is **approved** and
+in the DAG, so the second-derivative test and the \(Mh^2/2\) bound are *derived*
+from the FTC under an explicit continuous-\(f''\) hypothesis; and the **M2 depth
+bar is amended**, deliberately before Mode C rather than before Gate 10, so that
+Gate 5 consumed a calibrated target. Mode C itself is still an open approval
+boundary.
+
+**Four things the next session should not have to rediscover:**
+
+- **The Mean Value Theorem is not needed, and should not be added.** It was the
+  obvious route to the second-derivative test, monotonicity, and the error
+  bound, and L2/L4 both explicitly withhold it. All three follow instead from
+  the **FTC applied twice**. It also earns "\(f'>0\Rightarrow\) increasing",
+  which `CalculusFixture.monotoneIntervals` currently **declares** rather than
+  derives.
+- **A fix to a claim does not reach the sentences that use it.** Round 1 fixed
+  the thesis; the rejected "derivatives never certify" wording survived in the
+  contract's §7 and §10, and "the threshold \(\delta\)" survived across the
+  plan's active instructions even after §1g forbade it. Round 2 found both.
+  After changing a claim, grep for its *consequences*.
+- **Do not overcorrect the spine.** The first draft of this thesis said the
+  derivative "never finds the best point" and "only ever refutes" — false, since
+  \(f''\) certifies later in the same lesson — and called the three warnings
+  "three hypotheses" when there are two plus a failed converse. Owner review
+  caught both. The learner phrasing now carries an explicit do-not-shorten note
+  for exactly this reason.
+- **\(\delta\) is a sufficient radius, never a threshold.** The limit supplies
+  *some* radius that works, not a largest one; agreement can fail and later
+  return, and on a linear \(f\) it never fails. The certified radius, the first
+  sampled disagreement, and "none in this domain" are three separately labelled
+  things in the API, the explorer, and the scene copy.
+- **Two correctness oracles that look right and are not.** A dense scan cannot
+  certify candidate-set completeness — the fixture contract already says
+  sampling supports an observation and never a guarantee — so fixtures carry
+  analytically declared stationary/singular points and exact expected candidate
+  sets, with the scan kept as corroboration. And "the search becomes a finite
+  list" is false in general: a constant function makes every point stationary.
+  That overclaim was repaired in C9 and **survived in four other places** before
+  review caught it.
+
+**Evidence-level traps, all found in review and all now correct in the
+contract.** Read these off the code, not the taxonomy:
+`committed-prediction` caps at **E1** (`src/lessons/evidence.ts`), not E3;
+`SequenceStep` has no committed-prediction kind, so it cannot be chained with a
+numeric step; and — the one that actually blocked a core objective — **an
+in-lesson `self-check` is learner-self-marked, not human-scored.**
+`SelfCheckBody` (`ExercisePanel.tsx`) has the learner mark their own work;
+`/review` reads `AttemptSet`s, so human review reaches module items only; and
+[ADR-004](decisions/004-experience-node-ontology.md) plus
+`assessmentManifest.ts` bar any **E4+ claim on `self-marked` scoring** outright.
+So the free-response derivation is now a **practice event with no evidence
+claim**, objective 9 is re-scoped to a structured E3 item, and **this lesson
+produces no E6 evidence — none is obtainable in this repository today**, so the
+unaided-reconstruction obligation is deferred to the validation pilot.
+~~**L5's contract has an E4 self-check claim of the same shape and is very
+likely wrong in the same way** — worth checking before it is cited as
+precedent.~~ **Checked 2026-08-10: already fixed, no action needed.**
+`lessons/05-chain-rule/mastery-contract.md` records the correction made
+2026-08-01 — `chain-derive-fresh` is a **self-check practice event carrying no
+evidence claim**, with the superseded E4 "human-scored" claim quoted in place
+as the thing that was wrong. `chainRule.ts` matches. The suspicion was right
+about the defect class and stale about this instance.
+
+**Self-certified, and it showed.** Author and both audits were one agent
+lineage. Owner review found five real defects that the self-audits had passed —
+and notably, **C3's \(\delta\) derivation and C13's two-sided integral argument
+were both checked and found sound**. The defects were in what the documents
+*claimed around* those derivations: the thesis, the evidence levels, the
+correctness oracles. That is the same failure mode L5 hit, one level up, and it
+is the argument for a further independent read before implementation.
+
+### Mode C implementation (2026-08-01, same session)
+
+The owner's next prompt was **explicit repository-owner authorization to
+cross the Mode B → Mode C boundary and build L6**. Branch
+`feature/l6-optimization-approximation`; no competing implementation found on
+`master`, any branch, or any worktree before starting.
+
+**Built:** `src/math/optimization.ts` (a new module, deliberately kept
+separate from `calculus.ts` — see its own docstring for why); the full
+`LessonDefinition` in `src/lessons/optimizationApproximation.ts`; a guided
+scene (`optimizationApproximationScene.ts`, registered across
+`sceneTimings.ts`/`sceneBeatIntents.json`/`sceneMeta.ts`/
+`sceneDescriptions.ts`/`animation-authoring-scenes.json` — five separate
+mechanical surfaces, not one); an explorer
+(`OptimizationApproximationExplorer.tsx`, reusing `FunctionPlot`); grading
+contracts and a tier-mix test
+(`optimizationApproximationGradingContract.test.ts`); and full curriculum
+registration (`registry.ts`, `courseModel.ts`, `lessonRoster.ts`, the
+approved FTC edge in `edges.ts`, and — the one genuinely new registration
+this lesson's items needed — entries in `assessmentManifest.ts`, following
+karatsuba's real precedent rather than L5's mistaken claim that lesson items
+aren't registered there; see the commit that fixed L5's stale claim).
+
+**Every commit ran the actual test suites and fixed what they found, rather
+than assuming green.** Nine real, distinct bugs surfaced this way across ten
+commits — not a sign the work was sloppy, but the expected shape of building
+something this size and actually checking it:
+
+1. `OPT_DRIVE`'s stationary points were hand-typed rounded guesses that
+   didn't match its own velocity formula — caught by the math layer's own
+   consistency guard before any test ran against it.
+2. A hand-derived `E(h)=h^3` closed form in the guided scene, replaced with a
+   computation from the actual fixture, per the MATH_CORRECTNESS rule.
+3. Four unpaired `$` in exercise explanation strings (a leading KaTeX
+   delimiter omitted), caught by `proseEmphasis.test.ts`.
+4. `certifiedRadius` unconditionally required a `secondDerivativeBound` that
+   `OPT_ABS` correctly omits — threw on ANY point of that preset, not just
+   the singular one. Caught by the explorer's own component test on first
+   run.
+5. `objectiveCoverage.test.ts`/`evidenceCeiling.test.ts` failed until the
+   nine `assessmentManifest.ts` entries actually landed — proof the coverage
+   gate bites, not just that it compiles.
+6. A registry-order snapshot test (`lessonWiring.test.ts`) needed the new
+   lesson id appended — the correct, expected update for a newly registered
+   lesson.
+7. `authoringSceneRegistry.test.ts` caught a THIRD scene-registration surface
+   (`scripts/animation-authoring-scenes.json`) missed by the first two
+   registration passes.
+8. `designSystem.test.ts` caught an undefined CSS custom property
+   (`--role-violation` does not exist; no violation-specific token exists at
+   all — used `--role-invariant` instead).
+9. `oxlint` caught three unused imports; fixing the third
+   (`OPT_NEG_QUARTIC`) exposed a real gap — the explorer's "quartic" preset
+   promised "x⁴ / −x⁴" but only ever showed x⁴. Added a genuine second
+   preset rather than silence the warning by deleting the reference.
+
+**Verification actually run (as of the initial Mode C build, 2026-08-01):**
+full `vitest run` (153 files, 2435 tests, green), `tsc -b` (clean), `oxlint`
+(clean), plus a real Playwright pass — a dedicated
+`e2e/lesson-optimization-approximation.spec.ts` (8 tests: load and
+console-error-free clip playback; all eight major steps reachable via
+Previous/Next; the prediction hold genuinely holding; reduced-motion; the
+endpoint maximum rendering correctly; the certified-radius and
+first-sampled-disagreement readouts staying visually separate; the linear
+preset's "none in this domain"; live grading) plus the two cross-lesson
+sweeps that exercise every lesson including this one
+(`course-context-and-grammar.spec.ts`, `lesson-callouts-render.spec.ts`) — 29
+e2e tests total, all passing. One test bug found and fixed in the process:
+the practice-grading test assumed the first rendered question would be
+multiple-choice (matching `chain-rule`'s exercise ordering); L6's practice UI
+paginates one question at a time, and the real first question is
+`opt-candidate-set`'s numeric step — corrected to match the actual UI, not
+the lesson. **These counts are now superseded — see the review subsection
+below for the current totals (153 files, 2454 tests; 12 e2e tests, 33
+total).**
+
+**Not run:** the full 39-file `./check.sh --e2e` suite — scope was this
+lesson's own spec plus the cross-lesson sweeps that cover it, not every
+other lesson's specs. L5's own acceptance review found a real presentation
+defect (doc-internal citations reaching learner prose) that no automated
+test catches; `proseEmphasis.test.ts` now guards that specific class and is
+green here, but a human has not read the rendered page.
+
+**Gate 8 was explicitly NOT claimed at this point** — it was accepted later,
+on 2026-08-10, after four review rounds and a rendered read. What follows is
+the state as of the initial Mode C build; `mastery-contract.md` §6 is the
+authoritative record. At the time, it recorded what the implementing agent
+verified mechanically and stated plainly that this was not the domain-owner
+sign-off Gate 8 requires — the L5 precedent (self-review
+passed, an independent reviewer then found a real mathematical defect in
+exactly the step self-review had certified) is the reason to take that
+distinction seriously rather than as a formality. It repeated here: see the
+next subsection.
+
+### Second independent review of the Mode C implementation (2026-08-02)
+
+The owner independently reviewed the built lesson (not just the docs) and
+reported five P1 findings and one P2 finding, all confirmed against the
+actual code before fixing:
+
+1. **`trustRadius` was mathematically broken.** Its fixed-point iteration
+   diverged for `OPT_QUARTIC` at \(a=0,\ \epsilon=0.01\) — the returned
+   radius's own declared error bound was \(\sim1.67\times10^{19}\), not
+   \(\le0.01\). Root cause: composing a non-decreasing error-bound function
+   with \(r\mapsto\sqrt{2\epsilon/M}\) yields a *decreasing* map, and naive
+   fixed-point iteration on a decreasing map oscillates rather than
+   converges. Replaced with monotone bisection
+   (`src/math/optimization.ts`), re-verified against the closed form
+   \((0.01/6)^{1/4}\approx0.202\) and against every fixture with a declared
+   `secondDerivativeBound`, not just the one hand-checked case that had
+   hidden the bug.
+2. **Large parts of the approved scene/explorer contract were dropped.**
+   The guided scene was missing the `tooBig` and `oneDirection` beats; the
+   explorer was missing the signed-\(h\) control, interval bounds, sweep,
+   grid resolution, the sign-agreement indicator, and the candidate
+   comparison table; the planned committed-prediction checkpoint had been
+   replaced by a plain reveal-toggle (`Checkpoint.tsx`) that records no
+   commitment. All restored: both beats added to
+   `optimizationApproximationScene.ts`/`sceneTimings.ts`/
+   `sceneBeatIntents.json`/`sceneMeta.ts`; the explorer rebuilt with the
+   missing controls and a `withSubInterval` helper; the checkpoint replaced
+   with a real `opt-endpoint-predict` item on the `committed-prediction`
+   capability.
+3. **Three exercises overclaimed what they captured.** `opt-candidate-set`
+   asked only for a count, not the full construction; `opt-select-route`'s
+   first choice leaked the complete-square identity, so it was not
+   "unprompted"; `opt-which-hypothesis` used a shifted \(|x|\) corner,
+   directly shape-matchable to the lesson's own displayed example. All three
+   redesigned (new fixtures/consts, new exercise-sequence steps) and
+   `assessmentManifest.ts`'s `opt-select-route` entry corrected from
+   `methodSelection: false` to `true` — the comment already said the item
+   was method-selection; the metadata just hadn't matched it.
+4. **`opt-derive-escape`'s model answer contained false mathematics** — it
+   asserted "4/1·2=8" as a sufficient radius, then immediately derived
+   \(|h|<4\) (a direct contradiction), and assumed \(a=1\) was "interior to
+   any reasonable domain" without naming one. The rubric also rejected
+   "therefore \(a\) is not an extremum" even though refuting both local max
+   and local min logically implies exactly that. Rewritten with an explicit
+   domain, the correct (exact) threshold, and a corrected rubric.
+5. **Domain leaks.** Opening an endpoint left it still selectable; the
+   approximation panel evaluated \(a+0.3\) even outside the declared domain.
+   Fixed via a domain-width-scaled edge margin and a clamped step.
+6. **P2 — documentation honesty.** `mastery-contract.md` still marked
+   outcomes "planned" and described the lesson as not existing; the lesson
+   plan left most required-test boxes unticked while claiming completion
+   elsewhere. Both rewritten to reflect the actual (mechanically verified)
+   state, with an explicit note distinguishing mechanical verification from
+   independent review and from a live learner's success.
+
+**All six fixed, each with a regression test**, and re-verified live: full
+`vitest run` (153 files, 2454 tests, green), `tsc -b` clean, `oxlint` clean,
+and a live Playwright run of the full
+`e2e/lesson-optimization-approximation.spec.ts` (now 12 tests, including new
+coverage for both restored beats, the h-slider/sweep interaction, and
+`opt-endpoint-predict`'s genuine commit-before-reveal behavior) — 33 e2e
+tests total across this lesson's own spec and the two cross-lesson sweeps,
+all passing. **This review round is not a substitute for a further
+independent pass** — see `mastery-contract.md` §6 for the full record.
+
+### Third review round — a bounded repair (2026-08-02)
+
+The owner reviewed the second round's own fixes and reported five specific,
+scoped findings — explicitly bounded ("do not begin L7 or redesign unrelated
+infrastructure"):
+
+1. **`trustRadius`'s bisection still had an unverified lower bound.** The
+   second round's fix started from `lo = hi / 2` (with `hi` seeded at `1e-6`
+   and doubled until infeasible) — feasible only by assumption, never
+   checked. For a small enough epsilon the true root sits BELOW that
+   unverified `lo` (regression: `OPT_QUARTIC`, `a=0`, `epsilon=1e-30` — true
+   root `~2×10⁻⁸`, old `lo` `~5×10⁻⁷`), so bisection could only search a
+   range that never reached it. Fixed: `lo = 0`, which needs no assumption —
+   the error bound at `r=0` is exactly `0`, `<=` any positive epsilon by
+   definition.
+2. **`trustRadius` never reconciled its answer with the fixture's own
+   domain** — it returned literal `Infinity` for a zero-curvature fixture
+   (linear/constant), overstating what a BOUNDED domain actually supports,
+   and had no upper bound tied to the fixture's own reach from `a` at all.
+   Fixed: the radius is now capped at `min(a - domainLo, domainHi - a)`
+   (or, when `a` sits exactly at one domain edge — `OPT_DECAY`'s worked
+   example at `a=0` — the one-sided reach on the side that exists, since a
+   symmetric claim past that point would step outside the domain entirely).
+   `trustRadius(OPT_DECAY, 0, 0.01)` still returns `≈0.2121`, unchanged,
+   since 8 units of room to the right was always more than enough.
+3. **Four explorer presets opened away from the case they advertised.** The
+   x³/|x|/x⁴/−x⁴ presets defaulted `a` to `-1`, not the stationary/singular
+   point at `0` their own labels promised ("a survivor", "the unexamined
+   minimum", "silent, but a real minimum/maximum") — a learner had to already
+   know to drag the point before seeing what the preset claimed. Fixed: all
+   four now default to `a = 0`, with component tests pinning the initial
+   (no-drag) readout of each.
+4. **`opt-select-route`'s outcome overclaimed "unprompted" selection** — the
+   exercise presents both named routes and asks the learner to pick between
+   them; "unprompted" implies free/uncued generation that never happened.
+   Corrected everywhere (learner-facing `learningObjectives`, the internal
+   `objectives` text, `mastery-contract.md`'s outcomes table, the lesson
+   plan) to: "Select between the presented calculus and algebraic-certificate
+   routes on fresh functions, and justify the selection." The E3 evidence
+   claim survives this correction — `exercise-sequence`'s ceiling does not
+   depend on whether the route choice itself was cued, and the item still
+   captures genuine multi-step production (a certified minimum via each
+   route, plus a captured justification) beyond the one cued pick.
+5. **The guided scene and explorer each independently re-derived math the
+   `src/math` layer was supposed to own exclusively** — the escape step's
+   `mh`/`E(h)`/sign-agreement split was computed inline, twice, with no
+   shared source; `decideGlobally`'s candidate table was a hand-typed string
+   checked against `OPT_MAIN_CUBIC.f` at load time rather than built FROM the
+   computed candidate set. Fixed: one new pure helper,
+   `stepDecomposition(fixture, a, h)` (`src/math/optimization.ts`), used by
+   both the scene and the explorer; the candidate table and the global-max
+   caption are now built from `candidateSet`/`globalExtrema`'s own points,
+   not retyped and separately verified.
+
+**All five fixed, each with regression tests** — `src/math/__tests__/optimization.test.ts`
+grew from 33 to 40 tests (the `lo=0` regression, a domain-reconciliation
+regression, a logarithmic epsilon sweep, and four `stepDecomposition` tests);
+`OptimizationApproximationExplorer.test.tsx` grew from 19 to 21 (the four
+initial-readout tests, net of one now-redundant drag-based test removed).
+Verified with the FULL tier this time, not scoped to this lesson alone: lint
+clean, `tsc -b` clean (this surfaced a real narrowing bug the initial
+`tsc --noEmit -p .` pass had NOT caught — a discriminated-union field
+accessed from inside a function body, where TypeScript's control-flow
+narrowing does not survive; `tsc -b`, the exact command `check.sh` runs, is
+the canonical check from here on, not `tsc --noEmit -p .` alone), full
+`vitest run` (153 files, 2463 tests, green), and the complete
+`./check.sh --e2e` (39 spec files, 224 Playwright tests) — the first time
+this lesson's Mode C work has run the FULL e2e suite rather than a scoped
+subset. `e2e/lesson-optimization-approximation.spec.ts` (12 tests), the
+`guided-scene-hard-gates` check for `optimization-approximation`, and both
+cross-lesson sweeps all passed with zero failures. Three failures elsewhere
+in the full suite are pre-existing and already documented in
+`docs/quality/known-failure-modes.md`, not caused by this repair:
+`solution-sets` and `ftc-accumulate-then-measure` hard-gate failures (the two
+waivers recorded in the module ledger §7) and a `benchmark-lab.spec.ts`
+"eigen" candidate clock-starvation timeout matching that doc's "media-heavy
+specs that fail only inside the full `--e2e` sweep" contention class — none
+touch any file this repair changed. **No new waiver was added.** This round,
+too, is not a substitute for a further independent pass.
+
+### Fourth independent review — the repair that had not reached its siblings (2026-08-10)
+
+Run by a fresh agent lineage that built none of the above. It found **two real
+defects, both in `src/math/optimization.ts`, both reachable by a learner
+dragging the explorer's `a` slider** — and both are the *same* defect the third
+round fixed in `trustRadius`, left standing in the two neighbouring functions
+that make the same kind of claim:
+
+1. **`certifiedRadius` never referred to the domain**, while its own docstring
+   said the result was "clamped ... to stay inside the domain". At `a = 3` on
+   the main cubic's `[-2, 3]` — zero room to the right — it certified a radius
+   of `1.0`, a claim about `f` out at `x = 4`. It also still returned literal
+   `Infinity` for a zero-curvature fixture, the exact overstatement round 3 had
+   already struck from `trustRadius`.
+2. **`firstSampledDisagreement` could return `NO_DISAGREEMENT_IN_DOMAIN`
+   having sampled nothing.** Its window was the SYMMETRIC reach, so at a domain
+   edge it was `0`, and just inside an edge it threw away the whole long side:
+   at `a = -1.9` it searched `±0.1` and reported "none in this domain" while a
+   real in-domain disagreement sat at `h ≈ 2.31`. That is a false negative on
+   precisely the observation the lesson contrasts against the certified radius.
+
+Both fixed: one shared `guaranteeableReach` helper now owns the "how far can a
+claim at `a` reach" question for `certifiedRadius` and `trustRadius` (so they
+cannot drift apart a third time), and the sampler searches the longer reach
+with `inDomain` filtering per sample. Five regression tests added and **each
+proven to bite** — run against the pre-fix code, observed to fail, restored.
+The explorer's now-unreachable `"∞"` readout was removed with them.
+
+Worth carrying forward: the domain-derived window makes the certificate
+**tighter as well as sound** — on the main cubic at `a = 0` the certified radius
+goes `0.2 → 0.5` against a true first disagreement at `sqrt(3) ≈ 1.73`. The old
+value was conservative because `M` was bounding `|f''|` over five units the
+fixture never uses.
+
+**The generalisation this round earns:** the handoff already warned that *a fix
+to a claim does not reach the sentences that use it*. It also does not reach
+the **neighbouring functions making the same claim**. After repairing an
+invariant, grep for the other code that asserts something of that shape — here,
+every function returning a radius — not just for the prose downstream of the
+one you fixed.
+
+A minor Mode A-adjacent correction made alongside implementation, flagged
+rather than silently done: `course-spine.md`'s L6 row carried the spine's own
+imprecise sentence ("find where the local model is flat") verbatim, never
+repaired despite the insight-brief naming the repair as owed. Corrected to
+match the shipped insight, and L5's row (also missing its `**(built)**`
+marker since merge) fixed at the same time.
+
+---
+
+## Test state
+
+Run live rather than trusting any summary older than the newest commit.
+
+At the merge of the two streams, `./check.sh --e2e` is green apart from the
+**two known, documented, waived** failures — `solution-sets` text-clipping
+(intermittent, webfont-metric dependent) and `ftc-accumulate-then-measure`
+`seek-determinism` (the Package A waiver, ledger §7). Both are recorded in
+`docs/quality/known-failure-modes.md` and were reproduced identically against
+pre-change baselines by both streams independently.
+
+## Repository state
+
+`master` contains both streams as of the merge described above and has been
+pushed to `origin`. `feature/l5-chain-rule` and its worktree are deleted.
+
+**Corrected 2026-08-10.** This section previously said
+`feature/experience-architecture` was "**not** fully merged" and that "`master`
+does not yet have R4". Both statements were stale and are now false — verify
+against the repository, not against this file:
+
+- `git rev-list --count master..feature/experience-architecture` is **0** (and
+  `feature/experience-architecture..master` is 6), so the branch is fully
+  contained in `master` and is a stale pointer, safe to delete.
+- `src/curriculum/` on `master` carries `concepts.ts`, `edges.ts`, `labels.ts`,
+  `lessonRoster.ts` and `pathways.ts` — R4 **and** R5's data layer both landed.
+
+`feature/l6-optimization-approximation` was fast-forward merged into `master`
+on 2026-08-10, immediately after Gate 8 acceptance, and pushed. `master` now
+carries L6 plus the fourth review round's fixes, the R0–R4 review fix, and the
+bounded correctness patch.

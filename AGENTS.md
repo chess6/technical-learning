@@ -19,7 +19,7 @@ Read [docs/README.md](docs/README.md) first: it is the doc map.
 | Change a guided scene's motion or labels | the hard gates still run (`e2e/guided-scene-hard-gates.spec.ts`) — [docs/quality/benchmark-lab/README.md](docs/quality/benchmark-lab/README.md). Review packets, MP4 evidence, and BeatSpec migration are **deferred**: [audit § Deferred until product maturity](docs/quality/guided-animation-audit-2026-07.md#deferred-until-product-maturity) |
 | Code architecture / contracts | [docs/engineering/architecture.md](docs/engineering/architecture.md) |
 | A per-lesson artifact (brief/contract/plan) | under `docs/courses/<course>/lessons/<lesson>/` — never a loose `docs/insight-*.md` |
-| Which course a request is about | `docs/courses/<course>/` — **linear-algebra** (built through L11) or **applied-mathematics** (the doc directory; since R5 its *runtime* course id is `calculus`, because "Applied Mathematics" was never a course — it is the `applied-stem` pathway in `src/curriculum/pathways.ts`, and the later spine units become their own courses when their packages have content. Planning artifacts stay under this directory). The spine remains one arc: calculus, series, complex oscillation, Fourier, ODEs and Laplace, and vector calculus through the boundary theorems — 39 lessons in 12 packages; Package A approved (L1–L4, `calculus-foundations`), on `master`, under a narrow formally-approved E2E waiver — see the module ledger §7; its Gate 9 assessment is [built in code](docs/courses/applied-mathematics/modules/calculus-foundations/assessment-plan.md), not administered; Package B (`calculus-technique`) in progress on `master` — L5 `chain-rule` and L6 `optimization-approximation` are both built, merged, and **Gate 8 accepted** by the repository owner (2026-08-01 and 2026-08-10); L7–L8 remain `future`). Mode A always operates on that course's own spine and benchmark |
+| Which course a request is about | `docs/courses/<course>/` — **linear-algebra** (built through L11) or **applied-mathematics** (the planning directory; its current runtime course id is `calculus`, under the `applied-stem` pathway). The applied spine is one 43-lesson arc in 13 packages through nonlinear dynamics. Package A (L1–L4) and Package B’s L5–L6 are built on `master`; L7–L8 remain `future`. The package-status ledger in [curriculum-architecture §6.1](docs/courses/applied-mathematics/curriculum-architecture.md#61-package-status-ledger) is authoritative. Mode A always uses that course’s own spine and benchmark. |
 | Layering / scope / commit rules | `.cursor/rules/` (project-core, lesson-design, math-visualization-correctness, course-authoring, auto-commit) |
 
 ## Do not create a new standard doc
@@ -40,11 +40,15 @@ new owner is needed, say so and get agreement first.
 These are defined in the rules and workflow — do not self-authorize:
 
 - **Building or promoting** a `future` spine node — writing its lesson code or
-  `future → built` (the built surface is fixed). A uniquely resolved short prompt
-  may still run **docs-only Mode B planning** (Gates 3–5) for the next node.
+  `future → built` (the built surface is fixed) — without either fresh explicit
+  approval or an accepted ADR that grants explicit standing authorization for
+  that exact scope. [ADR-008](docs/engineering/decisions/008-autonomous-development-protocol.md)
+  currently supplies that authorization for applied-mathematics M2–M12, subject
+  to its gates and veto. A uniquely resolved short prompt may still run docs-only
+  Mode B planning (Gates 3–5) for the next node.
 - Beginning **Gate 5 (Lesson Mastery Contract)** without a `Gate result: PASS`
   insight contract — Gates 3–4 are how that `PASS` is produced.
-- Writing lesson code before an approved Mode B plan.
+- Writing lesson code before Mode B is complete and gate-valid, or outside the scope of fresh approval / accepted standing authorization.
 - Deviating from a standard, or shipping unverified math/visualization results.
 
 ## Claim a package before implementing it (no duplicate builds)
@@ -103,3 +107,15 @@ evidence overclaims) so reviews never re-litigate them.
   and test/manifest registration.
 - Hand a narrow correction to the faster model WITH the failing test. If no test
   can express the defect, it is a contract amendment — route it to Opus.
+
+## Usage-aware sessions
+
+- Default to one implementation session for an approved package and one fresh
+  package reviewer that covers both adversarial mathematics and rendered pages.
+- Return test-backed corrections to the existing implementation session; the
+  reviewer performs delta verification. Add another cold reviewer only for a
+  high-risk proof/algorithm or after a failed review.
+- Parallel agents/worktrees optimize elapsed time by multiplying context. Use
+  them only when the user explicitly chooses speed over usage.
+- Generate a bounded context pack with `npm run context:task -- --mode <mode>
+  --lesson <id>` before opening full standards or historical records.

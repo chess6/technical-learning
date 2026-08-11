@@ -23,12 +23,17 @@ Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent par
   linear algebra — `why-linear-algebra`, `vectors`, `transformations`, `systems`,
   `elimination`, `solution-sets`, `matrix-composition`, `determinants`,
   `subspaces-rank`, `rank-nullity`, `change-of-basis`, `eigenvectors` (full);
+  applied mathematics — `limits-continuity`, `derivative-local-linearity`,
+  `integral-accumulation`, `fundamental-theorem`, `chain-rule`, and
+  `optimization-approximation`;
   plus the Algorithmic Thinking course — `karatsuba`, `binary-search-trees`,
   `red-black-trees`. These are the active product.
 - Spine nodes marked `kind: "future"` are **closed to implementation**: do not
   write lesson code for, or promote (`future → built`), a `future` lesson unless
-  the user **explicitly reopens that specific lesson**. This is a hard approval
-  boundary (Mode C). *Docs-only Mode B **planning*** (insight brief → insight
+  the user **explicitly reopens that specific lesson**, either directly or
+  through an accepted ADR whose standing authorization names the exact scope.
+  ADR-008 currently covers applied-mathematics M2–M12; it does not waive any
+  gate. This is a hard approval boundary (Mode C). *Docs-only Mode B **planning*** (insight brief → insight
   contract → mastery contract → plan, Gates 3–5) **may** proceed for a uniquely
   resolved next node — see the workflow's short-prompt rule — but must stop before
   any code or promotion.

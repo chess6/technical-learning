@@ -22,9 +22,9 @@ be deleted, only reassigned.
 ## 1. What this authorizes (and what it does not)
 
 [course-authoring-workflow.md](../../authoring/course-authoring-workflow.md)
-Step 5 requires explicit owner approval to build a `future` spine node, to move
-from an approved plan to code, and for Gate 8 acceptance. The owner's directive
-above **is that approval, granted as a standing authorization** for the
+Step 5 requires explicit authorization to build a `future` spine node and move
+from a gate-valid plan to code. The owner’s directive above **is that approval,
+granted as a standing authorization** for the
 applied-mathematics spine (M2–M12) and the platform work in §5 below. From this
 ADR forward:
 
@@ -100,12 +100,9 @@ one's own work/research* — two structural gaps:
    checked. **Decision: R6 lands before the branch buildout passes M4**
    (§3, wave 2).
 
-One more honest observation: the per-lesson artifact set (brief, contract,
-mastery contract, plan — often 1,500+ lines) is what made L5/L6 correct, and
-it is also the throughput ceiling. The fix in §4 is not thinner artifacts; it
-is parallelizing their production and review.
+One more honest observation: the per-lesson artifact set made L5/L6 correct, but repeatedly loading full standards, historical review logs, and four long artifacts in each cold context is now the throughput ceiling. The response is to keep the gate-owned decisions while shrinking the active route: concise current artifacts, history in Git or lesson-owned acceptance records, and a generated task context. Parallel contexts are an explicit speed tradeoff, not the default.
 
-### 2.2 Architecture & stack — sound; the bottleneck is authoring throughput
+### 2.2 Architecture & stack — sound; the bottleneck is repeated cold context
 
 **Right and kept:** React + Vite + TS strict; KaTeX; Mafs for explorers;
 Motion Canvas for guided scenes; the pure `src/math` layer with load-time
@@ -120,7 +117,7 @@ compile-error wrong-space endpoints.
 | Finding | Decision |
 | --- | --- |
 | Guided-scene registration spans **five mechanical surfaces** (`sceneTimings`, `sceneBeatIntents.json`, `sceneMeta`, `sceneDescriptions`, `animation-authoring-scenes.json`); L6 missed one twice | Add a `scripts/new-scene` scaffolder that writes all five stubs from one declaration; the registry test already bites on omissions |
-| **No CI.** Every verification run in this repo's history was local; a branch can be pushed red with no signal | Add GitHub Actions: `check.sh --quick` on every push, full `--e2e` nightly and on `master` merges. This is a precondition for trusting autonomous merges |
+| CI existed but did not gate a branch before merge and duplicated quick/full work on pushes | Keep quick checks on pushes; run full unit + serialized browser checks on package-ready pull requests, `master`, nightly, and manual dispatch; cancel obsolete branch runs; upload both Playwright report and raw results |
 | jsdom hid two real browser-only defects (KaTeX no-op render, caret-vs-commit race) | Standing rule: every new interactive capability ships with a real-browser spec the same day (already true for `math-expression`; now required, not habitual) |
 | Full `--e2e` sweeps show contention-class failures (media-heavy specs, 404 bursts under parallel load) | Track in known-failure-modes; run heavy specs serialized in CI; do not waive new failures into the contention class without reproducing them in isolation |
 | Layout (`CourseSidebar`, lesson routes, `/set/:setId`) | Scales fine to ~40 lessons; the `/map` page (ADR-007) has its trigger condition and R6's readiness overlay — no change now |
@@ -141,8 +138,7 @@ response/control is M8, the remaining calculus is M2 + M9–M11. **Nonlinear
 dynamics is genuinely new** and is added as M12 (spine amendment committed with
 this ADR).
 
-Build waves, each wave a set of packages that can proceed in parallel once its
-dependencies are green:
+The waves below express dependency order. Default execution is one package session at a time; independent packages run in parallel only when the owner explicitly chooses elapsed-time speed over usage:
 
 | Wave | Packages | Content | Depends on |
 | --- | --- | --- | --- |
@@ -151,7 +147,7 @@ dependencies are green:
 | 3 | **D** (M4 complex-oscillation), **I** (M9 many-variables) | Two independent branch roots | Wave 1 (M4 also wants M3's series for `e^{iθ}`) |
 | 4 | **E** (M5 projection-spectra), **G** (M7 differential-equations), **J** (M10 fields) | Branch middles | M4 / M4 / M9 respectively |
 | 5 | **F** (M6 signals + FFT, ends in the **signals workshop**), **H** (M8 response-control, ends in the **ODE/control workshop**), **K** (M11 boundary-theorems) | Branch heads | M5 / M7 / M10 |
-| 6 | **L** (M12 nonlinear-dynamics, ends in the **dynamics workshop**), **fields workshop** | Phase portraits & stability; bifurcations; limit cycles; maps & chaos | M7 (+ eigen material from linear-algebra, already built) |
+| 6 | **L** (M12 nonlinear-dynamics, ends in the **dynamics workshop**), **fields workshop** | Phase portraits & stability; bifurcations; limit cycles; maps & chaos | M8 (+ eigen material from linear-algebra, already built) |
 
 Rules that survive the speed-up: modules ship as whole packages; Mode B for a
 full package completes before that package's Mode C begins; every lesson's
@@ -161,42 +157,40 @@ contract. Nothing in this ADR licenses skipping gates — it licenses not
 
 ---
 
-## 4. The substitute review protocol (what replaces the owner)
+## 4. Usage-aware package and review protocol
 
-Per lesson, in order, each by a **fresh context** that did not write the code
-under review (a new session or an explicitly clean-slate pass — the L6 record
-is the evidence that builder-context review reliably passes builder-context
-defects):
+The package is the context boundary. This preserves an independent review while
+avoiding multiple cold starts per lesson:
 
-1. **Mechanical tier** (unchanged): package-tier `check.sh`, full `--e2e` at
-   package boundaries, grading contracts + manifest entries in the same commit
-   as every auto-graded item.
-2. **Adversarial math review** — reads the math layer and the lesson's claims
-   with the explicit brief *"find the defect self-verification passed"*, and
-   greps for the *claims* (the L6 lesson: after fixing an invariant, search
-   for the sentences and sibling functions that assert it).
-3. **Rendered-page review** — loads every page in a real browser, reads every
-   prose string as rendered, checks every KaTeX span, exercises every control.
-   This is the reassigned owner function; both historical owner-only catches
-   are now permanent test guards, and this pass exists to catch the *next*
-   class, which by definition has no guard yet.
-4. **Acceptance record** — mastery-contract §6 states what was verified, by
-   which pass, and that acceptance is under ADR-008 with the owner's standing
-   veto. "Accepted" never appears without rounds 2–3 having found-and-fixed or
-   explicitly found-nothing (recorded as such — a round that finds nothing is
-   reported as exactly that, never as proof the next would not).
+1. **One implementation session per approved package.** It consumes the
+   package’s completed Mode B artifacts, implements its lessons in dependency
+   order, and uses targeted tests in the edit loop. Keep the session and working
+   directory stable while the package remains active.
+2. **One fresh package reviewer.** After the implementation branch is clean, a
+   context that wrote none of the code performs both adversarial mathematics and
+   rendered-page review across the package. It reads every learner-facing claim,
+   exercises every relevant control, and records a verdict for each lesson.
+3. **Escalate selectively.** Add another independent reviewer only for a
+   high-risk proof or numerical algorithm, or when the first review fails in a
+   way that changes the contract. Routine math and rendered review do not get
+   separate cold contexts.
+4. **Corrections and delta verification.** Test-backed corrections return to the
+   existing implementation session. The same fresh reviewer verifies the delta;
+   a new full review cycle begins only when the contract or meaning of
+   “correct” changes.
+5. **Mechanical floor.** Run targeted tests locally, `./check.sh --quick` at the
+   bounded correction commit, and let package-ready CI own the complete unit and
+   browser suites. Every auto-graded item still ships with its grading contract
+   and assessment-manifest entry.
+6. **Acceptance record.** Each lesson’s mastery contract states what the package
+   review verified and that acceptance is under ADR-008 with the owner’s
+   standing veto. “Accepted” never appears without both math and rendered-page
+   review.
 
-Merge to `master` follows acceptance; CI (once added, wave 1) must be green.
-
-**Throughput levers** (in effect immediately): batch Mode B per package;
-parallelize independent packages across waves; the scene scaffolder; and —
-**offered, not assumed** — multi-agent workflow orchestration for the
-fan-out-heavy stages (per-lesson Mode B drafting, finder/verifier review
-rounds). Workflows require an explicit owner opt-in per the harness rules; the
-owner can grant it by saying so, and it is the single largest remaining
-speed lever.
-
----
+Parallel agent teams and multiple worktrees remain available only as an explicit
+“favor speed over usage” option. They are not the default protocol. The active
+context should come from `npm run context:task`; full standards are opened only
+when that pack exposes an ambiguity.
 
 ## 5. Platform work authorized alongside content
 
@@ -210,10 +204,10 @@ mastery-contract decisions, starting with L7).
 ## 6. Consequences
 
 - The owner stops being the throughput ceiling and becomes an auditor with a
-  veto; the HANDOFF and ledgers become the audit surface.
-- Review quality now depends on genuinely fresh contexts per pass. A session
-  that builds and then "independently reviews" its own package violates this
-  ADR.
+  veto; the package ledger and lesson acceptance records are the audit surface.
+- Review quality depends on one genuinely fresh package-review context. A session
+  that builds and then “independently reviews” its own package violates this ADR;
+  combining mathematics and rendered-page review in the fresh reviewer does not.
 - If the substitute protocol starts passing defects the owner would have
   caught (measured by: owner spot-checks finding post-acceptance defects),
   this ADR's §4 is the first thing to amend — tighten the protocol, do not
