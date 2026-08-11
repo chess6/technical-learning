@@ -10,10 +10,22 @@ each stream — chiefly `calculus-foundations`'s Gate 9 items, which are **built
 but never administered**, and two recorded R0–R3 plan deviations never
 separately confirmed.
 
-**The critical path is now content.** No architectural obligation blocks the
-next lesson. The next spine nodes (`substitution-parts`, `improper-integrals`
-— L7/L8 of `calculus-technique`) are `future`, so building them is an approval
-boundary; docs-only Mode B planning for L7 is not.
+**Operating mode changed 2026-08-10 — read
+[ADR-008](decisions/008-autonomous-development-protocol.md) before anything
+else.** The owner issued a standing directive: develop the remaining spine
+end-to-end WITHOUT per-lesson owner review. ADR-008 records the authorization,
+the full-spine roadmap (waves 1–6, M2 through the new M12
+`nonlinear-dynamics`), the substitute review protocol (fresh-lineage
+adversarial + rendered-page passes replacing owner Gate 8), and the floors
+that did NOT relax (math correctness, evidence honesty, known-failure-modes,
+the package-claim rule). A session that builds a package must not also be the
+session that "independently" reviews it.
+
+**Current wave-1 state:** L7 `substitution-parts` Mode B is OPEN (Gate 3 brief
+drafted — see `lessons/07-substitution-parts/`). Remaining wave-1 items: L7
+Gates 4–5 + Mode C, L8 `improper-integrals` full pipeline, CI (GitHub Actions
+— no CI exists at all today; ADR-008 makes it a precondition for autonomous
+merges), and the scene-registration scaffolder.
 
 ---
 

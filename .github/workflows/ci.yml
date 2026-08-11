@@ -1,0 +1,67 @@
+# CI — added under ADR-008 (autonomous development protocol).
+#
+# Until 2026-08-10 every verification run in this repository's history was
+# local; a branch could be pushed red with no signal. Autonomous merges make
+# that intolerable: this workflow is the mechanical floor's remote half.
+#
+# Two tiers, mirroring check.sh's own:
+#  - quick (every push): lint, typecheck, the permanent grading/conformance
+#    suite — the same gate `check.sh --quick` runs locally.
+#  - e2e (master + nightly): the full Playwright sweep. Heavy specs run
+#    serialized (workers=1 for the media-heavy projects would be ideal;
+#    start with default and tighten if the known contention class appears —
+#    do NOT waive new failures into that class without reproducing them in
+#    isolation; see docs/quality/known-failure-modes.md).
+name: ci
+
+on:
+  push:
+  schedule:
+    - cron: "0 6 * * *" # nightly full sweep
+  workflow_dispatch:
+
+jobs:
+  quick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx oxlint
+      - run: npx tsc -b
+      - run: npm run test:grading
+
+  full-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run
+
+  e2e:
+    # Full browser sweep only where it gates something: master, nightly, manual.
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

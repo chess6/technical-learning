@@ -174,8 +174,10 @@ leaving one half-built.
 | M9 | `many-variables` | Calculus in more variables | 3 | I |
 | M10 | `fields` | Vector fields, circulation, and flux | 3 | J |
 | M11 | `boundary-theorems` | Green, Stokes, and the divergence theorem | 4 | K |
+| M12 | `nonlinear-dynamics` | When the linear picture breaks: flows, bifurcations, chaos | 4 | L |
 
-**39 lessons** (38 indispensable + 1 conditional bridge) in **12 packages**.
+**43 lessons** (42 indispensable + 1 conditional bridge) in **13 packages**.
+*(M12 added 2026-08-10 by owner directive — see ADR-008 and §6.4.)*
 
 M1 and M2 are the **trunk** on which everything else depends. M3–M6, M7–M8, and
 M9–M11 are three branches, described in [§6](#6-the-three-branches).
@@ -327,6 +329,25 @@ which it generalizes three times. Independent of M3–M8. It is placed last in t
 canonical order because it is the **capstone**: Theme 1 reaches full generality
 there, and the learner has by then watched the same cancellation argument pay off
 once already.
+
+### 6.4 The nonlinear extension (M7 → M12)
+
+**Added 2026-08-10 (owner directive, ADR-008).** Everything through M8 solves
+systems where superposition holds; M12 is the honest sequel — what the same
+machinery does when it does not. Four lessons:
+
+| Lesson id | Working title | The insight neighborhood |
+| --- | --- | --- |
+| `phase-portraits-stability` | The picture that replaces the formula | Most ODEs have no closed-form solution, and the qualitative picture (fixed points, their stability, the flow between them) answers the questions the formula was for. Linearization at a fixed point is the derivative's local-model idea (L2/L6) applied to a vector field; eigenvalues (linear-algebra course) classify what the formula cannot say. |
+| `bifurcations` | When a parameter crosses a threshold | The *structure* of the phase portrait is itself a function of parameters, and it changes discontinuously at bifurcation points while everything else varies smoothly — the reason "gradual causes, sudden effects" is mathematics, not metaphor. |
+| `limit-cycles-oscillators` | Oscillation without a restoring formula | Sustained oscillation as an attractor (van der Pol), not a solution formula — why linear intuition (M8's response picture) predicts decay or blow-up and misses the third possibility. |
+| `maps-and-chaos` | Determinism without predictability | The logistic map: iteration as the discrete flow, period doubling, sensitivity to initial conditions. Separates "deterministic" from "predictable" — the misconception the module exists to break. |
+
+Needs M7 (what an ODE is, what a solution is, the linear theory to break) and
+the eigenvalue material the linear-algebra course already ships. Deliberately
+*after* M8: the learner should have the linear response picture solidly before
+watching it fail. Ends in the **dynamics workshop** (ADR-008 §2.1): the
+learner brings their own system and produces its phase-portrait analysis.
 
 ---
 
