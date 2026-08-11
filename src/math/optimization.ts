@@ -81,8 +81,8 @@ export interface OptimizationFixture {
    * triangle-inequality bound) — never a sampled maximum. Required for
    * `certifiedRadius` and `linearizationErrorBound`. A fixture with
    * `derivative2` identically zero (a linear function) declares the constant
-   * bound `0`, which is what makes `certifiedRadius` correctly return "no
-   * disagreement anywhere in the domain" for a straight line.
+   * bound `0`, which is what lets `certifiedRadius` certify a straight line's
+   * whole available reach — the strongest claim a bounded domain supports.
    */
   readonly secondDerivativeBound?: (center: number, radius: number) => number;
 }
@@ -117,6 +117,37 @@ export type SampledDisagreement =
   | { readonly kind: typeof NO_DISAGREEMENT_IN_DOMAIN };
 
 const TOL = 1e-9;
+
+/**
+ * How far `a` can actually be stepped in each direction without leaving
+ * `fixture`'s OWN DECLARED domain. Every function below that makes a claim
+ * about a neighbourhood of `a` reads its window from here rather than from a
+ * fixed constant, so no claim can quietly extend past where the fixture says
+ * `f` is being considered.
+ *
+ * The three consumers want genuinely different things from it, which is why
+ * this returns both sides rather than one number:
+ *
+ * - `certifiedRadius`/`trustRadius` need a radius they can *guarantee*, so
+ *   they take `min(left, right)` — or the single side that exists when `a`
+ *   sits exactly at a domain edge, where the guarantee is honestly one-sided.
+ * - `firstSampledDisagreement` is looking for a counterexample, so it takes
+ *   `max(left, right)`: a disagreement on the long side is still a real
+ *   in-domain disagreement, and `inDomain` already discards the samples that
+ *   fall off the short side.
+ */
+function domainReach(fixture: OptimizationFixture, a: number): { left: number; right: number } {
+  const [lo, hi] = fixture.domain;
+  return { left: a - lo, right: hi - a };
+}
+
+/** The radius a two-sided claim at `a` can be made over — one-sided at a domain edge. */
+function guaranteeableReach(fixture: OptimizationFixture, a: number): number {
+  const { left, right } = domainReach(fixture, a);
+  if (left <= TOL) return right;
+  if (right <= TOL) return left;
+  return Math.min(left, right);
+}
 
 function inDomain(fixture: OptimizationFixture, x: number): boolean {
   const [lo, hi] = fixture.domain;
@@ -259,19 +290,41 @@ export function classifyStationaryPoint(
  * bounds `|f''|` on the search window via the fixture's own declared
  * `secondDerivativeBound`. NEVER claimed maximal — see the module docstring.
  *
- * `searchRadius` bounds the window `secondDerivativeBound` is asked to cover;
- * the returned radius is clamped to it (and to stay inside the domain), so
- * the result is always a radius the bound genuinely applies over.
+ * **Domain reconciliation** (the same defect `trustRadius` was repaired for,
+ * found unfixed here by a later review — the fix to one claim had not reached
+ * its sibling). Two things were wrong before that repair:
  *
- * Returns `Infinity` exactly when `M === 0` (a linear fixture, whose residual
- * is identically zero) — the sign agreement never fails anywhere `f'(a) != 0`
- * makes the argument run at all, which is `NO_DISAGREEMENT_IN_DOMAIN`'s
- * mathematical cause, not a coincidence of this implementation.
+ * 1. The docstring said the returned radius was "clamped ... to stay inside
+ *    the domain". It was not — nothing in the body referred to the domain at
+ *    all. `certifiedRadius(OPT_MAIN_CUBIC, 3)` returned `1.0` for a point with
+ *    ZERO room to its right on `[-2, 3]`, certifying sign agreement out to
+ *    `x = 4`, where the fixture does not declare `f` to be under consideration.
+ * 2. It returned literal `Infinity` when `M === 0`, overstating what a
+ *    BOUNDED domain supports — exactly the overstatement `trustRadius` had
+ *    already been corrected for.
+ *
+ * Both are now closed the same way `trustRadius` closes them: the window is
+ * the fixture's own `guaranteeableReach` from `a` (one-sided when `a` sits at
+ * a domain edge, where a symmetric claim would step straight out of the
+ * domain), and the returned radius is capped at it. A zero-curvature fixture
+ * therefore reports that whole reach — the honest "it never fails anywhere in
+ * this domain", stated as a radius the domain actually contains.
+ *
+ * Deriving the window from the domain rather than from a fixed constant also
+ * makes the certificate meaningfully TIGHTER, not merely safer: `M` no longer
+ * has to bound `|f''|` over five units the fixture never uses. On the main
+ * cubic at `a = 0` the certified radius rises from `0.2` to `0.5` — still
+ * comfortably below the real first disagreement at `sqrt(3)`, and now close
+ * enough to it that the certified-vs-observed contrast reads as the honest
+ * gap it is rather than as an arbitrary one.
+ *
+ * `searchRadius` may narrow that window further; it can never widen it past
+ * the domain.
  */
 export function certifiedRadius(
   fixture: OptimizationFixture,
   a: number,
-  searchRadius = 5,
+  searchRadius?: number,
 ): number {
   const m = fixture.derivative(a);
   if (Math.abs(m) <= 1e-12) {
@@ -280,10 +333,15 @@ export function certifiedRadius(
   if (!fixture.secondDerivativeBound) {
     throw new Error(`${fixture.id}: no declared secondDerivativeBound — cannot certify a radius.`);
   }
-  const bound = fixture.secondDerivativeBound(a, searchRadius);
-  if (bound <= 0) return Infinity;
+  const reach = guaranteeableReach(fixture, a);
+  if (!(reach > 0)) {
+    throw new Error(`certifiedRadius: ${fixture.id} has no room to step from a=${a} in either domain direction.`);
+  }
+  const window = searchRadius === undefined ? reach : Math.min(searchRadius, reach);
+  const bound = fixture.secondDerivativeBound(a, window);
+  if (bound <= 0) return window;
   const raw = (2 * Math.abs(m)) / bound;
-  return Math.min(raw, searchRadius);
+  return Math.min(raw, window);
 }
 
 /**
@@ -295,6 +353,25 @@ export function certifiedRadius(
  * the domain (a linear fixture, or a nonlinear one on a small enough domain),
  * this returns `NO_DISAGREEMENT_IN_DOMAIN` — a real, honest report, not a
  * missing value.
+ *
+ * **`NO_DISAGREEMENT_IN_DOMAIN` must mean "looked, found none".** An earlier
+ * version searched `min(maxRadius, a - lo, hi - a)` — the SYMMETRIC reach —
+ * and so emitted this lesson's strongest available report on the strength of
+ * whichever side happened to be shorter. Two real failures followed, both
+ * reachable by dragging the explorer's own `a` slider:
+ *
+ * - At a domain edge the symmetric reach is `0`, so it returned "none in this
+ *   domain" having sampled **not one point**.
+ * - Just inside an edge it threw away the entire long side. On the main cubic
+ *   at `a = -1.9` it searched only `±0.1` and reported "none in this domain",
+ *   while a genuine in-domain disagreement sits at `h ≈ 2.31` — a false
+ *   negative on the very observation the lesson contrasts against the
+ *   certified radius.
+ *
+ * The search window is now the LONGER reach; `inDomain` (already applied per
+ * sample, below) discards the steps that fall off the short side, so no
+ * out-of-domain point is ever evaluated. A point strictly inside a non-empty
+ * domain therefore always has somewhere to look.
  */
 export function firstSampledDisagreement(
   fixture: OptimizationFixture,
@@ -305,11 +382,18 @@ export function firstSampledDisagreement(
   if (Math.abs(m) <= 1e-12) {
     throw new Error(`firstSampledDisagreement: f'(${a}) = 0 — nothing to sample agreement against.`);
   }
+  const [domainLo, domainHi] = fixture.domain;
+  if (a < domainLo - TOL || a > domainHi + TOL) {
+    throw new Error(
+      `firstSampledDisagreement: a=${a} is outside ${fixture.id}'s domain [${domainLo}, ${domainHi}].`,
+    );
+  }
   const steps = options.steps ?? 400;
-  const [lo, hi] = fixture.domain;
-  const maxRadius = Math.min(options.maxRadius ?? 5, a - lo, hi - a);
-  if (maxRadius <= 0) return { kind: NO_DISAGREEMENT_IN_DOMAIN };
-  const expectedSign = Math.sign(m);
+  const { left, right } = domainReach(fixture, a);
+  const maxRadius = Math.min(options.maxRadius ?? 5, Math.max(left, right));
+  if (!(maxRadius > 0)) {
+    throw new Error(`firstSampledDisagreement: ${fixture.id} leaves no room to sample from a=${a}.`);
+  }
   for (let i = 1; i <= steps; i += 1) {
     const h = (maxRadius * i) / steps;
     for (const signedH of [h, -h]) {
@@ -321,7 +405,6 @@ export function firstSampledDisagreement(
       if (predictedSign !== 0 && actualSign !== predictedSign) {
         return { kind: "found", h: signedH };
       }
-      void expectedSign;
     }
   }
   return { kind: NO_DISAGREEMENT_IN_DOMAIN };
@@ -462,10 +545,7 @@ export function trustRadius(
   if (a < domainLo - TOL || a > domainHi + TOL) {
     throw new Error(`trustRadius: a=${a} is outside ${fixture.id}'s domain [${domainLo}, ${domainHi}].`);
   }
-  const leftReach = a - domainLo;
-  const rightReach = domainHi - a;
-  const maxReach =
-    leftReach <= TOL ? rightReach : rightReach <= TOL ? leftReach : Math.min(leftReach, rightReach);
+  const maxReach = guaranteeableReach(fixture, a);
   if (!(maxReach > 0)) {
     throw new Error(`trustRadius: ${fixture.id} has no room to step from a=${a} in either domain direction.`);
   }
@@ -567,10 +647,14 @@ export const OPT_NEG_QUARTIC: OptimizationFixture = {
 
 /**
  * A linear fixture — f''(x) = 0 EXACTLY, so `secondDerivativeBound` declares
- * the constant 0. This is what makes `certifiedRadius` return `Infinity` and
- * `firstSampledDisagreement` return `NO_DISAGREEMENT_IN_DOMAIN`: the residual
- * is identically zero, not merely small, so the escape-route sign agreement
- * never fails anywhere in the domain.
+ * the constant 0. The residual is identically zero, not merely small, so the
+ * escape-route sign agreement never fails anywhere in the domain.
+ * `certifiedRadius` therefore reports this fixture's WHOLE reach from `a` —
+ * the honest form of "never fails here", stated as a radius that `[-4, 4]`
+ * actually contains — and `firstSampledDisagreement` reports
+ * `NO_DISAGREEMENT_IN_DOMAIN` after genuinely searching that reach. (Both used
+ * to be reached differently: `certifiedRadius` returned literal `Infinity`,
+ * which a bounded domain cannot support.)
  */
 export const OPT_LINEAR: OptimizationFixture = {
   id: "opt-linear",

@@ -362,3 +362,41 @@ work normally for an affected scene.
 
 *Recorded 2026-07-29–30 while shipping applied-mathematics Package A slice A4,
 on `ftc-accumulate-then-measure`.*
+
+## An invariant repaired in one function, left standing in its siblings
+
+**Seen in:** `src/math/optimization.ts` (L6 `optimization-approximation`). A
+review round established that a radius returned about a point `a` must be
+reconciled with the fixture's own declared domain — never `Infinity` for a
+bounded domain, never a reach the domain does not contain — and repaired
+`trustRadius` accordingly, with regression tests. `certifiedRadius`, sitting
+forty lines away and returning the same kind of object, was not touched: it
+still used a fixed 5-unit window, still returned `Infinity` for a
+zero-curvature fixture, and certified a radius reaching past the domain's
+right endpoint. Its docstring meanwhile *claimed* the domain clamping the body
+never performed. The next round found it.
+
+The related shape, same file: a sentinel that names an honest negative result
+(`NO_DISAGREEMENT_IN_DOMAIN` — "searched this domain, found no disagreement")
+returned on a path that **searched nothing**, because the search window
+collapsed to zero at a domain edge. A learner-visible false negative wearing
+the label of the lesson's strongest claim.
+
+**Prevention.** Two rules, both cheap:
+
+1. **After repairing an invariant, grep for the other code that asserts
+   something of the same shape** — not just the prose downstream of the fix.
+   "Every function in this module that returns a radius" is a searchable set;
+   "everywhere this idea appears" is not. Where the siblings genuinely share
+   the question, extract the answer into one helper (here,
+   `guaranteeableReach`) so a third divergence is unwritable rather than
+   merely unlikely.
+2. **A sentinel that reports a negative result must be unreachable without
+   having looked.** If the search window can be empty, that is a distinct
+   outcome (or an error), never the same value as "looked and found none".
+   Test it by asserting the sentinel is *absent* at an input where the truth
+   is known to be positive — not only that it is present where the truth is
+   negative.
+
+*Recorded 2026-08-10, fourth independent review round on
+`feature/l6-optimization-approximation`.*

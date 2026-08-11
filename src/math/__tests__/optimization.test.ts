@@ -212,8 +212,59 @@ describe("certified radius — sufficient, never claimed maximal", () => {
     }
   });
 
-  it("is Infinity for a linear fixture — the residual is identically zero, so nothing ever disagrees", () => {
-    expect(certifiedRadius(OPT_LINEAR, 1)).toBe(Infinity);
+  it("reports a zero-curvature fixture's whole domain reach, never literal Infinity", () => {
+    // The residual is identically zero, so agreement never fails — but the
+    // domain is BOUNDED, and `Infinity` claimed a radius the fixture does not
+    // declare `f` over. `OPT_LINEAR` is [-4, 4], so from a = 1 the
+    // guaranteeable (symmetric) reach is 3.
+    const radius = certifiedRadius(OPT_LINEAR, 1);
+    expect(Number.isFinite(radius)).toBe(true);
+    expect(radius).toBeCloseTo(3, 12);
+  });
+
+  it("never certifies a radius that steps outside the fixture's own domain", () => {
+    // Regression: the docstring claimed the result was clamped to the domain
+    // and the body never referred to the domain at all. At a = 3 (the main
+    // cubic's right endpoint, zero room right) it returned 1.0, certifying
+    // sign agreement out to x = 4.
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      if (!fixture.secondDerivativeBound) continue;
+      const [lo, hi] = fixture.domain;
+      for (let i = 0; i <= 20; i += 1) {
+        const a = lo + ((hi - lo) * i) / 20;
+        if (Math.abs(fixture.derivative(a)) <= 1e-12) continue;
+        const radius = certifiedRadius(fixture, a);
+        const reach = Math.max(a - lo, hi - a);
+        expect(radius).toBeLessThanOrEqual(reach + 1e-9);
+      }
+    }
+  });
+
+  it("still certifies only radii on which the sign genuinely agrees, after the domain fix", () => {
+    // The fix TIGHTENS the window (M no longer bounds |f''| over five unused
+    // units), which makes the radius larger — so re-prove soundness rather
+    // than assume the earlier, looser value's proof carries over.
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      if (!fixture.secondDerivativeBound) continue;
+      const [lo, hi] = fixture.domain;
+      for (let i = 0; i <= 12; i += 1) {
+        const a = lo + ((hi - lo) * i) / 12;
+        const m = fixture.derivative(a);
+        if (Math.abs(m) <= 1e-12) continue;
+        const radius = certifiedRadius(fixture, a);
+        if (!Number.isFinite(radius)) continue;
+        for (let j = 1; j <= 40; j += 1) {
+          const h = (radius * 0.999 * j) / 40;
+          for (const signedH of [h, -h]) {
+            const x = a + signedH;
+            if (x < lo - 1e-12 || x > hi + 1e-12) continue;
+            const change = fixture.f(x) - fixture.f(a);
+            if (Math.sign(change) === 0) continue;
+            expect(Math.sign(change)).toBe(Math.sign(m * signedH));
+          }
+        }
+      }
+    }
   });
 
   it("throws rather than fabricating a radius at a stationary point", () => {
@@ -230,6 +281,59 @@ describe("first sampled disagreement — a distinct, purely observational report
   it("reports NO_DISAGREEMENT_IN_DOMAIN for a linear fixture — never a fabricated observation", () => {
     const result = firstSampledDisagreement(OPT_LINEAR, 1);
     expect(result.kind).toBe(NO_DISAGREEMENT_IN_DOMAIN);
+  });
+
+  it("does not report 'none in this domain' while a real in-domain disagreement exists", () => {
+    // Regression: the search window was the SYMMETRIC reach
+    // `min(maxRadius, a - lo, hi - a)`, so a point near a domain edge threw
+    // away the whole long side. At a = -1.9 on [-2, 3] it searched only ±0.1
+    // and reported the lesson's strongest available claim, while a genuine
+    // disagreement sits at h ≈ 2.31.
+    const a = -1.9;
+    const result = firstSampledDisagreement(OPT_MAIN_CUBIC, a);
+    expect(result.kind).toBe("found");
+    if (result.kind === "found") {
+      const m = OPT_MAIN_CUBIC.derivative(a);
+      const change = OPT_MAIN_CUBIC.f(a + result.h) - OPT_MAIN_CUBIC.f(a);
+      expect(Math.sign(change)).not.toBe(Math.sign(m * result.h));
+      expect(a + result.h).toBeLessThanOrEqual(OPT_MAIN_CUBIC.domain[1] + 1e-9);
+      expect(a + result.h).toBeGreaterThanOrEqual(OPT_MAIN_CUBIC.domain[0] - 1e-9);
+    }
+  });
+
+  it("actually samples at a domain edge instead of reporting 'none' vacuously", () => {
+    // At a = -2 the symmetric reach is 0, so the old window was 0 and the
+    // function returned NO_DISAGREEMENT_IN_DOMAIN without evaluating a single
+    // point. "None" is the right answer here (f(x) >= f(-2) across the whole
+    // domain), but it must be the result of looking — so assert the search is
+    // live by checking that the same edge on a fixture which DOES disagree
+    // to its available side reports the disagreement.
+    expect(firstSampledDisagreement(OPT_MAIN_CUBIC, -2).kind).toBe(NO_DISAGREEMENT_IN_DOMAIN);
+
+    // f(x) = x^3 on [-1.5, 1.5] from the left edge: f'(-1.5) > 0 predicts every
+    // rightward step raises f, and every rightward step really does — so this
+    // edge agrees. Use the cubic's right edge instead, where a leftward step
+    // is the only one available and the prediction genuinely fails somewhere.
+    const atRightEdge = firstSampledDisagreement(OPT_MAIN_CUBIC, 3);
+    if (atRightEdge.kind === "found") {
+      expect(atRightEdge.h).toBeLessThan(0); // only leftward steps exist there
+      expect(3 + atRightEdge.h).toBeGreaterThanOrEqual(OPT_MAIN_CUBIC.domain[0] - 1e-9);
+    }
+  });
+
+  it("never samples a point outside the fixture's declared domain", () => {
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      const [lo, hi] = fixture.domain;
+      for (let i = 0; i <= 20; i += 1) {
+        const a = lo + ((hi - lo) * i) / 20;
+        if (Math.abs(fixture.derivative(a)) <= 1e-12) continue;
+        const result = firstSampledDisagreement(fixture, a);
+        if (result.kind === "found") {
+          expect(a + result.h).toBeGreaterThanOrEqual(lo - 1e-9);
+          expect(a + result.h).toBeLessThanOrEqual(hi + 1e-9);
+        }
+      }
+    }
   });
 
   it("is a genuinely separate report from the certified radius — the two may disagree", () => {

@@ -15,6 +15,13 @@ const toggle = (container: HTMLElement, label: string) =>
     (i as HTMLInputElement).labels?.[0]?.textContent?.includes(label),
   ) as HTMLInputElement;
 
+/** The numeric value rendered under the "Certified sufficient radius" readout. */
+const certifiedRadiusShown = (text: string): number => {
+  const match = /Certified sufficient radius\s*(-?[\d.]+)/.exec(text);
+  expect(match, "certified radius readout not found").not.toBeNull();
+  return Number(match![1]);
+};
+
 const pickPreset = (container: HTMLElement, label: string) => {
   const button = [...container.querySelectorAll("button")].find((b) =>
     b.textContent?.includes(label),
@@ -43,7 +50,41 @@ describe("OptimizationApproximationExplorer", () => {
     pickPreset(container, "A linear function");
     const text = container.textContent ?? "";
     expect(text).toContain("none in this domain");
-    expect(text).toContain("∞");
+    // The certified radius on a zero-curvature fixture is the fixture's whole
+    // reach — a finite number the domain actually contains, not "∞". An
+    // unbounded radius overstated what OPT_LINEAR's bounded [-4, 4] supports;
+    // from the preset's a = 1 the guaranteeable reach is 3.
+    expect(text).not.toContain("∞");
+    expect(certifiedRadiusShown(text)).toBeCloseTo(3, 6);
+  });
+
+  it("never shows a certified radius that steps outside the domain, at any point on the a slider", () => {
+    // Regression, learner-reachable by dragging `a`: the certified radius used
+    // a fixed 5-unit search window and was never reconciled with the fixture's
+    // own domain, so near the main cubic's right endpoint it certified a
+    // radius reaching past x = 3 — outside where the fixture declares f at all.
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    for (const a of [-1.9, 0, 2.9]) {
+      fireEvent.change(slider, { target: { value: String(a) } });
+      const radius = certifiedRadiusShown(container.textContent ?? "");
+      expect(radius).toBeLessThanOrEqual(Math.max(a + 2, 3 - a) + 1e-6);
+    }
+  });
+
+  it("does not claim 'none in this domain' near an edge where a real disagreement exists", () => {
+    // Regression: the sampler's window was the SYMMETRIC reach, so at a = -1.9
+    // on [-2, 3] it searched only ±0.1 and reported the lesson's strongest
+    // available claim, while a genuine in-domain disagreement sat at h ≈ 2.31.
+    const { container } = render(<OptimizationApproximationExplorer />);
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
+    fireEvent.change(slider, { target: { value: "-1.9" } });
+    const text = container.textContent ?? "";
+    const marker = "First sampled disagreement (this grid)";
+    expect(text).toContain(marker);
+    const shown = text.slice(text.indexOf(marker) + marker.length, text.indexOf(marker) + marker.length + 40);
+    expect(shown).not.toContain("none in this domain");
+    expect(shown).toContain("h ≈");
   });
 
   it("reports the constant function as not a finite reduction", () => {

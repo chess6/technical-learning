@@ -50,9 +50,13 @@ own domain, four explorer presets opened away from the case they advertised,
 scene/explorer each independently re-derived the step decomposition and
 candidate-set values the math layer was supposed to own exclusively. All
 confirmed and fixed, with regression tests for each (detail in Stream 3's
-review subsections). **A third independent pass has not yet run** — the same
-discipline L5's Gate 8 needed applies here: passing review rounds is evidence
-the harness works, not evidence the next pass would find nothing.
+review subsections). **A fourth round has now run too** (2026-08-10, fresh
+lineage) and again found real defects — this time the third round's own domain
+reconciliation had been applied to `trustRadius` while its two sibling
+functions carried the identical gaps. Four rounds, four rounds that found
+something. The same discipline L5's Gate 8 needed still applies: passing a
+review round is evidence the harness works, not evidence the next pass would
+find nothing.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -352,8 +356,14 @@ So the free-response derivation is now a **practice event with no evidence
 claim**, objective 9 is re-scoped to a structured E3 item, and **this lesson
 produces no E6 evidence — none is obtainable in this repository today**, so the
 unaided-reconstruction obligation is deferred to the validation pilot.
-**L5's contract has an E4 self-check claim of the same shape and is very likely
-wrong in the same way** — worth checking before it is cited as precedent.
+~~**L5's contract has an E4 self-check claim of the same shape and is very
+likely wrong in the same way** — worth checking before it is cited as
+precedent.~~ **Checked 2026-08-10: already fixed, no action needed.**
+`lessons/05-chain-rule/mastery-contract.md` records the correction made
+2026-08-01 — `chain-derive-fresh` is a **self-check practice event carrying no
+evidence claim**, with the superseded E4 "human-scored" claim quoted in place
+as the thing that was wrong. `chainRule.ts` matches. The suspicion was right
+about the defect class and stale about this instance.
 
 **Self-certified, and it showed.** Author and both audits were one agent
 lineage. Owner review found five real defects that the self-audits had passed —
@@ -599,6 +609,47 @@ specs that fail only inside the full `--e2e` sweep" contention class — none
 touch any file this repair changed. **No new waiver was added.** This round,
 too, is not a substitute for a further independent pass.
 
+### Fourth independent review — the repair that had not reached its siblings (2026-08-10)
+
+Run by a fresh agent lineage that built none of the above. It found **two real
+defects, both in `src/math/optimization.ts`, both reachable by a learner
+dragging the explorer's `a` slider** — and both are the *same* defect the third
+round fixed in `trustRadius`, left standing in the two neighbouring functions
+that make the same kind of claim:
+
+1. **`certifiedRadius` never referred to the domain**, while its own docstring
+   said the result was "clamped ... to stay inside the domain". At `a = 3` on
+   the main cubic's `[-2, 3]` — zero room to the right — it certified a radius
+   of `1.0`, a claim about `f` out at `x = 4`. It also still returned literal
+   `Infinity` for a zero-curvature fixture, the exact overstatement round 3 had
+   already struck from `trustRadius`.
+2. **`firstSampledDisagreement` could return `NO_DISAGREEMENT_IN_DOMAIN`
+   having sampled nothing.** Its window was the SYMMETRIC reach, so at a domain
+   edge it was `0`, and just inside an edge it threw away the whole long side:
+   at `a = -1.9` it searched `±0.1` and reported "none in this domain" while a
+   real in-domain disagreement sat at `h ≈ 2.31`. That is a false negative on
+   precisely the observation the lesson contrasts against the certified radius.
+
+Both fixed: one shared `guaranteeableReach` helper now owns the "how far can a
+claim at `a` reach" question for `certifiedRadius` and `trustRadius` (so they
+cannot drift apart a third time), and the sampler searches the longer reach
+with `inDomain` filtering per sample. Five regression tests added and **each
+proven to bite** — run against the pre-fix code, observed to fail, restored.
+The explorer's now-unreachable `"∞"` readout was removed with them.
+
+Worth carrying forward: the domain-derived window makes the certificate
+**tighter as well as sound** — on the main cubic at `a = 0` the certified radius
+goes `0.2 → 0.5` against a true first disagreement at `sqrt(3) ≈ 1.73`. The old
+value was conservative because `M` was bounding `|f''|` over five units the
+fixture never uses.
+
+**The generalisation this round earns:** the handoff already warned that *a fix
+to a claim does not reach the sentences that use it*. It also does not reach
+the **neighbouring functions making the same claim**. After repairing an
+invariant, grep for the other code that asserts something of that shape — here,
+every function returning a radius — not just for the prose downstream of the
+one you fixed.
+
 A minor Mode A-adjacent correction made alongside implementation, flagged
 rather than silently done: `course-spine.md`'s L6 row carried the spine's own
 imprecise sentence ("find where the local model is flat") verbatim, never
@@ -624,9 +675,17 @@ pre-change baselines by both streams independently.
 `master` contains both streams as of the merge described above and has been
 pushed to `origin`. `feature/l5-chain-rule` and its worktree are deleted.
 
-`feature/experience-architecture` is **not** fully merged: it carries R4
-(above) plus the two closed defect-class fixes, both landed *after* the merge
-to `master` recorded here. `master` does not yet have R4. Before merging again,
-re-run the cross-stream compatibility check the first merge did (new
-lessons/tests on `master` since must satisfy this branch's validators, and
-vice versa) rather than assuming the first merge's clearance still holds.
+**Corrected 2026-08-10.** This section previously said
+`feature/experience-architecture` was "**not** fully merged" and that "`master`
+does not yet have R4". Both statements were stale and are now false — verify
+against the repository, not against this file:
+
+- `git rev-list --count master..feature/experience-architecture` is **0** (and
+  `feature/experience-architecture..master` is 6), so the branch is fully
+  contained in `master` and is a stale pointer, safe to delete.
+- `src/curriculum/` on `master` carries `concepts.ts`, `edges.ts`, `labels.ts`,
+  `lessonRoster.ts` and `pathways.ts` — R4 **and** R5's data layer both landed.
+
+`feature/l6-optimization-approximation` is the one live branch: 18 commits
+ahead of `master`, 0 behind, pushed to `origin`. A fast-forward merge is
+available whenever Gate 8 is accepted.

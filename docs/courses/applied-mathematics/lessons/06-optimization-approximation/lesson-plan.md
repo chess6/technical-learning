@@ -355,7 +355,7 @@ tests:
       sufficient radius**, first-sampled-disagreement, bound, and the shared
       step decomposition `stepDecomposition`) — the second and third are
       separate functions with separate names, not one "threshold" helper.
-      `src/math/__tests__/optimization.test.ts`, 40 tests — including a
+      `src/math/__tests__/optimization.test.ts`, 45 tests — including a
       regression for `trustRadius`'s original fixed-point iteration (a
       ~10-orders-of-magnitude wrong error bound on the quartic preset,
       replaced with bisection), a THIRD-round regression for the bisection
@@ -364,12 +364,18 @@ tests:
       domain-reconciliation regression (`trustRadius` no longer returns
       `Infinity` for a zero-curvature fixture, and never claims a radius past
       what a fixture's own domain allows from a given point), a logarithmic
-      epsilon sweep, and cross-checks tying `stepDecomposition` to
-      `linearize`'s own residual so the two can never silently drift apart.
+      epsilon sweep, cross-checks tying `stepDecomposition` to
+      `linearize`'s own residual so the two can never silently drift apart,
+      and — from the FOURTH round — the same domain reconciliation proven for
+      `certifiedRadius` (never a radius past the fixture's own reach, at any
+      sampled point of any fixture; no literal `Infinity`) plus two
+      regressions holding `firstSampledDisagreement` to searching the LONGER
+      domain reach, so `NO_DISAGREEMENT_IN_DOMAIN` can only mean "looked,
+      found none" and never "had nowhere to look".
 - [x] The seven invariant tests above — same file.
 - [x] Component tests: explorer readouts, the sign-agreement indicator, sweep,
       reset, endpoint-opening — `OptimizationApproximationExplorer.test.tsx`,
-      21 tests, including the endpoint-selectability and interval-narrowing
+      23 tests, including the endpoint-selectability and interval-narrowing
       regressions an earlier review found, and the initial (no-drag) readout
       of all four silence/singularity presets (x³, |x|, x⁴, −x⁴), each now
       defaulting its point directly onto the advertised case.

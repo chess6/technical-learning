@@ -411,6 +411,48 @@ points rather than a hand-typed, separately-checked string. **This round is
 not a substitute for a further one either** — the same discipline stated
 above still applies. No box below should be read as "accepted."
 
+**A fourth independent review (2026-08-10) found the third round's domain
+reconciliation had been applied to `trustRadius` alone, while its two sibling
+functions carried the identical defects.** This is the failure mode the
+handoff already names — *a fix to a claim does not reach the sentences that
+use it* — one level up: it did not reach the neighbouring functions making
+the same kind of claim. Both confirmed against the running code before being
+fixed, and both were reachable by a learner simply dragging the explorer's
+`a` slider:
+
+1. **`certifiedRadius` never referred to the domain at all**, while its own
+   docstring stated the returned radius was "clamped ... to stay inside the
+   domain". On the main cubic at `a = 3` — the right endpoint, with zero room
+   to its right — it certified a radius of `1.0`, a claim about `f` out to
+   `x = 4`, where the fixture does not declare `f` to exist. It also returned
+   literal `Infinity` for a zero-curvature fixture, the exact overstatement
+   `trustRadius` had already been corrected for. The window is now the
+   fixture's own reach from `a` (one-sided at a domain edge), shared with
+   `trustRadius` through a single `guaranteeableReach` helper so the two
+   cannot drift apart again. A side effect worth noting: deriving the window
+   from the domain rather than from a fixed 5-unit constant makes the
+   certificate materially **tighter** as well as sound — on the main cubic at
+   `a = 0` it rises from `0.2` to `0.5`, against a true first disagreement at
+   `sqrt(3) ≈ 1.73`, so the certified-vs-observed gap now reads as the honest
+   margin it is rather than as an arbitrary one.
+2. **`firstSampledDisagreement` could report `NO_DISAGREEMENT_IN_DOMAIN`
+   without having examined a single point.** Its search window was the
+   SYMMETRIC reach `min(maxRadius, a - lo, hi - a)`, so at a domain edge the
+   window was `0` and the function returned this lesson's strongest available
+   report having sampled nothing; just inside an edge it discarded the entire
+   long side. On the main cubic at `a = -1.9` it searched only `±0.1` and
+   reported "none in this domain" while a genuine in-domain disagreement sits
+   at `h ≈ 2.31` — a false negative on the very observation §1c contrasts
+   against the certified radius, and one that undercuts the distinction the
+   lesson is built on. The window is now the LONGER reach; `inDomain`, already
+   applied per sample, discards steps falling off the short side, so no
+   out-of-domain point is ever evaluated.
+
+Five regression tests were added across the two suites and **each was proven
+to bite** — run against the pre-fix implementation, observed to fail, then
+restored. `optimization.test.ts` 40 → 45 tests, the explorer's component
+suite 21 → 23. **This round is not a substitute for a further one either.**
+
 - [x] Insight contract linked and `PASS` — [insight.md](insight.md).
 - [x] All §1 fields filled and reconciled against the built lesson
       (`src/lessons/optimizationApproximation.ts`).

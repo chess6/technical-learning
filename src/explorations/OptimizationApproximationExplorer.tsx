@@ -374,7 +374,16 @@ export function OptimizationApproximationExplorer() {
                     {
                       id: "radius",
                       label: "Certified sufficient radius",
-                      value: radius === Infinity ? "∞ — never fails anywhere in the domain" : fmt(radius),
+                      // Always a finite number the fixture's own domain
+                      // contains — `certifiedRadius` no longer returns
+                      // `Infinity` for a zero-curvature fixture, since an
+                      // unbounded radius overstates what a bounded domain
+                      // supports. On such a fixture the value IS the whole
+                      // reach, and the disagreement readout below reports
+                      // "none in this domain" — the two together say
+                      // "certified everywhere there is room to look",
+                      // without either one claiming more than it proved.
+                      value: fmt(radius),
                     },
                   ]
                 : []),
