@@ -346,13 +346,56 @@ open, and Gate 8 (§6) records that distinction rather than closing over it.
 
 ## 6. Acceptance record (Gate 8)
 
-**Gate 8: READY FOR INDEPENDENT REVIEW — not yet accepted.** Mode C
-implementation is complete on `feature/l6-optimization-approximation`
-(2026-08-01 – 2026-08-02), per the repository owner's explicit authorization
-to cross the Mode B → Mode C boundary. Every checklist item below reflects
-what the **implementing agent** has verified mechanically (tests, typecheck,
-lint, a live e2e pass) — it is **not** the domain-owner sign-off Gate 8
-requires.
+**Gate 8: ACCEPTED by the repository owner, 2026-08-10.** This record is
+authoritative; any other document that still describes L6's Gate 8 as open is
+stale and should be corrected against this section, not the other way round.
+
+Acceptance followed a **human review of the rendered lesson** — the step no
+automated tier substitutes for, and the one that produced the two defects an
+owner found in `chain-rule` and `karatsuba` (a `$$display$$` block that
+inverted every math span after it, and 47 misconception callouts that read
+identically because the three-beat shape was baked into the renderer) which no
+test had caught. The mechanical evidence below was already green at that
+point; it is what made the human read worth doing, not a substitute for it.
+
+Four independent review rounds ran before acceptance, and **each found real
+defects** — the first three are recorded below, and the fourth (2026-08-10,
+fresh agent lineage) found the third round's domain reconciliation had been
+applied to `trustRadius` while `certifiedRadius` and `firstSampledDisagreement`
+carried the identical gaps. A bounded correctness patch then closed the
+remaining structural issues: one shared declared-domain assertion honouring
+`domainOpen` across all three point-claiming functions, `stepDecomposition`
+returning the positions the guided scene draws between (so scene geometry and
+printed numbers come from one call), and `NO_DISAGREEMENT_IN_DOMAIN` made
+unreachable without a complete grid walk.
+
+**Verification at acceptance:** `tsc -b` clean; `oxlint` 0 errors;
+`./check.sh --quick` green (73 files, 1699 tests); `optimization.test.ts` 57
+tests; `e2e/lesson-optimization-approximation.spec.ts` 12 tests green; the
+`optimization-approximation` guided-scene hard gate green.
+
+**What acceptance does and does not certify.** It certifies that this lesson's
+own outcomes are built, evidenced, and judged sound by the domain owner on a
+read of the real page. It does **not** certify the M2 depth bar — that needs
+`calculus-technique`'s own Gate 9 assessment, which does not exist — and it
+does not close the E6 obligation, which remains deferred to a validation pilot
+because no E6 evidence is obtainable in this repository today (§1d).
+
+The checklist items below were verified mechanically by the implementing agent
+before review; the acceptance above is the separate, human half.
+
+<details>
+<summary>Superseded pre-acceptance status (kept for the record)</summary>
+
+> **Gate 8: READY FOR INDEPENDENT REVIEW — not yet accepted.** Mode C
+> implementation is complete on `feature/l6-optimization-approximation`
+> (2026-08-01 – 2026-08-02), per the repository owner's explicit authorization
+> to cross the Mode B → Mode C boundary. Every checklist item below reflects
+> what the **implementing agent** has verified mechanically (tests, typecheck,
+> lint, a live e2e pass) — it is **not** the domain-owner sign-off Gate 8
+> requires.
+
+</details>
 
 **A first independent review of this implementation already ran, and found
 real defects self-verification had missed** — the same pattern the Mode B

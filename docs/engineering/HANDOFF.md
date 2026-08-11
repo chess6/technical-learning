@@ -1,8 +1,19 @@
 # Handoff
 
-Two independent work streams landed on `master` on 2026-08-01. Neither is
-fully signed off; each has a *different* open obligation. Package status is
-not duplicated here — follow the links.
+Everything below is on `master` as of 2026-08-10. Package status is not
+duplicated here — follow the links.
+
+**Both of the obligations this handoff was built around are now discharged.**
+L6 `optimization-approximation` is Gate-8 accepted and merged; the independent
+semantic review of R0–R4 has run. What remains open is smaller and listed under
+each stream — chiefly `calculus-foundations`'s Gate 9 items, which are **built
+but never administered**, and two recorded R0–R3 plan deviations never
+separately confirmed.
+
+**The critical path is now content.** No architectural obligation blocks the
+next lesson. The next spine nodes (`substitution-parts`, `improper-integrals`
+— L7/L8 of `calculus-technique`) are `future`, so building them is an approval
+boundary; docs-only Mode B planning for L7 is not.
 
 ---
 
@@ -34,10 +45,14 @@ that still read "pending" were stale and have been corrected.
 
 **Open:** Gate 9 items for `calculus-foundations` remain unadministered.
 
-**L6 `optimization-approximation` is built** on
-`feature/l6-optimization-approximation` (2026-08-01–02 — see Stream 3
-below), per the owner's explicit authorization to cross the Mode B → Mode C
-boundary. **Two independent review rounds have now run** (2026-08-02) and
+**L6 `optimization-approximation` is built, Gate-8 accepted (2026-08-10), and
+merged to `master`.** Built on `feature/l6-optimization-approximation`
+(2026-08-01–02 — see Stream 3 below), per the owner's explicit authorization
+to cross the Mode B → Mode C boundary. The authoritative acceptance record is
+`lessons/06-optimization-approximation/mastery-contract.md` §6; acceptance
+followed the owner's read of the **rendered lesson**, which is the step no
+automated tier substitutes for. **Two independent review rounds ran**
+(2026-08-02) and
 found real defects self-verification had missed each time — the first: a
 mathematically broken `trustRadius`, roughly half the approved scene/explorer
 plan silently dropped, three exercises overclaiming what they captured, a
@@ -53,10 +68,15 @@ confirmed and fixed, with regression tests for each (detail in Stream 3's
 review subsections). **A fourth round has now run too** (2026-08-10, fresh
 lineage) and again found real defects — this time the third round's own domain
 reconciliation had been applied to `trustRadius` while its two sibling
-functions carried the identical gaps. Four rounds, four rounds that found
-something. The same discipline L5's Gate 8 needed still applies: passing a
-review round is evidence the harness works, not evidence the next pass would
-find nothing.
+functions carried the identical gaps. Four rounds, four that found something —
+which is the number worth remembering: the harness kept paying out right up to
+the last pass, so "the previous round was clean" was never evidence the next
+one would be. A bounded correctness patch then closed the remaining structural
+issues (one shared declared-domain assertion honouring `domainOpen` across all
+three point-claiming functions; `stepDecomposition` returning the positions the
+guided scene draws between; `NO_DISAGREEMENT_IN_DOMAIN` made unreachable
+without a complete grid walk), and the owner accepted on a rendered read. No
+fifth code review was required.
 
 **References:** module ledger §6–§8
 (`docs/courses/applied-mathematics/modules/calculus-foundations/implementation-package.md`)
@@ -470,9 +490,12 @@ defect (doc-internal citations reaching learner prose) that no automated
 test catches; `proseEmphasis.test.ts` now guards that specific class and is
 green here, but a human has not read the rendered page.
 
-**Gate 8 is explicitly NOT claimed.** `mastery-contract.md` §6 records what
-the implementing agent verified mechanically and states plainly that this is
-not the domain-owner sign-off Gate 8 requires — the L5 precedent (self-review
+**Gate 8 was explicitly NOT claimed at this point** — it was accepted later,
+on 2026-08-10, after four review rounds and a rendered read. What follows is
+the state as of the initial Mode C build; `mastery-contract.md` §6 is the
+authoritative record. At the time, it recorded what the implementing agent
+verified mechanically and stated plainly that this was not the domain-owner
+sign-off Gate 8 requires — the L5 precedent (self-review
 passed, an independent reviewer then found a real mathematical defect in
 exactly the step self-review had certified) is the reason to take that
 distinction seriously rather than as a formality. It repeated here: see the
@@ -700,6 +723,7 @@ against the repository, not against this file:
 - `src/curriculum/` on `master` carries `concepts.ts`, `edges.ts`, `labels.ts`,
   `lessonRoster.ts` and `pathways.ts` — R4 **and** R5's data layer both landed.
 
-`feature/l6-optimization-approximation` is the one live branch: 18 commits
-ahead of `master`, 0 behind, pushed to `origin`. A fast-forward merge is
-available whenever Gate 8 is accepted.
+`feature/l6-optimization-approximation` was fast-forward merged into `master`
+on 2026-08-10, immediately after Gate 8 acceptance, and pushed. `master` now
+carries L6 plus the fourth review round's fixes, the R0–R4 review fix, and the
+bounded correctness patch.

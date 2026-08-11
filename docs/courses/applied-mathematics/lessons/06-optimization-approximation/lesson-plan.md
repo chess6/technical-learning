@@ -401,9 +401,12 @@ tests:
 ## Acceptance checklist
 
 > Ticked items reflect what the implementing agent verified mechanically
-> (tests, typecheck, lint, static review) on 2026-08-01. None of this is
-> independent review or a domain-owner's read of the rendered page — see
-> mastery-contract.md §6 for the full status and what remains open.
+> (tests, typecheck, lint, static review). That is the *mechanical* half only.
+>
+> The other half is now done: four independent review rounds ran, each finding
+> real defects, and the repository owner reviewed the **rendered lesson** and
+> **accepted Gate 8 on 2026-08-10**. `mastery-contract.md` §6 is the
+> authoritative acceptance record — read it, not this list, for status.
 
 - [x] Insight Contract linked and `PASS`; exact sentence verbatim above; learner wording preserves meaning and causal chain
 - [x] Insight traceability table complete, with the two ungraded obligations declared rather than hidden
