@@ -220,17 +220,27 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   });
   inner.add(steppedPoint);
 
-  /** The step segment, split into the LINEAR part (mh) and the residual (E), drawn separately. */
+  /**
+   * The step segment, split into the LINEAR part (mh) and the residual (E),
+   * drawn separately.
+   *
+   * Both read their endpoints from `stepDecomposition` — the same helper
+   * `mhLabel`/`eLabel`/`agrees()` below read — rather than recomputing
+   * `f(a) + m*h` and `f(a+h)` here. These segments are only ever visible over
+   * `OPT_MAIN_CUBIC` (`stepAndCheck` and `tooBig`), which is the fixture the
+   * labels report on, so the drawn geometry and the printed numbers now come
+   * from one call and cannot disagree.
+   */
+  const mainStep = () => stepDecomposition(OPT_MAIN_CUBIC, centre(), h());
+
   const linearSegment = new Line({
     key: "semantic:optapprox:mh",
     stroke: ROLE.transformed,
     lineWidth: 5,
     opacity: 0,
     points: () => {
-      const a = centre();
-      const f = activeF();
-      const m = MAIN_DERIVATIVE(a);
-      return [px(a, f(a)), px(a + h(), f(a) + m * h())];
+      const step = mainStep();
+      return [px(centre(), step.baseValue), px(centre() + h(), step.linearValue)];
     },
   });
   inner.add(linearSegment);
@@ -241,10 +251,8 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
     lineWidth: 4,
     opacity: 0,
     points: () => {
-      const a = centre();
-      const f = activeF();
-      const m = MAIN_DERIVATIVE(a);
-      return [px(a + h(), f(a) + m * h()), px(a + h(), f(a + h()))];
+      const step = mainStep();
+      return [px(centre() + h(), step.linearValue), px(centre() + h(), step.steppedValue)];
     },
   });
   inner.add(residualSegment);
@@ -272,7 +280,7 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
    * they disagree is a frame where this genuinely flips, not a scripted
    * color change.
    */
-  const agrees = (): boolean => stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).signAgrees;
+  const agrees = (): boolean => mainStep().signAgrees;
 
   /** The sweep marker and the set of sample dots, greying out as the sweep passes. */
   const SAMPLE_XS = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3];
@@ -327,7 +335,7 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   // `agrees()` above reads — never a hand-derived closed form that could
   // silently drift from `OPT_MAIN_CUBIC.f`.
   const mhLabel = tex(
-    () => `mh = ${stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).mh.toFixed(2)}`,
+    () => `mh = ${mainStep().mh.toFixed(2)}`,
     22,
     ROLE.transformed,
   );
@@ -336,7 +344,7 @@ export const optimizationApproximationScene = makeScene2D(function* (view) {
   view.add(mhLabel);
 
   const eLabel = tex(
-    () => `E(h) = ${stepDecomposition(OPT_MAIN_CUBIC, A_POINT, h()).eh.toFixed(3)}`,
+    () => `E(h) = ${mainStep().eh.toFixed(3)}`,
     22,
     ROLE.violation,
   );

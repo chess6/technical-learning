@@ -34,6 +34,47 @@ import {
  * here points at a specific learner-facing claim.
  */
 
+/**
+ * Sample points of a fixture's DECLARED domain: an evenly spaced grid, with
+ * any endpoint the fixture excludes (`domainOpen`) dropped. Sweeps must use
+ * this rather than a raw `[lo, hi]` grid — `OPT_OPEN_INTERVAL` declares
+ * `(0, 1)`, so `0` and `1` are not points of it and the module now (correctly)
+ * throws there.
+ */
+function interiorAndIncludedEndpoints(
+  fixture: (typeof OPTIMIZATION_FIXTURES)[number],
+  divisions: number,
+): number[] {
+  const [lo, hi] = fixture.domain;
+  const [leftOpen, rightOpen] = fixture.domainOpen ?? [false, false];
+  const points: number[] = [];
+  for (let i = 0; i <= divisions; i += 1) {
+    if (i === 0 && leftOpen) continue;
+    if (i === divisions && rightOpen) continue;
+    points.push(lo + ((hi - lo) * i) / divisions);
+  }
+  return points;
+}
+
+/**
+ * The radius a TWO-SIDED claim at `a` may span without leaving the domain:
+ * `min(left, right)` in general, and the one side that exists when `a` sits on
+ * an included endpoint. Mirrors the module's own internal `guaranteeableReach`
+ * — deliberately recomputed here from the fixture's public `domain` so the
+ * test does not merely restate the implementation it is checking.
+ */
+function guaranteeableReachOf(
+  fixture: (typeof OPTIMIZATION_FIXTURES)[number],
+  a: number,
+): number {
+  const [lo, hi] = fixture.domain;
+  const left = a - lo;
+  const right = hi - a;
+  if (left <= 1e-9) return right;
+  if (right <= 1e-9) return left;
+  return Math.min(left, right);
+}
+
 describe("fixtures", () => {
   it("passes its own render-time consistency guard", () => {
     expect(() => assertOptimizationFixturesAreConsistent()).not.toThrow();
@@ -229,13 +270,14 @@ describe("certified radius — sufficient, never claimed maximal", () => {
     // sign agreement out to x = 4.
     for (const fixture of OPTIMIZATION_FIXTURES) {
       if (!fixture.secondDerivativeBound) continue;
-      const [lo, hi] = fixture.domain;
-      for (let i = 0; i <= 20; i += 1) {
-        const a = lo + ((hi - lo) * i) / 20;
+      for (const a of interiorAndIncludedEndpoints(fixture, 20)) {
         if (Math.abs(fixture.derivative(a)) <= 1e-12) continue;
         const radius = certifiedRadius(fixture, a);
-        const reach = Math.max(a - lo, hi - a);
-        expect(radius).toBeLessThanOrEqual(reach + 1e-9);
+        // The GUARANTEEABLE reach, not the longer one: a certified radius is a
+        // two-sided claim, so at an interior point it may not exceed
+        // min(left, right), and only at an included endpoint — where one side
+        // does not exist at all — may it use the side that does.
+        expect(radius).toBeLessThanOrEqual(guaranteeableReachOf(fixture, a) + 1e-9);
       }
     }
   });
@@ -247,8 +289,7 @@ describe("certified radius — sufficient, never claimed maximal", () => {
     for (const fixture of OPTIMIZATION_FIXTURES) {
       if (!fixture.secondDerivativeBound) continue;
       const [lo, hi] = fixture.domain;
-      for (let i = 0; i <= 12; i += 1) {
-        const a = lo + ((hi - lo) * i) / 12;
+      for (const a of interiorAndIncludedEndpoints(fixture, 12)) {
         const m = fixture.derivative(a);
         if (Math.abs(m) <= 1e-12) continue;
         const radius = certifiedRadius(fixture, a);
@@ -272,9 +313,47 @@ describe("certified radius — sufficient, never claimed maximal", () => {
   });
 });
 
+describe("declared-domain membership, shared by every point-claiming function", () => {
+  // One assertion, three callers. Before it existed, each carried its own
+  // bounds check against the raw [lo, hi] numbers (or, in certifiedRadius's
+  // case, none), which accepted an EXCLUDED endpoint: OPT_OPEN_INTERVAL
+  // declares (0, 1), and every one of these would evaluate f and f' at 0 or 1
+  // and return a confident answer about a point the fixture excludes.
+  const CALLERS: ReadonlyArray<readonly [string, (a: number) => unknown]> = [
+    ["trustRadius", (a) => trustRadius(OPT_OPEN_INTERVAL, a, 0.01)],
+    ["certifiedRadius", (a) => certifiedRadius(OPT_OPEN_INTERVAL, a)],
+    ["firstSampledDisagreement", (a) => firstSampledDisagreement(OPT_OPEN_INTERVAL, a)],
+  ];
+
+  for (const [name, call] of CALLERS) {
+    it(`${name} rejects both excluded endpoints of OPT_OPEN_INTERVAL`, () => {
+      expect(() => call(0), "the excluded left endpoint").toThrow(/declared domain \(0, 1\)/);
+      expect(() => call(1), "the excluded right endpoint").toThrow(/declared domain \(0, 1\)/);
+    });
+
+    it(`${name} accepts an interior point of the same open interval`, () => {
+      expect(() => call(0.5)).not.toThrow();
+    });
+
+    it(`${name} accepts OPT_DECAY's INCLUDED endpoint a = 0, preserving the one-sided result`, () => {
+      expect(() => {
+        if (name === "trustRadius") trustRadius(OPT_DECAY, 0, 0.01);
+        else if (name === "certifiedRadius") certifiedRadius(OPT_DECAY, 0);
+        else firstSampledDisagreement(OPT_DECAY, 0);
+      }).not.toThrow();
+    });
+  }
+
+  it("OPT_DECAY at its included endpoint still returns the same one-sided trust radius", () => {
+    // The worked example the lesson prints. Closing the open-endpoint hole
+    // must not disturb a legitimate closed endpoint.
+    expect(trustRadius(OPT_DECAY, 0, 0.01)).toBeCloseTo(0.2121, 4);
+  });
+});
+
 describe("first sampled disagreement — a distinct, purely observational report", () => {
   it("finds a real disagreement on the main cubic near a = 0 (a nonlinear fixture with real curvature)", () => {
-    const result = firstSampledDisagreement(OPT_MAIN_CUBIC, 0, { maxRadius: 1.9 });
+    const result = firstSampledDisagreement(OPT_MAIN_CUBIC, 0);
     expect(result.kind).toBe("found");
   });
 
@@ -301,31 +380,53 @@ describe("first sampled disagreement — a distinct, purely observational report
     }
   });
 
-  it("actually samples at a domain edge instead of reporting 'none' vacuously", () => {
-    // At a = -2 the symmetric reach is 0, so the old window was 0 and the
-    // function returned NO_DISAGREEMENT_IN_DOMAIN without evaluating a single
-    // point. "None" is the right answer here (f(x) >= f(-2) across the whole
-    // domain), but it must be the result of looking — so assert the search is
-    // live by checking that the same edge on a fixture which DOES disagree
-    // to its available side reports the disagreement.
-    expect(firstSampledDisagreement(OPT_MAIN_CUBIC, -2).kind).toBe(NO_DISAGREEMENT_IN_DOMAIN);
+  it("finds the known edge disagreement on OPT_DRIVE at its included endpoint a = 0", () => {
+    // An UNCONDITIONAL edge regression, replacing an earlier `if (found)` one
+    // that asserted nothing whenever the edge happened to agree.
+    //
+    // OPT_DRIVE is `6 sin(0.55t) - 0.35t` on [0, 10]. At t = 0 — an INCLUDED
+    // endpoint, so a legitimate point with only a rightward step available —
+    // f'(0) = 2.95 > 0 predicts every rightward step raises f. It does at
+    // first (f peaks near t = 2.66), then the -0.35t drift wins and f falls
+    // back through f(0) = 0 at roughly t = 5.15, where the prediction is
+    // genuinely refuted.
+    //
+    // This point is past the old `?? 5` search cap, so it also pins the cap's
+    // removal: with it, the whole domain beyond h = 5 went unsearched and the
+    // function reported "none in this domain" about a domain it had walked
+    // barely half of.
+    const result = firstSampledDisagreement(OPT_DRIVE, 0);
+    expect(result.kind).toBe("found");
+    if (result.kind !== "found") return;
+    expect(result.h).toBeGreaterThan(5); // only reachable once the cap is gone
+    expect(result.h).toBeLessThanOrEqual(10);
+    const m = OPT_DRIVE.derivative(0);
+    const change = OPT_DRIVE.f(0 + result.h) - OPT_DRIVE.f(0);
+    expect(Math.sign(change)).not.toBe(Math.sign(m * result.h));
+  });
 
-    // f(x) = x^3 on [-1.5, 1.5] from the left edge: f'(-1.5) > 0 predicts every
-    // rightward step raises f, and every rightward step really does — so this
-    // edge agrees. Use the cubic's right edge instead, where a leftward step
-    // is the only one available and the prediction genuinely fails somewhere.
-    const atRightEdge = firstSampledDisagreement(OPT_MAIN_CUBIC, 3);
-    if (atRightEdge.kind === "found") {
-      expect(atRightEdge.h).toBeLessThan(0); // only leftward steps exist there
-      expect(3 + atRightEdge.h).toBeGreaterThanOrEqual(OPT_MAIN_CUBIC.domain[0] - 1e-9);
+  it("still reports 'none' at the main cubic's left edge — but only after walking the whole domain", () => {
+    // f(-2) = -2 is the global minimum, so no rightward step can lower f and
+    // "none in this domain" is the true answer. It must now be reached by
+    // sampling, not by a zero-width window: the grid from a = -2 spans the
+    // full 5 units to x = 3.
+    expect(firstSampledDisagreement(OPT_MAIN_CUBIC, -2).kind).toBe(NO_DISAGREEMENT_IN_DOMAIN);
+  });
+
+  it("rejects a non-positive or fractional step count rather than walking a grid that is not one", () => {
+    for (const steps of [0, -1, 2.5, Number.NaN]) {
+      expect(
+        () => firstSampledDisagreement(OPT_MAIN_CUBIC, 0, { steps }),
+        `steps=${steps}`,
+      ).toThrow(/positive integer/);
     }
+    expect(firstSampledDisagreement(OPT_MAIN_CUBIC, 0, { steps: 400 }).kind).toBe("found");
   });
 
   it("never samples a point outside the fixture's declared domain", () => {
     for (const fixture of OPTIMIZATION_FIXTURES) {
       const [lo, hi] = fixture.domain;
-      for (let i = 0; i <= 20; i += 1) {
-        const a = lo + ((hi - lo) * i) / 20;
+      for (const a of interiorAndIncludedEndpoints(fixture, 20)) {
         if (Math.abs(fixture.derivative(a)) <= 1e-12) continue;
         const result = firstSampledDisagreement(fixture, a);
         if (result.kind === "found") {
@@ -339,7 +440,7 @@ describe("first sampled disagreement — a distinct, purely observational report
   it("is a genuinely separate report from the certified radius — the two may disagree", () => {
     const a = 0;
     const delta = certifiedRadius(OPT_MAIN_CUBIC, a);
-    const observed = firstSampledDisagreement(OPT_MAIN_CUBIC, a, { maxRadius: 1.9 });
+    const observed = firstSampledDisagreement(OPT_MAIN_CUBIC, a);
     expect(observed.kind).toBe("found");
     if (observed.kind === "found") {
       // The certified radius is provably sufficient and therefore must be no
@@ -509,7 +610,7 @@ describe("linearization error bound — not violated, and not vacuous", () => {
         expect(
           bound,
           `${fixture.id} at a=${a}, epsilon=${epsilon}: trustRadius's own error bound is violated`,
-        ).toBeLessThanOrEqual(epsilon + Math.max(epsilon, 1e-9) * 1e-6 + 1e-300);
+        ).toBeLessThanOrEqual(epsilon * (1 + 1e-10));
       }
     }
   });
@@ -544,6 +645,36 @@ describe("stepDecomposition", () => {
     const step = stepDecomposition(OPT_MAIN_CUBIC, 0, 0);
     expect(step.mh).toBeCloseTo(0, 9);
     expect(step.signAgrees).toBe(true);
+  });
+
+  it("returns the three positions the guided scene draws mh and E(h) between", () => {
+    // The scene used to recompute `f(a) + m*h` and `f(a+h)` itself to place
+    // these segments — a second source for quantities this helper owns. It now
+    // reads `baseValue`/`linearValue`/`steppedValue`, so the drawn geometry and
+    // the printed numbers come from one call.
+    const a = 0;
+    const h = -0.5;
+    const step = stepDecomposition(OPT_MAIN_CUBIC, a, h);
+    expect(step.baseValue).toBeCloseTo(OPT_MAIN_CUBIC.f(a), 12);
+    expect(step.steppedValue).toBeCloseTo(OPT_MAIN_CUBIC.f(a + h), 12);
+    expect(step.linearValue).toBeCloseTo(OPT_MAIN_CUBIC.f(a) + OPT_MAIN_CUBIC.derivative(a) * h, 12);
+  });
+
+  it("keeps the positions consistent with the differences, for every fixture and step", () => {
+    // The invariant that makes the segments and the labels one statement:
+    // the linear segment spans mh vertically, the residual segment spans E(h),
+    // and together they span the actual change.
+    for (const fixture of OPTIMIZATION_FIXTURES) {
+      const [lo, hi] = fixture.domain;
+      const a = lo + (hi - lo) * 0.5;
+      for (const h of [-0.4, -0.05, 0, 0.05, 0.4]) {
+        if (a + h < lo || a + h > hi) continue;
+        const step = stepDecomposition(fixture, a, h);
+        expect(step.linearValue - step.baseValue).toBeCloseTo(step.mh, 9);
+        expect(step.steppedValue - step.linearValue).toBeCloseTo(step.eh, 9);
+        expect(step.steppedValue - step.baseValue).toBeCloseTo(step.change, 9);
+      }
+    }
   });
 });
 

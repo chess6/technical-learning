@@ -158,6 +158,44 @@ function inDomain(fixture: OptimizationFixture, x: number): boolean {
   return true;
 }
 
+/** `[lo, hi]` / `(lo, hi)` etc., for error messages that name the real interval. */
+function describeDomain(fixture: OptimizationFixture): string {
+  const [lo, hi] = fixture.domain;
+  const [leftOpen, rightOpen] = fixture.domainOpen ?? [false, false];
+  return `${leftOpen ? "(" : "["}${lo}, ${hi}${rightOpen ? ")" : "]"}`;
+}
+
+/**
+ * The ONE membership test every function that makes a claim about a
+ * neighbourhood of `a` runs before touching `fixture.f` or
+ * `fixture.derivative` at that point.
+ *
+ * It delegates to `inDomain`, so it honours `domainOpen` — which the
+ * hand-rolled bounds checks it replaces did not. Each of `trustRadius`,
+ * `certifiedRadius` and `firstSampledDisagreement` previously carried its own
+ * (or, in `certifiedRadius`'s case, no) version of this check, comparing only
+ * against the raw `[lo, hi]` numbers. That accepted an EXCLUDED endpoint:
+ * `OPT_OPEN_INTERVAL` declares `(0, 1)`, and `a = 0` is not a point of it, yet
+ * every one of those functions would happily evaluate `f` and `f'` there and
+ * return a confident answer about a point the fixture says it is not
+ * considering.
+ *
+ * An INCLUDED closed endpoint is a different case and stays valid — `OPT_DECAY`
+ * at `a = 0` is a genuine point of `[0, 8]`, and the one-sided results the
+ * callers derive there are correct. This assertion separates the two on the
+ * fixture's own declared semantics rather than on distance from a bound.
+ */
+function assertInDeclaredDomain(
+  fixture: OptimizationFixture,
+  a: number,
+  caller: string,
+): void {
+  if (inDomain(fixture, a)) return;
+  throw new Error(
+    `${caller}: a=${a} is not a point of ${fixture.id}'s declared domain ${describeDomain(fixture)}.`,
+  );
+}
+
 /* ------------------------------------------------------------- candidates */
 
 /**
@@ -326,6 +364,7 @@ export function certifiedRadius(
   a: number,
   searchRadius?: number,
 ): number {
+  assertInDeclaredDomain(fixture, a, "certifiedRadius");
   const m = fixture.derivative(a);
   if (Math.abs(m) <= 1e-12) {
     throw new Error(`certifiedRadius: f'(${a}) = 0 — the escape-route lemma needs a nonzero slope.`);
@@ -372,25 +411,36 @@ export function certifiedRadius(
  * sample, below) discards the steps that fall off the short side, so no
  * out-of-domain point is ever evaluated. A point strictly inside a non-empty
  * domain therefore always has somewhere to look.
+ *
+ * **The window is the whole available reach, with no cap.** It used to be
+ * `min(maxRadius ?? 5, ...)`. Nothing in production ever passed `maxRadius` —
+ * only tests did — while the `?? 5` default silently truncated any fixture
+ * wider than five units: on `OPT_DRIVE`'s `[0, 10]` from `a = 0`, the sign
+ * genuinely disagrees at `h ≈ 5.15`, just past where the cap stopped looking,
+ * so the function reported "none in this domain" about a domain it had
+ * searched barely half of. The option is gone and the search now covers the
+ * complete grid, which is what makes the sentinel structurally honest: there
+ * is no longer any path on which it can be returned without the whole
+ * available domain having been sampled.
  */
 export function firstSampledDisagreement(
   fixture: OptimizationFixture,
   a: number,
-  options: { readonly steps?: number; readonly maxRadius?: number } = {},
+  options: { readonly steps?: number } = {},
 ): SampledDisagreement {
+  assertInDeclaredDomain(fixture, a, "firstSampledDisagreement");
   const m = fixture.derivative(a);
   if (Math.abs(m) <= 1e-12) {
     throw new Error(`firstSampledDisagreement: f'(${a}) = 0 — nothing to sample agreement against.`);
   }
-  const [domainLo, domainHi] = fixture.domain;
-  if (a < domainLo - TOL || a > domainHi + TOL) {
+  const steps = options.steps ?? 400;
+  if (!Number.isInteger(steps) || steps <= 0) {
     throw new Error(
-      `firstSampledDisagreement: a=${a} is outside ${fixture.id}'s domain [${domainLo}, ${domainHi}].`,
+      `firstSampledDisagreement: steps must be a positive integer, got ${steps}. A fractional or non-positive grid would make "none in this domain" a claim about a grid that was never walked.`,
     );
   }
-  const steps = options.steps ?? 400;
   const { left, right } = domainReach(fixture, a);
-  const maxRadius = Math.min(options.maxRadius ?? 5, Math.max(left, right));
+  const maxRadius = Math.max(left, right);
   if (!(maxRadius > 0)) {
     throw new Error(`firstSampledDisagreement: ${fixture.id} leaves no room to sample from a=${a}.`);
   }
@@ -452,6 +502,12 @@ export function linearizationErrorBound(
 }
 
 export interface StepDecomposition {
+  /** `f(a)` — where the step starts. */
+  readonly baseValue: number;
+  /** `f(a) + f'(a) h` — where the LINEAR model says the step lands. */
+  readonly linearValue: number;
+  /** `f(a + h)` — where the function actually lands. */
+  readonly steppedValue: number;
   /** The linear term `f'(a) h` — the escape-route argument's prediction. */
   readonly mh: number;
   /** The residual `f(a+h) - f(a) - mh` — what the linear term leaves out. */
@@ -474,15 +530,36 @@ export interface StepDecomposition {
  * each re-deriving `mh`/`E(h)`/sign agreement inline. Requires no declared
  * `secondDerivativeBound` (unlike `linearize`) — the decomposition itself
  * needs only `f` and `f'`, the bound is a separate claim about it.
+ *
+ * It returns the three POSITIONS as well as the three differences
+ * (`baseValue`, `linearValue`, `steppedValue`) because the guided scene draws
+ * `mh` and `E(h)` as segments between exactly those points, and computing
+ * their endpoints scene-side meant re-deriving `f(a) + f'(a)h` there — a
+ * second source for a quantity this helper exists to own. With them returned
+ * here, the drawn segment and the printed number cannot disagree: they read
+ * the same fields of the same result.
  */
 export function stepDecomposition(fixture: OptimizationFixture, a: number, h: number): StepDecomposition {
+  const baseValue = fixture.f(a);
+  const steppedValue = fixture.f(a + h);
   const mh = fixture.derivative(a) * h;
-  const change = fixture.f(a + h) - fixture.f(a);
+  const linearValue = baseValue + mh;
+  const change = steppedValue - baseValue;
   const eh = change - mh;
   const predictedSign = Math.sign(mh);
   const actualSign = Math.sign(change);
   const signAgrees = predictedSign === 0 || actualSign === predictedSign;
-  return { mh, eh, change, predictedSign, actualSign, signAgrees };
+  return {
+    baseValue,
+    linearValue,
+    steppedValue,
+    mh,
+    eh,
+    change,
+    predictedSign,
+    actualSign,
+    signAgrees,
+  };
 }
 
 /**
@@ -541,10 +618,7 @@ export function trustRadius(
   if (!(epsilon > 0)) {
     throw new Error(`trustRadius: epsilon must be positive, got ${epsilon}.`);
   }
-  const [domainLo, domainHi] = fixture.domain;
-  if (a < domainLo - TOL || a > domainHi + TOL) {
-    throw new Error(`trustRadius: a=${a} is outside ${fixture.id}'s domain [${domainLo}, ${domainHi}].`);
-  }
+  assertInDeclaredDomain(fixture, a, "trustRadius");
   const maxReach = guaranteeableReach(fixture, a);
   if (!(maxReach > 0)) {
     throw new Error(`trustRadius: ${fixture.id} has no room to step from a=${a} in either domain direction.`);

@@ -68,7 +68,12 @@ describe("OptimizationApproximationExplorer", () => {
     for (const a of [-1.9, 0, 2.9]) {
       fireEvent.change(slider, { target: { value: String(a) } });
       const radius = certifiedRadiusShown(container.textContent ?? "");
-      expect(radius).toBeLessThanOrEqual(Math.max(a + 2, 3 - a) + 1e-6);
+      // The GUARANTEEABLE reach — min(left, right) at these interior points,
+      // not the longer side. A certified radius is a two-sided claim, so
+      // bounding it by max(left, right) would have passed a radius that steps
+      // out of the domain on the short side, which is the defect this pins.
+      const reach = Math.min(a - -2, 3 - a);
+      expect(radius, `a=${a}`).toBeLessThanOrEqual(reach + 1e-6);
     }
   });
 
