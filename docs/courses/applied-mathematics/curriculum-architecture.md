@@ -476,13 +476,13 @@ before implementing it").
 >    Gate 5 consumed a calibrated target rather than being checked against one
 >    afterwards.
 >
-> **Still open: L6's own independent Gate 8 review**, from outside the
-> implementing/reviewing agent lineage — the same class of obligation Stream
-> 1 named for L5, discharged there by the repository owner's 2026-08-01
-> acceptance. L6's Mode B artifacts already carry two owner review rounds
-> (each finding real defects the self-audits passed); Mode C implementation
-> itself is self-verified only (`./check.sh`-tier suites green, no `--e2e`
-> browser confirmation yet) and has not had an independent pass.
+> **L6's Gate 8 is closed** — accepted by the repository owner on 2026-08-10
+> and merged to `master`, the same class of obligation Stream 1 named for L5
+> and discharged there on 2026-08-01. It took four independent review rounds
+> from outside the implementing lineage, each of which found real defects, plus
+> a bounded correctness patch and an owner read of the rendered page.
+> `lessons/06-optimization-approximation/mastery-contract.md` §6 is the
+> authoritative record.
 >
 > Anyone starting further Package B work should check
 > `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a

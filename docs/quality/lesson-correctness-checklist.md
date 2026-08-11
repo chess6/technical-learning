@@ -1849,9 +1849,18 @@ only uniqueness test in the repo covered `chapter0Lesson` alone.
 
 ## Deciding with the Derivative — `optimization-approximation` (spine L6, 2026-08-01)
 
-Mode C implementation, self-verified only (no independent review, no
-`--e2e` browser pass yet). Recorded honestly: several items below need a
-browser to confirm and are left unticked for that reason, not overlooked.
+**Gate 8 accepted by the repository owner 2026-08-10**, on a review of the
+rendered lesson; merged to `master`. Four independent review rounds ran before
+that, each finding real defects — see
+`docs/courses/applied-mathematics/lessons/06-optimization-approximation/mastery-contract.md`
+§6, the authoritative record.
+
+The list below is the *implementation-time* checklist and is preserved as
+written. Items left unticked were unticked because they needed a browser at
+the time of writing; the `--e2e` browser pass has since run (this lesson's own
+spec, 12 tests; the `optimization-approximation` guided-scene hard gate; both
+cross-lesson sweeps), so treat §6 of the mastery contract as current status
+rather than re-deriving it from the ticks here.
 
 ### Mathematical review
 
