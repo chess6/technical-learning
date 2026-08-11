@@ -67,9 +67,12 @@ are exactly the `courseModel.ts` unit ids and exactly the directory names under
 | L35 | Surface integrals | `surface-integrals` | `boundary-theorems` | K |
 | L36 | Stokes' theorem | `stokes-theorem` | `boundary-theorems` | K |
 | L37 | The divergence theorem and conservation | `divergence-theorem` | `boundary-theorems` | K |
+| L38 | Phase portraits and stability | `phase-portraits-stability` | `nonlinear-dynamics` | L |
+| L39 | Bifurcations | `bifurcations` | `nonlinear-dynamics` | L |
+| L40 | Limit cycles and oscillators | `limit-cycles-oscillators` | `nonlinear-dynamics` | L |
+| L41 | Maps and chaos | `maps-and-chaos` | `nonlinear-dynamics` | L |
 
-**39 lessons; 38 indispensable. Two built** (`limits-continuity`,
-`derivative-local-linearity`). No id collides with a built lesson or with a
+**43 lessons; 42 indispensable. Six built** (`limits-continuity`, `derivative-local-linearity`, `integral-accumulation`, `fundamental-theorem`, `chain-rule`, `optimization-approximation`). No id collides with a built lesson or with a
 linear-algebra `future` node (`orthogonality`, `least-squares`, `svd`). All ids
 satisfy `ID_SYNTAX` in `src/platform/identity.ts`.
 
@@ -92,6 +95,7 @@ gating.
 | `matrix-composition` (LA, built) | `chain-rule` | hard | Composing local linear models is composing matrices. |
 | `determinants` (LA, built) | `change-of-variables-jacobian` | hard | The Jacobian determinant is the same area/volume scale factor. |
 | `eigenvectors` (LA, built) | `second-order-odes` | hard | \(e^{st}\) is an eigenfunction of \(d/dt\); the characteristic polynomial is the same object. |
+| `eigenvectors` (LA, built) | `phase-portraits-stability` | hard | Linearization near a fixed point uses eigenvalues to classify local stability. |
 | `eigenvectors` (LA, built) | `convolution-filtering` | connection | Complex sinusoids are the eigenfunctions of LTI systems. |
 | `karatsuba` (Algorithms, built) | `dft-fft` | connection | The FFT is the same "do the shared sub-work once" move. |
 
@@ -117,6 +121,10 @@ gating.
 | `improper-integrals` | `series-convergence` | hard | The integral test, and the \(p\)-series comparison. |
 | `series-convergence` | `power-taylor-series` | hard | A power series converges or does not, on a radius. |
 | `optimization-approximation` | `power-taylor-series` | hard | Linearization is the first two terms. |
+| `circuits-control-stability` | `phase-portraits-stability` | hard | M8’s linear response and stability picture must be secure before nonlinear dynamics shows where it breaks. |
+| `phase-portraits-stability` | `bifurcations` | hard | A bifurcation is a structural change in a parameterized phase portrait. |
+| `phase-portraits-stability` | `limit-cycles-oscillators` | hard | Limit cycles are invariant structures in a phase portrait. |
+| `bifurcations` | `maps-and-chaos` | hard | Period doubling carries the parameter-threshold idea into chaotic maps. |
 | `radians-rotation` | `complex-rotation` | hard | Rotation is measured in radians. |
 | `complex-rotation` | `eulers-formula` | hard | \(i\) as a quarter turn is the premise. |
 | `derivative-local-linearity` | `eulers-formula` | hard | The derivation asks what function's derivative is \(i\) times itself. |
@@ -256,6 +264,12 @@ flowchart TD
   l35 --> l37[L37 divergence-theorem]
   l33 --> l37
   l4 --> l37
+
+  l27 --> l38[L38 phase-portraits-stability]
+  laeig --> l38
+  l38 --> l39[L39 bifurcations]
+  l38 --> l40[L40 limit-cycles-oscillators]
+  l39 --> l41[L41 maps-and-chaos]
 
   classDef cond stroke-dasharray: 5 5;
 ```
@@ -399,7 +413,7 @@ reuse.
 
 ## 6. Implementation packages — the complete roadmap
 
-Twelve packages. **One package = one unit = one module directory.** Ship order is
+Thirteen packages. **One package = one unit = one module directory.** Ship order is
 row order; a package may be re-ordered only if its edges in §2 permit.
 
 | Pkg | Unit | Lessons | New families | Flagships | What it completes |
@@ -416,6 +430,7 @@ row order; a package may be re-ordered only if its edges in §2 permit.
 | **I** | `many-variables` | `partial-derivatives-gradient`, `multiple-integrals`, `change-of-variables-jacobian` | `region-and-jacobian` | — | Calculus in more variables. |
 | **J** | `fields` | `vector-fields-line-integrals`, `circulation-flux`, `divergence-curl` | `vector-field-grid`, `loop-and-flux` | — | The vocabulary of fields. |
 | **K** | `boundary-theorems` | `greens-theorem`, `surface-integrals`, `stokes-theorem`, `divergence-theorem` | `iso-surface-shell` | L34, L37 | **Theme 1 completed.** The course's capstone. |
+| **L** | `nonlinear-dynamics` | `phase-portraits-stability`, `bifurcations`, `limit-cycles-oscillators`, `maps-and-chaos` | `phase-portrait` | L38 | The nonlinear sequel, deliberately after M8’s linear response/control picture. |
 
 **The roadmap does not stop at Fourier or Laplace.** E and G are milestones; F,
 H, I, J, and K follow, and K is where the course's first structural theme reaches
@@ -429,64 +444,10 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 `chain-rule` built and merged to `master` (Mode B docs through `Gate result: PASS`, plus Mode C lesson code); **Gate 8 ACCEPTED 2026-08-01** by the repository owner (a domain-owner sign-off distinct from the implementing/reviewing agent lineage), after acceptance review found and fixed a mathematical defect in the derivation — it divided by \\(\\Delta u\\) in the very step whose thesis is that it never does — and rewrote both E2 recognition items, whose distractors were answerable by test-taking instinct. See the [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8). **L6 `optimization-approximation` is built** on `feature/l6-optimization-approximation` (Mode B docs through `Gate result: PASS`, independently reviewed across two rounds, plus full Mode C lesson code — guided scene, explorer, 9 auto-graded exercises + 1 self-marked practice event, all registered in the shared assessment manifest), per the owner's explicit 2026-08-01 authorization to cross the Mode B → Mode C boundary. `./check.sh`-tier verification green (full unit/component suite, typecheck, lint); **L6's own Gate 8 sign-off is still open**, pending independent review — see the acceptance record in [mastery-contract.md §6](lessons/06-optimization-approximation/mastery-contract.md#6-acceptance-record-gate-8). L7–L8 not started.** | `master` for L5 (merged from `feature/l5-chain-rule`, 2026-08-01; branch deleted); L6 built on `feature/l6-optimization-approximation`, not yet merged. | L5: [insight-brief](lessons/05-chain-rule/insight-brief.md) · [insight `PASS`](lessons/05-chain-rule/insight.md) · [contract](lessons/05-chain-rule/mastery-contract.md) · [plan](lessons/05-chain-rule/lesson-plan.md)<br>L6: [insight-brief](lessons/06-optimization-approximation/insight-brief.md) · [insight `PASS`](lessons/06-optimization-approximation/insight.md) · [contract](lessons/06-optimization-approximation/mastery-contract.md) · [plan](lessons/06-optimization-approximation/lesson-plan.md) — both Mode A amendments resolved; independent review complete; **implementation complete, Gate 8 open** |
-| C–K | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
+| **B** | **IN PROGRESS — L5 `chain-rule` and L6 `optimization-approximation` are built, merged to `master`, and Gate-8 accepted (2026-08-01 and 2026-08-10). L7 `substitution-parts` has a corrected Gate-3 draft only; Gate 4 has not run. L8 remains unplanned.** | `master`; no active Mode C package branch | L5: [contract](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8) · L6: [contract](lessons/06-optimization-approximation/mastery-contract.md#6-acceptance-record-gate-8) · L7: [Gate-3 brief](lessons/07-substitution-parts/insight-brief.md) |
+| C–L | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
-> **Approval state.** Package A was explicitly approved for implementation on
-> 2026-07-28. A0–A4 are all built: `limits-continuity`, `derivative-local-linearity`,
-> `integral-accumulation`, and `fundamental-theorem` are complete lessons, each
-> passing Gate 8 on its lesson-owned outcomes, and all four are on `master`
-> (A4 merged 2026-07-30). The package's semantic review ran three times
-> (2026-07-29, -30, -31), found defects each time, all corrected with
-> regressions. The repository owner approved the package on 2026-07-31,
-> including a narrow E2E waiver scoped to `ftc-accumulate-then-measure`'s
-> `seek-determinism` check only — see the
-> [ledger](modules/calculus-foundations/implementation-package.md) §7 for the
-> exact approval record. The Gate 9 module assessment for `calculus-foundations`
-> is [built in code](modules/calculus-foundations/assessment-plan.md) — 13
-> items, registered and machinery-verified — but not administered.
->
-> **Package B is in progress**, on `master` (merged from `feature/l5-chain-rule`,
-> 2026-08-01; see `docs/engineering/HANDOFF.md`). Its first lesson, `chain-rule`
-> (L5), has all Mode B docs through `Gate result: PASS` and full Mode C lesson
-> code (guided scene, explorer, exercises), verified by `./check.sh --e2e`
-> before merge, and its **Gate 8 was accepted by the repository owner on
-> 2026-08-01** — see the
-> [acceptance record](lessons/05-chain-rule/mastery-contract.md#6-acceptance-record-gate-8),
-> which is the authoritative statement of that gate's status.
->
-> **L6 `optimization-approximation` is built** (Mode B complete 2026-08-01:
-> brief, `PASS` contract, mastery contract, lesson plan; Mode C — math layer,
-> lesson content, guided scene, explorer, grading contracts, curriculum
-> registration — complete on `feature/l6-optimization-approximation` the same
-> day, per the owner's explicit authorization to cross the Mode B → Mode C
-> boundary). Both **Mode A amendments** its plan depended on were **resolved by
-> the owner on 2026-08-01**:
->
-> 1. the `fundamental-theorem → optimization-approximation` **hard edge is
->    approved** and is in §2.2 and the DAG. L6's second-derivative test and its
->    linearization error bound are therefore **derived** from the FTC applied
->    twice, under a **continuous \(f''\)** hypothesis that must stay explicit at
->    every use. The alternatives — the Mean Value Theorem (which L2 and L4 both
->    deliberately withhold) and simply citing the bound — were compared and
->    rejected, and the cite-instead fallback is **withdrawn**;
-> 2. the **M2 depth bar** in
->    [benchmark-matrix §2](benchmark-matrix.md#2-per-module-depth-bars) is
->    **amended**, deliberately before Mode C rather than before Gate 10, so that
->    Gate 5 consumed a calibrated target rather than being checked against one
->    afterwards.
->
-> **L6's Gate 8 is closed** — accepted by the repository owner on 2026-08-10
-> and merged to `master`, the same class of obligation Stream 1 named for L5
-> and discharged there on 2026-08-01. It took four independent review rounds
-> from outside the implementing lineage, each of which found real defects, plus
-> a bounded correctness patch and an owner read of the rendered page.
-> `lessons/06-optimization-approximation/mastery-contract.md` §6 is the
-> authoritative record.
->
-> Anyone starting further Package B work should check
-> `docs/engineering/HANDOFF.md` and this ledger first (AGENTS.md's "claim a
-> package before implementing it") rather than reimplementing.
+> Acceptance details live in each lesson’s mastery-contract §6; this table is the single package-status authority. Before Mode C, also check branches and worktrees as required by AGENTS.md.
 
 ### 6.2 Suggested Mode B order
 
@@ -495,7 +456,7 @@ package's implementation is accepted. Recommended order — dependency-legal, an
 front-loading the two branches that reach a milestone soonest:
 
 ```
-B0 → A → B → C → D → E → F → G → H → I → J → K
+B0 → A → B → C → D → E → F → G → H → I → J → K → L
 ```
 
 G–H may be pulled ahead of E–F if the dynamics branch is wanted first; the DAG
@@ -519,42 +480,4 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-**Package A is approved.** A0 (the calculus layer, the course registration, and
-the `function-plot` family), A1 (`limits-continuity`), A2
-(`derivative-local-linearity`, with the `local-linearity-zoom` family), A3
-(`integral-accumulation`, with the `accumulation-strip` family), and A4
-(`fundamental-theorem`, with the `telescoping-cancellation` family) are all
-built and merged to `master`. Package A's semantic review ran three times,
-found defects each time (evidence-level over-claims from a later
-MCQ-conversion pass, an `E_i` visualization defect, Gaussian-antiderivative
-overclaims, an endpoint derivative bug, a generic-cancellation gap, and — in
-the third pass — residual Gaussian-wording overclaims and a ledger wording
-defect), and all are corrected with regressions. The repository owner approved
-the package and a narrow E2E waiver on 2026-07-31 (see the
-[ledger](modules/calculus-foundations/implementation-package.md) §7). The Gate
-9 module assessment for `calculus-foundations` is
-[built in code](modules/calculus-foundations/assessment-plan.md) — 13 items,
-registered and machinery-verified — but not administered, a separate, later
-step.
-
-A4 created `telescoping-cancellation` parameterized over the cancelling pairs
-rather than hard-coded to interval endpoints (ledger check **P2**) — Packages
-I–K re-run that family with shared interior edges and faces. The underlying
-`cancelContributions`/`intervalContributions` primitives (and the pre-existing
-`telescopingTerms`/`cancellationReport`) take an arbitrary pairing for that
-reason, proven by a regression that feeds the family a non-interval pairing.
-
-**B (`calculus-technique`) is in progress**, merged to `master`
-(`feature/l5-chain-rule`, 2026-08-01; branch deleted). Its first lesson,
-`chain-rule` (L5), is fully built (Mode B docs through `Gate result: PASS`,
-plus Mode C lesson code), verified, and **Gate 8 accepted by the repository
-owner on 2026-08-01**. **L6 `optimization-approximation` is fully built** —
-Mode B planning complete and independently reviewed across two rounds, both
-Mode A amendments resolved, and, per the owner's explicit 2026-08-01
-authorization to cross the Mode B → Mode C boundary, Mode C implementation
-(math layer, lesson, guided scene, explorer, grading contracts, curriculum
-registration) complete the same day on `feature/l6-optimization-approximation`
-— **verified self-only** (unit/component suite and typecheck/lint green, no
-independent review, no `--e2e` browser confirmation yet). L7–L8 have not been
-started. See §6.1's package-status ledger and `docs/engineering/HANDOFF.md`
-before starting further Package B work.
+Package B remains active. L5 `chain-rule` and L6 `optimization-approximation` are built, accepted, and merged to `master`. L7 `substitution-parts` is paused at its corrected Gate-3 brief; Gate 4 has not run, and no L7 code is authorized by that brief. L8 `improper-integrals` remains unplanned. Use §6.1 as the status authority and `npm run context:task -- --mode B --lesson substitution-parts` for the next bounded context.

@@ -31,9 +31,7 @@ If a short prompt is ambiguous, resolve it from repository context
 ([Step 6](#step-6--handling-short-prompts-from-repo-context)) and, if still
 ambiguous or if it crosses an approval boundary, **ask** before proceeding.
 
-A request may span modes (e.g. "plan and build solution sets"). Run the modes in
-order (B then C), and **stop at the approval boundary between them**
-([Step 5](#step-5--approval-boundaries-hard-stops)).
+A request may span modes (e.g. "plan and build solution sets"). Run the modes in order (B then C), and stop at the approval boundary between them unless fresh approval or an accepted, scope-matching standing authorization permits the transition ([Step 5](#step-5--approval-boundaries-hard-stops)).
 
 ---
 
@@ -98,9 +96,7 @@ a loose `docs/insight-*.md` at the docs root (see
 Mode D artifacts are **module-scoped**, not per-lesson: they live under
 `docs/courses/<course>/modules/<module>/` (see [Step 4](#step-4--mode-d-assessment--validation)).
 
-**Output:** brief + contract (PASS) + mastery contract + lesson plan, all under the
-lesson directory. **No lesson code.** **Boundary:** stop here for approval before
-Mode C.
+**Output:** brief + contract (PASS) + mastery contract + lesson plan, all under the lesson directory. **No lesson code.** **Boundary:** stop here unless fresh approval or an accepted, scope-matching standing authorization permits Mode C.
 
 ---
 
@@ -156,22 +152,27 @@ After lessons exist. Do not skip once a module is complete. Both artifacts are
 
 ## Step 5 — Approval boundaries (hard stops)
 
-Stop and get explicit user approval before crossing any of these. Do not
-self-authorize.
+Stop before crossing any boundary below unless the user has supplied fresh approval
+or an accepted ADR supplies explicit standing authorization for the exact scope.
+Do not infer either.
 
 - **Building or promoting a `future` lesson (Mode C).** The built surface is fixed
   (see [project-core](../../.cursor/rules/project-core.mdc) Scope). Writing lesson
-  code for, or promoting (`future → built`), a `future` spine node requires an
-  explicit user go-ahead. *(Producing a Mode B **plan** for the uniquely resolved
-  next node is not promotion — see [Step 6](#step-6--handling-short-prompts-from-repo-context).)*
+  code for, or promoting (`future → built`), a `future` spine node requires either
+  a fresh explicit user go-ahead or an accepted ADR whose explicit standing
+  authorization names that scope. [ADR-008](../engineering/decisions/008-autonomous-development-protocol.md)
+  currently covers applied-mathematics M2–M12 while preserving every gate and the
+  owner’s veto. *(Producing a Mode B **plan** for the uniquely resolved next node
+  is not promotion — see [Step 6](#step-6--handling-short-prompts-from-repo-context).)*
 - **Gate 5 without a `PASS` insight contract.** The **Lesson Mastery Contract
   (Gate 5)** and everything after it require a `Gate result: PASS` insight
   contract. Gates 3–4 (the insight brief and the contract itself) are how that
   `PASS` is *produced*, so **beginning Gate 3 does not require a prior `PASS`** — a
   uniquely resolved short prompt may open Mode B at Gate 3. Do not skip ahead to
   Gate 5 while the insight contract is still unresolved.
-- **Planning → implementation.** Never write lesson code (Mode C) from a plan the
-  user has not approved. Finish Mode B, present the plan, wait.
+- **Planning → implementation.** Never write lesson code (Mode C) from a plan
+  that has not passed Mode B or lies outside the scope of fresh approval or an
+  accepted standing authorization.
 - **Changing a standard.** If a request conflicts with a standard, propose the
   standard change and get approval — do not silently deviate (see
   [lesson-design](../../.cursor/rules/lesson-design.mdc) "When in doubt").
@@ -189,7 +190,7 @@ Short prompts rely on repository state. Resolve before acting:
 | Prompt shape | Resolve via |
 | --- | --- |
 | "**Plan the next lesson**" | Resolve the next node from the subject's curriculum-architecture next-lesson recommendation + spine status (LA: [§6](../courses/linear-algebra/curriculum-architecture.md)). **If it resolves to exactly one unique next unbuilt spine node, treat the prompt as authorization to run Mode B (planning only) for that node** — **name the node first** ("Planning L6 `matrix-composition`…"), then produce the brief → insight contract → mastery contract → plan. Do **not** write code or promote the node. |
-| "**Build the next lesson**" | Same resolution, but *building* crosses the [Mode C boundary](#step-5--approval-boundaries-hard-stops): resolve + name the node, run Mode B if not already planned, then **stop for explicit approval** before implementation. |
+| "**Build the next lesson**" | Same resolution, but *building* crosses the [Mode C boundary](#step-5--approval-boundaries-hard-stops): resolve + name the node, run Mode B if not already planned, then stop unless fresh approval or an accepted, scope-matching standing authorization permits implementation. |
 | "Plan/build **`<topic>`**" | Map topic → spine node + concept ids; check the lesson directory `docs/courses/<course>/lessons/<lesson>/` for an existing `insight-brief.md` / `insight.md` / `mastery-contract.md` / `lesson-plan.md` and resume from the furthest completed gate. Planning is authorized; building stops at the Mode C boundary. |
 | "Fix / improve **`<lesson>`**" | Usually Mode C polish under correctness + design rules; if it changes coverage/assessment, re-open its Lesson Mastery Contract. |
 | "Add a **course/subject**" | Mode A; **resolve or create that subject's** spine + benchmark matrix (Step 1); reuse the subject-agnostic standards unchanged. |
@@ -197,5 +198,6 @@ Short prompts rely on repository state. Resolve before acting:
 
 **Rule of thumb:** a short prompt authorizes **planning** (Mode B) for a uniquely
 resolved node once you name it; it never authorizes **implementation** (Mode C),
-which is always a hard stop. Always name the mode and gate you are starting in, so
-the user can redirect early.
+which is a hard stop unless an accepted, scope-matching standing authorization is
+already in force. Always name the mode and gate you are starting in, so the user
+can redirect early.
