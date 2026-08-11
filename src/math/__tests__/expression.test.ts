@@ -178,6 +178,94 @@ describe("errors a learner can act on", () => {
   });
 });
 
+describe("review-round regressions — the preview must never read as a different value than the parse", () => {
+  // All from the 2026-08-10 fresh-lineage review (ADR-008): three finder
+  // lenses proved each of these against the shipped code before the fix.
+  it("marks number-times-number implicit products with a cdot instead of concatenating digits", () => {
+    expect(tex("2(3)")).toBe("2 \\cdot 3"); // rendered "23" before
+    expect(tex("2 3")).toBe("2 \\cdot 3");
+    expect(tex("(1)(2)")).toBe("1 \\cdot 2"); // rendered "12"
+    expect(evaluate(parseExpression("2(3)"), {})).toBe(6);
+  });
+
+  it("parenthesizes a unary-minus right operand: 2(-3) must not render as the subtraction 2-3", () => {
+    expect(tex("2(-3)")).toBe("2\\left(-3\\right)");
+    expect(tex("x(-1)")).toBe("x\\left(-1\\right)");
+    expect(evaluate(parseExpression("2(-3)"), {})).toBe(-6);
+  });
+
+  it("marks number-times-fraction: 2 1/2 is a product with value 1, not the mixed number 2½", () => {
+    // The parse is ((2·1))/2 — the product binds first, then the division —
+    // so the honest preview is the fraction with the product visible in its
+    // numerator. What matters is that no rendering can read as 2½.
+    expect(tex("2 1/2")).toBe("\\frac{2 \\cdot 1}{2}");
+    expect(evaluate(parseExpression("2 1/2"), {})).toBe(1);
+  });
+
+  it("wraps an exp() base under a power — e^{x}^{2} is illegal TeX and blanked the preview", () => {
+    expect(tex("exp(x)^2")).toBe("\\left(e^{x}\\right)^{2}");
+    expect(evaluate(parseExpression("exp(x)^2"), { x: 1 })).toBeCloseTo(Math.E ** 2, 9);
+  });
+
+  it("recognizes capitalized function names instead of rendering the invisible misreading 'Sinx'", () => {
+    expect(tex("Sin(x)")).toBe("\\sin\\left(x\\right)");
+    expect(evaluate(parseExpression("COS(0)"), {})).toBe(1);
+  });
+
+  it("renders exotic magnitudes as powers of ten, never as TeX that reads as 1·e − 7", () => {
+    expect(tex("0.0000001")).toBe("1 \\times 10^{-7}");
+  });
+
+  it("keeps a subscript to digits or a single letter, so x_1y stays a product", () => {
+    expect(tex("x_1y")).toBe("x_{1}y");
+    expect(freeVariables(parseExpression("x_1y"))).toEqual(["x_1", "y"]);
+    expect(tex("x_12 + a_n")).toBe("x_{12} + a_{n}");
+  });
+
+  it("refuses pathological nesting with a plain-language error instead of a RangeError crash", () => {
+    const deep = "(".repeat(2000) + "x" + ")".repeat(2000);
+    const outcome = tryParseExpression(deep);
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.message).toMatch(/nested too deeply/i);
+  });
+
+  it("gives actionable messages for =, unicode superscripts, and decimal commas", () => {
+    const eq = tryParseExpression("y = x^2");
+    expect(eq.ok).toBe(false);
+    if (!eq.ok) expect(eq.message).toMatch(/right-hand side/i);
+    const sup = tryParseExpression("x²+1");
+    expect(sup.ok).toBe(false);
+    if (!sup.ok) expect(sup.message).toMatch(/\^2/);
+    const comma = tryParseExpression("2,5");
+    expect(comma.ok).toBe(false);
+    if (!comma.ok) expect(comma.message).toMatch(/decimal point/i);
+  });
+});
+
+describe("review-round regressions — grading soundness", () => {
+  it("rejects the sampling-window attacks: agreement inside a narrow band is not equivalence", () => {
+    // abs(x+3)-3 equals x only for x >= -3; the old single [-2.5, 2.5] band
+    // never looked past -3 and graded it EQUIVALENT.
+    expect(expressionsAgree("abs(x+3)-3", "x", { variables: ["x"] }).kind).toBe("different");
+    // A near-zero bump: x + max(0, 0.3-|x|), expressible via abs. The old
+    // sampler excluded (-0.35, 0.35) entirely.
+    expect(
+      expressionsAgree("x + (0.3 - abs(x) + abs(0.3 - abs(x)))/2", "x", { variables: ["x"] }).kind,
+    ).toBe("different");
+  });
+
+  it("does not call domain-restricted coincidence equivalence: sqrt(x)·sqrt(x) is not x", () => {
+    const result = expressionsAgree("sqrt(x)sqrt(x)", "x", { variables: ["x"] });
+    expect(result.kind).not.toBe("equivalent");
+  });
+
+  it("names a stray variable as the reason instead of misdiagnosing a domain problem", () => {
+    const result = expressionsAgree("x^2", "y^2", { variables: ["x"] });
+    expect(result.kind).toBe("undecided");
+    if (result.kind === "undecided") expect(result.reason).toMatch(/outside the declared set: y/);
+  });
+});
+
 describe("the injection surface — why the rendered preview is safe to trust", () => {
   /**
    * `MathExpressionInput` hands `toLatex`'s output to KaTeX and inserts the

@@ -96,12 +96,21 @@ const FUNCTION_SET = new Set<string>(FUNCTION_NAMES);
  * `pix` has no such trap (both readings render the same and mean a product),
  * so symbol words keep the safer letter-boundary rule.
  */
-function matchWord(rest: string): string | undefined {
-  const fn = FUNCTIONS_LONGEST_FIRST.find((w) => rest.startsWith(w));
-  if (fn) return fn;
-  return SYMBOLS_LONGEST_FIRST.find(
+function matchWord(rest: string): { word: string; length: number } | undefined {
+  // Function names match CASE-INSENSITIVELY (review finding: `Sin(x)` lexed
+  // as S·i·n·(x) and rendered the italic concatenation "Sinx" — visually
+  // near-identical to the sine application meant, the exact invisible
+  // misreading this table exists to prevent). The canonical lowercase name
+  // is what enters the token stream. Symbol words stay case-sensitive: they
+  // have no call-shape to disambiguate them, and `Pi` as P·i is at least
+  // visibly two letters in the preview.
+  const lower = rest.toLowerCase();
+  const fn = FUNCTIONS_LONGEST_FIRST.find((w) => lower.startsWith(w));
+  if (fn) return { word: fn, length: fn.length };
+  const sym = SYMBOLS_LONGEST_FIRST.find(
     (w) => rest.startsWith(w) && !isLetter(rest[w.length] ?? ""),
   );
+  return sym ? { word: sym, length: sym.length } : undefined;
 }
 
 export class ExpressionError extends Error {
@@ -144,19 +153,34 @@ export function tokenize(source: string): Token[] {
     if (isLetter(c)) {
       const start = i;
       const rest = source.slice(i);
-      const word = matchWord(rest);
-      if (word) {
-        i += word.length;
+      const match = matchWord(rest);
+      let text: string | undefined;
+      if (match) {
+        i += match.length;
+        text = match.word; // canonical (lowercase for functions)
       } else {
         i += 1;
       }
-      // An optional subscript binds to the name it follows: `x_1`, `a_n`.
+      // An optional subscript binds to the name it follows: `x_1`, `x_12`,
+      // `a_n`. The subscript is a DIGIT RUN or a SINGLE letter — not a full
+      // alphanumeric run, which swallowed a following variable (review
+      // finding: `x_1y`, a learner meaning x₁·y, lexed as one identifier
+      // `x_1y` and evaluated as a single unbound variable).
       if (source[i] === "_") {
         let j = i + 1;
-        while (j < source.length && (isLetter(source[j]!) || isDigit(source[j]!))) j += 1;
-        if (j > i + 1) i = j;
+        if (j < source.length && isDigit(source[j]!)) {
+          while (j < source.length && isDigit(source[j]!)) j += 1;
+          i = j;
+        } else if (j < source.length && isLetter(source[j]!)) {
+          i = j + 1;
+        }
       }
-      tokens.push({ kind: "name", text: source.slice(start, i), at: start });
+      const raw = source.slice(start, i);
+      tokens.push({
+        kind: "name",
+        text: text !== undefined && raw.toLowerCase().startsWith(text) ? text + raw.slice(text.length) : raw,
+        at: start,
+      });
       continue;
     }
     if (c === "(" || c === "[" || c === "{") {
@@ -169,15 +193,34 @@ export function tokenize(source: string): Token[] {
       i += 1;
       continue;
     }
-    if (c === ",") {
-      tokens.push({ kind: "comma", text: ",", at: i });
-      i += 1;
-      continue;
-    }
     if (c === "+" || c === "-" || c === "*" || c === "/" || c === "^") {
       tokens.push({ kind: "op", text: c, at: i });
       i += 1;
       continue;
+    }
+    // Characters a learner plausibly types that we cannot accept — refuse
+    // with the fix, not just the refusal (review finding: the palette's own
+    // power key is LABELLED "x²", so the bare "I don't recognize ²" message
+    // was teaching the exact glyph the tokenizer rejects).
+    if (c === "=") {
+      throw new ExpressionError(
+        'Enter just the expression itself — no "=" (type the right-hand side only).',
+        i,
+      );
+    }
+    if (c === "²" || c === "³") {
+      throw new ExpressionError(
+        `Type ^${c === "²" ? "2" : "3"} for powers — e.g. x^${c === "²" ? "2" : "3"}.`,
+        i,
+      );
+    }
+    if (c === ",") {
+      // Reached only when a comma cannot be an argument separator; the most
+      // common cause is a decimal-comma habit.
+      throw new ExpressionError(
+        'Use a decimal point, not a comma (2.5, not 2,5).',
+        i,
+      );
     }
     // Typographic characters a learner may paste from a prompt.
     if (c === "×" || c === "⋅") {
@@ -222,8 +265,19 @@ export type ExprNode =
 
 /* ----------------------------------------------------------------- parser */
 
+/**
+ * Nesting bound for the recursive-descent parser. Without one, ~2000 nested
+ * parentheses overflowed the JS stack as a RangeError that escaped
+ * `tryParseExpression` (which converts only ExpressionError) and crashed the
+ * live preview — a review finding against the function's own "must not
+ * crash" contract. 64 is far beyond any human expression and far below any
+ * engine's stack limit.
+ */
+const MAX_DEPTH = 64;
+
 class Parser {
   private pos = 0;
+  private depth = 0;
   // Written out rather than declared as constructor parameter properties:
   // this project compiles with `erasableSyntaxOnly`, which rejects that
   // TypeScript-only shorthand.
@@ -263,7 +317,27 @@ class Parser {
     return node;
   }
 
+  private enter(): void {
+    this.depth += 1;
+    if (this.depth > MAX_DEPTH) {
+      throw new ExpressionError("This expression is nested too deeply to read.", this.pos);
+    }
+  }
+
+  private exit(): void {
+    this.depth -= 1;
+  }
+
   private parseSum(): ExprNode {
+    this.enter();
+    try {
+      return this.parseSumInner();
+    } finally {
+      this.exit();
+    }
+  }
+
+  private parseSumInner(): ExprNode {
     let left = this.parseProduct();
     for (;;) {
       const token = this.peek();
@@ -427,6 +501,41 @@ function wrap(tex: string): string {
   return `\\left(${tex}\\right)`;
 }
 
+/**
+ * How a number literal renders. `String(v)` switches to JS exponential
+ * notation below 1e-6 / at 1e21, and the resulting TeX "1e-7" is, in this
+ * module's own grammar, the expression 1·e − 7 ≈ −4.28 — a preview that
+ * silently means something else (review finding). Exotic magnitudes render
+ * as an explicit power of ten instead.
+ */
+function numberToLatex(value: number): string {
+  const plain = String(value);
+  if (!plain.includes("e")) return plain;
+  const [mantissa, exponent] = plain.split("e") as [string, string];
+  const exp = exponent.startsWith("+") ? exponent.slice(1) : exponent;
+  return `${mantissa} \\times 10^{${exp}}`;
+}
+
+/**
+ * Whether an implicit product may render as bare juxtaposition with this
+ * RIGHT operand, or needs an explicit mark. Review findings, all with the
+ * preview silently reading as a different value than the parse:
+ *   `2(3)` rendered "23" (reads twenty-three; value 6);
+ *   `2 1/2` rendered "2½"-style (reads two-and-a-half; value 1);
+ *   `2(-3)` rendered "2-3" (reads a subtraction; value −6).
+ * Rules: a number on the right always gets a \cdot; a unary minus on the
+ * right always gets parentheses; a fraction to the RIGHT of a number gets a
+ * \cdot (the mixed-number misreading). Identifiers, calls, and anything the
+ * precedence rules already wrap stay juxtaposed — `3x`, `2\sin(x)`,
+ * `2(x+1)` are the readable cases juxtaposition exists for.
+ */
+function implicitRightMark(left: ExprNode, right: ExprNode): "juxtapose" | "cdot" | "parens" {
+  if (right.kind === "number") return "cdot";
+  if (right.kind === "unary") return "parens";
+  if (right.kind === "binary" && right.op === "/" && left.kind === "number") return "cdot";
+  return "juxtapose";
+}
+
 function identifierToLatex(name: string): string {
   const [base, subscript] = name.split("_", 2);
   const head = LATEX_SYMBOLS[base ?? ""] ?? (base!.length > 1 ? `\\mathrm{${base}}` : base!);
@@ -447,7 +556,7 @@ const FUNCTION_LATEX: Partial<Record<FunctionName, string>> = {
 export function toLatex(node: ExprNode): string {
   switch (node.kind) {
     case "number":
-      return String(node.value);
+      return numberToLatex(node.value);
     case "identifier":
       return identifierToLatex(node.name);
     case "unary": {
@@ -472,8 +581,12 @@ export function toLatex(node: ExprNode): string {
       const right = toLatex(node.right);
       if (node.op === "^") {
         // The base must be grouped unless it is already atomic — `(x+1)^2`,
-        // and `(-x)^2`, which is NOT the same as `-x^2`.
-        const base = nodePrecedence(node.left) < 10 ? wrap(left) : left;
+        // and `(-x)^2`, which is NOT the same as `-x^2`. An `exp` call is a
+        // special case: it RENDERS as e^{…}, so an unwrapped `exp(x)^2`
+        // emitted the illegal double superscript e^{x}^{2} and KaTeX threw,
+        // blanking the preview of a perfectly valid input (review finding).
+        const baseIsExp = node.left.kind === "call" && node.left.name === "exp";
+        const base = nodePrecedence(node.left) < 10 || baseIsExp ? wrap(left) : left;
         return `${base}^{${right}}`;
       }
       const leftTex = nodePrecedence(node.left) < own ? wrap(left) : left;
@@ -487,7 +600,11 @@ export function toLatex(node: ExprNode): string {
         (nodePrecedence(node.right) === own && node.op === "-");
       const rightTex = rightNeedsWrap ? wrap(right) : right;
       if (node.op === "*") {
-        return node.implicit ? `${leftTex}${rightTex}` : `${leftTex} \\cdot ${rightTex}`;
+        if (!node.implicit) return `${leftTex} \\cdot ${rightTex}`;
+        const mark = implicitRightMark(node.left, node.right);
+        if (mark === "cdot") return `${leftTex} \\cdot ${rightTex}`;
+        if (mark === "parens") return `${leftTex}${wrap(rightTex)}`;
+        return `${leftTex}${rightTex}`;
       }
       return `${leftTex} ${node.op} ${rightTex}`;
     }
@@ -586,15 +703,30 @@ export function freeVariables(node: ExprNode): string[] {
  * not land on small integers or repeat across variables.
  */
 function samplePoints(count: number, seed: number): number[] {
+  // THREE bands, interleaved: near-zero, a core band, and a wide band out to
+  // ±9. A single [-2.5, 2.5] band was a proven soundness hole (review
+  // finding): `abs(x+3) - 3` — expressible in this grammar, differing from
+  // `x` everywhere below −3 — graded as EQUIVALENT to `x` because no sample
+  // ever left the window; a near-zero bump built from abs() slipped through
+  // the old ±0.35 exclusion zone the same way. Wide-band points also make
+  // the domain-mismatch check below meaningful for sqrt/ln answers.
   const out: number[] = [];
   let state = seed >>> 0;
   for (let i = 0; i < count; i += 1) {
     state = (state * 1664525 + 1013904223) >>> 0;
-    // Spread over [-2.5, 2.5], then push away from 0 so poles and the common
-    // "agrees at 0" coincidence do not dominate the sample.
-    const unit = state / 0x100000000;
-    const value = (unit - 0.5) * 5;
-    out.push(Math.abs(value) < 0.35 ? value + (value < 0 ? -0.6 : 0.6) : value);
+    const unit = state / 0x100000000; // (0, 1)
+    const centered = unit - 0.5;
+    const band = i % 3;
+    let value: number;
+    if (band === 0) {
+      value = centered * 0.6; // near zero: (−0.3, 0.3)
+    } else if (band === 1) {
+      value = centered * 5; // core: (−2.5, 2.5)
+    } else {
+      value = centered * 18; // wide: (−9, 9)
+    }
+    // Never exactly zero — poles at 0 are common and a 0-sample says little.
+    out.push(value === 0 ? 0.1234 : value);
   }
   return out;
 }
@@ -602,6 +734,11 @@ function samplePoints(count: number, seed: number): number[] {
 export interface EquivalenceOptions {
   /** Variables the expressions may use. A learner variable outside this set is a mismatch, not a sample. */
   readonly variables?: readonly string[];
+  // NOTE on tolerance: agreement is relative with a floor of 1 (an absolute
+  // ~1e-8 near the origin), so an answer differing by a term smaller than
+  // that everywhere sampled is accepted — standard numeric-grader behavior,
+  // recorded here deliberately rather than discovered later.
+
   /** Number of sample points to try. */
   readonly samples?: number;
   /** Minimum number of points where BOTH sides are finite, below which no verdict is claimed. */
@@ -614,6 +751,9 @@ export type EquivalenceResult =
   | { readonly kind: "equivalent"; readonly comparedAt: number }
   | { readonly kind: "different"; readonly comparedAt: number; readonly witness: Readonly<Record<string, number>> }
   | { readonly kind: "undecided"; readonly comparedAt: number; readonly reason: string };
+
+/** Points where exactly one side evaluates finitely before "equivalent" becomes suspect. */
+const DOMAIN_MISMATCH_LIMIT = 8;
 
 /**
  * Whether two expressions agree as FUNCTIONS, decided by sampling.
@@ -638,7 +778,25 @@ export function equivalentByValue(
   const variables = declared
     ? [...declared]
     : [...new Set([...freeVariables(a), ...freeVariables(b)])].sort();
-  const sampleCount = options.samples ?? 40;
+  // The documented contract: a variable outside the declared set is a
+  // MISMATCH, not a sample. (Review finding: the doc promised this while the
+  // implementation let the stray variable evaluate to NaN at every point and
+  // fall through to an "only 0 sample point(s)" undecided — a wrong-variable
+  // answer misdiagnosed as a domain problem.)
+  if (declared) {
+    const declaredSet = new Set(declared);
+    const stray = [...new Set([...freeVariables(a), ...freeVariables(b)])]
+      .filter((name) => !declaredSet.has(name))
+      .sort();
+    if (stray.length > 0) {
+      return {
+        kind: "undecided",
+        comparedAt: 0,
+        reason: `uses variable(s) outside the declared set: ${stray.join(", ")}`,
+      };
+    }
+  }
+  const sampleCount = options.samples ?? 48;
   const minComparable = options.minComparablePoints ?? 6;
   const tolerance = options.tolerance ?? 1e-8;
 
@@ -659,12 +817,16 @@ export function equivalentByValue(
   });
 
   let compared = 0;
+  let oneSided = 0;
   for (let i = 0; i < sampleCount; i += 1) {
     const env: Record<string, number> = {};
     for (const name of variables) env[name] = columns.get(name)![i]!;
     const va = evaluate(a, env);
     const vb = evaluate(b, env);
-    if (!Number.isFinite(va) || !Number.isFinite(vb)) continue;
+    const aDefined = Number.isFinite(va);
+    const bDefined = Number.isFinite(vb);
+    if (aDefined !== bDefined) oneSided += 1;
+    if (!aDefined || !bDefined) continue;
     compared += 1;
     const scale = Math.max(1, Math.abs(va), Math.abs(vb));
     if (Math.abs(va - vb) > tolerance * scale) {
@@ -677,6 +839,18 @@ export function equivalentByValue(
       kind: "undecided",
       comparedAt: compared,
       reason: `only ${compared} sample point(s) had both sides defined`,
+    };
+  }
+  // Agreement everywhere both sides exist, but one side is REPEATEDLY defined
+  // where the other is not: the two are not the same function, they merely
+  // coincide on the smaller domain (review finding: `sqrt(x)·sqrt(x)` graded
+  // equivalent to `x`). Not claimed "different" either — no numeric witness
+  // exists — so this is undecided, which graders already treat as not-correct.
+  if (oneSided >= DOMAIN_MISMATCH_LIMIT) {
+    return {
+      kind: "undecided",
+      comparedAt: compared,
+      reason: `the two expressions are defined on visibly different sets (${oneSided} one-sided points)`,
     };
   }
   return { kind: "equivalent", comparedAt: compared };

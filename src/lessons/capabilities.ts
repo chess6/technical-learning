@@ -884,6 +884,30 @@ function mathExpressionConfig(exercise: ExerciseDefinition): MathExpressionConfi
       `math-expression exercise "${exercise.id}" has an unparseable expected answer "${config.expected}": ${expected.message}`,
     );
   }
+  // Authoring guards, both from review findings where a one-character author
+  // typo produced an item NO input could answer — including the authored
+  // answer typed verbatim:
+  //  1. every free variable of `expected` must be declared (expected "3x^2"
+  //     with variables ["y"] silently rejected the correct "3y^2");
+  //  2. `expected` must agree with ITSELF under the declared variables — the
+  //     cheapest possible probe that the sampler can actually compare
+  //     answers for this item (expected "sqrt(x-100)" was undefined at every
+  //     sample point, so even a verbatim echo of the answer graded wrong).
+  const declared = new Set(config.variables);
+  const strayInExpected = freeVariables(expected.node).filter((name) => !declared.has(name));
+  if (strayInExpected.length > 0) {
+    throw new Error(
+      `math-expression exercise "${exercise.id}": expected answer uses undeclared variable(s) ${strayInExpected.join(", ")} — declare them in \`variables\` or fix the expected answer.`,
+    );
+  }
+  const selfCheck = expressionsAgree(config.expected, config.expected, {
+    variables: config.variables,
+  });
+  if (selfCheck.kind !== "equivalent") {
+    throw new Error(
+      `math-expression exercise "${exercise.id}": the expected answer cannot be compared with itself under the declared variables (${selfCheck.kind}${"reason" in selfCheck ? `: ${selfCheck.reason}` : ""}) — no learner answer could ever grade correct.`,
+    );
+  }
   return config;
 }
 

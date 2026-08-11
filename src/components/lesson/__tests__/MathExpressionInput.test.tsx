@@ -80,6 +80,10 @@ describe("MathExpressionInput", () => {
   it("inserts a palette symbol at the caret rather than appending", () => {
     render(<Harness initial="ab" />);
     const input = field();
+    // A real user has focused the field before they have a caret in it; the
+    // widget deliberately appends for a never-focused field (whose
+    // selectionStart is a meaningless 0), so the test must focus first.
+    fireEvent.focus(input);
     input.setSelectionRange(1, 1); // between a and b
     fireEvent.click(screen.getByRole("button", { name: /show symbols/i }));
     fireEvent.click(screen.getByRole("button", { name: "x" }));
@@ -89,10 +93,18 @@ describe("MathExpressionInput", () => {
   it("replaces the selection when one exists", () => {
     render(<Harness initial="abc" />);
     const input = field();
+    fireEvent.focus(input);
     input.setSelectionRange(1, 3); // select "bc"
     fireEvent.click(screen.getByRole("button", { name: /show symbols/i }));
     fireEvent.click(screen.getByRole("button", { name: "x" }));
     expect(field().value).toBe("ax");
+  });
+
+  it("appends rather than prepending when the field was never focused — a restored draft's first palette click", () => {
+    render(<Harness initial="x+" />);
+    fireEvent.click(screen.getByRole("button", { name: /show symbols/i }));
+    fireEvent.click(screen.getByRole("button", { name: "x" }));
+    expect(field().value).toBe("x+x"); // NOT "xx+" — selectionStart is 0 pre-focus
   });
 
   it("inserts a function with its parentheses, ready to be filled", () => {

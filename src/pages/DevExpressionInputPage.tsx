@@ -53,12 +53,16 @@ const DEMO_EXERCISES: ExerciseDefinition[] = [
     type: "custom",
     capabilityId: MATH_EXPRESSION_ID,
     tier: "transfer",
-    prompt:
-      "Write an expression equal to $\\sin(2\\theta)$ using only $\\sin(\\theta)$ and $\\cos(\\theta)$.",
+    // Review finding: the earlier prompt here ("write sin(2θ) USING ONLY
+    // sin θ and cos θ") was form-sensitive — restating sin(2theta) graded
+    // Correct, violating the capability's own pinned boundary. This prompt
+    // is value-honest: ANY expression equal to the derivative is genuinely
+    // a right answer, including sin(2theta) itself.
+    prompt: "What is $\\frac{d}{d\\theta}\\big[\\sin^2(\\theta)\\big]$? Any equivalent form is accepted.",
     config: {
       expected: "2sin(theta)cos(theta)",
       variables: ["theta"],
-      explanation: "The double-angle identity: $\\sin(2\\theta) = 2\\sin\\theta\\cos\\theta$.",
+      explanation: "By the chain rule, $\\frac{d}{d\\theta}\\sin^2\\theta = 2\\sin\\theta\\cos\\theta$ — equivalently $\\sin(2\\theta)$.",
       palette: ["theta"],
       placeholder: "e.g. 2sin(theta)cos(theta)",
     },

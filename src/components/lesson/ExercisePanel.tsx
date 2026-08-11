@@ -679,7 +679,12 @@ function MathExpressionBody({
         variables={config?.variables ?? []}
         palette={config?.palette ?? []}
         placeholder={config?.placeholder}
-        onSubmit={check}
+        // Guard blank submits here, not only via the disabled button — Enter
+        // in the empty field otherwise graded the blank and recorded an
+        // incorrect attempt the visible UI said was impossible.
+        onSubmit={() => {
+          if (draft.source.trim() !== "") check();
+        }}
       />
       <div className="exercise-panel__answer-actions">
         <button type="submit" className="btn" disabled={draft.source.trim() === ""}>

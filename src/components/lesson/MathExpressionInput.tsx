@@ -115,6 +115,12 @@ export function MathExpressionInput({
   onSubmit,
 }: MathExpressionInputProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // Whether the field has EVER been focused. Needed because selectionStart on
+  // a never-focused text input is 0, not null (null is reserved for input
+  // types without selection), so the `?? value.length` fallback below never
+  // fired and a palette click on a restored draft PREPENDED at position 0 —
+  // review finding against the original comment's wrong claim.
+  const hasFocusedRef = useRef(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const previewId = useId();
   const paletteId = useId();
@@ -165,10 +171,10 @@ export function MathExpressionInput({
 
   const insert = (entry: PaletteEntry) => {
     const field = inputRef.current;
-    // Fall back to appending when the caret position is unavailable (a
-    // never-focused field reports 0, which would silently prepend).
-    const start = field?.selectionStart ?? value.length;
-    const end = field?.selectionEnd ?? value.length;
+    // Append when the field has never been focused (its selectionStart is a
+    // meaningless 0 then, not null) or the position is unavailable.
+    const start = hasFocusedRef.current ? (field?.selectionStart ?? value.length) : value.length;
+    const end = hasFocusedRef.current ? (field?.selectionEnd ?? value.length) : value.length;
     onChange(value.slice(0, start) + entry.insert + value.slice(end));
     setPendingCaret(start + entry.insert.length - (entry.caretFromEnd ?? 0));
   };
@@ -187,6 +193,13 @@ export function MathExpressionInput({
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
+          // Bounds the parser's input; with the parser's own depth guard this
+          // is belt-and-braces against pathological pastes, and no honest
+          // answer at this course's level approaches it.
+          maxLength={200}
+          onFocus={() => {
+            hasFocusedRef.current = true;
+          }}
           aria-label={label}
           aria-describedby={previewId}
           aria-invalid={!isBlank && !outcome.ok}
