@@ -8,6 +8,8 @@ import {
   CONSTRUCT_IN_EXPLORER_ID,
   SELF_CHECK_ID,
   EXERCISE_SEQUENCE_ID,
+  MATH_EXPRESSION_ID,
+  type MathExpressionConfig,
   type CommittedPredictionConfig,
   type MatrixEntryConfig,
   type ConstructInExplorerConfig,
@@ -16,6 +18,7 @@ import {
   type ExerciseSequenceConfig,
   type SequenceResponse,
 } from "../../lessons/capabilities";
+import { MathExpressionInput } from "./MathExpressionInput";
 import { ProseWithMath } from "./ProseWithMath";
 import { SolutionReveal } from "./SolutionReveal";
 import "./ExercisePanel.css";
@@ -76,6 +79,19 @@ const gradedSummary =
     result: GradeResult | null,
   ): SummaryState => (result?.correct ? "correct" : "incorrect");
 
+/**
+ * How wide a free-text answer field should be, in characters.
+ *
+ * The fields below share one CSS rule, so before this they shared one fixed
+ * width — sized for a scalar like `2.5`, which left a list ("2, 3, 5, 7") or
+ * an expression scrolling sideways inside a four-character box while the
+ * learner was still typing it. Growing with the content keeps the whole answer
+ * visible; the floor keeps a short answer's field from looking like an essay
+ * prompt, and the ceiling stops one long answer from stretching the layout.
+ */
+const fieldSize = (value: string, floor = 8): number =>
+  Math.max(floor, Math.min(36, value.length + 2));
+
 const attemptedWhenResult = (
   _exercise: ExerciseDefinition,
   _draft: unknown,
@@ -91,6 +107,7 @@ type CommittedPredictionDraft = { committedIndex: number | null; submitted: bool
 type MatrixEntryDraft = { entries: string[][] };
 type ConstructDraft = { x: string; y: string; submitted: boolean };
 type SelfCheckDraft = { text: string; revealed: boolean; selfMark: SelfMark | null };
+type MathExpressionDraft = { source: string };
 type SequenceStepDraft = {
   value: string;
   choice: number | null;
@@ -155,6 +172,12 @@ const renderCapabilities: Record<string, RenderCapability<unknown>> = {
     isAttempted: (_exercise, draft) => draft.submitted,
     summaryState: gradedSummary(),
     Body: ConstructInExplorerBody,
+  }),
+  [MATH_EXPRESSION_ID]: defineCapability<MathExpressionDraft>({
+    emptyDraft: () => ({ source: "" }),
+    isAttempted: attemptedWhenResult,
+    summaryState: gradedSummary(),
+    Body: MathExpressionBody,
   }),
   [SELF_CHECK_ID]: defineCapability<SelfCheckDraft>({
     emptyDraft: () => ({ text: "", revealed: false, selfMark: null }),
@@ -608,6 +631,7 @@ function EigenvalueBody({
           inputMode="decimal"
           placeholder="e.g. 2, 3"
           aria-label="Eigenvalues"
+          size={fieldSize(draft.lambdas)}
           value={draft.lambdas}
           onChange={(event) => setDraft({ lambdas: event.target.value })}
         />
@@ -615,6 +639,53 @@ function EigenvalueBody({
       <button type="submit" className="btn">
         Check answer
       </button>
+      <Feedback result={result} exercise={exercise} />
+    </form>
+  );
+}
+
+function MathExpressionBody({
+  exercise,
+  draft,
+  result,
+  setDraft,
+  setResult,
+}: CapabilityBodyProps<MathExpressionDraft>) {
+  if (exercise.type !== "custom") return null;
+  const config = exercise.config as MathExpressionConfig | undefined;
+
+  const check = () => {
+    setResult(
+      gradeExercise(exercise, {
+        kind: "custom",
+        capabilityId: MATH_EXPRESSION_ID,
+        value: { source: draft.source },
+      }),
+    );
+  };
+
+  return (
+    <form
+      className="exercise-panel__answer exercise-panel__answer--block"
+      onSubmit={(event) => {
+        event.preventDefault();
+        check();
+      }}
+    >
+      <MathExpressionInput
+        label="Your answer, as an expression"
+        value={draft.source}
+        onChange={(source) => setDraft({ source })}
+        variables={config?.variables ?? []}
+        palette={config?.palette ?? []}
+        placeholder={config?.placeholder}
+        onSubmit={check}
+      />
+      <div className="exercise-panel__answer-actions">
+        <button type="submit" className="btn" disabled={draft.source.trim() === ""}>
+          Check answer
+        </button>
+      </div>
       <Feedback result={result} exercise={exercise} />
     </form>
   );
@@ -1226,6 +1297,7 @@ function ExerciseSequenceBody({
                   <input
                     type="text"
                     aria-label={`Step ${index + 1} answer`}
+                    size={fieldSize(current.text)}
                     value={current.text}
                     onChange={(event) => {
                       const steps = writeStep(index, { ...current, text: event.target.value });

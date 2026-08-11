@@ -194,8 +194,21 @@
   color: var(--color-text-muted);
 }
 
+/* Sized to the answer, not to the smallest answer.
+ *
+ * This was a flat `width: 5.5rem` — right for a single scalar like `2.5`, and
+ * wrong for everything else that lands in the same field. An eigenvalue list
+ * ("2, 3, 5, 7"), a coordinate pair, or any expression scrolled sideways
+ * inside a box built for four characters, so the learner could not see their
+ * own answer while typing it.
+ *
+ * `width` becomes a FLOOR and the field grows with its content up to a
+ * readable maximum, via the `size` attribute the inputs set from their own
+ * value. Fields that stay short still look short — nothing widens a field for
+ * an answer that does not need it. */
 .exercise-panel__field input {
-  width: 5.5rem;
+  min-width: 5.5rem;
+  max-width: min(28rem, 100%);
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
@@ -203,6 +216,22 @@
   background: var(--color-page-bg);
   color: var(--color-text);
   font-family: var(--font-mono);
+}
+
+/* A block answer (an expression field with its preview and palette) needs the
+   full column; the default row layout puts the button beside a narrow box. */
+.exercise-panel__answer--block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.exercise-panel__answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .exercise-panel__field-label {

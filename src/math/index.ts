@@ -448,3 +448,22 @@ export {
   stepDecomposition,
   trustRadius,
 } from "./optimization";
+
+export {
+  BUILTIN_CONSTANTS,
+  ExpressionError,
+  equivalentByValue,
+  evaluate,
+  expressionsAgree,
+  freeVariables,
+  latexPreview,
+  parseExpression,
+  toLatex,
+  tokenize,
+  tryParseExpression,
+  type EquivalenceOptions,
+  type EquivalenceResult,
+  type ExprNode,
+  type FunctionName,
+  type ParseOutcome,
+} from "./expression";

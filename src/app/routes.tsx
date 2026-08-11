@@ -33,6 +33,15 @@ const devRoutes = import.meta.env.DEV
         },
       },
       {
+        path: "dev/expression-input",
+        lazy: async () => {
+          const { DevExpressionInputPage } = await import(
+            "../pages/DevExpressionInputPage"
+          );
+          return { Component: DevExpressionInputPage };
+        },
+      },
+      {
         path: "dev/assessment",
         lazy: async () => {
           const { DevAssessmentIndexPage } = await import(

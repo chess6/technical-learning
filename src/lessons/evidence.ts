@@ -43,6 +43,25 @@ export const CAPABILITY_EVIDENCE_CEILING: Record<string, EvidenceLevel> = {
   "exercise-sequence": "E3", // scaffolded production; progressive reveal caps transfer
   // Open construction / complete produced mathematical objects.
   "construct-in-explorer": "E4", // predicate-graded open construction
+  /**
+   * `math-expression`: the learner types a complete symbolic expression into
+   * an empty field, graded by a predicate (agreement as a function) rather
+   * than against one spelling. Nothing is offered to select from and the
+   * answer space is unbounded, which is the same shape as
+   * `construct-in-explorer` above — open construction, predicate-graded — and
+   * why it lands at the same level.
+   *
+   * Not E5: what is captured is the produced OBJECT alone. No reasoning, no
+   * derivation, and no complete solution set accompanies it, which is what
+   * separates this from `solution-set` and `elimination-solution`.
+   *
+   * A ceiling is a necessary bound, never a licence. Grading here compares
+   * VALUE, not form, so an item whose prompt is about the form (factor this,
+   * write it in vertex form) can be answered by restating the question — see
+   * `mathExpressionGradingContract.test.ts`, which pins that boundary. Such an
+   * item earns nothing regardless of this ceiling.
+   */
+  "math-expression": "E4",
   "solution-set": "E5", // complete produced solution set
   "elimination-solution": "E5", // full produced elimination evidence
   "self-check": "E5", // written production, human-scored

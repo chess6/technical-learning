@@ -34,6 +34,9 @@ import {
   verifiesEigenpair,
   type AugmentedSystem,
   type LinearSystemKind,
+  expressionsAgree,
+  freeVariables,
+  tryParseExpression,
   type Matrix2x2,
   type Vector2,
 } from "../math";
@@ -827,6 +830,116 @@ export function normalizeAnswerText(raw: string): string {
     .trim();
 }
 
+/* --------------------------------------------------------------------------
+ * math-expression — the learner types an algebraic expression in ordinary
+ * infix notation (`x^2 + 3x + 7`) and it is graded by VALUE against `expected`.
+ * Reached via `custom`.
+ * ------------------------------------------------------------------------ */
+
+export type MathExpressionConfig = {
+  /**
+   * The correct answer, written in the same friendly infix notation the
+   * learner types — NOT LaTeX. Any expression that agrees with it as a
+   * function is accepted.
+   */
+  expected: string;
+  /**
+   * The variables the answer is a function of. Required rather than inferred:
+   * inferring them from `expected` would silently accept an answer in the
+   * wrong variable whenever the two happened to agree on the sampled points,
+   * and would make a typo'd variable name look like a domain problem instead
+   * of a wrong answer.
+   */
+  variables: readonly string[];
+  /** Shown after grading, correct or not — the same "always say why" bar every other capability meets. */
+  explanation: string;
+  /** Optional palette hint: extra symbols worth offering for THIS item. */
+  palette?: readonly string[];
+  /** Optional placeholder shown in the empty field. */
+  placeholder?: string;
+};
+
+export type MathExpressionAnswer = { source: string };
+
+export const MATH_EXPRESSION_ID = "math-expression";
+
+function mathExpressionConfig(exercise: ExerciseDefinition): MathExpressionConfig {
+  if (exercise.type !== "custom") {
+    throw new Error("math-expression requires a custom exercise");
+  }
+  const config = exercise.config as MathExpressionConfig | undefined;
+  if (
+    !config ||
+    typeof config.expected !== "string" ||
+    !Array.isArray(config.variables) ||
+    typeof config.explanation !== "string"
+  ) {
+    throw new Error(
+      `math-expression exercise "${exercise.id}" needs { expected, variables, explanation } config`,
+    );
+  }
+  const expected = tryParseExpression(config.expected);
+  if (!expected.ok) {
+    throw new Error(
+      `math-expression exercise "${exercise.id}" has an unparseable expected answer "${config.expected}": ${expected.message}`,
+    );
+  }
+  return config;
+}
+
+/**
+ * Grades a typed expression against the authored one.
+ *
+ * **This grades VALUE, not FORM.** `x^2+3x+7`, `7+3x+x^2` and
+ * `(x+1)(x+2)+(x+5)` are all the same answer here, which is right for "what is
+ * the derivative" and wrong for "factor this" or "write this in vertex form" —
+ * there, restating the question would score. An item whose prompt is about the
+ * FORM must not use this capability without a form check, and
+ * `describeGradingContract`'s reject battery is where that would be proven.
+ *
+ * Three failures are kept distinct because they need different messages:
+ * an input that does not parse (say what is wrong with it), an input using a
+ * variable the item never declared (a wrong answer, not a malformed one), and
+ * an input that parses but disagrees.
+ */
+function gradeMathExpression(
+  config: MathExpressionConfig,
+  source: string,
+): GradeResult {
+  const parsed = tryParseExpression(source);
+  if (!parsed.ok) {
+    return {
+      correct: false,
+      feedback: `That isn't a complete expression yet — ${parsed.message} ${config.explanation}`,
+    };
+  }
+  const declared = new Set(config.variables);
+  const stray = freeVariables(parsed.node).filter((name) => !declared.has(name));
+  if (stray.length > 0) {
+    const list = stray.join(", ");
+    return {
+      correct: false,
+      feedback: `This answer uses ${list}, but the question is about ${config.variables.join(", ") || "a constant"}. ${config.explanation}`,
+    };
+  }
+  const verdict = expressionsAgree(source, config.expected, {
+    variables: config.variables,
+  });
+  if (verdict.kind === "equivalent") {
+    return { correct: true, feedback: `Correct. ${config.explanation}` };
+  }
+  if (verdict.kind === "undecided") {
+    // Never a pass. Sampling could not compare the two (disjoint real
+    // domains, for instance), so no agreement was established — and an
+    // unestablished agreement is not a correct answer.
+    return {
+      correct: false,
+      feedback: `I couldn't compare that with the expected answer (${verdict.reason}). ${config.explanation}`,
+    };
+  }
+  return { correct: false, feedback: `Not equivalent. ${config.explanation}` };
+}
+
 export type ExerciseSequenceConfig = { steps: readonly SequenceStep[] };
 
 export type ExerciseSequenceAnswer = { responses: readonly SequenceResponse[] };
@@ -1045,6 +1158,11 @@ function decodeCommittedPredictionAnswer(raw: JsonValue | undefined): CommittedP
   };
 }
 
+function decodeMathExpressionAnswer(raw: JsonValue | undefined): MathExpressionAnswer {
+  const o = decodeObject(raw, MATH_EXPRESSION_ID);
+  return { source: decodeString(o.source, MATH_EXPRESSION_ID, "source") };
+}
+
 function decodeMatrixEntryAnswer(raw: JsonValue | undefined): MatrixEntryAnswer {
   const o = decodeObject(raw, MATRIX_ENTRY_ID);
   const rows = decodeArray(o.entries, MATRIX_ENTRY_ID, "entries");
@@ -1232,6 +1350,32 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
     },
     parseAnswer() {
       return { kind: "prediction" };
+    },
+  },
+
+  [MATH_EXPRESSION_ID]: {
+    id: MATH_EXPRESSION_ID,
+    answerSchemaVersion: 1,
+    grade(exercise, answer) {
+      const config = mathExpressionConfig(exercise);
+      const value = decodeMathExpressionAnswer(customValue(answer, MATH_EXPRESSION_ID));
+      return gradeMathExpression(config, value.source);
+    },
+    serializeAnswer(answer) {
+      // The learner's own SOURCE text is what is stored, not a normalized or
+      // re-rendered form: a later review needs to see what they actually
+      // typed, and a stored canonical form would quietly discard the
+      // difference between `1/2x` and `1/(2x)` that this input exists to make
+      // visible.
+      const value = decodeMathExpressionAnswer(customValue(answer, MATH_EXPRESSION_ID));
+      return { source: value.source };
+    },
+    parseAnswer(raw) {
+      return {
+        kind: "custom",
+        capabilityId: MATH_EXPRESSION_ID,
+        value: decodeMathExpressionAnswer(raw),
+      };
     },
   },
 

@@ -1,0 +1,133 @@
+/* Answer field for algebraic expressions: wide input, live typeset preview,
+   and an openable symbol palette. See MathExpressionInput.tsx for why the
+   preview is a correctness surface rather than decoration. */
+
+.math-expression {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.math-expression__row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+/* Deliberately full-width, unlike the narrow numeric fields beside it: an
+   expression is long, and a box sized for "2.5" tells the learner the wrong
+   thing about what is being asked for. */
+.math-expression__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+}
+
+.math-expression__field:focus-visible,
+.math-expression__palette-toggle:focus-visible,
+.math-expression__key:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.math-expression__field[aria-invalid="true"] {
+  border-color: var(--color-warning);
+}
+
+.math-expression__palette-toggle {
+  flex: 0 0 auto;
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.math-expression__palette-toggle:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.math-expression__palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+}
+
+.math-expression__key {
+  min-width: 2.5rem;
+  min-height: 2rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.math-expression__key:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  border-color: var(--color-accent);
+}
+
+.math-expression__key:disabled,
+.math-expression__palette-toggle:disabled,
+.math-expression__field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Always present, never collapsing: a preview that appears and disappears as
+   the expression parses would shift the layout on almost every keystroke. */
+.math-expression__preview {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--color-border-subtle);
+  overflow-x: auto;
+}
+
+.math-expression__rendered {
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.math-expression__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+  line-height: var(--leading-snug);
+}
+
+.math-expression__hint code {
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+/* The parse error is guidance, not a grade — it says what is incomplete about
+   what has been typed so far, which is a normal state mid-typing. Warning,
+   not error, so a half-finished expression does not read as a wrong answer. */
+.math-expression__error {
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+  line-height: var(--leading-snug);
+}
