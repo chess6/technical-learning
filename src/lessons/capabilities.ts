@@ -34,6 +34,7 @@ import {
   verifiesEigenpair,
   type AugmentedSystem,
   type LinearSystemKind,
+  differentiatesToTarget,
   expressionsAgree,
   freeVariables,
   tryParseExpression,
@@ -836,13 +837,41 @@ export function normalizeAnswerText(raw: string): string {
  * Reached via `custom`.
  * ------------------------------------------------------------------------ */
 
+/**
+ * How a math-expression item decides correctness.
+ *
+ * `value-equivalent` (the default): the answer must agree with `expected` as
+ * a function — right for "what is the derivative", wrong for form-sensitive
+ * prompts (see the boundary pinned in mathExpressionGradingContract.test.ts).
+ *
+ * `antiderivative-of`: the answer is graded by DIFFERENTIATING it on the
+ * item's own interval and comparing against `integrand` — the lesson's
+ * check-by-differentiating discipline (L7 insight.md §7d) executed by the
+ * machine. `+C` invariance is automatic (differentiation kills constants),
+ * which is why `expected` alone cannot grade these items: `expected + 7` is
+ * exactly as correct as `expected`.
+ */
+export type MathExpressionCheck =
+  | { kind: "value-equivalent" }
+  | {
+      kind: "antiderivative-of";
+      /** Friendly-infix integrand source (never LaTeX). */
+      integrand: string;
+      /** The interval the antiderivative claim is graded on. */
+      domain: readonly [number, number];
+    };
+
 export type MathExpressionConfig = {
   /**
-   * The correct answer, written in the same friendly infix notation the
-   * learner types — NOT LaTeX. Any expression that agrees with it as a
-   * function is accepted.
+   * The model answer, written in the same friendly infix notation the
+   * learner types — NOT LaTeX. Under `value-equivalent` (default), any
+   * expression that agrees with it as a function is accepted; under
+   * `antiderivative-of` it is shown as the model answer and sanity-checked
+   * against the integrand at config time, while grading runs against the
+   * integrand itself.
    */
   expected: string;
+  check?: MathExpressionCheck;
   /**
    * The variables the answer is a function of. Required rather than inferred:
    * inferring them from `expected` would silently accept an answer in the
@@ -903,10 +932,28 @@ function mathExpressionConfig(exercise: ExerciseDefinition): MathExpressionConfi
   const selfCheck = expressionsAgree(config.expected, config.expected, {
     variables: config.variables,
   });
-  if (selfCheck.kind !== "equivalent") {
+  if (selfCheck.kind !== "equivalent" && config.check?.kind !== "antiderivative-of") {
     throw new Error(
       `math-expression exercise "${exercise.id}": the expected answer cannot be compared with itself under the declared variables (${selfCheck.kind}${"reason" in selfCheck ? `: ${selfCheck.reason}` : ""}) — no learner answer could ever grade correct.`,
     );
+  }
+  if (config.check?.kind === "antiderivative-of") {
+    if (config.variables.length !== 1) {
+      throw new Error(
+        `math-expression exercise "${exercise.id}": antiderivative-of grading needs exactly one variable, got [${config.variables.join(", ")}].`,
+      );
+    }
+    // The authored model answer must itself pass the check it advertises —
+    // the same class of authoring guard as the self-comparison above.
+    const modelVerdict = differentiatesToTarget(config.expected, config.check.integrand, {
+      domain: config.check.domain,
+      variable: config.variables[0]!,
+    });
+    if (modelVerdict.kind !== "antiderivative") {
+      throw new Error(
+        `math-expression exercise "${exercise.id}": the model answer "${config.expected}" does not differentiate to the integrand "${config.check.integrand}" on [${config.check.domain.join(", ")}] (${modelVerdict.kind}) — the item is unanswerable as authored.`,
+      );
+    }
   }
   return config;
 }
@@ -932,9 +979,14 @@ function gradeMathExpression(
 ): GradeResult {
   const parsed = tryParseExpression(source);
   if (!parsed.ok) {
+    // Deliberately WITHOUT config.explanation: the rendered-page review
+    // caught the explanation (which contains the correct answer) riding
+    // along on a mid-typing parse failure — pressing Enter on "2(x+1"
+    // revealed the full solution. A malformed draft gets the parse message
+    // and nothing else; explanations are for genuine attempts.
     return {
       correct: false,
-      feedback: `That isn't a complete expression yet — ${parsed.message} ${config.explanation}`,
+      feedback: `That isn't a complete expression yet — ${parsed.message}`,
     };
   }
   const declared = new Set(config.variables);
@@ -944,6 +996,25 @@ function gradeMathExpression(
     return {
       correct: false,
       feedback: `This answer uses ${list}, but the question is about ${config.variables.join(", ") || "a constant"}. ${config.explanation}`,
+    };
+  }
+  if (config.check?.kind === "antiderivative-of") {
+    const verdict = differentiatesToTarget(source, config.check.integrand, {
+      domain: config.check.domain,
+      variable: config.variables[0]!,
+    });
+    if (verdict.kind === "antiderivative") {
+      return { correct: true, feedback: `Correct — its derivative is the integrand. ${config.explanation}` };
+    }
+    if (verdict.kind === "not-antiderivative") {
+      return {
+        correct: false,
+        feedback: `Differentiating your answer does not give the integrand back (near x = ${verdict.witnessX.toFixed(2)}, its derivative is ${verdict.derivativeThere.toFixed(3)} but the integrand is ${verdict.integrandThere.toFixed(3)}). Check by differentiating — that check is the method. ${config.explanation}`,
+      };
+    }
+    return {
+      correct: false,
+      feedback: `I couldn't check that answer by differentiating it (${verdict.reason}). ${config.explanation}`,
     };
   }
   const verdict = expressionsAgree(source, config.expected, {

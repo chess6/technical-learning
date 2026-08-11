@@ -13,20 +13,28 @@ The authoritative status is the
 - Package A is approved and shipped; its Gate-9 assessment is built, not administered.
 - Package B is active. L5 `chain-rule` and L6 `optimization-approximation` are
   built, Gate-8 accepted, and on `master`.
-- L7 `substitution-parts` is claimed on `feature/l7-substitution-parts`
-  (ledger row updated): Gate-4 contract drafted and marked **NOT YET PASS**
-  (its audit died at a session limit — the fresh package reviewer must attack
-  §7(a)–(e) before any Gate 5), and the math layer
-  (`src/math/integrationTechniques.ts`, 20 tests) is built ahead under
-  ADR-008. No lesson code, mastery contract, or plan exists yet.
-- L8 `improper-integrals`: two RAW, unjudged draft directions sit in
-  `lessons/08-improper-integrals/insight-brief-drafts.md`; the real Gate-3
-  brief is still owed.
-- The `math-expression` capability (`feature/math-expression-input`, merged
-  into the L7 branch) had its three-lens adversarial review: 18 proven
-  findings, all fixed with pinned regressions (`dd65900`). Outstanding before
-  it merges to `master`: the RENDERED-PAGE half of review (the UI lens died
-  before reporting) — fold it into the package reviewer's pass.
+- L7 `substitution-parts` is **BUILT** on `feature/l7-substitution-parts`.
+  The Gate-4 audit ran (fresh lineage): 2 blocking findings (product rule
+  falsely cited as an entry assumption — no built surface ever stated it, so
+  the lesson now DERIVES it from L2's local model; decreasing-order bounds
+  convention had no owner — the lesson now defines it), 4 repairs (P2 bar
+  misquote, the dropped cyclic-parts case — now taught and graded, endpoint
+  overclaim in (a), unowned integral additivity — now introduced at the
+  Riemann-sum level), 2 notes. All repaired; PASS recorded in insight.md
+  with the full audit record. Lesson + ledger explorer + 15 items + 77
+  contract tests + 5-test e2e spec green; full suite 159 files / 2694.
+- The `math-expression` capability completed BOTH review halves: 18 math
+  findings fixed (`dd65900`) and the rendered-page pass (3 more findings —
+  duplicate palette keys, the field-sizing rule silently widening size-less
+  fields, and a parse-failure path that LEAKED the solution via the
+  explanation — all fixed with pins).
+- L8 `improper-integrals`: judged Gate-3 brief written
+  (`insight-brief.md`, synthesized from the two draft directions). Gate 4
+  not run.
+- **Next session: the fresh package reviewer** (ADR-008 §4) — one context,
+  adversarial math + rendered page across L7 + the capability, verdict per
+  lesson; then merge to `master`; then L8 Gates 4–5 + Mode C completes
+  Package B.
 
 Before touching a package, reconcile the ledger with `git status`, `git branch
 -a`, and `git worktree list`. Actual repository state wins.

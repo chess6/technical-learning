@@ -767,6 +767,177 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
       scoringAuthority: "auto",
     },
   },
+  /* ---- substitution-parts (L7) ---------------------------------------- */
+  // Evidence design in docs/courses/applied-mathematics/lessons/
+  // 07-substitution-parts/mastery-contract.md §1. The four antiderivative
+  // items are E4 (math-expression's ceiling: predicate-graded open
+  // construction — the predicate here is check-by-differentiating on the
+  // item's own interval, +C-invariant). Nothing claims E5: only the produced
+  // object is captured, with no reasoning beside it.
+  "sp-witness-predict": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture", // deliberately: it grades the WITNESSED case
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-substitute-basic": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", // 3x^2 cos(x^3) — same recognition, new instance
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-du-ledger": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-half-constant": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-bounds": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "integrated",
+      scaffolding: "partial",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-parts-xexp": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", // x e^{2x} — the taught trade stays taught; this one is new
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-boundary-meaning": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-choose-u": {
+    // Genuine method selection: which factor to differentiate, with the
+    // reason — the judgment LIATE would have replaced.
+    evidenceTarget: "E3",
+    methodSelection: true,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "partial",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-parts-fresh": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-ln-parts": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-classify": {
+    // Method selection in its purest form: name the shape (or the honest
+    // absence of one) before any execution.
+    evidenceTarget: "E3",
+    methodSelection: true,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "partial",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-cyclic": {
+    // Recognizing the recurrence IS method selection — the brief's own
+    // mandate: "not merely ranking factors".
+    evidenceTarget: "E3",
+    methodSelection: true,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "integrated",
+      scaffolding: "partial",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-cyclic-produce": {
+    evidenceTarget: "E4",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  "sp-exists-elementary": {
+    evidenceTarget: "E2",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance",
+      unfamiliarity: "transfer",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    },
+  },
+  // sp-derive-parts is deliberately ABSENT: a self-marked practice event with
+  // no evidence claim (mastery-contract.md §1) — same reasoning as
+  // opt-derive-escape below, and the same conformance suite holds the absence.
+
   // opt-derive-escape is deliberately ABSENT from this manifest: it is a
   // self-marked practice event with no evidence claim (mastery-contract.md
   // §1d), covers no objective, and objectiveCoverage.test.ts / a dedicated

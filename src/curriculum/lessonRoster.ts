@@ -47,7 +47,7 @@ const APPLIED_MATHEMATICS_SPINE: readonly RosterEntry[] = [
   { id: "fundamental-theorem", status: "built" },
   { id: "chain-rule", status: "built" },
   { id: "optimization-approximation", status: "built" },
-  { id: "substitution-parts", status: "future" },
+  { id: "substitution-parts", status: "built" },
   { id: "improper-integrals", status: "future" },
   { id: "sequences-limits", status: "future" },
   { id: "series-convergence", status: "future" },

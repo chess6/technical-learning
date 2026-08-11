@@ -1,0 +1,67 @@
+/* The substitution ledger: two panels, one area. All colors are semantic
+   tokens; the selected strip pair reads as one object across both panels. */
+
+.subledger__ledger-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.subledger__ledger-entry {
+  padding: var(--space-1) var(--space-3);
+  border-left: 2px solid var(--color-accent);
+  background: var(--color-surface-inset);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.subledger__panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.subledger__panel {
+  margin: 0;
+}
+
+.subledger__panel-title {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.subledger__svg {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+}
+
+.subledger__axis {
+  stroke: var(--color-grid);
+  stroke-width: 1;
+}
+
+.subledger__curve {
+  stroke: var(--role-original);
+  stroke-width: 2.5;
+}
+
+.subledger__strip {
+  fill: var(--role-reachable);
+  opacity: 0.35;
+  stroke: var(--color-canvas);
+  stroke-width: 0.5;
+  cursor: pointer;
+}
+
+.subledger__strip[data-selected="true"] {
+  fill: var(--role-selected);
+  opacity: 0.85;
+}

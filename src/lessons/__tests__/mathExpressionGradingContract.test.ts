@@ -68,6 +68,99 @@ describeGradingContract(EXPAND, {
   ],
 });
 
+/**
+ * The `antiderivative-of` check mode (L7's grader): the answer is graded by
+ * differentiating it on the item's own interval — insight.md §7(d) executed
+ * by the machine. The battery's job: +C invariance must hold, near-misses
+ * must fail with the check-by-differentiating explanation, and the authoring
+ * guard must reject an unanswerable item.
+ */
+const ANTIDERIVATIVE: ExerciseDefinition = {
+  id: "math-expression-contract-antiderivative",
+  type: "custom",
+  capabilityId: MATH_EXPRESSION_ID,
+  tier: "drill",
+  prompt: "Find an antiderivative of $2x\\cos(x^2)$.",
+  config: {
+    expected: "sin(x^2)",
+    variables: ["x"],
+    explanation: "Recognize the chain shape: $\\frac{d}{dx}\\sin(x^2) = 2x\\cos(x^2)$.",
+    check: { kind: "antiderivative-of", integrand: "2x cos(x^2)", domain: [0.2, 1.8] },
+  },
+};
+
+describeGradingContract(ANTIDERIVATIVE, {
+  mustAccept: [
+    { name: "the model answer", answer: answer("sin(x^2)") },
+    { name: "the model answer plus a constant — the content of +C", answer: answer("sin(x^2) + 5") },
+    { name: "minus a constant", answer: answer("sin(x^2) - 100") },
+    { name: "an equivalent spelling", answer: answer("0.5(2sin(x^2))") },
+  ],
+  mustReject: [
+    { name: "blank", answer: answer("") },
+    { name: "the integrand itself, unintegrated", answer: answer("2x cos(x^2)") },
+    { name: "the manufacturing factor forgotten", answer: answer("cos(x^2)") },
+    { name: "rule-mangling", answer: answer("2x sin(x^2)") },
+    { name: "wrong composition", answer: answer("sin(x)^2") },
+    { name: "the derivative instead", answer: answer("2cos(x^2) - 4x^2 sin(x^2)") },
+    { name: "a stray variable", answer: answer("sin(t^2)") },
+    { name: "prose", answer: answer("the antiderivative") },
+  ],
+});
+
+describe("math-expression: the antiderivative mode's own guarantees", () => {
+  it("explains failures in the lesson's own language — check by differentiating, with a witness", () => {
+    const result = gradeExercise(ANTIDERIVATIVE, {
+      kind: "custom",
+      capabilityId: MATH_EXPRESSION_ID,
+      value: { source: "cos(x^2)" },
+    });
+    expect(result.correct).toBe(false);
+    expect(result.feedback).toMatch(/Differentiating your answer/);
+    expect(result.feedback).toMatch(/near x =/);
+  });
+
+  it("rejects an item whose model answer fails its own integrand — unanswerable as authored", () => {
+    const broken: ExerciseDefinition = {
+      ...ANTIDERIVATIVE,
+      id: "math-expression-broken-model",
+      config: {
+        expected: "cos(x^2)", // NOT an antiderivative of the integrand
+        variables: ["x"],
+        explanation: "…",
+        check: { kind: "antiderivative-of", integrand: "2x cos(x^2)", domain: [0.2, 1.8] },
+      },
+    };
+    expect(() =>
+      gradeExercise(broken, {
+        kind: "custom",
+        capabilityId: MATH_EXPRESSION_ID,
+        value: { source: "sin(x^2)" },
+      }),
+    ).toThrow(/unanswerable as authored/);
+  });
+
+  it("requires exactly one declared variable", () => {
+    const broken: ExerciseDefinition = {
+      ...ANTIDERIVATIVE,
+      id: "math-expression-two-vars",
+      config: {
+        expected: "sin(x^2)",
+        variables: ["x", "y"],
+        explanation: "…",
+        check: { kind: "antiderivative-of", integrand: "2x cos(x^2)", domain: [0.2, 1.8] },
+      },
+    };
+    expect(() =>
+      gradeExercise(broken, {
+        kind: "custom",
+        capabilityId: MATH_EXPRESSION_ID,
+        value: { source: "sin(x^2)" },
+      }),
+    ).toThrow(/exactly one variable/);
+  });
+});
+
 describe("math-expression: forgiving where forgiveness is harmless", () => {
   it("accepts brace grouping, so a learner who types LaTeX-ish braces is not punished", () => {
     // `{` and `}` lex as ordinary grouping, which makes `x^{2}` read as
@@ -85,8 +178,8 @@ describe("math-expression: forgiving where forgiveness is harmless", () => {
 });
 
 describe("math-expression: what the capability refuses to pretend", () => {
-  it("says why, on every verdict — correct and incorrect alike", () => {
-    for (const source of ["x^2+3x+2", "x^2+3x+1", "", "(x+1)(x+2"]) {
+  it("says why on every GENUINE attempt — correct and incorrect alike", () => {
+    for (const source of ["x^2+3x+2", "x^2+3x+1"]) {
       const result = gradeExercise(EXPAND, {
         kind: "custom",
         capabilityId: MATH_EXPRESSION_ID,
@@ -95,6 +188,21 @@ describe("math-expression: what the capability refuses to pretend", () => {
       expect(result.feedback, `"${source}" produced no explanation`).toContain(
         "(x+1)(x+2)",
       );
+    }
+  });
+
+  it("does NOT leak the explanation on a parse failure — a mid-typing draft must not reveal the answer", () => {
+    // Rendered-page review finding: Enter on "2(x+1" returned the parse
+    // message PLUS the explanation, whose text contains the correct answer.
+    for (const source of ["", "(x+1)(x+2", "x +"]) {
+      const result = gradeExercise(EXPAND, {
+        kind: "custom",
+        capabilityId: MATH_EXPRESSION_ID,
+        value: { source },
+      });
+      expect(result.correct).toBe(false);
+      expect(result.feedback, `"${source}" leaked the explanation`).not.toContain("x^2+3x+2");
+      expect(result.feedback).toMatch(/isn't a complete expression/);
     }
   });
 

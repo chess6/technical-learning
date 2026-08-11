@@ -255,12 +255,7 @@ export const CURRICULUM: readonly Subject[] = [
             items: [
               { kind: "lesson", lessonId: "chain-rule" },
               { kind: "lesson", lessonId: "optimization-approximation" },
-              {
-                kind: "future",
-                id: "substitution-parts",
-                title: "Two Techniques, Both Derived",
-                subtitle: "Substitution is the chain rule backwards",
-              },
+              { kind: "lesson", lessonId: "substitution-parts" },
               {
                 kind: "future",
                 id: "improper-integrals",

@@ -131,22 +131,23 @@ export function MathExpressionInput({
     [outcome],
   );
 
-  const entries = useMemo<readonly PaletteEntry[]>(
-    () => [
-      ...variables.map((name) => ({
-        label: name,
-        insert: name,
-        title: `Insert ${name}`,
-      })),
-      ...palette.map((symbol) => ({
-        label: symbol,
-        insert: symbol,
-        title: `Insert ${symbol}`,
-      })),
-      ...OPERATION_ENTRIES,
-    ],
-    [variables, palette],
-  );
+  const entries = useMemo<readonly PaletteEntry[]>(() => {
+    // Deduped by insert string (variables win over palette, palette over
+    // operations) — a config that lists a symbol as both a variable and a
+    // palette extra previously rendered TWO identical keys with colliding
+    // React keys (review finding: console errors on every keystroke).
+    const seen = new Set<string>();
+    const out: PaletteEntry[] = [];
+    const push = (entry: PaletteEntry) => {
+      if (seen.has(entry.insert)) return;
+      seen.add(entry.insert);
+      out.push(entry);
+    };
+    for (const name of variables) push({ label: name, insert: name, title: `Insert ${name}` });
+    for (const symbol of palette) push({ label: symbol, insert: symbol, title: `Insert ${symbol}` });
+    for (const entry of OPERATION_ENTRIES) push(entry);
+    return out;
+  }, [variables, palette]);
 
   // Where the caret must land once React has COMMITTED the inserted text.
   //

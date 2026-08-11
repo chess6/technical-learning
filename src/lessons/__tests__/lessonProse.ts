@@ -113,6 +113,11 @@ export const CUSTOM_CONFIG_PROSE: Record<
   string,
   (config: Record<string, unknown>, path: string, out: ProseString[]) => void
 > = {
+  "math-expression": (config, path, out) => {
+    // `expected`, `placeholder`, and check sources are machine-facing infix,
+    // not prose; the explanation is the learner-facing string.
+    push(out, `${path}.config.explanation`, config.explanation);
+  },
   "self-check": (config, path, out) => {
     push(out, `${path}.config.modelAnswer`, config.modelAnswer);
     push(out, `${path}.config.rubric`, config.rubric);

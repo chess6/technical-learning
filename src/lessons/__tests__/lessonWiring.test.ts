@@ -419,6 +419,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       // Unit `calculus-technique`.
       "chain-rule",
       "optimization-approximation",
+      "substitution-parts",
     ]);
   });
 

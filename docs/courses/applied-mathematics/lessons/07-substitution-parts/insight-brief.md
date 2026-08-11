@@ -57,7 +57,8 @@ bar requires the learner to own.
 
 **Alternative (selected direction):** both techniques *derived on screen*
 from the differentiation rules the learner has already mastered (L5's chain
-rule; the product rule is an entry assumption), with the FTC as the bridge —
+rule; the product rule DERIVED in-lesson from L2 C5 — the Gate-4 audit
+established no built surface has ever stated it, so it cannot be cited), with the FTC as the bridge —
 so "technique" is reframed as **running a known machine in reverse**, and
 the integral table becomes a set of recognitions rather than incantations.
 LIATE is deliberately not taught as an algorithm. “Choose a factor that gets simpler when differentiated” is introduced only as a heuristic, then confronted with a cyclic example such as `∫ e^x sin x dx`, where two integrations by parts return the original integral and algebra closes the cycle. Method selection must include recognizing that recurrence, not merely ranking factors.

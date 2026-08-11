@@ -63,7 +63,6 @@ const DEMO_EXERCISES: ExerciseDefinition[] = [
       expected: "2sin(theta)cos(theta)",
       variables: ["theta"],
       explanation: "By the chain rule, $\\frac{d}{d\\theta}\\sin^2\\theta = 2\\sin\\theta\\cos\\theta$ — equivalently $\\sin(2\\theta)$.",
-      palette: ["theta"],
       placeholder: "e.g. 2sin(theta)cos(theta)",
     },
   },

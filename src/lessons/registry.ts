@@ -2,6 +2,7 @@ import { binarySearchTreesLesson } from "./binarySearchTrees";
 import { changeOfBasisLesson } from "./changeOfBasis";
 import { chainRuleLesson } from "./chainRule";
 import { optimizationApproximationLesson } from "./optimizationApproximation";
+import { substitutionPartsLesson } from "./substitutionParts";
 import { chapter0Lesson } from "./chapter0";
 import { derivativeLocalLinearityLesson } from "./derivativeLocalLinearity";
 import { integralAccumulationLesson } from "./integralAccumulation";
@@ -52,6 +53,7 @@ export const lessons: LessonDefinition[] = [
   fundamentalTheoremLesson,
   chainRuleLesson,
   optimizationApproximationLesson,
+  substitutionPartsLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

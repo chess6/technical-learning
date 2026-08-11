@@ -7,9 +7,13 @@ ranked direction ([insight-brief.md](insight-brief.md)).
 
 Spine row (M2 `calculus-technique`, L7): after L5 (chain rule) and L6
 (optimization), the trunk owes the two rewriting moves that make integrals
-computable. Benchmark bar consumed (M2, P1): techniques **derived** from the
-chain and product rules; parts recognized as Theme 1's boundary term; method
-selection between routes on fresh integrands.
+computable. Benchmark bar consumed (M2, **P2** — the declared course target;
+an earlier draft misattributed this language to P1): "techniques **derived**
+from the chain and product rules; parts recognised as Theme 1's boundary
+term". Method selection on fresh integrands is this contract's OWN E3+
+commitment (§10, §11), not a benchmark quote. Trig substitution and partial
+fractions are withheld as this contract's own scoping decision — the matrix
+names neither, so no exclusion can be cited from it.
 
 ## Primary insight (contents 1–11)
 
@@ -52,8 +56,10 @@ try the other one, or a different `u`."
 
 ### 4. Tension / redundancy
 
-The ritual works and explains nothing. Why may `du = g'(x)\,dx` be treated as
-a fraction when L2 was emphatic that \(dy/dx\) is not one? Why do the bounds
+The ritual works and explains nothing. Why may `du = g'(x)\,dx` be treated
+as a fraction, when L2 defined the derivative as the LIMIT of quotients —
+never a quotient of standalone quantities — and L5 was emphatic that
+cancelling \(du\)'s proves nothing? Why do the bounds
 transform under `g` on a definite integral? Where does `uv` come from — and
 why does *it* get evaluated at the endpoints while everything else stays
 under an integral sign? Why does substitution sometimes fail no matter which
@@ -83,8 +89,11 @@ TERM of a product-rule output — and solving the integrated product rule for
 that term produces two pieces with distinct roles, a boundary term and a
 remaining integral, which the lesson must keep visibly separate (the owner's
 Gate-3 correction; "half of a product-rule output" blurred exactly that).
-The product rule (entry assumption, spine §2.1) says
-\((uv)' = u'v + uv'\). Integrate both sides over \([a,b]\)
+The product rule \((uv)' = u'v + uv'\) is **derived in-lesson from L2 C5**
+in one line (multiply the two local-linear models; the cross term is
+\(o(h)\)) — the audit established that no built surface has ever stated it
+and spine §2.1 does not list it, so the lesson owes the derivation rather
+than a citation. Integrate both sides over \([a,b]\)
 — the left side by the FTC (L4):
 \[[uv]_a^b = \int_a^b u'v\,dx + \int_a^b uv'\,dx.\]
 Rearranged, \(\int_a^b uv'\,dx = [uv]_a^b - \int_a^b u'v\,dx\): the technique
@@ -117,7 +126,13 @@ interval \(I\); \(f\) continuous on \(g(I)\); \(F\) an antiderivative of
 So \(F(g(x))\) is, by definition of antiderivative, an antiderivative of
 \(f(g(x))\,g'(x)\):
 \[\int f(g(x))\,g'(x)\,dx = F(g(x)) + C.\]
-Two lines; the only cited fact is L5's chain rule.
+Two lines, resting on L5's chain rule — with one honest remark the audit
+required: at a point \(x_0\) where \(g(x_0)\) is an ENDPOINT of the
+interval \(g(I)\) (an interior extremum of \(g\)), \(F'\) exists only
+one-sidedly there and L5's two-sided statement does not literally apply; at
+such points \(g'(x_0) = 0\) and a one-sided residual argument closes the
+gap, so the formula survives, but the citation alone does not carry it. A
+constant \(g\) makes both sides trivially constant, dispatched separately.
 
 **(b) Substitution, definite — why the bounds transform.** Add the
 hypothesis that \(f(g(x))g'(x)\) is continuous on \([a,b]\) (so the FTC's
@@ -127,9 +142,12 @@ evaluation form applies). Then, using (a) and the FTC twice:
 The bounds transform because both sides are the *same two numbers*
 \(F(g(b)) - F(g(a))\), reached through two different antiderivatives. No
 orientation caveat is needed: if \(g(a) > g(b)\), the right-hand integral is
-simply an integral with its bounds in decreasing order, which L4 already
-defined as the negated increasing-order integral — the identity holds as
-written.
+simply an integral with its bounds in decreasing order — a convention THIS
+LESSON introduces (\(\int_a^b f := -\int_b^a f\) for \(a > b\), chosen
+precisely so the FTC's evaluation form holds verbatim for either order; the
+audit confirmed L4 never defined it, so citing L4 here was false). Under it
+the identity holds as written. Hypothesis kept explicit: \([a,b]
+\subseteq I\), so (a) applies on all of it.
 
 **(c) Parts.** Hypotheses: \(u, v\) differentiable on \([a,b]\) with \(u'\),
 \(v'\) continuous (so every integral below exists and the FTC applies to
@@ -140,14 +158,23 @@ so integrate over \([a,b]\); the left by the FTC:
 The indefinite form \(\int uv'\,dx = uv - \int u'v\,dx\) follows by the same
 two lines without evaluation.
 
+**(c′) The cyclic trade.** The brief mandates one more parts pattern: on
+\(\int e^x \sin x\,dx\), TWO trades return the original integral —
+\(I = e^x\sin x - \int e^x\cos x\,dx = e^x\sin x - e^x\cos x - I\) —
+and ALGEBRA closes the cycle: \(2I = e^x(\sin x - \cos x)\), so
+\(I = \tfrac{1}{2}e^x(\sin x - \cos x) + C\). Method selection includes
+recognizing the recurrence when it appears, not merely ranking factors; a
+learner who treats the returning integral as failure has missed the move.
+
 **(d) The verification principle.** For any candidate \(G\) and integrand
 \(h\): \(G\) is an antiderivative of \(h\) on an interval iff \(G' = h\)
 there — and computing \(G'\) is the forward algorithm the learner has owned
 since L5. Finding is search; checking is calculation. (This is also literally
 how the lesson's grader works: a produced antiderivative is graded by
-differentiating it and comparing against the integrand, which is why answers
-differing by a constant all pass — \(d/dx\) kills the constant, which is the
-mathematical content of "+C", not a grading accident.)
+differentiating it and comparing against the integrand. Answers differing by
+a constant all pass because \(d/dx\) kills the constant — the SOUNDNESS
+half of "+C"; the completeness half (same derivative on an interval ⇒
+constant difference) is L4 C9's, cited rather than reproved.)
 
 **(e) The honest failure.** \(e^{-x^2}\) is continuous, so an antiderivative
 *exists* (L4: the accumulation function \(\int_0^x e^{-t^2}dt\)); what fails
@@ -197,6 +224,8 @@ LIATE misorders.
 - Classify a fresh integrand as chain-shape, product-shape, or *neither* —
   and for the neither case, state the existence/elementarity distinction
   instead of retrying tricks forever.
+- Recognize a CYCLIC parts recurrence (\(\int e^x\sin x\)) and close it
+  algebraically instead of reading the returning integral as failure.
 
 ### 11. Transfer assessment
 
@@ -239,10 +268,16 @@ long, with a derivation each.
 
 ## Prerequisites, limitations, likely misconceptions
 
-**Requires:** L5 chain rule (its exact statement is cited in (a)); L4 FTC
-(evaluation form, used in (b) and (c)); product rule (declared entry
-assumption, spine §2.1); L3/L4's definite integral including
-decreasing-order bounds (used in (b)).
+**Requires:** L5 chain rule (cited in (a), with the endpoint remark there);
+L4 FTC (evaluation form, used in (b) and (c)); L2 C5 (from which the lesson
+DERIVES the product rule in one line — the audit found no built surface has
+ever stated it, so it is not available to cite); L3/L4's definite integral.
+Two conventions this lesson must itself introduce, because the audit found
+no owner upstream: the decreasing-order-bounds convention
+\(\int_a^b := -\int_b^a\) for \(a > b\) (used in (b)), and integral
+additivity \(\int(p+q) = \int p + \int q\) (used in (c)) — each a one-line
+statement at the Riemann-sum level, where finite sums split exactly and L3's
+limit passes to both parts.
 
 **Withheld:** trig substitution, partial fractions (M2 extensions beyond the
 P1 bar — the mastery contract must re-verify this against
@@ -267,27 +302,58 @@ tractable.
 
 ## Mathematical audit (Audit A)
 
-**PENDING.** Adversarial audit launched 2026-08-10 (fresh lineage, ADR-008
-§4); this section is filled in from its actual findings, never before.
+**RAN 2026-08-10** — fresh-lineage single-context audit (ADR-008 §4,
+usage-aware protocol), three lenses sequentially. Verified sound: (a)'s
+existence claim (\(g\) differentiable ⇒ \(g(I)\) an interval by the IVT,
+continuity of \(f\) on it gives \(F\)); (b)'s double-FTC argument WITHOUT
+monotonicity, including the overshoot case; the auditor attempted and failed
+to construct a counterexample to either identity. Defects found, all
+repaired in place above:
 
-Author's own pre-audit notes, for the auditors to attack rather than as
-cleared claims: (b) deliberately carries NO monotonicity hypothesis on
-\(g\) — the double-FTC argument never uses one; monotonicity matters only
-for the explorer's area-reparametrization picture, whose fixtures are
-restricted to monotone-\(g\) windows for exactly that reason. (c)'s split of
-\(\int(u'v+uv')\) into two integrals leans on both being individually
-integrable, which the stated continuity hypotheses supply.
+1. **(blocking)** The product rule was cited as a spine §2.1 entry
+   assumption — §2.1 lists no differentiation rule, and NO built surface has
+   ever stated \((uv)' = u'v + uv'\). Repaired: the lesson derives it in
+   one line from L2 C5; provenance corrected here and in the brief.
+2. **(blocking)** (b) cited a decreasing-order-bounds definition "L4 already
+   made" — L4 never made it. Repaired: the convention is this lesson's own
+   one-line definition, motivated by the FTC evaluation form.
+3. (repair) The consumed benchmark bar was P2's language misattributed to
+   P1, plus an exclusion claim the matrix never makes. Repaired in the
+   header: P2 named, method selection restated as this contract's own
+   commitment, the withheld list owned as a scoping decision.
+4. (repair) The brief's mandatory cyclic-parts case (\(\int e^x\sin x\))
+   had been dropped. Repaired: §7(c′) and the §10 prediction.
+5. (repair) (a)'s "only cited fact is L5's chain rule" over-claimed at
+   endpoint values of \(g(I)\); constant \(g\); (b) lacked \([a,b]
+   \subseteq I\). All repaired with the one-line endpoint remark.
+6. (repair) (c)'s linearity split leaned on integral additivity, which no
+   upstream lesson owns — the pre-audit note below this section had
+   justified it with the wrong property. Repaired: additivity is introduced
+   by this lesson at the Riemann-sum level.
+7. (notes) The fraction-emphasis misattribution (L2 → L5) and the +C
+   soundness/completeness conflation (completeness is L4 C9's), both
+   repaired.
 
 ## Grounding & model-change audit (Audit B)
 
-**PENDING** — same round as Audit A.
+Same round. The bridge (§12) grounds recognition in a witnessed event; the
+ledger gives `du` a referent that survives scrutiny; the boundary-term
+reading is the course's own Theme 1. Checked against the constitution: the
+learner performs the recognitions (principle 1); equation-first media with
+the one exact-area explorer match the concept's character (principle 2);
+LIATE's omission is principle 3 applied to a mnemonic; §13's exactness claim
+survives with the wording repair recorded in Audit A item 7.
 
 ## Review signoff
 
-Not yet signed. The owner does not review under ADR-008; sign-off is the
-independent audit round's, and it has not returned.
+Signed by the 2026-08-10 fresh-lineage audit round, under ADR-008 §4 — the
+findings above were verified against the real artifacts by the auditor
+(each citation checked, each identity refereed) and the repairs applied by
+the implementation session the same day. The owner did not review
+(standing directive); the owner's veto stands.
 
 ## Gate result
 
-**NOT YET PASS.** Gate 5 must not consume this contract until the audits
-above are filled in from real findings and this line is updated.
+**PASS** — recorded 2026-08-10, after the seven repairs above. Gate 5 may
+consume this contract. The Gate 3 brief's "+C" evidence flag is resolved by
+(d): grade the derivative of the produced answer against the integrand.

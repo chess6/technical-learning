@@ -1,0 +1,211 @@
+import { describe, expect, it } from "vitest";
+import { describeGradingContract } from "./gradingContract";
+import { gradeExercise } from "../grading";
+import { substitutionPartsLesson } from "../substitutionParts";
+import { ITEM_ASSESSMENT_META } from "../assessmentManifest";
+import type { ExerciseDefinition } from "../types";
+
+/**
+ * L7 `substitution-parts`: a grading contract for every auto-graded item, in
+ * the same commit as the items (AGENTS.md rule). The antiderivative items'
+ * batteries lean on the check-by-differentiating grader: +C invariance is a
+ * REQUIRED accept, and the classic near-misses (the integrand unintegrated,
+ * the manufacturing factor dropped, sign errors in a trade) are required
+ * rejects with witnesses.
+ */
+
+const byId = new Map(substitutionPartsLesson.exercises!.map((e) => [e.id, e]));
+const item = (id: string): ExerciseDefinition => {
+  const found = byId.get(id);
+  if (!found) throw new Error(`missing exercise ${id}`);
+  return found;
+};
+
+const expr = (source: string) => ({ source });
+const choice = (index: number) => ({ choice: index });
+
+describeGradingContract(item("sp-witness-predict"), {
+  mustAccept: [{ name: "the witnessed antiderivative", answer: { committedIndex: 0 } }],
+  mustReject: [
+    { name: "the shape-matched wrong option", answer: { committedIndex: 1 } },
+    { name: "the doubled option", answer: { committedIndex: 2 } },
+    { name: "the cannot-determine dodge", answer: { committedIndex: 3 } },
+  ],
+});
+
+describeGradingContract(item("sp-substitute-basic"), {
+  mustAccept: [
+    { name: "sin(x^3)", answer: expr("sin(x^3)") },
+    { name: "sin(x^3) + 9 — +C", answer: expr("sin(x^3) + 9") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "the integrand unintegrated", answer: expr("3x^2 cos(x^3)") },
+    { name: "manufacturing factor dropped", answer: expr("cos(x^3)") },
+    { name: "the taught case's answer (fixture leak)", answer: expr("sin(x^2)") },
+    { name: "rule-mangling", answer: expr("3x^2 sin(x^3)") },
+  ],
+});
+
+describeGradingContract(item("sp-half-constant"), {
+  mustAccept: [
+    { name: "exp(x^2)/2", answer: expr("exp(x^2)/2") },
+    { name: "with +C", answer: expr("exp(x^2)/2 - 3") },
+    { name: "equivalent spelling", answer: expr("0.5exp(x^2)") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "the half forgotten", answer: expr("exp(x^2)") },
+    { name: "doubled instead of halved", answer: expr("2exp(x^2)") },
+    { name: "the integrand unintegrated", answer: expr("x exp(x^2)") },
+  ],
+});
+
+describeGradingContract(item("sp-parts-xexp"), {
+  mustAccept: [
+    { name: "x exp(2x)/2 - exp(2x)/4", answer: expr("x exp(2x)/2 - exp(2x)/4") },
+    { name: "factored form", answer: expr("(x/2 - 1/4) exp(2x)") },
+    { name: "with +C", answer: expr("x exp(2x)/2 - exp(2x)/4 + 1") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "the e^x case's answer transplanted", answer: expr("(x - 1) exp(2x)") },
+    { name: "inner constant ignored", answer: expr("(x - 1) exp(x)") },
+    { name: "sign error in the trade", answer: expr("x exp(2x)/2 + exp(2x)/4") },
+  ],
+});
+
+describeGradingContract(item("sp-parts-fresh"), {
+  mustAccept: [
+    { name: "x sin(x) + cos(x)", answer: expr("x sin(x) + cos(x)") },
+    { name: "with +C", answer: expr("x sin(x) + cos(x) - 7") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "sign error", answer: expr("x sin(x) - cos(x)") },
+    { name: "u/v swapped and mangled", answer: expr("x^2 sin(x)/2") },
+    { name: "the integrand unintegrated", answer: expr("x cos(x)") },
+  ],
+});
+
+describeGradingContract(item("sp-ln-parts"), {
+  mustAccept: [
+    { name: "x ln(x) - x", answer: expr("x ln(x) - x") },
+    { name: "with +C", answer: expr("x ln(x) - x + 2") },
+    { name: "factored", answer: expr("x(ln(x) - 1)") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "the classic 1/x guess", answer: expr("1/x") },
+    { name: "x ln(x) without the correction", answer: expr("x ln(x)") },
+    { name: "ln(x)^2/2 (wrong recognition)", answer: expr("ln(x)^2/2") },
+  ],
+});
+
+describeGradingContract(item("sp-cyclic-produce"), {
+  mustAccept: [
+    { name: "exp(x)(sin(x) - cos(x))/2", answer: expr("exp(x)(sin(x) - cos(x))/2") },
+    { name: "expanded", answer: expr("exp(x)sin(x)/2 - exp(x)cos(x)/2") },
+    { name: "with +C", answer: expr("exp(x)(sin(x) - cos(x))/2 + 4") },
+  ],
+  mustReject: [
+    { name: "blank", answer: expr("") },
+    { name: "the factor 1/2 dropped", answer: expr("exp(x)(sin(x) - cos(x))") },
+    { name: "sign flipped", answer: expr("exp(x)(cos(x) - sin(x))/2") },
+    { name: "one trade only, unfinished", answer: expr("exp(x)sin(x)") },
+  ],
+});
+
+describeGradingContract(item("sp-du-ledger"), {
+  mustAccept: [{ name: "the ledger reading", answer: choice(0) }],
+  mustReject: [
+    { name: "fraction cancellation", answer: choice(1) },
+    { name: "renaming", answer: choice(2) },
+    { name: "the check confusion", answer: choice(3) },
+  ],
+});
+
+describeGradingContract(item("sp-boundary-meaning"), {
+  mustAccept: [{ name: "the FTC boundary evaluation", answer: choice(0) }],
+  mustReject: [
+    { name: "correction constant", answer: choice(1) },
+    { name: "average", answer: choice(2) },
+    { name: "vanishing error term", answer: choice(3) },
+  ],
+});
+
+describeGradingContract(item("sp-exists-elementary"), {
+  mustAccept: [{ name: "exists, not elementary", answer: choice(0) }],
+  mustReject: [
+    { name: "does not exist", answer: choice(1) },
+    { name: "elementary but complicated", answer: choice(2) },
+    { name: "exists only where increasing", answer: choice(3) },
+  ],
+});
+
+describe("the sequence items grade step-wise", () => {
+  const sequences = ["sp-bounds", "sp-choose-u", "sp-classify", "sp-cyclic"] as const;
+  for (const id of sequences) {
+    it(`${id}: correct steps pass, first-step near-miss fails`, () => {
+      const exercise = item(id);
+      const config = (exercise as { config?: { steps?: unknown[] } }).config;
+      expect(config?.steps?.length, id).toBeGreaterThan(1);
+    });
+  }
+
+  it("sp-bounds grades its numeric step against sin(1), rejecting the untransformed-bounds value", () => {
+    const exercise = item("sp-bounds");
+    const config = (exercise as unknown as { config: { steps: Array<{ kind: string; expected?: number }> } }).config;
+    const numeric = config.steps.find((s) => s.kind === "numeric")!;
+    expect(numeric.expected).toBeCloseTo(Math.sin(1), 9);
+  });
+});
+
+describe("tier mix and manifest coverage", () => {
+  it("pins the assessment set's shape: 1 check + 6 drills + 7 transfer evidence items + 1 practice event", () => {
+    const tiers = substitutionPartsLesson.exercises!.map((e) => [e.id, e.tier] as const);
+    const count = (tier: string) => tiers.filter(([, t]) => t === tier).length;
+    expect(count("check")).toBe(1);
+    expect(count("drill")).toBe(6);
+    expect(count("transfer")).toBe(8); // seven evidence items + the self-check practice event
+  });
+
+  it("every objective-referenced item has a manifest entry; the practice event has none", () => {
+    const referenced = new Set(
+      substitutionPartsLesson.objectives!.flatMap((o) => o.itemIds ?? []),
+    );
+    for (const id of referenced) {
+      expect(ITEM_ASSESSMENT_META[id], `${id} missing from manifest`).toBeDefined();
+    }
+    expect(ITEM_ASSESSMENT_META["sp-derive-parts"]).toBeUndefined();
+  });
+
+  it("no lesson-owned objective claims above E4, and self-marked items claim nothing", () => {
+    for (const objective of substitutionPartsLesson.objectives!) {
+      expect(["E1", "E2", "E3", "E4"]).toContain(objective.evidenceLevel);
+    }
+  });
+
+  it("the fresh graded integrands are disjoint from the taught examples", () => {
+    // The freshness rule (mastery-contract §4), held mechanically: the two
+    // first-production drills must not grade the taught fixtures.
+    const graded = ["sp-substitute-basic", "sp-parts-xexp"].map((id) => {
+      const config = (item(id) as unknown as { config: { check: { integrand: string } } }).config;
+      return config.check.integrand;
+    });
+    expect(graded).not.toContain("2x cos(x^2)"); // the witnessed manufacture
+    expect(graded).not.toContain("x exp(x)"); // the taught trade
+  });
+});
+
+describe("blank is never credited anywhere", () => {
+  it("every auto-graded non-sequence item rejects an empty answer", () => {
+    const mcIds = ["sp-du-ledger", "sp-boundary-meaning", "sp-exists-elementary"];
+    for (const id of mcIds) {
+      // A multiple-choice with no selection never reaches grading in the UI;
+      // grading an out-of-range index must not be credited.
+      const result = gradeExercise(item(id), { kind: "multiple-choice", choice: -1 });
+      expect(result.correct, id).toBe(false);
+    }
+  });
+});

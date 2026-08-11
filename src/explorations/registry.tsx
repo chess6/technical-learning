@@ -37,6 +37,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.OptimizationApproximationExplorer,
     })),
   ),
+  "substitution-ledger": lazy(() =>
+    import("./SubstitutionLedgerExplorer").then((m) => ({
+      default: m.SubstitutionLedgerExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,
