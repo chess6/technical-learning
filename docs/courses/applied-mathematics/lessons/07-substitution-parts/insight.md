@@ -16,11 +16,15 @@ selection between routes on fresh integrands.
 ### 1. Diagnosed cognitive obstacle
 
 **A category error about what kind of activity integration is.**
-Differentiation, as the learner has practiced it since L2, is an *algorithm*:
-rules applied forward, terminating on every elementary function. The learner
-arrives expecting antidifferentiation to be the same kind of thing — a
-forward procedure — and is instead handed an **inverse problem**: *which
-differentiation produced this?* Nobody says so. The techniques therefore
+Differentiation, as the learner has practiced it since L2, runs on a compact
+forward rule system that covers every expression this course uses. The
+learner arrives expecting antidifferentiation to be the same kind of thing —
+a forward procedure whose rule is visible in the expression — and is instead
+handed an **inverse-recognition problem**: *which differentiation could have
+produced this?* Nobody says so. (Carefully: more sophisticated
+symbolic-integration algorithms exist, so the lesson never claims integration
+"has no algorithm" — the change of task the learner meets is real without
+that overclaim; owner's Gate-3 correction.) The techniques therefore
 present as a bag of unrelated tricks, and the `u`-substitution notation in
 particular (`du = g'(x)\,dx`) degenerates into fraction-cancellation ritual
 that produces right answers without being about anything.
@@ -74,8 +78,13 @@ substitution notation is a *ledger* for this recognition: writing \(u=g(x)\),
 the chain-rule factor. Nothing is cancelled; a recognition is being
 book-kept.
 
-*Parts is the product rule integrated.* The product rule (entry assumption,
-spine §2.1) says \((uv)' = u'v + uv'\). Integrate both sides over \([a,b]\)
+*Parts is the product rule integrated.* The integrand is recognized as ONE
+TERM of a product-rule output — and solving the integrated product rule for
+that term produces two pieces with distinct roles, a boundary term and a
+remaining integral, which the lesson must keep visibly separate (the owner's
+Gate-3 correction; "half of a product-rule output" blurred exactly that).
+The product rule (entry assumption, spine §2.1) says
+\((uv)' = u'v + uv'\). Integrate both sides over \([a,b]\)
 — the left side by the FTC (L4):
 \[[uv]_a^b = \int_a^b u'v\,dx + \int_a^b uv'\,dx.\]
 Rearranged, \(\int_a^b uv'\,dx = [uv]_a^b - \int_a^b u'v\,dx\): the technique
@@ -160,8 +169,12 @@ identical; only the account of it changes.
 
 ### 9. Cost / model change
 
-The learner gives up the comfort of "integration has an algorithm like
-differentiation does" and accepts search-with-verification in its place —
+The learner gives up the comfort of "integration works like differentiation
+— apply the visible rule" and accepts search-with-verification in its place.
+(Stated carefully: sophisticated symbolic-integration algorithms exist —
+Risch — so the honest claim is that no comparably simple rule system is
+within this course's reach, not that none exists; the owner's Gate-3
+correction, carried into this contract.) The trade is —
 including genuine failure as a mathematical outcome, not a personal one.
 LIATE is deliberately not offered as compensation: choosing \(u\) is taught
 as *"pick the factor that dies (or simplifies) under differentiation"*,

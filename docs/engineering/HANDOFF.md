@@ -13,10 +13,20 @@ The authoritative status is the
 - Package A is approved and shipped; its Gate-9 assessment is built, not administered.
 - Package B is active. L5 `chain-rule` and L6 `optimization-approximation` are
   built, Gate-8 accepted, and on `master`.
-- L7 `substitution-parts` is paused at a corrected Gate-3 brief. Gate 4 has not
-  run; no insight `PASS`, mastery contract, lesson plan, or lesson code belongs
-  to this workflow-correction package.
-- L8 `improper-integrals` is unplanned.
+- L7 `substitution-parts` is claimed on `feature/l7-substitution-parts`
+  (ledger row updated): Gate-4 contract drafted and marked **NOT YET PASS**
+  (its audit died at a session limit — the fresh package reviewer must attack
+  §7(a)–(e) before any Gate 5), and the math layer
+  (`src/math/integrationTechniques.ts`, 20 tests) is built ahead under
+  ADR-008. No lesson code, mastery contract, or plan exists yet.
+- L8 `improper-integrals`: two RAW, unjudged draft directions sit in
+  `lessons/08-improper-integrals/insight-brief-drafts.md`; the real Gate-3
+  brief is still owed.
+- The `math-expression` capability (`feature/math-expression-input`, merged
+  into the L7 branch) had its three-lens adversarial review: 18 proven
+  findings, all fixed with pinned regressions (`dd65900`). Outstanding before
+  it merges to `master`: the RENDERED-PAGE half of review (the UI lens died
+  before reporting) — fold it into the package reviewer's pass.
 
 Before touching a package, reconcile the ledger with `git status`, `git branch
 -a`, and `git worktree list`. Actual repository state wins.

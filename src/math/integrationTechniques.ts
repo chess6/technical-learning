@@ -451,14 +451,10 @@ export const ANTIDERIVATIVE_PAIRS: readonly AntiderivativePair[] = [
     label: fix.label,
     integrand: partsIntegrand(fix),
     integrandSource: fix.integrandSource,
-    antiderivative: (x: number) => {
-      // u·v minus the accumulated trade — but every shipped parts fixture
-      // declares its antiderivative SOURCE, and the guard pins source ↔ this
-      // closure, so compute from the declared closed form instead of
-      // quadrature: the closures below are the parsed sources' twins.
-      void x;
-      return NaN;
-    },
+    // The closure IS the parsed source — one origin, and the guard checks
+    // that its numeric derivative matches u·v', so the pair cannot claim an
+    // antiderivative its own string does not deliver.
+    antiderivative: parsedClosure(`${fix.id}-pair`, fix.antiderivativeSource),
     antiderivativeSource: fix.antiderivativeSource,
     domain: fix.domain,
   })),
