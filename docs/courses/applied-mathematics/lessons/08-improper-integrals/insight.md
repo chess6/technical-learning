@@ -309,40 +309,45 @@ infinite" → broken by (i); (5) "symmetric so zero" → broken by (h).
 
 ## Mathematical audit (Audit A)
 
-**RAN 2026-08-11 — REVISE.** Fresh-lineage ADR-008 audit found seven
+**RAN 2026-08-11 — PASS after delta verification.** The initial fresh-lineage
+ADR-008 audit found seven
 mathematical blockers: false L3/L4 hypotheses; false L7 interval-additivity
 provenance; an unowned geometric bound and incorrect \(R=e^M\) witness;
 missing comparison hypotheses/direction; a skipped FTC-order step in
 \(Re^{-R}\to0\); "proved" rather than cited Gaussian provenance; and a
 left-edge-only Type-II definition. Sections 4–7 and the prerequisites now
 resolve each finding. The Monotone Accumulation Principle was accepted as
-openly supplied P3 completeness machinery. A fresh delta audit is still
-required before PASS.
+openly supplied P3 completeness machinery. The same fresh auditor verified
+the corrected delta through `c344a62`; no mathematical blocker remains.
 
 ## Grounding & model-change audit (Audit B)
 
-**RAN 2026-08-11 — REVISE.** The same fresh context found the primary sentence
+**RAN 2026-08-11 — PASS after delta verification.** The same fresh context
+initially found the primary sentence
 globally overbroad, the correspondence/analogy-limit account not in the
 required explicit form, the four-stage abstraction return incomplete, and
 all broader transfers unclassified. Sections 5 and 11–14 now scope the
 improper-Riemann claim, separate exact correspondences from added agency,
 spell out the four-stage return plus discriminator, and classify every
-transfer. Fresh delta review remains owed.
+transfer. The same context verified the corrected delta; no grounding,
+pedagogical, redundancy, or scope blocker remains.
 
 ## Review signoff
 
 - **Contract author:** implementation context under ADR-008.
-- **Mathematical reviewer:** fresh-lineage Gate-4 auditor, 2026-08-11 — REVISE.
-- **Pedagogical/redundancy reviewer:** same fresh context, sequential lenses — REVISE.
+- **Mathematical reviewer:** fresh-lineage Gate-4 auditor, 2026-08-11 — PASS
+  after delta verification through `c344a62`.
+- **Pedagogical/redundancy reviewer:** same fresh context, sequential lenses —
+  PASS after delta verification.
 - **User/domain owner:** standing authorization and veto under ADR-008; no
   per-lesson signoff claimed.
-- **Outstanding concern:** corrected delta requires fresh re-audit.
+- **Outstanding concern:** none at Gate 4; Gate 5 remains a separate artifact.
 
 ## Gate result
 
-Gate result: REVISE
+Gate result: PASS
 
-Proposed primary insight (not approved): “In this course's improper-Riemann
+Exact primary insight: “In this course's improper-Riemann
 setting, the infinity notation names no completed infinite object; it
 abbreviates a claim that proper finite accumulations settle as their intervals
 exhaust the domain. That claim lives in the tail. For nonnegative tails
@@ -350,5 +355,3 @@ compared with the \(p\)-family, decay rate decides the verdict, and comparison
 can inherit it even when no elementary antiderivative can be written. This
 supplies the notation later transform integrals use; each transform still owes
 its own convergence hypotheses.”
-
-Gate 5 must not begin. A fresh Gate-4 delta audit is required.
