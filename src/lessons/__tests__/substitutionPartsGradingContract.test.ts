@@ -254,6 +254,29 @@ describe("tier mix and manifest coverage", () => {
     expect(graded).not.toContain("2x cos(x^2)"); // the witnessed manufacture
     expect(graded).not.toContain("x exp(x)"); // the taught trade
   });
+
+  it("keeps the manifest freshness partition consistent with the taught surfaces", () => {
+    const fresh = ["sp-substitute-basic", "sp-parts-xexp", "sp-choose-u"];
+    const reused = [
+      "sp-witness-predict",
+      "sp-du-ledger",
+      "sp-half-constant",
+      "sp-bounds",
+      "sp-boundary-meaning",
+      "sp-parts-fresh",
+      "sp-ln-parts",
+      "sp-classify",
+      "sp-cyclic",
+      "sp-cyclic-produce",
+      "sp-exists-elementary",
+    ];
+    for (const id of fresh) {
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceBasis.freshness, id).toBe("fresh-instance");
+    }
+    for (const id of reused) {
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceBasis.freshness, id).toBe("reused-fixture");
+    }
+  });
 });
 
 describe("audited theorem ownership and ordering", () => {

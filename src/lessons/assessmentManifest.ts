@@ -800,8 +800,8 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "near",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",
@@ -811,8 +811,8 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "near",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",
@@ -822,8 +822,8 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "near",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "integrated",
       scaffolding: "partial",
       scoringAuthority: "auto",
@@ -844,8 +844,8 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "near",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",

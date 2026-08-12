@@ -66,9 +66,12 @@ illustrates.
 Only `sp-substitute-basic`, `sp-parts-xexp`, and the `sp-choose-u` product are
 fresh instances. The first two remain near E2 drills; only `sp-choose-u`
 captures E3 scaffolded method selection. `sp-parts-fresh`, `sp-ln-parts`,
+`sp-du-ledger`, `sp-half-constant`, `sp-bounds`, `sp-boundary-meaning`,
 `sp-classify`, `sp-cyclic`, `sp-cyclic-produce`, and
 `sp-exists-elementary` reuse or immediately reveal taught structures; their
-manifest metadata, tiers, and evidence targets say so explicitly.
+manifest metadata, tiers, and evidence targets say so explicitly. The
+committed prediction `sp-witness-predict` deliberately uses the witnessed
+opening fixture and is reused too.
 
 ## 5. Retention hook
 
