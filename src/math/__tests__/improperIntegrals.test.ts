@@ -7,6 +7,15 @@ import {
   singularAccumulation, tailInequalityHolds,
 } from "../improperIntegrals";
 
+function nextDown(value: number): number {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, value);
+  let bits = view.getBigUint64(0);
+  bits -= 1n;
+  view.setBigUint64(0, bits);
+  return view.getFloat64(0);
+}
+
 describe("finite accumulations and fixtures", () => {
   it("passes the source consistency guard", () => {
     expect(() => assertImproperFixturesAreConsistent()).not.toThrow();
@@ -49,6 +58,12 @@ describe("Type-II orientation", () => {
   it("rejects epsilon at or below zero", () => {
     expect(() => singularAccumulation(IMP_SCANDAL, 0)).toThrow(/positive/);
   });
+  it.each([
+    [IMP_SCANDAL, 1], [IMP_SCANDAL, 2],
+    [IMP_RIGHT_SQRT_SING, 0.81], [IMP_RIGHT_SQRT_SING, 2],
+  ])("rejects equality and overrun for %s", (fixture, epsilon) => {
+    expect(() => singularAccumulation(fixture, epsilon)).toThrow(/strictly inside/);
+  });
 });
 
 describe("analytic comparison certificates", () => {
@@ -64,6 +79,18 @@ describe("analytic comparison certificates", () => {
       expect(tailInequalityHolds(
         "cubic-convergent-majorant", C, p, "target-lte-comparator",
       ).kind).toBe("fails");
+    }
+  });
+  it("accepts every sampled curved threshold and rejects its next representable neighbor below", () => {
+    for (let i = 1; i < 100; i += 1) {
+      const p = 2 + i / 100;
+      const boundary = minimumCForCubicMajorant(p)!;
+      expect(tailInequalityHolds(
+        "cubic-convergent-majorant", boundary, p, "target-lte-comparator",
+      ).kind, `boundary p=${p}`).toBe("holds");
+      expect(tailInequalityHolds(
+        "cubic-convergent-majorant", nextDown(boundary), p, "target-lte-comparator",
+      ).kind, `nextDown p=${p}`).toBe("fails");
     }
   });
   it.each([[1, 0.5], [0.25, 0.75], [1, 1]])(

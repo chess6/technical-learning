@@ -112,7 +112,7 @@ export const improperIntegralsLesson: LessonDefinition = {
       id: "parts-boundary",
       title: "A boundary term is still a limit",
       body:
-        "Integration by parts is performed on $[0,R]$, where every step is ordinary: $\\int_0^R xe^{-x}dx=1-(R+1)e^{-R}$. The expression $Re^{-R}$ is not evaluated by plugging in infinity. From the FTC, $e^R\\ge R^2/2$ for $R>0$, so $0\\le Re^{-R}\\le2/R\\to0$. Only after that limit is checked may the finite identity yield the total $1$.",
+        "Integration by parts is performed on $[0,R]$, where every step is ordinary: $\\int_0^R xe^{-x}dx=1-(R+1)e^{-R}$. The expression $Re^{-R}$ is not evaluated by plugging in infinity. Here is the promised order argument: positivity gives $e^t-1=\\int_0^t e^u\\,du\\ge0$. The FTC and integral order then give $e^R-1=\\int_0^R e^t\\,dt\\ge\\int_0^R1\\,dt=R$. Apply the same idea again: $e^R-1-R=\\int_0^R(e^t-1)\\,dt\\ge\\int_0^Rt\\,dt=R^2/2$. Thus $e^R\\ge1+R+R^2/2$, so $0\\le Re^{-R}\\le2/R\\to0$. Only after that limit is checked may the finite identity yield the total $1$.",
       equation:
         "\\int_0^R xe^{-x}\\,dx=1-(R+1)e^{-R}\\longrightarrow1",
     },
@@ -151,6 +151,18 @@ export const improperIntegralsLesson: LessonDefinition = {
         "For $p\\ne1$, integrate on finite bounds: $\\int_1^R x^{-p}dx=(R^{1-p}-1)/(1-p)$ and $\\int_\\varepsilon^1x^{-p}dx=(1-\\varepsilon^{1-p})/(1-p)$. Now take the stated limits. For $p=1$, octave blocks each contribute $\\ln2$, so the positive partial totals exceed every bound.",
     },
     {
+      id: "thm-tail-principle",
+      kind: "theorem",
+      label: "Finite prefixes do not decide a tail",
+      statement:
+        "For any finite $c>a$, $\\int_a^\\infty f$ converges exactly when $\\int_c^\\infty f$ converges; when they converge, their values differ by the proper integral $\\int_a^c f$.",
+      interpretation:
+        "Comparison may begin where its inequality becomes useful. A finite proper prefix changes the total, never the convergence verdict.",
+      visibility: "visible",
+      proof:
+        "On every finite $R>c$, interval additivity gives $\\int_a^R f=\\int_a^c f+\\int_c^R f$. This identity comes from joining tagged partitions of $[a,c]$ and $[c,R]$ (or splitting one at $c$), then passing to the proper-integral limits. The first term is one fixed finite number, so either family has a finite limit exactly when the other does. This is interval additivity, not L7's integrand linearity.",
+    },
+    {
       id: "thm-comparison",
       kind: "theorem",
       label: "Positive comparison",
@@ -186,29 +198,29 @@ export const improperIntegralsLesson: LessonDefinition = {
       prompt: "Translate each non-proper notation into the finite-limit family it actually means.",
       config: { steps: [
         {
-          kind: "multiple-choice", prompt: "$\\int_2^\\infty f$",
-          choices: ["$\\lim_{R\\to\\infty}\\int_2^R f$", "$\\int_2^R f$ for one large R", "$F(\\infty)-F(2)$"],
-          correctChoice: 0, explanation: "Type I is a limit of finite right-edge accumulations.",
+          kind: "text", prompt: "$\\int_2^\\infty f$: type its finite-limit family in short ASCII form.",
+          accept: ["lim r->infinity int_2^r f", "lim r->inf int_2^r f"],
+          explanation: "Type I is a limit of finite right-edge accumulations.",
         },
         {
-          kind: "multiple-choice", prompt: "$f$ is singular at the left endpoint $a$",
-          choices: ["$\\lim_{t\\to a^+}\\int_t^b f$", "$\\lim_{t\\to b^-}\\int_a^t f$", "$\\int_a^b f$ directly"],
-          correctChoice: 0, explanation: "Approach a left singular edge from inside the domain.",
+          kind: "text", prompt: "$f$ is singular at the left endpoint $a$: type the finite-limit family.",
+          accept: ["lim t->a+ int_t^b f"],
+          explanation: "Approach a left singular edge from inside the domain.",
         },
         {
-          kind: "multiple-choice", prompt: "$f$ is singular at the right endpoint $b$",
-          choices: ["$\\lim_{t\\to b^-}\\int_a^t f$", "$\\lim_{t\\to a^+}\\int_t^b f$", "$\\int_a^b f$ directly"],
-          correctChoice: 0, explanation: "Approach a right singular edge from inside the domain.",
+          kind: "text", prompt: "$f$ is singular at the right endpoint $b$: type the finite-limit family.",
+          accept: ["lim t->b- int_a^t f"],
+          explanation: "Approach a right singular edge from inside the domain.",
         },
         {
-          kind: "multiple-choice", prompt: "An interior singularity at $c$",
-          choices: ["Require both one-sided integrals separately", "Use only symmetric cancellation", "Choose the side with the smaller value"],
-          correctChoice: 0, explanation: "Both sides must exist independently.",
+          kind: "text", prompt: "An interior singularity at $c$: what must exist?",
+          accept: ["both one-sided limits", "both sides independently"],
+          explanation: "Both sides must exist independently.",
         },
         {
-          kind: "multiple-choice", prompt: "$\\int_{-\\infty}^{\\infty}f$",
-          choices: ["Split at finite c and require both sides", "Take only $\\lim_{R\\to\\infty}\\int_{-R}^{R}f$", "Plug both infinities into F"],
-          correctChoice: 0, explanation: "Two infinite edges create two independent limits.",
+          kind: "text", prompt: "$\\int_{-\\infty}^{\\infty}f$: state the defining requirement in words.",
+          accept: ["split at finite c and require both sides", "split and require both one-sided limits"],
+          explanation: "Two infinite edges create two independent limits.",
         },
       ] },
     },
@@ -242,15 +254,15 @@ export const improperIntegralsLesson: LessonDefinition = {
       prompt: "Classify from the formulas for the finite accumulations, not from a plot.",
       config: { steps: [
         {
-          kind: "text", prompt: "$A(R)=1-1/R$",
-          accept: ["converges", "convergent"], explanation: "It tends to the finite value 1.",
+          kind: "text", prompt: "$A(R)=2-2/\\sqrt R$",
+          accept: ["converges", "convergent"], explanation: "It tends to the finite value 2.",
         },
         {
-          kind: "text", prompt: "$A(R)=\\ln R$",
+          kind: "text", prompt: "$A(R)=\\sqrt R-1$",
           accept: ["unbounded", "diverges unboundedly"], explanation: "It crosses every finite bound.",
         },
         {
-          kind: "text", prompt: "$A(R)=1-\\cos R$",
+          kind: "text", prompt: "$A(R)=\\sin(\\ln R)$",
           accept: ["oscillates", "oscillatory"], explanation: "It stays bounded but has no limit.",
         },
       ] },
@@ -284,17 +296,22 @@ export const improperIntegralsLesson: LessonDefinition = {
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
-      prompt: "Audit the tempting claim $\\int_{-\\infty}^{\\infty}x\\,dx=0$.",
+      prompt: "Audit the fresh claim $\\int_{-\\infty}^{\\infty}x^3\\,dx=0$.",
       config: { steps: [
         {
-          kind: "multiple-choice", prompt: "What does symmetric truncation compute here?",
-          choices: ["A principal value, a different object", "The improper integral by definition", "A proper integral"],
-          correctChoice: 0, explanation: "Symmetric cancellation is meaningful, but it is not this definition.",
+          kind: "text", prompt: "Name the object computed by symmetric truncation.",
+          accept: ["principal value", "cauchy principal value"],
+          explanation: "Symmetric cancellation is meaningful, but it is not this definition.",
         },
         {
-          kind: "multiple-choice", prompt: "What happens to the two required one-sided totals?",
-          choices: ["Each is unbounded, so the improper integral diverges", "They converge and cancel", "Only the right side matters"],
-          correctChoice: 0, explanation: "Each side must converge independently; neither does.",
+          kind: "numeric", prompt: "In $\\int_0^R x^3dx=cR^4$, produce the coefficient $c$.",
+          expected: 0.25, tolerance: 0,
+          explanation: "The right accumulation is $R^4/4$ and is unbounded.",
+        },
+        {
+          kind: "text", prompt: "Converges, unbounded, or oscillates?",
+          accept: ["unbounded", "diverges unboundedly"],
+          explanation: "The one-sided totals fail independently, so symmetric cancellation cannot license the integral.",
         },
       ] },
     },
@@ -303,21 +320,21 @@ export const improperIntegralsLesson: LessonDefinition = {
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
       tier: "drill",
-      prompt: "Finish $\\int_0^\\infty xe^{-x}dx$ without plugging infinity into the parts boundary.",
+      prompt: "On a fresh rate, finish $\\int_0^\\infty xe^{-2x}dx$ without plugging infinity into its boundary.",
       config: { steps: [
         {
-          kind: "multiple-choice", prompt: "Which finite identity is correct?",
-          choices: ["$\\int_0^Rxe^{-x}dx=1-(R+1)e^{-R}$", "$1-Re^{-R}$", "$-Re^{-R}$"],
-          correctChoice: 0, explanation: "Parts is performed first on the proper interval $[0,R]$.",
+          kind: "vector", prompt: "Write the boundary as $(aR+b)e^{-2R}$. Produce $(a,b)$.",
+          expected: [0.5, 0.25], tolerance: 0,
+          explanation: "$\\int_0^Rxe^{-2x}dx=1/4-(R/2+1/4)e^{-2R}$ on the finite interval.",
         },
         {
-          kind: "multiple-choice", prompt: "Which bound proves $Re^{-R}\\to0$?",
-          choices: ["$0\\le Re^{-R}\\le2/R$ from $e^R\\ge R^2/2$", "It looks small at R=60", "$e^{-R}\\to0$ so products always do"],
-          correctChoice: 0, explanation: "The explicit squeeze owns the product limit.",
+          kind: "text", prompt: "From $e^{2R}\\ge2R^2$, type a bound for $Re^{-2R}$ in short ASCII form.",
+          accept: ["0<=r*e^(-2r)<=1/(2r)", "r*e^(-2r)<=1/(2r)"],
+          explanation: "The explicit squeeze, not a large finite sample, owns the product limit.",
         },
         {
-          kind: "numeric", prompt: "What total remains?", expected: 1, tolerance: 0,
-          explanation: "Both $(R+1)e^{-R}$ terms vanish, leaving 1.",
+          kind: "numeric", prompt: "What total remains?", expected: 0.25, tolerance: 0,
+          explanation: "Both boundary terms vanish, leaving $1/4$.",
         },
       ] },
     },
@@ -338,6 +355,8 @@ export const improperIntegralsLesson: LessonDefinition = {
       exerciseIds: ["imp-definition-edges", "imp-p-ladder", "imp-verdict-classify"],
       scaffold: "independent",
     },
+    { kind: "formal", formalId: "thm-tail-principle" },
+    { kind: "proof", formalId: "thm-tail-principle" },
     { kind: "formal", formalId: "thm-comparison" },
     { kind: "proof", formalId: "thm-comparison" },
     { kind: "section", sectionId: "gaussian" },

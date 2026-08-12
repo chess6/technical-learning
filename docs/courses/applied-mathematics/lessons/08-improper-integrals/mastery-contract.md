@@ -105,7 +105,7 @@ integral” object.
 | Distinguish convergence, unbounded divergence, and oscillatory divergence without relying on plots | D2/D7 | lesson | E3 | `imp-verdict-classify`, exercise sequence | independently demonstrated |
 | Apply both positive comparison directions: construct a convergent \(C/x^p\) majorant and a divergent \(C/x^p\) minorant, state the finite-truncation integrability hypotheses, and inherit the corresponding verdict | D3/D5 | lesson | E3 | `imp-comparison-produce`, `imp-comparison-diverge`, `tail-comparison` | independently demonstrated |
 | Refuse a symmetric-only two-sided value and require both one-sided limits | D5/D13 | lesson | E3 | `imp-route-refusal`, exercise sequence | independently demonstrated |
-| Check an infinite-edge parts boundary as a limit and finish \(\int_0^\infty xe^{-x}dx\) | D3/D10 | lesson | E3 | `imp-boundary-limit`, exercise sequence | independently demonstrated |
+| Check an infinite-edge parts boundary as a limit on fresh \(xe^{-2x}\), after the lesson derives \(xe^{-x}\) | D3/D10 | lesson | E3 | `imp-boundary-limit`, produced vector/text/numeric sequence | independently demonstrated |
 | Select among direct truncation, \(p\)-ladder, and comparison on a mixed fresh set | D8/D10 | module | E5 | `mod-calctech-method-mix` | Gate 9 planned |
 | Retrieve convergence reasoning after a delay in the series/transform arc | D12 | module | E5 | Package C spaced item | planned |
 
@@ -121,6 +121,10 @@ not automatically make the context unfamiliar transfer.
 - **Practice:** seven evidence items above, including fresh finite-limit
   translation, two-edge \(p\)-classification, divergence-mode discrimination,
   both comparison directions, route refusal, and boundary-limit completion.
+  The four evidence-honesty repairs are pinned: finite families are typed, the
+  three verdict formulas are not the taught \(\ln R\)/\(1-\cos R\) pair, route
+  refusal uses \(x^3\) with a produced one-sided coefficient, and the boundary
+  item uses fresh \(xe^{-2x}\) with a produced finite identity and squeeze.
 - **Module obligations:** mixed L5–L8 method selection, delayed retention, and
   timed performance remain Gate 9; this lesson does not borrow those claims.
 - **Forward retention:** L10 partial sums reuse limit-of-finite-objects; L24
@@ -139,7 +143,8 @@ divergence.
 - Exact closed forms own learner-facing values; Riemann sums only corroborate.
 - A Gaussian fixture records convergence by comparison but **no exact value**.
 - `singularAccumulation` must preserve orientation at left and right bad
-  endpoints; permanent tests cover both.
+  endpoints and reject epsilon at or beyond the opposite finite endpoint;
+  permanent equality/overrun tests cover both orientations.
 - `tailInequalityHolds` may return a certain counterexample witness from
   evaluation, but “holds” for learner grading requires an analytic certificate
   over the entire declared tail. Finite samples never pass an answer.

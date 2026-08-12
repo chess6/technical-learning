@@ -90,14 +90,14 @@ objective at E1, never an independent mastery claim.
 
 ## Practice contract
 
-1. `imp-definition-edges` — sequence: choose the correct finite family
+1. `imp-definition-edges` — sequence: type the finite family (no choices)
    for Type I, bad left edge, bad right edge, interior singularity, and a
    two-sided infinite interval. Use the corresponding one-sided limit at each
    bad endpoint; require both one-sided accumulations for interior and
    two-sided cases. A principal-value answer is an explicit reject.
 2. `imp-p-ladder` — sequence: classify fresh \(p\) values at infinity
    and zero, then identify why \(p=1\) is the knife edge.
-3. `imp-verdict-classify` — sequence: classify three formula-only
+3. `imp-verdict-classify` — sequence: classify three fresh formula-only
    accumulations as converges / unbounded / oscillates; “bounded” alone fails.
 4. `imp-comparison-produce` — `tail-comparison`: for
    \(f(x)=1/(x^3+x)\) on \([1,\infty)\), enter finite \(C,p\), choose
@@ -118,11 +118,12 @@ objective at E1, never an independent mastery claim.
    values with no favourable tolerance. Sampling may return a certain reject
    witness but never a positive certificate. Feedback names the failed
    condition without revealing a valid pair before commitment.
-6. `imp-route-refusal` — sequence: reject symmetric-only
-   \(\int_{-\infty}^{\infty}x\,dx=0\), name principal value as the different
-   object, and identify the failed one-sided integral.
-7. `imp-boundary-limit` — sequence: parts on \([0,R]\), select the
-   FTC/order bound that proves \(Re^{-R}\to0\), and produce total \(1\).
+6. `imp-route-refusal` — sequence on the fresh fixture
+   \(\int_{-\infty}^{\infty}x^3\,dx\): type “principal value,” produce the
+   one-sided coefficient \(1/4\), and classify the unbounded failure.
+7. `imp-boundary-limit` — sequence on fresh \(xe^{-2x}\): produce the two
+   coefficients in the finite parts boundary, type the FTC/order squeeze, and
+   produce total \(1/4\).
 
 Every sequence battery rejects blank, omitted, swapped-kind, and
 related-but-wrong partial answers. The new capability registers:
@@ -154,7 +155,8 @@ related-but-wrong partial answers. The new capability registers:
 
 Create `src/math/improperIntegrals.ts` and tests:
 
-- `accumulation`, `singularAccumulation` with left/right orientation;
+- `accumulation`, `singularAccumulation` with left/right orientation and strict
+  rejection when epsilon equals or overruns the finite interval;
 - `pLadderVerdict`, `octaveContribution`, finite geometric bound;
 - verdict union distinguishes `unbounded` and `oscillates`;
 - convergent fixture values are optional; Gaussian has no value and is owned by
@@ -163,7 +165,8 @@ Create `src/math/improperIntegrals.ts` and tests:
   counterexample witnesses and never returns a positive grade from samples;
 - display strings parse and agree with closures; declared antiderivatives
   differentiate to integrands on their domains; all analytic fixture claims
-  receive exact regression tests.
+  receive exact regression tests; the curved comparison boundary is swept and
+  the next representable coefficient below every sampled threshold is rejected.
 
 ## Required verification
 

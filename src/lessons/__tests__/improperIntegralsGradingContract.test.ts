@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { improperIntegralsLesson } from "../improperIntegrals";
 import { ITEM_ASSESSMENT_META } from "../assessmentManifest";
 import { CAPABILITY_EVIDENCE_CEILING } from "../evidence";
+import { minimumCForCubicMajorant } from "../../math";
 import type { ExerciseDefinition } from "../types";
 import { describeGradingContract } from "./gradingContract";
 
@@ -14,7 +15,8 @@ const item = (id: string): ExerciseDefinition => {
 const pick = (choice: number) => ({ kind: "multiple-choice" as const, choice });
 const text = (value: string) => ({ kind: "text" as const, value });
 const numeric = (value: number) => ({ kind: "numeric" as const, value });
-const sequence = (...responses: Array<ReturnType<typeof pick> | ReturnType<typeof text> | ReturnType<typeof numeric>>) =>
+const vector = (value: readonly [number, number]) => ({ kind: "vector" as const, value });
+const sequence = (...responses: Array<ReturnType<typeof pick> | ReturnType<typeof text> | ReturnType<typeof numeric> | ReturnType<typeof vector>>) =>
   ({ responses });
 const comparison = (
   C: number,
@@ -35,13 +37,24 @@ describeGradingContract(item("imp-scandal-predict"), {
 });
 
 describeGradingContract(item("imp-definition-edges"), {
-  mustAccept: [{ name: "all five edge families", answer: sequence(pick(0), pick(0), pick(0), pick(0), pick(0)) }],
+  mustAccept: [{ name: "all five edge families produced", answer: sequence(
+    text("lim r->infinity int_2^r f"), text("lim t->a+ int_t^b f"),
+    text("lim t->b- int_a^t f"), text("both one-sided limits"),
+    text("split at finite c and require both sides"),
+  ) }],
   mustReject: [
     { name: "blank", answer: sequence() },
-    { name: "bad-left edge omitted", answer: sequence(pick(0)) },
-    { name: "right orientation reversed", answer: sequence(pick(0), pick(0), pick(1), pick(0), pick(0)) },
-    { name: "principal value substituted for interior split", answer: sequence(pick(0), pick(0), pick(0), pick(1), pick(0)) },
-    { name: "symmetric route substituted for two-sided definition", answer: sequence(pick(0), pick(0), pick(0), pick(0), pick(1)) },
+    { name: "bad-left edge omitted", answer: sequence(text("lim r->infinity int_2^r f")) },
+    { name: "right orientation reversed", answer: sequence(
+      text("lim r->infinity int_2^r f"), text("lim t->a+ int_t^b f"),
+      text("lim t->a+ int_t^b f"), text("both one-sided limits"),
+      text("split at finite c and require both sides"),
+    ) },
+    { name: "principal value substituted for interior split", answer: sequence(
+      text("lim r->infinity int_2^r f"), text("lim t->a+ int_t^b f"),
+      text("lim t->b- int_a^t f"), text("principal value"),
+      text("split at finite c and require both sides"),
+    ) },
   ],
 });
 
@@ -69,7 +82,7 @@ describeGradingContract(item("imp-comparison-produce"), {
   mustAccept: [
     { name: "p=2 boundary coefficient", answer: comparison(0.5, 2, "target-lte-comparator", "converges", "target-converges") },
     { name: "p=3 boundary coefficient", answer: comparison(1, 3, "target-lte-comparator", "converges", "target-converges") },
-    { name: "interior exponent", answer: comparison(0.57, 2.5, "target-lte-comparator", "converges", "target-converges") },
+    { name: "exact curved threshold", answer: comparison(minimumCForCubicMajorant(2.5)!, 2.5, "target-lte-comparator", "converges", "target-converges") },
   ],
   mustReject: [
     { name: "blank object", answer: {} },
@@ -101,22 +114,22 @@ describeGradingContract(item("imp-comparison-diverge"), {
 });
 
 describeGradingContract(item("imp-route-refusal"), {
-  mustAccept: [{ name: "principal value distinguished from divergence", answer: sequence(pick(0), pick(0)) }],
+  mustAccept: [{ name: "principal value distinguished from divergence", answer: sequence(text("principal value"), numeric(0.25), text("unbounded")) }],
   mustReject: [
     { name: "blank", answer: sequence() },
-    { name: "calls symmetry the definition", answer: sequence(pick(1), pick(0)) },
-    { name: "claims the sides converge and cancel", answer: sequence(pick(0), pick(1)) },
+    { name: "calls symmetry the definition", answer: sequence(text("improper integral"), numeric(0.25), text("unbounded")) },
+    { name: "wrong one-sided coefficient", answer: sequence(text("principal value"), numeric(0), text("unbounded")) },
+    { name: "claims convergence", answer: sequence(text("principal value"), numeric(0.25), text("converges")) },
   ],
 });
 
 describeGradingContract(item("imp-boundary-limit"), {
-  mustAccept: [{ name: "finite parts, squeeze, total", answer: sequence(pick(0), pick(0), numeric(1)) }],
+  mustAccept: [{ name: "finite parts, squeeze, total", answer: sequence(vector([0.5, 0.25]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) }],
   mustReject: [
     { name: "blank", answer: sequence() },
-    { name: "drops the extra exponential term", answer: sequence(pick(1), pick(0), numeric(1)) },
-    { name: "finite sample masquerades as proof", answer: sequence(pick(0), pick(1), numeric(1)) },
-    { name: "product limit assumed", answer: sequence(pick(0), pick(2), numeric(1)) },
-    { name: "wrong total", answer: sequence(pick(0), pick(0), numeric(0)) },
+    { name: "drops the extra exponential term", answer: sequence(vector([0.5, 0]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) },
+    { name: "finite sample masquerades as proof", answer: sequence(vector([0.5, 0.25]), text("small at r=60"), numeric(0.25)) },
+    { name: "wrong total", answer: sequence(vector([0.5, 0.25]), text("r*e^(-2r)<=1/(2r)"), numeric(1)) },
   ],
 });
 
@@ -130,6 +143,13 @@ describe("L8 manifest and capability claims", () => {
     expect(CAPABILITY_EVIDENCE_CEILING["tail-comparison"]).toBe("E3");
     expect(ITEM_ASSESSMENT_META["imp-comparison-produce"]?.evidenceTarget).toBe("E3");
     expect(ITEM_ASSESSMENT_META["imp-comparison-diverge"]?.methodSelection).toBe(false);
+  });
+  it("pins fresh produced evidence for the four corrected E3 items", () => {
+    for (const id of ["imp-definition-edges", "imp-verdict-classify", "imp-route-refusal", "imp-boundary-limit"]) {
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceTarget, id).toBe("E3");
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceBasis.freshness, id).toBe("fresh-instance");
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceBasis.unfamiliarity, id).toBe("near");
+    }
   });
   it("puts definitions before theorems that consume them", () => {
     const route = improperIntegralsLesson.route!;

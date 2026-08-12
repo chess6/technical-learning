@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { ExplorationPanel } from "../components/lesson/ExplorationPanel";
-import { IMP_P_ONE, IMP_P_TWO, IMP_SIN, accumulation, type TailFixture } from "../math";
+import { IMP_EXP, IMP_P_ONE, IMP_P_TWO, IMP_SIN, accumulation, type TailFixture } from "../math";
 import { ParameterControls } from "./ParameterControls";
 import { PresetPicker } from "./PresetPicker";
 import { ResetButton } from "./ResetButton";
 import { SceneReadout } from "./SceneReadout";
 import "./ImproperIntegralExplorer.css";
 
-const PRESETS: readonly TailFixture[] = [IMP_P_TWO, IMP_P_ONE, IMP_SIN];
+const PRESETS: readonly TailFixture[] = [IMP_EXP, IMP_P_TWO, IMP_P_ONE, IMP_SIN];
 const WIDTH = 620;
 const HEIGHT = 230;
 const PAD = 32;

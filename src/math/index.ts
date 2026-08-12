@@ -499,6 +499,7 @@ export {
   type SubstitutionFixture,
 } from "./integrationTechniques";
 export {
+  IMP_EXP,
   IMP_P_ONE,
   IMP_P_TWO,
   IMP_SIN,

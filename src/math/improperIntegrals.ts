@@ -3,7 +3,7 @@
  * verdicts; there is deliberately no improper-integral value object.
  * Quadrature corroborates fixtures but never certifies a universal claim.
  */
-import { riemannSum, type RealFunction } from "./calculus";
+import { boundaryAwareDerivative, riemannSum, type RealFunction } from "./calculus";
 import { evaluate, tryParseExpression } from "./expression";
 
 export type DivergenceMode = "unbounded" | "oscillates";
@@ -52,6 +52,9 @@ export function singularAccumulation(
 ): { readonly value: number; readonly exact: boolean } {
   if (!Number.isFinite(epsilon) || epsilon <= 0) {
     throw new Error("singularAccumulation: epsilon must be positive.");
+  }
+  if (epsilon >= Math.abs(fixture.s - fixture.b)) {
+    throw new Error("singularAccumulation: epsilon must stay strictly inside the interval.");
   }
   const truncated = fixture.s < fixture.b
     ? fixture.s + epsilon
@@ -229,18 +232,43 @@ function agree(label: string, a: RealFunction, b: RealFunction, lo: number, hi: 
   }
 }
 
+function antiderivativeAgrees(
+  label: string,
+  F: RealFunction,
+  integrand: RealFunction,
+  lo: number,
+  hi: number,
+): void {
+  for (let i = 1; i < 40; i += 1) {
+    const x = lo + ((hi - lo) * i) / 40;
+    const derivative = boundaryAwareDerivative(F, x, [lo, hi], (hi - lo) * 1e-5);
+    if (Math.abs(derivative - integrand(x)) > 2e-5 * Math.max(1, Math.abs(integrand(x)))) {
+      throw new Error(label + ": declared antiderivative does not differentiate to its integrand.");
+    }
+  }
+}
+
 export function assertImproperFixturesAreConsistent(): void {
   const tails = [IMP_EXP, IMP_P_ONE, IMP_P_TWO, IMP_ARCTAN, IMP_SIN, IMP_X_EXP, IMP_GAUSS];
   for (const fixture of tails) {
     agree(fixture.id, parsedClosure(fixture.id, fixture.integrandSource),
       fixture.integrand, fixture.a + 0.01, fixture.a + 20);
     if (!fixture.F && !fixture.decidedBy) throw new Error(fixture.id + ": verdict has no owner.");
+    if (fixture.F) {
+      antiderivativeAgrees(fixture.id, fixture.F, fixture.integrand,
+        fixture.a + 0.01, fixture.a + 20);
+    }
   }
   const singulars = [IMP_SCANDAL, IMP_SQRT_SING, IMP_RIGHT_SQRT_SING];
   for (const fixture of singulars) {
     agree(fixture.id, parsedClosure(fixture.id, fixture.integrandSource),
       fixture.integrand, Math.min(fixture.s, fixture.b) + 0.01,
       Math.max(fixture.s, fixture.b) - 0.01);
+    if (fixture.F) {
+      antiderivativeAgrees(fixture.id, fixture.F, fixture.integrand,
+        Math.min(fixture.s, fixture.b) + 0.01,
+        Math.max(fixture.s, fixture.b) - 0.01);
+    }
     if (fixture.verdict.kind === "converges" && fixture.verdict.value !== undefined) {
       const actual = singularAccumulation(fixture, 1e-8).value;
       if (Math.abs(actual - fixture.verdict.value) > 1e-3) {

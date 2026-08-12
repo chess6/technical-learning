@@ -991,7 +991,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E3",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "reused-fixture", unfamiliarity: "familiar-drill",
+      freshness: "fresh-instance", unfamiliarity: "near",
       integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
     },
   },
@@ -999,7 +999,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E3",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "reused-fixture", unfamiliarity: "familiar-drill",
+      freshness: "fresh-instance", unfamiliarity: "near",
       integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
     },
   },
