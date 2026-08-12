@@ -42,6 +42,11 @@ const LAZY_EXPLORERS: Record<string, ComponentType> = {
       default: m.SubstitutionLedgerExplorer,
     })),
   ),
+  "improper-accumulation": lazy(() =>
+    import("./ImproperIntegralExplorer").then((m) => ({
+      default: m.ImproperIntegralExplorer,
+    })),
+  ),
   "limits-continuity": lazy(() =>
     import("./LimitsContinuityExplorer").then((m) => ({
       default: m.LimitsContinuityExplorer,

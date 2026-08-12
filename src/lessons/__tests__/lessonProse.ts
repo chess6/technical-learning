@@ -118,6 +118,10 @@ export const CUSTOM_CONFIG_PROSE: Record<
     // not prose; the explanation is the learner-facing string.
     push(out, `${path}.config.explanation`, config.explanation);
   },
+  "tail-comparison": (config, path, out) => {
+    // The target id is machine-facing; explanation is rendered after grading.
+    push(out, `${path}.config.explanation`, config.explanation);
+  },
   "self-check": (config, path, out) => {
     push(out, `${path}.config.modelAnswer`, config.modelAnswer);
     push(out, `${path}.config.rubric`, config.rubric);

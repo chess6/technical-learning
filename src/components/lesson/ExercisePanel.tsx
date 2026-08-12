@@ -9,6 +9,7 @@ import {
   SELF_CHECK_ID,
   EXERCISE_SEQUENCE_ID,
   MATH_EXPRESSION_ID,
+  TAIL_COMPARISON_ID,
   type MathExpressionConfig,
   type CommittedPredictionConfig,
   type MatrixEntryConfig,
@@ -17,7 +18,9 @@ import {
   type SelfMark,
   type ExerciseSequenceConfig,
   type SequenceResponse,
+  type TailComparisonConfig,
 } from "../../lessons/capabilities";
+import type { ComparisonDirection } from "../../math";
 import { MathExpressionInput } from "./MathExpressionInput";
 import { ProseWithMath } from "./ProseWithMath";
 import { SolutionReveal } from "./SolutionReveal";
@@ -108,6 +111,15 @@ type MatrixEntryDraft = { entries: string[][] };
 type ConstructDraft = { x: string; y: string; submitted: boolean };
 type SelfCheckDraft = { text: string; revealed: boolean; selfMark: SelfMark | null };
 type MathExpressionDraft = { source: string };
+type TailComparisonDraft = {
+  C: string;
+  p: string;
+  direction: ComparisonDirection;
+  targetFiniteIntegrable: boolean;
+  comparatorFiniteIntegrable: boolean;
+  comparatorVerdict: "converges" | "diverges";
+  conclusion: "target-converges" | "target-diverges";
+};
 type SequenceStepDraft = {
   value: string;
   choice: number | null;
@@ -178,6 +190,20 @@ const renderCapabilities: Record<string, RenderCapability<unknown>> = {
     isAttempted: attemptedWhenResult,
     summaryState: gradedSummary(),
     Body: MathExpressionBody,
+  }),
+  [TAIL_COMPARISON_ID]: defineCapability<TailComparisonDraft>({
+    emptyDraft: () => ({
+      C: "",
+      p: "",
+      direction: "target-lte-comparator",
+      targetFiniteIntegrable: false,
+      comparatorFiniteIntegrable: false,
+      comparatorVerdict: "converges",
+      conclusion: "target-converges",
+    }),
+    isAttempted: attemptedWhenResult,
+    summaryState: gradedSummary(),
+    Body: TailComparisonBody,
   }),
   [SELF_CHECK_ID]: defineCapability<SelfCheckDraft>({
     emptyDraft: () => ({ text: "", revealed: false, selfMark: null }),
@@ -691,6 +717,107 @@ function MathExpressionBody({
           Check answer
         </button>
       </div>
+      <Feedback result={result} exercise={exercise} />
+    </form>
+  );
+}
+
+function TailComparisonBody({
+  exercise,
+  draft,
+  result,
+  setDraft,
+  setResult,
+}: CapabilityBodyProps<TailComparisonDraft>) {
+  if (exercise.type !== "custom") return null;
+  const config = exercise.config as TailComparisonConfig | undefined;
+  const check = () => {
+    if (draft.C.trim() === "" || draft.p.trim() === "") {
+      setResult({ correct: false, feedback: "Enter both C and p." });
+      return;
+    }
+    setResult(gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: TAIL_COMPARISON_ID,
+      value: {
+        C: Number(draft.C),
+        p: Number(draft.p),
+        direction: draft.direction,
+        targetFiniteIntegrable: draft.targetFiniteIntegrable,
+        comparatorFiniteIntegrable: draft.comparatorFiniteIntegrable,
+        comparatorVerdict: draft.comparatorVerdict,
+        conclusion: draft.conclusion,
+      },
+    }));
+  };
+  const convergence = config?.target === "cubic-convergent-majorant";
+  return (
+    <form className="exercise-panel__answer exercise-panel__answer--block"
+      onSubmit={(event) => { event.preventDefault(); check(); }}>
+      <div className="exercise-panel__field-row">
+        <label className="exercise-panel__field">
+          <span>C</span>
+          <input aria-label="Comparator coefficient C" type="number" step="any"
+            value={draft.C} onChange={(event) => setDraft({ ...draft, C: event.target.value })} />
+        </label>
+        <label className="exercise-panel__field">
+          <span>p</span>
+          <input aria-label="Comparator exponent p" type="number" step="any"
+            value={draft.p} onChange={(event) => setDraft({ ...draft, p: event.target.value })} />
+        </label>
+      </div>
+      <label className="exercise-panel__field">
+        <span>Inequality on x ≥ 1</span>
+        <select aria-label="Comparison direction" value={draft.direction}
+          onChange={(event) => setDraft({
+            ...draft, direction: event.target.value as ComparisonDirection,
+          })}>
+          <option value="target-lte-comparator">target ≤ C/x^p</option>
+          <option value="comparator-lte-target">C/x^p ≤ target</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" checked={draft.targetFiniteIntegrable}
+          onChange={(event) => setDraft({
+            ...draft, targetFiniteIntegrable: event.target.checked,
+          })} />
+        {" "}The target is integrable on every finite truncation.
+      </label>
+      <label>
+        <input type="checkbox" checked={draft.comparatorFiniteIntegrable}
+          onChange={(event) => setDraft({
+            ...draft, comparatorFiniteIntegrable: event.target.checked,
+          })} />
+        {" "}The comparator is integrable on every finite truncation.
+      </label>
+      <label className="exercise-panel__field">
+        <span>Known comparator verdict</span>
+        <select aria-label="Comparator verdict" value={draft.comparatorVerdict}
+          onChange={(event) => setDraft({
+            ...draft,
+            comparatorVerdict: event.target.value as "converges" | "diverges",
+          })}>
+          <option value="converges">converges</option>
+          <option value="diverges">diverges</option>
+        </select>
+      </label>
+      <label className="exercise-panel__field">
+        <span>Conclusion</span>
+        <select aria-label="Comparison conclusion" value={draft.conclusion}
+          onChange={(event) => setDraft({
+            ...draft,
+            conclusion: event.target.value as "target-converges" | "target-diverges",
+          })}>
+          <option value="target-converges">the target converges</option>
+          <option value="target-diverges">the target diverges</option>
+        </select>
+      </label>
+      <button type="submit" className="btn">
+        Certify comparison
+      </button>
+      <span className="sr-only">
+        {convergence ? "Build a convergent majorant." : "Build a divergent minorant."}
+      </span>
       <Feedback result={result} exercise={exercise} />
     </form>
   );

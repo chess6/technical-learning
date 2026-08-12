@@ -187,4 +187,6 @@ Create `src/math/improperIntegrals.ts` and tests:
 - [x] No guided scene; explorer medium and accessibility contract fixed.
 - [x] Gaussian value, sampling ceiling, Type-II orientation, and two-sided
   refusal are explicit rejection conditions.
-- [ ] Mode C implementation, verification, fresh package review, and Gate 8.
+- [x] Mode C implementation and package verification (`./check.sh`; targeted
+  Chromium 4/4).
+- [ ] Fresh package review and Gate 8.

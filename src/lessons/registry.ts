@@ -3,6 +3,7 @@ import { changeOfBasisLesson } from "./changeOfBasis";
 import { chainRuleLesson } from "./chainRule";
 import { optimizationApproximationLesson } from "./optimizationApproximation";
 import { substitutionPartsLesson } from "./substitutionParts";
+import { improperIntegralsLesson } from "./improperIntegrals";
 import { chapter0Lesson } from "./chapter0";
 import { derivativeLocalLinearityLesson } from "./derivativeLocalLinearity";
 import { integralAccumulationLesson } from "./integralAccumulation";
@@ -54,6 +55,7 @@ export const lessons: LessonDefinition[] = [
   chainRuleLesson,
   optimizationApproximationLesson,
   substitutionPartsLesson,
+  improperIntegralsLesson,
 ];
 
 const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));

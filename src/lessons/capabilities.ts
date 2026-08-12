@@ -40,6 +40,9 @@ import {
   tryParseExpression,
   type Matrix2x2,
   type Vector2,
+  tailInequalityHolds,
+  type ComparisonDirection,
+  type ComparisonTarget,
 } from "../math";
 import type { JsonObject, JsonValue } from "../platform/json";
 import type { ExerciseDefinition, SolutionReveal } from "./types";
@@ -892,6 +895,67 @@ export type MathExpressionAnswer = { source: string };
 
 export const MATH_EXPRESSION_ID = "math-expression";
 
+export const TAIL_COMPARISON_ID = "tail-comparison";
+
+export type TailComparisonConfig = {
+  target: ComparisonTarget;
+  explanation: string;
+};
+
+export type TailComparisonAnswer = {
+  C: number;
+  p: number;
+  direction: ComparisonDirection;
+  targetFiniteIntegrable: boolean;
+  comparatorFiniteIntegrable: boolean;
+  comparatorVerdict: "converges" | "diverges";
+  conclusion: "target-converges" | "target-diverges";
+};
+
+function tailComparisonConfig(exercise: ExerciseDefinition): TailComparisonConfig {
+  if (exercise.type !== "custom") throw new Error("tail-comparison requires a custom exercise");
+  const config = exercise.config as TailComparisonConfig | undefined;
+  if (
+    !config ||
+    (config.target !== "cubic-convergent-majorant" &&
+      config.target !== "sqrt-divergent-minorant") ||
+    typeof config.explanation !== "string"
+  ) {
+    throw new Error("tail-comparison needs a declared target and explanation");
+  }
+  return config;
+}
+
+function gradeTailComparison(
+  config: TailComparisonConfig,
+  answer: TailComparisonAnswer,
+): GradeResult {
+  const inequality = tailInequalityHolds(
+    config.target, answer.C, answer.p, answer.direction,
+  );
+  if (inequality.kind !== "holds") {
+    return { correct: false, feedback: inequality.reason };
+  }
+  if (!answer.targetFiniteIntegrable || !answer.comparatorFiniteIntegrable) {
+    return {
+      correct: false,
+      feedback: "State that both functions are integrable on every finite truncation.",
+    };
+  }
+  const convergence = config.target === "cubic-convergent-majorant";
+  const verdictCorrect = answer.comparatorVerdict ===
+    (convergence ? "converges" : "diverges");
+  const conclusionCorrect = answer.conclusion ===
+    (convergence ? "target-converges" : "target-diverges");
+  if (!verdictCorrect) {
+    return { correct: false, feedback: "Use the known verdict of the p-comparator." };
+  }
+  if (!conclusionCorrect) {
+    return { correct: false, feedback: "The inequality direction does not support that conclusion." };
+  }
+  return { correct: true, feedback: "Certified on the whole tail. " + config.explanation };
+}
+
 function mathExpressionConfig(exercise: ExerciseDefinition): MathExpressionConfig {
   if (exercise.type !== "custom") {
     throw new Error("math-expression requires a custom exercise");
@@ -1264,6 +1328,40 @@ function decodeMathExpressionAnswer(raw: JsonValue | undefined): MathExpressionA
   return { source: decodeString(o.source, MATH_EXPRESSION_ID, "source") };
 }
 
+function decodeTailComparisonAnswer(raw: JsonValue | undefined): TailComparisonAnswer {
+  const o = decodeObject(raw, TAIL_COMPARISON_ID);
+  const direction = decodeString(o.direction, TAIL_COMPARISON_ID, "direction");
+  const comparatorVerdict = decodeString(
+    o.comparatorVerdict, TAIL_COMPARISON_ID, "comparatorVerdict",
+  );
+  const conclusion = decodeString(o.conclusion, TAIL_COMPARISON_ID, "conclusion");
+  const targetFiniteIntegrable = o.targetFiniteIntegrable;
+  const comparatorFiniteIntegrable = o.comparatorFiniteIntegrable;
+  if (
+    direction !== "target-lte-comparator" &&
+    direction !== "comparator-lte-target"
+  ) throw new AnswerDecodeError(TAIL_COMPARISON_ID, "invalid direction");
+  if (comparatorVerdict !== "converges" && comparatorVerdict !== "diverges") {
+    throw new AnswerDecodeError(TAIL_COMPARISON_ID, "invalid comparator verdict");
+  }
+  if (conclusion !== "target-converges" && conclusion !== "target-diverges") {
+    throw new AnswerDecodeError(TAIL_COMPARISON_ID, "invalid conclusion");
+  }
+  if (
+    typeof targetFiniteIntegrable !== "boolean" ||
+    typeof comparatorFiniteIntegrable !== "boolean"
+  ) throw new AnswerDecodeError(TAIL_COMPARISON_ID, "finite-truncation claims must be boolean");
+  return {
+    C: decodeFiniteNumber(o.C, TAIL_COMPARISON_ID, "C"),
+    p: decodeFiniteNumber(o.p, TAIL_COMPARISON_ID, "p"),
+    direction,
+    targetFiniteIntegrable,
+    comparatorFiniteIntegrable,
+    comparatorVerdict,
+    conclusion,
+  };
+}
+
 function decodeMatrixEntryAnswer(raw: JsonValue | undefined): MatrixEntryAnswer {
   const o = decodeObject(raw, MATRIX_ENTRY_ID);
   const rows = decodeArray(o.entries, MATRIX_ENTRY_ID, "entries");
@@ -1476,6 +1574,28 @@ export const gradingCapabilities: Record<string, GradingCapability> = {
         kind: "custom",
         capabilityId: MATH_EXPRESSION_ID,
         value: decodeMathExpressionAnswer(raw),
+      };
+    },
+  },
+
+  [TAIL_COMPARISON_ID]: {
+    id: TAIL_COMPARISON_ID,
+    answerSchemaVersion: 1,
+    grade(exercise, answer) {
+      const config = tailComparisonConfig(exercise);
+      return gradeTailComparison(
+        config,
+        decodeTailComparisonAnswer(customValue(answer, TAIL_COMPARISON_ID)),
+      );
+    },
+    serializeAnswer(answer) {
+      return decodeTailComparisonAnswer(customValue(answer, TAIL_COMPARISON_ID));
+    },
+    parseAnswer(raw) {
+      return {
+        kind: "custom",
+        capabilityId: TAIL_COMPARISON_ID,
+        value: decodeTailComparisonAnswer(raw),
       };
     },
   },

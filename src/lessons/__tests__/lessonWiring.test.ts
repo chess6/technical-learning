@@ -420,6 +420,7 @@ describe("Linear systems lesson (row vs column picture)", () => {
       "chain-rule",
       "optimization-approximation",
       "substitution-parts",
+      "improper-integrals",
     ]);
   });
 

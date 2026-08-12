@@ -498,3 +498,23 @@ export {
   type StripPair,
   type SubstitutionFixture,
 } from "./integrationTechniques";
+export {
+  IMP_P_ONE,
+  IMP_P_TWO,
+  IMP_SIN,
+  accumulation,
+  assertImproperFixturesAreConsistent,
+  findTailCounterexample,
+  minimumCForCubicMajorant,
+  octaveContribution,
+  octaveRatio,
+  pLadderVerdict,
+  singularAccumulation,
+  tailInequalityHolds,
+  type ComparisonDirection,
+  type ComparisonTarget,
+  type ImproperVerdict,
+  type SingularFixture,
+  type TailFixture,
+  type TailInequalityVerdict,
+} from "./improperIntegrals";

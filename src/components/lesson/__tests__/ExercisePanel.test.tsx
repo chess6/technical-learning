@@ -7,6 +7,7 @@ import {
   EXERCISE_SEQUENCE_ID,
   MATRIX_ENTRY_ID,
   SELF_CHECK_ID,
+  TAIL_COMPARISON_ID,
 } from "../../../lessons/capabilities";
 import type { ExerciseDefinition } from "../../../lessons/types";
 
@@ -30,6 +31,37 @@ describe("ExercisePanel renders built-in interactions through the registry", () 
 
     expect(container.textContent).toContain("Correct.");
     expect(container.textContent).toContain("second is right");
+  });
+});
+
+describe("ExercisePanel renders the tail-comparison capability", () => {
+  const comparison: ExerciseDefinition = {
+    id: "comparison",
+    type: "custom",
+    capabilityId: TAIL_COMPARISON_ID,
+    prompt: "Build a convergent majorant.",
+    config: {
+      target: "cubic-convergent-majorant",
+      explanation: "The target is trapped.",
+    },
+  };
+
+  it("collects the comparator and both finite-truncation hypotheses", () => {
+    const { container, getByLabelText, getByText } = render(
+      <ExercisePanel exercises={[comparison]} />,
+    );
+    fireEvent.change(getByLabelText("Comparator coefficient C"), {
+      target: { value: "0.5" },
+    });
+    fireEvent.change(getByLabelText("Comparator exponent p"), {
+      target: { value: "2" },
+    });
+    const checks = container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    fireEvent.click(checks[0]!);
+    fireEvent.click(checks[1]!);
+    fireEvent.click(getByText("Certify comparison"));
+    expect(container.textContent).toContain("Certified on the whole tail.");
+    expect(container.textContent).toContain("Correct");
   });
 });
 

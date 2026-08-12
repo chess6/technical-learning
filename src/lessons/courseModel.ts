@@ -249,12 +249,7 @@ export const CURRICULUM: readonly Subject[] = [
               { kind: "lesson", lessonId: "chain-rule" },
               { kind: "lesson", lessonId: "optimization-approximation" },
               { kind: "lesson", lessonId: "substitution-parts" },
-              {
-                kind: "future",
-                id: "improper-integrals",
-                title: "Accumulating Forever",
-                subtitle: "An improper integral is a limit of proper ones",
-              },
+              { kind: "lesson", lessonId: "improper-integrals" },
             ],
           },
         ],

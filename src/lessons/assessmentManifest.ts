@@ -938,6 +938,72 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   // no evidence claim (mastery-contract.md §1) — same reasoning as
   // opt-derive-escape below, and the same conformance suite holds the absence.
 
+  /* ---- improper-integrals (L8) ---------------------------------------- */
+  "imp-scandal-predict": {
+    evidenceTarget: "E1",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture", unfamiliarity: "familiar-drill",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto",
+    },
+  },
+  "imp-definition-edges": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-p-ladder": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-verdict-classify": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-comparison-produce": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-comparison-diverge": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-route-refusal": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture", unfamiliarity: "familiar-drill",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+  "imp-boundary-limit": {
+    evidenceTarget: "E3",
+    methodSelection: false,
+    evidenceBasis: {
+      freshness: "reused-fixture", unfamiliarity: "familiar-drill",
+      integration: "integrated", scaffolding: "partial", scoringAuthority: "auto",
+    },
+  },
+
   // opt-derive-escape is deliberately ABSENT from this manifest: it is a
   // self-marked practice event with no evidence claim (mastery-contract.md
   // §1d), covers no objective, and objectiveCoverage.test.ts / a dedicated

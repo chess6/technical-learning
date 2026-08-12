@@ -41,6 +41,7 @@ export const CAPABILITY_EVIDENCE_CEILING: Record<string, EvidenceLevel> = {
   eigenvalue: "E3",
   "matrix-entry": "E3",
   "exercise-sequence": "E3", // scaffolded production; progressive reveal caps transfer
+  "tail-comparison": "E3", // scaffolded comparator + hypotheses, predicate-graded
   // Open construction / complete produced mathematical objects.
   "construct-in-explorer": "E4", // predicate-graded open construction
   /**
