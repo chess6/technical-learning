@@ -504,6 +504,7 @@ export {
   IMP_P_TWO,
   IMP_SIN,
   accumulation,
+  assertTailFixtureVerdictIsOwned,
   assertImproperFixturesAreConsistent,
   findTailCounterexample,
   minimumCForCubicMajorant,

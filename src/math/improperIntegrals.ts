@@ -18,6 +18,11 @@ export interface TailFixture {
   readonly integrandSource: string;
   readonly a: number;
   readonly F?: RealFunction;
+  /** Analytic limit of the declared F at infinity; owns the tail verdict. */
+  readonly antiderivativeLimit?:
+    | { readonly kind: "finite"; readonly value: number }
+    | { readonly kind: "unbounded" }
+    | { readonly kind: "oscillates" };
   readonly verdict: ImproperVerdict;
   readonly decidedBy?: string;
 }
@@ -162,32 +167,39 @@ export function findTailCounterexample(
 export const IMP_EXP: TailFixture = {
   id: "imp-exp", label: "∫₀^∞ e^(−x) dx", integrand: (x) => Math.exp(-x),
   integrandSource: "exp(-x)", a: 0, F: (x) => -Math.exp(-x),
+  antiderivativeLimit: { kind: "finite", value: 0 },
   verdict: { kind: "converges", value: 1 },
 };
 export const IMP_P_ONE: TailFixture = {
   id: "imp-p-one", label: "∫₁^∞ dx/x", integrand: (x) => 1 / x,
   integrandSource: "1/x", a: 1, F: Math.log,
+  antiderivativeLimit: { kind: "unbounded" },
   verdict: { kind: "diverges", mode: "unbounded" },
 };
 export const IMP_P_TWO: TailFixture = {
   id: "imp-p-two", label: "∫₁^∞ dx/x²", integrand: (x) => 1 / (x * x),
   integrandSource: "1/x^2", a: 1, F: (x) => -1 / x,
+  antiderivativeLimit: { kind: "finite", value: 0 },
   verdict: { kind: "converges", value: 1 },
 };
 export const IMP_ARCTAN: TailFixture = {
   id: "imp-arctan", label: "∫₀^∞ dx/(1+x²)",
   integrand: (x) => 1 / (1 + x * x), integrandSource: "1/(1+x^2)",
   a: 0, F: Math.atan, verdict: { kind: "converges", value: Math.PI / 2 },
+  antiderivativeLimit: { kind: "finite", value: Math.PI / 2 },
 };
 export const IMP_SIN: TailFixture = {
   id: "imp-sin", label: "∫₀^∞ sin(x) dx", integrand: Math.sin,
   integrandSource: "sin(x)", a: 0, F: (x) => -Math.cos(x),
+  antiderivativeLimit: { kind: "oscillates" },
   verdict: { kind: "diverges", mode: "oscillates" },
 };
 export const IMP_X_EXP: TailFixture = {
   id: "imp-x-exp", label: "∫₀^∞ x e^(−x) dx",
   integrand: (x) => x * Math.exp(-x), integrandSource: "x*exp(-x)", a: 0,
-  F: (x) => -(x + 1) * Math.exp(-x), verdict: { kind: "converges", value: 1 },
+  F: (x) => -(x + 1) * Math.exp(-x),
+  antiderivativeLimit: { kind: "finite", value: 0 },
+  verdict: { kind: "converges", value: 1 },
 };
 export const IMP_GAUSS: TailFixture = {
   id: "imp-gauss", label: "∫₀^∞ e^(−x²) dx",
@@ -214,6 +226,10 @@ export const IMP_RIGHT_SQRT_SING: SingularFixture = {
 export const PAIR_GAUSS_EXP = {
   id: "gauss-vs-exp", smaller: (x: number) => Math.exp(-(x * x)),
   larger: (x: number) => Math.exp(-x), tailStart: 1,
+  analyticCertificate: {
+    kind: "ordered-exponents", domain: "x>=1", fact: "x^2>=x",
+    monotonicity: "exp(-t)-decreases",
+  },
 } as const;
 
 function parsedClosure(id: string, source: string): RealFunction {
@@ -248,12 +264,35 @@ function antiderivativeAgrees(
   }
 }
 
+export function assertTailFixtureVerdictIsOwned(fixture: TailFixture): void {
+  if (!fixture.F) {
+    if (!fixture.decidedBy) throw new Error(fixture.id + ": verdict has no owner.");
+    return;
+  }
+  if (!fixture.antiderivativeLimit) {
+    throw new Error(fixture.id + ": antiderivative has no analytic limit owner.");
+  }
+  const limit = fixture.antiderivativeLimit;
+  if (limit.kind === "finite") {
+    const expectedValue = limit.value - fixture.F(fixture.a);
+    if (fixture.verdict.kind !== "converges" || fixture.verdict.value === undefined ||
+        !Object.is(fixture.verdict.value, expectedValue)) {
+      throw new Error(fixture.id + ": declared value disagrees with the analytic F limit.");
+    }
+    return;
+  }
+  const expectedMode = limit.kind === "unbounded" ? "unbounded" : "oscillates";
+  if (fixture.verdict.kind !== "diverges" || fixture.verdict.mode !== expectedMode) {
+    throw new Error(fixture.id + ": declared divergence disagrees with the analytic F limit.");
+  }
+}
+
 export function assertImproperFixturesAreConsistent(): void {
   const tails = [IMP_EXP, IMP_P_ONE, IMP_P_TWO, IMP_ARCTAN, IMP_SIN, IMP_X_EXP, IMP_GAUSS];
   for (const fixture of tails) {
     agree(fixture.id, parsedClosure(fixture.id, fixture.integrandSource),
       fixture.integrand, fixture.a + 0.01, fixture.a + 20);
-    if (!fixture.F && !fixture.decidedBy) throw new Error(fixture.id + ": verdict has no owner.");
+    assertTailFixtureVerdictIsOwned(fixture);
     if (fixture.F) {
       antiderivativeAgrees(fixture.id, fixture.F, fixture.integrand,
         fixture.a + 0.01, fixture.a + 20);
@@ -276,7 +315,11 @@ export function assertImproperFixturesAreConsistent(): void {
       }
     }
   }
-  if (findTailCounterexample(PAIR_GAUSS_EXP.smaller, PAIR_GAUSS_EXP.larger, 1)) {
-    throw new Error("gauss-vs-exp: analytic comparison has a counterexample.");
+  const certificate = PAIR_GAUSS_EXP.analyticCertificate;
+  if (PAIR_GAUSS_EXP.tailStart !== 1 || certificate.kind !== "ordered-exponents" ||
+      certificate.domain !== "x>=1" || certificate.fact !== "x^2>=x" ||
+      certificate.monotonicity !== "exp(-t)-decreases" ||
+      IMP_GAUSS.decidedBy !== PAIR_GAUSS_EXP.id || IMP_GAUSS.verdict.kind !== "converges") {
+    throw new Error("gauss-vs-exp: analytic comparison ownership is incomplete.");
   }
 }

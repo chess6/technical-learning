@@ -809,9 +809,18 @@ export type SequenceStep =
       // `accept` (e.g. ["none", "0", "no solution"]).
       kind: "text";
       prompt: string;
-      accept: readonly string[];
+      accept?: readonly string[];
+      semanticCheck?: SequenceTextSemanticCheck;
       explanation: string;
     };
+
+export type SequenceTextSemanticCheck =
+  | "type-one-2-infinity"
+  | "left-singular-a-b"
+  | "right-singular-a-b"
+  | "independent-one-sided"
+  | "two-sided-split"
+  | "exp-minus-two-squeeze";
 
 export type SequenceResponse =
   | { kind: "numeric"; value: number }
@@ -832,6 +841,52 @@ export function normalizeAnswerText(raw: string): string {
     .replace(/\s+/g, " ")
     .replace(/[.!]+$/, "")
     .trim();
+}
+
+function normalizeMathProduction(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/\\(?:left|right|big|displaystyle)/g, "")
+    .replace(/\\(?:infty|infinity)|∞|infinity/g, "inf")
+    .replace(/\\to|→/g, "->")
+    .replace(/\\int|integral/g, "int")
+    .replace(/\\exp/g, "exp")
+    .replace(/\\,|\\!|\\;/g, "")
+    .replace(/f\s*\(\s*x\s*\)/g, "f")
+    .replace(/d\s*[xtr]/g, "")
+    .replace(/[{}$]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/limit/g, "lim");
+}
+
+function passesSequenceTextSemanticCheck(
+  check: SequenceTextSemanticCheck,
+  raw: string,
+): boolean {
+  const prose = normalizeAnswerText(raw);
+  const math = normalizeMathProduction(raw);
+  switch (check) {
+    case "type-one-2-infinity":
+      return /lim(?:_|\()?r->inf/.test(math) && /int(?:_|\()?2(?:\^|to)?r/.test(math) && math.includes("f");
+    case "left-singular-a-b":
+      return /lim(?:_|\()?t->a\+/.test(math) && /int(?:_|\()?t(?:\^|to)?b/.test(math) && math.includes("f");
+    case "right-singular-a-b":
+      return /lim(?:_|\()?t->b-/.test(math) && /int(?:_|\()?a(?:\^|to)?t/.test(math) && math.includes("f");
+    case "independent-one-sided":
+      return /both/.test(prose) && /one-sided|one sided/.test(prose) &&
+        /limit|integral/.test(prose) && /converg|exist|independent/.test(prose);
+    case "two-sided-split":
+      return /split/.test(prose) && /finite| at c|point c/.test(prose) &&
+        /both/.test(prose) && /one-sided|one sided|sides/.test(prose) &&
+        /converg|exist|require/.test(prose);
+    case "exp-minus-two-squeeze": {
+      const canonical = math
+        .replace(/e\^\(-?2r\)/g, "exp(-2r)")
+        .replace(/rexp/g, "r*exp");
+      return canonical.includes("r*exp(-2r)<=1/(2r)") &&
+        (!canonical.includes("0<=") || canonical.includes("0<=r*exp(-2r)"));
+    }
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1188,8 +1243,11 @@ export function gradeSequenceStep(
         throw new Error("Expected a text response for a text step");
       }
       const got = normalizeAnswerText(response.value);
-      const correct =
-        got.length > 0 && step.accept.some((a) => normalizeAnswerText(a) === got);
+      const exact = step.accept?.some((a) => normalizeAnswerText(a) === got) ?? false;
+      const semantic = step.semanticCheck
+        ? passesSequenceTextSemanticCheck(step.semanticCheck, response.value)
+        : false;
+      const correct = got.length > 0 && (exact || semantic);
       return {
         correct,
         feedback: correct ? `Correct. ${step.explanation}` : `Not quite. ${step.explanation}`,

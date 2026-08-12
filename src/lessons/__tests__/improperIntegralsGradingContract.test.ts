@@ -41,7 +41,25 @@ describeGradingContract(item("imp-definition-edges"), {
     text("lim r->infinity int_2^r f"), text("lim t->a+ int_t^b f"),
     text("lim t->b- int_a^t f"), text("both one-sided limits"),
     text("split at finite c and require both sides"),
-  ) }],
+  ) }, {
+    name: "natural equivalent limit and integral notation",
+    answer: sequence(
+      text("limit R->infinity integral_2^R f(x) dx"),
+      text("limit t->a+ integral_t^b f(x) dx"),
+      text("limit t->b- integral_a^t f(x) dx"),
+      text("both one-sided improper integrals converge independently"),
+      text("split at c and require both one-sided integrals to converge independently"),
+    ),
+  }, {
+    name: "LaTeX equivalent limit notation",
+    answer: sequence(
+      text("\\lim_{R\\to\\infty} \\int_2^R f(x) dx"),
+      text("\\lim_{t\\to a+} \\int_t^b f(x) dx"),
+      text("\\lim_{t\\to b-} \\int_a^t f(x) dx"),
+      text("both one-sided limits exist"),
+      text("split at a finite point c; both sides must exist"),
+    ),
+  }],
   mustReject: [
     { name: "blank", answer: sequence() },
     { name: "bad-left edge omitted", answer: sequence(text("lim r->infinity int_2^r f")) },
@@ -124,7 +142,11 @@ describeGradingContract(item("imp-route-refusal"), {
 });
 
 describeGradingContract(item("imp-boundary-limit"), {
-  mustAccept: [{ name: "finite parts, squeeze, total", answer: sequence(vector([0.5, 0.25]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) }],
+  mustAccept: [
+    { name: "finite parts, squeeze, total", answer: sequence(vector([0.5, 0.25]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) },
+    { name: "natural exp squeeze notation", answer: sequence(vector([0.5, 0.25]), text("0 <= R exp(-2R) <= 1/(2R)"), numeric(0.25)) },
+    { name: "natural exponential-power notation", answer: sequence(vector([0.5, 0.25]), text("0 <= R e^(-2R) <= 1/(2R)"), numeric(0.25)) },
+  ],
   mustReject: [
     { name: "blank", answer: sequence() },
     { name: "drops the extra exponential term", answer: sequence(vector([0.5, 0]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) },

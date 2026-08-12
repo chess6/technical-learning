@@ -200,26 +200,31 @@ export const improperIntegralsLesson: LessonDefinition = {
         {
           kind: "text", prompt: "$\\int_2^\\infty f$: type its finite-limit family in short ASCII form.",
           accept: ["lim r->infinity int_2^r f", "lim r->inf int_2^r f"],
+          semanticCheck: "type-one-2-infinity",
           explanation: "Type I is a limit of finite right-edge accumulations.",
         },
         {
           kind: "text", prompt: "$f$ is singular at the left endpoint $a$: type the finite-limit family.",
           accept: ["lim t->a+ int_t^b f"],
+          semanticCheck: "left-singular-a-b",
           explanation: "Approach a left singular edge from inside the domain.",
         },
         {
           kind: "text", prompt: "$f$ is singular at the right endpoint $b$: type the finite-limit family.",
           accept: ["lim t->b- int_a^t f"],
+          semanticCheck: "right-singular-a-b",
           explanation: "Approach a right singular edge from inside the domain.",
         },
         {
           kind: "text", prompt: "An interior singularity at $c$: what must exist?",
           accept: ["both one-sided limits", "both sides independently"],
+          semanticCheck: "independent-one-sided",
           explanation: "Both sides must exist independently.",
         },
         {
           kind: "text", prompt: "$\\int_{-\\infty}^{\\infty}f$: state the defining requirement in words.",
           accept: ["split at finite c and require both sides", "split and require both one-sided limits"],
+          semanticCheck: "two-sided-split",
           explanation: "Two infinite edges create two independent limits.",
         },
       ] },
@@ -330,6 +335,7 @@ export const improperIntegralsLesson: LessonDefinition = {
         {
           kind: "text", prompt: "From $e^{2R}\\ge2R^2$, type a bound for $Re^{-2R}$ in short ASCII form.",
           accept: ["0<=r*e^(-2r)<=1/(2r)", "r*e^(-2r)<=1/(2r)"],
+          semanticCheck: "exp-minus-two-squeeze",
           explanation: "The explicit squeeze, not a large finite sample, owns the product limit.",
         },
         {

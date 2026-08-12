@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  IMP_GAUSS, IMP_P_ONE, IMP_P_TWO, IMP_RIGHT_SQRT_SING, IMP_SCANDAL,
+  IMP_ARCTAN, IMP_EXP, IMP_GAUSS, IMP_P_ONE, IMP_P_TWO, IMP_RIGHT_SQRT_SING, IMP_SCANDAL,
   IMP_SIN, IMP_X_EXP, PAIR_GAUSS_EXP, accumulation,
-  assertImproperFixturesAreConsistent, findTailCounterexample,
+  assertImproperFixturesAreConsistent, assertTailFixtureVerdictIsOwned, findTailCounterexample,
   minimumCForCubicMajorant, octaveContribution, octaveRatio, pLadderVerdict,
   singularAccumulation, tailInequalityHolds,
 } from "../improperIntegrals";
@@ -31,6 +31,24 @@ describe("finite accumulations and fixtures", () => {
   it("distinguishes unbounded and oscillatory divergence", () => {
     expect(IMP_P_ONE.verdict).toEqual({ kind: "diverges", mode: "unbounded" });
     expect(IMP_SIN.verdict).toEqual({ kind: "diverges", mode: "oscillates" });
+  });
+  it("derives every F-owned tail value or mode from its analytic F limit", () => {
+    for (const fixture of [IMP_EXP, IMP_P_ONE, IMP_P_TWO, IMP_ARCTAN, IMP_SIN, IMP_X_EXP]) {
+      expect(() => assertTailFixtureVerdictIsOwned(fixture), fixture.id).not.toThrow();
+    }
+    expect(() => assertTailFixtureVerdictIsOwned({
+      ...IMP_EXP, verdict: { kind: "converges", value: 99 },
+    })).toThrow(/declared value disagrees/);
+    expect(() => assertTailFixtureVerdictIsOwned({
+      ...IMP_SIN, verdict: { kind: "converges", value: 0 },
+    })).toThrow(/declared divergence disagrees/);
+  });
+  it("owns Gaussian convergence by an analytic exponent-order certificate", () => {
+    expect(PAIR_GAUSS_EXP.analyticCertificate).toEqual({
+      kind: "ordered-exponents", domain: "x>=1", fact: "x^2>=x",
+      monotonicity: "exp(-t)-decreases",
+    });
+    expect(IMP_GAUSS.decidedBy).toBe(PAIR_GAUSS_EXP.id);
   });
 });
 
