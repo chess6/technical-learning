@@ -400,3 +400,26 @@ the label of the lesson's strongest claim.
 
 *Recorded 2026-08-10, fourth independent review round on
 `feature/l6-optimization-approximation`.*
+
+## Symbolic simplification erased a candidate's domain hole
+
+**Seen in:** the L7 antiderivative grader. Exact simplification reduced
+`(x - 1)/(x - 1)` to `1`, so a candidate undefined at `x = 1` was accepted as
+an antiderivative on an interval containing `1`. Point probes do not reliably
+repair this class: any finite deterministic sample can miss the bad point.
+The dual failure rejected `x ln(abs(x)) - x` for `ln(x)` on a wholly positive
+interval because the exact engine did not use the declared interval when
+normalizing `abs`.
+
+**Prevention.** Certify every authored and learner expression over the whole
+declared interval *before* exact simplification is allowed to establish
+equality. Denominators must be bounded away from zero; logarithm arguments
+must keep one valid sign; fractional powers need their real-domain and
+differentiability conditions. Interval facts may normalize expressions such
+as `abs(x)` only when the sign is certified. If the conservative certificate
+cannot decide, return `undecided`; never promote probes to acceptance.
+
+The permanent battery must include interior and endpoint removable
+singularities plus interval-valid positive and negative `ln(abs(x))` forms.
+
+*Recorded 2026-08-11, fresh package review of applied-mathematics L7.*

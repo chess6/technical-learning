@@ -123,8 +123,9 @@ function Panel({
             height={Math.abs(sy(strip.height) - sy(0))}
             className="subledger__strip"
             data-selected={strip.index === selected}
+            data-strip-index={strip.index}
             role="button"
-            tabIndex={0}
+            tabIndex={strip.index === selected ? 0 : -1}
             aria-label={`Select strip ${strip.index + 1} of ${spec.strips.length} in ${spec.title}`}
             aria-pressed={strip.index === selected}
             onClick={() => onSelect(strip.index)}
@@ -134,10 +135,18 @@ function Panel({
                 onSelect(strip.index);
               } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
                 event.preventDefault();
-                onSelect(Math.min(spec.strips.length - 1, strip.index + 1));
+                const next = Math.min(spec.strips.length - 1, selected + 1);
+                onSelect(next);
+                event.currentTarget.ownerSVGElement
+                  ?.querySelector<SVGRectElement>(`[data-strip-index="${next}"]`)
+                  ?.focus();
               } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
                 event.preventDefault();
-                onSelect(Math.max(0, strip.index - 1));
+                const next = Math.max(0, selected - 1);
+                onSelect(next);
+                event.currentTarget.ownerSVGElement
+                  ?.querySelector<SVGRectElement>(`[data-strip-index="${next}"]`)
+                  ?.focus();
               }
             }}
           />

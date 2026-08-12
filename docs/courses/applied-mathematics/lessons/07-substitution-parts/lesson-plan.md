@@ -38,7 +38,14 @@ mastery contract §3). No scene surfaces registered.
   message; mid-typing parse failure leaks no solution) plus both
   cross-lesson sweeps (22 tests).
 
-## Owed before acceptance
+## Review correction status (2026-08-11)
 
-The fresh package reviewer's pass over Package B (adversarial math +
-rendered page, per ADR-008 §4), then the mastery contract's §6.
+The fresh package review (adversarial math + rendered page, ADR-008 §4)
+returned **REVISE**. Its correction delta adds whole-interval domain
+certification before exact grading, accepts interval-valid `ln(abs(x))`,
+registers real adversarial batteries for every sequence item, aligns reused
+fixtures to E2/drill, restores the substitution proof's endpoint caveat, and
+makes the ledger a two-stop roving-tabindex control with working arrow focus.
+The focused typecheck and 186 grading/evidence tests are green. The same
+reviewer must verify this delta, and the browser correction plus quick tier
+must pass, before the mastery contract's §6 can record acceptance.

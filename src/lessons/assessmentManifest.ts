@@ -865,22 +865,22 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "sp-parts-fresh": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",
     },
   },
   "sp-ln-parts": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",
@@ -889,11 +889,11 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   "sp-classify": {
     // Method selection in its purest form: name the shape (or the honest
     // absence of one) before any execution.
-    evidenceTarget: "E3",
+    evidenceTarget: "E2",
     methodSelection: true,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "near",
       integration: "integrated",
       scaffolding: "partial",
       scoringAuthority: "auto",
@@ -902,22 +902,22 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   "sp-cyclic": {
     // Recognizing the recurrence IS method selection — the brief's own
     // mandate: "not merely ranking factors".
-    evidenceTarget: "E3",
+    evidenceTarget: "E2",
     methodSelection: true,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "near",
       integration: "integrated",
       scaffolding: "partial",
       scoringAuthority: "auto",
     },
   },
   "sp-cyclic-produce": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",
@@ -927,8 +927,8 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
-      freshness: "fresh-instance",
-      unfamiliarity: "transfer",
+      freshness: "reused-fixture",
+      unfamiliarity: "familiar-drill",
       integration: "single-outcome",
       scaffolding: "none",
       scoringAuthority: "auto",

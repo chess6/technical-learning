@@ -50,6 +50,13 @@ test("the ledger strips are keyboard-operable", async ({ page }) => {
   await expect(explorer.getByText(/Strip 4 of/)).toBeVisible();
   await strip.press("ArrowRight");
   await expect(explorer.getByText(/Strip 5 of/)).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await expect(explorer.getByText(/Strip 6 of/)).toBeVisible();
+  await expect(explorer.getByRole("button", { name: /Select strip 6 of .*given/ })).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
+  await expect(explorer.getByText(/Strip 4 of/)).toBeVisible();
+  await expect(explorer.locator('.subledger__strip[tabindex="0"]')).toHaveCount(2);
 });
 
 test("a math-expression item grades a typed antiderivative inside the lesson", async ({ page }) => {

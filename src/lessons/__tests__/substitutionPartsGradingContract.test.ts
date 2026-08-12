@@ -23,6 +23,9 @@ const item = (id: string): ExerciseDefinition => {
 
 const expr = (source: string) => ({ source });
 const choice = (index: number) => ({ choice: index });
+const sequence = (...responses: Array<{ kind: "multiple-choice"; choice: number } | { kind: "numeric"; value: number }>) => ({ responses });
+const pick = (choiceIndex: number) => ({ kind: "multiple-choice" as const, choice: choiceIndex });
+const numeric = (value: number) => ({ kind: "numeric" as const, value });
 
 describeGradingContract(item("sp-witness-predict"), {
   mustAccept: [{ name: "the witnessed antiderivative", answer: { committedIndex: 0 } }],
@@ -159,16 +162,49 @@ describeGradingContract(item("sp-exists-elementary"), {
   ],
 });
 
-describe("the sequence items grade step-wise", () => {
-  const sequences = ["sp-bounds", "sp-choose-u", "sp-classify", "sp-cyclic"] as const;
-  for (const id of sequences) {
-    it(`${id}: correct steps pass, first-step near-miss fails`, () => {
-      const exercise = item(id);
-      const config = (exercise as { config?: { steps?: unknown[] } }).config;
-      expect(config?.steps?.length, id).toBeGreaterThan(1);
-    });
-  }
+describeGradingContract(item("sp-bounds"), {
+  mustAccept: [{ name: "transformed bounds and correct value", answer: sequence(pick(0), numeric(Math.sin(1))) }],
+  mustReject: [
+    { name: "blank sequence", answer: sequence() },
+    { name: "numeric step omitted", answer: sequence(pick(0)) },
+    { name: "wrong transformed bounds", answer: sequence(pick(1), numeric(Math.sin(1))) },
+    { name: "untransformed-bounds arithmetic", answer: sequence(pick(0), numeric(0)) },
+    { name: "step kinds swapped", answer: sequence(numeric(Math.sin(1)), pick(0)) },
+  ],
+});
 
+describeGradingContract(item("sp-choose-u"), {
+  mustAccept: [{ name: "differentiate what dies and identify the remaining integral", answer: sequence(pick(0), pick(0)) }],
+  mustReject: [
+    { name: "blank sequence", answer: sequence() },
+    { name: "remaining-integral step omitted", answer: sequence(pick(0)) },
+    { name: "LIATE-style cue without simplification judgment", answer: sequence(pick(1), pick(0)) },
+    { name: "correct choice but wrong traded integral", answer: sequence(pick(0), pick(1)) },
+  ],
+});
+
+describeGradingContract(item("sp-classify"), {
+  mustAccept: [{ name: "chain, product, and honest neither", answer: sequence(pick(0), pick(0), pick(0)) }],
+  mustReject: [
+    { name: "blank sequence", answer: sequence() },
+    { name: "neither step omitted", answer: sequence(pick(0), pick(0)) },
+    { name: "calls the chain case a product", answer: sequence(pick(1), pick(0), pick(0)) },
+    { name: "calls the product case a chain", answer: sequence(pick(0), pick(1), pick(0)) },
+    { name: "smuggles in the missing chain factor", answer: sequence(pick(0), pick(0), pick(1)) },
+  ],
+});
+
+describeGradingContract(item("sp-cyclic"), {
+  mustAccept: [{ name: "recognizes recurrence and closes it algebraically", answer: sequence(pick(0), pick(0)) }],
+  mustReject: [
+    { name: "blank sequence", answer: sequence() },
+    { name: "closing step omitted", answer: sequence(pick(0)) },
+    { name: "mistakes recurrence for failure", answer: sequence(pick(2), pick(0)) },
+    { name: "asks for a third trade instead of algebra", answer: sequence(pick(0), pick(1)) },
+  ],
+});
+
+describe("the bounds fixture stays derived", () => {
   it("sp-bounds grades its numeric step against sin(1), rejecting the untransformed-bounds value", () => {
     const exercise = item("sp-bounds");
     const config = (exercise as unknown as { config: { steps: Array<{ kind: string; expected?: number }> } }).config;
@@ -178,12 +214,12 @@ describe("the sequence items grade step-wise", () => {
 });
 
 describe("tier mix and manifest coverage", () => {
-  it("pins the assessment set's shape: 1 check + 6 drills + 7 transfer evidence items + 1 practice event", () => {
+  it("pins the assessment set's honest shape: one check, repeated drills, one transfer item, and one practice event", () => {
     const tiers = substitutionPartsLesson.exercises!.map((e) => [e.id, e.tier] as const);
     const count = (tier: string) => tiers.filter(([, t]) => t === tier).length;
     expect(count("check")).toBe(1);
-    expect(count("drill")).toBe(6);
-    expect(count("transfer")).toBe(8); // seven evidence items + the self-check practice event
+    expect(count("drill")).toBe(12);
+    expect(count("transfer")).toBe(2); // sp-choose-u plus the self-check practice event
   });
 
   it("every objective-referenced item has a manifest entry; the practice event has none", () => {
@@ -203,7 +239,7 @@ describe("tier mix and manifest coverage", () => {
   });
 
   it("keeps near or technique-cued L7 drills at E2", () => {
-    for (const id of ["sp-substitute-basic", "sp-half-constant", "sp-bounds", "sp-parts-xexp"]) {
+    for (const id of ["sp-substitute-basic", "sp-half-constant", "sp-bounds", "sp-parts-xexp", "sp-parts-fresh", "sp-ln-parts", "sp-classify", "sp-cyclic", "sp-cyclic-produce", "sp-exists-elementary"]) {
       expect(ITEM_ASSESSMENT_META[id]?.evidenceTarget, id).toBe("E2");
     }
   });
@@ -234,6 +270,8 @@ describe("audited theorem ownership and ordering", () => {
       (block) => block.id === "thm-substitution",
     )?.proof;
     expect(proof).toContain("convention defined immediately above");
+    expect(proof).toContain("endpoint of $g(I)$ attained at an interior extremum");
+    expect(proof).toContain("if $g$ is constant");
     expect(proof).not.toMatch(/Lesson 4 already defined/);
   });
 

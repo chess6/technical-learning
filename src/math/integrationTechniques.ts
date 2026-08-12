@@ -287,6 +287,245 @@ const EXACT_ALGEBRA_RULES = [
   { l: "(n1 + n2) * n3", r: "n1 * n3 + n2 * n3", repeat: true },
 ] as const;
 
+type IntervalRange = { readonly lo: number; readonly hi: number };
+type CertifiedExpression =
+  | { readonly ok: true; readonly node: ExprNode; readonly range?: IntervalRange }
+  | { readonly ok: false; readonly reason: string };
+
+function range(lo: number, hi: number): IntervalRange {
+  return { lo: Math.min(lo, hi), hi: Math.max(lo, hi) };
+}
+
+function containsZero(value: IntervalRange): boolean {
+  return value.lo <= 0 && value.hi >= 0;
+}
+
+function integerPowerRange(base: IntervalRange, exponent: number): IntervalRange | undefined {
+  if (!Number.isInteger(exponent)) return undefined;
+  if (exponent === 0) return containsZero(base) ? undefined : range(1, 1);
+  if (exponent < 0) {
+    if (containsZero(base)) return undefined;
+    const positive = integerPowerRange(base, -exponent);
+    return positive ? range(1 / positive.hi, 1 / positive.lo) : undefined;
+  }
+  if (exponent % 2 === 1) return range(base.lo ** exponent, base.hi ** exponent);
+  const farthest = Math.max(Math.abs(base.lo), Math.abs(base.hi)) ** exponent;
+  const nearest = containsZero(base)
+    ? 0
+    : Math.min(Math.abs(base.lo), Math.abs(base.hi)) ** exponent;
+  return range(nearest, farthest);
+}
+
+function containsPeriodicPoint(
+  value: IntervalRange,
+  first: number,
+  period: number,
+): boolean {
+  const firstIndex = Math.ceil((value.lo - first) / period);
+  return first + firstIndex * period <= value.hi;
+}
+
+/**
+ * Certify that an expression is defined and differentiable on the WHOLE
+ * authored interval, while applying only interval-valid rewrites. This is the
+ * guard symbolic simplification cannot supply: `(x-1)/(x-1)` simplifies to 1
+ * but still has a hole at x=1. The analysis is deliberately conservative —
+ * an uncertified expression is rejected rather than inferred from samples.
+ */
+function certifyOnInterval(
+  node: ExprNode,
+  variable: string,
+  domain: readonly [number, number],
+  requirement: "defined" | "differentiable",
+): CertifiedExpression {
+  switch (node.kind) {
+    case "number":
+      return { ok: true, node, range: range(node.value, node.value) };
+    case "identifier": {
+      if (node.name === variable) return { ok: true, node, range: range(domain[0], domain[1]) };
+      if (node.name === "C") return { ok: true, node, range: range(0, 0) };
+      const builtin = node.name === "e" ? Math.E : node.name === "pi" ? Math.PI : undefined;
+      return builtin === undefined
+        ? { ok: true, node }
+        : { ok: true, node, range: range(builtin, builtin) };
+    }
+    case "unary": {
+      const operand = certifyOnInterval(node.operand, variable, domain, requirement);
+      if (!operand.ok) return operand;
+      return {
+        ok: true,
+        node: { ...node, operand: operand.node },
+        range: operand.range ? range(-operand.range.hi, -operand.range.lo) : undefined,
+      };
+    }
+    case "binary": {
+      const left = certifyOnInterval(node.left, variable, domain, requirement);
+      if (!left.ok) return left;
+      const right = certifyOnInterval(node.right, variable, domain, requirement);
+      if (!right.ok) return right;
+      const normalized: ExprNode = { ...node, left: left.node, right: right.node };
+      if (node.op === "/") {
+        if (!right.range || containsZero(right.range)) {
+          return { ok: false, reason: "a denominator may be zero inside the claimed interval" };
+        }
+        if (!left.range) return { ok: true, node: normalized };
+        const quotients = [
+          left.range.lo / right.range.lo,
+          left.range.lo / right.range.hi,
+          left.range.hi / right.range.lo,
+          left.range.hi / right.range.hi,
+        ];
+        return { ok: true, node: normalized, range: range(Math.min(...quotients), Math.max(...quotients)) };
+      }
+      if (node.op === "^") {
+        const rightRange = right.range;
+        const exponent = rightRange && rightRange.lo === rightRange.hi ? rightRange.lo : undefined;
+        if (exponent === undefined) {
+          if (!left.range || left.range.lo <= 0) {
+            return { ok: false, reason: "a variable power is not certified on the whole interval" };
+          }
+          return { ok: true, node: normalized };
+        }
+        if (Number.isInteger(exponent)) {
+          if (
+            exponent <= 0 &&
+            (!left.range || containsZero(left.range))
+          ) {
+            return {
+              ok: false,
+              reason:
+                exponent < 0
+                  ? "a negative power may divide by zero inside the claimed interval"
+                  : "a zero power may contain the undefined form 0^0 inside the claimed interval",
+            };
+          }
+          return {
+            ok: true,
+            node: normalized,
+            range: left.range ? integerPowerRange(left.range, exponent) : undefined,
+          };
+        }
+        if (
+          !left.range ||
+          left.range.lo < 0 ||
+          (left.range.lo === 0 &&
+            (exponent < 0 || (requirement === "differentiable" && exponent < 1)))
+        ) {
+          return {
+            ok: false,
+            reason:
+              requirement === "differentiable"
+                ? "a fractional power is not differentiable on the whole interval"
+                : "a fractional power is not defined on the whole interval",
+          };
+        }
+        return {
+          ok: true,
+          node: normalized,
+          range: range(left.range.lo ** exponent, left.range.hi ** exponent),
+        };
+      }
+      if (!left.range || !right.range) return { ok: true, node: normalized };
+      if (node.op === "+") {
+        return { ok: true, node: normalized, range: range(left.range.lo + right.range.lo, left.range.hi + right.range.hi) };
+      }
+      if (node.op === "-") {
+        return { ok: true, node: normalized, range: range(left.range.lo - right.range.hi, left.range.hi - right.range.lo) };
+      }
+      const products = [
+        left.range.lo * right.range.lo,
+        left.range.lo * right.range.hi,
+        left.range.hi * right.range.lo,
+        left.range.hi * right.range.hi,
+      ];
+      return { ok: true, node: normalized, range: range(Math.min(...products), Math.max(...products)) };
+    }
+    case "call": {
+      const arg = certifyOnInterval(node.arg, variable, domain, requirement);
+      if (!arg.ok) return arg;
+      const normalized: ExprNode = { ...node, arg: arg.node };
+      if (node.name === "abs") {
+        if (!arg.range) {
+          return { ok: false, reason: "abs(...) could not be certified on the whole interval" };
+        }
+        if (containsZero(arg.range) && requirement === "differentiable") {
+          return { ok: false, reason: "abs(...) is not differentiable where its argument may be zero" };
+        }
+        if (containsZero(arg.range)) {
+          return {
+            ok: true,
+            node: normalized,
+            range: range(0, Math.max(Math.abs(arg.range.lo), Math.abs(arg.range.hi))),
+          };
+        }
+        if (arg.range.lo > 0) return { ok: true, node: arg.node, range: arg.range };
+        return {
+          ok: true,
+          node: { kind: "unary", op: "-", operand: arg.node },
+          range: range(-arg.range.hi, -arg.range.lo),
+        };
+      }
+      if (node.name === "ln" || node.name === "log") {
+        if (!arg.range || arg.range.lo <= 0) {
+          return { ok: false, reason: `${node.name}(...) is not defined on the whole claimed interval` };
+        }
+        const fn = node.name === "ln" ? Math.log : Math.log10;
+        return { ok: true, node: normalized, range: range(fn(arg.range.lo), fn(arg.range.hi)) };
+      }
+      if (node.name === "sqrt") {
+        if (
+          !arg.range ||
+          arg.range.lo < 0 ||
+          (arg.range.lo === 0 && requirement === "differentiable")
+        ) {
+          return {
+            ok: false,
+            reason:
+              requirement === "differentiable"
+                ? "sqrt(...) is not differentiable on the whole claimed interval"
+                : "sqrt(...) is not defined on the whole claimed interval",
+          };
+        }
+        return { ok: true, node: normalized, range: range(Math.sqrt(arg.range.lo), Math.sqrt(arg.range.hi)) };
+      }
+      if (node.name === "arcsin" || node.name === "asin" || node.name === "arccos" || node.name === "acos") {
+        const outsideDomain = !arg.range || arg.range.lo < -1 || arg.range.hi > 1;
+        const touchesNondifferentiableEdge =
+          requirement === "differentiable" &&
+          !!arg.range &&
+          (arg.range.lo <= -1 || arg.range.hi >= 1);
+        if (outsideDomain || touchesNondifferentiableEdge) {
+          return {
+            ok: false,
+            reason:
+              node.name +
+              (requirement === "differentiable"
+                ? "(...) is not differentiable on the whole claimed interval"
+                : "(...) is not defined on the whole claimed interval"),
+          };
+        }
+      }
+      if (node.name === "tan" || node.name === "sec") {
+        if (!arg.range || containsPeriodicPoint(arg.range, Math.PI / 2, Math.PI)) {
+          return { ok: false, reason: `${node.name}(...) has a pole inside the claimed interval` };
+        }
+      }
+      if (node.name === "csc" || node.name === "cot") {
+        if (!arg.range || containsPeriodicPoint(arg.range, 0, Math.PI)) {
+          return { ok: false, reason: `${node.name}(...) has a pole inside the claimed interval` };
+        }
+      }
+      if (node.name === "exp" && arg.range) {
+        return { ok: true, node: normalized, range: range(Math.exp(arg.range.lo), Math.exp(arg.range.hi)) };
+      }
+      if (node.name === "sin" || node.name === "cos" || node.name === "tanh") {
+        return { ok: true, node: normalized, range: range(-1, 1) };
+      }
+      return { ok: true, node: normalized };
+    }
+  }
+}
+
 function derivativeIsExactlyIntegrand(
   candidate: ExprNode,
   integrand: ExprNode,
@@ -368,7 +607,28 @@ export function differentiatesToTarget(
     );
   }
 
-  if (derivativeIsExactlyIntegrand(candidate.node, integrand.node, variable)) {
+  const certifiedCandidate = certifyOnInterval(
+    candidate.node,
+    variable,
+    options.domain,
+    "differentiable",
+  );
+  if (!certifiedCandidate.ok) {
+    return { kind: "undecided", comparedAt: 0, reason: certifiedCandidate.reason };
+  }
+  const certifiedIntegrand = certifyOnInterval(
+    integrand.node,
+    variable,
+    options.domain,
+    "defined",
+  );
+  if (!certifiedIntegrand.ok) {
+    throw new Error(
+      `differentiatesToTarget: authored integrand is not valid on [${lo}, ${hi}]: ${certifiedIntegrand.reason}`,
+    );
+  }
+
+  if (derivativeIsExactlyIntegrand(certifiedCandidate.node, certifiedIntegrand.node, variable)) {
     return { kind: "antiderivative", comparedAt: 0 };
   }
 

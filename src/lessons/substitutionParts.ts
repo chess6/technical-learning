@@ -96,7 +96,7 @@ export const substitutionPartsLesson: LessonDefinition = {
     "Recognize an integrand as the output of a differentiation you can name, before touching any notation",
     "Execute substitution as bookkeeping for that recognition — including the constant-adjustment ledger and transformed bounds",
     "Derive integration by parts from the product rule and the FTC, and read [uv] as the boundary term it is",
-    "Choose which factor to differentiate by what simplifies — and classify a fresh integrand as chain-shape, product-shape, or honestly neither",
+    "Choose which factor to differentiate by what simplifies — and classify an integrand as chain-shape, product-shape, or honestly neither",
     "Check any candidate antiderivative by differentiating it — the verification that is always available even when finding fails",
   ],
 
@@ -159,30 +159,30 @@ export const substitutionPartsLesson: LessonDefinition = {
     },
     {
       id: "sp-obj-parts-fresh",
-      text: "Execute parts on a fresh integrand",
+      text: "Execute the parts trade after selecting which factor to differentiate",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-parts-fresh"],
     },
     {
       id: "sp-obj-ln-transfer",
       text: "Apply parts where the second factor is the invisible v' = 1",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-ln-parts"],
     },
     {
       id: "sp-obj-cyclic",
       text: "Recognize a cyclic parts recurrence and close it algebraically, then produce the antiderivative",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-cyclic-produce", "sp-cyclic"],
     },
     {
       id: "sp-obj-classify",
-      text: "Classify a fresh integrand as chain-shape, product-shape, or neither — including the honest neither",
+      text: "Classify a mixed set as chain-shape, product-shape, or neither — including the honest neither",
       evidence: "lesson-owned",
-      evidenceLevel: "E3",
+      evidenceLevel: "E2",
       itemIds: ["sp-classify"],
     },
     {
@@ -301,7 +301,7 @@ export const substitutionPartsLesson: LessonDefinition = {
         "An integrand of the shape f(g(x))·g'(x) is the output of a differentiation you can name — so naming it IS integrating it, and the bounds ride along because both sides are the same two numbers.",
       visibility: "visible",
       proof:
-        "By Lesson 5's chain rule, $\\frac{d}{dx}F(g(x)) = F'(g(x))\\,g'(x) = f(g(x))\\,g'(x)$ — so $F(g(x))$ is, by definition, an antiderivative of the integrand, which is the indefinite statement. For the definite one, apply the FTC twice: $\\int_a^b f(g(x))g'(x)\\,dx = F(g(b)) - F(g(a)) = \\big[F(u)\\big]_{g(a)}^{g(b)} = \\int_{g(a)}^{g(b)} f(u)\\,du$. If $g(a) > g(b)$, the right side uses the decreasing-bounds convention defined immediately above, so the identity still holds as written. Note what is NOT assumed: no monotonicity of $g$ anywhere.",
+        "At points where $g(x)$ lies in the interior of $g(I)$, Lesson 5's chain rule gives $\\frac{d}{dx}F(g(x)) = F'(g(x))\\,g'(x) = f(g(x))\\,g'(x)$. If $g(x_0)$ is an endpoint of $g(I)$ attained at an interior extremum, then $g'(x_0)=0$ and the same result follows from the one-sided residuals of $F$ composed with $g$; if $g$ is constant, both sides are identically zero. Thus $F(g(x))$ is an antiderivative on all of $I$. For the definite statement, apply the FTC twice: $\\int_a^b f(g(x))g'(x)\\,dx = F(g(b)) - F(g(a)) = \\big[F(u)\\big]_{g(a)}^{g(b)} = \\int_{g(a)}^{g(b)} f(u)\\,du$. If $g(a) > g(b)$, the right side uses the decreasing-bounds convention defined immediately above. No monotonicity of $g$ is assumed.",
     },
     {
       id: "thm-parts",
@@ -571,7 +571,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-parts-fresh",
       type: "custom",
       capabilityId: MATH_EXPRESSION_ID,
-      tier: "transfer",
+      tier: "drill",
       prompt: "Now execute it: find an antiderivative of $x\\cos(x)$.",
       config: {
         expected: PARTS_X_COS.antiderivativeSource,
@@ -590,7 +590,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-ln-parts",
       type: "custom",
       capabilityId: MATH_EXPRESSION_ID,
-      tier: "transfer",
+      tier: "drill",
       prompt:
         "Find an antiderivative of $\\ln(x)$ on $[0.5, 3]$. Hint withheld on purpose: what is the product here?",
       config: {
@@ -610,9 +610,9 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-classify",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
-      tier: "transfer",
+      tier: "drill",
       prompt:
-        "Three fresh integrands. For each: chain-shape (substitute), product-shape (parts), or neither. The honest 'neither' is a real answer, not a trick.",
+        "Three integrands. For each: chain-shape (substitute), product-shape (parts), or neither. The honest 'neither' is a real answer, not a trick.",
       config: {
         steps: [
           {
@@ -661,7 +661,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-cyclic",
       type: "custom",
       capabilityId: EXERCISE_SEQUENCE_ID,
-      tier: "transfer",
+      tier: "drill",
       prompt: "For $\\int e^x \\sin(x)\\,dx$, run the trade and watch what comes back.",
       config: {
         steps: [
@@ -698,7 +698,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-cyclic-produce",
       type: "custom",
       capabilityId: MATH_EXPRESSION_ID,
-      tier: "transfer",
+      tier: "drill",
       prompt: "Close it yourself: find an antiderivative of $e^x\\sin(x)$.",
       config: {
         expected: "exp(x)(sin(x) - cos(x))/2",
@@ -716,7 +716,7 @@ export const substitutionPartsLesson: LessonDefinition = {
     {
       id: "sp-exists-elementary",
       type: "multiple-choice",
-      tier: "transfer",
+      tier: "drill",
       prompt: "For $f(x) = e^{-x^2}$, which statement is exactly right?",
       choices: [
         "An antiderivative exists (the accumulation function $\\int_0^x e^{-t^2}dt$), but no elementary formula equals it",
@@ -778,9 +778,9 @@ export const substitutionPartsLesson: LessonDefinition = {
       "L8 gives $e^{-x^2}$'s improper integral a value the antiderivative search could not. Much later, in the differential-equations unit, the Laplace transform's derivative rule IS this lesson's parts identity, with the boundary term carrying the initial conditions.",
   },
 
-  // No single exampleId: the worked examples and graded items deliberately use
-  // disjoint fixtures (mastery-contract.md §4's freshness rule), so no one id
-  // covers both surfaces — the same reasoning as L6's omission.
+  // No single exampleId: this lesson deliberately uses several representations
+  // and worked structures, so no one fixture covers both taught and graded
+  // surfaces — the same reasoning as L6's omission.
 };
 
 // Referenced by the classify item's honest-neither explanation; asserting it

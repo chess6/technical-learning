@@ -174,6 +174,39 @@ describe("differentiatesToTarget — the check-by-differentiating grader (insigh
       differentiatesToTarget(candidate, "x cos(x)", { domain: [0, 3] }).kind,
     ).not.toBe("antiderivative");
   });
+
+  it("rejects removable singularities inside and at the endpoints of the claimed interval", () => {
+    for (const candidate of [
+      "x sin(x) + cos(x) + (x-1)/(x-1)",
+      "x sin(x) + cos(x) + x/x",
+      "x sin(x) + cos(x) + (x-3)/(x-3)",
+    ]) {
+      const verdict = differentiatesToTarget(candidate, "x cos(x)", { domain: [0, 3] });
+      expect(verdict.kind, candidate).not.toBe("antiderivative");
+      expect("reason" in verdict ? verdict.reason : "").toMatch(/denominator|zero|interval/i);
+    }
+  });
+
+  it("accepts interval-valid logarithmic identities after certifying their domains", () => {
+    expect(
+      differentiatesToTarget("x ln(abs(x)) - x", "ln(x)", { domain: [0.5, 3] }).kind,
+    ).toBe("antiderivative");
+    expect(
+      differentiatesToTarget("x ln(abs(x)) - x", "ln(-x)", { domain: [-3, -0.5] }).kind,
+    ).toBe("antiderivative");
+  });
+
+  it("allows a continuous target whose own derivative fails at an endpoint", () => {
+    expect(
+      differentiatesToTarget("(2/3)x^(3/2)", "x^(1/2)", { domain: [0, 1] }).kind,
+    ).toBe("antiderivative");
+  });
+
+  it("rejects a candidate containing zero-to-the-zero on the interval", () => {
+    expect(
+      differentiatesToTarget("x + x^0", "1", { domain: [0, 1] }).kind,
+    ).not.toBe("antiderivative");
+  });
 });
 
 describe("the antiderivative pairs and the classification battery", () => {

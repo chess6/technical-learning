@@ -22,10 +22,10 @@ capability's ceiling is E4 (predicate-graded open construction).
 | Produce a parts antiderivative on the canonical trade | E2 | `sp-parts-xexp` (math-expression, antiderivative-of) | Near drill whose prompt names the trade |
 | Identify `[uv]` as the FTC's boundary evaluation | E2 | `sp-boundary-meaning` (multiple-choice) | Theme 1's boundary term |
 | Choose which factor to differentiate, with the reason | E3 | `sp-choose-u` (exercise-sequence, methodSelection) | LIATE never taught; the judgment is |
-| Execute parts on a fresh integrand | E4 | `sp-parts-fresh` (math-expression, antiderivative-of) | `x·cos x` |
-| Execute the hidden-`v'` transfer | E4 | `sp-ln-parts` (math-expression, antiderivative-of) | `∫ln x dx` |
-| Recognize a cyclic parts recurrence, close it algebraically, and produce the antiderivative | E4 | `sp-cyclic` + `sp-cyclic-produce` | E3 method selection plus E4 uncued production |
-| Classify a fresh integrand chain/product/neither | E3 | `sp-classify` (exercise-sequence, methodSelection) | includes the honest `neither` |
+| Execute parts after selecting which factor to differentiate | E2 | `sp-parts-fresh` (math-expression, antiderivative-of) | Follows the `x·cos x` setup immediately; reproduction, not transfer |
+| Execute the hidden-`v'` case | E2 | `sp-ln-parts` (math-expression, antiderivative-of) | The complete `∫ln x dx` solution appeared earlier |
+| Recognize a cyclic parts recurrence, close it algebraically, and reproduce the antiderivative | E2 | `sp-cyclic` + `sp-cyclic-produce` | The complete recurrence and solution appeared earlier; both items reproduce that taught structure |
+| Classify a mixed set chain/product/neither | E2 | `sp-classify` (exercise-sequence, methodSelection) | All three structures were taught or revealed; includes the honest `neither` |
 | Distinguish existence from elementarity | E2 | `sp-exists-elementary` (multiple-choice) | Liouville cited, not proved |
 
 **Practice event, no evidence claim:** `sp-derive-parts` (self-check) —
@@ -33,9 +33,9 @@ reproduce the parts derivation from the product rule + FTC. Self-marked;
 ADR-004 bars E4+ claims on self-marked scoring; deliberately absent from the
 assessment manifest (a conformance test holds the absence).
 
-**No E5/E6 anywhere.** The strongest captured object is a produced
-antiderivative with no reasoning beside it (E4). Unaided-reconstruction
-evidence remains unobtainable in this repository (L6 precedent).
+**No E4/E5/E6 anywhere.** The strongest captured evidence is E3 scaffolded
+method selection. A produced expression field can support E4 in principle,
+but these production prompts repeat or immediately follow their taught cases.
 
 ## 2. Correctness obligations (all implemented and tested before this draft)
 
@@ -61,12 +61,14 @@ image-strip tiling from `stripCorrespondence`), whose picture is restricted
 to monotone-`g` fixtures so it never claims more than the identity it
 illustrates.
 
-## 4. Freshness rule
+## 4. Freshness accounting
 
-Every graded item's integrand is distinct from every taught example's; the
-worked examples use `SUB_MAIN_COS`/`PARTS_X_EXP`, the graded production items
-use the constant-adjustment, definite, `x·cos x`, and `ln x` cases, and the
-classification battery is disjoint from both.
+Only `sp-substitute-basic`, `sp-parts-xexp`, and the `sp-choose-u` product are
+fresh instances. The first two remain near E2 drills; only `sp-choose-u`
+captures E3 scaffolded method selection. `sp-parts-fresh`, `sp-ln-parts`,
+`sp-classify`, `sp-cyclic`, `sp-cyclic-produce`, and
+`sp-exists-elementary` reuse or immediately reveal taught structures; their
+manifest metadata, tiers, and evidence targets say so explicitly.
 
 ## 5. Retention hook
 
