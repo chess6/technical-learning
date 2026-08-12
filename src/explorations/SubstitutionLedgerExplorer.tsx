@@ -123,7 +123,23 @@ function Panel({
             height={Math.abs(sy(strip.height) - sy(0))}
             className="subledger__strip"
             data-selected={strip.index === selected}
+            role="button"
+            tabIndex={0}
+            aria-label={`Select strip ${strip.index + 1} of ${spec.strips.length} in ${spec.title}`}
+            aria-pressed={strip.index === selected}
             onClick={() => onSelect(strip.index)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(strip.index);
+              } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                event.preventDefault();
+                onSelect(Math.min(spec.strips.length - 1, strip.index + 1));
+              } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                event.preventDefault();
+                onSelect(Math.max(0, strip.index - 1));
+              }
+            }}
           />
         ))}
         <path d={path} className="subledger__curve" fill="none" />
@@ -184,7 +200,7 @@ export function SubstitutionLedgerExplorer() {
       explorationId="substitution-ledger"
       title="The area ledger"
       description="Substitution as a change of bookkeeping: same area, two partitions."
-      summary="**Click a strip** in either panel to see its partner. The u-strip's width is the exact image width — its ratio to the x-width approaches g′(x), which is what du = g′(x)dx records. Raise the strip count and watch both totals close in on the same number."
+      summary="**Select a strip** in either panel by click or keyboard to see its partner. The u-strip's width is the exact image width — its ratio to the x-width approaches g′(x), which is what du = g′(x)dx records. Raise the strip count and watch both totals close in on the same number."
       toolbar={
         <>
           <PresetPicker

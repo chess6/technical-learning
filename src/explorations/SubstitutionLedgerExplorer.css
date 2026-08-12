@@ -65,3 +65,10 @@
   fill: var(--role-selected);
   opacity: 0.85;
 }
+
+.subledger__strip:focus-visible {
+  outline: none;
+  stroke: var(--color-focus);
+  stroke-width: 3;
+  opacity: 1;
+}

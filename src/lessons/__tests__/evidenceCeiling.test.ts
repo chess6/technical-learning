@@ -84,6 +84,16 @@ describe("evidenceBasis contradiction filter (rejects impossible claims; does NO
     expect(problems, problems.join("\n")).toEqual([]);
   });
 
+  it("rejects a near-context basis for E4 transfer", () => {
+    expect(evidenceContradictions("E4", {
+      freshness: "fresh-instance",
+      unfamiliarity: "near",
+      integration: "single-outcome",
+      scaffolding: "none",
+      scoringAuthority: "auto",
+    })).toContain("near context");
+  });
+
   it("declares a coherent EvidenceLevel for every item", () => {
     const valid = new Set<EvidenceLevel>(["E1", "E2", "E3", "E4", "E5"]);
     for (const item of MODULE_ITEMS) {

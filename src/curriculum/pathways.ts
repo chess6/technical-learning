@@ -1,6 +1,7 @@
 /**
- * Pathway overlays — ADR-005's third data layer, and the reason
- * "Applied Mathematics" is no longer a course.
+ * Pathway overlays — ADR-005's third data layer. The `applied-stem` pathway
+ * traverses Applied Mathematics plus the linear-algebra prerequisites it needs;
+ * it does not replace or rename the Applied Mathematics course.
  *
  * A pathway is a **goal-shaped traversal** of courses that already exist. It
  * owns no content: every id here must resolve to a lesson the curriculum
@@ -104,8 +105,8 @@ export const PATHWAYS: readonly Pathway[] = [
     title: "Applied mathematics for science and engineering",
     goal: "Model change, accumulation, oscillation and fields — and solve the equations that describe them.",
     audience: "Science and engineering students who need the whole applied arc, not one branch of it.",
-    // The complete spine: this is what the course called "Applied Mathematics"
-    // actually was, now expressed as a traversal instead of a container.
+    // The complete Applied Mathematics spine, expressed here as a traversal so
+    // it can include cross-course prerequisites without changing course ownership.
     requiredNodeIds: [
       ...LA_PREREQS_FOR_APPLIED,
       ...ENTRY_BRIDGE_REQUIRED,

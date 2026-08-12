@@ -192,18 +192,12 @@ export const CURRICULUM: readonly Subject[] = [
         ],
       },
       {
-        // Renamed from `applied-mathematics` (R5). "Applied Mathematics" was
-        // never a course — it is the *pathway* spanning calculus, signals,
-        // differential equations and multivariable, and it survives as the
-        // `applied-stem` overlay in `src/curriculum/pathways.ts`. What is
-        // actually built here is calculus, so the course says so.
-        //
-        // The remaining spine units (`series`, `signals`, `fields`, …) become
-        // their own courses **when their packages enter Mode B and have
-        // content** — declaring three empty courses now would be decoration.
-        // The old id is aliased in `identity.ts`, per its no-rename contract.
+        // The stable internal id remains `calculus`, but the learner-facing
+        // course is Applied Mathematics. Calculus Foundations and Calculus
+        // Technique are units in that course; later spine units join this same
+        // course as their packages gain content.
         id: "calculus",
-        title: "Calculus",
+        title: "Applied Mathematics",
         subtitle: "Change, accumulation, and the theorem that binds them",
         // Units mirror the authoritative spine in
         // docs/courses/applied-mathematics/course-spine.md, where **one unit =
@@ -212,9 +206,8 @@ export const CURRICULUM: readonly Subject[] = [
         // `calculus-technique` (Package B, L5 built so far) are planned in
         // Mode B; the later units are added as their packages enter Mode B, so
         // this list grows with the roadmap rather than declaring 39 stubs up
-        // front. The doc directory keeps its `applied-mathematics` name — the
-        // split is a navigation-layer change, and the Mode B artifacts under
-        // it are untouched.
+        // front. The doc directory and displayed product language both remain
+        // `applied-mathematics`; only the internal runtime id is `calculus`.
         units: [
           {
             // Diagnosed, not taught (course-spine §2.1–2.3): these are bounded

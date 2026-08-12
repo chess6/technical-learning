@@ -203,6 +203,14 @@ describe("unitless-course convenience", () => {
   });
 });
 
+describe("Applied Mathematics product identity", () => {
+  it("keeps the internal calculus id while displaying the canonical course title", () => {
+    const course = COURSES.find((candidate) => candidate.id === "calculus");
+    expect(course?.title).toBe("Applied Mathematics");
+    expect(course?.units?.find((unit) => unit.id === "calculus-foundations")).toBeDefined();
+  });
+});
+
 describe("curriculum stays a reference, not a content owner", () => {
   it("does not duplicate lesson content — only ids", () => {
     // Every lesson item is a bare id reference; no LessonDefinition fields leak in.

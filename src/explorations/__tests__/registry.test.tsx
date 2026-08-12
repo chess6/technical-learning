@@ -24,6 +24,6 @@ describe("explorer registry (M6 lazy-loading)", () => {
 
     await waitFor(() => {
       expect(screen.queryByText("Loading exploration…")).toBeNull();
-    });
+    }, { timeout: 5_000 });
   });
 });

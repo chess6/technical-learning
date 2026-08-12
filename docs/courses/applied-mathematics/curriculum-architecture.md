@@ -444,7 +444,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 and L6 Gate-8 accepted, on `master`. L7 `substitution-parts` BUILT on `feature/l7-substitution-parts`: Gate-4 audit RAN (fresh lineage — 2 blocking + 4 repair + 2 note findings, all repaired; PASS recorded in insight.md), lesson + ledger explorer + 15 items + grading contracts + e2e all green. L8 `improper-integrals`: judged Gate-3 brief written (`lessons/08-improper-integrals/insight-brief.md`); Gate 4 not run. AWAITING: the single fresh package reviewer (ADR-008 §4) over the whole package — L7, the `math-expression` capability, L8's later build — before any Gate-8 language or merge.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) |
+| **B** | **IN PROGRESS — L5 and L6 Gate-8 accepted on `master`. L7 `substitution-parts` is built on `feature/l7-substitution-parts` but NOT Gate-8 accepted; the 2026-08-11 owner review's grading, evidence, provenance, ordering, and accessibility blockers are corrected and verified (`./check.sh` green; targeted browser 6/6), awaiting review. L8 `improper-integrals` has a judged Gate-3 brief and a Gate-4 draft whose audits are PENDING and verdict is NOT YET PASS; all pre-gate production code/tests were removed. Do not begin Gate 5 or Mode C for L8.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) · [Gate-4 draft](lessons/08-improper-integrals/insight.md) |
 | C–L | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > Acceptance details live in each lesson’s mastery-contract §6; this table is the single package-status authority. Before Mode C, also check branches and worktrees as required by AGENTS.md.
@@ -480,4 +480,7 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-Package B remains active. L5 `chain-rule` and L6 `optimization-approximation` are built, accepted, and merged to `master`. L7 `substitution-parts` is paused at its corrected Gate-3 brief; Gate 4 has not run, and no L7 code is authorized by that brief. L8 `improper-integrals` remains unplanned. Use §6.1 as the status authority and `npm run context:task -- --mode B --lesson substitution-parts` for the next bounded context.
+Package B remains active; §6.1 is the sole status authority. The next bounded
+work is L7 correction verification and review. L8 remains at Gate 4 with a
+real NOT-YET-PASS verdict: finish its audits before Gate 5, and do not recreate
+production code until every planning gate has passed.

@@ -8,9 +8,10 @@ recorded in both documents.
 
 ## Route (as built — `src/lessons/substitutionParts.ts`)
 
-motivate → witnessed-manufacture → thm-substitution (+ **proof**) → ledger
-section → **explore** (`substitution-ledger`) → def-reversed-bounds (audit
-item 2: this lesson owns the convention) → bounds section → worked
+motivate → witnessed-manufacture → def-reversed-bounds (audit item 2: this
+lesson owns the convention, placed before the theorem that needs it) →
+thm-substitution (+ **proof**) → ledger section → **explore**
+(`substitution-ledger`) → bounds section → worked
 (substitution) → parts section → **lemma-product-rule (+ proof)** (audit
 item 1: derived from L2's local model, since no built surface ever stated
 it) → thm-parts (+ **proof**, with additivity introduced at the Riemann-sum
@@ -23,16 +24,16 @@ mastery contract §3). No scene surfaces registered.
 
 ## Verification (all run at build, 2026-08-10)
 
-- `src/math/__tests__/integrationTechniques.test.ts` — 20 tests (identities,
-  exact strip tiling, the +C-invariant grader, guard).
+- `src/math/__tests__/integrationTechniques.test.ts` — identities, exact strip
+  tiling, exact-symbolic +C-invariant grading, and the hidden-ramp regression.
 - `mathExpressionGradingContract.test.ts` — 55 incl. the `antiderivative-of`
   battery and the parse-failure no-leak pin (rendered-review finding).
-- `substitutionPartsGradingContract.test.ts` — 77: a battery per auto-graded
-  item, tier-mix pin (1 check + 6 drill + 7 transfer evidence + 1 practice
-  event), manifest-coverage and freshness-disjointness pins.
-- Full unit suite 159 files / 2694 green · `tsc -b` clean · oxlint 0 errors.
-- `e2e/lesson-substitution-parts.spec.ts` — 5 real-browser tests (proof
-  blocks render; ledger panels + paired strip selection; typed antiderivative
+- `substitutionPartsGradingContract.test.ts` — a battery per auto-graded item,
+  hidden-ramp rejection, evidence-level pins, audited theorem ordering and
+  provenance, tier mix, manifest coverage, and freshness disjointness.
+- Full unit suite 159 files / 2705 green · `tsc -b` clean · oxlint has only pre-existing warnings.
+- `e2e/lesson-substitution-parts.spec.ts` — 6 real-browser tests (proof
+  blocks render; mouse + keyboard paired-strip selection; typed antiderivative
   grades correct including a +C member; wrong answer gets the witness
   message; mid-typing parse failure leaks no solution) plus both
   cross-lesson sweeps (22 tests).

@@ -29,21 +29,42 @@ function unique(values) {
 function findLesson(root, lesson, requestedCourse) {
   const coursesRoot = join(root, "docs", "courses");
   const courses = requestedCourse ? [requestedCourse] : readdirSync(coursesRoot);
-  const matches = courses.flatMap((course) => {
+  const directoryMatches = courses.flatMap((course) => {
     const lessonsRoot = join(coursesRoot, course, "lessons");
     if (!existsSync(lessonsRoot)) return [];
     return readdirSync(lessonsRoot)
       .filter((name) => name === lesson || name.endsWith(`-${lesson}`))
       .map((name) => ({course, directory: join(lessonsRoot, name)}));
   });
-  if (matches.length !== 1) {
+  if (directoryMatches.length === 1) return directoryMatches[0];
+  if (directoryMatches.length > 1) {
+    throw new Error(`lesson id is ambiguous across courses: ${lesson}`);
+  }
+
+  // A future lesson legitimately has no artifact directory yet. Resolve it
+  // from the course architecture and return the canonical numbered path that
+  // Gate 3 should create, rather than requiring the directory to pre-exist.
+  const architectureMatches = courses.flatMap((course) => {
+    const architecture = read(join(coursesRoot, course, "curriculum-architecture.md"));
+    const row = parseSequenceRow(architecture, lesson);
+    if (row === "not listed") return [];
+    const lessonNumber = /^\|\s*L(\d+)\s*\|/.exec(row)?.[1];
+    const directoryName = lessonNumber
+      ? `${lessonNumber.padStart(2, "0")}-${lesson}`
+      : lesson;
+    return [{
+      course,
+      directory: join(coursesRoot, course, "lessons", directoryName),
+    }];
+  });
+  if (architectureMatches.length !== 1) {
     throw new Error(
-      matches.length === 0
+      architectureMatches.length === 0
         ? `lesson not found: ${lesson}`
         : `lesson id is ambiguous across courses: ${lesson}`,
     );
   }
-  return matches[0];
+  return architectureMatches[0];
 }
 
 function parseSequenceRow(architecture, lesson) {
@@ -72,6 +93,32 @@ function packageStatus(architecture, packageId) {
     ?? "not listed";
 }
 
+function parseSpineRow(spine, lesson) {
+  return spine
+    .split("\n")
+    .find((line) => /^\|\s*L\d+\s*\|/.test(line) && line.includes(`\`${lesson}\``))
+    ?? "not listed";
+}
+
+function lessonLifecycle(spineRow) {
+  if (spineRow === "not listed") return "unknown";
+  return /\*\*\(built\)\*\*/i.test(spineRow) ? "built" : "future";
+}
+
+function hasGatePass(body) {
+  if (/^\s*Gate result:\s*(?:\*\*|__)?PASS(?:\*\*|__)?\s*$/im.test(body)) {
+    return true;
+  }
+  const gateSection = body.match(/^##\s+Gate result\s*$([\s\S]*)$/im)?.[1] ?? "";
+  const verdict = gateSection
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
+  return verdict
+    ? /^(?:\*\*|__)?PASS(?:\*\*|__)?(?:\s|—|-|$)/i.test(verdict)
+    : false;
+}
+
 function artifactState(directory) {
   return ARTIFACTS.map((name) => {
     const path = join(directory, name);
@@ -79,7 +126,7 @@ function artifactState(directory) {
     const state = !body
       ? "missing"
       : name === "insight.md"
-        ? /Gate result:\s*PASS/i.test(body)
+        ? hasGatePass(body)
           ? "PASS"
           : "present, no PASS"
         : "present";
@@ -87,7 +134,23 @@ function artifactState(directory) {
   });
 }
 
-function readiness(mode, artifacts) {
+function readiness(mode, artifacts, lifecycle) {
+  if (lifecycle === "built" && (mode === "B" || mode === "C")) {
+    return "ALREADY BUILT — do not restart planning or implementation; use a scoped correction/polish request.";
+  }
+  if (mode === "B") {
+    const byName = new Map(artifacts.map((artifact) => [artifact.name, artifact]));
+    if (artifacts.every((artifact) => artifact.state === "missing")) {
+      return "READY to initialize Mode B at Gate 3; create the numbered lesson directory and insight-brief.md.";
+    }
+    if (byName.get("insight.md")?.state !== "PASS") {
+      return "READY to continue Mode B through Gate 4; Gate 5 remains blocked until the insight contract passes.";
+    }
+    if (byName.get("mastery-contract.md")?.state === "missing") {
+      return "READY to continue Mode B at Gate 5.";
+    }
+    return "READY to complete or correct the bounded Mode B plan; normal gates still apply.";
+  }
   if (mode !== "C") return "READY for bounded work in the requested mode; normal gates still apply.";
   const byName = new Map(artifacts.map((artifact) => [artifact.name, artifact]));
   const missing = ["mastery-contract.md", "lesson-plan.md"].filter(
@@ -101,13 +164,25 @@ function readiness(mode, artifacts) {
 
 function contractSignals(artifacts) {
   const signalPattern = /\b(?:C|O|M|E)\d+\b|objective|evidence|route|fixture|Gate result/i;
+  const matchesByArtifact = artifacts.map((artifact) => ({
+    artifact,
+    matches: artifact.body
+      ? artifact.body.split("\n").filter((line) => signalPattern.test(line))
+      : [],
+  }));
   const lines = [];
-  for (const artifact of artifacts) {
-    if (!artifact.body) continue;
-    for (const line of artifact.body.split("\n")) {
-      if (signalPattern.test(line)) lines.push(`- ${artifact.name}: ${cleanLine(line)}`);
-      if (lines.length >= 45) return unique(lines);
+  // Round-robin is load-bearing: one long insight draft must not consume the
+  // whole budget before the mastery contract and implementation plan appear.
+  for (let index = 0; lines.length < 48; index += 1) {
+    let added = false;
+    for (const {artifact, matches} of matchesByArtifact) {
+      const line = matches[index];
+      if (!line) continue;
+      lines.push(`- ${artifact.name}: ${cleanLine(line)}`);
+      added = true;
+      if (lines.length >= 48) break;
     }
+    if (!added) break;
   }
   return unique(lines);
 }
@@ -134,6 +209,9 @@ function likelyFiles(root, lesson, course, unit, mode, artifacts) {
   );
   const docs = artifacts.filter(({body}) => body).map(({path}) => relative(root, path));
   const missingDocs = artifacts.filter(({body}) => !body).map(({path}) => relative(root, path));
+  const lessonDirectory = artifacts[0]
+    ? relative(root, dirname(artifacts[0].path))
+    : `docs/courses/${course}/lessons/${lesson}`;
   const candidates = [
     ...missingDocs,
     ...(mode === "C"
@@ -145,7 +223,7 @@ function likelyFiles(root, lesson, course, unit, mode, artifacts) {
           "src/lessons/assessmentManifest.ts",
           "src/lessons/courseModel.ts",
         ]
-      : [`docs/courses/${course}/lessons/${lesson}/`, `docs/courses/${course}/modules/${unit}/`]),
+      : [`${lessonDirectory}/`, `docs/courses/${course}/modules/${unit}/`]),
   ];
   return {actual: unique([...docs, ...actual]).slice(0, 35), candidates};
 }
@@ -218,7 +296,10 @@ export function buildTaskContext({root, mode, lesson, course}) {
   const located = findLesson(root, lesson, course);
   const architecturePath = join(root, "docs", "courses", located.course, "curriculum-architecture.md");
   const architecture = read(architecturePath);
+  const spine = read(join(root, "docs", "courses", located.course, "course-spine.md"));
   const sequence = parseSequenceRow(architecture, lesson);
+  const spineRow = parseSpineRow(spine, lesson);
+  const lifecycle = lessonLifecycle(spineRow);
   const unit = parseUnit(sequence);
   const packageId = parsePackage(sequence);
   const artifacts = artifactState(located.directory);
@@ -234,7 +315,8 @@ export function buildTaskContext({root, mode, lesson, course}) {
     "",
     `- Course: \`${located.course}\``,
     `- Unit/package: \`${unit}\` / \`${packageId}\``,
-    `- Readiness: **${readiness(mode, artifacts)}**`,
+    `- Lifecycle: \`${lifecycle}\``,
+    `- Readiness: **${readiness(mode, artifacts, lifecycle)}**`,
     `- Sequence row: ${cleanLine(sequence)}`,
     `- Package ledger: ${cleanLine(packageStatus(architecture, packageId))}`,
     "",

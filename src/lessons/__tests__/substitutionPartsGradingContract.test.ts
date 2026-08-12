@@ -37,6 +37,7 @@ describeGradingContract(item("sp-substitute-basic"), {
   mustAccept: [
     { name: "sin(x^3)", answer: expr("sin(x^3)") },
     { name: "sin(x^3) + 9 — +C", answer: expr("sin(x^3) + 9") },
+    { name: "sin(x^3) + C — literal arbitrary constant", answer: expr("sin(x^3) + C") },
   ],
   mustReject: [
     { name: "blank", answer: expr("") },
@@ -45,6 +46,21 @@ describeGradingContract(item("sp-substitute-basic"), {
     { name: "the taught case's answer (fixture leak)", answer: expr("sin(x^2)") },
     { name: "rule-mangling", answer: expr("3x^2 sin(x^3)") },
   ],
+});
+
+describe("antiderivative grading rejects finite-grid attacks", () => {
+  it("rejects a nonconstant ramp hidden between the old 40 probes", () => {
+    const candidate =
+      "x sin(x) + cos(x) + 50*((abs(x - 0.922933) + (x - 0.922933))/2 - (abs(x - 1.001929) + (x - 1.001929))/2)";
+    const exercise = item("sp-parts-fresh");
+    const capability = (exercise as { capabilityId?: string }).capabilityId;
+    expect(capability).toBe("math-expression");
+    expect(gradeExercise(exercise, {
+      kind: "custom",
+      capabilityId: "math-expression",
+      value: { source: candidate },
+    }).correct).toBe(false);
+  });
 });
 
 describeGradingContract(item("sp-half-constant"), {
@@ -186,6 +202,12 @@ describe("tier mix and manifest coverage", () => {
     }
   });
 
+  it("keeps near or technique-cued L7 drills at E2", () => {
+    for (const id of ["sp-substitute-basic", "sp-half-constant", "sp-bounds", "sp-parts-xexp"]) {
+      expect(ITEM_ASSESSMENT_META[id]?.evidenceTarget, id).toBe("E2");
+    }
+  });
+
   it("the fresh graded integrands are disjoint from the taught examples", () => {
     // The freshness rule (mastery-contract §4), held mechanically: the two
     // first-production drills must not grade the taught fixtures.
@@ -195,6 +217,32 @@ describe("tier mix and manifest coverage", () => {
     });
     expect(graded).not.toContain("2x cos(x^2)"); // the witnessed manufacture
     expect(graded).not.toContain("x exp(x)"); // the taught trade
+  });
+});
+
+describe("audited theorem ownership and ordering", () => {
+  it("defines decreasing bounds before the substitution theorem uses them", () => {
+    const definition = substitutionPartsLesson.route!.findIndex(
+      (block) => block.kind === "formal" && block.formalId === "def-reversed-bounds",
+    );
+    const theorem = substitutionPartsLesson.route!.findIndex(
+      (block) => block.kind === "formal" && block.formalId === "thm-substitution",
+    );
+    expect(definition).toBeGreaterThanOrEqual(0);
+    expect(definition).toBeLessThan(theorem);
+    const proof = substitutionPartsLesson.formalBlocks!.find(
+      (block) => block.id === "thm-substitution",
+    )?.proof;
+    expect(proof).toContain("convention defined immediately above");
+    expect(proof).not.toMatch(/Lesson 4 already defined/);
+  });
+
+  it("attributes the non-cancellation correction to Lesson 5", () => {
+    const exercise = item("sp-du-ledger");
+    expect(exercise.type).toBe("multiple-choice");
+    if (exercise.type !== "multiple-choice") throw new Error("sp-du-ledger type drifted");
+    expect(exercise.explanation).toContain("Lesson 5");
+    expect(exercise.explanation).not.toContain("Lesson 2 already ruled");
   });
 });
 

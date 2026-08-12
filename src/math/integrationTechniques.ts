@@ -20,18 +20,23 @@
  * are the guard's.
  *
  * **The grader is the lesson's own discipline.** `differentiatesToTarget`
- * grades a produced antiderivative by DIFFERENTIATING it (numerically,
- * densely, on the item's own declared interval) and comparing against the
- * integrand — insight.md §7(d): finding is search, checking is calculation.
- * Answers differing by a constant all pass because d/dx kills the constant,
- * which is the mathematical content of "+C", not a grading accident. The
- * check is explicitly interval-scoped: the item's claim is "an antiderivative
- * on THIS interval", so sampling that interval is the honest verification,
- * not a window convenience.
+ * grades a produced antiderivative by symbolically differentiating it and
+ * requiring the resulting expression to reduce exactly to the integrand —
+ * insight.md §7(d): finding is search, checking is calculation. Numerical
+ * differentiation is used only to produce a useful counterexample witness;
+ * finite samples never authorize a pass. Answers containing the conventional
+ * arbitrary constant `C` pass because dC/dx = 0, which is the mathematical
+ * content of "+C", not a grading accident.
  */
 
+import { derivative, simplify } from "mathjs";
 import { numericDerivative, riemannSum, type RealFunction } from "./calculus";
-import { evaluate, tryParseExpression, type ExprNode } from "./expression";
+import {
+  evaluate,
+  freeVariables,
+  tryParseExpression,
+  type ExprNode,
+} from "./expression";
 
 /* ------------------------------------------------------------------ types */
 
@@ -240,16 +245,78 @@ function sampleInterior(lo: number, hi: number, count: number, margin: number): 
 
 const DIFF_H = 1e-5;
 
+/** Convert the learner grammar's AST to the equivalent mathjs expression. */
+function toSymbolicSource(node: ExprNode): string {
+  switch (node.kind) {
+    case "number":
+      return String(node.value);
+    case "identifier":
+      return node.name;
+    case "unary":
+      return `(-(${toSymbolicSource(node.operand)}))`;
+    case "call": {
+      // mathjs calls the natural logarithm `log`; the learner language calls
+      // it `ln` and reserves `log` for base 10.
+      const name = node.name === "ln" ? "log" : node.name === "log" ? "log10" : node.name;
+      return `${name}(${toSymbolicSource(node.arg)})`;
+    }
+    case "binary": {
+      // Normalize the learner spelling e^x to exp(x); mathjs differentiates
+      // both but does not reduce e^x - exp(x) to zero afterwards.
+      if (
+        node.op === "^" &&
+        node.left.kind === "identifier" &&
+        node.left.name === "e"
+      ) {
+        return `exp(${toSymbolicSource(node.right)})`;
+      }
+      return `(${toSymbolicSource(node.left)}) ${node.op} (${toSymbolicSource(node.right)})`;
+    }
+  }
+}
+
+/**
+ * Distribution is deliberately bounded to ordinary field algebra. The default
+ * simplifier leaves forms such as `(2x + 1)/2 - 1/2 - x` unreduced, which
+ * would reject a standard integration-by-parts answer. These rules expose the
+ * cancellation; they do not introduce sampled or approximate identities.
+ */
+const EXACT_ALGEBRA_RULES = [
+  { l: "(n1 + n2) / n3", r: "n1 / n3 + n2 / n3", repeat: true },
+  { l: "n1 * (n2 + n3)", r: "n1 * n2 + n1 * n3", repeat: true },
+  { l: "(n1 + n2) * n3", r: "n1 * n3 + n2 * n3", repeat: true },
+] as const;
+
+function derivativeIsExactlyIntegrand(
+  candidate: ExprNode,
+  integrand: ExprNode,
+  variable: string,
+): boolean {
+  try {
+    const candidateDerivative = derivative(toSymbolicSource(candidate), variable);
+    const difference = `(${candidateDerivative.toString()}) - (${toSymbolicSource(integrand)})`;
+    const distributed = simplify(difference, [...EXACT_ALGEBRA_RULES]);
+    return simplify(distributed).toString() === "0";
+  } catch {
+    // Unsupported symbolic forms fail closed. The caller reports `undecided`,
+    // never a pass, after attempting to find a concrete numeric witness.
+    return false;
+  }
+}
+
 /**
  * Is `candidateSource` an antiderivative of `integrandSource` on `domain`?
  * Decided by the lesson's own verification discipline (insight.md §7(d)):
- * numerically differentiate the candidate and compare against the integrand
- * at deterministic interior sample points of the DECLARED interval.
+ * symbolically differentiate the candidate and require exact reduction to the
+ * integrand. Deterministic interior samples are diagnostic only: they can
+ * provide a visible counterexample, but agreement on a finite grid never
+ * authorizes a pass.
  *
  * Scoping the samples to the item's interval is the honest reading, not a
  * shortcut: the graded claim is "an antiderivative on this interval", and a
  * candidate that fails elsewhere but works here has answered the question
- * asked. `+C` invariance is automatic — differentiation kills constants.
+ * asked. Literal `+ C` is supported as the conventional arbitrary constant;
+ * differentiation kills it.
  *
  * `undecided` is a real third verdict (unparseable candidate, or too few
  * points where both sides evaluate finitely) and MUST never be treated as a
@@ -281,8 +348,32 @@ export function differentiatesToTarget(
     throw new Error(`differentiatesToTarget: integrand "${integrandSource}" does not parse: ${integrand.message}`);
   }
 
+  const candidateVariables = freeVariables(candidate.node);
+  const strayCandidateVariables = candidateVariables.filter(
+    (name) => name !== variable && name !== "C",
+  );
+  if (strayCandidateVariables.length > 0) {
+    return {
+      kind: "undecided",
+      comparedAt: 0,
+      reason: `uses variable(s) other than ${variable} or the arbitrary constant C: ${strayCandidateVariables.join(", ")}`,
+    };
+  }
+  const strayIntegrandVariables = freeVariables(integrand.node).filter(
+    (name) => name !== variable,
+  );
+  if (strayIntegrandVariables.length > 0) {
+    throw new Error(
+      `differentiatesToTarget: authored integrand uses variable(s) other than ${variable}: ${strayIntegrandVariables.join(", ")}`,
+    );
+  }
+
+  if (derivativeIsExactlyIntegrand(candidate.node, integrand.node, variable)) {
+    return { kind: "antiderivative", comparedAt: 0 };
+  }
+
   const evalAt = (node: ExprNode, x: number): number => evaluate(node, { [variable]: x });
-  const candidateF: RealFunction = (x) => evalAt(candidate.node, x);
+  const candidateF: RealFunction = (x) => evaluate(candidate.node, { [variable]: x, C: 0 });
 
   let compared = 0;
   for (const x of sampleInterior(lo, hi, samples, 4 * DIFF_H)) {
@@ -308,7 +399,11 @@ export function differentiatesToTarget(
       reason: `only ${compared} sample point(s) had both the candidate's derivative and the integrand defined`,
     };
   }
-  return { kind: "antiderivative", comparedAt: compared };
+  return {
+    kind: "undecided",
+    comparedAt: compared,
+    reason: "symbolic differentiation did not establish exact equality to the integrand",
+  };
 }
 
 /* --------------------------------------------------------------- fixtures */

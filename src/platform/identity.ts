@@ -107,12 +107,9 @@ export type AliasMap = Record<string, string>;
 
 const ALIASES: Record<EntityKind, AliasMap> = {
   course: {
-    // R5: "Applied Mathematics" was never a course — it is the pathway
-    // spanning calculus, signals, ODEs and multivariable (now the
-    // `applied-stem` overlay). What is built under it is calculus, so the
-    // course was renamed. Nothing persists a course id today, so no stored
-    // progress depends on this; the alias exists because the contract above
-    // forbids a bare rename, and because R6 may key readiness by course.
+    // The displayed course remains Applied Mathematics. The runtime keeps the
+    // historical internal id `calculus`; this alias lets canonical product
+    // language resolve to that stable id without changing persisted identity.
     "applied-mathematics": "calculus",
   },
   unit: {},

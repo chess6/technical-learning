@@ -53,9 +53,8 @@ if (Math.abs(XEXP_BOUNDARY - 2 * Math.E * Math.E) > 1e-9) {
 // capability re-checks this at grade time; failing FAST here keeps a broken
 // edit from shipping a page that only errors when a learner submits.
 // The two first-production drills grade FRESH integrands, distinct from every
-// taught example (mastery-contract.md §4 — and the evidence-ceiling gate
-// rejects an E4 claim on a reused fixture, which is how an earlier draft of
-// this file was caught grading the taught cases).
+// taught example (mastery-contract.md §4). Freshness keeps the drill honest;
+// it does not promote a near, technique-cued item to transfer evidence.
 const FRESH_SUB = {
   integrand: "3x^2 cos(x^3)",
   expected: "sin(x^3)",
@@ -113,7 +112,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-obj-substitute",
       text: "Produce an antiderivative for a fresh chain-shape integrand",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-substitute-basic"],
     },
     {
@@ -127,21 +126,21 @@ export const substitutionPartsLesson: LessonDefinition = {
       id: "sp-obj-half-constant",
       text: "Carry the constant-adjustment ledger honestly when the manufacturing factor is off by a constant",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-half-constant"],
     },
     {
       id: "sp-obj-bounds",
       text: "Transform bounds under substitution and evaluate the definite integral without back-substituting",
       evidence: "lesson-owned",
-      evidenceLevel: "E3",
+      evidenceLevel: "E2",
       itemIds: ["sp-bounds"],
     },
     {
       id: "sp-obj-parts-execute",
       text: "Produce a parts antiderivative on a fresh first trade",
       evidence: "lesson-owned",
-      evidenceLevel: "E4",
+      evidenceLevel: "E2",
       itemIds: ["sp-parts-xexp"],
     },
     {
@@ -248,11 +247,11 @@ export const substitutionPartsLesson: LessonDefinition = {
   route: [
     { kind: "motivate" },
     { kind: "section", sectionId: "witnessed-manufacture" },
+    { kind: "formal", formalId: "def-reversed-bounds" },
     { kind: "formal", formalId: "thm-substitution" },
     { kind: "proof", formalId: "thm-substitution" },
     { kind: "section", sectionId: "the-ledger" },
     { kind: "explore" },
-    { kind: "formal", formalId: "def-reversed-bounds" },
     { kind: "section", sectionId: "bounds-transform" },
     { kind: "worked", workedId: "worked-substitution" },
     { kind: "section", sectionId: "parts-trade" },
@@ -302,7 +301,7 @@ export const substitutionPartsLesson: LessonDefinition = {
         "An integrand of the shape f(g(x))·g'(x) is the output of a differentiation you can name — so naming it IS integrating it, and the bounds ride along because both sides are the same two numbers.",
       visibility: "visible",
       proof:
-        "By Lesson 5's chain rule, $\\frac{d}{dx}F(g(x)) = F'(g(x))\\,g'(x) = f(g(x))\\,g'(x)$ — so $F(g(x))$ is, by definition, an antiderivative of the integrand, which is the indefinite statement. For the definite one, apply the FTC twice: $\\int_a^b f(g(x))g'(x)\\,dx = F(g(b)) - F(g(a)) = \\big[F(u)\\big]_{g(a)}^{g(b)} = \\int_{g(a)}^{g(b)} f(u)\\,du$. If $g(a) > g(b)$, the right side is an integral with decreasing bounds, which Lesson 4 already defined as the negated increasing-order integral — the identity holds as written. Note what is NOT assumed: no monotonicity of $g$ anywhere.",
+        "By Lesson 5's chain rule, $\\frac{d}{dx}F(g(x)) = F'(g(x))\\,g'(x) = f(g(x))\\,g'(x)$ — so $F(g(x))$ is, by definition, an antiderivative of the integrand, which is the indefinite statement. For the definite one, apply the FTC twice: $\\int_a^b f(g(x))g'(x)\\,dx = F(g(b)) - F(g(a)) = \\big[F(u)\\big]_{g(a)}^{g(b)} = \\int_{g(a)}^{g(b)} f(u)\\,du$. If $g(a) > g(b)$, the right side uses the decreasing-bounds convention defined immediately above, so the identity still holds as written. Note what is NOT assumed: no monotonicity of $g$ anywhere.",
     },
     {
       id: "thm-parts",
@@ -357,7 +356,7 @@ export const substitutionPartsLesson: LessonDefinition = {
         },
         {
           label: "But watch",
-          body: "Lesson 2 defined $\\frac{dy}{dx}$ as the LIMIT of quotients — never a quotient of two standalone numbers named $dy$ and $dx$ — and Lesson 5 was emphatic that cancelling $du$'s proves nothing. If the cancellation were really algebra, it would need those objects to exist. Nothing here cancels: run the computation without any $u$ at all — recognize $2x\\cos(x^2)$ as $\\frac{d}{dx}\\sin(x^2)$ directly — and you get the same answer with no fraction in sight.",
+          body: "Lesson 5 was emphatic that the chain-rule notation does not justify cancelling $du$ and $dx$ as standalone quantities (building on Lesson 2's limit definition of a derivative). If the cancellation were really algebra, those standalone objects would have to exist. Nothing here cancels: run the computation without any $u$ at all — recognize $2x\\cos(x^2)$ as $\\frac{d}{dx}\\sin(x^2)$ directly — and you get the same answer with no fraction in sight.",
         },
         {
           label: "Repair",
@@ -441,7 +440,7 @@ export const substitutionPartsLesson: LessonDefinition = {
       ],
       correctChoice: 0,
       explanation:
-        "It is a ledger entry for the recognition — the factor $2x\\,dx$ is what the chain rule's output must contain, and the ledger marks it consumed. Nothing cancels; Lesson 2 already ruled out reading $\\frac{du}{dx}$ as a fraction.",
+        "It is a ledger entry for the recognition — the factor $2x\\,dx$ is what the chain rule's output must contain, and the ledger marks it consumed. Nothing cancels; Lesson 5 already ruled out treating $du$ and $dx$ as cancellable standalone quantities.",
     },
     {
       id: "sp-half-constant",

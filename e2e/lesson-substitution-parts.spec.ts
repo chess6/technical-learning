@@ -40,6 +40,18 @@ test("the ledger explorer draws two panels whose strips select as a pair", async
   await expect(explorer.getByText(/F\(g\(b\)\)/)).toBeVisible();
 });
 
+test("the ledger strips are keyboard-operable", async ({ page }) => {
+  await page.goto(PAGE);
+  const explorer = page.locator(".exploration-panel", { hasText: "The area ledger" }).first();
+  await explorer.scrollIntoViewIfNeeded();
+  const strip = explorer.getByRole("button", { name: /Select strip 4 of .*given/ });
+  await strip.focus();
+  await strip.press("Enter");
+  await expect(explorer.getByText(/Strip 4 of/)).toBeVisible();
+  await strip.press("ArrowRight");
+  await expect(explorer.getByText(/Strip 5 of/)).toBeVisible();
+});
+
 test("a math-expression item grades a typed antiderivative inside the lesson", async ({ page }) => {
   await page.goto(PAGE);
   const practice = page.locator(".exercise-panel").first();

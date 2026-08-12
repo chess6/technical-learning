@@ -108,7 +108,7 @@ describe("differentiatesToTarget — the check-by-differentiating grader (insigh
   const MAIN = { domain: SUB_MAIN_COS.domain };
 
   it("accepts the true antiderivative, in any of its family — the mathematical content of +C", () => {
-    for (const candidate of ["sin(x^2)", "sin(x^2) + 5", "sin(x^2) - 100"]) {
+    for (const candidate of ["sin(x^2)", "sin(x^2) + 5", "sin(x^2) - 100", "sin(x^2) + C"]) {
       const verdict = differentiatesToTarget(candidate, "2x cos(x^2)", MAIN);
       expect(verdict.kind, candidate).toBe("antiderivative");
     }
@@ -165,6 +165,14 @@ describe("differentiatesToTarget — the check-by-differentiating grader (insigh
       expect(differentiatesToTarget("sin(x^2)", "2x cos(x^2)", MAIN).kind).toBe("antiderivative");
       expect(differentiatesToTarget("cos(x^2)", "2x cos(x^2)", MAIN).kind).toBe("not-antiderivative");
     }
+  });
+
+  it("does not accept a nonconstant ramp hidden between deterministic diagnostic points", () => {
+    const candidate =
+      "x sin(x) + cos(x) + 50*((abs(x - 0.922933) + (x - 0.922933))/2 - (abs(x - 1.001929) + (x - 1.001929))/2)";
+    expect(
+      differentiatesToTarget(candidate, "x cos(x)", { domain: [0, 3] }).kind,
+    ).not.toBe("antiderivative");
   });
 });
 

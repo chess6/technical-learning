@@ -17,7 +17,7 @@ import { EVIDENCE_ORDER, type EvidenceLevel } from "./evidence";
 /**
  * The affirmative grounds for an item's evidence claim. The evidence-ceiling test
  * rejects an E4/E5 claim whose basis CONTRADICTS it (heavy scaffolding, a reused
- * fixture, a familiar drill, or self-marked scoring). Passing that filter does
+ * fixture, a near/familiar context, or self-marked scoring). Passing that filter does
  * NOT certify E4/E5 — it only rules out impossible/contradictory claims; the
  * affirmative warrant is the contract reviewer's judgment.
  */
@@ -59,7 +59,7 @@ export type ItemAssessmentMeta = {
 /**
  * Grounds on which a claim at `level` is self-contradicted by its own basis.
  *
- * **Level-aware by design.** A reused fixture and a familiar drill are exactly
+ * **Level-aware by design.** A reused fixture and a near/familiar drill are exactly
  * what E2/E3 recognition and fluency items are *supposed* to be — flagging them
  * everywhere would reject the whole drill tier. They only contradict a claim of
  * TRANSFER (E4+), where the point is a fresh instance in an unfamiliar context.
@@ -82,6 +82,7 @@ export function evidenceContradictions(
   if (basis.scaffolding === "heavy") found.push("heavy scaffolding");
   if (basis.freshness === "reused-fixture") found.push("reused fixture");
   if (basis.unfamiliarity === "familiar-drill") found.push("familiar drill");
+  if (basis.unfamiliarity === "near") found.push("near context");
   if (basis.scoringAuthority === "self-marked") found.push("self-marked");
   return found;
 }
@@ -769,11 +770,10 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
   },
   /* ---- substitution-parts (L7) ---------------------------------------- */
   // Evidence design in docs/courses/applied-mathematics/lessons/
-  // 07-substitution-parts/mastery-contract.md §1. The four antiderivative
-  // items are E4 (math-expression's ceiling: predicate-graded open
-  // construction — the predicate here is check-by-differentiating on the
-  // item's own interval, +C-invariant). Nothing claims E5: only the produced
-  // object is captured, with no reasoning beside it.
+  // 07-substitution-parts/mastery-contract.md §1. Capability ceilings are
+  // ceilings, not automatic evidence awards: the near, technique-cued drills
+  // below remain E2 even though math-expression could support E4 in a genuinely
+  // unfamiliar, uncued context.
   "sp-witness-predict": {
     evidenceTarget: "E1",
     methodSelection: false,
@@ -786,7 +786,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "sp-substitute-basic": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
       freshness: "fresh-instance", // 3x^2 cos(x^3) — same recognition, new instance
@@ -808,7 +808,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "sp-half-constant": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
       freshness: "fresh-instance",
@@ -819,7 +819,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "sp-bounds": {
-    evidenceTarget: "E3",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
       freshness: "fresh-instance",
@@ -830,7 +830,7 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
   "sp-parts-xexp": {
-    evidenceTarget: "E4",
+    evidenceTarget: "E2",
     methodSelection: false,
     evidenceBasis: {
       freshness: "fresh-instance", // x e^{2x} — the taught trade stays taught; this one is new

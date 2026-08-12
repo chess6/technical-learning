@@ -17,13 +17,12 @@ describe("task context generator", () => {
     );
   });
 
-  it("fails closed when Mode C gates are incomplete", () => {
+  it("recognizes the audited bold PASS verdict for L7", () => {
     const output = buildTaskContext({root, mode: "C", lesson: "substitution-parts"});
 
-    expect(output).toContain("BLOCKED for Mode C");
-    expect(output).toContain("insight.md with Gate result: PASS");
-    expect(output).toContain("mastery-contract.md");
-    expect(output).toContain("lesson-plan.md");
+    expect(output).toContain("insight.md`: PASS");
+    expect(output).toContain("READY for Mode C");
+    expect(output).not.toContain("BLOCKED for Mode C");
   });
 
   it("includes the requested bounded task surfaces", () => {
@@ -36,6 +35,44 @@ describe("task context generator", () => {
     expect(output).toContain("Applicable known-failure modes");
     expect(output).toContain("Branch and diff");
     expect(output).toContain("Exact verification");
+  });
+
+  it("does not reopen an already-built lesson for Mode C", () => {
+    const output = buildTaskContext({
+      root,
+      mode: "C",
+      lesson: "optimization-approximation",
+      course: "applied-mathematics",
+    });
+    expect(output).toContain("Lifecycle: `built`");
+    expect(output).toContain("ALREADY BUILT");
+    expect(output).not.toContain("READY for Mode C");
+  });
+
+  it("initializes Mode B for a future lesson with no existing directory", () => {
+    const output = buildTaskContext({
+      root,
+      mode: "B",
+      lesson: "sequences-limits",
+      course: "applied-mathematics",
+    });
+    expect(output).toContain("READY to initialize Mode B at Gate 3");
+    expect(output).toContain(
+      "docs/courses/applied-mathematics/lessons/09-sequences-limits/insight-brief.md",
+    );
+    expect(output).not.toContain("docs/courses/applied-mathematics/lessons/sequences-limits/");
+  });
+
+  it("balances signals across all four implementation contracts", () => {
+    const output = buildTaskContext({
+      root,
+      mode: "C",
+      lesson: "optimization-approximation",
+      course: "applied-mathematics",
+    });
+    expect(output).toContain("- mastery-contract.md:");
+    expect(output).toContain("- lesson-plan.md:");
+    expect(output).toContain("lesson-plan.md: ## Route");
   });
 
   it("stays below the 3,000-word cold-context ceiling", () => {

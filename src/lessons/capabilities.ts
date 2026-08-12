@@ -923,7 +923,10 @@ function mathExpressionConfig(exercise: ExerciseDefinition): MathExpressionConfi
   //     answers for this item (expected "sqrt(x-100)" was undefined at every
   //     sample point, so even a verbatim echo of the answer graded wrong).
   const declared = new Set(config.variables);
-  const strayInExpected = freeVariables(expected.node).filter((name) => !declared.has(name));
+  const allowsArbitraryConstant = config.check?.kind === "antiderivative-of";
+  const strayInExpected = freeVariables(expected.node).filter(
+    (name) => !declared.has(name) && !(allowsArbitraryConstant && name === "C"),
+  );
   if (strayInExpected.length > 0) {
     throw new Error(
       `math-expression exercise "${exercise.id}": expected answer uses undeclared variable(s) ${strayInExpected.join(", ")} — declare them in \`variables\` or fix the expected answer.`,
@@ -990,7 +993,10 @@ function gradeMathExpression(
     };
   }
   const declared = new Set(config.variables);
-  const stray = freeVariables(parsed.node).filter((name) => !declared.has(name));
+  const allowsArbitraryConstant = config.check?.kind === "antiderivative-of";
+  const stray = freeVariables(parsed.node).filter(
+    (name) => !declared.has(name) && !(allowsArbitraryConstant && name === "C"),
+  );
   if (stray.length > 0) {
     const list = stray.join(", ");
     return {

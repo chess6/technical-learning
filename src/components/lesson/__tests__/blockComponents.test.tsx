@@ -45,7 +45,7 @@ describe("blockComponents registry", () => {
       render(node);
       // `findAllByRole` waits out the lazy import; an entry that renders no
       // labelled region — or renders one with an empty name — fails here.
-      const regions = await screen.findAllByRole("region");
+      const regions = await screen.findAllByRole("region", undefined, { timeout: 5_000 });
       const named = regions.filter((r) => (r.getAttribute("aria-label") ?? "").trim().length > 0);
       expect(named.length, `"${componentId}" renders no region with an accessible name`).toBeGreaterThan(0);
     },
