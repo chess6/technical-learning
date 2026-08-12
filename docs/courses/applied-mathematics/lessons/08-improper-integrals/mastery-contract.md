@@ -102,7 +102,7 @@ integral” object.
 | Translate Type I, all Type-II edge cases, and two-sided notation into the required finite-limit families | D2/D4 | lesson | E3 | `imp-definition-edges`, exercise sequence | independently demonstrated |
 | Classify both \(p\)-edges and justify the knife-edge using accumulation formulas/octave behavior | D3/D5 | lesson | E3 | `imp-p-ladder`, exercise sequence | independently demonstrated |
 | Distinguish convergence, unbounded divergence, and oscillatory divergence without relying on plots | D2/D7 | lesson | E3 | `imp-verdict-classify`, exercise sequence | independently demonstrated |
-| Produce a certified \(C/x^p\) comparator, useful inequality direction, and inherited verdict for a fresh positive tail | D3/D8 | lesson | E3 | `imp-comparison-produce`, `tail-comparison` | independently demonstrated |
+| Apply both positive comparison directions: construct a convergent \(C/x^p\) majorant and a divergent \(C/x^p\) minorant, state the finite-truncation integrability hypotheses, and inherit the corresponding verdict | D3/D5 | lesson | E3 | `imp-comparison-produce`, `imp-comparison-diverge`, `tail-comparison` | independently demonstrated |
 | Refuse a symmetric-only two-sided value and require both one-sided limits | D5/D13 | lesson | E3 | `imp-route-refusal`, exercise sequence | independently demonstrated |
 | Check an infinite-edge parts boundary as a limit and finish \(\int_0^\infty xe^{-x}dx\) | D3/D10 | lesson | E3 | `imp-boundary-limit`, exercise sequence | independently demonstrated |
 | Select among direct truncation, \(p\)-ladder, and comparison on a mixed fresh set | D8/D10 | module | E5 | `mod-calctech-method-mix` | Gate 9 planned |
@@ -117,9 +117,9 @@ not automatically make the context unfamiliar transfer.
 - **Check:** one committed scandal prediction (E1, no mastery claim).
 - **Explore:** predict then move \(R\); read \(A(R)\); translate the graph back
   to a threshold statement. Explorer actions are learning events, not evidence.
-- **Practice:** six evidence items above, including fresh finite-limit
+- **Practice:** seven evidence items above, including fresh finite-limit
   translation, two-edge \(p\)-classification, divergence-mode discrimination,
-  produced comparison, route refusal, and boundary-limit completion.
+  both comparison directions, route refusal, and boundary-limit completion.
 - **Module obligations:** mixed L5–L8 method selection, delayed retention, and
   timed performance remain Gate 9; this lesson does not borrow those claims.
 - **Forward retention:** L10 partial sums reuse limit-of-finite-objects; L24
@@ -142,9 +142,24 @@ divergence.
 - `tailInequalityHolds` may return a certain counterexample witness from
   evaluation, but “holds” for learner grading requires an analytic certificate
   over the entire declared tail. Finite samples never pass an answer.
-- The comparison capability accepts every valid comparator in its declared
-  \(C/x^p\) family range, not one expected exponent; valid mathematics outside
-  the declared p-family is labelled unsupported, never wrong.
+- For the convergence target \(f(x)=1/(x^3+x)\) on \(x\ge1\), the comparison
+  capability accepts \(f(x)\le C/x^p\) exactly when \(1<p\le3\) and
+  \(C\ge C_{\min}(p)\), where \(C_{\min}=1/2\) for \(1<p\le2\),
+  \(C_{\min}=\frac{3-p}{2}(\frac{p-1}{3-p})^{(p-1)/2}\) for
+  \(2<p<3\), and \(C_{\min}=1\) for \(p=3\). No finite \(C\) works for
+  \(p>3\), and \(p\le1\) does not supply a convergent comparator.
+- For the divergence target \(f(x)=x^{-1/2}\) on \(x\ge1\), the capability
+  accepts \(C/x^p\le f(x)\) exactly when \(1/2\le p\le1\) and
+  \(0<C\le1\).
+- Each comparison answer must also state that target and comparator are
+  integrable on every finite truncation, identify the comparator's known
+  verdict, and draw the directionally valid conclusion. All numeric entries
+  must be finite. Open and closed boundary comparisons use the entered
+  IEEE-754 values exactly, with no favourable tolerance. A displayed decimal
+  below the analytic minimum is rejected with feedback to increase \(C\).
+- The capability accepts every valid comparator in those declared \(C/x^p\)
+  ranges; valid mathematics outside the declared family is labelled
+  unsupported, never wrong.
 - Withheld: conditional convergence, limit comparison as a named test,
   principal-value technique, Gamma, integral test for series, and the unowned
   Gaussian value \(\sqrt{\pi}/2\).
@@ -153,4 +168,3 @@ divergence.
 “improper integral” value object, claims a Gaussian value from comparison,
 uses sampling for positive grading, handles only one Type-II orientation, or
 lets the graph replace the symbolic abstraction return.
-

@@ -62,7 +62,7 @@ Lesson-owned runtime mappings:
 | `imp-obj-definition-edges` | E3 | `imp-definition-edges` |
 | `imp-obj-p-ladder` | E3 | `imp-p-ladder` |
 | `imp-obj-verdicts` | E3 | `imp-verdict-classify` |
-| `imp-obj-comparison` | E3 | `imp-comparison-produce` |
+| `imp-obj-comparison` | E3 | `imp-comparison-produce`, `imp-comparison-diverge` |
 | `imp-obj-refusal` | E3 | `imp-route-refusal` |
 | `imp-obj-boundary` | E3 | `imp-boundary-limit` |
 
@@ -86,22 +86,37 @@ objective at E1, never an independent mastery claim.
 ## Practice contract
 
 1. `imp-definition-edges` — sequence: choose the correct finite family
-   for Type I, bad right edge, and interior singularity; require both one-sided
-   limits for the interior case.
+   for Type I, bad left edge, bad right edge, interior singularity, and a
+   two-sided infinite interval. Use the corresponding one-sided limit at each
+   bad endpoint; require both one-sided accumulations for interior and
+   two-sided cases. A principal-value answer is an explicit reject.
 2. `imp-p-ladder` — sequence: classify fresh \(p\) values at infinity
    and zero, then identify why \(p=1\) is the knife edge.
 3. `imp-verdict-classify` — sequence: classify three formula-only
    accumulations as converges / unbounded / oscillates; “bounded” alone fails.
 4. `imp-comparison-produce` — `tail-comparison`: for
-   \(f(x)=1/(x^3+x)\) on \([1,\infty)\), produce \(C/x^p\), the useful
-   inequality direction, and convergence conclusion. Analytically accept the
-   full certified range (including \(1/x^2\), \(1/x^{5/2}\), and
-   \(2/x^3\)); reject reversed direction, \(p\le1\), insufficient \(C\), and
-   sample-only “looks true.”
-5. `imp-route-refusal` — sequence: reject symmetric-only
+   \(f(x)=1/(x^3+x)\) on \([1,\infty)\), enter finite \(C,p\), choose
+   \(f(x)\le C/x^p\), mark both functions integrable on every finite
+   truncation, identify comparator convergence, and conclude target
+   convergence. Accept exactly \(1<p\le3\) and \(C\ge C_{\min}(p)\), with
+   \(C_{\min}=1/2\) for \(1<p\le2\),
+   \(C_{\min}=\frac{3-p}{2}(\frac{p-1}{3-p})^{(p-1)/2}\) for
+   \(2<p<3\), and \(C_{\min}=1\) for \(p=3\). No finite \(C\) works for
+   \(p>3\).
+5. `imp-comparison-diverge` — `tail-comparison`: for
+   \(f(x)=x^{-1/2}\) on \([1,\infty)\), enter finite \(C,p\), choose
+   \(C/x^p\le f(x)\), mark both functions integrable on every finite
+   truncation, identify comparator divergence, and conclude target divergence.
+   Accept exactly \(1/2\le p\le1\) and \(0<C\le1\).
+
+   Both comparison graders use exact open/closed tests on the entered IEEE-754
+   values with no favourable tolerance. Sampling may return a certain reject
+   witness but never a positive certificate. Feedback names the failed
+   condition without revealing a valid pair before commitment.
+6. `imp-route-refusal` — sequence: reject symmetric-only
    \(\int_{-\infty}^{\infty}x\,dx=0\), name principal value as the different
    object, and identify the failed one-sided integral.
-6. `imp-boundary-limit` — sequence: parts on \([0,R]\), select the
+7. `imp-boundary-limit` — sequence: parts on \([0,R]\), select the
    FTC/order bound that proves \(Re^{-R}\to0\), and produce total \(1\).
 
 Every sequence battery rejects blank, omitted, swapped-kind, and
@@ -150,8 +165,9 @@ Create `src/math/improperIntegrals.ts` and tests:
 - Edit time: `npm run typecheck` plus focused math, capability,
   grading-contract, manifest, and explorer tests.
 - Browser: lesson console clean; committed scandal; slider/mouse/keyboard;
-  finite-\(R\) readouts; comparison accepts two distinct valid comparators and
-  rejects inverted direction; no Gaussian value displayed.
+  finite-\(R\) readouts; comparison accepts three distinct convergent
+  majorants and two divergent minorants (including boundary cases), rejects
+  inverted direction and missing hypotheses; no Gaussian value displayed.
 - Package commit: `./check.sh` (layout/explorer touched, so include the
   targeted browser spec); package approval handoff uses `./check.sh --e2e`.
 
@@ -167,4 +183,3 @@ Create `src/math/improperIntegrals.ts` and tests:
 - [x] Gaussian value, sampling ceiling, Type-II orientation, and two-sided
   refusal are explicit rejection conditions.
 - [ ] Mode C implementation, verification, fresh package review, and Gate 8.
-
