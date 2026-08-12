@@ -17,12 +17,13 @@ describe("task context generator", () => {
     );
   });
 
-  it("recognizes the audited bold PASS verdict for L7", () => {
+  it("recognizes L7's audited PASS without reopening the now-built lesson", () => {
     const output = buildTaskContext({root, mode: "C", lesson: "substitution-parts"});
 
     expect(output).toContain("insight.md`: PASS");
-    expect(output).toContain("READY for Mode C");
-    expect(output).not.toContain("BLOCKED for Mode C");
+    expect(output).toContain("Lifecycle: `built`");
+    expect(output).toContain("ALREADY BUILT");
+    expect(output).not.toContain("READY for Mode C");
   });
 
   it("includes the requested bounded task surfaces", () => {

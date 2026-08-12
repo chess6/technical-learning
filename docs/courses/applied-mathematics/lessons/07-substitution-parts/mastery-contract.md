@@ -1,9 +1,9 @@
 # Lesson Mastery Contract — Substitution and Parts (spine L7, `substitution-parts`)
 
 **Gate 5 artifact.** Consumes [insight.md](insight.md), whose audits ran and
-whose Gate result is **PASS** (2026-08-10). This contract remains unaccepted
-at Gate 8; the owner's blocking package-review findings have been corrected
-and await re-review. Planning status and acceptance status are kept separate.
+whose Gate result is **PASS** (2026-08-10). Gate 8 was accepted under ADR-008
+after fresh package review and delta verification on 2026-08-11; §6 is the
+authoritative acceptance record.
 
 ## 1. Objectives (evidence-typed) and their items
 
@@ -81,13 +81,22 @@ explicitly in the closing section.
 
 ## 6. Acceptance record (Gate 8)
 
-**NOT ACCEPTED — nothing below is sign-off.** State as of 2026-08-11:
+**Gate 8: ACCEPTED under ADR-008; owner retains standing veto, 2026-08-11.**
 
-- Insight contract: audits complete, **Gate result: PASS**.
-- This contract: synchronized to the audited insight, including the cyclic
-  objective and evidence levels corrected to the actual familiarity/cueing.
-- Mode C: built by this session (the implementation session under the
-  usage-aware ADR-008 §4). Mechanical verification recorded in the package
-  ledger commit messages.
-- Owed before any acceptance: all 2026-08-11 blocking package-review findings
-  resolved, the corrected package re-reviewed, and CI green.
+The fresh package reviewer performed the required combined adversarial-
+mathematics and rendered-page review. Its first verdict was **REVISE** on six
+classes: interval-domain grading, interval-valid `ln(abs(x))`, evidence
+freshness/tiering, missing sequence-item batteries, an omitted substitution
+endpoint caveat, and ledger keyboard operation. The implementation context
+returned test-backed corrections; the same reviewer verified the deltas
+through `f41f81e` and returned **PASS** on every class.
+
+Mechanical evidence at acceptance: `npm run typecheck` clean;
+`./check.sh --quick` green (77 files, 1,925 tests); the final focused
+freshness/objective/evidence suite green (124 tests); and
+`e2e/lesson-substitution-parts.spec.ts` green in Chromium (6/6).
+Lint has no new warnings.
+
+Acceptance certifies L7's lesson-owned outcomes and the reviewed learner
+surface. It does not certify Package B's module depth bar: L8, Gate 9, and
+Gate 10 remain separate obligations.
