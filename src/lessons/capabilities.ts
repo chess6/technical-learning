@@ -865,6 +865,7 @@ function passesSequenceTextSemanticCheck(
 ): boolean {
   const prose = normalizeAnswerText(raw);
   const math = normalizeMathProduction(raw);
+  const negated = /\b(?:do|does|did|must|need|is|are|was|were)?\s*not\b|\bneither\b|\bdon't\b|\bdoesn't\b|\bfail(?:s|ed)?\b/.test(prose);
   switch (check) {
     case "type-one-2-infinity":
       return /lim(?:_|\()?r->inf/.test(math) && /int(?:_|\()?2(?:\^|to)?r/.test(math) && math.includes("f");
@@ -873,18 +874,19 @@ function passesSequenceTextSemanticCheck(
     case "right-singular-a-b":
       return /lim(?:_|\()?t->b-/.test(math) && /int(?:_|\()?a(?:\^|to)?t/.test(math) && math.includes("f");
     case "independent-one-sided":
-      return /both/.test(prose) && /one-sided|one sided/.test(prose) &&
+      return !negated && /both/.test(prose) && /one-sided|one sided/.test(prose) &&
         /limit|integral/.test(prose) && /converg|exist|independent/.test(prose);
     case "two-sided-split":
-      return /split/.test(prose) && /finite| at c|point c/.test(prose) &&
+      return !negated && /split/.test(prose) && /finite| at c|point c/.test(prose) &&
         /both/.test(prose) && /one-sided|one sided|sides/.test(prose) &&
         /converg|exist|require/.test(prose);
     case "exp-minus-two-squeeze": {
       const canonical = math
         .replace(/e\^\(-?2r\)/g, "exp(-2r)")
-        .replace(/rexp/g, "r*exp");
-      return canonical.includes("r*exp(-2r)<=1/(2r)") &&
-        (!canonical.includes("0<=") || canonical.includes("0<=r*exp(-2r)"));
+        .replace(/rexp/g, "r*exp")
+        .replace(/[.,;]+$/, "");
+      return canonical === "r*exp(-2r)<=1/(2r)" ||
+        canonical === "0<=r*exp(-2r)<=1/(2r)";
     }
   }
 }

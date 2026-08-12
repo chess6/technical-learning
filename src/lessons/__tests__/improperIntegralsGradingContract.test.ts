@@ -73,6 +73,13 @@ describeGradingContract(item("imp-definition-edges"), {
       text("lim t->b- int_a^t f"), text("principal value"),
       text("split at finite c and require both sides"),
     ) },
+    { name: "negated one-sided requirements", answer: sequence(
+      text("limit R->infinity integral_2^R f(x) dx"),
+      text("limit t->a+ integral_t^b f(x) dx"),
+      text("limit t->b- integral_a^t f(x) dx"),
+      text("both one-sided improper integrals do not converge"),
+      text("split at c and require both sides do not exist"),
+    ) },
   ],
 });
 
@@ -151,6 +158,7 @@ describeGradingContract(item("imp-boundary-limit"), {
     { name: "blank", answer: sequence() },
     { name: "drops the extra exponential term", answer: sequence(vector([0.5, 0]), text("r*e^(-2r)<=1/(2r)"), numeric(0.25)) },
     { name: "finite sample masquerades as proof", answer: sequence(vector([0.5, 0.25]), text("small at r=60"), numeric(0.25)) },
+    { name: "certified bound is only a prefix of a weaker non-squeeze", answer: sequence(vector([0.5, 0.25]), text("0 <= R exp(-2R) <= 1/(2R) + 1"), numeric(0.25)) },
     { name: "wrong total", answer: sequence(vector([0.5, 0.25]), text("r*e^(-2r)<=1/(2r)"), numeric(1)) },
   ],
 });
