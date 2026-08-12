@@ -444,7 +444,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 and L6 are Gate-8 accepted on `master`; L7 `substitution-parts` is built and Gate-8 accepted under ADR-008 on `feature/l7-substitution-parts`. L8 `improper-integrals` is built on that branch from fresh-audited Gate-4/Gate-5 PASS artifacts; `./check.sh` and its targeted Chromium suite pass. Fresh Gate-8 review remains open.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) · [Gate-4 PASS](lessons/08-improper-integrals/insight.md) · [Gate-5 mastery](lessons/08-improper-integrals/mastery-contract.md) · [plan](lessons/08-improper-integrals/lesson-plan.md) |
+| **B** | **IMPLEMENTATION COMPLETE / ACCEPTED — L5–L6 accepted on `master`; L7–L8 Gate-8 accepted under ADR-008 on `feature/l7-substitution-parts` (owner retains standing veto). Gate 9 is built (11 items) but unadministered; module mastery is not claimed. `./check.sh --e2e` green.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) · [Gate-4 PASS](lessons/08-improper-integrals/insight.md) · [Gate-8 mastery](lessons/08-improper-integrals/mastery-contract.md) · [plan](lessons/08-improper-integrals/lesson-plan.md) · [Gate 9](modules/calculus-technique/assessment-plan.md) |
 | C–L | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > Acceptance details live in each lesson’s mastery-contract §6; this table is the single package-status authority. Before Mode C, also check branches and worktrees as required by AGENTS.md.
@@ -480,7 +480,7 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 
 ## 8. Next-package recommendation
 
-Package B remains active; §6.1 is the sole status authority. L7 is accepted.
-L8 passed Gates 4 and 5, its Mode-C build is package-verified, and its first
-fresh Gate-8 verdict's corrections are in delta review. Package B's Gate-9
-assessment is built (11 items) but unadministered, so no module mastery is claimed.
+Package B is implementation-complete and accepted; §6.1 is the sole status
+authority. Gate 9 is built but unadministered, so no module mastery is claimed.
+Wave 2 is open: Package C (`series`) is the next lesson package, alongside the
+R6 retention work named by ADR-008.

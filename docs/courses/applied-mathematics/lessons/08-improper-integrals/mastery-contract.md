@@ -175,3 +175,25 @@ divergence.
 “improper integral” value object, claims a Gaussian value from comparison,
 uses sampling for positive grading, handles only one Type-II orientation, or
 lets the graph replace the symbolic abstraction return.
+
+## 6. Acceptance record (Gate 8)
+
+**Gate 8: ACCEPTED under ADR-008; owner retains standing veto, 2026-08-11.**
+
+The required fresh reviewer covered adversarial mathematics/grading and the
+complete rendered page. Its initial verdict was REVISE on five classes:
+Type-II overrun, missing learner-facing proofs, evidence overclaims, incomplete
+analytic/browser batteries, and a missing explorer preset. Two delta passes
+then found and closed overly literal text grading, missing exact fixture-value
+ownership, negation-blind prose, and prefix-only squeeze matching. The same
+reviewer returned PASS at immutable `d0b604b`; both review obligations are
+satisfied.
+
+Acceptance verification: `./check.sh --e2e` green (162 unit files / 2,868
+tests, 242 Chromium tests, six transcript tests); the final semantic battery
+passes 67/67. Existing lint warnings are unchanged and no new warning exists.
+
+Acceptance certifies L8's lesson-owned outcomes and rendered learner surface.
+It does not manufacture module evidence: Package B's Gate-9 assessment is
+built but unadministered, and the stronger Package C delayed-reasoning
+obligation remains open.

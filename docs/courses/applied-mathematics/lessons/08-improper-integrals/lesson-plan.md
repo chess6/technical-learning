@@ -191,5 +191,6 @@ Create `src/math/improperIntegrals.ts` and tests:
 - [x] Gaussian value, sampling ceiling, Type-II orientation, and two-sided
   refusal are explicit rejection conditions.
 - [x] Mode C implementation and package verification (`./check.sh`; targeted
-  Chromium 4/4).
-- [ ] Fresh package review and Gate 8.
+  Chromium 6/6 after review corrections).
+- [x] Fresh package review and Gate 8 — PASS at `d0b604b`; accepted under
+  ADR-008, owner retains standing veto (2026-08-11).
