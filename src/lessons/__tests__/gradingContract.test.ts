@@ -973,6 +973,54 @@ const CONTRACTS: { id: string; spec: GradingContractSpec }[] = [
       ],
     },
   },
+  /* `calculus-technique` module (Gate 9). */
+  ...[
+    "mod-calctech-retain-du-not-proof",
+    "mod-calctech-retain-necessary-not-sufficient",
+    "mod-calctech-retain-antiderivative-check",
+    "mod-calctech-retain-convergence-limit",
+  ].map((id) => ({
+    id,
+    spec: {
+      mustAccept: [{ name: "the precise retained claim", answer: { choice: 0 } }],
+      mustReject: [1, 2, 3].map((choice) => ({
+        name: `distractor ${choice}`, answer: { choice },
+      })),
+    },
+  })),
+  {
+    id: "mod-calctech-mock-derivative",
+    spec: {
+      mustAccept: [{ name: "chain derivative at x=1", answer: { value: 1536 } }],
+      mustReject: [
+        { name: "outer derivative only", answer: { value: 256 } },
+        { name: "inner derivative only", answer: { value: 6 } },
+        { name: "blank coerced to zero", answer: { value: 0 } },
+      ],
+    },
+  },
+  {
+    id: "mod-calctech-mock-optimize",
+    spec: {
+      mustAccept: [{ name: "minimum -2, maximum 2", answer: [-2, 2] }],
+      mustReject: [
+        { name: "order reversed", answer: [2, -2] },
+        { name: "stationary value only", answer: [-2, -2] },
+        { name: "endpoints ignored", answer: [-2, 0] },
+      ],
+    },
+  },
+  {
+    id: "mod-calctech-mock-improper",
+    spec: {
+      mustAccept: [{ name: "finite accumulation limit 1", answer: { value: 1 } }],
+      mustReject: [
+        { name: "coefficient copied without integration", answer: { value: 5 } },
+        { name: "power reciprocal guessed", answer: { value: 0.2 } },
+        { name: "decay mistaken for zero total", answer: { value: 0 } },
+      ],
+    },
+  },
 ];
 
 for (const { id, spec } of CONTRACTS) {

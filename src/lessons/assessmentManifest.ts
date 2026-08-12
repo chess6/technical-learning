@@ -552,6 +552,64 @@ export const ITEM_ASSESSMENT_META: Record<string, ItemAssessmentMeta> = {
     },
   },
 
+  /* `calculus-technique` module (L5-L8) — Gate 9, built not administered. */
+  "mod-calctech-mixed-chain-matrix": {
+    evidenceTarget: "E5", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "transfer",
+      integration: "integrated", scaffolding: "none", scoringAuthority: "human-scored" },
+  },
+  "mod-calctech-mixed-optimize-composite": {
+    evidenceTarget: "E5", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "transfer",
+      integration: "integrated", scaffolding: "none", scoringAuthority: "human-scored" },
+  },
+  "mod-calctech-method-mix": {
+    evidenceTarget: "E5", methodSelection: true,
+    requiredPostCommitmentCues: ["direct truncation", "p-ladder", "comparison"],
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "transfer",
+      integration: "integrated", scaffolding: "none", scoringAuthority: "human-scored" },
+  },
+  "mod-calctech-diagnose-limit": {
+    evidenceTarget: "E4", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "transfer",
+      integration: "integrated", scaffolding: "none", scoringAuthority: "human-scored" },
+  },
+  "mod-calctech-retain-du-not-proof": {
+    evidenceTarget: "E1", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-retain-necessary-not-sufficient": {
+    evidenceTarget: "E1", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-retain-antiderivative-check": {
+    evidenceTarget: "E1", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-retain-convergence-limit": {
+    evidenceTarget: "E1", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-mock-derivative": {
+    evidenceTarget: "E3", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-mock-optimize": {
+    evidenceTarget: "E3", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "integrated", scaffolding: "none", scoringAuthority: "auto" },
+  },
+  "mod-calctech-mock-improper": {
+    evidenceTarget: "E3", methodSelection: false,
+    evidenceBasis: { freshness: "fresh-instance", unfamiliarity: "near",
+      integration: "single-outcome", scaffolding: "none", scoringAuthority: "auto" },
+  },
+
   /* ----------------------------------------------------------------------
    * LESSON-owned exercises named by a lesson's `objectives[].itemIds`.
    *

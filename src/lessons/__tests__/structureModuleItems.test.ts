@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getGradingCapability, requiresHumanScore } from "../capabilities";
 import { CALCULUS_FOUNDATIONS_MODULE_ITEMS } from "../calculusFoundationsModuleItems";
+import { CALCULUS_TECHNIQUE_MODULE_ITEMS } from "../calculusTechniqueModuleItems";
 import { MODULE_ITEMS, SYSTEMS_ELIMINATION_ITEMS } from "../moduleItems";
 import {
   STRUCTURE_MODULE_ITEMS,
@@ -57,7 +58,8 @@ describe("structure module items — registration", () => {
     expect(all).toHaveLength(
       SYSTEMS_ELIMINATION_ITEMS.length +
         STRUCTURE_MODULE_ITEMS.length +
-        CALCULUS_FOUNDATIONS_MODULE_ITEMS.length,
+        CALCULUS_FOUNDATIONS_MODULE_ITEMS.length +
+        CALCULUS_TECHNIQUE_MODULE_ITEMS.length,
     );
     for (const id of EXPECTED_IDS) expect(all).toContain(id);
   });

@@ -106,7 +106,7 @@ integral” object.
 | Apply both positive comparison directions: construct a convergent \(C/x^p\) majorant and a divergent \(C/x^p\) minorant, state the finite-truncation integrability hypotheses, and inherit the corresponding verdict | D3/D5 | lesson | E3 | `imp-comparison-produce`, `imp-comparison-diverge`, `tail-comparison` | independently demonstrated |
 | Refuse a symmetric-only two-sided value and require both one-sided limits | D5/D13 | lesson | E3 | `imp-route-refusal`, exercise sequence | independently demonstrated |
 | Check an infinite-edge parts boundary as a limit on fresh \(xe^{-2x}\), after the lesson derives \(xe^{-x}\) | D3/D10 | lesson | E3 | `imp-boundary-limit`, produced vector/text/numeric sequence | independently demonstrated |
-| Select among direct truncation, \(p\)-ladder, and comparison on a mixed fresh set | D8/D10 | module | E5 | `mod-calctech-method-mix` | Gate 9 planned |
+| Select among direct truncation, \(p\)-ladder, and comparison on a mixed fresh set | D8/D10 | module | E5 | `mod-calctech-method-mix` | built · not administered in Gate 9 |
 | Retrieve convergence reasoning after a delay in the series/transform arc | D12 | module | E5 | Package C spaced item | planned |
 
 No lesson-owned outcome claims E4. The new comparison capture is scaffolded
@@ -126,7 +126,8 @@ not automatically make the context unfamiliar transfer.
   refusal uses \(x^3\) with a produced one-sided coefficient, and the boundary
   item uses fresh \(xe^{-2x}\) with a produced finite identity and squeeze.
 - **Module obligations:** mixed L5–L8 method selection, delayed retention, and
-  timed performance remain Gate 9; this lesson does not borrow those claims.
+  timed surfaces are built in Gate 9 but unadministered; this lesson does not
+  borrow those claims. The stronger Package C delayed-reasoning row remains open.
 - **Forward retention:** L10 partial sums reuse limit-of-finite-objects; L24
   must re-check transform convergence hypotheses; M7 parts retrieves the
   boundary-limit discipline.

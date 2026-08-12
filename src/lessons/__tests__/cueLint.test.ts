@@ -29,6 +29,10 @@ const METHOD_CUE_PATTERNS: readonly { name: string; re: RegExp }[] = [
   { name: "partition", re: /partition/i },
   { name: "bracket", re: /bracket/i },
   { name: "substitution", re: /substitut/i },
+  { name: "integration by parts", re: /integration by parts|parts formula/i },
+  { name: "direct truncation", re: /direct truncat/i },
+  { name: "p-ladder", re: /p[- ]ladder/i },
+  { name: "comparison", re: /compar(?:e|ison)/i },
 ];
 
 describe("cue-lint — method-selection prompts must not name the method", () => {

@@ -144,8 +144,8 @@ reached `PASS`. Second lesson of Package B (`calculus-technique`).
 | Select between the presented calculus and algebraic-certificate routes on fresh functions, and justify the selection | D8/D9 | lesson | E3 | `opt-select-route` (`exercise-sequence` on a **genuine fresh pair**, \(p(x)=x^2+6x+11\) and \(q(x)=x^3-6x^2+9x+1\): which has an algebraic certificate (`multiple-choice`, choices name only the structural reason, never the completed identity or the answer) → \(p\)'s certified minimum (`numeric`) → why \(q\) has no such shortcut (`multiple-choice`, the captured justification) → \(q\)'s minimum via the full calculus route (`numeric`, landing at an ENDPOINT, not either interior stationary point)) | built |
 | Identify the load-bearing steps of the escape-route argument and what each hypothesis does — on a fresh sloped point | D6 | lesson | E3 | `opt-derive-steps` (`exercise-sequence` on \(g(x)=x^2-4x+1\) at \(a=0\), a fresh pair used nowhere else: **(A)** which property of \(g\) licenses treating \(E(h)\) as smaller than \(\lvert mh\rvert\) for small \(h\) — differentiability, not mere continuity or boundedness (`multiple-choice`); **(B)** stepping with only \(h>0\), which single claim (max or min) that alone refutes (`multiple-choice`); **(C)** what property of \(a=0\) is what makes \(h<0\) *also* available, so the *other* claim gets refuted too — interiority, not differentiability again (`multiple-choice`); **(D)** the value at the step that actually improves (`numeric`)) | built |
 | Write the escape-route argument out in full | D6 | **none — see note** | — | `opt-derive-escape` (`self-check`) — a **practice event, not evidence** | built (no evidence claim) |
-| Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
-| Optimize a **composite** on an interval, requiring L5's chain rule to differentiate and L6's method to decide | D10 | **module** | E5 | `mod-calctech-mixed-optimize-composite` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open |
+| Retain "necessary is not sufficient" under delayed retrieval | D12 | **module** | E3 requested → E1 built | `mod-calctech-retain-necessary-not-sufficient` (module `calculus-technique`, Gate 9) | **built · not administered** — recognition-level partial discharge |
+| Optimize a **composite** on an interval, requiring L5's chain rule to differentiate and L6's method to decide | D10 | **module** | E5 | `mod-calctech-mixed-optimize-composite` (module `calculus-technique`, Gate 9) | **built · not administered** |
 
 **Transfer.** Four transfer-tier items. `opt-which-hypothesis` is the
 **abstraction-return** item (insight §14): it is set on a function with no
@@ -376,8 +376,8 @@ tests; `e2e/lesson-optimization-approximation.spec.ts` 12 tests green; the
 
 **What acceptance does and does not certify.** It certifies that this lesson's
 own outcomes are built, evidenced, and judged sound by the domain owner on a
-read of the real page. It does **not** certify the M2 depth bar — that needs
-`calculus-technique`'s own Gate 9 assessment, which does not exist — and it
+read of the real page. It does **not** certify the M2 depth bar — the
+`calculus-technique` Gate 9 assessment is built but unadministered — and it
 does not close the E6 obligation, which remains deferred to a validation pilot
 because no E6 evidence is obtainable in this repository today (§1d).
 

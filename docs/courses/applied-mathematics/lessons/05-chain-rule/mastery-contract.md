@@ -88,8 +88,8 @@ First lesson of Package B (`calculus-technique`).
 | Select the efficient route (direct expansion vs. chain rule) on a fresh composite, unprompted | D8/D9 | lesson | E3 | `chain-select-method` (`exercise-sequence`: efficient route (`multiple-choice`, prompt does not name either route) → the answer (`numeric`)) | planned |
 | Reproduce the substitution derivation on a fresh pair — not just apply the rule | D6 | **none — see note** | — | `chain-derive-fresh` (`self-check`) — a **practice event, not evidence** | n/a |
 | State what can and cannot be concluded when the inner function has a corner | D7 | lesson | E2 | `chain-corner-not-necessary` (`multiple-choice`) | planned |
-| Retain "cancel the \(du\)" is not sufficient justification, under delayed retrieval | D12 | **module** | E3 | `mod-calctech-retain-du-not-proof` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
-| Integrate the chain rule with the \(1\times1\)-matrix reading and LA matrix composition on one mixed item | D10 | **module** | E5 | `mod-calctech-mixed-chain-matrix` (module `calculus-technique`, Gate 9) | **not built** — Gate 9 open, module not yet entered |
+| Retain "cancel the \(du\)" is not sufficient justification, under delayed retrieval | D12 | **module** | E3 requested → E1 built | `mod-calctech-retain-du-not-proof` (module `calculus-technique`, Gate 9) | **built · not administered** — recognition-level partial discharge |
+| Integrate the chain rule with the \(1\times1\)-matrix reading and LA matrix composition on one mixed item | D10 | **module** | E5 | `mod-calctech-mixed-chain-matrix` (module `calculus-technique`, Gate 9) | **built · not administered** |
 
 **Transfer:** two transfer-tier evidence items. `chain-zero-predict` (predict
 before computing — D9) and `chain-select-method` (method selection folded into

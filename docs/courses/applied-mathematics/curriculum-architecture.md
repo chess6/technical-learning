@@ -481,6 +481,6 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 ## 8. Next-package recommendation
 
 Package B remains active; §6.1 is the sole status authority. L7 is accepted.
-L8 passed Gates 4 and 5 and its Mode-C build is package-verified. The next
-bounded work is its fresh Gate-8 review; Package B's module-owned Gate 9 remains
-open.
+L8 passed Gates 4 and 5, its Mode-C build is package-verified, and its first
+fresh Gate-8 verdict's corrections are in delta review. Package B's Gate-9
+assessment is built (11 items) but unadministered, so no module mastery is claimed.

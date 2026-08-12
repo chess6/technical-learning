@@ -12,6 +12,7 @@ import { getGradingCapability, requiresHumanScore } from "../capabilities";
 import { CALCULUS_FIXTURES } from "../../math/calculus";
 import { MODULE_ITEMS, SYSTEMS_ELIMINATION_ITEMS } from "../moduleItems";
 import { STRUCTURE_MODULE_ITEMS } from "../structureModuleItems";
+import { CALCULUS_TECHNIQUE_MODULE_ITEMS } from "../calculusTechniqueModuleItems";
 import { getModuleSet, resolveModuleSet } from "../moduleSets";
 import { snapshotItem } from "../attemptSnapshot";
 import { ITEM_ASSESSMENT_META } from "../assessmentManifest";
@@ -51,7 +52,8 @@ describe("calculus-foundations module items — registration", () => {
     expect(all).toHaveLength(
       SYSTEMS_ELIMINATION_ITEMS.length +
         STRUCTURE_MODULE_ITEMS.length +
-        CALCULUS_FOUNDATIONS_MODULE_ITEMS.length,
+        CALCULUS_FOUNDATIONS_MODULE_ITEMS.length +
+        CALCULUS_TECHNIQUE_MODULE_ITEMS.length,
     );
     for (const id of EXPECTED_IDS) expect(all).toContain(id);
   });

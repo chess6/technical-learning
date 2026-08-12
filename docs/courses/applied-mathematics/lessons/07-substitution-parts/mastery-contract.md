@@ -98,5 +98,6 @@ freshness/objective/evidence suite green (124 tests); and
 Lint has no new warnings.
 
 Acceptance certifies L7's lesson-owned outcomes and the reviewed learner
-surface. It does not certify Package B's module depth bar: L8, Gate 9, and
-Gate 10 remain separate obligations.
+surface. It does not certify Package B's module depth bar: L8 acceptance and
+real Gate-9 learner results remain separate obligations; Gate-9 surfaces are
+built but unadministered.

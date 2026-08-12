@@ -275,6 +275,49 @@ const CALCULUS_FOUNDATIONS_MOCK: ModuleSet = {
   itemIds: ["mod-calcfound-mock-limit", "mod-calcfound-mock-total", "mod-calcfound-mock-slope-of-total"],
 };
 
+/* Package B (`calculus-technique`, L5–L8) — Gate 9. Membership is disjoint. */
+const CALCULUS_TECHNIQUE_REVIEW: ModuleSet = {
+  id: "calculus-technique-review",
+  version: 1,
+  moduleId: "calculus-technique",
+  title: "Calculus Technique — cumulative review",
+  mode: "exam",
+  itemIds: [
+    "mod-calctech-mixed-chain-matrix",
+    "mod-calctech-mixed-optimize-composite",
+    "mod-calctech-method-mix",
+    "mod-calctech-diagnose-limit",
+  ],
+};
+
+const CALCULUS_TECHNIQUE_RETENTION: ModuleSet = {
+  id: "calculus-technique-retention",
+  version: 1,
+  moduleId: "calculus-technique",
+  title: "Calculus Technique — delayed retention",
+  mode: "exam",
+  itemIds: [
+    "mod-calctech-retain-du-not-proof",
+    "mod-calctech-retain-necessary-not-sufficient",
+    "mod-calctech-retain-antiderivative-check",
+    "mod-calctech-retain-convergence-limit",
+  ],
+};
+
+const CALCULUS_TECHNIQUE_MOCK: ModuleSet = {
+  id: "calculus-technique-mock",
+  version: 1,
+  moduleId: "calculus-technique",
+  title: "Calculus Technique — timed mock",
+  mode: "exam",
+  timeLimitSec: 600,
+  itemIds: [
+    "mod-calctech-mock-derivative",
+    "mod-calctech-mock-optimize",
+    "mod-calctech-mock-improper",
+  ],
+};
+
 export const MODULE_SETS: readonly ModuleSet[] = [
   SYSTEMS_ELIMINATION_REVIEW,
   SYSTEMS_ELIMINATION_TRANSFER,
@@ -289,6 +332,9 @@ export const MODULE_SETS: readonly ModuleSet[] = [
   CALCULUS_FOUNDATIONS_REVIEW,
   CALCULUS_FOUNDATIONS_RETENTION,
   CALCULUS_FOUNDATIONS_MOCK,
+  CALCULUS_TECHNIQUE_REVIEW,
+  CALCULUS_TECHNIQUE_RETENTION,
+  CALCULUS_TECHNIQUE_MOCK,
 ];
 
 /* -------------------------------------------------------------------------- */
