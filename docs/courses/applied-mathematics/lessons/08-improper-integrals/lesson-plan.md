@@ -1,5 +1,10 @@
 # Lesson Plan — Accumulating Forever (L8, `improper-integrals`)
 
+**Gate 5: PASS (2026-08-11).** A fresh delta audit of immutable commit
+`dbb8cd6` cleared Type-I/Type-II/two-sided coverage, both comparison directions
+and their finite-truncation hypotheses, and the exact analytic grading regions.
+Mode C is authorized; Gate 8 remains open.
+
 ## Approved insight
 
 - Contract: [insight.md](insight.md) — `Gate result: PASS` confirmed

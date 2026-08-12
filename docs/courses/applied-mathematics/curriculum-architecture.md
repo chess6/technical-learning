@@ -444,7 +444,7 @@ before implementing it").
 | Pkg | Status | Branch / worktree | Mode B artifacts |
 | --- | --- | --- | --- |
 | **A** | **APPROVED — A0–A4 complete on `master`; package-level semantic review run three times, defects found and corrected each time, re-verified green under a narrow formally-approved E2E waiver; Gate 9 assessment BUILT in code, not administered** | `master` | Complete: [ledger](modules/calculus-foundations/implementation-package.md) + 4 lesson artifact sets + [Gate 9 plan](modules/calculus-foundations/assessment-plan.md) |
-| **B** | **IN PROGRESS — L5 and L6 are Gate-8 accepted on `master`; L7 `substitution-parts` is built and Gate-8 accepted under ADR-008 on `feature/l7-substitution-parts` after fresh math/rendered review and verified corrections. L8 `improper-integrals` has a judged brief and fresh-audited Gate-4 contract with `Gate result: PASS`; Gate 5 is now the next obligation. No L8 production code exists.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) · [Gate-4 PASS](lessons/08-improper-integrals/insight.md) |
+| **B** | **IN PROGRESS — L5 and L6 are Gate-8 accepted on `master`; L7 `substitution-parts` is built and Gate-8 accepted under ADR-008 on `feature/l7-substitution-parts` after fresh math/rendered review and verified corrections. L8 `improper-integrals` has fresh-audited Gate-4 and Gate-5 PASS artifacts; its Mode-C implementation slice is claimed on the same branch. Gate 8 remains open.** | `feature/l7-substitution-parts` | L7: [contract](lessons/07-substitution-parts/insight.md) · [mastery](lessons/07-substitution-parts/mastery-contract.md) · [plan](lessons/07-substitution-parts/lesson-plan.md) · L8: [brief](lessons/08-improper-integrals/insight-brief.md) · [Gate-4 PASS](lessons/08-improper-integrals/insight.md) · [Gate-5 mastery](lessons/08-improper-integrals/mastery-contract.md) · [plan](lessons/08-improper-integrals/lesson-plan.md) |
 | C–L | NOT STARTED | — | None. Mode A only; each enters Mode B when scheduled. |
 
 > Acceptance details live in each lesson’s mastery-contract §6; this table is the single package-status authority. Before Mode C, also check branches and worktrees as required by AGENTS.md.
@@ -481,5 +481,5 @@ permits it because `fourier-transform → laplace-transform` is only a connectio
 ## 8. Next-package recommendation
 
 Package B remains active; §6.1 is the sole status authority. L7 is accepted.
-The next bounded work is L8 Gate 5 and its lesson plan; production code remains
-blocked until that complete Mode B plan exists.
+L8 passed Gates 4 and 5; its claimed Mode-C implementation is the next bounded
+work. Gate 8 and Package B's module-owned Gate 9 remain open.

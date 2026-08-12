@@ -8,7 +8,8 @@
   fresh-audited 2026-08-11. The exact primary remains owned there.
 - **Concept ids:** introduces `improper-integral`; reuses `limit`,
   `definite-integral`, `ftc`, and `antiderivative`.
-- **Scope status:** Gate 5 planning. Nothing here is Gate-8 acceptance.
+- **Scope status:** Gate 5 PASS, fresh delta-audited at `dbb8cd6` on
+  2026-08-11. Mode C is authorized; nothing here is Gate-8 acceptance.
 
 ## 1b. Role, bridge, and need
 
