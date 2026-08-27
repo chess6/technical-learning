@@ -1,6 +1,6 @@
 import {resolve} from "node:path";
 import {describe, expect, it} from "vitest";
-import {buildTaskContext, parseTaskArgs} from "../../scripts/task-context.mjs";
+import {buildCourseContext, buildTaskContext, parseTaskArgs} from "../../scripts/task-context.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 
@@ -92,6 +92,31 @@ describe("task context generator", () => {
     expect(prefixed).toContain("Lifecycle: `built`");
     expect(prefixed).toContain("ALREADY BUILT");
     expect(prefixed).toBe(bare);
+  });
+
+  it("serves Mode A for a course that does not exist yet", () => {
+    // "Add a new course" is the one task with no lesson to name. Requiring
+    // --lesson there left the cheap path unavailable for exactly that request.
+    const output = buildTaskContext({root, mode: "A", course: "totally-new-subject"});
+    expect(output).toContain("**does not exist yet**");
+    expect(output).toContain("NEW COURSE");
+    expect(output).toContain("course-spine.md");
+    expect(output).toContain("Mode A output is **docs only**");
+    expect(output.trim().split(/\s+/).length).toBeLessThanOrEqual(3000);
+  });
+
+  it("reports an existing course as an amendment, not a fresh build", () => {
+    const output = buildCourseContext({root, course: "applied-mathematics"});
+    expect(output).toContain("EXISTING COURSE");
+    expect(output).toContain("Missing (Mode A must produce these): none");
+    // The spine is mapped by section, never inlined.
+    expect(output).toMatch(/\*\*`course-spine\.md`\*\* \(\d+ lines\)/);
+  });
+
+  it("requires --lesson only where a lesson is meaningful", () => {
+    expect(parseTaskArgs(["--mode", "A", "--course", "x"])).toMatchObject({mode: "A", course: "x"});
+    expect(() => parseTaskArgs(["--mode", "A"])).toThrow(/--course/);
+    expect(() => parseTaskArgs(["--mode", "C"])).toThrow(/--lesson/);
   });
 
   it("stays below the 3,000-word cold-context ceiling", () => {

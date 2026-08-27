@@ -346,11 +346,73 @@ export function parseTaskArgs(argv) {
   }
   const mode = result.mode?.toUpperCase();
   if (!VALID_MODES.has(mode)) throw new Error("--mode must be A, B, C, or D");
-  if (!result.lesson) throw new Error("--lesson is required");
+  // Mode A operates on a course, not a lesson — and for a NEW course no lesson
+  // exists to name. Requiring --lesson there made the cheap path unavailable
+  // for exactly the task that needs it most.
+  if (!result.lesson && mode !== "A") throw new Error("--lesson is required (except for --mode A)");
+  if (!result.lesson && !result.course) throw new Error("--mode A needs --course <id>");
   return {mode, lesson: result.lesson, course: result.course};
 }
 
+function courseFile(root, course, name) {
+  return join(root, "docs", "courses", course, name);
+}
+
+export function buildCourseContext({root, course}) {
+  const courseRoot = join(root, "docs", "courses", course);
+  const exists = existsSync(courseRoot);
+  const required = ["course-spine.md", "curriculum-architecture.md", "benchmark-matrix.md"];
+  const present = required.filter((name) => existsSync(courseFile(root, course, name)));
+  const missing = required.filter((name) => !present.includes(name));
+  const lessonsRoot = join(courseRoot, "lessons");
+  const lessonDirs = existsSync(lessonsRoot) ? readdirSync(lessonsRoot).sort() : [];
+  const siblings = readdirSync(join(root, "docs", "courses"))
+    .filter((name) => existsSync(join(root, "docs", "courses", name, "course-spine.md")) && name !== course);
+
+  const blocks = present.flatMap((name) => {
+    const body = read(courseFile(root, course, name));
+    return [`**\`${name}\`** (${body.split("\n").length} lines) — sections:`,
+      ...headingOutline(body).map((entry) => `  - ${entry}`), ""];
+  });
+
+  const branch = runGit(root, ["branch", "--show-current"]) || "detached";
+  const output = [
+    `# Course context — ${course} (Mode A)`,
+    "",
+    `- Course directory: \`docs/courses/${course}/\`${exists ? "" : " — **does not exist yet**"}`,
+    `- Gate 1–2 artifacts present: ${present.length ? present.map((n) => `\`${n}\``).join(", ") : "none"}`,
+    `- Missing (Mode A must produce these): ${missing.length ? missing.map((n) => `\`${n}\``).join(", ") : "none"}`,
+    `- Lesson directories: ${lessonDirs.length ? lessonDirs.length : "none"}`,
+    `- Branch: \`${branch}\``,
+    "",
+    section("Readiness", [exists && !missing.length
+      ? "- **EXISTING COURSE** — amend the artifacts above; do not recreate them."
+      : "- **NEW COURSE** — Mode A produces the three artifacts above. Reuse the subject-agnostic standards unchanged; do NOT copy another course's particulars into them, and do NOT point this course at another course's files."]),
+    "",
+    section("Artifact map", blocks.length ? blocks : ["_No course artifacts yet._"]),
+    "",
+    section("Calibration references (read a section, not the file)", [
+      ...siblings.map((name) => `- \`docs/courses/${name}/course-spine.md\` — a built spine to imitate in *shape only*`),
+      "- `docs/courses/multi-domain-architecture.md` — subjects → courses → modules",
+      "- `docs/authoring/mastery-standard.md` §3 (profiles P1/P2/P3) and §9 (gate sequence)",
+    ]),
+    "",
+    section("Boundary", [
+      "- Mode A output is **docs only**. No lesson code, and no `future → built` promotion.",
+      "- Register the course in `src/lessons/courseModel.ts` only when a lesson is actually built.",
+    ]),
+    "",
+    section("Exact verification", ["- `npm run typecheck`", "- `./check.sh --quick` (docs-only Mode A needs no more)"]),
+    "",
+    "This pack is a router, not an approval or a substitute for an ambiguous canonical section.",
+  ].join("\n");
+  const wordCount = output.trim().split(/\s+/).length;
+  if (wordCount > 3000) throw new Error(`course pack exceeded 3000 words (${wordCount})`);
+  return output;
+}
+
 export function buildTaskContext({root, mode, lesson, course}) {
+  if (mode === "A" && !lesson) return buildCourseContext({root, course});
   const located = findLesson(root, lesson, course);
   lesson = located.lesson;
   const architecturePath = join(root, "docs", "courses", located.course, "curriculum-architecture.md");
@@ -408,7 +470,10 @@ export function buildTaskContext({root, mode, lesson, course}) {
 }
 
 function usage() {
-  return "Usage: npm run context:task -- --mode <A|B|C|D> --lesson <id> [--course <id>]";
+  return [
+    "Usage: npm run context:task -- --mode <B|C|D> --lesson <id> [--course <id>]",
+    "       npm run context:task -- --mode A --course <id>    (course architecture; the course need not exist yet)",
+  ].join("\n");
 }
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

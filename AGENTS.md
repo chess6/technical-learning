@@ -7,12 +7,14 @@ boundaries you must not cross.
 **Start every bounded task with the context pack, not with a document:**
 
 ```bash
-npm run context:task -- --mode <A|B|C|D> --lesson <id>
+npm run context:task -- --mode <B|C|D> --lesson <id>   # one lesson
+npm run context:task -- --mode A --course <id>         # course architecture (new or existing)
 ```
 
 It resolves the lesson's course, package, lifecycle, readiness verdict, gate
 artifacts, the objective/route/Gate-result blocks verbatim, the likely files, and
-the exact verification command — in ~1,300 words. Open a full standard **only**
+the exact verification command — in ~1,300 words. `--mode A` works for a course
+that does not exist yet, and says which Gate 1–2 artifacts are still missing. Open a full standard **only**
 when the pack exposes an ambiguity it cannot resolve; open the artifact at the
 line number the pack gives you rather than reading the file end-to-end.
 [docs/README.md](docs/README.md) is the full doc map if the table below misses
