@@ -64,16 +64,34 @@ describe("task context generator", () => {
     expect(output).not.toContain("docs/courses/applied-mathematics/lessons/sequences-limits/");
   });
 
-  it("balances signals across all four implementation contracts", () => {
+  it("maps every implementation contract by section and line number", () => {
     const output = buildTaskContext({
       root,
       mode: "C",
       lesson: "optimization-approximation",
       course: "applied-mathematics",
     });
-    expect(output).toContain("- mastery-contract.md:");
-    expect(output).toContain("- lesson-plan.md:");
-    expect(output).toContain("lesson-plan.md: ## Route");
+    // Each artifact is navigable: the pack names it, sizes it, and lists its
+    // headings with line numbers so a reader opens two sections, not the file.
+    for (const artifact of ["insight-brief.md", "insight.md", "mastery-contract.md", "lesson-plan.md"]) {
+      expect(output).toContain(`**\`${artifact}\`**`);
+    }
+    expect(output).toMatch(/- L\d+: /);
+    // The decisions of record are quoted verbatim rather than pointed at.
+    expect(output).toContain("Verbatim from `insight.md`");
+    expect(output).toContain("Gate result");
+    expect(output).toContain("Verbatim from `mastery-contract.md`");
+    expect(output).toContain("Verbatim from `lesson-plan.md`");
+  });
+
+  it("resolves lifecycle from the numbered directory name, not only the spine id", () => {
+    const prefixed = buildTaskContext({root, mode: "C", lesson: "07-substitution-parts"});
+    const bare = buildTaskContext({root, mode: "C", lesson: "substitution-parts"});
+    // A caller who pastes the directory name must get the same readiness verdict;
+    // reporting "not listed"/READY for a built lesson invites a duplicate build.
+    expect(prefixed).toContain("Lifecycle: `built`");
+    expect(prefixed).toContain("ALREADY BUILT");
+    expect(prefixed).toBe(bare);
   });
 
   it("stays below the 3,000-word cold-context ceiling", () => {

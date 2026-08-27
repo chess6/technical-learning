@@ -37,7 +37,7 @@ Read alongside:
 - [authoring/assessment-patterns.md](assessment-patterns.md) — the working *library* of
   assessment patterns; this document tells you *how much* of it a course owes and
   *how* to combine patterns into an assessment architecture.
-- [authoring/insight-validation-protocol.md](insight-validation-protocol.md) — the
+- [the Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md) — the
   post-implementation learner pilot; its 0–4 acquisition rubric is a special case
   of the [evidence levels](#5-evidence-levels) below.
 
@@ -266,7 +266,7 @@ Mastery is claimed only from **observable evidence**, graded on a seven-level
 scale. This scale generalizes the two taxonomies already in the repo — the
 `check | drill | transfer` [exercise tiers](assessment-patterns.md#tiers--phases)
 and the `recall / reconstruction / transfer` levels of the
-[Insight Validation Protocol](insight-validation-protocol.md) — rather than
+[Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md) — rather than
 inventing a competing one.
 
 | Level | Name | The learner… | Existing-repo mapping |
@@ -382,7 +382,7 @@ supports them. Do not invent psychometric precision (see [§6.3](#63-honesty-abo
 
 These are **design targets and heuristics, not validated psychometrics.** The
 project has one worked calibration instrument — the
-[Insight Validation Protocol](insight-validation-protocol.md), whose cohort
+[Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md), whose cohort
 bars ("≥ 60% reach rubric ≥ 3") are explicitly *pilot heuristics*. Any mastery
 threshold, decay schedule, or `mastery: number` estimate introduced later:
 
@@ -521,7 +521,7 @@ copy with a reference.
 | **Presentation (how it reads)** | [authoring/lesson-design.md](lesson-design.md) + [product/semantic-page-grammar.md](../product/semantic-page-grammar.md) | Block palette, page grammar, representation choice, prose. |
 | **Content & sequence (what & when)** | [courses/linear-algebra/course-spine.md](../courses/linear-algebra/course-spine.md) + [courses/linear-algebra/curriculum-architecture.md](../courses/linear-algebra/curriculum-architecture.md) + [courses/linear-algebra/benchmark-matrix.md](../courses/linear-algebra/benchmark-matrix.md) | Topics, order, prerequisites, external calibration. |
 | **Correctness** | [engineering/math-correctness.md](../engineering/math-correctness.md) + [quality/known-failure-modes.md](../quality/known-failure-modes.md) + [quality/lesson-correctness-checklist.md](../quality/lesson-correctness-checklist.md) | Mathematical + visualization correctness. |
-| **Assessment library & pilot** | [authoring/assessment-patterns.md](assessment-patterns.md) + [authoring/insight-validation-protocol.md](insight-validation-protocol.md) | Reusable patterns; post-ship learner validation. |
+| **Assessment library & pilot** | [authoring/assessment-patterns.md](assessment-patterns.md) + [the Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md) | Reusable patterns; post-ship learner validation. |
 | **Data model** | [courses/multi-domain-architecture.md](../courses/multi-domain-architecture.md) + `learnerState.ts` + `capabilities.ts` | Curriculum tree/graph; progress envelope; grading. |
 
 These standards are **reusable across mathematics, computer science, and related

@@ -365,8 +365,7 @@ animation.
 Visual **direction** (and algorithm/data-structure primitives) is owned by
 [product/visual-language.md](../product/visual-language.md); **code owns the actual
 token values.** The light-first, warm-ivory page with dark visualization canvases
-(Lesson 1 is the reference) is documented in
-[archive/milestones/visual-design-refinement.md](../archive/milestones/visual-design-refinement.md).
+uses Lesson 1 as its reference implementation.
 
 ---
 

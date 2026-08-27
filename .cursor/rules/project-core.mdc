@@ -1,61 +1,41 @@
 ---
-description: Core architecture, scope, and conventions for the linear algebra visual learning POC
+description: Core architecture, scope, and conventions for the visual learning platform
 alwaysApply: true
 ---
 
 # Project core
 
-Desktop-first Vite/React/TS POC. Prefer the existing layering; do not invent parallel math or lesson pipelines.
+Desktop-first Vite/React/TS. Prefer the existing layering; do not invent parallel
+math or lesson pipelines.
 
-## Layers (keep boundaries)
+## Layers
 
-| Layer | Path | Rule |
-| --- | --- | --- |
-| Pure math | `src/math/` | No React, no Mafs, no Motion Canvas. Production must not import `mathjs` (`mathjs` is devDependency only). |
-| Shared examples | `src/math/examples.ts`, `src/lessons/exampleData.ts` | Guided + explorers share example ids — never duplicate matrix/vector constants. |
-| Guided | `src/guided-scenes/` | Lessons pass `guidedSceneId` only; React never imports Motion Canvas scene modules directly. |
-| Explorations | `src/explorations/` | Register in `registry.tsx`; reuse `MafsSceneShell`, controls, toggles, readouts. |
-| Lessons / UI | `src/lessons/`, `src/components/lesson/` | Registry-driven; no per-lesson branching in the shell. |
+The layer table is owned by
+[docs/engineering/architecture.md](../../docs/engineering/architecture.md) —
+read it there, do not restate it. The rule it enforces: math lives only in
+`src/math`, guided scenes receive a `guidedSceneId` (React never imports a scene
+module), explorers register in `registry.tsx`, and the lesson shell never
+branches per lesson.
 
 ## Scope
 
-- **Built surface** (in `src/lessons/courseModel.ts` as `kind: "lesson"`):
-  linear algebra — `why-linear-algebra`, `vectors`, `transformations`, `systems`,
-  `elimination`, `solution-sets`, `matrix-composition`, `determinants`,
-  `subspaces-rank`, `rank-nullity`, `change-of-basis`, `eigenvectors` (full);
-  applied mathematics — `limits-continuity`, `derivative-local-linearity`,
-  `integral-accumulation`, `fundamental-theorem`, `chain-rule`, and
-  `optimization-approximation`;
-  plus the Algorithmic Thinking course — `karatsuba`, `binary-search-trees`,
-  `red-black-trees`. These are the active product.
-- Spine nodes marked `kind: "future"` are **closed to implementation**: do not
-  write lesson code for, or promote (`future → built`), a `future` lesson unless
-  the user **explicitly reopens that specific lesson**, either directly or
-  through an accepted ADR whose standing authorization names the exact scope.
-  ADR-008 currently covers applied-mathematics M2–M12; it does not waive any
-  gate. This is a hard approval boundary (Mode C). *Docs-only Mode B **planning*** (insight brief → insight
-  contract → mastery contract → plan, Gates 3–5) **may** proceed for a uniquely
-  resolved next node — see the workflow's short-prompt rule — but must stop before
-  any code or promotion.
+- The **built surface** is whatever `src/lessons/courseModel.ts` marks
+  `kind: "lesson"`. Read it from the file; never trust a copy in a doc.
+- Nodes marked `kind: "future"` are **closed to implementation**. Promoting one
+  (`future → built`) or writing its lesson code is an approval boundary —
+  see [AGENTS.md § Approval boundaries](../../AGENTS.md), which owns those rules.
 - Prefer fixing visual/math correctness and shared helpers over new lesson content.
-- **Any course or lesson authoring request** — architecture, planning, or
-  implementation — must be routed through
-  [docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md) first
-  (see the `course-authoring` rule).
+- Any course or lesson authoring request routes through
+  [docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md) first.
 
 ## Math & copy
 
-- Learner-facing math uses KaTeX (`ProseWithMath`, equation/readout components) — including MC choices when they are matrices/vectors.
+- Learner-facing math uses KaTeX (`ProseWithMath`, equation/readout components),
+  including MC choices when they are matrices/vectors.
 - Prefer `matrixVectorMultiply` / shared helpers over ad-hoc formulas in UI code.
-
-## Correctness docs
-
-Before changing math or visualizations: `docs/engineering/math-correctness.md`, `docs/quality/known-failure-modes.md`. Checklist: `docs/quality/lesson-correctness-checklist.md`.
-
-## Verify
-
-Match the check to the change — see the tiered Verify + model-routing table in [AGENTS.md](../../AGENTS.md#verify) (edit-time → `./check.sh --quick` → `./check.sh` → `./check.sh --e2e`). Add `--e2e` when touching player/layout/lesson flow or persistence.
 
 ## Browser review screenshots
 
-Save app screenshots **only** under `screenshots/` in the project workspace (gitignored). Always pass an absolute path such as `/home/thomas/Dev/technical-learning/screenshots/<name>.png` to Playwright / browser tools. Never write review captures to the home directory, Downloads, or other unrelated locations.
+Save app screenshots **only** under `screenshots/` (gitignored), always via an
+absolute path such as `/home/thomas/Dev/technical-learning/screenshots/<name>.png`.
+Never write captures to the home directory or Downloads.

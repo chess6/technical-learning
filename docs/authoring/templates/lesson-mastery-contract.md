@@ -283,7 +283,7 @@ Consistent with [authoring/assessment-patterns.md](../assessment-patterns.md#cho
   *construction*, untelegraphed transfer, timed mixed problems.
 
 The heavy, false-positive-prone probes belong **off the in-lesson surface** (the
-module assessment and the [validation pilot](../insight-validation-protocol.md)),
+module assessment and the [validation pilot](../../courses/algorithms/lessons/karatsuba/validation-protocol.md)),
 not stacked into Practice.
 
 ---

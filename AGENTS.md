@@ -4,7 +4,19 @@ Short router for agents working in this repo. It does **not** restate the
 standards — it points you to the document that owns each task, and names the
 boundaries you must not cross.
 
-Read [docs/README.md](docs/README.md) first: it is the doc map.
+**Start every bounded task with the context pack, not with a document:**
+
+```bash
+npm run context:task -- --mode <A|B|C|D> --lesson <id>
+```
+
+It resolves the lesson's course, package, lifecycle, readiness verdict, gate
+artifacts, the objective/route/Gate-result blocks verbatim, the likely files, and
+the exact verification command — in ~1,300 words. Open a full standard **only**
+when the pack exposes an ambiguity it cannot resolve; open the artifact at the
+line number the pack gives you rather than reading the file end-to-end.
+[docs/README.md](docs/README.md) is the full doc map if the table below misses
+your task.
 
 ## Which doc for which task
 
@@ -17,10 +29,11 @@ Read [docs/README.md](docs/README.md) first: it is the doc map.
 | Mastery bar / evidence | [docs/authoring/mastery-standard.md](docs/authoring/mastery-standard.md) |
 | Change math or a visualization | [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md) + [docs/quality/known-failure-modes.md](docs/quality/known-failure-modes.md) |
 | Change a guided scene's motion or labels | the hard gates still run (`e2e/guided-scene-hard-gates.spec.ts`) — [docs/quality/benchmark-lab/README.md](docs/quality/benchmark-lab/README.md). Review packets, MP4 evidence, and BeatSpec migration are **deferred**: [audit § Deferred until product maturity](docs/quality/guided-animation-audit-2026-07.md#deferred-until-product-maturity) |
-| Code architecture / contracts | [docs/engineering/architecture.md](docs/engineering/architecture.md) |
 | A per-lesson artifact (brief/contract/plan) | under `docs/courses/<course>/lessons/<lesson>/` — never a loose `docs/insight-*.md` |
-| Which course a request is about | `docs/courses/<course>/` — **linear-algebra** (built through L11) or **applied-mathematics** (the planning directory; its current runtime course id is `calculus`, under the `applied-stem` pathway). The applied spine is one 43-lesson arc in 13 packages through nonlinear dynamics. Package A and Package B (L1–L8) are implementation-complete; L7–L8 are Gate-8 accepted under ADR-008 on `feature/l7-substitution-parts`. Package B Gate 9 is built but unadministered, so no module mastery is claimed. Wave 2 / Package C is next. The package-status ledger in [curriculum-architecture §6.1](docs/courses/applied-mathematics/curriculum-architecture.md#61-package-status-ledger) is authoritative. Mode A always uses that course’s own spine and benchmark. |
-| Layering / scope / commit rules | `.cursor/rules/` (project-core, lesson-design, math-visualization-correctness, course-authoring, auto-commit) |
+| Which course a request is about | `docs/courses/<course>/` — **linear-algebra**, **applied-mathematics** (planning dir; runtime course id `calculus`, pathway `applied-stem`), **algorithms**, **data-structures**. Mode A always uses that course's own spine and benchmark. |
+| What is built, accepted, or next | **Never a copy in this file** — it goes stale. `npm run context:task` reports it per lesson; the [applied package ledger](docs/courses/applied-mathematics/curriculum-architecture.md#61-package-status-ledger) and `src/lessons/courseModel.ts` are authoritative. |
+| Code architecture, contracts, the layer table | [docs/engineering/architecture.md](docs/engineering/architecture.md) |
+| Math/visualization rules, commit habit | `.cursor/rules/math-visualization-correctness.mdc`, `.cursor/rules/auto-commit.mdc` — the other `.mdc` files are thin pointers into the docs above, not extra reading |
 
 ## Do not create a new standard doc
 

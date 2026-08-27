@@ -146,7 +146,7 @@ After lessons exist. Do not skip once a module is complete. Both artifacts are
    [declared target](../courses/linear-algebra/course-spine.md#0-declared-course-target-gate-1);
    never claim a profile the assessments do not support.
 3. **Learner-validation pilot** (post-ship, optional) —
-   [authoring/insight-validation-protocol.md](insight-validation-protocol.md).
+   [the Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md).
 
 ---
 

@@ -1,17 +1,17 @@
 # Insight Validation Protocol — Karatsuba Lesson
 
-The final **learner-validation** layer of the [Insight Discovery Gate](insight-discovery-gate.md).
+The final **learner-validation** layer of the [Insight Discovery Gate](../../../../authoring/insight-discovery-gate.md).
 A printable, operational pilot that tests whether a shipped lesson actually made
 learners **acquire** its approved insight — not whether they can recite a formula
 or repeat the steps. Worked application throughout: **Karatsuba multiplication**.
 
-- **Validates:** the approved insight in [insights/karatsuba.md](../courses/algorithms/lessons/karatsuba/insight.md)
+- **Validates:** the approved insight in [insight.md](insight.md)
   (the Stage 2 contract). The lesson under test is
-  [lesson-plans/karatsuba.md](../courses/algorithms/lessons/karatsuba/lesson-plan.md) /
-  [`src/lessons/karatsuba.ts`](../../src/lessons/karatsuba.ts).
+  [lesson-plan.md](lesson-plan.md) /
+  [`src/lessons/karatsuba.ts`](../../../../../src/lessons/karatsuba.ts).
 - **Format:** 1 facilitator + 1 learner. Screen + audio recording recommended.
 - **Time:** 20–30 min per learner. **Sample:** 5–8 learners (pilot, not a study).
-- **Tone / accessibility:** follow [authoring/lesson-design.md](lesson-design.md) — no leading
+- **Tone / accessibility:** follow [authoring/lesson-design.md](../../../../authoring/lesson-design.md) — no leading
   questions, no jargon the learner hasn't met, reduced-motion respected, the
   *lesson* is on trial, never the learner.
 

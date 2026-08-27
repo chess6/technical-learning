@@ -114,8 +114,7 @@ mathematics — but it discharges no outcome. Recall is capped at two bare
 > Neither survives scrutiny against the runtime: the capability is self-marked
 > in a lesson context, and no E4+ claim on self-marked evidence is licensed.
 > Found during independent review of L6 `optimization-approximation`'s
-> Mode B artifacts, whose own draft carried the identical error — see
-> `docs/engineering/HANDOFF.md`. Fixed here to match; the exercise, its model
+> Mode B artifacts, whose own draft carried the identical error. Fixed here to match; the exercise, its model
 > answer, and its rubric are unchanged.
 
 **Evidence-ceiling preflight (applied before coding, per A2–A4's own

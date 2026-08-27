@@ -17,7 +17,7 @@ Pair it with:
 - [authoring/lesson-design.md](lesson-design.md) — the block palette
   (Motivate → Watch → **Check** → **Explore** → **Practice** → Summarize) and the
   exercise/feedback bar.
-- [authoring/insight-validation-protocol.md](insight-validation-protocol.md) — the
+- [the Karatsuba validation protocol](../courses/algorithms/lessons/karatsuba/validation-protocol.md) — the
   **learner-validation pilot**, where heavy reconstruction/transfer probing lives
   (out of the in-lesson surface).
 - [authoring/insight-discovery-gate.md](insight-discovery-gate.md) and

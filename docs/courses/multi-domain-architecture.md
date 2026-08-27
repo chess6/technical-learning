@@ -57,7 +57,7 @@ prints the literal string `Linear Algebra` / `Visual Learning`. There is no data
 model for "which course am I in," so a second course cannot relabel the header.
 
 **There is no subject / course / module nesting.**
-[src/lessons/curriculum.ts](../../src/lessons/curriculum.ts) is a flat list of
+[`src/lessons/courseModel.ts`](../../src/lessons/courseModel.ts) is a flat list of
 `CourseSection`s. A `CourseSection` is a heading with items; there is no level
 above it (subject, course) and the one level it has (section) is doing
 double duty as "module." Karatsuba already sits awkwardly as an

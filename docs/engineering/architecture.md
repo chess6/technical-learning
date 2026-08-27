@@ -27,8 +27,8 @@ framework; their responsibilities are deliberately kept separate (see
 - **Math space vs. screen space** (coordinate/y-flip conventions):
   [math-space-conventions.md](math-space-conventions.md).
 - **Mathematical correctness** (source of truth, packing, invariants):
-  [math-correctness.md](math-correctness.md) + the layering rule in
-  [project-core](../../.cursor/rules/project-core.mdc).
+  [math-correctness.md](math-correctness.md). The layer table above is the
+  canonical statement of the layering rule.
 
 ## Key decisions
 

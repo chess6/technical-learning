@@ -7,9 +7,7 @@ learner's mental model of the opening linear-algebra slice — not the definitio
 This is a **joint** gate: Chapter 0 supplies the mystery, Lesson 1 establishes
 unique coordinates, and Lesson 2 completes the causal chain, so a single primary
 insight spans both lessons. The approved Stage 2 contract is
-[courses/linear-algebra/lessons/00-opening-slice/insight.md](insight.md); the
-design brief this gate governs is
-[archive/milestones/linear-algebra-opening-vertical-slice.md](../../../../archive/milestones/linear-algebra-opening-vertical-slice.md).
+[insight.md](insight.md).
 
 > Primary insight (after audit): **C1** — unique basis coordinates describe every
 > vector by coefficients, and linearity preserves those coefficients; therefore

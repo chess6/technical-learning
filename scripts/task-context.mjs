@@ -26,6 +26,10 @@ function unique(values) {
   return [...new Set(values)];
 }
 
+function canonicalLessonId(directoryName) {
+  return directoryName.replace(/^\d+-/, "");
+}
+
 function findLesson(root, lesson, requestedCourse) {
   const coursesRoot = join(root, "docs", "courses");
   const courses = requestedCourse ? [requestedCourse] : readdirSync(coursesRoot);
@@ -34,7 +38,15 @@ function findLesson(root, lesson, requestedCourse) {
     if (!existsSync(lessonsRoot)) return [];
     return readdirSync(lessonsRoot)
       .filter((name) => name === lesson || name.endsWith(`-${lesson}`))
-      .map((name) => ({course, directory: join(lessonsRoot, name)}));
+      .map((name) => ({
+        course,
+        directory: join(lessonsRoot, name),
+        // The spine and the package ledger key on the unprefixed id, so a
+        // caller who passes the directory name ("07-substitution-parts") must
+        // still resolve its lifecycle. Without this the pack silently reported
+        // "not listed" / READY for an already-built lesson.
+        lesson: canonicalLessonId(name),
+      }));
   });
   if (directoryMatches.length === 1) return directoryMatches[0];
   if (directoryMatches.length > 1) {
@@ -55,6 +67,7 @@ function findLesson(root, lesson, requestedCourse) {
     return [{
       course,
       directory: join(coursesRoot, course, "lessons", directoryName),
+      lesson,
     }];
   });
   if (architectureMatches.length !== 1) {
@@ -162,29 +175,74 @@ function readiness(mode, artifacts, lifecycle) {
     : `BLOCKED for Mode C: requires ${missing.join(", ")}.`;
 }
 
-function contractSignals(artifacts) {
-  const signalPattern = /\b(?:C|O|M|E)\d+\b|objective|evidence|route|fixture|Gate result/i;
-  const matchesByArtifact = artifacts.map((artifact) => ({
-    artifact,
-    matches: artifact.body
-      ? artifact.body.split("\n").filter((line) => signalPattern.test(line))
-      : [],
-  }));
-  const lines = [];
-  // Round-robin is load-bearing: one long insight draft must not consume the
-  // whole budget before the mastery contract and implementation plan appear.
-  for (let index = 0; lines.length < 48; index += 1) {
-    let added = false;
-    for (const {artifact, matches} of matchesByArtifact) {
-      const line = matches[index];
-      if (!line) continue;
-      lines.push(`- ${artifact.name}: ${cleanLine(line)}`);
-      added = true;
-      if (lines.length >= 48) break;
-    }
-    if (!added) break;
+// A navigable outline beats scraped prose. An agent that knows an artifact's
+// headings and line numbers reads the two sections it needs with `sed -n`
+// instead of loading 5,000 words to find them. Verbatim quoting is reserved
+// for the blocks that ARE the decision of record: the insight contract's Gate
+// result and the mastery contract's objective/evidence table.
+// Heading wording drifts between lessons ("1. Objectives (evidence-typed)" vs
+// "1d. Outcomes with evidence"), so each entry is an ordered list of accepted
+// spellings and the first match wins. A missing section is not an error — the
+// outline above still points at whatever the artifact does have.
+const QUOTED_SECTIONS = {
+  "insight.md": [[/^##+\s*Gate result/i]],
+  "mastery-contract.md": [[/^##+\s*(?:\d+[a-z]?\.\s*)?(?:Objectives|Outcomes with evidence)/i]],
+  "lesson-plan.md": [[/^##+\s*Route\b/i, /^##+\s*Title, route/i]],
+};
+
+function headingOutline(body) {
+  return body
+    .split("\n")
+    .map((line, index) => ({line, number: index + 1}))
+    .filter(({line}) => /^##+\s+\S/.test(line))
+    .map(({line, number}) => `L${number}: ${cleanLine(line.replace(/^#+\s*/, ""))}`);
+}
+
+function quotedSection(body, pattern) {
+  const lines = body.split("\n");
+  const start = lines.findIndex((line) => pattern.test(line));
+  if (start === -1) return null;
+  const depth = /^(#+)/.exec(lines[start])[1].length;
+  let end = start + 1;
+  // Stop at the next heading of the same or shallower depth; a deeper
+  // subheading is part of this section and must not truncate it.
+  while (end < lines.length) {
+    const heading = /^(#+)\s/.exec(lines[end]);
+    if (heading && heading[1].length <= depth) break;
+    end += 1;
   }
-  return unique(lines);
+  return {startLine: start + 1, text: lines.slice(start, end).join("\n").trim()};
+}
+
+function contractSignals(artifacts) {
+  const blocks = [];
+  for (const artifact of artifacts) {
+    if (!artifact.body) continue;
+    const outline = headingOutline(artifact.body);
+    const totalLines = artifact.body.split("\n").length;
+    blocks.push(`**\`${artifact.name}\`** (${totalLines} lines) — sections:`);
+    blocks.push(...outline.map((entry) => `  - ${entry}`));
+
+    for (const spellings of QUOTED_SECTIONS[artifact.name] ?? []) {
+      const found = spellings
+        .map((pattern) => quotedSection(artifact.body, pattern))
+        .find(Boolean);
+      if (!found) continue;
+      // Bound the quote: a section that runs long is still worth pointing at,
+      // but the pack must never become the artifact it is meant to replace.
+      const quoted = found.text.split("\n").slice(0, 40).join("\n");
+      const truncated = found.text.split("\n").length > 40;
+      blocks.push("");
+      blocks.push(`  Verbatim from \`${artifact.name}\` (line ${found.startLine}):`);
+      blocks.push("");
+      blocks.push("```markdown");
+      blocks.push(quoted);
+      if (truncated) blocks.push(`… truncated — read the rest at ${artifact.name}:${found.startLine}`);
+      blocks.push("```");
+    }
+    blocks.push("");
+  }
+  return blocks;
 }
 
 function dependencyLines(architecture, lesson) {
@@ -294,6 +352,7 @@ export function parseTaskArgs(argv) {
 
 export function buildTaskContext({root, mode, lesson, course}) {
   const located = findLesson(root, lesson, course);
+  lesson = located.lesson;
   const architecturePath = join(root, "docs", "courses", located.course, "curriculum-architecture.md");
   const architecture = read(architecturePath);
   const spine = read(join(root, "docs", "courses", located.course, "course-spine.md"));
@@ -322,7 +381,7 @@ export function buildTaskContext({root, mode, lesson, course}) {
     "",
     section("Gate artifacts", artifacts.map(({name, state}) => `- \`${name}\`: ${state}`)),
     "",
-    section("Objective, evidence, route, and fixture signals", signals),
+    section("Artifact map and decisions of record", signals),
     "",
     section("Prerequisite and outbound edges", dependencies.map((line) => `- ${line}`)),
     "",

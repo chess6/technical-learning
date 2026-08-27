@@ -202,7 +202,7 @@ quietly counted:
    evidence, and none is obtainable in this repository today** — not in-lesson,
    and not via the module queue either, per ADR-004. The genuine "reproduce the
    argument unaided" obligation is therefore deferred to the
-   [validation pilot](../../../../authoring/insight-validation-protocol.md),
+   [validation pilot](../../../algorithms/lessons/karatsuba/validation-protocol.md),
    where a real human scores a real learner. No proof-ready or E6 claim may rest
    on anything in this lesson.
 

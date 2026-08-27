@@ -33,8 +33,8 @@ ADR forward:
 - Gate 8 acceptance is performed under §4's substitute protocol and recorded in
   each lesson's `mastery-contract.md` §6 as *"accepted under ADR-008; owner
   retains standing veto."*
-- The owner retains an **asynchronous veto**: anything can be reverted, and the
-  HANDOFF + module ledgers must stay current enough that a reverting owner can
+- The owner retains an **asynchronous veto**: anything can be reverted, and
+  the module package ledgers must stay current enough that a reverting owner can
   find what to revert.
 
 **Unchanged, non-negotiable floors** — these were never owner-convenience and

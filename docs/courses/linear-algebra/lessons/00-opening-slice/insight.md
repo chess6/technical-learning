@@ -5,8 +5,7 @@ primary breakthrough from the Stage 1 brief
 ([courses/linear-algebra/lessons/00-opening-slice/insight-brief.md](insight-brief.md))
 and verifies its complete mathematical and pedagogical chain, then runs the
 mathematical audit. This is a **joint** contract covering Lesson 1 and Lesson 2 as
-one opening slice; it governs the design brief
-[archive/milestones/linear-algebra-opening-vertical-slice.md](../../../../archive/milestones/linear-algebra-opening-vertical-slice.md).
+one opening slice.
 
 Primary insight selected: **C1** — unique basis coordinates plus linearity make two
 basis images determine the whole map. Its load-bearing prerequisite is the Lesson 1

@@ -17,8 +17,7 @@ bridge to the multivariable case.
 > below was originally certified by this same agent lineage's own Audit A/B —
 > not an independent reviewer's — and an independent review subsequently
 > found a real gap in exactly the step Audit A had certified clean (C7; see
-> Audit A below and the review-fix note in
-> [HANDOFF.md](../../../../engineering/HANDOFF.md)), which is precisely the
+> Audit A below), which is precisely the
 > failure mode self-certification cannot catch. The gap is now fixed and
 > re-verified, but the `PASS` still reflects one round of independent review,
 > not a domain-owner's sign-off — see the Review signoff section below.

@@ -7,42 +7,13 @@ alwaysApply: true
 
 **Before acting on any request to design, plan, extend, or build a course,
 module, lesson, exercise bank, assessment, or interactive learning object, read
-[docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md)
-first.** It is the single entry point; it routes the request to the correct
-sequence of standards and gates without duplicating them. Do not jump straight to
-code.
+[docs/authoring/course-authoring-workflow.md](../../docs/authoring/course-authoring-workflow.md).**
+It is the single entry point: classify the request into a mode (A architecture /
+B planning / C implementation / D assessment), then follow that mode's ordered
+gates. Do not jump straight to code.
 
-## What to do
+**Name the mode and gate you are entering** so the user can redirect early.
+Resume from the furthest completed gate.
 
-1. **Classify the request into a mode** (workflow Step 0):
-   - **A — Course architecture:** profiles, spine, sequence, prerequisites, benchmark.
-   - **B — Pre-implementation lesson planning:** insight → mastery contract → plan, **no code**.
-   - **C — Implementation:** build an *approved* plan into a tested lesson.
-   - **D — Assessment & validation:** cumulative assessment + benchmark check.
-2. **Follow that mode's ordered gates** from the workflow (which point to the
-   canonical docs — insight gate, mastery standard, lesson design, page grammar,
-   math correctness, benchmark). Resume from the furthest completed gate.
-3. **Name the mode and gate you are entering** so the user can redirect early,
-   especially for short prompts that rely on repo context (workflow Step 6).
-
-A **uniquely resolved** short prompt (e.g. "plan the next lesson" → one unbuilt
-spine node) authorizes **Mode B planning (Gates 3–5), docs only** — name the node
-first, then proceed. It does **not** authorize implementation. Ask only when the
-resolution is ambiguous.
-
-## Approval boundaries (stop and ask — do not self-authorize)
-
-- **Building or promoting** a `future` spine node — writing lesson code or
-  `future → built` (Mode C, closed per `project-core` Scope) — without fresh
-  explicit approval or an accepted ADR granting explicit standing authorization
-  for the exact scope. ADR-008 currently covers applied-mathematics M2–M12 and
-  preserves every gate. *(Docs-only Mode B planning for a uniquely resolved node
-  is allowed, above.)*
-- Beginning **Gate 5 (the Lesson Mastery Contract)** without a `Gate result: PASS`
-  insight contract. *(Gates 3–4 produce that `PASS`, so starting Gate 3 does not
-  require one.)*
-- Writing lesson code before Mode B is complete and gate-valid, or outside the scope of fresh approval / accepted standing authorization.
-- Deviating from a standard, or shipping an unverified math/visualization result.
-- Claiming a course profile/stage the assessments do not support.
-
-When in doubt, prefer the workflow's routing over improvising a shortcut.
+Approval boundaries are owned by [AGENTS.md](../../AGENTS.md) — that section is
+canonical; this rule does not restate it.

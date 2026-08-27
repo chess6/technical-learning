@@ -31,7 +31,6 @@ the router is [authoring/course-authoring-workflow.md](authoring/course-authorin
 | Benchmark our animation against expert references; run the scene hard gates | [quality/benchmark-lab/README.md](quality/benchmark-lab/README.md) |
 | Export a guided scene to video | [engineering/video-export.md](engineering/video-export.md) |
 | Understand a past decision | [engineering/decisions/](engineering/decisions/) |
-| Find historical milestones/experiments | [archive/](archive/) |
 
 ## Tree
 
@@ -42,7 +41,7 @@ docs/
   courses/       per-course spine/architecture/benchmark + per-lesson artifacts
   engineering/   architecture, math correctness, decision records (ADRs)
   quality/       correctness checklist + curated known failure modes
-  archive/       milestones, experiments, superseded plans (historical)
+  archive/       two still-cited references (depth pattern, Motion Canvas spike)
 ```
 
 ## Where a document belongs
@@ -53,7 +52,7 @@ docs/
 | Reusable tool | templates, assessment patterns, checklist | Used repeatedly; concise and actionable |
 | Course artifact | spine, insight brief, mastery contract, lesson plan | Lives under `courses/<course>/…` (per lesson under `lessons/<lesson>/`) |
 | Decision / experiment | Motion Canvas runtime, architecture choice | Preserve rationale as an ADR; don't present as active instruction |
-| Historical record | milestone write-ups, old implementation plans | Archive (or delete once its lasting decisions are absorbed) |
+| Historical record | milestone write-ups, old implementation plans | **Delete it.** Git history is the archive; absorb any lasting decision into its owning standard or an ADR first |
 
 ## Course artifacts
 

@@ -124,17 +124,13 @@ Key entry points:
   [e2e/visual-identity.spec.ts](e2e/visual-identity.spec.ts) (the same claims
   measured in a browser, plus switching, persistence, keyboard access, and no
   horizontal overflow). Per-primitive visual direction for algorithm lessons:
-  [docs/product/visual-language.md](docs/product/visual-language.md). The
-  original light-first page refinement that Notebook descends from is kept as
-  historical reference in
-  [docs/archive/milestones/visual-design-refinement.md](docs/archive/milestones/visual-design-refinement.md).
+  [docs/product/visual-language.md](docs/product/visual-language.md). Notebook
+  descends from an earlier light-first page refinement (history in Git).
 - **Math & visualization correctness:**
   [docs/engineering/math-correctness.md](docs/engineering/math-correctness.md) +
   [docs/quality/known-failure-modes.md](docs/quality/known-failure-modes.md);
   sign off with
   [docs/quality/lesson-correctness-checklist.md](docs/quality/lesson-correctness-checklist.md).
-- **History:** milestone write-ups and experiments live under
-  [docs/archive/](docs/archive/).
 
 Notation: standard basis \(\mathbf{e}_1, \mathbf{e}_2\); bold vectors
 \(\mathbf{v}, \mathbf{w}\); matrix \(A\). Keep basic accessibility (labels, focus,

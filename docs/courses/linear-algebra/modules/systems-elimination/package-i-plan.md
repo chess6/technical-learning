@@ -12,7 +12,7 @@ performance) and enables the **S3** readiness claim. Annex to the
 > [course-authoring-workflow](../../../../authoring/course-authoring-workflow.md) and
 > the [approval boundaries](../../../../../AGENTS.md#approval-boundaries-stop-and-ask).
 > This plan is authored **contract-table-first** per ADR-002
-> ([workflow redesign](../../../engineering/decisions/002-package-workflow-redesign.md)):
+> ([workflow redesign](../../../../engineering/decisions/002-package-workflow-redesign.md)):
 > the grading-semantics contract table (§2) is the artifact to review **before** any
 > code, and every new auto-graded item ships with a `describeGradingContract` spec.
 
