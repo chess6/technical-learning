@@ -1,0 +1,1 @@
+import{Ct as e}from"./math-_95IFDdj.js";import{l as t}from"./matrices--CLGFi8H.js";import{n}from"./interpolation-DwG-svjC.js";var r=e(`shear-2-1`),i=r.matrix,a=r.inputVector??[1.5,.5],o={width:960,height:540};function s(e,t=i){return n(t,e)}function c(e,n){return t(e,n)}export{s as a,c as i,i as n,o as r,a as t};

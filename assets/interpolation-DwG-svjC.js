@@ -1,0 +1,1 @@
+import{t as e}from"./matrices--CLGFi8H.js";function t(e,t,n){return Math.min(n,Math.max(t,e))}function n(e,t,n){return e+(t-e)*n}function r(e,t,r){return[[n(e[0][0],t[0][0],r),n(e[0][1],t[0][1],r)],[n(e[1][0],t[1][0],r),n(e[1][1],t[1][1],r)]]}function i(t,n){return r(e,t,n)}export{i as n,t};

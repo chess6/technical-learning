@@ -1,0 +1,1 @@
+import{b as e}from"./spacedConfig-B5ADdtlS.js";function t(t,n){let r=e(t).grade(t,n),i=r.solutionReveal??(`solutionReveal`in t?t.solutionReveal:void 0);return i?{...r,solutionReveal:i}:r}export{t};
