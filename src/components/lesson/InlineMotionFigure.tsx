@@ -30,7 +30,8 @@ export function InlineMotionFigure({
 }: InlineMotionFigureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reducedMotion, setReducedMotion] = useState(initiallyReduced);
-  const base = `/media/inline-motion/${stem}`;
+  // BASE_URL is "/" in dev and "/technical-learning/" on GitHub Pages.
+  const base = `${import.meta.env.BASE_URL}media/inline-motion/${stem}`;
 
   useEffect(() => {
     const media = window.matchMedia?.(REDUCED_MOTION_QUERY);

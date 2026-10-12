@@ -152,4 +152,7 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+], {
+  // Serve correctly from a sub-path (e.g. GitHub Pages at /technical-learning/); "/" in dev.
+  basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/",
+});
